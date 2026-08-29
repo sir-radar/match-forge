@@ -16,6 +16,7 @@ def test_fixture_is_pinned_to_full_git_sha() -> None:
     assert fixture["match_id"] == 3869685
     assert len(fixture["resources"]) == 5
     assert all(len(resource["sha256"]) == 64 for resource in fixture["resources"])
+    assert fixture["attribution"] == "Data provided by StatsBomb"
 
 
 def test_quality_policy_has_four_expected_severities() -> None:

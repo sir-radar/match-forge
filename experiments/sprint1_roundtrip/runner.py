@@ -94,6 +94,7 @@ def _failure_injections(
     run_id: uuid.UUID,
     snapshot_id: uuid.UUID,
     published_events: PublishedFile,
+    source_resource_ids: list[uuid.UUID],
 ) -> tuple[dict[str, Any], list[Finding]]:
     failure_root = RUNTIME_ROOT / "failure-fixtures" / str(run_id)
     failure_root.mkdir(parents=True, exist_ok=True)
@@ -182,6 +183,7 @@ def _failure_injections(
         published_events.logical_sha256,
         published_events.row_count,
         postpublish_path.stat().st_size,
+        source_resource_ids,
     )
     registration_after = database.dataset_file_registered(
         postpublish_dataset_id,
@@ -273,9 +275,12 @@ def _contract_matrix(report: dict[str, Any]) -> dict[str, str]:
         "Temporal reconstruction": not report["temporal"]["future_observation_leakage"],
         "PostgreSQL ownership": report["storage"]["postgresql_owns_relational_only"],
         "Parquet ownership": report["storage"]["parquet_read_back_passed"],
+        "Dataset lineage": report["lineage"]["forward_trace_passed"]
+        and report["lineage"]["reverse_trace_passed"],
         "Event ordering": report["storage"]["event_indexes_strictly_ordered"],
         "Coordinate preservation": report["storage"]["coordinates_preserved"],
-        "Lineup preservation": report["reconciliation"]["unexplained_lineup_difference"] == 0,
+        "Lineup preservation": report["reconciliation"]["unexplained_lineup_difference"] == 0
+        and report["reconciliation"]["unexplained_lineup_card_difference"] == 0,
         "Idempotency": report["idempotency"]["passed"],
         "Transaction rollback": report["failure_injections"]["lineup_transaction_failure"][
             "passed"
@@ -380,6 +385,7 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
             item.logical_sha256,
             item.row_count,
             item.size_bytes,
+            list(resource_ids.values()),
         )
     _, dataset_manifest_path, dataset_manifest_hash = create_dataset_manifest(
         str(fixture["source_git_sha"]),
@@ -432,6 +438,7 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
             item.logical_sha256,
             item.row_count,
             item.size_bytes,
+            list(resource_ids.values()),
         )
     counts_after_second = database.table_counts()
 
@@ -463,6 +470,7 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
         run_id,
         snapshot_id,
         published_events,
+        list(resource_ids.values()),
     )
     database.record_findings(run_id, normalized.findings + injected_findings)
     determinism = prove_deterministic_rebuild(normalized.rows, published_events)
@@ -496,6 +504,7 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
             "match_observations",
             "event_catalogue",
             "dataset_versions",
+            "dataset_inputs",
             "dataset_files",
         )
     }
@@ -509,7 +518,25 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
     )
 
     real_finding_counts = Counter(item.severity for item in normalized.findings)
+    source_lineage = database.dataset_lineage(uuid.UUID(published_events.dataset_version_id))
+    representative_event = database.trace_event(normalized.rows[0]["provider_event_id"])
+    representative_event["dataset_version_id"] = published_events.dataset_version_id
+    representative_event["parquet_file"] = published_events.relative_path
+    representative_event["normalizer_version"] = NORMALIZER_VERSION
+    representative_event["schema_version"] = published_events.schema_version
+    forward_trace_passed = (
+        representative_event["canonical_event_id"] == normalized.rows[0]["canonical_event_id"]
+        and representative_event["provider_path"] == "data/events/3869685.json"
+        and representative_event["source_revision"] == fixture["source_git_sha"]
+    )
+    reverse_trace_passed = source_lineage["source_revision"] == fixture["source_git_sha"] and len(
+        source_lineage["resources"]
+    ) == len(fixture["resources"])
     finished = utc_now()
+    lineup_source_cards = sum(
+        len(player.get("cards", [])) for team in lineups for player in team["lineup"]
+    )
+    normalized_lineup_cards = database.table_counts()["lineup_cards"]
     report: dict[str, Any] = {
         "contract": "PrototypeRoundTripReportV1",
         "run_id": str(run_id),
@@ -540,6 +567,9 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
         "source": {
             "repository": fixture["repository"],
             "source_git_sha": fixture["source_git_sha"],
+            "license": fixture["license"],
+            "license_url": fixture["license_url"],
+            "attribution": fixture["attribution"],
             "source_manifest_path": str(acquisition_first.manifest_path.relative_to(PROJECT_ROOT)),
             "source_manifest_sha256": acquisition_first.manifest_sha256,
             "resource_count": len(fixture["resources"]),
@@ -577,6 +607,12 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
             "coordinates_preserved": _event_coordinates_preserved(normalized.rows),
             "kickoff_timezone_invented": False,
         },
+        "lineage": {
+            "representative_event": representative_event,
+            "dataset_to_source": source_lineage,
+            "forward_trace_passed": forward_trace_passed,
+            "reverse_trace_passed": reverse_trace_passed,
+        },
         "reconciliation": {
             "raw_events": normalized.raw_count,
             "normalized_events": len(normalized.rows),
@@ -590,6 +626,9 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
             "normalized_participants": _count_database_players(database),
             "unexplained_lineup_difference": sum(len(team["lineup"]) for team in lineups)
             - _count_database_players(database),
+            "lineup_source_cards": lineup_source_cards,
+            "normalized_lineup_cards": normalized_lineup_cards,
+            "unexplained_lineup_card_difference": lineup_source_cards - normalized_lineup_cards,
             "three_sixty_frames": len(normalized_360),
         },
         "idempotency": {

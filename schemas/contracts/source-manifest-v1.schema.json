@@ -2,12 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "SourceManifestV1",
   "type": "object",
-  "required": ["contract", "provider", "repository", "source_git_sha", "acquired_at", "resources"],
+  "required": ["contract", "provider", "repository", "source_git_sha", "license", "license_url", "attribution", "acquired_at", "resources"],
   "properties": {
     "contract": {"const": "SourceManifestV1"},
     "provider": {"type": "string"},
     "repository": {"type": "string", "format": "uri"},
     "source_git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "license": {"type": "string"},
+    "license_url": {"type": "string", "format": "uri"},
+    "attribution": {"type": "string"},
     "acquired_at": {"type": "string"},
     "resources": {
       "type": "array",

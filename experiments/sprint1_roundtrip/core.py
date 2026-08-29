@@ -237,6 +237,9 @@ def acquire_source() -> Acquisition:
             "provider": fixture["provider"],
             "repository": fixture["repository"],
             "source_git_sha": source_sha,
+            "license": fixture["license"],
+            "license_url": fixture["license_url"],
+            "attribution": fixture["attribution"],
             "acquired_at": utc_text(),
             "resources": manifest_resources,
         }
