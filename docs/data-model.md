@@ -70,6 +70,10 @@ Within one source snapshot, provider event IDs and `(provider_match_id, event_in
 
 Filesystem publication precedes database registration. A registration rollback therefore cannot erase an already published immutable artifact; an identical rerun verifies the files and manifest, then reconciles missing PostgreSQL rows. See [Event datasets](event-datasets.md).
 
+## Validation registry
+
+`validation_runs` identifies one immutable execution by dataset version, dataset manifest, quality-policy checksum, and validator version. `validation_findings` records policy-derived severity, action, scope, evidence, and optional file and source-resource lineage. Composite foreign keys prevent cross-dataset files and cross-snapshot resources. See [Data validation](data-validation.md).
+
 ## Migration policy
 
 Production migrations are forward-only. The initial canonical migration has no destructive Down section. Corrections require a new migration.
@@ -77,3 +81,5 @@ Production migrations are forward-only. The initial canonical migration has no d
 `202608291335_preserve_provider_position_spans.sql` removes the original normalized-interval ordering assumption after verification against the pinned StatsBomb fixture. Other position shape and non-negative clock constraints remain enforced.
 
 `202608291500_event_datasets.sql` adds normalized dataset versions, source-resource lineage, and file metadata.
+
+`202608291530_data_validation.sql` adds immutable validation runs, policy-classified findings, and exact dataset/source lineage constraints.

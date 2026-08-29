@@ -23,6 +23,7 @@ from football.ingestion import (
     SourceIntegrityError,
     StatsBombCanonicalIngestor,
 )
+from football.validation import QualityPolicy, StatsBombDatasetValidator
 from jsonschema import validate as validate_json
 from psycopg import Connection
 
@@ -83,7 +84,12 @@ def _competition_payload() -> list[dict[str, object]]:
     ]
 
 
-def _match_payload(*, home_name: str = "Argentina") -> list[dict[str, object]]:
+def _match_payload(
+    *,
+    home_name: str = "Argentina",
+    home_score: int = 3,
+    away_score: int = 3,
+) -> list[dict[str, object]]:
     return [
         {
             "match_id": 3869685,
@@ -107,8 +113,8 @@ def _match_payload(*, home_name: str = "Argentina") -> list[dict[str, object]]:
                 "away_team_gender": "male",
                 "country": {"id": 78, "name": "France"},
             },
-            "home_score": 3,
-            "away_score": 3,
+            "home_score": home_score,
+            "away_score": away_score,
             "match_status": "available",
             "match_status_360": "available",
             "last_updated": "2024-12-16T10:15:11.055845",
@@ -217,10 +223,18 @@ def _acquire_bundle(
     nickname: str = "Lionel Messi",
     events: list[dict[str, object]] | None = None,
     nonmonotonic_position: bool = False,
+    home_score: int = 3,
+    away_score: int = 3,
 ) -> AcquisitionResult:
     payloads = {
         "data/competitions.json": _json_bytes(_competition_payload()),
-        "data/matches/43/106.json": _json_bytes(_match_payload(home_name=home_name)),
+        "data/matches/43/106.json": _json_bytes(
+            _match_payload(
+                home_name=home_name,
+                home_score=home_score,
+                away_score=away_score,
+            )
+        ),
         "data/lineups/3869685.json": _json_bytes(
             _lineup_payload(
                 home_team_id=home_team_id,
@@ -843,7 +857,7 @@ def test_publishes_and_registers_normalized_event_dataset_idempotently(
                 """
                 SELECT resource.provider_path, input.input_role
                 FROM football.dataset_inputs AS input
-                JOIN football.source_resources AS resource
+                LEFT JOIN football.source_resources AS resource
                   ON resource.id = input.source_resource_id
                 WHERE input.dataset_version_id = %s
                 ORDER BY resource.provider_path
@@ -941,6 +955,188 @@ def test_dataset_publication_reconciles_files_after_database_rollback(
             (recovered.dataset_version_id,),
         ).fetchone()
     assert registered == (1,)
+
+
+def test_validates_normalized_event_dataset_and_registers_idempotent_run(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="1" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation_times = iter(
+        (
+            datetime(2026, 8, 29, 9, 0, tzinfo=UTC),
+            datetime(2026, 8, 29, 9, 1, tzinfo=UTC),
+            datetime(2026, 8, 29, 10, 0, tzinfo=UTC),
+            datetime(2026, 8, 29, 10, 1, tzinfo=UTC),
+        )
+    )
+    validator = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+        clock=lambda: next(validation_times),
+    )
+
+    first = validator.validate(dataset.dataset_version_id)
+    second = validator.validate(dataset.dataset_version_id)
+
+    assert first.status == "passed"
+    assert first.registration_status == "registered"
+    assert first.findings == ()
+    assert second.validation_run_id == first.validation_run_id
+    assert second.registration_status == "verified_registered"
+    with connection.cursor() as cursor:
+        run = cursor.execute(
+            """
+            SELECT dataset_version_id, source_snapshot_id, policy_version,
+                   validator_version, status, started_at, completed_at
+            FROM football.validation_runs WHERE id = %s
+            """,
+            (first.validation_run_id,),
+        ).fetchone()
+        counts = cursor.execute(
+            """
+            SELECT
+                (SELECT count(*) FROM football.validation_runs
+                 WHERE dataset_version_id = %s),
+                (SELECT count(*) FROM football.validation_findings
+                 WHERE validation_run_id = %s)
+            """,
+            (dataset.dataset_version_id, first.validation_run_id),
+        ).fetchone()
+
+    assert run == (
+        dataset.dataset_version_id,
+        dataset.source_snapshot_id,
+        "statsbomb-quality-policy-v1",
+        "statsbomb-dataset-validator-v1",
+        "passed",
+        datetime(2026, 8, 29, 9, 0, tzinfo=UTC),
+        datetime(2026, 8, 29, 9, 1, tzinfo=UTC),
+    )
+    assert counts == (1, 0)
+
+
+def test_registers_policy_classified_dataset_findings(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    events = _event_payload()
+    events[0]["type"] = {"id": 999999, "name": "Unknown Test Event"}
+    events[0]["player"] = {"id": 9999, "name": "Missing From Lineup"}
+    events[0]["location"] = [130.0, 40.0]
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="2" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=events,
+        nonmonotonic_position=True,
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+
+    result = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+
+    assert result.status == "quarantined"
+    assert {finding.rule_code for finding in result.findings} == {
+        "SB_EVENT_LOCATION_OUT_OF_BOUNDS",
+        "SB_LINEUP_INCONSISTENCY",
+        "SB_NONMONOTONIC_POSITION_STINT",
+        "SB_UNKNOWN_EVENT_TYPE",
+    }
+    with connection.cursor() as cursor:
+        findings = list(
+            cursor.execute(
+                """
+                SELECT finding.rule_code, finding.severity, finding.action,
+                       finding.scope_type, file.dataset_version_id,
+                       resource.source_snapshot_id
+                FROM football.validation_findings AS finding
+                JOIN football.dataset_files AS file ON file.id = finding.dataset_file_id
+                LEFT JOIN football.source_resources AS resource
+                  ON resource.id = finding.source_resource_id
+                WHERE finding.validation_run_id = %s
+                ORDER BY finding.rule_code
+                """,
+                (result.validation_run_id,),
+            )
+        )
+
+    assert findings == [
+        (
+            "SB_EVENT_LOCATION_OUT_OF_BOUNDS",
+            "WARNING",
+            "EXCLUDE_FROM_DERIVED_SPATIAL_FEATURES",
+            "event",
+            dataset.dataset_version_id,
+            dataset.source_snapshot_id,
+        ),
+        (
+            "SB_LINEUP_INCONSISTENCY",
+            "QUARANTINE",
+            "QUARANTINE_MATCH",
+            "event",
+            dataset.dataset_version_id,
+            dataset.source_snapshot_id,
+        ),
+        (
+            "SB_NONMONOTONIC_POSITION_STINT",
+            "WARNING",
+            "PRESERVE_AND_REVIEW",
+            "lineup",
+            dataset.dataset_version_id,
+            None,
+        ),
+        (
+            "SB_UNKNOWN_EVENT_TYPE",
+            "WARNING",
+            "PRESERVE_WITH_NULL_CANONICAL_MAPPING",
+            "event",
+            dataset.dataset_version_id,
+            dataset.source_snapshot_id,
+        ),
+    ]
+
+
+def test_dataset_validation_fails_on_mutated_registered_parquet(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="3" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    dataset.files[0].absolute_path.write_bytes(b"mutated")
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+
+    result = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+
+    assert result.status == "failed"
+    assert [finding.rule_code for finding in result.findings] == ["SB_DATASET_FILE_INTEGRITY"]
 
 
 def test_concurrent_identical_ingestion_publishes_one_canonical_graph(tmp_path: Path) -> None:

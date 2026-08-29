@@ -627,6 +627,117 @@ def test_dataset_lineage_rejects_resource_from_another_snapshot(
             )
 
 
+def test_validation_findings_reject_cross_dataset_and_snapshot_lineage(
+    connection: Connection[Any],
+) -> None:
+    _first_provider, first_snapshot, first_resource = _source_lineage(connection, uuid.uuid4().hex)
+    _second_provider, second_snapshot, second_resource = _source_lineage(
+        connection, uuid.uuid4().hex
+    )
+    first_dataset = uuid.uuid4()
+    second_dataset = uuid.uuid4()
+    validation_run = uuid.uuid4()
+    now = datetime(2026, 1, 1, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        for dataset_id, snapshot_id, identity in (
+            (first_dataset, first_snapshot, first_dataset.hex * 2),
+            (second_dataset, second_snapshot, second_dataset.hex * 2),
+        ):
+            cursor.execute(
+                """
+                INSERT INTO football.dataset_versions
+                    (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                     schema_version, schema_sha256, normalizer_version, manifest_path,
+                     manifest_sha256, status, published_at)
+                VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                        'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+                """,
+                (
+                    dataset_id,
+                    snapshot_id,
+                    identity,
+                    "3" * 64,
+                    f"manifests/{dataset_id}.json",
+                    "4" * 64,
+                    now,
+                ),
+            )
+        second_file = cursor.execute(
+            """
+            INSERT INTO football.dataset_files
+                (dataset_version_id, relative_path, physical_sha256,
+                 logical_sha256, row_count, size_bytes, schema_sha256)
+            VALUES (%s, 'normalized/second.parquet', %s, %s, 1, 1, %s)
+            RETURNING id
+            """,
+            (second_dataset, "5" * 64, "6" * 64, "3" * 64),
+        ).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO football.validation_runs
+                (id, dataset_version_id, source_snapshot_id, identity_hash,
+                 policy_version, policy_sha256, validator_version, status,
+                 started_at, completed_at)
+            VALUES (%s, %s, %s, %s, 'statsbomb-quality-policy-v1', %s,
+                    'statsbomb-dataset-validator-v1', 'passed', %s, %s)
+            """,
+            (
+                validation_run,
+                first_dataset,
+                first_snapshot,
+                validation_run.hex * 2,
+                "8" * 64,
+                now,
+                now,
+            ),
+        )
+
+        with pytest.raises(ForeignKeyViolation), connection.transaction():
+            cursor.execute(
+                """
+                INSERT INTO football.validation_findings
+                    (id, validation_run_id, dataset_version_id, source_snapshot_id,
+                     dataset_file_id, source_resource_id, finding_key, rule_code,
+                     severity, action, scope_type, message, evidence, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s,
+                        'SB_LINEUP_INCONSISTENCY', 'QUARANTINE', 'QUARANTINE_MATCH',
+                        'match', 'cross-lineage test', '{}'::jsonb, %s)
+                """,
+                (
+                    uuid.uuid4(),
+                    validation_run,
+                    first_dataset,
+                    first_snapshot,
+                    second_file,
+                    first_resource,
+                    uuid.uuid4().hex * 2,
+                    now,
+                ),
+            )
+
+        with pytest.raises(ForeignKeyViolation), connection.transaction():
+            cursor.execute(
+                """
+                INSERT INTO football.validation_findings
+                    (id, validation_run_id, dataset_version_id, source_snapshot_id,
+                     source_resource_id, finding_key, rule_code, severity, action,
+                     scope_type, message, evidence, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s,
+                        'SB_LINEUP_INCONSISTENCY', 'QUARANTINE', 'QUARANTINE_MATCH',
+                        'match', 'cross-snapshot test', '{}'::jsonb, %s)
+                """,
+                (
+                    uuid.uuid4(),
+                    validation_run,
+                    first_dataset,
+                    first_snapshot,
+                    second_resource,
+                    uuid.uuid4().hex * 2,
+                    now,
+                ),
+            )
+
+
 def test_concurrent_first_seen_mapping_leaves_one_canonical_team(
     connection: Connection[Any],
 ) -> None:
