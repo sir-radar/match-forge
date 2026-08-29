@@ -1,0 +1,10 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - cyclop
+  settings:
+    cyclop:
+      max-complexity: 10
+      package-average: 5.0

@@ -21,7 +21,13 @@ from experiments.sprint1_roundtrip.core import (
 )
 
 DEFAULT_DATABASE_URL = "postgresql://football:football@127.0.0.1:55432/football_prototype"
-MIGRATION_PATH = PROJECT_ROOT / "infrastructure" / "migrations" / "202608290001_gate_a_contract.sql"
+MIGRATION_PATH = (
+    PROJECT_ROOT
+    / "experiments"
+    / "sprint1_roundtrip"
+    / "migrations"
+    / "202608290001_gate_a_contract.sql"
+)
 
 
 class InjectedPrototypeFailure(RuntimeError):

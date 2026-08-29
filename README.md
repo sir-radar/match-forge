@@ -1,12 +1,27 @@
 # Football forecasting platform
 
-Current phase: Sprint 1 Gate A architecture prototype.
+Current phase: Sprint 1 production implementation, Phase 1 foundation.
 
-The production Sprint 1 implementation remains blocked until the disposable one-match round-trip prototype produces a `PROCEED` recommendation.
+Gate A passed. Phase 1 establishes the pinned macOS arm64 toolchain, local PostgreSQL and Redis services, production Python package boundary, Rust simulation-core boundary, and Go operational API scaffold. It does not implement production ingestion or forecasting.
 
 ```bash
-make prototype-bootstrap
-make prototype-up
+make bootstrap
+make doctor
+make check
+make integration
+```
+
+The Go scaffold exposes `GET /healthz`, `GET /readyz`, and `GET /version`. Run it after `make up` with:
+
+```bash
+. ./scripts/toolchain.sh
+cd go/api
+go run ./cmd/api
+```
+
+The disposable Gate A prototype remains reproducible:
+
+```bash
 make prototype-gate-a
 ```
 
