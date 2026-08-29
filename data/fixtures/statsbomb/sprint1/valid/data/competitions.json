@@ -1,0 +1,14 @@
+[
+  {
+    "competition_id": 1,
+    "season_id": 1,
+    "country_name": "Fixtureland",
+    "competition_name": "Synthetic Cup",
+    "competition_gender": "mixed",
+    "competition_youth": false,
+    "competition_international": false,
+    "season_name": "2026",
+    "match_updated": "2026-08-01T00:00:00Z",
+    "match_available": "2026-08-01T00:00:00Z"
+  }
+]

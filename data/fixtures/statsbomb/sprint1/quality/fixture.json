@@ -1,0 +1,59 @@
+{
+  "contract": "Sprint1FixtureV1",
+  "name": "quality",
+  "description": "Synthetic StatsBomb bundle covering quarantined and warning findings.",
+  "provider": "statsbomb_open_data",
+  "repository": "https://example.test/statsbomb-fixtures",
+  "source_git_sha": "2222222222222222222222222222222222222222",
+  "license": "Synthetic test fixture",
+  "license_url": "https://example.test/statsbomb-fixtures/license",
+  "attribution": "Synthetic test data",
+  "acquired_at": "2026-08-29T08:01:00Z",
+  "resources": [
+    {
+      "path": "data/competitions.json",
+      "size_bytes": 366,
+      "sha256": "c678e7ba5ab2f1d6d64b8ebb61168d395e4bacadcb17d97e0c9164f20dd32a79",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/events/1002.json",
+      "size_bytes": 768,
+      "sha256": "1a38e409a057e581d2f2fa591edb6c93f35533b8103917c827fd062541348218",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/lineups/1002.json",
+      "size_bytes": 742,
+      "sha256": "0b0508ec6c4bb64debabbbc932343f0474859647b72eb0005b2dc3ad8c5f6fda",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/matches/2/2.json",
+      "size_bytes": 1044,
+      "sha256": "298fcd065aa3986eef7a173757379a75fa944e55213adc8ce8f888d6bfdcc785",
+      "media_type": "application/json"
+    }
+  ],
+  "expected": {
+    "outcome": "quarantined",
+    "canonical": {
+      "competitions": 1,
+      "seasons": 1,
+      "teams": 2,
+      "players": 2,
+      "matches": 1,
+      "lineup_players": 1,
+      "position_stints": 1,
+      "cards": 0,
+      "events": 2
+    },
+    "dataset_rows": 2,
+    "finding_counts": {
+      "SB_EVENT_LOCATION_OUT_OF_BOUNDS": 1,
+      "SB_LINEUP_INCONSISTENCY": 1,
+      "SB_NONMONOTONIC_POSITION_STINT": 1,
+      "SB_UNKNOWN_EVENT_TYPE": 1
+    }
+  }
+}

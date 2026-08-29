@@ -1,0 +1,26 @@
+[
+  {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "index": 1,
+    "period": 1,
+    "timestamp": "00:00:00.000",
+    "minute": 0,
+    "second": 0,
+    "type": {"id": 35, "name": "Starting XI"},
+    "possession_team": {"id": 40, "name": "Fixture Quality Away"},
+    "team": {"id": 40, "name": "Fixture Quality Away"}
+  },
+  {
+    "id": "20000000-0000-4000-8000-000000000002",
+    "index": 2,
+    "period": 1,
+    "timestamp": "00:00:01.000",
+    "minute": 0,
+    "second": 1,
+    "type": {"id": 999999, "name": "Synthetic Unknown Event"},
+    "possession_team": {"id": 30, "name": "Fixture Quality Home"},
+    "team": {"id": 30, "name": "Fixture Quality Home"},
+    "player": {"id": 399, "name": "Fixture Unlisted Player"},
+    "location": [130.0, 40.0]
+  }
+]

@@ -1,37 +1,56 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
 [project]
-name = "football-forecasting-gate-a"
+name = "football-forecasting"
 version = "0.1.0"
-description = "Disposable Sprint 1 architecture-gate prototype"
+description = "Reproducible data foundation for football forecasting"
 requires-python = ">=3.13,<3.14"
 dependencies = [
   "jsonschema>=4.25,<5",
+  "pandera[polars]>=0.26,<1",
   "polars>=1.33,<2",
   "psycopg[binary]>=3.2,<4",
   "pyarrow==25.0.1",
 ]
 
+[project.scripts]
+football = "football.cli:main"
+
 [dependency-groups]
 dev = [
+  "coverage>=7.10,<8",
+  "hatchling>=1.27,<2",
   "hypothesis>=6.138,<7",
   "mypy>=1.17,<2",
   "pytest>=8.4,<9",
   "ruff>=0.12,<1",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["python/football/src/football"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"schemas/quality/statsbomb-quality-policy-v1.json" = "football/validation/statsbomb-quality-policy-v1.json"
+
 [tool.pytest.ini_options]
 addopts = "-q"
-testpaths = ["tests"]
-pythonpath = ["."]
+testpaths = ["tests", "python/football/tests"]
+pythonpath = [".", "python/football/src"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+select = ["E", "F", "I", "UP", "B", "SIM", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
 
 [tool.mypy]
 python_version = "3.13"
 strict = true
-files = ["experiments/sprint1_roundtrip"]
+files = ["experiments/sprint1_roundtrip", "python/football/src", "python/football/tests"]
 ignore_missing_imports = true

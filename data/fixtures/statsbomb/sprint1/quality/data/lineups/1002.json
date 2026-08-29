@@ -1,0 +1,33 @@
+[
+  {
+    "team_id": 30,
+    "team_name": "Fixture Quality Home",
+    "lineup": [
+      {
+        "player_id": 301,
+        "player_name": "Fixture Listed Player",
+        "player_nickname": null,
+        "jersey_number": 10,
+        "country": {"id": 1, "name": "Fixtureland"},
+        "cards": [],
+        "positions": [
+          {
+            "position_id": 17,
+            "position": "Right Wing",
+            "from": "50:00",
+            "to": "10:00",
+            "from_period": 2,
+            "to_period": 1,
+            "start_reason": "Starting XI",
+            "end_reason": "Provider Fixture Anomaly"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "team_id": 40,
+    "team_name": "Fixture Quality Away",
+    "lineup": []
+  }
+]

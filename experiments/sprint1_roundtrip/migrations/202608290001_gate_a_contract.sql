@@ -94,6 +94,19 @@ CREATE TABLE IF NOT EXISTS gate_a.position_stints (
     UNIQUE (canonical_match_id, canonical_player_id, stint_index)
 );
 
+CREATE TABLE IF NOT EXISTS gate_a.lineup_cards (
+    id uuid PRIMARY KEY,
+    canonical_match_id uuid NOT NULL REFERENCES gate_a.canonical_entities(id),
+    canonical_team_id uuid NOT NULL REFERENCES gate_a.canonical_entities(id),
+    canonical_player_id uuid NOT NULL REFERENCES gate_a.canonical_entities(id),
+    card_index integer NOT NULL,
+    provider_time text,
+    card_type text NOT NULL,
+    reason text,
+    period integer,
+    UNIQUE (canonical_match_id, canonical_player_id, card_index)
+);
+
 CREATE TABLE IF NOT EXISTS gate_a.event_catalogue (
     canonical_event_id uuid PRIMARY KEY REFERENCES gate_a.canonical_entities(id),
     canonical_match_id uuid NOT NULL REFERENCES gate_a.canonical_entities(id),
@@ -139,6 +152,13 @@ CREATE TABLE IF NOT EXISTS gate_a.dataset_versions (
     source_snapshot_id uuid NOT NULL REFERENCES gate_a.source_snapshots(id),
     status text NOT NULL,
     created_at timestamptz NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gate_a.dataset_inputs (
+    dataset_version_id uuid NOT NULL REFERENCES gate_a.dataset_versions(id),
+    source_resource_id uuid NOT NULL REFERENCES gate_a.source_resources(id),
+    input_role text NOT NULL,
+    PRIMARY KEY (dataset_version_id, source_resource_id)
 );
 
 CREATE TABLE IF NOT EXISTS gate_a.dataset_files (

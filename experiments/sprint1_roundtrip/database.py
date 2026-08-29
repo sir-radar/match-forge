@@ -21,7 +21,13 @@ from experiments.sprint1_roundtrip.core import (
 )
 
 DEFAULT_DATABASE_URL = "postgresql://football:football@127.0.0.1:55432/football_prototype"
-MIGRATION_PATH = PROJECT_ROOT / "infrastructure" / "migrations" / "202608290001_gate_a_contract.sql"
+MIGRATION_PATH = (
+    PROJECT_ROOT
+    / "experiments"
+    / "sprint1_roundtrip"
+    / "migrations"
+    / "202608290001_gate_a_contract.sql"
+)
 
 
 class InjectedPrototypeFailure(RuntimeError):
@@ -253,6 +259,7 @@ class PrototypeDatabase:
 
             player_count = 0
             stint_count = 0
+            card_count = 0
             for team in lineups:
                 team_id = self._entity(
                     cursor,
@@ -322,6 +329,33 @@ class PrototypeDatabase:
                             ),
                         )
                         stint_count += 1
+                    for index, card in enumerate(player.get("cards", [])):
+                        card_id = stable_uuid(
+                            "lineup_card",
+                            f"{provider_match_id}:{player['player_id']}:{index}",
+                        )
+                        cursor.execute(
+                            """
+                            INSERT INTO gate_a.lineup_cards
+                                (id, canonical_match_id, canonical_team_id,
+                                 canonical_player_id, card_index, provider_time,
+                                 card_type, reason, period)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT DO NOTHING
+                            """,
+                            (
+                                card_id,
+                                match_id,
+                                team_id,
+                                player_id,
+                                index,
+                                card.get("time"),
+                                card["card_type"],
+                                card.get("reason"),
+                                card.get("period"),
+                            ),
+                        )
+                        card_count += 1
 
             for event in sorted(events, key=lambda item: int(item["index"])):
                 event_id = self._entity(
@@ -370,6 +404,7 @@ class PrototypeDatabase:
             created = {
                 "lineup_players_seen": player_count,
                 "position_stints_seen": stint_count,
+                "lineup_cards_seen": card_count,
                 "events_seen": len(events),
             }
         return created
@@ -385,8 +420,10 @@ class PrototypeDatabase:
             "match_teams",
             "match_players",
             "position_stints",
+            "lineup_cards",
             "event_catalogue",
             "dataset_versions",
+            "dataset_inputs",
             "dataset_files",
         )
         counts: dict[str, int] = {}
@@ -539,6 +576,7 @@ class PrototypeDatabase:
         logical_hash: str,
         row_count: int,
         size_bytes: int,
+        source_resource_ids: list[uuid.UUID],
     ) -> None:
         with self.connection() as connection, connection.cursor() as cursor:
             cursor.execute(
@@ -561,6 +599,16 @@ class PrototypeDatabase:
                 ),
             )
             file_id = stable_uuid("dataset_file", f"{dataset_id}:{relative_path}")
+            for source_resource_id in source_resource_ids:
+                cursor.execute(
+                    """
+                    INSERT INTO gate_a.dataset_inputs
+                        (dataset_version_id, source_resource_id, input_role)
+                    VALUES (%s, %s, 'source')
+                    ON CONFLICT DO NOTHING
+                    """,
+                    (dataset_id, source_resource_id),
+                )
             cursor.execute(
                 """
                 INSERT INTO gate_a.dataset_files
@@ -594,6 +642,49 @@ class PrototypeDatabase:
             if row is None:
                 raise LookupError((dataset_id, relative_path))
             return int(row[0]) == 1
+
+    def dataset_lineage(self, dataset_id: uuid.UUID) -> dict[str, Any]:
+        with self.connection() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT ss.source_revision, sr.provider_path, sr.sha256
+                FROM gate_a.dataset_inputs di
+                JOIN gate_a.source_resources sr ON sr.id = di.source_resource_id
+                JOIN gate_a.source_snapshots ss ON ss.id = sr.source_snapshot_id
+                WHERE di.dataset_version_id = %s
+                ORDER BY sr.provider_path
+                """,
+                (dataset_id,),
+            )
+            rows = cursor.fetchall()
+        return {
+            "source_revision": str(rows[0][0]) if rows else None,
+            "resources": [{"provider_path": str(row[1]), "sha256": str(row[2])} for row in rows],
+        }
+
+    def trace_event(self, provider_event_id: str) -> dict[str, Any]:
+        with self.connection() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT ec.canonical_event_id, ec.provider_event_id,
+                       sr.provider_path, sr.sha256, ss.source_revision
+                FROM gate_a.event_catalogue ec
+                JOIN gate_a.source_resources sr ON sr.id = ec.source_resource_id
+                JOIN gate_a.source_snapshots ss ON ss.id = ec.source_snapshot_id
+                WHERE ec.provider_event_id = %s
+                """,
+                (provider_event_id,),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                raise LookupError(provider_event_id)
+        return {
+            "canonical_event_id": str(row[0]),
+            "provider_event_id": str(row[1]),
+            "provider_path": str(row[2]),
+            "source_sha256": str(row[3]),
+            "source_revision": str(row[4]),
+        }
 
     def record_findings(self, run_id: uuid.UUID, findings: list[Finding]) -> None:
         with self.connection() as connection, connection.cursor() as cursor:

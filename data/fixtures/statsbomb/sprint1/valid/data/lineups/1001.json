@@ -1,0 +1,43 @@
+[
+  {
+    "team_id": 10,
+    "team_name": "Fixture Home",
+    "lineup": [
+      {
+        "player_id": 101,
+        "player_name": "Fixture Home Player",
+        "player_nickname": "Home Player",
+        "jersey_number": 9,
+        "country": {"id": 1, "name": "Fixtureland"},
+        "cards": [],
+        "positions": [
+          {
+            "position_id": 23,
+            "position": "Center Forward",
+            "from": "00:00",
+            "to": "45:00",
+            "from_period": 1,
+            "to_period": 1,
+            "start_reason": "Starting XI",
+            "end_reason": "Half End"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "team_id": 20,
+    "team_name": "Fixture Away",
+    "lineup": [
+      {
+        "player_id": 201,
+        "player_name": "Fixture Away Player",
+        "player_nickname": null,
+        "jersey_number": 8,
+        "country": {"id": 1, "name": "Fixtureland"},
+        "cards": [],
+        "positions": []
+      }
+    ]
+  }
+]
