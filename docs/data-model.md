@@ -4,6 +4,8 @@
 
 PostgreSQL owns provider-neutral identity, source lineage, historical observations, match participation, and the lightweight event catalogue. It does not own raw provider payloads or full analytical event facts; those remain filesystem and Parquet responsibilities.
 
+The acquisition-side filesystem contract is documented in [Source acquisition](source-acquisition.md).
+
 SQL migrations under `infrastructure/migrations/` are the only authority for PostgreSQL shape. Python and Go must not introduce competing ORM migrations.
 
 ## Identity chain

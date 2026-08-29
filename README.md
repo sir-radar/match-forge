@@ -1,8 +1,8 @@
 # Football forecasting platform
 
-Current phase: Sprint 1 production implementation, Phase 2 canonical storage.
+Current phase: Sprint 1 production implementation, Phase 3 source acquisition.
 
-Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 adds forward-only Goose migrations for source lineage, canonical identity, provider mappings, bitemporal observations, lineups, and the lightweight event catalogue. It does not implement source acquisition, full ingestion orchestration, Parquet publication, or forecasting.
+Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 added canonical temporal storage. Phase 3 adds the provider protocol, a commit-pinned StatsBomb Open Data adapter, exact-byte raw preservation, deterministic source manifests, offline idempotency, and interrupted-run recovery. It does not yet parse or normalize provider data, register acquired resources in PostgreSQL, publish Parquet, generate quality reports, or implement forecasting.
 
 ```bash
 make bootstrap

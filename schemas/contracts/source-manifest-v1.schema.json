@@ -23,6 +23,7 @@
           "size_bytes": {"type": "integer", "minimum": 0},
           "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "raw_path": {"type": "string"},
+          "media_type": {"type": "string", "minLength": 1},
           "status": {"enum": ["acquired", "verified_existing"]}
         },
         "additionalProperties": false
