@@ -75,6 +75,18 @@ class FixtureProvider:
     def snapshot(self) -> SourceSnapshot:
         return self._fixture.snapshot
 
+    def competitions(self) -> SourceResource:
+        return SourceResource("data/competitions.json")
+
+    def matches(self, *, competition_id: int, season_id: int) -> SourceResource:
+        return SourceResource(f"data/matches/{competition_id}/{season_id}.json")
+
+    def lineups(self, *, match_id: int) -> SourceResource:
+        return SourceResource(f"data/lineups/{match_id}.json")
+
+    def events(self, *, match_id: int) -> SourceResource:
+        return SourceResource(f"data/events/{match_id}.json")
+
     def fetch(self, resource: SourceResource) -> bytes:
         payload = self._fixture.payload(resource)
         self.fetches.append(resource.path)

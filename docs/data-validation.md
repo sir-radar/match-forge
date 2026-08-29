@@ -6,7 +6,7 @@
 
 Validation does not mutate raw resources, Parquet files, canonical observations, or source processing statuses. `QUARANTINE` is a downstream exclusion classification recorded on a finding; it does not move or overwrite an immutable artifact.
 
-Task 13 will expose this service through the CLI. Task 14 owns JSON and human-readable ingestion report generation.
+The [`football` CLI](cli.md) exposes latest-season validation. Task 14 owns JSON and human-readable ingestion report generation.
 
 ## Checks
 

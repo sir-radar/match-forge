@@ -33,6 +33,7 @@ goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_canonical_ingestion.py \
-	tests/integration/test_sprint1_fixtures.py
+	tests/integration/test_sprint1_fixtures.py \
+	tests/integration/test_cli.py
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'
