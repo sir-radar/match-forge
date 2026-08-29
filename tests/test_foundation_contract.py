@@ -48,3 +48,12 @@ def test_gate_a_migration_is_not_a_production_migration() -> None:
 
     assert not production_migration.exists()
     assert prototype_migration.is_file()
+
+
+def test_production_canonical_migration_is_forward_only() -> None:
+    migration = (
+        PROJECT_ROOT / "infrastructure" / "migrations" / "202608290200_canonical_storage.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "-- +goose Up" in migration
+    assert "-- +goose Down" not in migration

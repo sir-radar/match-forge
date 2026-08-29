@@ -4,9 +4,11 @@ UV := .tools/bin/uv
 TOOL_ENV := . ./scripts/toolchain.sh
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
+MIGRATIONS_DIR := infrastructure/migrations
+DATABASE_URL ?= postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean format format-check lint test build integration check \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean
 
@@ -25,6 +27,12 @@ down:
 clean:
 	docker compose down --volumes
 
+migrate: up
+	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" up
+
+migration-status: up
+	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" status
+
 format:
 	@$(TOOL_ENV); uv run ruff check --fix python tests experiments
 	@$(TOOL_ENV); uv run ruff format python tests experiments
@@ -42,10 +50,11 @@ lint:
 	@$(TOOL_ENV); cargo clippy --workspace --all-targets --all-features -- -D warnings
 	@$(TOOL_ENV); cd go/api && go vet ./...
 	@$(TOOL_ENV); cd go/api && golangci-lint run ./...
-	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/toolchain.sh
+	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
+	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh
 
 test:
-	@$(TOOL_ENV); uv run pytest
+	@$(TOOL_ENV); uv run pytest --ignore=tests/integration
 	@$(TOOL_ENV); cargo test --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go test ./...
 
@@ -57,6 +66,7 @@ build:
 
 integration: build
 	docker compose up -d --wait
+	./scripts/storage-integration.sh
 	./scripts/integration.sh
 
 check: format-check lint test build
