@@ -1,8 +1,8 @@
 # Football forecasting platform
 
-Current phase: Sprint 1 complete and validated.
+Current phase: Sprint 2 team Elo baseline.
 
-Gate A passed. Sprint 1 now provides pinned toolchains, canonical temporal storage, commit-pinned immutable StatsBomb acquisition, canonical PostgreSQL ingestion, normalized event Parquet, dataset lineage, policy-driven validation, deterministic fixtures, production CLI commands, and immutable JSON/Markdown ingestion reports. See the [Sprint 1 architecture](docs/architecture.md). Forecasting, simulation, and 360 normalization remain deferred.
+Gate A and Sprint 1 are complete. Sprint 2 now adds deterministic dynamic team Elo with home advantage, opponent strength, goal margin, competition weighting, inactivity decay, immutable PostgreSQL history, and point-in-time rating lookup. See the [Sprint 1 architecture](docs/architecture.md) and [team Elo baseline](docs/team-elo.md). Further forecasting models, simulation, and 360 normalization remain deferred.
 
 ```bash
 make bootstrap
