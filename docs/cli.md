@@ -10,9 +10,11 @@ football ingest season <id>
 football validate season <id>
 ```
 
-Competition ingestion acquires the commit-pinned StatsBomb catalog and publishes canonical competitions and seasons. Season ingestion refreshes that catalog, resolves exactly one competition, acquires and ingests the season match list, acquires every match lineup and event resource, then publishes one normalized event dataset. An empty season succeeds without publishing a dataset.
+Competition ingestion acquires the commit-pinned StatsBomb catalog and publishes canonical competitions and seasons. Season ingestion refreshes that catalog, resolves exactly one competition, acquires and ingests the season match list, acquires every match lineup and event resource, publishes one normalized event dataset, and validates it. An empty season succeeds without publishing or validating a dataset.
 
 Season validation resolves exactly one canonical StatsBomb season and validates its latest published normalized event dataset. `passed` and `warnings` return success. `quarantined` and `failed` remain registered results but return nonzero exit codes.
+
+Both ingestion commands publish immutable JSON and Markdown reports and print their paths. See [Ingestion reports](ingestion-reports.md).
 
 ## Configuration
 
@@ -32,12 +34,10 @@ The CLI assumes production migrations are current. It never migrates PostgreSQL 
 ## Exit codes
 
 ```text
-0  ingestion completed, or validation passed/has warnings
+0  ingestion completed with no quarantine/failure, or validation passed/has warnings
 2  invalid configuration, unknown/ambiguous season, or missing dataset
 3  provider fetch or immutable source-integrity failure
 4  database, canonical ingestion, publication, or validation execution failure
-5  validation completed with quarantined status
-6  validation completed with failed status
+5  ingestion or validation completed with quarantined status
+6  ingestion or validation completed with failed status
 ```
-
-Task 14 will replace the basic one-line summaries with durable JSON and human-readable ingestion reports.

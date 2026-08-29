@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from io import StringIO
+from pathlib import Path
 
 import pytest
 from football.cli.main import DEFAULT_QUALITY_POLICY, build_parser, positive_identifier, run
@@ -65,3 +66,29 @@ def test_validate_does_not_require_source_revision() -> None:
     assert exit_code == 4
     assert stdout.getvalue() == ""
     assert stderr.getvalue() == "error: database operation failed\n"
+
+
+def test_season_ingestion_requires_quality_policy_before_connecting(tmp_path: Path) -> None:
+    stdout = StringIO()
+    stderr = StringIO()
+
+    exit_code = run(
+        [
+            "--source-git-sha",
+            "1" * 40,
+            "--quality-policy",
+            str(tmp_path / "missing.json"),
+            "ingest",
+            "season",
+            "106",
+        ],
+        environ={},
+        stdout=stdout,
+        stderr=stderr,
+    )
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert stderr.getvalue() == (
+        "error: quality policy does not exist; set FOOTBALL_QUALITY_POLICY or --quality-policy\n"
+    )

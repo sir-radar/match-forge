@@ -19,6 +19,7 @@ from football.providers import (
     ProviderFetchError,
     StatsBombOpenDataAdapter,
 )
+from football.reports import IngestionReportError
 from football.validation import DatasetValidationError
 
 DEFAULT_DATABASE_URL = (
@@ -105,7 +106,10 @@ def run(
             file=errors,
         )
         return 2
-    if args.command == "validate" and not quality_policy.is_file():
+    needs_quality_policy = args.command == "validate" or (
+        args.command == "ingest" and args.scope == "season"
+    )
+    if needs_quality_policy and not quality_policy.is_file():
         print(
             "error: quality policy does not exist; set FOOTBALL_QUALITY_POLICY or --quality-policy",
             file=errors,
@@ -126,7 +130,9 @@ def run(
                     "ingested competitions: "
                     f"source_snapshot_id={competition_result.source_snapshot_id} "
                     f"competitions={competition_result.competitions} "
-                    f"seasons={competition_result.seasons}",
+                    f"seasons={competition_result.seasons} "
+                    f"report_json={competition_result.report_json_path} "
+                    f"report_markdown={competition_result.report_markdown_path}",
                     file=output,
                 )
                 return 0
@@ -138,10 +144,14 @@ def run(
                     f"competition_id={season_result.competition_id} "
                     f"matches={season_result.matches} events={season_result.events} "
                     f"source_snapshot_id={season_result.source_snapshot_id} "
-                    f"dataset_version_id={dataset_id}",
+                    f"dataset_version_id={dataset_id} "
+                    f"validation_status={season_result.validation_status or 'not_applicable'} "
+                    f"findings={season_result.findings} "
+                    f"report_json={season_result.report_json_path} "
+                    f"report_markdown={season_result.report_markdown_path}",
                     file=output,
                 )
-                return 0
+                return {"quarantined": 5, "failed": 6}.get(season_result.validation_status or "", 0)
             validation_result = application.validate_season(args.season_id)
             print(
                 f"validated season {validation_result.season_id}: "
@@ -157,7 +167,12 @@ def run(
     except (ProviderFetchError, SourceIntegrityError) as error:
         print(f"error: {error}", file=errors)
         return 3
-    except (CanonicalIngestionError, DatasetPublicationError, DatasetValidationError) as error:
+    except (
+        CanonicalIngestionError,
+        DatasetPublicationError,
+        DatasetValidationError,
+        IngestionReportError,
+    ) as error:
         print(f"error: {error}", file=errors)
         return 4
     except OSError as error:

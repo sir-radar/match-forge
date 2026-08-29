@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "IngestionReportV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "report_id",
+    "operation",
+    "generated_at",
+    "provider",
+    "source_git_sha",
+    "sources",
+    "scope",
+    "canonical",
+    "dataset",
+    "validation"
+  ],
+  "properties": {
+    "contract": {"const": "IngestionReportV1"},
+    "report_id": {"type": "string", "format": "uuid"},
+    "operation": {"enum": ["ingest_competitions", "ingest_season"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "provider": {"const": "statsbomb_open_data"},
+    "source_git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "source_snapshot_id",
+          "acquired_at",
+          "manifest_path",
+          "manifest_sha256",
+          "resource_count",
+          "size_bytes"
+        ],
+        "properties": {
+          "role": {"enum": ["catalog", "matches", "details"]},
+          "source_snapshot_id": {"type": "string", "format": "uuid"},
+          "acquired_at": {"type": "string", "format": "date-time"},
+          "manifest_path": {"type": "string", "minLength": 1},
+          "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "resource_count": {"type": "integer", "minimum": 1},
+          "size_bytes": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["competition_id", "season_id"],
+      "properties": {
+        "competition_id": {"type": ["integer", "null"], "minimum": 1},
+        "season_id": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
+    "canonical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "competitions",
+        "seasons",
+        "teams",
+        "players",
+        "matches",
+        "lineup_players",
+        "position_stints",
+        "cards",
+        "events"
+      ],
+      "properties": {
+        "competitions": {"type": "integer", "minimum": 0},
+        "seasons": {"type": "integer", "minimum": 0},
+        "teams": {"type": "integer", "minimum": 0},
+        "players": {"type": "integer", "minimum": 0},
+        "matches": {"type": "integer", "minimum": 0},
+        "lineup_players": {"type": "integer", "minimum": 0},
+        "position_stints": {"type": "integer", "minimum": 0},
+        "cards": {"type": "integer", "minimum": 0},
+        "events": {"type": "integer", "minimum": 0}
+      }
+    },
+    "dataset": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dataset_version_id",
+            "manifest_path",
+            "manifest_sha256",
+            "file_count",
+            "row_count",
+            "size_bytes"
+          ],
+          "properties": {
+            "dataset_version_id": {"type": "string", "format": "uuid"},
+            "manifest_path": {"type": "string", "minLength": 1},
+            "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_count": {"type": "integer", "minimum": 1},
+            "row_count": {"type": "integer", "minimum": 0},
+            "size_bytes": {"type": "integer", "minimum": 1}
+          }
+        }
+      ]
+    },
+    "validation": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "validation_run_id",
+            "status",
+            "finding_count",
+            "findings_by_severity",
+            "findings_by_rule",
+            "findings_by_action"
+          ],
+          "properties": {
+            "validation_run_id": {"type": "string", "format": "uuid"},
+            "status": {"enum": ["passed", "warnings", "quarantined", "failed"]},
+            "finding_count": {"type": "integer", "minimum": 0},
+            "findings_by_severity": {
+              "type": "object",
+              "additionalProperties": {"type": "integer", "minimum": 1}
+            },
+            "findings_by_rule": {
+              "type": "object",
+              "propertyNames": {"pattern": "^[A-Z][A-Z0-9_]+$"},
+              "additionalProperties": {"type": "integer", "minimum": 1}
+            },
+            "findings_by_action": {
+              "type": "object",
+              "propertyNames": {"pattern": "^[A-Z][A-Z0-9_]+$"},
+              "additionalProperties": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      ]
+    }
+  }
+}
