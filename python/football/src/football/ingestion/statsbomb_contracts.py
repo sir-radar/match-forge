@@ -6,13 +6,16 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, time, timedelta
 from decimal import Decimal, InvalidOperation
+from uuid import UUID
 
 from football.ingestion.errors import CanonicalIngestionError
 from football.ingestion.registration import VerifiedSource
 
 _MATCH_PATH = re.compile(r"^data/matches/([1-9][0-9]*)/([1-9][0-9]*)\.json$")
 _LINEUP_PATH = re.compile(r"^data/lineups/([1-9][0-9]*)\.json$")
+_EVENT_PATH = re.compile(r"^data/events/([1-9][0-9]*)\.json$")
 _CLOCK = re.compile(r"^([0-9]+):([0-5][0-9](?:\.[0-9]+)?)$")
+_EVENT_CLOCK = re.compile(r"^([0-9]+):([0-5][0-9]):([0-5][0-9](?:\.[0-9]+)?)$")
 
 
 @dataclass(frozen=True)
@@ -110,10 +113,36 @@ class MatchLineup:
 
 
 @dataclass(frozen=True)
+class EventEntity:
+    provider_id: str
+    name: str
+
+
+@dataclass(frozen=True)
+class Event:
+    provider_id: str
+    event_index: int
+    provider_event_type: str
+    period: int
+    event_clock: timedelta
+    team: EventEntity | None
+    player: EventEntity | None
+    possession_team: EventEntity | None
+
+
+@dataclass(frozen=True)
+class MatchEvents:
+    provider_match_id: str
+    events: tuple[Event, ...]
+    source_path: str
+
+
+@dataclass(frozen=True)
 class StatsBombBundle:
     competitions: tuple[CompetitionSeason, ...]
     matches: tuple[Match, ...]
     lineups: tuple[MatchLineup, ...]
+    events: tuple[MatchEvents, ...]
     processed_paths: tuple[str, ...]
 
 
@@ -121,6 +150,7 @@ def parse_statsbomb_bundle(source: VerifiedSource) -> StatsBombBundle:
     competitions: list[CompetitionSeason] = []
     matches: list[Match] = []
     lineups: list[MatchLineup] = []
+    events: list[MatchEvents] = []
     processed: list[str] = []
     for path in sorted(source.payloads):
         if path == "data/competitions.json":
@@ -140,14 +170,24 @@ def parse_statsbomb_bundle(source: VerifiedSource) -> StatsBombBundle:
         if lineup_path := _LINEUP_PATH.fullmatch(path):
             lineups.append(_parse_lineup(source.payloads[path], path, lineup_path.group(1)))
             processed.append(path)
+            continue
+        if event_path := _EVENT_PATH.fullmatch(path):
+            events.append(_parse_events(source.payloads[path], path, event_path.group(1)))
+            processed.append(path)
     if not processed:
         raise CanonicalIngestionError("source manifest has no supported canonical resources")
     _require_unique((match.provider_id for match in matches), "match")
     _require_unique((lineup.provider_match_id for lineup in lineups), "lineup")
+    _require_unique((resource.provider_match_id for resource in events), "event resource")
+    _require_unique(
+        (event.provider_id for resource in events for event in resource.events),
+        "event",
+    )
     return StatsBombBundle(
         competitions=tuple(competitions),
         matches=tuple(sorted(matches, key=lambda item: int(item.provider_id))),
         lineups=tuple(sorted(lineups, key=lambda item: int(item.provider_match_id))),
+        events=tuple(sorted(events, key=lambda item: int(item.provider_match_id))),
         processed_paths=tuple(processed),
     )
 
@@ -244,6 +284,45 @@ def _parse_lineup(payload: bytes, path: str, provider_match_id: str) -> MatchLin
     return MatchLineup(provider_match_id, teams, path)
 
 
+def _parse_events(payload: bytes, path: str, provider_match_id: str) -> MatchEvents:
+    rows = _json_array(payload, path)
+    events = tuple(_parse_event(_object(row, f"{path}[{index}]")) for index, row in enumerate(rows))
+    indexes = [event.event_index for event in events]
+    if len(indexes) != len(set(indexes)):
+        raise CanonicalIngestionError(f"event resource contains duplicate event indexes: {path}")
+    _require_unique((event.provider_id for event in events), "event")
+    return MatchEvents(
+        provider_match_id=provider_match_id,
+        events=tuple(sorted(events, key=lambda event: event.event_index)),
+        source_path=path,
+    )
+
+
+def _parse_event(row: dict[str, object]) -> Event:
+    event_type = _nested_object(row, "type")
+    return Event(
+        provider_id=_uuid_identifier(row, "id"),
+        event_index=_positive_int(row, "index"),
+        provider_event_type=_string(event_type, "name"),
+        period=_positive_int(row, "period"),
+        event_clock=_event_timestamp(row, "timestamp"),
+        team=_event_entity(row, "team"),
+        player=_event_entity(row, "player"),
+        possession_team=_event_entity(row, "possession_team"),
+    )
+
+
+def _event_entity(row: dict[str, object], field: str) -> EventEntity | None:
+    value = row.get(field)
+    if value is None:
+        return None
+    entity = _object(value, field)
+    return EventEntity(
+        provider_id=_identifier(entity, "id"),
+        name=_string(entity, "name"),
+    )
+
+
 def _parse_lineup_team(row: dict[str, object]) -> LineupTeam:
     lineup = _array(row, "lineup")
     players = tuple(
@@ -290,10 +369,6 @@ def _parse_position(row: dict[str, object]) -> PositionStint:
         raise CanonicalIngestionError("position to_period and to must both be null or present")
     if clock_from is None:
         raise CanonicalIngestionError("position from is required")
-    if period_to is not None and (
-        clock_to is None or (period_to, clock_to) <= (period_from, clock_from)
-    ):
-        raise CanonicalIngestionError("position interval must end after it starts")
     return PositionStint(
         provider_position_id=_optional_identifier(row, "position_id"),
         position_name=_string(row, "position"),
@@ -399,6 +474,17 @@ def _identifier(row: dict[str, object], field: str) -> str:
     return str(_positive_int(row, field))
 
 
+def _uuid_identifier(row: dict[str, object], field: str) -> str:
+    value = _string(row, field)
+    try:
+        parsed = UUID(value)
+    except ValueError as error:
+        raise CanonicalIngestionError(f"{field} must be a UUID") from error
+    if str(parsed) != value:
+        raise CanonicalIngestionError(f"{field} must be a canonical lowercase UUID")
+    return value
+
+
 def _optional_identifier(row: dict[str, object], field: str) -> str | None:
     value = _optional_positive_int(row, field)
     return str(value) if value is not None else None
@@ -448,3 +534,19 @@ def _clock(row: dict[str, object], field: str, *, required: bool) -> timedelta |
     except InvalidOperation as error:
         raise CanonicalIngestionError(f"{field} has an invalid second value") from error
     return timedelta(minutes=int(match.group(1)), seconds=float(seconds))
+
+
+def _event_timestamp(row: dict[str, object], field: str) -> timedelta:
+    value = _string(row, field)
+    match = _EVENT_CLOCK.fullmatch(value)
+    if match is None:
+        raise CanonicalIngestionError(f"{field} must use hour:minute:second format")
+    try:
+        seconds = Decimal(match.group(3))
+    except InvalidOperation as error:
+        raise CanonicalIngestionError(f"{field} has an invalid second value") from error
+    return timedelta(
+        hours=int(match.group(1)),
+        minutes=int(match.group(2)),
+        seconds=float(seconds),
+    )

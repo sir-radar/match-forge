@@ -5,7 +5,7 @@ import os
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Barrier
 from typing import Any
@@ -126,6 +126,7 @@ def _lineup_payload(
     home_team_id: int = 779,
     home_name: str = "Argentina",
     nickname: str = "Lionel Messi",
+    nonmonotonic_position: bool = False,
 ) -> list[dict[str, object]]:
     return [
         {
@@ -150,10 +151,10 @@ def _lineup_payload(
                         {
                             "position_id": 17,
                             "position": "Right Wing",
-                            "from": "00:00",
-                            "to": "115:32",
-                            "from_period": 1,
-                            "to_period": 4,
+                            "from": "115:32" if nonmonotonic_position else "00:00",
+                            "to": "28:11" if nonmonotonic_position else "115:32",
+                            "from_period": 4 if nonmonotonic_position else 1,
+                            "to_period": 1 if nonmonotonic_position else 4,
                             "start_reason": "Starting XI",
                             "end_reason": "Tactical Shift",
                         }
@@ -174,6 +175,30 @@ def _lineup_payload(
     ]
 
 
+def _event_payload(*, second_type: str = "Pass") -> list[dict[str, object]]:
+    return [
+        {
+            "id": "11111111-1111-4111-8111-111111111111",
+            "index": 2,
+            "period": 1,
+            "timestamp": "00:00:05.250",
+            "type": {"id": 30, "name": second_type},
+            "possession_team": {"id": 779, "name": "Argentina"},
+            "team": {"id": 779, "name": "Argentina"},
+            "player": {"id": 5503, "name": "Lionel Andrés Messi Cuccittini"},
+        },
+        {
+            "id": "22222222-2222-4222-8222-222222222222",
+            "index": 1,
+            "period": 1,
+            "timestamp": "00:00:00.000",
+            "type": {"id": 35, "name": "Starting XI"},
+            "possession_team": {"id": 771, "name": "France"},
+            "team": {"id": 771, "name": "France"},
+        },
+    ]
+
+
 def _acquire_bundle(
     data_root: Path,
     *,
@@ -182,6 +207,8 @@ def _acquire_bundle(
     home_name: str = "Argentina",
     home_team_id: int = 779,
     nickname: str = "Lionel Messi",
+    events: list[dict[str, object]] | None = None,
+    nonmonotonic_position: bool = False,
 ) -> AcquisitionResult:
     payloads = {
         "data/competitions.json": _json_bytes(_competition_payload()),
@@ -191,9 +218,12 @@ def _acquire_bundle(
                 home_team_id=home_team_id,
                 home_name=home_name,
                 nickname=nickname,
+                nonmonotonic_position=nonmonotonic_position,
             )
         ),
     }
+    if events is not None:
+        payloads["data/events/3869685.json"] = _json_bytes(events)
     provider = FixtureProvider(source_git_sha, payloads)
     resources = tuple(SourceResource(path) for path in payloads)
     return SourceAcquirer(data_root, clock=lambda: acquired_at).acquire(provider, resources)
@@ -545,6 +575,213 @@ def test_lineup_only_scope_does_not_replace_richer_current_team_facts(
             )
         )
     assert rows == [("Argentina", "male", "11", None)]
+
+
+def test_preserves_provider_position_span_when_periods_are_not_monotonic(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="7" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        nonmonotonic_position=True,
+    )
+
+    result = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+
+    with connection.cursor() as cursor:
+        position_span = cursor.execute(
+            """
+            SELECT period_from, clock_from, period_to, clock_to
+            FROM football.player_position_stints AS stint
+            JOIN football.match_player_participation_observations AS observation
+              ON observation.id = stint.match_player_observation_id
+            WHERE observation.source_snapshot_id = %s
+            """,
+            (result.source_snapshot_id,),
+        ).fetchone()
+    assert position_span == (
+        4,
+        timedelta(minutes=115, seconds=32),
+        1,
+        timedelta(minutes=28, seconds=11),
+    )
+
+
+def test_ingests_event_catalog_in_source_order_idempotently(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="3" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+
+    first = ingestor.ingest(acquisition)
+    second = ingestor.ingest(acquisition)
+
+    assert second == first
+    assert first.events_seen == 2
+    provider_id = _provider_id(connection)
+    with connection.cursor() as cursor:
+        event_counts = cursor.execute(
+            """
+            SELECT
+                (SELECT count(*) FROM football.event_catalog AS catalog
+                 JOIN football.event_provider_mappings AS mapping
+                   ON mapping.event_id = catalog.id
+                 WHERE mapping.provider_id = %s),
+                (SELECT count(*) FROM football.event_provider_mappings
+                 WHERE provider_id = %s),
+                (SELECT count(*) FROM football.event_observations
+                 WHERE provider_id = %s)
+            """,
+            (provider_id, provider_id, provider_id),
+        ).fetchone()
+        observations = list(
+            cursor.execute(
+                """
+                SELECT event.provider_event_id, event.event_index,
+                       event.provider_event_type, event.period, event.event_clock,
+                       team.provider_team_id, player.provider_player_id,
+                       possession.provider_team_id
+                FROM football.event_observations AS event
+                LEFT JOIN football.team_provider_mappings AS team
+                  ON team.team_id = event.team_id AND team.provider_id = event.provider_id
+                 AND team.valid_to IS NULL
+                LEFT JOIN football.player_provider_mappings AS player
+                  ON player.player_id = event.player_id
+                 AND player.provider_id = event.provider_id AND player.valid_to IS NULL
+                LEFT JOIN football.team_provider_mappings AS possession
+                  ON possession.team_id = event.possession_team_id
+                 AND possession.provider_id = event.provider_id
+                 AND possession.valid_to IS NULL
+                WHERE event.provider_id = %s
+                ORDER BY event.event_index
+                """,
+                (provider_id,),
+            )
+        )
+        resource_status = cursor.execute(
+            """
+            SELECT resource.parse_status, resource.validation_status, snapshot.status
+            FROM football.source_resources AS resource
+            JOIN football.source_snapshots AS snapshot
+              ON snapshot.id = resource.source_snapshot_id
+            WHERE snapshot.provider_id = %s
+              AND resource.provider_path = 'data/events/3869685.json'
+            """,
+            (provider_id,),
+        ).fetchone()
+
+    assert event_counts == (2, 2, 2)
+    assert observations == [
+        (
+            "22222222-2222-4222-8222-222222222222",
+            1,
+            "Starting XI",
+            1,
+            timedelta(0),
+            "771",
+            None,
+            "771",
+        ),
+        (
+            "11111111-1111-4111-8111-111111111111",
+            2,
+            "Pass",
+            1,
+            timedelta(seconds=5.25),
+            "779",
+            "5503",
+            "779",
+        ),
+    ]
+    assert resource_status == ("parsed", "valid", "validated")
+
+
+def test_event_only_scope_preserves_entities_and_versions_event_facts(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    source_git_sha = "4" * 40
+    first_at = datetime(2026, 8, 29, 8, 0, tzinfo=UTC)
+    second_at = datetime(2026, 8, 30, 8, 0, tzinfo=UTC)
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+    ingestor.ingest(
+        _acquire_bundle(
+            tmp_path,
+            source_git_sha=source_git_sha,
+            acquired_at=first_at,
+            events=_event_payload(),
+        )
+    )
+    event_provider = FixtureProvider(
+        "6" * 40,
+        {"data/events/3869685.json": _json_bytes(_event_payload(second_type="Carry"))},
+    )
+    event_scope = SourceAcquirer(tmp_path, clock=lambda: second_at).acquire(
+        event_provider,
+        (SourceResource("data/events/3869685.json"),),
+    )
+
+    result = ingestor.ingest(event_scope)
+
+    assert result.events_seen == 2
+    provider_id = _provider_id(connection)
+    with connection.cursor() as cursor:
+        entity_observations = cursor.execute(
+            """
+            SELECT
+                (SELECT count(*) FROM football.team_observations WHERE provider_id = %s),
+                (SELECT count(*) FROM football.player_observations WHERE provider_id = %s)
+            """,
+            (provider_id, provider_id),
+        ).fetchone()
+        event_history = list(
+            cursor.execute(
+                """
+                SELECT provider_event_type, known_from, known_to
+                FROM football.event_observations
+                WHERE provider_id = %s
+                  AND provider_event_id = '11111111-1111-4111-8111-111111111111'
+                ORDER BY known_from
+                """,
+                (provider_id,),
+            )
+        )
+
+    assert entity_observations == (2, 2)
+    assert event_history == [
+        ("Pass", first_at, second_at),
+        ("Carry", second_at, None),
+    ]
+
+
+def test_duplicate_event_index_rejects_entire_source_before_registration(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    events = _event_payload()
+    events[0]["index"] = 1
+    provider = FixtureProvider(
+        "5" * 40,
+        {"data/events/3869685.json": _json_bytes(events)},
+    )
+    acquisition = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+    ).acquire(provider, (SourceResource("data/events/3869685.json"),))
+
+    with pytest.raises(CanonicalIngestionError, match="duplicate event indexes"):
+        StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+
+    with connection.cursor() as cursor:
+        row = cursor.execute(
+            "SELECT count(*) FROM football.source_snapshots WHERE source_revision = %s",
+            ("5" * 40,),
+        ).fetchone()
+    assert row is not None and row[0] == 0
 
 
 def test_concurrent_identical_ingestion_publishes_one_canonical_graph(tmp_path: Path) -> None:

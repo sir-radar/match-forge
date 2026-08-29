@@ -502,9 +502,9 @@ def test_lineup_history_rejects_two_current_home_sides(connection: Connection[An
                 INSERT INTO football.player_position_stints
                     (match_player_observation_id, position_name, period_from,
                      clock_from, period_to, clock_to, sequence)
-                VALUES (%s, 'Invalid', 1, %s, 1, %s, 2)
+                VALUES (%s, 'Invalid', 1, %s, 1, NULL, 2)
                 """,
-                (player_observation, timedelta(minutes=70), timedelta(minutes=60)),
+                (player_observation, timedelta(minutes=70)),
             )
 
 

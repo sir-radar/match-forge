@@ -19,9 +19,12 @@ from football.ingestion.registration import (
 )
 from football.ingestion.statsbomb_contracts import (
     CompetitionSeason,
+    Event,
+    EventEntity,
     LineupPlayer,
     LineupTeam,
     Match,
+    MatchEvents,
     MatchLineup,
     PlayerCard,
     PositionStint,
@@ -42,6 +45,7 @@ class CanonicalIngestionResult:
     lineup_players_seen: int
     position_stints_seen: int
     cards_seen: int
+    events_seen: int
 
 
 @dataclass(frozen=True)
@@ -89,6 +93,8 @@ class _CanonicalWriter:
         matches = {match.provider_id: self._match(match) for match in bundle.matches}
         for lineup in bundle.lineups:
             self._lineup(lineup, matches.get(lineup.provider_match_id))
+        for resource in bundle.events:
+            self._events(resource, matches.get(resource.provider_match_id))
         return _result(bundle, self._source.snapshot_id, len(competitions))
 
     def _competitions(self, rows: tuple[CompetitionSeason, ...]) -> dict[str, UUID]:
@@ -433,6 +439,234 @@ class _CanonicalWriter:
                     )
                 player_ids.add(player.provider_id)
                 self._lineup_player(player, participation_id, lineup.source_path)
+
+    def _events(self, resource: MatchEvents, ingested_match_id: UUID | None) -> None:
+        match_id = ingested_match_id or self._mapping_id(
+            "match_provider_mappings",
+            "match_id",
+            ("provider_match_id",),
+            (resource.provider_match_id,),
+        )
+        match_teams = self._current_match_teams(match_id)
+        for event in resource.events:
+            team_id = self._event_team(event.team, resource.source_path)
+            possession_team_id = self._event_team(
+                event.possession_team,
+                resource.source_path,
+            )
+            for referenced_team_id in (team_id, possession_team_id):
+                if referenced_team_id is not None and referenced_team_id not in match_teams:
+                    raise CanonicalIngestionError(
+                        f"event {event.provider_id} references a team outside match "
+                        f"{resource.provider_match_id}"
+                    )
+            player_id = self._event_player(event.player, resource.source_path)
+            event_id = self._event_identity(event, resource.provider_match_id, match_id)
+            self._event_observation(
+                event,
+                resource,
+                event_id,
+                match_id,
+                team_id,
+                player_id,
+                possession_team_id,
+            )
+
+    def _event_team(self, entity: EventEntity | None, source_path: str) -> UUID | None:
+        if entity is None:
+            return None
+        return self._team(
+            LineupTeam(provider_id=entity.provider_id, name=entity.name, players=()),
+            source_path,
+        )
+
+    def _event_player(self, entity: EventEntity | None, source_path: str) -> UUID | None:
+        if entity is None:
+            return None
+        player_id = self._identity(
+            _IdentitySpec(
+                "players",
+                "player_provider_mappings",
+                "player_id",
+                ("provider_player_id",),
+            ),
+            (entity.provider_id,),
+            {},
+        )
+        existing = self._cursor.execute(
+            """
+            SELECT full_name FROM football.player_observations
+            WHERE source_snapshot_id = %s AND provider_player_id = %s
+            """,
+            (self._source.snapshot_id, entity.provider_id),
+        ).fetchone()
+        if existing is None:
+            existing = self._cursor.execute(
+                """
+                SELECT full_name FROM football.current_player_observations
+                WHERE player_id = %s AND provider_id = %s
+                """,
+                (player_id, self._source.provider_id),
+            ).fetchone()
+        if existing is not None:
+            if existing[0] != entity.name:
+                raise CanonicalIngestionError(
+                    f"player {entity.provider_id} has conflicting source names"
+                )
+            return player_id
+        if not self._begin_observation(
+            "player_observations",
+            "player_id",
+            player_id,
+            ("provider_player_id",),
+            (entity.provider_id,),
+        ):
+            return player_id
+        self._cursor.execute(
+            """
+            INSERT INTO football.player_observations
+                (player_id, provider_id, provider_player_id, full_name, known_from,
+                 source_snapshot_id, source_resource_id, acquired_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                player_id,
+                self._source.provider_id,
+                entity.provider_id,
+                entity.name,
+                self._known_from,
+                self._source.snapshot_id,
+                self._source.resource_ids[source_path],
+                self._known_from,
+            ),
+        )
+        return player_id
+
+    def _event_identity(
+        self,
+        event: Event,
+        provider_match_id: str,
+        match_id: UUID,
+    ) -> UUID:
+        lock_key = ":".join(
+            (str(self._source.provider_id), "event_provider_mappings", event.provider_id)
+        )
+        self._cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (lock_key,))
+        mapped = self._cursor.execute(
+            """
+            SELECT mapping.event_id, mapping.provider_match_id, catalog.match_id
+            FROM football.event_provider_mappings AS mapping
+            JOIN football.event_catalog AS catalog ON catalog.id = mapping.event_id
+            WHERE mapping.provider_id = %s AND mapping.provider_event_id = %s
+            """,
+            (self._source.provider_id, event.provider_id),
+        ).fetchone()
+        if mapped is not None:
+            if mapped[1] != provider_match_id or UUID(str(mapped[2])) != match_id:
+                raise CanonicalIngestionError(
+                    f"event {event.provider_id} maps to a different match"
+                )
+            self._cursor.execute(
+                """
+                UPDATE football.event_provider_mappings
+                SET last_seen_at = GREATEST(last_seen_at, %s)
+                WHERE provider_id = %s AND provider_event_id = %s
+                """,
+                (self._known_from, self._source.provider_id, event.provider_id),
+            )
+            return UUID(str(mapped[0]))
+        event_id = self._insert_canonical("event_catalog", {"match_id": match_id})
+        self._cursor.execute(
+            """
+            INSERT INTO football.event_provider_mappings
+                (event_id, provider_id, provider_match_id, provider_event_id,
+                 source_snapshot_id, first_seen_at, last_seen_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                event_id,
+                self._source.provider_id,
+                provider_match_id,
+                event.provider_id,
+                self._source.snapshot_id,
+                self._known_from,
+                self._known_from,
+            ),
+        )
+        return event_id
+
+    def _event_observation(
+        self,
+        event: Event,
+        resource: MatchEvents,
+        event_id: UUID,
+        match_id: UUID,
+        team_id: UUID | None,
+        player_id: UUID | None,
+        possession_team_id: UUID | None,
+    ) -> None:
+        facts = (
+            event_id,
+            match_id,
+            event.event_index,
+            event.provider_event_type,
+            event.period,
+            event.event_clock,
+            team_id,
+            player_id,
+            possession_team_id,
+        )
+        existing = self._cursor.execute(
+            """
+            SELECT event_id, match_id, event_index, provider_event_type, period,
+                   event_clock, team_id, player_id, possession_team_id
+            FROM football.event_observations
+            WHERE source_snapshot_id = %s AND provider_event_id = %s
+            """,
+            (self._source.snapshot_id, event.provider_id),
+        ).fetchone()
+        if existing is not None:
+            if existing != facts:
+                raise CanonicalIngestionError(
+                    f"event {event.provider_id} has conflicting source facts"
+                )
+            return
+        if not self._begin_observation(
+            "event_observations",
+            "event_id",
+            event_id,
+            ("provider_event_id",),
+            (event.provider_id,),
+        ):
+            return
+        self._cursor.execute(
+            """
+            INSERT INTO football.event_observations
+                (event_id, match_id, provider_id, provider_match_id, provider_event_id,
+                 event_index, provider_event_type, period, event_clock, team_id,
+                 player_id, possession_team_id, known_from, source_snapshot_id,
+                 source_resource_id, acquired_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                event_id,
+                match_id,
+                self._source.provider_id,
+                resource.provider_match_id,
+                event.provider_id,
+                event.event_index,
+                event.provider_event_type,
+                event.period,
+                event.event_clock,
+                team_id,
+                player_id,
+                possession_team_id,
+                self._known_from,
+                self._source.snapshot_id,
+                self._source.resource_ids[resource.source_path],
+                self._known_from,
+            ),
+        )
 
     def _lineup_player(
         self,
@@ -903,19 +1137,34 @@ def _result(
         team.provider_id for match in bundle.matches for team in (match.home_team, match.away_team)
     }
     team_ids.update(team.provider_id for lineup in bundle.lineups for team in lineup.teams)
-    players = [
+    team_ids.update(
+        entity.provider_id
+        for resource in bundle.events
+        for event in resource.events
+        for entity in (event.team, event.possession_team)
+        if entity is not None
+    )
+    lineup_players = [
         player for lineup in bundle.lineups for team in lineup.teams for player in team.players
     ]
+    event_player_ids = {
+        event.player.provider_id
+        for resource in bundle.events
+        for event in resource.events
+        if event.player is not None
+    }
+    player_ids = {player.provider_id for player in lineup_players} | event_player_ids
     return CanonicalIngestionResult(
         source_snapshot_id=snapshot_id,
         competitions_seen=competitions_seen,
         seasons_seen=len({(row.competition_id, row.season_id) for row in bundle.competitions}),
         teams_seen=len(team_ids),
-        players_seen=len({player.provider_id for player in players}),
+        players_seen=len(player_ids),
         matches_seen=len(bundle.matches),
-        lineup_players_seen=len(players),
-        position_stints_seen=sum(len(player.positions) for player in players),
-        cards_seen=sum(len(player.cards) for player in players),
+        lineup_players_seen=len(lineup_players),
+        position_stints_seen=sum(len(player.positions) for player in lineup_players),
+        cards_seen=sum(len(player.cards) for player in lineup_players),
+        events_seen=sum(len(resource.events) for resource in bundle.events),
     )
 
 

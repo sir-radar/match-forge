@@ -56,7 +56,7 @@ match_team_participations
         → player_cards
 ```
 
-Team side and player lineup attributes remain historical observations. Position stints use ordered period/clock intervals; invalid or reversed intervals are rejected.
+Team side and player lineup attributes remain historical observations. Position rows preserve StatsBomb's provider-reported period/clock spans. End period and clock are either both present or both absent; non-monotonic source spans remain intact for later quality classification.
 
 ## Event catalogue boundary
 
@@ -67,3 +67,5 @@ Within one source snapshot, provider event IDs and `(provider_match_id, event_in
 ## Migration policy
 
 Production migrations are forward-only. The initial canonical migration has no destructive Down section. Corrections require a new migration.
+
+`202608291335_preserve_provider_position_spans.sql` removes the original normalized-interval ordering assumption after verification against the pinned StatsBomb fixture. Other position shape and non-negative clock constraints remain enforced.
