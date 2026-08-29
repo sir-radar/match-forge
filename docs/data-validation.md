@@ -10,7 +10,7 @@ The [`football` CLI](cli.md) validates a season automatically after ingestion an
 
 ## Checks
 
-Task 11 validates:
+The validator checks:
 
 - duplicate match partitions, event identities, and per-match event indexes;
 - incomplete provider-to-canonical player identities and event players absent from lineups;

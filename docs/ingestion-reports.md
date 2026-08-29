@@ -1,5 +1,7 @@
 # Ingestion reports
 
+This component's place in the complete system is documented in [Sprint 1 architecture](architecture.md).
+
 ## Contract
 
 Every successful `football ingest competitions` and `football ingest season <id>` command publishes `IngestionReportV1` in JSON and Markdown. The JSON contract is `schemas/contracts/ingestion-report-v1.schema.json`.

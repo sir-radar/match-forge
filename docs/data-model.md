@@ -2,7 +2,7 @@
 
 ## Ownership
 
-PostgreSQL owns provider-neutral identity, source lineage, historical observations, match participation, and the lightweight event catalogue. It does not own raw provider payloads or full analytical event facts; those remain filesystem and Parquet responsibilities.
+PostgreSQL owns provider-neutral identity, source lineage, historical observations, match participation, and the lightweight event catalogue. It does not own raw provider payloads, full analytical event facts, or report bodies; those remain immutable filesystem and Parquet responsibilities.
 
 The acquisition-side filesystem contract is documented in [Source acquisition](source-acquisition.md).
 
