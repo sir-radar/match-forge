@@ -9,6 +9,7 @@ def test_production_package_exposes_expected_boundaries() -> None:
         "cli",
         "contracts",
         "datasets",
+        "forecasting",
         "ingestion",
         "normalization",
         "providers",

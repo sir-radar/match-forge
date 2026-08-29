@@ -57,3 +57,15 @@ def test_production_canonical_migration_is_forward_only() -> None:
 
     assert "-- +goose Up" in migration
     assert "-- +goose Down" not in migration
+
+
+def test_team_elo_migration_is_forward_only_and_versioned() -> None:
+    migration = (
+        PROJECT_ROOT / "infrastructure" / "migrations" / "202608292000_team_elo.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "-- +goose Up" in migration
+    assert "-- +goose Down" not in migration
+    assert "CREATE TABLE football.elo_model_versions" in migration
+    assert "CREATE TABLE football.team_elo_history" in migration
+    assert "UNIQUE (model_version, team_id, rating_timestamp)" in migration

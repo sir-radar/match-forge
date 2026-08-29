@@ -41,6 +41,7 @@ football.ingestion   → immutable acquisition, verification, registration, cano
 football.datasets    → normalized event Parquet and dataset registration
 football.validation  → policy-driven dataset checks and immutable findings
 football.reports     → deterministic JSON and Markdown evidence publication
+football.forecasting → deterministic team models and immutable model history
 football.cli         → command parsing, configuration, orchestration, exit behavior
 ```
 
@@ -156,10 +157,11 @@ Provider anomalies remain preserved when safe. Warnings identify excluded derive
 - [Data validation](data-validation.md)
 - [Ingestion reports](ingestion-reports.md)
 - [CLI](cli.md)
+- [Team Elo baseline](team-elo.md)
 - [ADR 0001: Python managed runtime pin](adr/0001-python-managed-runtime-pin.md)
 - [ADR 0002: Go analysis scope](adr/0002-go-127-golangci-analysis-scope.md)
 - [ADR 0003: Commit-pinned source acquisition](adr/0003-use-commit-pinned-source-acquisition.md)
 
 ## Deferred boundaries
 
-Sprint 2 begins with measurable team-level forecasting baselines: Elo, Dixon-Coles, score matrices, market probabilities, corner models, walk-forward backtesting, and calibration. Player modelling and full Monte Carlo simulation remain blocked until simpler baselines demonstrate predictive value.
+Sprint 2's Elo baseline is implemented. Dixon-Coles, score matrices, market probabilities, corner models, walk-forward backtesting, and calibration remain deferred. Player modelling and full Monte Carlo simulation remain blocked until simpler baselines demonstrate predictive value.
