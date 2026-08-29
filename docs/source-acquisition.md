@@ -12,7 +12,7 @@ FootballDataProvider
     → SourceManifestV1
 ```
 
-Canonical ingestion consumes this boundary only after re-verifying the immutable manifest and every declared resource. See [Canonical ingestion](canonical-ingestion.md). Normalized event publication then consumes the same verified acquisition and registered canonical catalogue. See [Event datasets](event-datasets.md). Published event datasets receive policy-driven [data validation](data-validation.md). 360 normalization and data-quality reports remain later phases.
+Canonical ingestion consumes this boundary only after re-verifying the immutable manifest and every declared resource. See [Canonical ingestion](canonical-ingestion.md). Normalized event publication then consumes the same verified acquisition and registered canonical catalogue. See [Event datasets](event-datasets.md). Published event datasets receive policy-driven [data validation](data-validation.md), and each ingestion publishes immutable [ingestion reports](ingestion-reports.md). 360 normalization remains a later phase.
 
 ## StatsBomb Open Data
 

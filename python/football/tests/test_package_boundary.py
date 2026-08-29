@@ -12,6 +12,7 @@ def test_production_package_exposes_expected_boundaries() -> None:
         "ingestion",
         "normalization",
         "providers",
+        "reports",
         "storage",
         "temporal",
         "validation",

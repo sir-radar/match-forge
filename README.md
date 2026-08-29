@@ -1,8 +1,8 @@
 # Football forecasting platform
 
-Current phase: Sprint 1 production implementation, Phase 9 ingestion CLI.
+Current phase: Sprint 1 production implementation, Phase 10 ingestion reports.
 
-Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 added canonical temporal storage. Phase 3 added commit-pinned immutable StatsBomb source acquisition. Phases 4 and 5 added canonical PostgreSQL ingestion. Phase 6 publishes schema-bound normalized event Parquet, immutable dataset manifests, and PostgreSQL dataset lineage. Phase 7 adds policy-driven dataset validation with immutable PostgreSQL runs and findings. Phase 8 adds checksum-pinned synthetic fixtures that exercise the complete acquisition-to-validation path without network access. Phase 9 exposes competition ingestion, complete-season ingestion, and latest-season validation through the `football` CLI. The platform does not yet normalize 360 data, generate quality reports, or implement forecasting.
+Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 added canonical temporal storage. Phase 3 added commit-pinned immutable StatsBomb source acquisition. Phases 4 and 5 added canonical PostgreSQL ingestion. Phase 6 publishes schema-bound normalized event Parquet, immutable dataset manifests, and PostgreSQL dataset lineage. Phase 7 adds policy-driven dataset validation with immutable PostgreSQL runs and findings. Phase 8 adds checksum-pinned synthetic fixtures. Phase 9 exposes the production data pipeline through the `football` CLI. Phase 10 publishes deterministic JSON and Markdown ingestion reports with source, canonical, dataset, and quality evidence. The platform does not yet normalize 360 data or implement forecasting.
 
 ```bash
 make bootstrap

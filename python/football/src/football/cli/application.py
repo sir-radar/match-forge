@@ -10,6 +10,11 @@ from psycopg import Connection
 from football.datasets import StatsBombEventDatasetPublisher
 from football.ingestion import SourceAcquirer, StatsBombCanonicalIngestor
 from football.providers import FootballDataProvider
+from football.reports import (
+    ReportSource,
+    publish_competition_ingestion_report,
+    publish_season_ingestion_report,
+)
 from football.validation import QualityPolicy, StatsBombDatasetValidator
 
 
@@ -22,6 +27,9 @@ class CompetitionIngestionSummary:
     source_snapshot_id: UUID
     competitions: int
     seasons: int
+    report_json_path: Path
+    report_markdown_path: Path
+    report_status: str
 
 
 @dataclass(frozen=True)
@@ -32,6 +40,12 @@ class SeasonIngestionSummary:
     matches: int
     events: int
     dataset_version_id: UUID | None
+    validation_run_id: UUID | None
+    validation_status: str | None
+    findings: int
+    report_json_path: Path
+    report_markdown_path: Path
+    report_status: str
 
 
 @dataclass(frozen=True)
@@ -60,10 +74,18 @@ class FootballApplication:
         provider = self._require_provider()
         acquisition = SourceAcquirer(self._data_root).acquire(provider, (provider.competitions(),))
         result = StatsBombCanonicalIngestor(self._connection, self._data_root).ingest(acquisition)
+        report = publish_competition_ingestion_report(
+            self._data_root,
+            ReportSource("catalog", acquisition, result.source_snapshot_id),
+            result,
+        )
         return CompetitionIngestionSummary(
             source_snapshot_id=result.source_snapshot_id,
             competitions=result.competitions_seen,
             seasons=result.seasons_seen,
+            report_json_path=report.json_path,
+            report_markdown_path=report.markdown_path,
+            report_status=report.status,
         )
 
     def ingest_season(self, season_id: int) -> SeasonIngestionSummary:
@@ -83,6 +105,20 @@ class FootballApplication:
         )
         match_ids = self._match_ids(matches_result.source_snapshot_id)
         if not match_ids:
+            report = publish_season_ingestion_report(
+                self._data_root,
+                competition_id=competition_id,
+                season_id=season_id,
+                sources=(
+                    ReportSource("catalog", catalog, catalog_result.source_snapshot_id),
+                    ReportSource("matches", matches_acquisition, matches_result.source_snapshot_id),
+                ),
+                catalog=catalog_result,
+                matches=matches_result,
+                details=None,
+                dataset=None,
+                validation=None,
+            )
             return SeasonIngestionSummary(
                 season_id=season_id,
                 competition_id=competition_id,
@@ -90,6 +126,12 @@ class FootballApplication:
                 matches=0,
                 events=0,
                 dataset_version_id=None,
+                validation_run_id=None,
+                validation_status=None,
+                findings=0,
+                report_json_path=report.json_path,
+                report_markdown_path=report.markdown_path,
+                report_status=report.status,
             )
 
         resources = tuple(
@@ -107,6 +149,26 @@ class FootballApplication:
         dataset = StatsBombEventDatasetPublisher(self._connection, self._data_root).publish(
             detail_acquisition
         )
+        validation = StatsBombDatasetValidator(
+            self._connection,
+            self._data_root,
+            QualityPolicy.from_path(self._quality_policy_path),
+        ).validate(dataset.dataset_version_id)
+        report = publish_season_ingestion_report(
+            self._data_root,
+            competition_id=competition_id,
+            season_id=season_id,
+            sources=(
+                ReportSource("catalog", catalog, catalog_result.source_snapshot_id),
+                ReportSource("matches", matches_acquisition, matches_result.source_snapshot_id),
+                ReportSource("details", detail_acquisition, detail_result.source_snapshot_id),
+            ),
+            catalog=catalog_result,
+            matches=matches_result,
+            details=detail_result,
+            dataset=dataset,
+            validation=validation,
+        )
         return SeasonIngestionSummary(
             season_id=season_id,
             competition_id=competition_id,
@@ -114,6 +176,12 @@ class FootballApplication:
             matches=len(match_ids),
             events=detail_result.events_seen,
             dataset_version_id=dataset.dataset_version_id,
+            validation_run_id=validation.validation_run_id,
+            validation_status=validation.status,
+            findings=len(validation.findings),
+            report_json_path=report.json_path,
+            report_markdown_path=report.markdown_path,
+            report_status=report.status,
         )
 
     def validate_season(self, season_id: int) -> SeasonValidationSummary:

@@ -18,7 +18,7 @@ Normalized rows contain:
 - original StatsBomb coordinates, bounded normalized coordinates, and location quality;
 - the complete provider event as deterministic canonical JSON.
 
-Unknown provider event types keep their provider ID and name with a null canonical mapping. Out-of-bounds coordinates remain unchanged while normalized coordinates stay null. Task 11 classifies these preserved states through [data validation](data-validation.md). Task 14 owns quality-report publication.
+Unknown provider event types keep their provider ID and name with a null canonical mapping. Out-of-bounds coordinates remain unchanged while normalized coordinates stay null. [Data validation](data-validation.md) classifies these preserved states, and [ingestion reports](ingestion-reports.md) summarize the resulting quality evidence.
 
 ## Immutable layout
 
