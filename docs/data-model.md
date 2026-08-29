@@ -64,8 +64,16 @@ Team side and player lineup attributes remain historical observations. Position 
 
 Within one source snapshot, provider event IDs and `(provider_match_id, event_index)` are unique. Canonical traversal uses `event_index ASC`.
 
+## Dataset registry
+
+`dataset_versions` registers immutable normalized dataset identity, schema and normalizer versions, source snapshot, manifest checksum, and publication state. `dataset_inputs` binds each version to source resources from the same snapshot through composite foreign keys. `dataset_files` records relative Parquet paths, physical and logical SHA-256 checksums, row counts, sizes, and schema checksum.
+
+Filesystem publication precedes database registration. A registration rollback therefore cannot erase an already published immutable artifact; an identical rerun verifies the files and manifest, then reconciles missing PostgreSQL rows. See [Event datasets](event-datasets.md).
+
 ## Migration policy
 
 Production migrations are forward-only. The initial canonical migration has no destructive Down section. Corrections require a new migration.
 
 `202608291335_preserve_provider_position_spans.sql` removes the original normalized-interval ordering assumption after verification against the pinned StatsBomb fixture. Other position shape and non-negative clock constraints remain enforced.
+
+`202608291500_event_datasets.sql` adds normalized dataset versions, source-resource lineage, and file metadata.

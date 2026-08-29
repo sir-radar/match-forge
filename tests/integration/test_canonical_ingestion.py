@@ -12,8 +12,10 @@ from typing import Any
 from uuid import UUID
 
 import psycopg
+import pyarrow.parquet as pq
 import pytest
 from football.contracts import SourceResource, SourceSnapshot
+from football.datasets import DatasetPublicationError, StatsBombEventDatasetPublisher
 from football.ingestion import (
     AcquisitionResult,
     CanonicalIngestionError,
@@ -21,6 +23,7 @@ from football.ingestion import (
     SourceIntegrityError,
     StatsBombCanonicalIngestor,
 )
+from jsonschema import validate as validate_json
 from psycopg import Connection
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
@@ -182,16 +185,21 @@ def _event_payload(*, second_type: str = "Pass") -> list[dict[str, object]]:
             "index": 2,
             "period": 1,
             "timestamp": "00:00:05.250",
+            "minute": 0,
+            "second": 5,
             "type": {"id": 30, "name": second_type},
             "possession_team": {"id": 779, "name": "Argentina"},
             "team": {"id": 779, "name": "Argentina"},
             "player": {"id": 5503, "name": "Lionel Andrés Messi Cuccittini"},
+            "location": [60.0, 40.0],
         },
         {
             "id": "22222222-2222-4222-8222-222222222222",
             "index": 1,
             "period": 1,
             "timestamp": "00:00:00.000",
+            "minute": 0,
+            "second": 0,
             "type": {"id": 35, "name": "Starting XI"},
             "possession_team": {"id": 771, "name": "France"},
             "team": {"id": 771, "name": "France"},
@@ -782,6 +790,157 @@ def test_duplicate_event_index_rejects_entire_source_before_registration(
             ("5" * 40,),
         ).fetchone()
     assert row is not None and row[0] == 0
+
+
+def test_publishes_and_registers_normalized_event_dataset_idempotently(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="8" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+
+    first = publisher.publish(acquisition)
+    first_file = first.files[0]
+    modified_at = first_file.absolute_path.stat().st_mtime_ns
+    second = publisher.publish(acquisition)
+
+    assert second.dataset_version_id == first.dataset_version_id
+    assert second.manifest_sha256 == first.manifest_sha256
+    assert second.files[0].physical_sha256 == first_file.physical_sha256
+    assert second.files[0].status == "verified_published"
+    assert first_file.absolute_path.stat().st_mtime_ns == modified_at
+    table = pq.ParquetFile(first_file.absolute_path).read()
+    rows = table.to_pylist()
+    assert [row["event_index"] for row in rows] == [1, 2]
+    assert rows[1]["x_norm"] == 0.5
+    assert rows[1]["y_norm"] == 0.5
+    assert rows[1]["canonical_event_type_id"] == "pass"
+    assert json.loads(rows[1]["provider_payload_json"])["location"] == [60.0, 40.0]
+
+    manifest = json.loads(first.manifest_path.read_bytes())
+    schema_path = Path(__file__).parents[2] / "schemas/contracts/dataset-manifest-v1.schema.json"
+    validate_json(manifest, json.loads(schema_path.read_bytes()))
+    assert manifest["dataset_version_id"] == str(first.dataset_version_id)
+    assert manifest["files"][0]["physical_sha256"] == first_file.physical_sha256
+
+    with connection.cursor() as cursor:
+        version = cursor.execute(
+            """
+            SELECT dataset_name, layer, schema_version, schema_sha256,
+                   normalizer_version, status, manifest_path, manifest_sha256
+            FROM football.dataset_versions
+            WHERE id = %s AND source_snapshot_id = %s
+            """,
+            (first.dataset_version_id, canonical.source_snapshot_id),
+        ).fetchone()
+        inputs = list(
+            cursor.execute(
+                """
+                SELECT resource.provider_path, input.input_role
+                FROM football.dataset_inputs AS input
+                JOIN football.source_resources AS resource
+                  ON resource.id = input.source_resource_id
+                WHERE input.dataset_version_id = %s
+                ORDER BY resource.provider_path
+                """,
+                (first.dataset_version_id,),
+            )
+        )
+        files = list(
+            cursor.execute(
+                """
+                SELECT relative_path, physical_sha256, logical_sha256,
+                       row_count, size_bytes, schema_sha256
+                FROM football.dataset_files
+                WHERE dataset_version_id = %s
+                """,
+                (first.dataset_version_id,),
+            )
+        )
+
+    assert version == (
+        "events",
+        "normalized",
+        "v1",
+        "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18",
+        "statsbomb-normalizer-v1",
+        "published",
+        str(first.manifest_path.relative_to(tmp_path)),
+        first.manifest_sha256,
+    )
+    assert inputs == [
+        ("data/competitions.json", "source"),
+        ("data/events/3869685.json", "source"),
+        ("data/lineups/3869685.json", "source"),
+        ("data/matches/43/106.json", "source"),
+    ]
+    assert files == [
+        (
+            first_file.relative_path,
+            first_file.physical_sha256,
+            first_file.logical_sha256,
+            2,
+            first_file.size_bytes,
+            "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18",
+        )
+    ]
+
+
+def test_dataset_publication_requires_canonical_source_registration(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="9" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+
+    with pytest.raises(DatasetPublicationError, match="registered canonical source snapshot"):
+        StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+
+    assert not (tmp_path / "normalized").exists()
+    assert not (tmp_path / "manifests/datasets").exists()
+
+
+def test_dataset_publication_reconciles_files_after_database_rollback(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="0" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+
+    with connection.transaction(force_rollback=True):
+        orphaned = publisher.publish(acquisition)
+
+    with connection.cursor() as cursor:
+        absent = cursor.execute(
+            "SELECT count(*) FROM football.dataset_versions WHERE id = %s",
+            (orphaned.dataset_version_id,),
+        ).fetchone()
+    assert absent == (0,)
+
+    recovered = publisher.publish(acquisition)
+
+    assert recovered.dataset_version_id == orphaned.dataset_version_id
+    assert recovered.status == "verified_published"
+    assert recovered.files[0].status == "verified_published"
+    with connection.cursor() as cursor:
+        registered = cursor.execute(
+            "SELECT count(*) FROM football.dataset_versions WHERE id = %s",
+            (recovered.dataset_version_id,),
+        ).fetchone()
+    assert registered == (1,)
 
 
 def test_concurrent_identical_ingestion_publishes_one_canonical_graph(tmp_path: Path) -> None:

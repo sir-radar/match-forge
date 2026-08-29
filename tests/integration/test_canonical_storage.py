@@ -587,6 +587,46 @@ def test_event_catalog_rejects_duplicate_source_order(connection: Connection[Any
             )
 
 
+def test_dataset_lineage_rejects_resource_from_another_snapshot(
+    connection: Connection[Any],
+) -> None:
+    _first_provider, first_snapshot, _first_resource = _source_lineage(connection, uuid.uuid4().hex)
+    _second_provider, _second_snapshot, second_resource = _source_lineage(
+        connection, uuid.uuid4().hex
+    )
+    dataset_id = uuid.uuid4()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO football.dataset_versions
+                (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                 schema_version, schema_sha256, normalizer_version, manifest_path,
+                 manifest_sha256, status, published_at)
+            VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                    'statsbomb-normalizer-v1', 'manifests/dataset.json', %s,
+                    'published', %s)
+            """,
+            (
+                dataset_id,
+                first_snapshot,
+                "d" * 64,
+                "e" * 64,
+                "f" * 64,
+                datetime(2026, 1, 1, tzinfo=UTC),
+            ),
+        )
+
+        with pytest.raises(ForeignKeyViolation), connection.transaction():
+            cursor.execute(
+                """
+                INSERT INTO football.dataset_inputs
+                    (dataset_version_id, source_snapshot_id, source_resource_id, input_role)
+                VALUES (%s, %s, %s, 'source')
+                """,
+                (dataset_id, first_snapshot, second_resource),
+            )
+
+
 def test_concurrent_first_seen_mapping_leaves_one_canonical_team(
     connection: Connection[Any],
 ) -> None:
