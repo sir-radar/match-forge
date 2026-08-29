@@ -1,0 +1,27 @@
+{
+  "contract": "Sprint1FixtureV1",
+  "name": "malformed-events",
+  "description": "Synthetic StatsBomb bundle proving malformed provider JSON fails atomically.",
+  "provider": "statsbomb_open_data",
+  "repository": "https://example.test/statsbomb-fixtures",
+  "source_git_sha": "3333333333333333333333333333333333333333",
+  "license": "Synthetic test fixture",
+  "license_url": "https://example.test/statsbomb-fixtures/license",
+  "attribution": "Synthetic test data",
+  "acquired_at": "2026-08-29T08:02:00Z",
+  "resources": [
+    {
+      "path": "data/events/1003.json",
+      "size_bytes": 2,
+      "sha256": "a6fb08fda1acb957b6116bd37811a1fe41a01611c0631edbf786d6889a27a55c",
+      "media_type": "application/json"
+    }
+  ],
+  "expected": {
+    "outcome": "ingestion_error",
+    "canonical": {},
+    "dataset_rows": null,
+    "finding_counts": {},
+    "error_message": "source resource is not valid UTF-8 JSON"
+  }
+}

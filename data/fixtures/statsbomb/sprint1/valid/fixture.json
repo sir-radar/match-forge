@@ -1,0 +1,54 @@
+{
+  "contract": "Sprint1FixtureV1",
+  "name": "valid",
+  "description": "Synthetic StatsBomb bundle covering a clean Sprint 1 round trip.",
+  "provider": "statsbomb_open_data",
+  "repository": "https://example.test/statsbomb-fixtures",
+  "source_git_sha": "1111111111111111111111111111111111111111",
+  "license": "Synthetic test fixture",
+  "license_url": "https://example.test/statsbomb-fixtures/license",
+  "attribution": "Synthetic test data",
+  "acquired_at": "2026-08-29T08:00:00Z",
+  "resources": [
+    {
+      "path": "data/competitions.json",
+      "size_bytes": 358,
+      "sha256": "b3a06af1196863b147df1727113b8054d1089c474c174c46fd520fbcffb1c19f",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/events/1001.json",
+      "size_bytes": 1829,
+      "sha256": "be1b0c9018fc88e45d3bbfdc3b20c70db521b291307e64983be09e83168a0b78",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/lineups/1001.json",
+      "size_bytes": 972,
+      "sha256": "e58c6b5500e071b574ca8a6795775b76a085b582646f9580cf919b7c98a6df5c",
+      "media_type": "application/json"
+    },
+    {
+      "path": "data/matches/1/1.json",
+      "size_bytes": 1020,
+      "sha256": "731dcf63174f7823c5c056b11e741e71286a3982cb2d8e65d4f908238f81994c",
+      "media_type": "application/json"
+    }
+  ],
+  "expected": {
+    "outcome": "passed",
+    "canonical": {
+      "competitions": 1,
+      "seasons": 1,
+      "teams": 2,
+      "players": 2,
+      "matches": 1,
+      "lineup_players": 2,
+      "position_stints": 1,
+      "cards": 0,
+      "events": 5
+    },
+    "dataset_rows": 5,
+    "finding_counts": {}
+  }
+}
