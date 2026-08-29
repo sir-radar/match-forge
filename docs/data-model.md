@@ -31,7 +31,7 @@ This permits the same provider season identifier under different competitions wi
 
 ## Source lineage
 
-`source_snapshots` identifies one immutable provider revision. `source_resources` records each preserved resource path, SHA-256, size, media type, acquisition time, and processing state. Composite foreign keys prevent an observation from claiming a resource belonging to another snapshot or provider.
+`source_snapshots` identifies one immutable acquisition-manifest scope at a provider revision. The manifest scope path is its `source_identity`; `source_revision` and `git_sha` retain the pinned provider revision. This permits several deterministic resource scopes at one Git revision without losing any manifest registration. `source_resources` records each preserved resource path, SHA-256, size, media type, acquisition time, and processing state. Composite foreign keys prevent an observation from claiming a resource belonging to another snapshot or provider.
 
 Source paths must be relative and cannot contain parent traversal. Checksums use a constrained 64-character lowercase hexadecimal domain.
 

@@ -12,7 +12,7 @@ FootballDataProvider
     → SourceManifestV1
 ```
 
-This phase does not parse provider JSON, create canonical entities, register PostgreSQL rows, publish Parquet, or produce data-quality reports. Those operations consume preserved resources in later phases.
+Canonical ingestion consumes this boundary only after re-verifying the immutable manifest and every declared resource. See [Canonical ingestion](canonical-ingestion.md). Event normalization, Parquet publication, and data-quality reports remain later phases.
 
 ## StatsBomb Open Data
 

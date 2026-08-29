@@ -1,8 +1,8 @@
 # Football forecasting platform
 
-Current phase: Sprint 1 production implementation, Phase 3 source acquisition.
+Current phase: Sprint 1 production implementation, Phase 4 canonical ingestion.
 
-Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 added canonical temporal storage. Phase 3 adds the provider protocol, a commit-pinned StatsBomb Open Data adapter, exact-byte raw preservation, deterministic source manifests, offline idempotency, and interrupted-run recovery. It does not yet parse or normalize provider data, register acquired resources in PostgreSQL, publish Parquet, generate quality reports, or implement forecasting.
+Gate A passed. Phase 1 established the pinned toolchain and language boundaries. Phase 2 added canonical temporal storage. Phase 3 added commit-pinned immutable StatsBomb source acquisition. Phase 4 re-verifies and registers source manifests and resources in PostgreSQL, then atomically ingests canonical competitions, seasons, teams, players, matches, and lineups with provider mappings and point-in-time observation history. It does not yet ingest the event catalogue, publish Parquet, generate quality reports, expose the ingestion CLI, or implement forecasting.
 
 ```bash
 make bootstrap
