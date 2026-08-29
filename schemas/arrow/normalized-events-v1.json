@@ -1,0 +1,28 @@
+{
+  "name": "normalized-events-v1",
+  "fields": [
+    ["canonical_event_id", "string", false],
+    ["canonical_match_id", "string", false],
+    ["provider_event_id", "string", false],
+    ["provider_match_id", "string", false],
+    ["event_index", "int32", false],
+    ["period", "int8", false],
+    ["timestamp", "string", false],
+    ["minute", "int16", false],
+    ["second", "int16", false],
+    ["provider_event_type_id", "string", false],
+    ["provider_event_type_name", "string", false],
+    ["canonical_event_type_id", "string", true],
+    ["canonical_team_id", "string", true],
+    ["provider_team_id", "string", true],
+    ["canonical_player_id", "string", true],
+    ["provider_player_id", "string", true],
+    ["source_coordinate_system", "string", true],
+    ["source_x", "float64", true],
+    ["source_y", "float64", true],
+    ["x_norm", "float64", true],
+    ["y_norm", "float64", true],
+    ["location_quality", "string", false],
+    ["provider_payload_json", "string", false]
+  ]
+}

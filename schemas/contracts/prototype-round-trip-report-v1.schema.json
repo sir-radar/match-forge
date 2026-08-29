@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PrototypeRoundTripReportV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "run_id",
+    "started_at",
+    "finished_at",
+    "fixture",
+    "environment",
+    "source",
+    "identity",
+    "temporal",
+    "storage",
+    "reconciliation",
+    "idempotency",
+    "determinism",
+    "failure_injections",
+    "contract_matrix",
+    "overall_result",
+    "recommendation"
+  ],
+  "properties": {
+    "contract": {"const": "PrototypeRoundTripReportV1"},
+    "run_id": {"type": "string"},
+    "started_at": {"type": "string"},
+    "finished_at": {"type": "string"},
+    "fixture": {"type": "object"},
+    "environment": {"type": "object"},
+    "source": {"type": "object"},
+    "identity": {"type": "object"},
+    "temporal": {"type": "object"},
+    "storage": {"type": "object"},
+    "reconciliation": {"type": "object"},
+    "idempotency": {"type": "object"},
+    "determinism": {"type": "object"},
+    "failure_injections": {"type": "object"},
+    "quality": {"type": "object"},
+    "contract_matrix": {
+      "type": "object",
+      "additionalProperties": {"enum": ["PASS", "FAIL"]}
+    },
+    "overall_result": {"enum": ["PASS", "FAIL"]},
+    "recommendation": {
+      "enum": ["PROCEED", "PROCEED AFTER CONTRACT CHANGES", "DO NOT PROCEED"]
+    }
+  },
+  "additionalProperties": false
+}

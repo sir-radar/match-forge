@@ -1,0 +1,13 @@
+{
+  "contract": "QualityPolicyV1",
+  "version": "statsbomb-quality-policy-v1",
+  "rules": {
+    "SB_SOURCE_CHECKSUM_MISMATCH": {"severity": "FATAL", "action": "ABORT_SCOPE"},
+    "SB_MALFORMED_EVENTS_JSON": {"severity": "QUARANTINE", "action": "QUARANTINE_RESOURCE"},
+    "SB_UNKNOWN_EVENT_TYPE": {"severity": "WARNING", "action": "PRESERVE_WITH_NULL_CANONICAL_MAPPING"},
+    "SB_EVENT_LOCATION_OUT_OF_BOUNDS": {"severity": "WARNING", "action": "EXCLUDE_FROM_DERIVED_SPATIAL_FEATURES"},
+    "SB_DUPLICATE_EVENT_INDEX": {"severity": "QUARANTINE", "action": "QUARANTINE_RESOURCE"},
+    "SB_UNKNOWN_ADDITIVE_FIELD": {"severity": "INFO", "action": "PRESERVE_AND_CONTINUE"},
+    "SB_360_UNAVAILABLE": {"severity": "INFO", "action": "MARK_UNAVAILABLE"}
+  }
+}

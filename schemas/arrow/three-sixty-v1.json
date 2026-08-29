@@ -1,0 +1,9 @@
+{
+  "name": "three-sixty-v1",
+  "fields": [
+    ["canonical_event_id", "string", false],
+    ["provider_event_id", "string", false],
+    ["visible_area_json", "string", false],
+    ["freeze_frame_json", "string", false]
+  ]
+}

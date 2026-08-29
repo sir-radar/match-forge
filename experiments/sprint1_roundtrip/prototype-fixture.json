@@ -1,0 +1,37 @@
+{
+  "contract": "PrototypeFixtureV1",
+  "provider": "statsbomb_open_data",
+  "repository": "https://github.com/statsbomb/open-data",
+  "source_git_sha": "b0bc9f22dd77c206ddedc1d742893b3bbe64baec",
+  "competition_id": 43,
+  "season_id": 106,
+  "match_id": 3869685,
+  "match_name": "Argentina vs France — 2022 FIFA World Cup Final",
+  "resources": [
+    {
+      "path": "data/competitions.json",
+      "size_bytes": 34887,
+      "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa"
+    },
+    {
+      "path": "data/matches/43/106.json",
+      "size_bytes": 119132,
+      "sha256": "b9d7516dc9919a825f04c204ca85487958c8a2431e84140a48e944934661efc7"
+    },
+    {
+      "path": "data/events/3869685.json",
+      "size_bytes": 3757121,
+      "sha256": "a0b0036d50c10a4c8879d1ee9f24a7502ec2cfb264a61951c8d500dfc897ec35"
+    },
+    {
+      "path": "data/lineups/3869685.json",
+      "size_bytes": 28432,
+      "sha256": "2b00c4cbf027b36ae2ce99f183a0943c649bb5bdcb8324683a8603785beffed5"
+    },
+    {
+      "path": "data/three-sixty/3869685.json",
+      "size_bytes": 9030507,
+      "sha256": "e0e32229eed636d1987d6fb03bad4e6931dc42109cb533299c2f39088aff3d17"
+    }
+  ]
+}

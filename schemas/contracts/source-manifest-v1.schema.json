@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SourceManifestV1",
+  "type": "object",
+  "required": ["contract", "provider", "repository", "source_git_sha", "acquired_at", "resources"],
+  "properties": {
+    "contract": {"const": "SourceManifestV1"},
+    "provider": {"type": "string"},
+    "repository": {"type": "string", "format": "uri"},
+    "source_git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "acquired_at": {"type": "string"},
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "size_bytes", "sha256", "raw_path", "status"],
+        "properties": {
+          "path": {"type": "string"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "raw_path": {"type": "string"},
+          "status": {"enum": ["acquired", "verified_existing"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
