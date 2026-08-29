@@ -1,5 +1,17 @@
 """Transparent forecasting baseline boundary."""
 
+from football.forecasting.dixon_coles import (
+    DixonColesConfig,
+    DixonColesContractError,
+    DixonColesFit,
+    DixonColesFitError,
+    DixonColesModel,
+    DixonColesParameters,
+    GoalForecast,
+    GoalMarkets,
+    GoalMatch,
+    ScoreMatrix,
+)
 from football.forecasting.elo import (
     EloConfig,
     EloContractError,
@@ -16,6 +28,12 @@ from football.forecasting.elo_storage import (
 )
 
 __all__ = [
+    "DixonColesConfig",
+    "DixonColesContractError",
+    "DixonColesFit",
+    "DixonColesFitError",
+    "DixonColesModel",
+    "DixonColesParameters",
     "EloConfig",
     "EloContractError",
     "EloMatch",
@@ -23,7 +41,11 @@ __all__ = [
     "EloRun",
     "EloStorageError",
     "EloTeamRating",
+    "GoalForecast",
+    "GoalMarkets",
+    "GoalMatch",
     "PostgresEloHistory",
     "RatedEloMatch",
+    "ScoreMatrix",
     "TeamEloModel",
 ]

@@ -1,8 +1,8 @@
 # Football forecasting platform
 
-Current phase: Sprint 2 team Elo baseline.
+Current phase: Sprint 2 forecasting baselines.
 
-Gate A and Sprint 1 are complete. Sprint 2 now adds deterministic dynamic team Elo with home advantage, opponent strength, goal margin, competition weighting, inactivity decay, immutable PostgreSQL history, and point-in-time rating lookup. See the [Sprint 1 architecture](docs/architecture.md) and [team Elo baseline](docs/team-elo.md). Further forecasting models, simulation, and 360 normalization remain deferred.
+Gate A and Sprint 1 are complete. Sprint 2 now includes versioned team Elo and a time-weighted Dixon–Coles goal model with score matrices and market probabilities. See the [Sprint 1 architecture](docs/architecture.md), [team Elo baseline](docs/team-elo.md), and [Dixon–Coles goal baseline](docs/dixon-coles.md). Corner models, walk-forward evaluation, calibration, simulation, and 360 normalization remain deferred.
 
 ```bash
 make bootstrap

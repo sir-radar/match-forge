@@ -59,5 +59,6 @@ Unit tests fix the formulas, ordering, decay, configuration identity, and invali
 Fresh PostgreSQL integration tests cover migration replay, model registration, immutable publication,
 idempotent retries, canonical foreign keys, and point-in-time lookup.
 
-Parameter fitting, walk-forward evaluation, probability calibration, Dixon-Coles score modelling,
-market-derived probabilities, and corner models remain subsequent Sprint 2 work.
+Parameter fitting, walk-forward evaluation, probability calibration, market-derived probabilities,
+and corner models remain subsequent Sprint 2 work. The separate Dixon–Coles score baseline is
+documented in [Dixon–Coles goal baseline](dixon-coles.md).
