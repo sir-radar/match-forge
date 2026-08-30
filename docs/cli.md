@@ -10,6 +10,7 @@ football ingest season <id>
 football ingest season <id> --competition-id <id>
 football validate season <id>
 football validate season <id> --competition-id <id>
+football resolve sprint2-lifecycle
 football evaluate sprint2
 ```
 
@@ -34,6 +35,11 @@ is ambiguous. `passed` and `warnings` return success. `quarantined` and `failed`
 results but return nonzero exit codes.
 
 Both ingestion commands publish immutable JSON and Markdown reports and print their paths. See [Ingestion reports](ingestion-reports.md).
+
+`football resolve sprint2-lifecycle` publishes immutable `completed` claims only when every match
+in the approved corpus has exact score-reconciled validator v3 lineage and terminal event evidence.
+It does not alter provider match observations or treat `match_status=available` as football
+completion. See [Match lifecycle claims](lifecycle-claims.md).
 
 `football evaluate sprint2` runs the pinned `Sprint2BaselineGatePolicyV1` workflow until the first
 blocking stage. It starts with the approved StatsBomb EPL 2015/16 corpus

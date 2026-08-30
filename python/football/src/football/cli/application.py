@@ -9,6 +9,10 @@ from psycopg import Connection
 
 from football.datasets import StatsBombEventDatasetPublisher
 from football.forecasting.gate import Sprint2GateService, Sprint2GateSummary
+from football.forecasting.lifecycle import (
+    LifecycleClaimPublicationResult,
+    Sprint2LifecycleClaimPublisher,
+)
 from football.ingestion import SourceAcquirer, StatsBombCanonicalIngestor
 from football.providers import FootballDataProvider
 from football.reports import (
@@ -75,6 +79,9 @@ class FootballApplication:
 
     def evaluate_sprint2(self) -> Sprint2GateSummary:
         return Sprint2GateService(self._connection, self._report_root).evaluate()
+
+    def resolve_sprint2_lifecycle(self) -> LifecycleClaimPublicationResult:
+        return Sprint2LifecycleClaimPublisher(self._connection).publish()
 
     def ingest_competitions(self) -> CompetitionIngestionSummary:
         provider = self._require_provider()

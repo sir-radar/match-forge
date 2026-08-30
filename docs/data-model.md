@@ -79,6 +79,11 @@ Filesystem publication precedes database registration. A registration rollback t
 
 `validation_runs` identifies one immutable execution by dataset version, dataset manifest, quality-policy checksum, and validator version. `validation_findings` records policy-derived severity, action, scope, evidence, and optional file and source-resource lineage. Composite foreign keys prevent cross-dataset files and cross-snapshot resources. See [Data validation](data-validation.md).
 
+`match_lifecycle_claims` records derived football completion separately from provider observations.
+Each claim binds an exact match observation, dataset version/file/input resource, validation run,
+terminal-event evidence, deterministic checksum, and knowledge time. Composite foreign keys prevent
+cross-match, cross-dataset, and cross-snapshot lineage. See [Match lifecycle claims](lifecycle-claims.md).
+
 ## Migration policy
 
 Production migrations are forward-only. The initial canonical migration has no destructive Down section. Corrections require a new migration.

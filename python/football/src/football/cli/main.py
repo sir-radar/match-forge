@@ -13,6 +13,7 @@ from psycopg import Connection
 
 from football.cli.application import FootballApplication
 from football.datasets import DatasetPublicationError
+from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
 from football.providers import (
     FootballDataProvider,
@@ -85,6 +86,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="provider competition ID; required when season ID is ambiguous",
     )
 
+    resolve = commands.add_parser("resolve", help="publish governed source-fact resolutions")
+    resolve_scopes = resolve.add_subparsers(dest="scope", required=True)
+    resolve_scopes.add_parser(
+        "sprint2-lifecycle",
+        help="publish completed lifecycle claims for the approved Sprint 2 corpus",
+    )
+
     evaluate = commands.add_parser("evaluate", help="run phase-gated historical evaluation")
     evaluate_scopes = evaluate.add_subparsers(dest="scope", required=True)
     evaluate_scopes.add_parser("sprint2", help="run the authoritative Sprint 2 baseline gate")
@@ -155,6 +163,7 @@ def run(
         DatasetPublicationError,
         DatasetValidationError,
         IngestionReportError,
+        LifecycleClaimError,
     ) as error:
         print(f"error: {error}", file=errors)
         return 4
@@ -212,6 +221,16 @@ def _execute(application: FootballApplication, args: argparse.Namespace, output:
             file=output,
         )
         return 0 if evaluation.status in ("PASS", "PASS_WITH_WARNINGS") else 7
+    if args.command == "resolve":
+        resolution = application.resolve_sprint2_lifecycle()
+        print(
+            "resolved Sprint 2 lifecycle: "
+            f"status={resolution.status} claims={resolution.claims} "
+            f"dataset_version_id={resolution.dataset_version_id} "
+            f"validation_run_id={resolution.validation_run_id}",
+            file=output,
+        )
+        return 0
     validation_result = application.validate_season(args.season_id, args.competition_id)
     print(
         f"validated season {validation_result.season_id}: "
