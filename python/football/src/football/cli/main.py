@@ -13,6 +13,7 @@ from psycopg import Connection
 
 from football.cli.application import FootballApplication
 from football.datasets import DatasetPublicationError
+from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
 from football.providers import (
@@ -92,6 +93,10 @@ def build_parser() -> argparse.ArgumentParser:
         "sprint2-lifecycle",
         help="publish completed lifecycle claims for the approved Sprint 2 corpus",
     )
+    resolve_scopes.add_parser(
+        "sprint2-kickoffs",
+        help="publish UTC kickoff claims for the approved Sprint 2 corpus",
+    )
 
     evaluate = commands.add_parser("evaluate", help="run phase-gated historical evaluation")
     evaluate_scopes = evaluate.add_subparsers(dest="scope", required=True)
@@ -163,6 +168,7 @@ def run(
         DatasetPublicationError,
         DatasetValidationError,
         IngestionReportError,
+        KickoffClaimError,
         LifecycleClaimError,
     ) as error:
         print(f"error: {error}", file=errors)
@@ -222,12 +228,21 @@ def _execute(application: FootballApplication, args: argparse.Namespace, output:
         )
         return 0 if evaluation.status in ("PASS", "PASS_WITH_WARNINGS") else 7
     if args.command == "resolve":
-        resolution = application.resolve_sprint2_lifecycle()
+        if args.scope == "sprint2-lifecycle":
+            resolution = application.resolve_sprint2_lifecycle()
+            print(
+                "resolved Sprint 2 lifecycle: "
+                f"status={resolution.status} claims={resolution.claims} "
+                f"dataset_version_id={resolution.dataset_version_id} "
+                f"validation_run_id={resolution.validation_run_id}",
+                file=output,
+            )
+            return 0
+        kickoffs = application.resolve_sprint2_kickoffs()
         print(
-            "resolved Sprint 2 lifecycle: "
-            f"status={resolution.status} claims={resolution.claims} "
-            f"dataset_version_id={resolution.dataset_version_id} "
-            f"validation_run_id={resolution.validation_run_id}",
+            "resolved Sprint 2 kickoffs: "
+            f"status={kickoffs.status} claims={kickoffs.claims} "
+            f"chronological_batches={kickoffs.chronological_batches}",
             file=output,
         )
         return 0

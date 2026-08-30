@@ -20,6 +20,7 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     explicit_season = parser.parse_args(["ingest", "season", "27", "--competition-id", "2"])
     validation = parser.parse_args(["validate", "season", "106"])
     lifecycle = parser.parse_args(["resolve", "sprint2-lifecycle"])
+    kickoffs = parser.parse_args(["resolve", "sprint2-kickoffs"])
 
     assert (competitions.command, competitions.scope) == ("ingest", "competitions")
     assert (season.command, season.scope, season.season_id) == ("ingest", "season", 106)
@@ -30,6 +31,7 @@ def test_parser_accepts_required_sprint1_commands() -> None:
         106,
     )
     assert (lifecycle.command, lifecycle.scope) == ("resolve", "sprint2-lifecycle")
+    assert (kickoffs.command, kickoffs.scope) == ("resolve", "sprint2-kickoffs")
 
 
 @pytest.mark.parametrize("value", ("0", "-1", "abc", "1.5"))

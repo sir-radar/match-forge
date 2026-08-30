@@ -16,8 +16,11 @@ import pyarrow.parquet as pq
 import pytest
 from football.contracts import SourceResource, SourceSnapshot
 from football.datasets import DatasetPublicationError, StatsBombEventDatasetPublisher
+from football.forecasting.contracts import PointInTimeScopeV1
+from football.forecasting.dataset import PointInTimeMatchDatasetProvider
 from football.forecasting.gate import Sprint2GateService
 from football.forecasting.governance import EvaluationCorpusV1
+from football.forecasting.kickoff import KickoffClaimError, Sprint2KickoffClaimPublisher
 from football.forecasting.lifecycle import LifecycleClaimError, Sprint2LifecycleClaimPublisher
 from football.ingestion import (
     AcquisitionResult,
@@ -68,17 +71,25 @@ def _json_bytes(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False).encode("utf-8")
 
 
-def _competition_payload() -> list[dict[str, object]]:
+def _competition_payload(
+    *,
+    competition_id: int = 43,
+    season_id: int = 106,
+    country_name: str = "International",
+    competition_name: str = "FIFA World Cup",
+    is_international: bool = True,
+    season_name: str = "2022",
+) -> list[dict[str, object]]:
     return [
         {
-            "competition_id": 43,
-            "season_id": 106,
-            "country_name": "International",
-            "competition_name": "FIFA World Cup",
+            "competition_id": competition_id,
+            "season_id": season_id,
+            "country_name": country_name,
+            "competition_name": competition_name,
             "competition_gender": "male",
             "competition_youth": False,
-            "competition_international": True,
-            "season_name": "2022",
+            "competition_international": is_international,
+            "season_name": season_name,
             "match_updated": "2026-05-04T01:48:57.914346",
             "match_updated_360": "2026-05-04T01:53:40.309717",
             "match_available_360": "2026-05-04T01:53:40.309717",
@@ -92,6 +103,11 @@ def _match_payload(
     home_name: str = "Argentina",
     home_score: int = 3,
     away_score: int = 3,
+    competition_id: int = 43,
+    season_id: int = 106,
+    competition_country_name: str = "International",
+    competition_name: str = "FIFA World Cup",
+    season_name: str = "2022",
 ) -> list[dict[str, object]]:
     return [
         {
@@ -99,11 +115,11 @@ def _match_payload(
             "match_date": "2022-12-18",
             "kick_off": "17:00:00.000",
             "competition": {
-                "competition_id": 43,
-                "country_name": "International",
-                "competition_name": "FIFA World Cup",
+                "competition_id": competition_id,
+                "country_name": competition_country_name,
+                "competition_name": competition_name,
             },
-            "season": {"season_id": 106, "season_name": "2022"},
+            "season": {"season_id": season_id, "season_name": season_name},
             "home_team": {
                 "home_team_id": 779,
                 "home_team_name": home_name,
@@ -258,13 +274,24 @@ def _acquire_bundle(
     home_score: int = 3,
     away_score: int = 3,
     include_catalog: bool = True,
+    competition_id: int = 43,
+    season_id: int = 106,
+    competition_country_name: str = "International",
+    competition_name: str = "FIFA World Cup",
+    competition_is_international: bool = True,
+    season_name: str = "2022",
 ) -> AcquisitionResult:
     payloads = {
-        "data/matches/43/106.json": _json_bytes(
+        f"data/matches/{competition_id}/{season_id}.json": _json_bytes(
             _match_payload(
                 home_name=home_name,
                 home_score=home_score,
                 away_score=away_score,
+                competition_id=competition_id,
+                season_id=season_id,
+                competition_country_name=competition_country_name,
+                competition_name=competition_name,
+                season_name=season_name,
             )
         ),
         "data/lineups/3869685.json": _json_bytes(
@@ -277,7 +304,16 @@ def _acquire_bundle(
         ),
     }
     if include_catalog:
-        payloads["data/competitions.json"] = _json_bytes(_competition_payload())
+        payloads["data/competitions.json"] = _json_bytes(
+            _competition_payload(
+                competition_id=competition_id,
+                season_id=season_id,
+                country_name=competition_country_name,
+                competition_name=competition_name,
+                is_international=competition_is_international,
+                season_name=season_name,
+            )
+        )
     if events is not None:
         payloads["data/events/3869685.json"] = _json_bytes(events)
     provider = FixtureProvider(source_git_sha, payloads)
@@ -1214,6 +1250,12 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
         events=None,
         home_score=0,
         away_score=0,
+        competition_id=2,
+        season_id=27,
+        competition_country_name="England",
+        competition_name="Premier League",
+        competition_is_international=False,
+        season_name="2015/2016",
     )
     events = _terminal_event_payload()
     detail_payloads = {
@@ -1239,8 +1281,8 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
         clock=lambda: datetime(2026, 8, 29, 10, 0, tzinfo=UTC),
     ).validate(dataset.dataset_version_id)
     corpus = EvaluationCorpusV1(
-        provider_competition_id=43,
-        provider_season_id=106,
+        provider_competition_id=2,
+        provider_season_id=27,
         minimum_team_history=1,
         minimum_competition_history=1,
         minimum_scored_targets=1,
@@ -1280,8 +1322,83 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
         dataset.dataset_version_id,
         validation.validation_run_id,
     )
-    gate = Sprint2GateService(connection, tmp_path / "gate").evaluate(corpus)
+    unresolved_gate = Sprint2GateService(connection, tmp_path / "gate-unresolved").evaluate(corpus)
+    assert unresolved_gate.stage == "chronology-resolution"
+
+    claim_clock = datetime(2026, 8, 29, 11, 0, tzinfo=UTC)
+    kickoff_publisher = Sprint2KickoffClaimPublisher(connection, clock=lambda: claim_clock)
+    first_kickoff = kickoff_publisher.publish(corpus)
+    second_kickoff = kickoff_publisher.publish(corpus)
+
+    assert first_kickoff.status == "published"
+    assert first_kickoff.claims == 1
+    assert first_kickoff.chronological_batches == 1
+    assert second_kickoff.status == "verified_existing"
+    with connection.cursor() as cursor:
+        kickoff_claim = cursor.execute(
+            """
+            SELECT kickoff.claim_version, kickoff.timezone_name, kickoff.tzdata_version,
+                   kickoff.kickoff_at, observation.kickoff_at
+            FROM football.match_kickoff_claims AS kickoff
+            JOIN football.match_observations AS observation
+              ON observation.id = kickoff.match_observation_id
+            """
+        ).fetchone()
+    assert kickoff_claim == (
+        "statsbomb-england-local-kickoff-v1",
+        "Europe/London",
+        "2026.3",
+        datetime(2022, 12, 18, 17, 0, tzinfo=UTC),
+        None,
+    )
+
+    scope = PointInTimeScopeV1(
+        dataset_version_id=dataset.dataset_version_id,
+        source_snapshot_id=dataset.source_snapshot_id,
+        feature_set_version="sprint2-team-baselines-v1",
+        football_cutoff=datetime(2022, 12, 18, 17, 0, tzinfo=UTC),
+        knowledge_cutoff=claim_clock,
+        knowledge_mode="retrospective-fixed-snapshot-v1",
+        quality_policy_sha256=QualityPolicy.from_path(policy_path).sha256,
+        target_set_sha256="1" * 64,
+    )
+    with connection.cursor() as cursor:
+        canonical_scope = cursor.execute(
+            """
+            SELECT season.competition_id, season.id
+            FROM football.season_provider_mappings AS mapping
+            JOIN football.providers AS provider ON provider.id = mapping.provider_id
+            JOIN football.seasons AS season ON season.id = mapping.season_id
+            WHERE provider.code = 'statsbomb_open_data'
+              AND mapping.provider_competition_id = '2'
+              AND mapping.provider_season_id = '27'
+              AND mapping.valid_to IS NULL
+            """
+        ).fetchone()
+    assert canonical_scope is not None
+    competition_id = UUID(str(canonical_scope[0]))
+    season_id = UUID(str(canonical_scope[1]))
+    point_in_time = PointInTimeMatchDatasetProvider(connection)
+    batch = point_in_time.forecast_batch(scope, competition_id, season_id)
+    history_scope = PointInTimeScopeV1(
+        dataset_version_id=scope.dataset_version_id,
+        source_snapshot_id=scope.source_snapshot_id,
+        feature_set_version=scope.feature_set_version,
+        football_cutoff=scope.football_cutoff + timedelta(days=1),
+        knowledge_cutoff=scope.knowledge_cutoff,
+        knowledge_mode=scope.knowledge_mode,
+        quality_policy_sha256=scope.quality_policy_sha256,
+        target_set_sha256=scope.target_set_sha256,
+    )
+    history = point_in_time.completed_history(history_scope, competition_id, season_id)
+
+    assert len(batch.matches) == 1
+    assert "score" not in batch.matches[0].to_dict()
+    assert len(history) == 1
+    assert (history[0].home_score, history[0].away_score) == (0, 0)
+    gate = Sprint2GateService(connection, tmp_path / "gate-resolved").evaluate(corpus)
     assert gate.stage == "walk-forward-execution"
+    assert "1 batches" in gate.findings[0]
 
 
 def test_rejects_completed_claim_without_terminal_event_evidence(
@@ -1319,6 +1436,44 @@ def test_rejects_completed_claim_without_terminal_event_evidence(
         assert cursor.execute(
             "SELECT count(*) FROM football.match_lifecycle_claims"
         ).fetchone() == (0,)
+
+
+def test_rejects_london_kickoff_claim_for_international_competition(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="f" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_terminal_event_payload(),
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+    assert validation.status == "passed"
+    corpus = EvaluationCorpusV1(
+        provider_competition_id=43,
+        provider_season_id=106,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=1,
+    )
+    Sprint2LifecycleClaimPublisher(connection).publish(corpus)
+
+    with pytest.raises(KickoffClaimError, match="domestic England"):
+        Sprint2KickoffClaimPublisher(connection).publish(corpus)
+
+    with connection.cursor() as cursor:
+        assert cursor.execute("SELECT count(*) FROM football.match_kickoff_claims").fetchone() == (
+            0,
+        )
 
 
 def test_rejects_completed_claim_from_quarantined_score_evidence(
@@ -1479,7 +1634,7 @@ def test_concurrent_identical_ingestion_publishes_one_canonical_graph(tmp_path: 
         with psycopg.connect(DATABASE_URL) as worker_connection:
             barrier.wait()
             result = StatsBombCanonicalIngestor(worker_connection, tmp_path).ingest(acquisition)
-            return result.source_snapshot_id
+            return UUID(str(result.source_snapshot_id))
 
     with ThreadPoolExecutor(max_workers=2) as executor:
         snapshot_ids = list(executor.map(lambda _index: ingest(), range(2)))
