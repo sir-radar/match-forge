@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Barrier
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import psycopg
@@ -426,6 +426,109 @@ def test_match_list_supplies_catalog_missing_competition_season_with_lineage(
     assert row == ("43", "106", "data/matches/43/106.json")
 
 
+def test_preserves_conflicting_player_facts_without_selecting_a_winner(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    matches = _match_payload()
+    second_match = _match_payload()[0]
+    second_match["match_id"] = 3869686
+    second_match["match_date"] = "2022-12-17"
+    matches.append(second_match)
+    for match in matches:
+        match["home_score"] = 0
+        match["away_score"] = 0
+
+    first_lineup = _lineup_payload()
+    second_lineup = _lineup_payload()
+    conflicting_lineup = cast(list[dict[str, object]], second_lineup[0]["lineup"])
+    conflicting_player = conflicting_lineup[0]
+    conflicting_player["player_name"] = "Lionel Messi"
+    conflicting_player["country"] = {"id": 68, "name": "England"}
+    first_events = _event_payload()
+    second_events = _event_payload()
+    second_events[0]["id"] = "33333333-3333-4333-8333-333333333333"
+    second_events[1]["id"] = "44444444-4444-4444-8444-444444444444"
+    payloads = {
+        "data/competitions.json": _json_bytes(_competition_payload()),
+        "data/matches/43/106.json": _json_bytes(matches),
+        "data/events/3869685.json": _json_bytes(first_events),
+        "data/events/3869686.json": _json_bytes(second_events),
+        "data/lineups/3869685.json": _json_bytes(first_lineup),
+        "data/lineups/3869686.json": _json_bytes(second_lineup),
+    }
+    provider = FixtureProvider("8" * 40, payloads)
+    acquisition = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2026, 8, 30, 12, 0, tzinfo=UTC),
+    ).acquire(provider, tuple(SourceResource(path) for path in payloads))
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+
+    first = ingestor.ingest(acquisition)
+    second = ingestor.ingest(acquisition)
+
+    assert second == first
+    with connection.cursor() as cursor:
+        canonical = cursor.execute(
+            """
+            SELECT full_name, nickname, country_provider_id, fact_status
+            FROM football.player_observations
+            WHERE source_snapshot_id = %s AND provider_player_id = '5503'
+            """,
+            (first.source_snapshot_id,),
+        ).fetchone()
+        variants = list(
+            cursor.execute(
+                """
+                SELECT resource.provider_path, fact.full_name, fact.nickname,
+                       fact.country_provider_id, fact.observation_kind
+                FROM football.player_source_facts AS fact
+                JOIN football.source_resources AS resource
+                  ON resource.id = fact.source_resource_id
+                WHERE fact.source_snapshot_id = %s
+                  AND fact.provider_player_id = '5503'
+                  AND fact.observation_kind = 'lineup'
+                ORDER BY resource.provider_path
+                """,
+                (first.source_snapshot_id,),
+            )
+        )
+
+    assert canonical == (None, "Lionel Messi", None, "conflicting")
+    assert variants == [
+        (
+            "data/lineups/3869685.json",
+            "Lionel Andrés Messi Cuccittini",
+            "Lionel Messi",
+            "11",
+            "lineup",
+        ),
+        (
+            "data/lineups/3869686.json",
+            "Lionel Messi",
+            "Lionel Messi",
+            "68",
+            "lineup",
+        ),
+    ]
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+
+    assert validation.status == "warnings"
+    assert [finding.rule_code for finding in validation.findings] == [
+        "SB_CONFLICTING_PLAYER_FACT",
+        "SB_CONFLICTING_PLAYER_FACT",
+    ]
+    assert {finding.field_path for finding in validation.findings} == {
+        "player.country_provider_id",
+        "player.full_name",
+    }
+
+
 def test_new_snapshot_closes_current_observations_and_preserves_history(
     connection: Connection[Any], tmp_path: Path
 ) -> None:
@@ -732,6 +835,12 @@ def test_ingests_event_catalog_in_source_order_idempotently(
             """,
             (provider_id,),
         ).fetchone()
+        advisory_locks = cursor.execute(
+            """
+            SELECT count(*) FROM pg_locks
+            WHERE pid = pg_backend_pid() AND locktype = 'advisory'
+            """
+        ).fetchone()
 
     assert event_counts == (2, 2, 2)
     assert observations == [
@@ -757,6 +866,7 @@ def test_ingests_event_catalog_in_source_order_idempotently(
         ),
     ]
     assert resource_status == ("parsed", "valid", "validated")
+    assert advisory_locks == (1,)
 
 
 def test_event_only_scope_preserves_entities_and_versions_event_facts(
@@ -1053,7 +1163,7 @@ def test_validates_normalized_event_dataset_and_registers_idempotent_run(
         dataset.dataset_version_id,
         dataset.source_snapshot_id,
         "statsbomb-quality-policy-v1",
-        "statsbomb-dataset-validator-v1",
+        "statsbomb-dataset-validator-v3",
         "passed",
         datetime(2026, 8, 29, 9, 0, tzinfo=UTC),
         datetime(2026, 8, 29, 9, 1, tzinfo=UTC),

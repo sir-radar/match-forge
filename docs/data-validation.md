@@ -17,12 +17,14 @@ The validator checks:
 - invalid event periods, clocks, clock ordering, and second values;
 - missing, valid, and out-of-bounds coordinate-state consistency;
 - regulation and extra-time goal totals against match scores, excluding period 5 shootouts;
+- paired StatsBomb own-goal events, counting the beneficiary-side `Own Goal For` observation once;
 - lineup team membership, cross-team players, and non-monotonic provider position stints;
+- contradictory player name, nickname, and country facts with exact resource variants;
 - unknown provider event types with preserved null canonical mappings;
 - malformed embedded provider event JSON;
 - registered Parquet schema, physical checksum, logical checksum, row count, and size.
 
-Valid out-of-bounds coordinates and unknown event types remain preserved with warnings. Impossible provider clocks use authoritative `event_index` order and exclude affected temporal features. Non-monotonic StatsBomb position stints remain preserved with warnings because real provider observations contain them. Broken identity, score, coordinate, or lineup invariants receive quarantine classifications. Dataset registry integrity failures are fatal.
+Valid out-of-bounds coordinates and unknown event types remain preserved with warnings. Impossible provider clocks use authoritative `event_index` order and exclude affected temporal features. Non-monotonic StatsBomb position stints remain preserved with warnings because real provider observations contain them. Contradictory player facts retain every source variant, null the disputed canonical consensus field, and produce warnings. Broken identity, score, coordinate, or lineup invariants receive quarantine classifications. Dataset registry integrity failures are fatal.
 
 ## Status
 

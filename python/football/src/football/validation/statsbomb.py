@@ -561,10 +561,8 @@ def _scoring_team(
         return team_id
     if event_type == "Own Goal For":
         return team_id
-    if event_type == "Own Goal Against" and team_id == match.home_team_id:
-        return match.away_team_id
-    if event_type == "Own Goal Against" and team_id == match.away_team_id:
-        return match.home_team_id
+    # StatsBomb emits paired Own Goal For/Against events for one goal. The
+    # beneficiary-side Own Goal For event is the single scoring observation.
     return None
 
 

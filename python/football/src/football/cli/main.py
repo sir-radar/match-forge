@@ -79,6 +79,11 @@ def build_parser() -> argparse.ArgumentParser:
     validate_scopes = validate.add_subparsers(dest="scope", required=True)
     validate_season = validate_scopes.add_parser("season", help="validate latest season dataset")
     validate_season.add_argument("season_id", type=positive_identifier)
+    validate_season.add_argument(
+        "--competition-id",
+        type=positive_identifier,
+        help="provider competition ID; required when season ID is ambiguous",
+    )
 
     evaluate = commands.add_parser("evaluate", help="run phase-gated historical evaluation")
     evaluate_scopes = evaluate.add_subparsers(dest="scope", required=True)
@@ -207,7 +212,7 @@ def _execute(application: FootballApplication, args: argparse.Namespace, output:
             file=output,
         )
         return 0 if evaluation.status in ("PASS", "PASS_WITH_WARNINGS") else 7
-    validation_result = application.validate_season(args.season_id)
+    validation_result = application.validate_season(args.season_id, args.competition_id)
     print(
         f"validated season {validation_result.season_id}: "
         f"dataset_version_id={validation_result.dataset_version_id} "

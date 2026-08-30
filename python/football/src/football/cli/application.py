@@ -194,8 +194,10 @@ class FootballApplication:
             report_status=report.status,
         )
 
-    def validate_season(self, season_id: int) -> SeasonValidationSummary:
-        canonical_season_id = self._canonical_season_id(season_id)
+    def validate_season(
+        self, season_id: int, competition_id: int | None = None
+    ) -> SeasonValidationSummary:
+        canonical_season_id = self._canonical_season_id(season_id, competition_id)
         dataset_version_id = self._latest_dataset(canonical_season_id, season_id)
         policy = QualityPolicy.from_path(self._quality_policy_path)
         result = StatsBombDatasetValidator(
@@ -253,7 +255,9 @@ class FootballApplication:
             ).fetchall()
         return tuple(int(row[0]) for row in rows)
 
-    def _canonical_season_id(self, provider_season_id: int) -> UUID:
+    def _canonical_season_id(
+        self, provider_season_id: int, provider_competition_id: int | None
+    ) -> UUID:
         with self._connection.cursor() as cursor:
             rows = cursor.execute(
                 """
@@ -262,14 +266,29 @@ class FootballApplication:
                 JOIN football.providers AS provider ON provider.id = mapping.provider_id
                 WHERE provider.code = 'statsbomb_open_data'
                   AND mapping.provider_season_id = %s
+                  AND (%s::text IS NULL OR mapping.provider_competition_id = %s)
                   AND mapping.valid_to IS NULL
                 ORDER BY mapping.season_id
                 """,
-                (str(provider_season_id),),
+                (
+                    str(provider_season_id),
+                    str(provider_competition_id) if provider_competition_id else None,
+                    str(provider_competition_id) if provider_competition_id else None,
+                ),
             ).fetchall()
         if not rows:
+            if provider_competition_id is not None:
+                raise SeasonLookupError(
+                    f"StatsBomb competition {provider_competition_id} season "
+                    f"{provider_season_id} is not ingested"
+                )
             raise SeasonLookupError(f"StatsBomb season {provider_season_id} is not ingested")
         if len(rows) != 1:
+            if provider_competition_id is not None:
+                raise SeasonLookupError(
+                    f"StatsBomb competition {provider_competition_id} season "
+                    f"{provider_season_id} maps to multiple canonical seasons"
+                )
             raise SeasonLookupError(
                 f"StatsBomb season {provider_season_id} maps to multiple canonical seasons"
             )

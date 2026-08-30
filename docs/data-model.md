@@ -56,7 +56,12 @@ match_team_participations
         → player_cards
 ```
 
-Team side and player lineup attributes remain historical observations. Position rows preserve StatsBomb's provider-reported period/clock spans. End period and clock are either both present or both absent; non-monotonic source spans remain intact for later quality classification.
+Team side and player lineup attributes remain historical observations. `player_source_facts`
+preserves each distinct provider player variant with exact snapshot/resource lineage. Canonical
+player observation fields contain only same-snapshot consensus; disputed fields are null and
+`fact_status = 'conflicting'`. Position rows preserve StatsBomb's provider-reported period/clock
+spans. End period and clock are either both present or both absent; non-monotonic source spans
+remain intact for later quality classification.
 
 ## Event catalogue boundary
 

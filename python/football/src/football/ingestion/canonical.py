@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -9,6 +10,7 @@ from uuid import UUID
 from psycopg import Connection, Cursor, sql
 from psycopg.errors import DeadlockDetected, ExclusionViolation, SerializationFailure
 
+from football.contracts.source import canonical_json_bytes
 from football.ingestion.acquisition import AcquisitionResult
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
 from football.ingestion.registration import (
@@ -19,7 +21,6 @@ from football.ingestion.registration import (
 )
 from football.ingestion.statsbomb_contracts import (
     CompetitionSeason,
-    Event,
     EventEntity,
     LineupPlayer,
     LineupTeam,
@@ -66,6 +67,10 @@ class StatsBombCanonicalIngestor:
         bundle = parse_statsbomb_bundle(source)
         try:
             with self._connection.transaction(), self._connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                    (f"canonical-provider:{source.manifest.snapshot.provider}",),
+                )
                 registered = PostgresSourceRegistry().register(cursor, source)
                 writer = _CanonicalWriter(cursor, registered, source)
                 result = writer.ingest(bundle)
@@ -87,6 +92,7 @@ class _CanonicalWriter:
         self._cursor = cursor
         self._source = registered
         self._known_from = source.manifest.acquired_at
+        self._recorded_player_fact_sha256: set[str] = set()
 
     def ingest(self, bundle: StatsBombBundle) -> CanonicalIngestionResult:
         competitions = self._competitions(bundle.competitions)
@@ -448,11 +454,27 @@ class _CanonicalWriter:
             (resource.provider_match_id,),
         )
         match_teams = self._current_match_teams(match_id)
+        team_entities: dict[str, EventEntity] = {}
+        player_entities: dict[str, EventEntity] = {}
         for event in resource.events:
-            team_id = self._event_team(event.team, resource.source_path)
-            possession_team_id = self._event_team(
-                event.possession_team,
-                resource.source_path,
+            for entity in (event.team, event.possession_team):
+                _collect_event_entity(team_entities, entity, "team")
+            _collect_event_entity(player_entities, event.player, "player")
+        team_ids = {
+            provider_id: self._event_team(entity, resource.source_path)
+            for provider_id, entity in team_entities.items()
+        }
+        player_ids = {
+            provider_id: self._event_player(entity, resource.source_path)
+            for provider_id, entity in player_entities.items()
+        }
+        rows: list[tuple[object, ...]] = []
+        for event in resource.events:
+            team_id = team_ids.get(event.team.provider_id) if event.team is not None else None
+            possession_team_id = (
+                team_ids.get(event.possession_team.provider_id)
+                if event.possession_team is not None
+                else None
             )
             for referenced_team_id in (team_id, possession_team_id):
                 if referenced_team_id is not None and referenced_team_id not in match_teams:
@@ -460,17 +482,261 @@ class _CanonicalWriter:
                         f"event {event.provider_id} references a team outside match "
                         f"{resource.provider_match_id}"
                     )
-            player_id = self._event_player(event.player, resource.source_path)
-            event_id = self._event_identity(event, resource.provider_match_id, match_id)
-            self._event_observation(
-                event,
-                resource,
-                event_id,
-                match_id,
-                team_id,
-                player_id,
-                possession_team_id,
+            player_id = (
+                player_ids.get(event.player.provider_id) if event.player is not None else None
             )
+            rows.append(
+                (
+                    event.provider_id,
+                    resource.provider_match_id,
+                    event.event_index,
+                    match_id,
+                    event.provider_event_type,
+                    event.period,
+                    event.event_clock,
+                    team_id,
+                    player_id,
+                    possession_team_id,
+                    self._source.resource_ids[resource.source_path],
+                )
+            )
+        self._publish_event_batch(resource.provider_match_id, rows)
+
+    def _publish_event_batch(self, provider_match_id: str, rows: list[tuple[object, ...]]) -> None:
+        self._prepare_event_stage()
+        with self._cursor.copy(
+            """
+            COPY football_event_stage
+                (provider_event_id, provider_match_id, event_index, match_id,
+                 provider_event_type, period, event_clock, team_id, player_id,
+                 possession_team_id, source_resource_id)
+            FROM STDIN
+            """
+        ) as copy:
+            for row in rows:
+                copy.write_row(row)
+        self._cursor.execute("ANALYZE football_event_stage")
+        self._cursor.execute(
+            """
+            UPDATE football_event_stage AS stage
+            SET (mapping_id, event_id, mapped_provider_match_id, mapped_match_id,
+                 mapped_last_seen_at) = (
+                SELECT mapping.id, mapping.event_id, mapping.provider_match_id,
+                       catalog.match_id, mapping.last_seen_at
+                FROM football.event_provider_mappings AS mapping
+                JOIN football.event_catalog AS catalog ON catalog.id = mapping.event_id
+                WHERE mapping.provider_id = %s
+                  AND mapping.provider_event_id = stage.provider_event_id
+            )
+            """,
+            (self._source.provider_id,),
+        )
+        conflict = self._cursor.execute(
+            """
+            SELECT provider_event_id
+            FROM football_event_stage
+            WHERE mapping_id IS NOT NULL
+              AND (mapped_provider_match_id <> provider_match_id
+                   OR mapped_match_id <> match_id)
+            ORDER BY provider_event_id
+            LIMIT 1
+            """
+        ).fetchone()
+        if conflict is not None:
+            raise CanonicalIngestionError(f"event {conflict[0]} maps to a different match")
+        self._cursor.execute(
+            "UPDATE football_event_stage SET event_id = uuidv7() WHERE event_id IS NULL"
+        )
+        self._cursor.execute(
+            """
+            INSERT INTO football.event_catalog (id, match_id)
+            SELECT stage.event_id, stage.match_id
+            FROM football_event_stage AS stage
+            WHERE stage.mapping_id IS NULL
+            """
+        )
+        self._cursor.execute(
+            """
+            INSERT INTO football.event_provider_mappings
+                (event_id, provider_id, provider_match_id, provider_event_id,
+                 source_snapshot_id, first_seen_at, last_seen_at)
+            SELECT stage.event_id, %s, stage.provider_match_id, stage.provider_event_id,
+                   %s, %s, %s
+            FROM football_event_stage AS stage
+            WHERE stage.mapping_id IS NULL
+            """,
+            (
+                self._source.provider_id,
+                self._source.snapshot_id,
+                self._known_from,
+                self._known_from,
+            ),
+        )
+        stale_mappings = self._cursor.execute(
+            """
+            SELECT mapping_id
+            FROM football_event_stage
+            WHERE mapping_id IS NOT NULL AND mapped_last_seen_at < %s
+            """,
+            (self._known_from,),
+        ).fetchall()
+        self._cursor.executemany(
+            """
+            UPDATE football.event_provider_mappings
+            SET last_seen_at = %s
+            WHERE id = %s
+            """,
+            ((self._known_from, row[0]) for row in stale_mappings),
+        )
+        self._cursor.execute(
+            """
+            UPDATE football_event_stage AS stage
+            SET (observation_id, observed_event_id, observed_match_id,
+                 observed_event_index, observed_provider_event_type, observed_period,
+                 observed_event_clock, observed_team_id, observed_player_id,
+                 observed_possession_team_id, observed_source_resource_id) = (
+                SELECT observation.id, observation.event_id, observation.match_id,
+                       observation.event_index, observation.provider_event_type,
+                       observation.period, observation.event_clock, observation.team_id,
+                       observation.player_id, observation.possession_team_id,
+                       observation.source_resource_id
+                FROM football.event_observations AS observation
+                WHERE observation.source_snapshot_id = %s
+                  AND observation.provider_event_id = stage.provider_event_id
+            )
+            """,
+            (self._source.snapshot_id,),
+        )
+        conflicting_observation = self._cursor.execute(
+            """
+            SELECT provider_event_id
+            FROM football_event_stage
+            WHERE observation_id IS NOT NULL
+              AND (observed_event_id IS DISTINCT FROM event_id
+                   OR observed_match_id IS DISTINCT FROM match_id
+                   OR observed_event_index IS DISTINCT FROM event_index
+                   OR observed_provider_event_type IS DISTINCT FROM provider_event_type
+                   OR observed_period IS DISTINCT FROM period
+                   OR observed_event_clock IS DISTINCT FROM event_clock
+                   OR observed_team_id IS DISTINCT FROM team_id
+                   OR observed_player_id IS DISTINCT FROM player_id
+                   OR observed_possession_team_id IS DISTINCT FROM possession_team_id
+                   OR observed_source_resource_id IS DISTINCT FROM source_resource_id)
+            ORDER BY provider_event_id
+            LIMIT 1
+            """
+        ).fetchone()
+        if conflicting_observation is not None:
+            raise CanonicalIngestionError(
+                f"event {conflicting_observation[0]} has conflicting source facts"
+            )
+        self._cursor.execute(
+            """
+            UPDATE football_event_stage AS stage
+            SET (current_observation_id, current_known_from) = (
+                SELECT observation.id, observation.known_from
+                FROM football.event_observations AS observation
+                WHERE observation.event_id = stage.event_id
+                  AND observation.provider_id = %s
+                  AND observation.known_to IS NULL
+                  AND observation.source_snapshot_id <> %s
+            )
+            WHERE stage.mapping_id IS NOT NULL AND stage.observation_id IS NULL
+            """,
+            (self._source.provider_id, self._source.snapshot_id),
+        )
+        newer = self._cursor.execute(
+            """
+            SELECT provider_event_id
+            FROM football_event_stage
+            WHERE current_known_from >= %s
+            ORDER BY provider_event_id
+            LIMIT 1
+            """,
+            (self._known_from,),
+        ).fetchone()
+        if newer is not None:
+            raise CanonicalIngestionError(
+                "source snapshot acquisition time must follow current observation"
+            )
+        current_observations = self._cursor.execute(
+            """
+            SELECT current_observation_id
+            FROM football_event_stage
+            WHERE current_observation_id IS NOT NULL
+            """,
+        ).fetchall()
+        self._cursor.executemany(
+            "UPDATE football.event_observations SET known_to = %s WHERE id = %s",
+            ((self._known_from, row[0]) for row in current_observations),
+        )
+        missing_row = self._cursor.execute(
+            "SELECT count(*) FROM football_event_stage WHERE observation_id IS NULL"
+        ).fetchone()
+        missing = int(missing_row[0]) if missing_row is not None else -1
+        self._cursor.execute(
+            """
+            INSERT INTO football.event_observations
+                (event_id, match_id, provider_id, provider_match_id, provider_event_id,
+                 event_index, provider_event_type, period, event_clock, team_id,
+                 player_id, possession_team_id, known_from, source_snapshot_id,
+                 source_resource_id, acquired_at)
+            SELECT stage.event_id, stage.match_id, %s, stage.provider_match_id,
+                   stage.provider_event_id, stage.event_index, stage.provider_event_type,
+                   stage.period, stage.event_clock, stage.team_id, stage.player_id,
+                   stage.possession_team_id, %s, %s, stage.source_resource_id, %s
+            FROM football_event_stage AS stage
+            WHERE stage.observation_id IS NULL
+            """,
+            (
+                self._source.provider_id,
+                self._known_from,
+                self._source.snapshot_id,
+                self._known_from,
+            ),
+        )
+        if self._cursor.rowcount != missing:
+            raise CanonicalIngestionError(
+                f"event batch publication is incomplete for match {provider_match_id}"
+            )
+
+    def _prepare_event_stage(self) -> None:
+        self._cursor.execute(
+            """
+            CREATE TEMP TABLE IF NOT EXISTS football_event_stage (
+                provider_event_id text NOT NULL,
+                provider_match_id text NOT NULL,
+                event_index integer NOT NULL,
+                match_id uuid NOT NULL,
+                provider_event_type text NOT NULL,
+                period smallint NOT NULL,
+                event_clock interval NOT NULL,
+                team_id uuid,
+                player_id uuid,
+                possession_team_id uuid,
+                source_resource_id uuid NOT NULL,
+                event_id uuid,
+                mapping_id uuid,
+                mapped_provider_match_id text,
+                mapped_match_id uuid,
+                mapped_last_seen_at timestamptz,
+                observation_id uuid,
+                observed_event_id uuid,
+                observed_match_id uuid,
+                observed_event_index integer,
+                observed_provider_event_type text,
+                observed_period smallint,
+                observed_event_clock interval,
+                observed_team_id uuid,
+                observed_player_id uuid,
+                observed_possession_team_id uuid,
+                observed_source_resource_id uuid,
+                current_observation_id uuid,
+                current_known_from timestamptz
+            ) ON COMMIT DROP
+            """
+        )
+        self._cursor.execute("TRUNCATE football_event_stage")
 
     def _event_team(self, entity: EventEntity | None, source_path: str) -> UUID | None:
         if entity is None:
@@ -493,13 +759,28 @@ class _CanonicalWriter:
             (entity.provider_id,),
             {},
         )
+        new_fact = self._record_player_fact(
+            player_id=player_id,
+            provider_player_id=entity.provider_id,
+            full_name=entity.name,
+            nickname=None,
+            country_provider_id=None,
+            nickname_observed=False,
+            country_observed=False,
+            observation_kind="event",
+            source_path=source_path,
+        )
         existing = self._cursor.execute(
             """
-            SELECT full_name FROM football.player_observations
+            SELECT id FROM football.player_observations
             WHERE source_snapshot_id = %s AND provider_player_id = %s
             """,
             (self._source.snapshot_id, entity.provider_id),
         ).fetchone()
+        if existing is not None:
+            if new_fact:
+                self._update_player_consensus(entity.provider_id)
+            return player_id
         if existing is None:
             existing = self._cursor.execute(
                 """
@@ -509,7 +790,7 @@ class _CanonicalWriter:
                 (player_id, self._source.provider_id),
             ).fetchone()
         if existing is not None:
-            if existing[0] != entity.name:
+            if existing[0] not in (None, entity.name):
                 raise CanonicalIngestionError(
                     f"player {entity.provider_id} has conflicting source names"
                 )
@@ -524,10 +805,10 @@ class _CanonicalWriter:
             return player_id
         self._cursor.execute(
             """
-            INSERT INTO football.player_observations
-                (player_id, provider_id, provider_player_id, full_name, known_from,
-                 source_snapshot_id, source_resource_id, acquired_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO football.player_observations
+                    (player_id, provider_id, provider_player_id, full_name, known_from,
+                     fact_status, source_snapshot_id, source_resource_id, acquired_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 player_id,
@@ -535,138 +816,13 @@ class _CanonicalWriter:
                 entity.provider_id,
                 entity.name,
                 self._known_from,
+                "consistent",
                 self._source.snapshot_id,
                 self._source.resource_ids[source_path],
                 self._known_from,
             ),
         )
         return player_id
-
-    def _event_identity(
-        self,
-        event: Event,
-        provider_match_id: str,
-        match_id: UUID,
-    ) -> UUID:
-        lock_key = ":".join(
-            (str(self._source.provider_id), "event_provider_mappings", event.provider_id)
-        )
-        self._cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (lock_key,))
-        mapped = self._cursor.execute(
-            """
-            SELECT mapping.event_id, mapping.provider_match_id, catalog.match_id
-            FROM football.event_provider_mappings AS mapping
-            JOIN football.event_catalog AS catalog ON catalog.id = mapping.event_id
-            WHERE mapping.provider_id = %s AND mapping.provider_event_id = %s
-            """,
-            (self._source.provider_id, event.provider_id),
-        ).fetchone()
-        if mapped is not None:
-            if mapped[1] != provider_match_id or UUID(str(mapped[2])) != match_id:
-                raise CanonicalIngestionError(
-                    f"event {event.provider_id} maps to a different match"
-                )
-            self._cursor.execute(
-                """
-                UPDATE football.event_provider_mappings
-                SET last_seen_at = GREATEST(last_seen_at, %s)
-                WHERE provider_id = %s AND provider_event_id = %s
-                """,
-                (self._known_from, self._source.provider_id, event.provider_id),
-            )
-            return UUID(str(mapped[0]))
-        event_id = self._insert_canonical("event_catalog", {"match_id": match_id})
-        self._cursor.execute(
-            """
-            INSERT INTO football.event_provider_mappings
-                (event_id, provider_id, provider_match_id, provider_event_id,
-                 source_snapshot_id, first_seen_at, last_seen_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                event_id,
-                self._source.provider_id,
-                provider_match_id,
-                event.provider_id,
-                self._source.snapshot_id,
-                self._known_from,
-                self._known_from,
-            ),
-        )
-        return event_id
-
-    def _event_observation(
-        self,
-        event: Event,
-        resource: MatchEvents,
-        event_id: UUID,
-        match_id: UUID,
-        team_id: UUID | None,
-        player_id: UUID | None,
-        possession_team_id: UUID | None,
-    ) -> None:
-        facts = (
-            event_id,
-            match_id,
-            event.event_index,
-            event.provider_event_type,
-            event.period,
-            event.event_clock,
-            team_id,
-            player_id,
-            possession_team_id,
-        )
-        existing = self._cursor.execute(
-            """
-            SELECT event_id, match_id, event_index, provider_event_type, period,
-                   event_clock, team_id, player_id, possession_team_id
-            FROM football.event_observations
-            WHERE source_snapshot_id = %s AND provider_event_id = %s
-            """,
-            (self._source.snapshot_id, event.provider_id),
-        ).fetchone()
-        if existing is not None:
-            if existing != facts:
-                raise CanonicalIngestionError(
-                    f"event {event.provider_id} has conflicting source facts"
-                )
-            return
-        if not self._begin_observation(
-            "event_observations",
-            "event_id",
-            event_id,
-            ("provider_event_id",),
-            (event.provider_id,),
-        ):
-            return
-        self._cursor.execute(
-            """
-            INSERT INTO football.event_observations
-                (event_id, match_id, provider_id, provider_match_id, provider_event_id,
-                 event_index, provider_event_type, period, event_clock, team_id,
-                 player_id, possession_team_id, known_from, source_snapshot_id,
-                 source_resource_id, acquired_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                event_id,
-                match_id,
-                self._source.provider_id,
-                resource.provider_match_id,
-                event.provider_id,
-                event.event_index,
-                event.provider_event_type,
-                event.period,
-                event.event_clock,
-                team_id,
-                player_id,
-                possession_team_id,
-                self._known_from,
-                self._source.snapshot_id,
-                self._source.resource_ids[resource.source_path],
-                self._known_from,
-            ),
-        )
 
     def _lineup_player(
         self,
@@ -742,20 +898,28 @@ class _CanonicalWriter:
             (row.provider_id,),
             {},
         )
+        new_fact = self._record_player_fact(
+            player_id=player_id,
+            provider_player_id=row.provider_id,
+            full_name=row.full_name,
+            nickname=row.nickname,
+            country_provider_id=row.country_provider_id,
+            nickname_observed=True,
+            country_observed=True,
+            observation_kind="lineup",
+            source_path=source_path,
+        )
         existing = self._cursor.execute(
             """
-            SELECT full_name, nickname, country_provider_id
+            SELECT id
             FROM football.player_observations
             WHERE source_snapshot_id = %s AND provider_player_id = %s
             """,
             (self._source.snapshot_id, row.provider_id),
         ).fetchone()
-        expected = (row.full_name, row.nickname, row.country_provider_id)
         if existing is not None:
-            if existing != expected:
-                raise CanonicalIngestionError(
-                    f"player {row.provider_id} has conflicting source facts"
-                )
+            if new_fact:
+                self._update_player_consensus(row.provider_id)
             return player_id
         if not self._begin_observation(
             "player_observations",
@@ -765,22 +929,26 @@ class _CanonicalWriter:
             (row.provider_id,),
         ):
             return player_id
+        full_name, nickname, country_provider_id, fact_status = self._player_consensus(
+            row.provider_id
+        )
         self._cursor.execute(
             """
             INSERT INTO football.player_observations
                 (player_id, provider_id, provider_player_id, full_name, nickname,
-                 country_provider_id, known_from, source_snapshot_id,
+                 country_provider_id, known_from, fact_status, source_snapshot_id,
                  source_resource_id, acquired_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 player_id,
                 self._source.provider_id,
                 row.provider_id,
-                row.full_name,
-                row.nickname,
-                row.country_provider_id,
+                full_name,
+                nickname,
+                country_provider_id,
                 self._known_from,
+                fact_status,
                 self._source.snapshot_id,
                 self._source.resource_ids[source_path],
                 self._known_from,
@@ -788,14 +956,150 @@ class _CanonicalWriter:
         )
         return player_id
 
+    def _record_player_fact(
+        self,
+        *,
+        player_id: UUID,
+        provider_player_id: str,
+        full_name: str,
+        nickname: str | None,
+        country_provider_id: str | None,
+        nickname_observed: bool,
+        country_observed: bool,
+        observation_kind: str,
+        source_path: str,
+    ) -> bool:
+        source_resource_id = self._source.resource_ids[source_path]
+        fact_payload = {
+            "source_snapshot_id": str(self._source.snapshot_id),
+            "source_resource_id": str(source_resource_id),
+            "provider_player_id": provider_player_id,
+            "full_name": full_name,
+            "nickname": nickname,
+            "country_provider_id": country_provider_id,
+            "nickname_observed": nickname_observed,
+            "country_observed": country_observed,
+            "observation_kind": observation_kind,
+        }
+        fact_sha256 = hashlib.sha256(canonical_json_bytes(fact_payload)).hexdigest()
+        if fact_sha256 in self._recorded_player_fact_sha256:
+            return False
+        inserted = self._cursor.execute(
+            """
+            INSERT INTO football.player_source_facts
+                (player_id, provider_id, provider_player_id, full_name, nickname,
+                 country_provider_id, nickname_observed, country_observed,
+                 observation_kind, fact_sha256, source_snapshot_id,
+                 source_resource_id, acquired_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (fact_sha256) DO NOTHING
+            """,
+            (
+                player_id,
+                self._source.provider_id,
+                provider_player_id,
+                full_name,
+                nickname,
+                country_provider_id,
+                nickname_observed,
+                country_observed,
+                observation_kind,
+                fact_sha256,
+                self._source.snapshot_id,
+                source_resource_id,
+                self._known_from,
+            ),
+        ).rowcount
+        stored = self._cursor.execute(
+            """
+            SELECT player_id, provider_id, provider_player_id, full_name, nickname,
+                   country_provider_id, nickname_observed, country_observed,
+                   observation_kind, source_snapshot_id, source_resource_id, acquired_at
+            FROM football.player_source_facts
+            WHERE fact_sha256 = %s
+            """,
+            (fact_sha256,),
+        ).fetchone()
+        expected = (
+            player_id,
+            self._source.provider_id,
+            provider_player_id,
+            full_name,
+            nickname,
+            country_provider_id,
+            nickname_observed,
+            country_observed,
+            observation_kind,
+            self._source.snapshot_id,
+            source_resource_id,
+            self._known_from,
+        )
+        if stored != expected:
+            raise CanonicalIngestionError(
+                f"player {provider_player_id} source fact conflicts with its checksum"
+            )
+        self._recorded_player_fact_sha256.add(fact_sha256)
+        return inserted == 1
+
+    def _player_consensus(
+        self, provider_player_id: str
+    ) -> tuple[str | None, str | None, str | None, str]:
+        rows = self._cursor.execute(
+            """
+            SELECT full_name, nickname, country_provider_id,
+                   nickname_observed, country_observed
+            FROM football.player_source_facts
+            WHERE source_snapshot_id = %s AND provider_player_id = %s
+            ORDER BY fact_sha256
+            """,
+            (self._source.snapshot_id, provider_player_id),
+        ).fetchall()
+        if not rows:
+            raise CanonicalIngestionError(
+                f"player {provider_player_id} has no preserved source facts"
+            )
+        full_names = {row[0] for row in rows}
+        nicknames = {row[1] for row in rows if row[3]}
+        countries = {row[2] for row in rows if row[4]}
+        conflicting = any(len(values) > 1 for values in (full_names, nicknames, countries))
+        return (
+            _consensus_value(full_names),
+            _consensus_value(nicknames),
+            _consensus_value(countries),
+            "conflicting" if conflicting else "consistent",
+        )
+
+    def _update_player_consensus(self, provider_player_id: str) -> None:
+        full_name, nickname, country_provider_id, fact_status = self._player_consensus(
+            provider_player_id
+        )
+        updated = self._cursor.execute(
+            """
+            UPDATE football.player_observations
+            SET full_name = %s, nickname = %s, country_provider_id = %s,
+                fact_status = %s
+            WHERE source_snapshot_id = %s AND provider_player_id = %s
+            """,
+            (
+                full_name,
+                nickname,
+                country_provider_id,
+                fact_status,
+                self._source.snapshot_id,
+                provider_player_id,
+            ),
+        ).rowcount
+        if updated != 1:
+            raise CanonicalIngestionError(
+                f"player {provider_player_id} consensus observation is missing"
+            )
+
     def _identity(
         self,
         spec: _IdentitySpec,
         provider_values: tuple[str, ...],
         canonical_values: dict[str, object],
     ) -> UUID:
-        lock_key = ":".join((str(self._source.provider_id), spec.mapping_table, *provider_values))
-        self._cursor.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (lock_key,))
         mapped = self._select_mapping(spec, provider_values)
         if mapped is not None:
             self._touch_mapping(spec, provider_values)
@@ -1114,6 +1418,25 @@ def _provider_datetime(raw: str | None) -> tuple[datetime | None, str | None]:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         return None, raw
     return parsed, raw
+
+
+def _consensus_value(values: set[str | None]) -> str | None:
+    return next(iter(values)) if len(values) == 1 else None
+
+
+def _collect_event_entity(
+    entities: dict[str, EventEntity],
+    entity: EventEntity | None,
+    entity_kind: str,
+) -> None:
+    if entity is None:
+        return
+    existing = entities.get(entity.provider_id)
+    if existing is not None and existing.name != entity.name:
+        raise CanonicalIngestionError(
+            f"{entity_kind} {entity.provider_id} has conflicting source names"
+        )
+    entities[entity.provider_id] = entity
 
 
 def _require_compatible_team(

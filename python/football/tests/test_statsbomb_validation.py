@@ -247,6 +247,41 @@ def test_detects_score_inconsistency_and_ignores_shootout_goals() -> None:
     )
 
 
+def test_counts_paired_own_goal_events_once() -> None:
+    own_goal_for = _row()
+    for_payload = json.loads(str(own_goal_for["provider_payload_json"]))
+    for_payload["type"] = {"id": 25, "name": "Own Goal For"}
+    own_goal_for.update(
+        provider_event_type_id="25",
+        provider_event_type_name="Own Goal For",
+        canonical_team_id=str(HOME_TEAM_ID),
+        provider_payload_json=json.dumps(for_payload),
+    )
+    own_goal_against = _row(
+        event_id="22222222-2222-4222-8222-222222222222",
+        event_index=2,
+    )
+    against_payload = json.loads(str(own_goal_against["provider_payload_json"]))
+    against_payload.update(
+        type={"id": 20, "name": "Own Goal Against"},
+        team={"id": 780, "name": "Away"},
+    )
+    own_goal_against.update(
+        provider_event_type_id="20",
+        provider_event_type_name="Own Goal Against",
+        canonical_team_id=str(AWAY_TEAM_ID),
+        provider_team_id="780",
+        provider_payload_json=json.dumps(against_payload),
+    )
+
+    assert "SB_SCORE_INCONSISTENCY" not in _codes(
+        _file(
+            (own_goal_for, own_goal_against),
+            context=_context(home_score=1, away_score=0),
+        )
+    )
+
+
 def test_findings_are_deterministic() -> None:
     row = _row()
     row["canonical_event_type_id"] = None

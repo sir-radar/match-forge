@@ -88,7 +88,13 @@ def test_cli_ingests_and_validates_fixture_season(
         ["ingest", "season", str(_season_id(fixture_name))]
     )
     validation_exit, validation_output, validation_error = invoke(
-        ["validate", "season", str(_season_id(fixture_name))]
+        [
+            "validate",
+            "season",
+            str(_season_id(fixture_name)),
+            "--competition-id",
+            str(_season_id(fixture_name)),
+        ]
     )
 
     assert competitions_exit == 0
