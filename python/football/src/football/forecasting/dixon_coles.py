@@ -138,6 +138,7 @@ class DixonColesParameters:
 @dataclass(frozen=True)
 class DixonColesFit:
     model_version: str
+    config: DixonColesConfig
     config_sha256: str
     training_sha256: str
     training_match_count: int
@@ -278,6 +279,7 @@ class DixonColesModel:
         )
         return DixonColesFit(
             model_version=self.config.model_version,
+            config=self.config,
             config_sha256=self.config.sha256,
             training_sha256=_training_sha256(self.config.sha256, ordered),
             training_match_count=len(ordered),

@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Sprint2EvaluationReportV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "evaluation_run_id",
+    "policy_version",
+    "corpus",
+    "coverage",
+    "stage",
+    "scope",
+    "status",
+    "completed_at",
+    "raw_match_result_metrics",
+    "calibrated_match_result_metrics",
+    "calibration_accepted",
+    "findings"
+  ],
+  "properties": {
+    "contract": {"const": "Sprint2EvaluationReportV1"},
+    "evaluation_run_id": {"type": "string", "format": "uuid"},
+    "policy_version": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "corpus": {"$ref": "#/$defs/corpus"},
+    "coverage": {"$ref": "#/$defs/coverage"},
+    "stage": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "scope": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/scope"}]},
+    "status": {"enum": ["PASS", "PASS_WITH_WARNINGS", "FAIL"]},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "raw_match_result_metrics": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/metrics"}]
+    },
+    "calibrated_match_result_metrics": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/metrics"}]
+    },
+    "calibration_accepted": {"type": ["boolean", "null"]},
+    "findings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "corpus": {
+      "type": "object",
+      "required": [
+        "provider_code",
+        "provider_competition_id",
+        "provider_season_id",
+        "minimum_team_history",
+        "minimum_competition_history",
+        "minimum_scored_targets"
+      ],
+      "properties": {
+        "provider_code": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "provider_competition_id": {"type": "integer", "minimum": 1},
+        "provider_season_id": {"type": "integer", "minimum": 1},
+        "minimum_team_history": {"type": "integer", "minimum": 1},
+        "minimum_competition_history": {"type": "integer", "minimum": 1},
+        "minimum_scored_targets": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "registered_matches",
+        "completed_matches",
+        "scored_targets",
+        "corner_labelled_targets"
+      ],
+      "properties": {
+        "registered_matches": {"type": "integer", "minimum": 0},
+        "completed_matches": {"type": "integer", "minimum": 0},
+        "scored_targets": {"type": "integer", "minimum": 0},
+        "corner_labelled_targets": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "contract",
+        "dataset_version_id",
+        "source_snapshot_id",
+        "feature_set_version",
+        "football_cutoff",
+        "knowledge_cutoff",
+        "knowledge_mode",
+        "quality_policy_sha256",
+        "target_set_sha256"
+      ],
+      "properties": {
+        "contract": {"const": "PointInTimeScopeV1"},
+        "dataset_version_id": {"type": "string", "format": "uuid"},
+        "source_snapshot_id": {"type": "string", "format": "uuid"},
+        "feature_set_version": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "football_cutoff": {"type": "string", "format": "date-time"},
+        "knowledge_cutoff": {"type": "string", "format": "date-time"},
+        "knowledge_mode": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "quality_policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "target_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "sample_count",
+        "log_loss",
+        "brier_score",
+        "ranked_probability_score",
+        "accuracy",
+        "expected_calibration_error",
+        "brier_decomposition",
+        "reliability_bins"
+      ],
+      "properties": {
+        "sample_count": {"type": "integer", "minimum": 1},
+        "log_loss": {"type": "number", "minimum": 0},
+        "brier_score": {"type": "number", "minimum": 0},
+        "ranked_probability_score": {"type": "number", "minimum": 0},
+        "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "expected_calibration_error": {"type": "number", "minimum": 0, "maximum": 1},
+        "brier_decomposition": {
+          "type": "object",
+          "required": ["uncertainty", "resolution", "reliability"],
+          "properties": {
+            "uncertainty": {"type": "number", "minimum": 0},
+            "resolution": {"type": "number", "minimum": 0},
+            "reliability": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "reliability_bins": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "lower_bound",
+              "upper_bound",
+              "sample_count",
+              "mean_probability",
+              "observed_frequency"
+            ],
+            "properties": {
+              "lower_bound": {"type": "number", "minimum": 0, "maximum": 1},
+              "upper_bound": {"type": "number", "minimum": 0, "maximum": 1},
+              "sample_count": {"type": "integer", "minimum": 0},
+              "mean_probability": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+              "observed_frequency": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -60,13 +60,14 @@ validate pinned source configuration
 → publish IngestionReportV1 JSON and Markdown
 ```
 
-### `football ingest season <id>`
+### `football ingest season <id> [--competition-id <id>]`
 
 ```text
 validate source and quality-policy configuration
 → acquire and ingest competition catalog
-→ resolve exactly one provider competition for season
+→ resolve exactly one provider competition for season, or use the explicit pair
 → acquire and ingest season match list
+→ supplement a catalog-missing pair from consistent match-list metadata with source lineage
 → resolve match IDs from that exact source snapshot
 → acquire and ingest every lineup and event resource
 → publish normalized event Parquet and dataset manifest
@@ -75,7 +76,7 @@ validate source and quality-policy configuration
 → publish IngestionReportV1 JSON and Markdown
 ```
 
-The catalog, match-list, and detail acquisitions are separate immutable source scopes at one provider Git revision. They are intentionally recoverable units, not one distributed transaction. If a later step fails, an identical command verifies completed scopes and resumes from the first missing step.
+The catalog, match-list, and detail acquisitions are separate immutable source scopes at one provider Git revision. They are intentionally recoverable units, not one distributed transaction. If a later step fails, an identical command verifies completed scopes and resumes from the first missing step. An explicit competition ID is required when a season ID is ambiguous or the pinned catalog omits the requested pair. In that catalog-missing case, the parser accepts only internally consistent competition and season metadata from the preserved match list, records that resource as lineage, and leaves authoritative raw bytes unchanged.
 
 ### `football validate season <id>`
 
@@ -159,10 +160,14 @@ Provider anomalies remain preserved when safe. Warnings identify excluded derive
 - [CLI](cli.md)
 - [Team Elo baseline](team-elo.md)
 - [Dixon–Coles goal baseline](dixon-coles.md)
+- [Corner count baselines](corner-models.md)
+- [Sprint 2 backtesting](backtesting.md)
+- [Model governance](model-governance.md)
+- [Sprint 2 phase gate](sprint2-phase-gate.md)
 - [ADR 0001: Python managed runtime pin](adr/0001-python-managed-runtime-pin.md)
 - [ADR 0002: Go analysis scope](adr/0002-go-127-golangci-analysis-scope.md)
 - [ADR 0003: Commit-pinned source acquisition](adr/0003-use-commit-pinned-source-acquisition.md)
 
 ## Deferred boundaries
 
-Sprint 2's Elo and Dixon–Coles baselines, score matrix, and goal-market probabilities are implemented. Corner models, walk-forward backtesting, and calibration remain deferred. Player modelling and full Monte Carlo simulation remain blocked until simpler baselines demonstrate predictive value.
+Sprint 2 baseline, walk-forward, calibration, artifact, forecast, evaluation, and governance contracts are implemented. `make sprint2-evaluate` retains JSON and Markdown evidence at the first blocking gate stage. The current result is `FAIL` at coverage: 380 approved EPL 2015/16 matches are registered, but their football lifecycle remains `unknown`, so none are eligible scored targets. Full detail acquisition also exposed contradictory same-revision player facts and correctly stopped before event-dataset publication instead of silently choosing values. No synthetic metrics are emitted. Player modelling and full Monte Carlo simulation remain blocked until these data contracts are resolved and a complete historical evaluation is reviewed and passed.

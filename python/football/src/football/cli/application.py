@@ -8,6 +8,7 @@ from uuid import UUID
 from psycopg import Connection
 
 from football.datasets import StatsBombEventDatasetPublisher
+from football.forecasting.gate import Sprint2GateService, Sprint2GateSummary
 from football.ingestion import SourceAcquirer, StatsBombCanonicalIngestor
 from football.providers import FootballDataProvider
 from football.reports import (
@@ -64,11 +65,16 @@ class FootballApplication:
         data_root: Path,
         provider: FootballDataProvider | None,
         quality_policy_path: Path,
+        report_root: Path,
     ) -> None:
         self._connection = connection
         self._data_root = data_root.resolve()
         self._provider = provider
         self._quality_policy_path = quality_policy_path.resolve()
+        self._report_root = report_root.resolve()
+
+    def evaluate_sprint2(self) -> Sprint2GateSummary:
+        return Sprint2GateService(self._connection, self._report_root).evaluate()
 
     def ingest_competitions(self) -> CompetitionIngestionSummary:
         provider = self._require_provider()
@@ -88,13 +94,17 @@ class FootballApplication:
             report_status=report.status,
         )
 
-    def ingest_season(self, season_id: int) -> SeasonIngestionSummary:
+    def ingest_season(
+        self, season_id: int, competition_id: int | None = None
+    ) -> SeasonIngestionSummary:
         provider = self._require_provider()
         catalog = SourceAcquirer(self._data_root).acquire(provider, (provider.competitions(),))
         catalog_result = StatsBombCanonicalIngestor(self._connection, self._data_root).ingest(
             catalog
         )
-        competition_id = self._competition_for_season(catalog_result.source_snapshot_id, season_id)
+        competition_id = self._competition_for_season(
+            catalog_result.source_snapshot_id, season_id, competition_id
+        )
 
         matches_acquisition = SourceAcquirer(self._data_root).acquire(
             provider,
@@ -206,7 +216,11 @@ class FootballApplication:
             raise RuntimeError("ingestion provider is not configured")
         return self._provider
 
-    def _competition_for_season(self, source_snapshot_id: UUID, season_id: int) -> int:
+    def _competition_for_season(
+        self, source_snapshot_id: UUID, season_id: int, competition_id: int | None
+    ) -> int:
+        if competition_id is not None:
+            return competition_id
         with self._connection.cursor() as cursor:
             rows = cursor.execute(
                 """

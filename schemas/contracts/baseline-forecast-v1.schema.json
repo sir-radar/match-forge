@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "BaselineForecastV1",
+  "type": "object",
+  "required": [
+    "forecast_id",
+    "semantic_sha256",
+    "contract",
+    "match_id",
+    "prediction_cutoff",
+    "scope",
+    "probability_variant",
+    "probability_contract_version",
+    "output_version",
+    "model_artifact_ids",
+    "calibrator_artifact_id",
+    "payload_sha256",
+    "forecast_context_sha256",
+    "match_result"
+  ],
+  "properties": {
+    "forecast_id": {"type": "string", "format": "uuid"},
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "contract": {"const": "BaselineForecastV1"},
+    "match_id": {"type": "string", "format": "uuid"},
+    "prediction_cutoff": {"type": "string", "format": "date-time"},
+    "scope": {
+      "type": "object",
+      "required": [
+        "contract",
+        "dataset_version_id",
+        "source_snapshot_id",
+        "feature_set_version",
+        "football_cutoff",
+        "knowledge_cutoff",
+        "knowledge_mode",
+        "quality_policy_sha256",
+        "target_set_sha256"
+      ],
+      "properties": {
+        "contract": {"const": "PointInTimeScopeV1"},
+        "dataset_version_id": {"type": "string", "format": "uuid"},
+        "source_snapshot_id": {"type": "string", "format": "uuid"},
+        "feature_set_version": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "football_cutoff": {"type": "string", "format": "date-time"},
+        "knowledge_cutoff": {"type": "string", "format": "date-time"},
+        "knowledge_mode": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "quality_policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "target_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "probability_variant": {"enum": ["MODEL_RAW", "MODEL_CALIBRATED"]},
+    "probability_contract_version": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "output_version": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "model_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "format": "uuid"}
+    },
+    "calibrator_artifact_id": {"type": ["string", "null"], "format": "uuid"},
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "forecast_context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "match_result": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["contract", "home", "draw", "away"],
+          "properties": {
+            "contract": {"const": "MatchResultProbabilitiesV1"},
+            "home": {"type": "number", "minimum": 0, "maximum": 1},
+            "draw": {"type": "number", "minimum": 0, "maximum": 1},
+            "away": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

@@ -6,9 +6,10 @@ PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
 DATABASE_URL ?= postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable
+SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check sprint2-evaluate \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean
 
@@ -70,6 +71,9 @@ integration: build
 	./scripts/integration.sh
 
 check: format-check lint test build
+
+sprint2-evaluate: up
+	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --report-root "$(SPRINT2_REPORT_ROOT)" evaluate sprint2
 
 prototype-bootstrap:
 	@test -x $(UV) || { echo "missing $(UV); run make bootstrap" >&2; exit 3; }
