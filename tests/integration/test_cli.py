@@ -126,5 +126,55 @@ def test_cli_ingests_and_validates_fixture_season(
         assert path.with_suffix(".md").is_file()
 
 
+def test_cli_evaluate_sprint2_retains_failed_corpus_report(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    @contextmanager
+    def connection_factory(_database_url: str) -> Iterator[Connection[Any]]:
+        yield connection
+
+    stdout = StringIO()
+    stderr = StringIO()
+    exit_code = run(
+        [
+            "--database-url",
+            DATABASE_URL,
+            "--report-root",
+            str(tmp_path),
+            "evaluate",
+            "sprint2",
+        ],
+        environ={},
+        stdout=stdout,
+        stderr=stderr,
+        connection_factory=connection_factory,
+    )
+
+    reports = tuple(tmp_path.glob("run=*/Sprint2EvaluationReportV1.json"))
+    assert exit_code == 7
+    assert stderr.getvalue() == ""
+    assert "Sprint 2 evaluation: status=FAIL stage=corpus-resolution" in stdout.getvalue()
+    assert len(reports) == 1
+    payload = json.loads(reports[0].read_text(encoding="utf-8"))
+    schema = json.loads(
+        (PROJECT_ROOT / "schemas/contracts/sprint2-evaluation-report-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+    assert payload["scope"] is None
+    assert payload["raw_match_result_metrics"] is None
+    assert payload["status"] == "FAIL"
+    assert payload["corpus"] == {
+        "provider_code": "statsbomb_open_data",
+        "provider_competition_id": 2,
+        "provider_season_id": 27,
+        "minimum_team_history": 10,
+        "minimum_competition_history": 100,
+        "minimum_scored_targets": 250,
+    }
+    assert reports[0].with_suffix(".md").is_file()
+
+
 def _season_id(fixture_name: str) -> int:
     return 1 if fixture_name == "valid" else 2

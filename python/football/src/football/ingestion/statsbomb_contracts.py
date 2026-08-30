@@ -46,6 +46,9 @@ class Match:
     provider_id: str
     competition_id: str
     season_id: str
+    competition_name: str
+    competition_country_name: str | None
+    season_name: str
     match_date: date | None
     kick_off_local: time | None
     home_team: Team
@@ -183,8 +186,9 @@ def parse_statsbomb_bundle(source: VerifiedSource) -> StatsBombBundle:
         (event.provider_id for resource in events for event in resource.events),
         "event",
     )
+    supplemented_competitions = _supplement_competitions(competitions, matches)
     return StatsBombBundle(
-        competitions=tuple(competitions),
+        competitions=supplemented_competitions,
         matches=tuple(sorted(matches, key=lambda item: int(item.provider_id))),
         lineups=tuple(sorted(lineups, key=lambda item: int(item.provider_match_id))),
         events=tuple(sorted(events, key=lambda item: int(item.provider_match_id))),
@@ -245,6 +249,9 @@ def _parse_match(row: dict[str, object], path: str) -> Match:
         provider_id=_identifier(row, "match_id"),
         competition_id=_identifier(competition, "competition_id"),
         season_id=_identifier(season, "season_id"),
+        competition_name=_string(competition, "competition_name"),
+        competition_country_name=_optional_string(competition, "country_name"),
+        season_name=_string(season, "season_name"),
         match_date=_optional_date(row, "match_date"),
         kick_off_local=_optional_time(row, "kick_off"),
         home_team=_parse_team(_nested_object(row, "home_team"), "home"),
@@ -261,6 +268,88 @@ def _parse_match(row: dict[str, object], path: str) -> Match:
         provider_updated_at_raw=_optional_string(row, "last_updated"),
         source_path=path,
     )
+
+
+def _supplement_competitions(
+    competitions: list[CompetitionSeason], matches: list[Match]
+) -> tuple[CompetitionSeason, ...]:
+    rows = list(competitions)
+    existing_pairs = {(row.competition_id, row.season_id) for row in rows}
+    existing_competitions = {row.competition_id: row for row in rows}
+    matches_by_pair: dict[tuple[str, str], list[Match]] = {}
+    for match in matches:
+        matches_by_pair.setdefault((match.competition_id, match.season_id), []).append(match)
+    for pair in sorted(matches_by_pair, key=lambda item: (int(item[0]), int(item[1]))):
+        if pair in existing_pairs:
+            continue
+        group = matches_by_pair[pair]
+        competition_name = _required_match_value(group, "competition_name")
+        country_name = _one_match_value(group, "competition_country_name")
+        season_name = _required_match_value(group, "season_name")
+        source_path = _required_match_value(group, "source_path")
+        catalog = existing_competitions.get(pair[0])
+        gender = catalog.gender if catalog else _match_gender(group)
+        rows.append(
+            CompetitionSeason(
+                competition_id=pair[0],
+                season_id=pair[1],
+                competition_name=catalog.competition_name if catalog else competition_name,
+                country_name=catalog.country_name if catalog else country_name,
+                gender=gender,
+                is_youth=catalog.is_youth if catalog else None,
+                is_international=catalog.is_international if catalog else None,
+                season_name=season_name,
+                provider_available_at_raw=None,
+                provider_updated_at_raw=_latest_match_update(group),
+                source_path=source_path,
+            )
+        )
+        existing_pairs.add(pair)
+    return tuple(rows)
+
+
+def _one_match_value(matches: list[Match], field_name: str) -> str | None:
+    values = {getattr(match, field_name) for match in matches}
+    if len(values) != 1:
+        pair = (matches[0].competition_id, matches[0].season_id)
+        raise CanonicalIngestionError(
+            f"match-list competition season {pair} has conflicting {field_name}"
+        )
+    value = values.pop()
+    if value is not None and not isinstance(value, str):
+        raise AssertionError(f"unexpected match field type: {field_name}")
+    return value
+
+
+def _required_match_value(matches: list[Match], field_name: str) -> str:
+    value = _one_match_value(matches, field_name)
+    if value is None:
+        raise AssertionError(f"required match field is missing: {field_name}")
+    return value
+
+
+def _match_gender(matches: list[Match]) -> str | None:
+    values = {
+        gender
+        for match in matches
+        for gender in (match.home_team.gender, match.away_team.gender)
+        if gender is not None
+    }
+    if len(values) > 1:
+        pair = (matches[0].competition_id, matches[0].season_id)
+        raise CanonicalIngestionError(
+            f"match-list competition season {pair} has conflicting team genders"
+        )
+    return values.pop() if values else None
+
+
+def _latest_match_update(matches: list[Match]) -> str | None:
+    values = [
+        match.provider_updated_at_raw
+        for match in matches
+        if match.provider_updated_at_raw is not None
+    ]
+    return max(values) if values else None
 
 
 def _parse_team(row: dict[str, object], side: str) -> Team:

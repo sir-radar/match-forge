@@ -5,11 +5,31 @@ import threading
 import uuid
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import psycopg
 import pytest
+from football.forecasting.artifacts import ModelArtifactPublisher
+from football.forecasting.contracts import (
+    BaselineForecastV1,
+    MatchResultProbabilitiesV1,
+    ModelFamily,
+    ModelFitSpecV1,
+    PointInTimeScopeV1,
+    forecast_payload_sha256,
+)
+from football.forecasting.evaluation import EvaluatedMatchResultV1, evaluate_match_results
+from football.forecasting.governance import (
+    EvaluationReportPublisher,
+    GovernancePublicationError,
+    ModelPromotionEventV1,
+    PostgresModelPromotionRegistry,
+    Sprint2EvaluationReportV1,
+)
+from football.forecasting.publication import BaselineForecastPublisher
 from football.temporal.repository import PointInTimeRepository
 from psycopg import Connection
 from psycopg.errors import (
@@ -625,6 +645,325 @@ def test_dataset_lineage_rejects_resource_from_another_snapshot(
                 """,
                 (dataset_id, first_snapshot, second_resource),
             )
+
+
+def test_model_artifact_publication_reconciles_identical_retry(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    _provider_id, snapshot_id, _resource_id = _source_lineage(connection, uuid.uuid4().hex)
+    now = datetime(2026, 8, 29, 16, 0, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        dataset_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
+        artifact_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO football.dataset_versions
+                (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                 schema_version, schema_sha256, normalizer_version, manifest_path,
+                 manifest_sha256, status, published_at)
+            VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                    'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+            """,
+            (
+                dataset_id,
+                snapshot_id,
+                dataset_id.hex * 2,
+                "2" * 64,
+                f"manifests/{dataset_id}.json",
+                "3" * 64,
+                now,
+            ),
+        )
+    fit_spec = ModelFitSpecV1(
+        model_family="DIXON_COLES_GOALS",
+        algorithm_version="dixon-coles-v1",
+        config_sha256="4" * 64,
+        scope=PointInTimeScopeV1(
+            dataset_version_id=dataset_id,
+            source_snapshot_id=snapshot_id,
+            feature_set_version="sprint2-features-v1",
+            football_cutoff=now,
+            knowledge_cutoff=now,
+            knowledge_mode="bitemporal",
+            quality_policy_sha256="5" * 64,
+            target_set_sha256="6" * 64,
+        ),
+        code_commit_sha="7" * 40,
+        dependency_lock_sha256="8" * 64,
+    )
+    publisher = ModelArtifactPublisher(connection, tmp_path)
+
+    first = publisher.publish(
+        model_artifact_id=artifact_id,
+        fit_spec=fit_spec,
+        state={"contract": "DixonColesModelStateV1", "home_advantage": 0.2},
+        created_at=now,
+    )
+    with connection.cursor() as cursor:
+        retry_artifact_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
+    retry = publisher.publish(
+        model_artifact_id=retry_artifact_id,
+        fit_spec=fit_spec,
+        state={"contract": "DixonColesModelStateV1", "home_advantage": 0.2},
+        created_at=now,
+    )
+
+    assert first.status == "published"
+    assert retry.status == "verified_existing"
+    assert retry.manifest.model_artifact_id == artifact_id
+    with connection.cursor() as cursor:
+        assert (
+            cursor.execute(
+                "SELECT count(*) FROM football.model_artifacts WHERE fit_spec_sha256 = %s",
+                (fit_spec.sha256,),
+            ).fetchone()[0]
+            == 1
+        )
+        assert (
+            cursor.execute(
+                "SELECT count(*) FROM football.model_artifact_files WHERE model_artifact_id = %s",
+                (artifact_id,),
+            ).fetchone()[0]
+            == 1
+        )
+        assert (
+            cursor.execute(
+                "SELECT count(*) FROM football.model_artifact_inputs WHERE model_artifact_id = %s",
+                (artifact_id,),
+            ).fetchone()[0]
+            == 1
+        )
+
+
+def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    _provider_id, snapshot_id, _resource_id = _source_lineage(connection, uuid.uuid4().hex)
+    now = datetime(2026, 8, 30, 12, 0, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        dataset_id, first_artifact_id, second_artifact_id, forecast_id = cursor.execute(
+            "SELECT uuidv7(), uuidv7(), uuidv7(), uuidv7()"
+        ).fetchone()
+        competition_id = cursor.execute(
+            "INSERT INTO football.competitions DEFAULT VALUES RETURNING id"
+        ).fetchone()[0]
+        season_id = cursor.execute(
+            "INSERT INTO football.seasons (competition_id) VALUES (%s) RETURNING id",
+            (competition_id,),
+        ).fetchone()[0]
+        match_id = cursor.execute(
+            """
+            INSERT INTO football.matches (competition_id, season_id)
+            VALUES (%s, %s) RETURNING id
+            """,
+            (competition_id, season_id),
+        ).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO football.dataset_versions
+                (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                 schema_version, schema_sha256, normalizer_version, manifest_path,
+                 manifest_sha256, status, published_at)
+            VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                    'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+            """,
+            (
+                dataset_id,
+                snapshot_id,
+                dataset_id.hex * 2,
+                "9" * 64,
+                f"manifests/{dataset_id}.json",
+                "a" * 64,
+                now,
+            ),
+        )
+    scope = PointInTimeScopeV1(
+        dataset_version_id=dataset_id,
+        source_snapshot_id=snapshot_id,
+        feature_set_version="sprint2-features-v1",
+        football_cutoff=now,
+        knowledge_cutoff=now,
+        knowledge_mode="bitemporal",
+        quality_policy_sha256="b" * 64,
+        target_set_sha256="c" * 64,
+    )
+    model_publisher = ModelArtifactPublisher(connection, tmp_path)
+    model_specs: tuple[tuple[uuid.UUID, ModelFamily, str], ...] = (
+        (first_artifact_id, "DIXON_COLES_GOALS", "d" * 64),
+        (second_artifact_id, "TEAM_ELO", "e" * 64),
+    )
+    for artifact_id, model_family, config_sha256 in model_specs:
+        model_publisher.publish(
+            model_artifact_id=artifact_id,
+            fit_spec=ModelFitSpecV1(
+                model_family=model_family,
+                algorithm_version="baseline-v1",
+                config_sha256=config_sha256,
+                scope=scope,
+                code_commit_sha="f" * 40,
+                dependency_lock_sha256="1" * 64,
+            ),
+            state={"contract": "TestModelStateV1", "coefficient": 0.2},
+            created_at=now,
+        )
+    probabilities = MatchResultProbabilitiesV1(home=0.45, draw=0.3, away=0.25)
+    forecast = BaselineForecastV1(
+        forecast_id=forecast_id,
+        match_id=match_id,
+        prediction_cutoff=now,
+        scope=scope,
+        probability_variant="MODEL_RAW",
+        model_artifact_ids=(first_artifact_id, second_artifact_id),
+        forecast_context_sha256="d" * 64,
+        payload_sha256=forecast_payload_sha256(probabilities),
+        match_result=probabilities,
+    )
+    publisher = BaselineForecastPublisher(connection, tmp_path)
+
+    first = publisher.publish(forecast, now)
+    with connection.cursor() as cursor:
+        retry_forecast_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
+    retry = publisher.publish(replace(forecast, forecast_id=retry_forecast_id), now)
+
+    assert first.status == "published"
+    assert retry.status == "verified_existing"
+    assert retry.forecast.forecast_id == forecast_id
+    with connection.cursor() as cursor:
+        assert (
+            cursor.execute(
+                "SELECT count(*) FROM football.baseline_forecasts WHERE id = %s",
+                (forecast_id,),
+            ).fetchone()[0]
+            == 1
+        )
+        roles = cursor.execute(
+            """
+            SELECT artifact_role FROM football.forecast_artifacts
+            WHERE forecast_id = %s ORDER BY model_artifact_id
+            """,
+            (forecast_id,),
+        ).fetchall()
+    assert roles == [("PRIMARY",), ("PRIMARY",)]
+
+
+def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    _provider_id, snapshot_id, _resource_id = _source_lineage(connection, uuid.uuid4().hex)
+    now = datetime(2026, 8, 30, 13, 0, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        dataset_id, artifact_id, evaluation_id, promotion_id = cursor.execute(
+            "SELECT uuidv7(), uuidv7(), uuidv7(), uuidv7()"
+        ).fetchone()
+        cursor.execute(
+            """
+            INSERT INTO football.dataset_versions
+                (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                 schema_version, schema_sha256, normalizer_version, manifest_path,
+                 manifest_sha256, status, published_at)
+            VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                    'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+            """,
+            (
+                dataset_id,
+                snapshot_id,
+                dataset_id.hex * 2,
+                "2" * 64,
+                f"manifests/{dataset_id}.json",
+                "3" * 64,
+                now,
+            ),
+        )
+    scope = PointInTimeScopeV1(
+        dataset_version_id=dataset_id,
+        source_snapshot_id=snapshot_id,
+        feature_set_version="sprint2-features-v1",
+        football_cutoff=now,
+        knowledge_cutoff=now,
+        knowledge_mode="bitemporal",
+        quality_policy_sha256="4" * 64,
+        target_set_sha256="5" * 64,
+    )
+    ModelArtifactPublisher(connection, tmp_path).publish(
+        model_artifact_id=artifact_id,
+        fit_spec=ModelFitSpecV1(
+            model_family="DIXON_COLES_GOALS",
+            algorithm_version="dixon-coles-v1",
+            config_sha256="6" * 64,
+            scope=scope,
+            code_commit_sha="7" * 40,
+            dependency_lock_sha256="8" * 64,
+        ),
+        state={"contract": "DixonColesModelStateV1", "home_advantage": 0.2},
+        created_at=now,
+    )
+    probabilities = (
+        MatchResultProbabilitiesV1(0.7, 0.2, 0.1),
+        MatchResultProbabilitiesV1(0.2, 0.6, 0.2),
+        MatchResultProbabilitiesV1(0.1, 0.2, 0.7),
+    )
+    outcomes = ("HOME", "DRAW", "AWAY")
+    metrics = evaluate_match_results(
+        tuple(
+            EvaluatedMatchResultV1(
+                kickoff_at=now + timedelta(days=index, hours=1),
+                prediction_cutoff=now + timedelta(days=index),
+                outcome_known_at=now + timedelta(days=index, hours=3),
+                probabilities=probability,
+                outcome=outcome,
+            )
+            for index, (probability, outcome) in enumerate(
+                zip(probabilities, outcomes, strict=True)
+            )
+        )
+    )
+    report = Sprint2EvaluationReportV1(
+        evaluation_run_id=evaluation_id,
+        policy_version="sprint2-gate-v1",
+        scope=scope,
+        status="PASS",
+        completed_at=now,
+        raw_match_result_metrics=metrics,
+    )
+    report_publisher = EvaluationReportPublisher(connection, tmp_path)
+
+    first_report = report_publisher.publish(report)
+    retry_report = report_publisher.publish(report)
+    event = ModelPromotionEventV1(
+        promotion_event_id=promotion_id,
+        model_artifact_id=artifact_id,
+        evaluation_run_id=evaluation_id,
+        role="match_result/baseline",
+        designation="BASELINE_APPROVED",
+        recorded_at=now,
+    )
+    promotion_registry = PostgresModelPromotionRegistry(connection)
+    first_event = promotion_registry.record(event)
+    retry_event = promotion_registry.record(event)
+
+    assert first_report.status == "published"
+    assert retry_report.status == "verified_existing"
+    assert first_event.status == "published"
+    assert retry_event.status == "verified_existing"
+    with connection.cursor() as cursor:
+        assert (
+            cursor.execute(
+                "SELECT count(*) FROM football.model_promotion_events WHERE id = %s",
+                (promotion_id,),
+            ).fetchone()[0]
+            == 1
+        )
+    with pytest.raises(GovernancePublicationError, match="calibration artifact"):
+        promotion_registry.record(
+            ModelPromotionEventV1(
+                promotion_event_id=uuid.uuid4(),
+                model_artifact_id=artifact_id,
+                evaluation_run_id=evaluation_id,
+                role="match_result/calibrator",
+                designation="CALIBRATION_APPROVED",
+                recorded_at=now + timedelta(seconds=1),
+            )
+        )
 
 
 def test_validation_findings_reject_cross_dataset_and_snapshot_lineage(

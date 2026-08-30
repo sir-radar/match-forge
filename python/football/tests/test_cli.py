@@ -17,10 +17,12 @@ def test_parser_accepts_required_sprint1_commands() -> None:
 
     competitions = parser.parse_args(["ingest", "competitions"])
     season = parser.parse_args(["ingest", "season", "106"])
+    explicit_season = parser.parse_args(["ingest", "season", "27", "--competition-id", "2"])
     validation = parser.parse_args(["validate", "season", "106"])
 
     assert (competitions.command, competitions.scope) == ("ingest", "competitions")
     assert (season.command, season.scope, season.season_id) == ("ingest", "season", 106)
+    assert explicit_season.competition_id == 2
     assert (validation.command, validation.scope, validation.season_id) == (
         "validate",
         "season",

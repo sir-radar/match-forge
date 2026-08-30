@@ -225,9 +225,9 @@ def _acquire_bundle(
     nonmonotonic_position: bool = False,
     home_score: int = 3,
     away_score: int = 3,
+    include_catalog: bool = True,
 ) -> AcquisitionResult:
     payloads = {
-        "data/competitions.json": _json_bytes(_competition_payload()),
         "data/matches/43/106.json": _json_bytes(
             _match_payload(
                 home_name=home_name,
@@ -244,6 +244,8 @@ def _acquire_bundle(
             )
         ),
     }
+    if include_catalog:
+        payloads["data/competitions.json"] = _json_bytes(_competition_payload())
     if events is not None:
         payloads["data/events/3869685.json"] = _json_bytes(events)
     provider = FixtureProvider(source_git_sha, payloads)
@@ -389,6 +391,39 @@ def test_registers_source_and_ingests_canonical_hierarchy_idempotently(
             """,
             (provider_id,),
         ).fetchone() == (None, "2024-12-16T10:15:11.055845")
+
+
+def test_match_list_supplies_catalog_missing_competition_season_with_lineage(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="6" * 40,
+        acquired_at=datetime(2026, 8, 30, 10, 0, tzinfo=UTC),
+        include_catalog=False,
+    )
+
+    result = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+
+    assert result.competitions_seen == 1
+    assert result.seasons_seen == 1
+    with connection.cursor() as cursor:
+        row = cursor.execute(
+            """
+            SELECT competition.provider_competition_id,
+                   season.provider_season_id,
+                   resource.provider_path
+            FROM football.competition_observations AS competition
+            JOIN football.season_observations AS season
+              ON season.provider_id = competition.provider_id
+             AND season.provider_competition_id = competition.provider_competition_id
+            JOIN football.source_resources AS resource
+              ON resource.id = competition.source_resource_id
+            WHERE competition.provider_competition_id = '43'
+              AND season.provider_season_id = '106'
+            """
+        ).fetchone()
+    assert row == ("43", "106", "data/matches/43/106.json")
 
 
 def test_new_snapshot_closes_current_observations_and_preserves_history(
