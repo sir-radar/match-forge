@@ -44,6 +44,7 @@ exceeded or too few metrics improve.
 ## Current evidence boundary
 
 Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
-exclusion, metric mathematics, immutable reporting, and retry behavior. No repository command has
-yet executed full model refits and forecasts across a production-sized canonical historical
-dataset. See [Sprint 2 phase gate](sprint2-phase-gate.md).
+exclusion, metric mathematics, immutable reporting, and retry behavior. The approved corpus now has
+380 registered, completed, and scored targets through exact immutable lifecycle claims. No
+repository command has yet executed full model refits and forecasts across that corpus. See
+[Sprint 2 phase gate](sprint2-phase-gate.md).

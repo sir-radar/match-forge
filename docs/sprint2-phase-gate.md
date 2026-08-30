@@ -14,6 +14,8 @@ Date: 2026-08-30
 - Match-result proper scores, reliability analysis, Platt calibration, and isotonic calibration.
 - Immutable evaluation reports and governed promotion events.
 - Operator entry points: `football evaluate sprint2` and `make sprint2-evaluate`.
+- Versioned immutable lifecycle claims with exact score, event-resource, dataset-file, and
+  validation lineage.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
@@ -21,15 +23,15 @@ Date: 2026-08-30
 `make integration` passed on 2026-08-30:
 
 - Fresh temporary PostgreSQL database created.
-- All migrations through `202608301530` applied successfully.
+- All migrations through `202608302000` applied successfully.
 - Second migration pass reported no pending migrations.
-- 41 integration tests passed.
+- 44 integration tests passed.
 - PostgreSQL 18.6, Redis 8.10, and Go operational checks passed.
 
 Final `make check` passed on 2026-08-30:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 69 source files.
+- Strict MyPy passed for 70 source files.
 - Static health analysis reported 0 issues.
 - 125 Python tests passed.
 - Rust formatting, lint, test, and build passed.
@@ -49,15 +51,15 @@ evidence. No model artifact is approved by this gate.
 
 ## Executed phase gate
 
-`make sprint2-evaluate` ran after corrected validator v3 evidence was registered and produced
-evaluation run `8460ee50-a8a6-5047-9640-0b7d4e7bf5e3`.
+`make sprint2-evaluate` ran after immutable lifecycle claims were registered and produced evaluation
+run `cdd5cbd8-c38f-5b7f-a380-439151603f51`.
 
 ```text
 Status: FAIL
-Stage: coverage
+Stage: walk-forward-execution
 Registered matches: 380
-Completed matches: 0
-Scored targets: 0
+Completed matches: 380
+Scored targets: 380
 Corner-labelled targets: 0
 ```
 
@@ -89,11 +91,18 @@ SB_NONMONOTONIC_POSITION_STINT:    74
 SB_UNKNOWN_EVENT_TYPE:            526
 ```
 
-All 380 canonical matches and their scores are registered. Their football lifecycle remains
-`unknown`, however, because StatsBomb's `match_status=available` is a data-availability status rather
-than an approved mapping to `completed`. Gate run `8460ee50-a8a6-5047-9640-0b7d4e7bf5e3`
-therefore remains `FAIL` at coverage with 0 completed matches and 0 scored targets. No walk-forward
-fit or score ran. Scope and metric fields remain `null`, preserving the distinction between missing
+StatsBomb's `match_status=available` remains a data-availability status and is not mapped to football
+completion. Instead, `football resolve sprint2-lifecycle` published 380 claims under
+`statsbomb-terminal-event-score-v1`. Each claim binds an exact scored match observation, event
+resource, normalized dataset file, validator v3 run, and regulation-time terminal-event evidence.
+The raw provider observations remain `lifecycle = 'unknown'`.
+
+All 380 claims have exactly two period-2 `Half End` events, maximum period 2, distinct match
+observations, distinct event resources, distinct dataset files, and deterministic evidence hashes.
+A repeated publication returned `verified_existing` for all 380 claims. Gate run
+`cdd5cbd8-c38f-5b7f-a380-439151603f51` therefore passed coverage and remains `FAIL` at
+`walk-forward-execution`: no complete retained chronological evaluation exists. No walk-forward fit
+or score ran. Scope and metric fields remain `null`, preserving the distinction between missing
 evidence and measured zero performance. The retained JSON report validates against
 `Sprint2EvaluationReportV1`.
 
@@ -112,12 +121,12 @@ The command retains:
 
 Underlying CLI exit code `7` means `FAIL`; Make reports a failed target. The report identifies the
 first blocking stage. A missing approved corpus is `corpus-resolution`; insufficient scored matches
-is `coverage`. No failed preflight emits placeholder model metrics.
+is `coverage`; missing retained chronological evidence is `walk-forward-execution`. No failed
+preflight emits placeholder model metrics.
 
 ## Required next gate action
 
-Resolve and version a trustworthy source fact for football lifecycle `completed` without treating
-StatsBomb data-availability status as football lifecycle. Then rerun `make sprint2-evaluate`. The
-gate must next complete chronological model fitting, forecast-before-outcome persistence, proper
-scoring, calibration analysis, subgroup regressions, and promotion review. No later phase is
-authorized while status remains `FAIL`.
+Run the complete retained chronological evaluation: repeated model fitting, forecast-before-outcome
+persistence, proper scoring, calibration analysis, subgroup regressions, and promotion review. Stop
+for review after that gate evidence is produced. No later phase is authorized while status remains
+`FAIL`.

@@ -16,6 +16,9 @@ import pyarrow.parquet as pq
 import pytest
 from football.contracts import SourceResource, SourceSnapshot
 from football.datasets import DatasetPublicationError, StatsBombEventDatasetPublisher
+from football.forecasting.gate import Sprint2GateService
+from football.forecasting.governance import EvaluationCorpusV1
+from football.forecasting.lifecycle import LifecycleClaimError, Sprint2LifecycleClaimPublisher
 from football.ingestion import (
     AcquisitionResult,
     CanonicalIngestionError,
@@ -211,6 +214,35 @@ def _event_payload(*, second_type: str = "Pass") -> list[dict[str, object]]:
             "team": {"id": 771, "name": "France"},
         },
     ]
+
+
+def _terminal_event_payload() -> list[dict[str, object]]:
+    events = _event_payload()
+    events.extend(
+        (
+            {
+                "id": "33333333-3333-4333-8333-333333333333",
+                "index": 3,
+                "period": 2,
+                "timestamp": "00:50:00.000",
+                "minute": 95,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 779, "name": "Argentina"},
+            },
+            {
+                "id": "44444444-4444-4444-8444-444444444444",
+                "index": 4,
+                "period": 2,
+                "timestamp": "00:50:00.000",
+                "minute": 95,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 771, "name": "France"},
+            },
+        )
+    )
+    return events
 
 
 def _acquire_bundle(
@@ -1169,6 +1201,156 @@ def test_validates_normalized_event_dataset_and_registers_idempotent_run(
         datetime(2026, 8, 29, 9, 1, tzinfo=UTC),
     )
     assert counts == (1, 0)
+
+
+def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    source_git_sha = "c" * 40
+    metadata = _acquire_bundle(
+        tmp_path,
+        source_git_sha=source_git_sha,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=None,
+        home_score=0,
+        away_score=0,
+    )
+    events = _terminal_event_payload()
+    detail_payloads = {
+        "data/events/3869685.json": _json_bytes(events),
+        "data/lineups/3869685.json": _json_bytes(_lineup_payload()),
+    }
+    details = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2026, 8, 29, 9, 0, tzinfo=UTC),
+    ).acquire(
+        FixtureProvider(source_git_sha, detail_payloads),
+        tuple(SourceResource(path) for path in detail_payloads),
+    )
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+    metadata_result = ingestor.ingest(metadata)
+    ingestor.ingest(details)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(details)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+        clock=lambda: datetime(2026, 8, 29, 10, 0, tzinfo=UTC),
+    ).validate(dataset.dataset_version_id)
+    corpus = EvaluationCorpusV1(
+        provider_competition_id=43,
+        provider_season_id=106,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=1,
+    )
+    publisher = Sprint2LifecycleClaimPublisher(connection)
+
+    first = publisher.publish(corpus)
+    second = publisher.publish(corpus)
+
+    assert first.claims == 1
+    assert first.status == "published"
+    assert second.claims == 1
+    assert second.status == "verified_existing"
+    assert second.dataset_version_id == first.dataset_version_id
+    assert second.validation_run_id == first.validation_run_id
+    with connection.cursor() as cursor:
+        claim = cursor.execute(
+            """
+            SELECT claim.lifecycle, claim.claim_version, claim.terminal_period,
+                   claim.terminal_event_count, observation.lifecycle,
+                   observation.source_snapshot_id, claim.source_snapshot_id,
+                   claim.dataset_version_id, claim.validation_run_id
+            FROM football.match_lifecycle_claims AS claim
+            JOIN football.match_observations AS observation
+              ON observation.id = claim.match_observation_id
+            """
+        ).fetchone()
+
+    assert claim == (
+        "completed",
+        "statsbomb-terminal-event-score-v1",
+        2,
+        2,
+        "unknown",
+        metadata_result.source_snapshot_id,
+        dataset.source_snapshot_id,
+        dataset.dataset_version_id,
+        validation.validation_run_id,
+    )
+    gate = Sprint2GateService(connection, tmp_path / "gate").evaluate(corpus)
+    assert gate.stage == "walk-forward-execution"
+
+
+def test_rejects_completed_claim_without_terminal_event_evidence(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="d" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+    assert validation.status == "passed"
+    corpus = EvaluationCorpusV1(
+        provider_competition_id=43,
+        provider_season_id=106,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=1,
+    )
+
+    with pytest.raises(LifecycleClaimError, match="lacks exact regulation terminal evidence"):
+        Sprint2LifecycleClaimPublisher(connection).publish(corpus)
+
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT count(*) FROM football.match_lifecycle_claims"
+        ).fetchone() == (0,)
+
+
+def test_rejects_completed_claim_from_quarantined_score_evidence(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="e" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_terminal_event_payload(),
+        home_score=1,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+    assert validation.status == "quarantined"
+    corpus = EvaluationCorpusV1(
+        provider_competition_id=43,
+        provider_season_id=106,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=1,
+    )
+
+    with pytest.raises(LifecycleClaimError, match="lacks passed or warning validator v3"):
+        Sprint2LifecycleClaimPublisher(connection).publish(corpus)
 
 
 def test_registers_policy_classified_dataset_findings(

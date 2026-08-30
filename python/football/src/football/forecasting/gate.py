@@ -17,6 +17,7 @@ from football.forecasting.governance import (
     ImmutableEvaluationReportStore,
     Sprint2EvaluationReportV1,
 )
+from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
 
 _EVALUATION_NAMESPACE = UUID("4ae2a83b-7efb-4c2c-98bf-70e818c6f6d1")
 
@@ -134,20 +135,23 @@ class Sprint2GateService:
                 SELECT
                     count(DISTINCT match.id),
                     count(DISTINCT match.id) FILTER (
-                        WHERE observation.lifecycle = 'completed'
+                        WHERE claim.id IS NOT NULL
                     ),
                     count(DISTINCT match.id) FILTER (
-                        WHERE observation.lifecycle = 'completed'
+                        WHERE claim.id IS NOT NULL
                           AND observation.home_score IS NOT NULL
                           AND observation.away_score IS NOT NULL
                     )
                 FROM football.matches AS match
+                LEFT JOIN football.match_lifecycle_claims AS claim
+                  ON claim.match_id = match.id
+                 AND claim.claim_version = %s
+                 AND claim.lifecycle = 'completed'
                 LEFT JOIN football.match_observations AS observation
-                  ON observation.match_id = match.id
-                 AND observation.known_to IS NULL
+                  ON observation.id = claim.match_observation_id
                 WHERE match.season_id = %s
                 """,
-                (season_id,),
+                (LIFECYCLE_CLAIM_VERSION, season_id),
             ).fetchone()
         if row is None:
             return EvaluationCoverageV1()
