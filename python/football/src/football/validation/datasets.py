@@ -31,7 +31,7 @@ from football.validation.statsbomb import (
     validate_statsbomb_dataset,
 )
 
-VALIDATOR_VERSION = "statsbomb-dataset-validator-v1"
+VALIDATOR_VERSION = "statsbomb-dataset-validator-v3"
 
 _VALIDATION_NAMESPACE = UUID("6f57ba57-984c-4c42-877d-d355561742ea")
 _DATASET_PATH = re.compile(
@@ -96,7 +96,9 @@ class StatsBombDatasetValidator:
         _require_aware_time(started_at)
         with self._connection.transaction(), self._connection.cursor() as cursor:
             dataset = _resolve_dataset(cursor, dataset_version_id)
+            source_findings = _player_fact_findings(cursor, dataset, self._policy)
         inputs, findings = self._read_files(dataset)
+        findings.extend(source_findings)
         findings.extend(validate_statsbomb_dataset(inputs, self._policy))
         ordered = tuple(
             sorted(
@@ -191,6 +193,64 @@ class StatsBombDatasetValidator:
                 )
             )
         return tuple(inputs), findings
+
+
+def _player_fact_findings(
+    cursor: Cursor[Any], dataset: _Dataset, policy: QualityPolicy
+) -> list[ValidationFinding]:
+    rows = cursor.execute(
+        """
+        SELECT fact.provider_player_id, fact.full_name, fact.nickname,
+               fact.country_provider_id, fact.nickname_observed,
+               fact.country_observed, fact.observation_kind,
+               fact.source_resource_id, resource.provider_path
+        FROM football.player_source_facts AS fact
+        JOIN football.source_resources AS resource
+          ON resource.id = fact.source_resource_id
+         AND resource.source_snapshot_id = fact.source_snapshot_id
+        WHERE fact.source_snapshot_id = %s
+        ORDER BY fact.provider_player_id, fact.fact_sha256
+        """,
+        (dataset.source_snapshot_id,),
+    ).fetchall()
+    players: dict[str, list[tuple[Any, ...]]] = defaultdict(list)
+    for row in rows:
+        players[str(row[0])].append(row)
+    findings: list[ValidationFinding] = []
+    fields = (
+        ("full_name", 1, None),
+        ("nickname", 2, 4),
+        ("country_provider_id", 3, 5),
+    )
+    for provider_player_id, facts in sorted(players.items()):
+        for field_name, value_index, observed_index in fields:
+            observed = [
+                fact for fact in facts if observed_index is None or bool(fact[observed_index])
+            ]
+            if len({fact[value_index] for fact in observed}) <= 1:
+                continue
+            variants = [
+                {
+                    "value": fact[value_index],
+                    "observation_kind": str(fact[6]),
+                    "source_resource_id": str(fact[7]),
+                    "provider_path": str(fact[8]),
+                }
+                for fact in observed
+            ]
+            findings.append(
+                make_finding(
+                    policy,
+                    "SB_CONFLICTING_PLAYER_FACT",
+                    "dataset",
+                    f"player {provider_player_id} has conflicting {field_name} source facts; "
+                    "canonical consensus is null",
+                    {"field": field_name, "variants": variants},
+                    provider_entity_id=provider_player_id,
+                    field_path=f"player.{field_name}",
+                )
+            )
+    return findings
 
 
 def _resolve_dataset(cursor: Cursor[Any], dataset_version_id: UUID) -> _Dataset:

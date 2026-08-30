@@ -26,13 +26,20 @@ competitions → seasons → teams → matches → match teams
                          ordered event catalogue
 ```
 
-Canonical UUIDs stay provider-neutral. Provider identifiers live in mapping and observation tables. Advisory transaction locks serialize first-seen identity publication for each provider entity. Later snapshots reuse mappings, advance `last_seen_at`, close the previous half-open knowledge interval, and publish a new source-linked observation.
+Canonical UUIDs stay provider-neutral. Provider identifiers live in mapping and observation tables. One provider-scoped advisory transaction lock serializes canonical publication without consuming one PostgreSQL lock per event. Event resources resolve referenced entities once, stage each match through PostgreSQL `COPY`, and publish mappings and observations with set-based statements. Later snapshots reuse mappings, advance `last_seen_at`, close the previous half-open knowledge interval, and publish a new source-linked observation.
 
 Provider timestamps are parsed into `TIMESTAMPTZ` only when the source includes a timezone. Raw text is always retained when present; timezone-naive StatsBomb timestamps remain raw-only.
 
 ## Validation behavior
 
-Required identifiers, JSON shapes, dates, local times, scores, lineup membership, jersey numbers, cards, event UUIDs, event clocks, periods, and source indexes are validated before publication. A lineup must contain exactly the match's two current teams. Event and possession teams must belong to the event's match. Duplicate players, event IDs, event resources, or per-match event indexes and conflicting same-snapshot facts fail the whole ingestion.
+Required identifiers, JSON shapes, dates, local times, scores, lineup membership, jersey numbers, cards, event UUIDs, event clocks, periods, and source indexes are validated before publication. A lineup must contain exactly the match's two current teams. Event and possession teams must belong to the event's match. Duplicate players, event IDs, event resources, per-match event indexes, and conflicting same-snapshot event facts fail the whole ingestion.
+
+Contradictory player metadata is preserved differently because the pinned source can legitimately
+contain multiple variants for one provider player. Every lineup and event variant is registered in
+`player_source_facts` with exact snapshot and resource lineage. Canonical player fields contain only
+single-valued consensus; a disputed field is `NULL` and `fact_status` is `conflicting`. Validation
+emits `SB_CONFLICTING_PLAYER_FACT` with all variants instead of selecting a winner or rewriting raw
+provider bytes.
 
 StatsBomb position `from`/`to` values are preserved as provider observations. Real source rows can be non-monotonic across periods and clocks, so ingestion validates presence, shape, positivity, and paired nullability without inventing corrected intervals. Raw bytes remain available for the later data-quality and quarantine phase.
 

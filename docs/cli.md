@@ -9,6 +9,7 @@ football ingest competitions
 football ingest season <id>
 football ingest season <id> --competition-id <id>
 football validate season <id>
+football validate season <id> --competition-id <id>
 football evaluate sprint2
 ```
 
@@ -27,7 +28,10 @@ canonical ingestion derives the missing competition-season observation only from
 metadata in that preserved match-list resource and records the resource as lineage. It does not
 modify provider bytes or infer a pair from the non-unique season ID alone.
 
-Season validation resolves exactly one canonical StatsBomb season and validates its latest published normalized event dataset. `passed` and `warnings` return success. `quarantined` and `failed` remain registered results but return nonzero exit codes.
+Season validation resolves exactly one canonical StatsBomb competition-season pair and validates
+its latest published normalized event dataset. Use `--competition-id` when the provider season ID
+is ambiguous. `passed` and `warnings` return success. `quarantined` and `failed` remain registered
+results but return nonzero exit codes.
 
 Both ingestion commands publish immutable JSON and Markdown reports and print their paths. See [Ingestion reports](ingestion-reports.md).
 

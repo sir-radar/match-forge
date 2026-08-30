@@ -21,9 +21,9 @@ Date: 2026-08-30
 `make integration` passed on 2026-08-30:
 
 - Fresh temporary PostgreSQL database created.
-- All migrations through `202608300200` applied successfully.
+- All migrations through `202608301530` applied successfully.
 - Second migration pass reported no pending migrations.
-- 40 integration tests passed.
+- 41 integration tests passed.
 - PostgreSQL 18.6, Redis 8.10, and Go operational checks passed.
 
 Final `make check` passed on 2026-08-30:
@@ -31,7 +31,7 @@ Final `make check` passed on 2026-08-30:
 - Ruff formatting and lint passed.
 - Strict MyPy passed for 69 source files.
 - Static health analysis reported 0 issues.
-- 124 Python tests passed.
+- 125 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -49,8 +49,8 @@ evidence. No model artifact is approved by this gate.
 
 ## Executed phase gate
 
-`make sprint2-evaluate` ran after the approved match corpus was registered and produced evaluation
-run `304bde88-6bfe-56bd-a051-0fc3d145a979`.
+`make sprint2-evaluate` ran after corrected validator v3 evidence was registered and produced
+evaluation run `8460ee50-a8a6-5047-9640-0b7d4e7bf5e3`.
 
 ```text
 Status: FAIL
@@ -64,24 +64,37 @@ Corner-labelled targets: 0
 The pinned StatsBomb revision
 `b0bc9f22dd77c206ddedc1d742893b3bbe64baec` supplied the EPL 2015/16 match list at
 `data/matches/2/27.json`; the catalog omits that pair, so ingestion used the explicit
-`--competition-id 2` contract and preserved match-list lineage. All 380 canonical matches and their
-scores are registered. Their football lifecycle remains `unknown`, however, because StatsBomb's
-`match_status=available` is a data-availability status rather than an approved mapping to
-`completed`. The gate therefore correctly excludes all 380 from scored evaluation coverage.
-
-Full detail acquisition completed with 762 immutable raw resources and three source manifests, but
-canonical detail ingestion stopped before event publication at:
+`--competition-id 2` contract and preserved match-list lineage. Full detail ingestion completed for
+762 immutable resources and published:
 
 ```text
-error: player 3649 has conflicting source facts
+Source snapshot: 01a0534c-cb84-702b-8249-a0a572a2f280
+Dataset version: d62b97d6-f39b-5f14-9773-61f57f7b677b
+Matches: 380
+Event observations: 1,313,773
 ```
 
-The source contains contradictory same-revision player metadata. Examples include Karl Darlow
-country IDs `68` (England) and `249` (Wales), Demarai Gray country IDs `68` (England) and `113`
-(Jamaica), and differing player-name spellings. The canonical writer rejects those conflicts rather
-than silently selecting or repairing an authoritative fact. No partial event dataset was published.
-No walk-forward fit or score ran. Scope and metric fields remain `null`, preserving the distinction
-between missing evidence and measured zero performance. The retained JSON report validates against
+Contradictory same-revision player facts no longer force an arbitrary winner. Exact lineup and event
+variants retain snapshot/resource lineage in `player_source_facts`; disputed canonical fields are
+null with `fact_status = 'conflicting'`. Validator v3 also corrected StatsBomb paired own-goal
+semantics by counting `Own Goal For` once and not double-counting its paired `Own Goal Against`
+event. Validation run `0a470aa5-5627-5ddb-ac35-ef650398422f` completed with `warnings` and 749
+findings:
+
+```text
+SB_CONFLICTING_PLAYER_FACT:        7
+SB_EVENT_LOCATION_OUT_OF_BOUNDS:   3
+SB_IMPOSSIBLE_EVENT_TIMESTAMP:    139
+SB_NONMONOTONIC_POSITION_STINT:    74
+SB_UNKNOWN_EVENT_TYPE:            526
+```
+
+All 380 canonical matches and their scores are registered. Their football lifecycle remains
+`unknown`, however, because StatsBomb's `match_status=available` is a data-availability status rather
+than an approved mapping to `completed`. Gate run `8460ee50-a8a6-5047-9640-0b7d4e7bf5e3`
+therefore remains `FAIL` at coverage with 0 completed matches and 0 scored targets. No walk-forward
+fit or score ran. Scope and metric fields remain `null`, preserving the distinction between missing
+evidence and measured zero performance. The retained JSON report validates against
 `Sprint2EvaluationReportV1`.
 
 ## Operator command
@@ -103,14 +116,8 @@ is `coverage`. No failed preflight emits placeholder model metrics.
 
 ## Required next gate action
 
-Resolve and version two data-contract decisions before another authoritative run:
-
-1. map a trustworthy source fact to football lifecycle `completed` without treating
-   StatsBomb data-availability status as football lifecycle; and
-2. define explicit, lineage-preserving handling for contradictory player facts within one pinned
-   source revision without silently choosing a winner.
-
-Then publish the approved event dataset and rerun `make sprint2-evaluate`. The gate must next
-complete chronological model fitting, forecast-before-outcome persistence, proper scoring,
-calibration analysis, subgroup regressions, and promotion review. No later phase is authorized
-while status remains `FAIL`.
+Resolve and version a trustworthy source fact for football lifecycle `completed` without treating
+StatsBomb data-availability status as football lifecycle. Then rerun `make sprint2-evaluate`. The
+gate must next complete chronological model fitting, forecast-before-outcome persistence, proper
+scoring, calibration analysis, subgroup regressions, and promotion review. No later phase is
+authorized while status remains `FAIL`.
