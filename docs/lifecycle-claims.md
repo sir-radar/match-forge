@@ -47,3 +47,6 @@ whole transaction.
 
 The Sprint 2 gate counts only `completed` claims with the approved claim version. It does not count
 raw `available` provider statuses.
+
+Lifecycle evidence does not invent timezone semantics. UTC chronology is a separate governed
+boundary documented in [Match kickoff claims](kickoff-claims.md).

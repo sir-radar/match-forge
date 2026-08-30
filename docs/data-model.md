@@ -84,6 +84,12 @@ Each claim binds an exact match observation, dataset version/file/input resource
 terminal-event evidence, deterministic checksum, and knowledge time. Composite foreign keys prevent
 cross-match, cross-dataset, and cross-snapshot lineage. See [Match lifecycle claims](lifecycle-claims.md).
 
+`match_kickoff_claims` records derived UTC chronology separately from timezone-naive provider
+observations. Each row binds exact lifecycle, match, and competition evidence; local date/time;
+timezone policy and TZif checksum; UTC kickoff; deterministic identity; and knowledge time. Raw
+`match_observations.kickoff_at` remains nullable and unchanged. See
+[Match kickoff claims](kickoff-claims.md).
+
 ## Migration policy
 
 Production migrations are forward-only. The initial canonical migration has no destructive Down section. Corrections require a new migration.

@@ -12,6 +12,11 @@ from football.forecasting.dataset import (
     ForecastMatchContextV1,
     PointInTimeMatchDatasetProvider,
 )
+from football.forecasting.kickoff import (
+    KICKOFF_CLAIM_VERSION,
+    KICKOFF_TIMEZONE,
+    TZDATA_VERSION,
+)
 from psycopg import Connection
 
 DATASET = UUID(int=1)
@@ -69,9 +74,19 @@ def test_completed_history_uses_strict_football_cutoff_and_exact_lineage() -> No
 
     assert result == (match,)
     query = connection.used[1]
-    assert "observation.kickoff_at < %s" in query.statement
-    assert "observation.lifecycle = 'completed'" in query.statement
-    assert query.parameters == (COMPETITION, SEASON, SNAPSHOT, CUTOFF, CUTOFF)
+    assert "resolved.kickoff_at < %s" in query.statement
+    assert "lifecycle.dataset_version_id = %s" in query.statement
+    assert "kickoff.known_from <= %s" in query.statement
+    assert query.parameters == (
+        KICKOFF_CLAIM_VERSION,
+        KICKOFF_TIMEZONE,
+        TZDATA_VERSION,
+        CUTOFF,
+        DATASET,
+        COMPETITION,
+        SEASON,
+        CUTOFF,
+    )
 
 
 def test_forecast_batch_is_label_free_and_groups_same_time_targets() -> None:
@@ -86,7 +101,8 @@ def test_forecast_batch_is_label_free_and_groups_same_time_targets() -> None:
     select_clause = target_query.split("FROM football.matches", maxsplit=1)[0]
     assert "home_score" not in select_clause
     assert "away_score" not in select_clause
-    assert "observation.kickoff_at = %s" in target_query
+    assert "resolved.kickoff_at = %s" in target_query
+    assert "lifecycle.dataset_version_id = %s" in target_query
     assert "score" not in context.to_dict()
     assert len(context.sha256) == 64
 

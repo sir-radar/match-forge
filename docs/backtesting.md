@@ -7,8 +7,10 @@ evidence.
 
 `PointInTimeScopeV1` binds dataset and source snapshot identity, feature version,
 `football_cutoff`, `knowledge_cutoff`, `knowledge_mode`, quality policy, and target-set checksum.
-`PointInTimeMatchDatasetProvider` applies the dual cutoffs before models receive data. Forecast
-contexts are label-free and have a canonical checksum. Same-kickoff targets remain one batch.
+`PointInTimeMatchDatasetProvider` applies the dual cutoffs before models receive data. It resolves
+chronology through immutable kickoff claims linked to the exact lifecycle dataset; it does not read
+timezone-naive provider values as UTC. Forecast contexts are label-free and have a canonical
+checksum. Same-kickoff targets remain one batch.
 
 `WalkForwardEvaluator` defines expanding or rolling training windows, evaluation duration, and
 retraining frequency. Evaluation observations keep prediction time, kickoff time, and
@@ -45,6 +47,7 @@ exceeded or too few metrics improve.
 
 Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
 exclusion, metric mathematics, immutable reporting, and retry behavior. The approved corpus now has
-380 registered, completed, and scored targets through exact immutable lifecycle claims. No
-repository command has yet executed full model refits and forecasts across that corpus. See
+380 registered, completed, scored, and UTC-resolved targets through exact immutable lifecycle and
+kickoff claims, forming 199 chronological batches. No repository command has yet executed full
+model refits and forecasts across that corpus. See
 [Sprint 2 phase gate](sprint2-phase-gate.md).

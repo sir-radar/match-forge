@@ -11,6 +11,7 @@ football ingest season <id> --competition-id <id>
 football validate season <id>
 football validate season <id> --competition-id <id>
 football resolve sprint2-lifecycle
+football resolve sprint2-kickoffs
 football evaluate sprint2
 ```
 
@@ -40,6 +41,10 @@ Both ingestion commands publish immutable JSON and Markdown reports and print th
 in the approved corpus has exact score-reconciled validator v3 lineage and terminal event evidence.
 It does not alter provider match observations or treat `match_status=available` as football
 completion. See [Match lifecycle claims](lifecycle-claims.md).
+
+`football resolve sprint2-kickoffs` preserves timezone-naive provider date/time and publishes
+separate UTC claims using exact lifecycle and competition facts, `Europe/London`, and pinned
+`tzdata 2026.3`. See [Match kickoff claims](kickoff-claims.md).
 
 `football evaluate sprint2` runs the pinned `Sprint2BaselineGatePolicyV1` workflow until the first
 blocking stage. It starts with the approved StatsBomb EPL 2015/16 corpus

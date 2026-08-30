@@ -2,7 +2,7 @@
 
 Status: **FAIL**
 
-Date: 2026-08-30
+Date: 2026-08-31
 
 ## Implemented
 
@@ -16,24 +16,27 @@ Date: 2026-08-30
 - Operator entry points: `football evaluate sprint2` and `make sprint2-evaluate`.
 - Versioned immutable lifecycle claims with exact score, event-resource, dataset-file, and
   validation lineage.
+- Versioned immutable kickoff claims with exact local-time, competition, timezone-data, and
+  lifecycle lineage.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
 
-`make integration` passed on 2026-08-30:
+`make integration` passed on 2026-08-31:
 
 - Fresh temporary PostgreSQL database created.
-- All migrations through `202608302000` applied successfully.
+- All migrations through `202608302100` applied successfully.
 - Second migration pass reported no pending migrations.
-- 44 integration tests passed.
+- 45 integration tests passed, including cross-snapshot kickoff and history resolution and
+  rejection of unsupported competition geography.
 - PostgreSQL 18.6, Redis 8.10, and Go operational checks passed.
 
-Final `make check` passed on 2026-08-30:
+Final `make check` passed on 2026-08-31:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 70 source files.
+- Strict MyPy passed for 72 source files.
 - Static health analysis reported 0 issues.
-- 125 Python tests passed.
+- 128 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -51,8 +54,13 @@ evidence. No model artifact is approved by this gate.
 
 ## Executed phase gate
 
-`make sprint2-evaluate` ran after immutable lifecycle claims were registered and produced evaluation
-run `cdd5cbd8-c38f-5b7f-a380-439151603f51`.
+Before kickoff resolution, `make sprint2-evaluate` retained run
+`c5c39fe9-babc-576f-b440-b35cb5b5a994` at `chronology-resolution`: all 380 scored targets had
+timezone-naive local date/time but 0 governed UTC instants.
+
+`football resolve sprint2-kickoffs` then published 380 claims across 199 chronological batches. An
+identical retry returned `verified_existing`. The post-resolution gate produced evaluation run
+`f4f6e4cd-0d85-5066-974e-fc5f1ea0d76b`.
 
 ```text
 Status: FAIL
@@ -99,12 +107,15 @@ The raw provider observations remain `lifecycle = 'unknown'`.
 
 All 380 claims have exactly two period-2 `Half End` events, maximum period 2, distinct match
 observations, distinct event resources, distinct dataset files, and deterministic evidence hashes.
-A repeated publication returned `verified_existing` for all 380 claims. Gate run
-`cdd5cbd8-c38f-5b7f-a380-439151603f51` therefore passed coverage and remains `FAIL` at
-`walk-forward-execution`: no complete retained chronological evaluation exists. No walk-forward fit
-or score ran. Scope and metric fields remain `null`, preserving the distinction between missing
-evidence and measured zero performance. The retained JSON report validates against
-`Sprint2EvaluationReportV1`.
+A repeated publication returned `verified_existing` for all 380 claims. Coverage therefore passes;
+the added chronology preflight then exposed the missing timezone-safe ordering before any model fit.
+
+All 380 match observations also contain a local date and local time but no provider timezone.
+`statsbomb-england-local-kickoff-v1` binds each exact lifecycle claim and match observation to the
+domestic England competition observation, `Europe/London`, pinned `tzdata 2026.3`, and an exact
+TZif checksum. The resulting 380 distinct claim hashes cover 199 UTC batches from
+`2015-08-08T12:45:00Z` through `2016-05-17T20:00:00Z`. All 380 raw
+`match_observations.kickoff_at` values remain null.
 
 ## Operator command
 
@@ -121,8 +132,8 @@ The command retains:
 
 Underlying CLI exit code `7` means `FAIL`; Make reports a failed target. The report identifies the
 first blocking stage. A missing approved corpus is `corpus-resolution`; insufficient scored matches
-is `coverage`; missing retained chronological evidence is `walk-forward-execution`. No failed
-preflight emits placeholder model metrics.
+is `coverage`; unresolved timezone-safe ordering is `chronology-resolution`; missing retained model
+execution is `walk-forward-execution`. No failed preflight emits placeholder model metrics.
 
 ## Required next gate action
 

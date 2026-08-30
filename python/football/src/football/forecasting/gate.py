@@ -17,6 +17,11 @@ from football.forecasting.governance import (
     ImmutableEvaluationReportStore,
     Sprint2EvaluationReportV1,
 )
+from football.forecasting.kickoff import (
+    KICKOFF_CLAIM_VERSION,
+    KICKOFF_TIMEZONE,
+    TZDATA_VERSION,
+)
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
 
 _EVALUATION_NAMESPACE = UUID("4ae2a83b-7efb-4c2c-98bf-70e818c6f6d1")
@@ -119,14 +124,54 @@ class Sprint2GateService:
                     "chronological walk-forward evaluation did not run",
                 ),
             )
+        chronological_targets, chronological_batches = self._chronology(season_id)
+        if chronological_targets != coverage.scored_targets:
+            return (
+                coverage,
+                "chronology-resolution",
+                (
+                    f"primary evaluation has {chronological_targets} timezone-resolved targets; "
+                    f"expected {coverage.scored_targets}",
+                    "chronological walk-forward evaluation did not run",
+                ),
+            )
         return (
             coverage,
             "walk-forward-execution",
             (
-                "approved corpus passed count preflight but no complete retained walk-forward "
+                "approved corpus passed count and chronology preflight across "
+                f"{chronological_batches} batches but no complete retained walk-forward "
                 "evaluation exists",
             ),
         )
+
+    def _chronology(self, season_id: UUID) -> tuple[int, int]:
+        with self._connection.cursor() as cursor:
+            row = cursor.execute(
+                """
+                SELECT count(DISTINCT kickoff.match_id), count(DISTINCT kickoff.kickoff_at)
+                FROM football.match_kickoff_claims AS kickoff
+                JOIN football.match_lifecycle_claims AS lifecycle
+                  ON lifecycle.id = kickoff.lifecycle_claim_id
+                JOIN football.match_observations AS observation
+                  ON observation.id = kickoff.match_observation_id
+                WHERE kickoff.season_id = %s
+                  AND kickoff.claim_version = %s
+                  AND kickoff.timezone_name = %s
+                  AND kickoff.tzdata_version = %s
+                  AND lifecycle.claim_version = %s
+                  AND observation.home_score IS NOT NULL
+                  AND observation.away_score IS NOT NULL
+                """,
+                (
+                    season_id,
+                    KICKOFF_CLAIM_VERSION,
+                    KICKOFF_TIMEZONE,
+                    TZDATA_VERSION,
+                    LIFECYCLE_CLAIM_VERSION,
+                ),
+            ).fetchone()
+        return (int(row[0]), int(row[1])) if row is not None else (0, 0)
 
     def _coverage(self, season_id: UUID) -> EvaluationCoverageV1:
         with self._connection.cursor() as cursor:

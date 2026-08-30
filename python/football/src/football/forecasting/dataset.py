@@ -10,6 +10,11 @@ from psycopg.rows import class_row
 
 from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.forecasting.contracts import PointInTimeScopeV1
+from football.forecasting.kickoff import (
+    KICKOFF_CLAIM_VERSION,
+    KICKOFF_TIMEZONE,
+    TZDATA_VERSION,
+)
 
 
 class ForecastingDatasetError(RuntimeError):
@@ -91,31 +96,43 @@ class PointInTimeMatchDatasetProvider:
             rows = cursor.execute(
                 """
                 SELECT match.id AS match_id, match.competition_id, match.season_id,
-                       observation.kickoff_at, observation.home_team_id,
+                       resolved.kickoff_at, observation.home_team_id,
                        observation.away_team_id, observation.home_score,
                        observation.away_score
                 FROM football.matches AS match
+                JOIN LATERAL (
+                    SELECT kickoff.kickoff_at, kickoff.match_observation_id
+                    FROM football.match_kickoff_claims AS kickoff
+                    JOIN football.match_lifecycle_claims AS lifecycle
+                      ON lifecycle.id = kickoff.lifecycle_claim_id
+                    WHERE kickoff.match_id = match.id
+                      AND kickoff.claim_version = %s
+                      AND kickoff.timezone_name = %s
+                      AND kickoff.tzdata_version = %s
+                      AND kickoff.known_from <= %s
+                      AND lifecycle.dataset_version_id = %s
+                    ORDER BY kickoff.known_from DESC, kickoff.id DESC
+                    LIMIT 1
+                ) AS resolved ON TRUE
                 JOIN football.match_observations AS observation
-                  ON observation.match_id = match.id
+                  ON observation.id = resolved.match_observation_id
                 WHERE match.competition_id = %s
                   AND match.season_id = %s
-                  AND observation.source_snapshot_id = %s
-                  AND football.known_at(
-                      observation.known_from, observation.known_to, %s
-                  )
-                  AND observation.lifecycle = 'completed'
-                  AND observation.kickoff_at < %s
+                  AND resolved.kickoff_at < %s
                   AND observation.home_team_id IS NOT NULL
                   AND observation.away_team_id IS NOT NULL
                   AND observation.home_score IS NOT NULL
                   AND observation.away_score IS NOT NULL
-                ORDER BY observation.kickoff_at, match.id
+                ORDER BY resolved.kickoff_at, match.id
                 """,
                 (
+                    KICKOFF_CLAIM_VERSION,
+                    KICKOFF_TIMEZONE,
+                    TZDATA_VERSION,
+                    scope.knowledge_cutoff,
+                    scope.dataset_version_id,
                     competition_id,
                     season_id,
-                    scope.source_snapshot_id,
-                    scope.knowledge_cutoff,
                     scope.football_cutoff,
                 ),
             ).fetchall()
@@ -132,28 +149,40 @@ class PointInTimeMatchDatasetProvider:
             rows = cursor.execute(
                 """
                 SELECT match.id AS match_id, match.competition_id, match.season_id,
-                       observation.kickoff_at, observation.home_team_id,
+                       resolved.kickoff_at, observation.home_team_id,
                        observation.away_team_id
                 FROM football.matches AS match
+                JOIN LATERAL (
+                    SELECT kickoff.kickoff_at, kickoff.match_observation_id
+                    FROM football.match_kickoff_claims AS kickoff
+                    JOIN football.match_lifecycle_claims AS lifecycle
+                      ON lifecycle.id = kickoff.lifecycle_claim_id
+                    WHERE kickoff.match_id = match.id
+                      AND kickoff.claim_version = %s
+                      AND kickoff.timezone_name = %s
+                      AND kickoff.tzdata_version = %s
+                      AND kickoff.known_from <= %s
+                      AND lifecycle.dataset_version_id = %s
+                    ORDER BY kickoff.known_from DESC, kickoff.id DESC
+                    LIMIT 1
+                ) AS resolved ON TRUE
                 JOIN football.match_observations AS observation
-                  ON observation.match_id = match.id
+                  ON observation.id = resolved.match_observation_id
                 WHERE match.competition_id = %s
                   AND match.season_id = %s
-                  AND observation.source_snapshot_id = %s
-                  AND football.known_at(
-                      observation.known_from, observation.known_to, %s
-                  )
-                  AND observation.kickoff_at = %s
+                  AND resolved.kickoff_at = %s
                   AND observation.home_team_id IS NOT NULL
                   AND observation.away_team_id IS NOT NULL
-                  AND observation.lifecycle NOT IN ('abandoned', 'postponed', 'cancelled')
                 ORDER BY match.id
                 """,
                 (
+                    KICKOFF_CLAIM_VERSION,
+                    KICKOFF_TIMEZONE,
+                    TZDATA_VERSION,
+                    scope.knowledge_cutoff,
+                    scope.dataset_version_id,
                     competition_id,
                     season_id,
-                    scope.source_snapshot_id,
-                    scope.knowledge_cutoff,
                     scope.football_cutoff,
                 ),
             ).fetchall()
