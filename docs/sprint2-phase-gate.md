@@ -157,17 +157,23 @@ The command retains:
 ```text
 .local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationReportV1.json
 .local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationReportV1.md
+.local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationEvidenceManifestV1.json
+.local/reports/sprint2/run=<evaluation-run-id>/*.parquet
+.local/reports/sprint2/run=<evaluation-run-id>/*.svg
 ```
 
 Underlying CLI exit code `7` means `FAIL`; Make reports a failed target. The report identifies the
 first blocking stage. A missing approved corpus is `corpus-resolution`; insufficient scored matches
 is `coverage`; unresolved timezone-safe ordering is `chronology-resolution`; corner-label coverage
-below 95% is `corner-label-coverage`; missing retained model execution is
-`walk-forward-execution`. No failed preflight emits placeholder model metrics.
+below 95% is `corner-label-coverage`; ambiguous dataset provenance is `execution-lineage`; an
+undersized frozen target set is `target-plan-coverage`; and a model or publication failure is
+`walk-forward-execution`. A complete run retains raw predictions, outcomes, proper scores, paired
+chronological moving-block bootstrap evidence, chronological calibration diagnostics, and plots,
+then stops at `FAIL / baseline-policy-review`. No failed preflight emits placeholder model metrics.
 
 ## Required next gate action
 
-Run the complete retained chronological evaluation: repeated model fitting, forecast-before-outcome
-persistence, proper scoring, calibration analysis, subgroup regressions, and promotion review. Stop
-for review after that gate evidence is produced. No later phase is authorized while status remains
-`FAIL`.
+Run `make sprint2-evaluate`, inspect the retained evidence, complete the locked baseline-policy and
+engineering review, and record the gate decision separately. No baseline or calibration challenger
+is promoted automatically. Subgroup and reproducibility review remain required before a PASS. No
+later phase is authorized while status remains `FAIL`.

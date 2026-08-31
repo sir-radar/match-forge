@@ -7,6 +7,8 @@ PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
 DATABASE_URL ?= postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
+CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
+DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
 .PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check sprint2-evaluate \
@@ -73,7 +75,8 @@ integration: build
 check: format-check lint test build
 
 sprint2-evaluate: up
-	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --report-root "$(SPRINT2_REPORT_ROOT)" evaluate sprint2
+	@test -z "$$(git status --porcelain)" || { echo "Sprint 2 evaluation requires a clean worktree" >&2; exit 2; }
+	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" evaluate sprint2
 
 prototype-bootstrap:
 	@test -x $(UV) || { echo "missing $(UV); run make bootstrap" >&2; exit 3; }

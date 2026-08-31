@@ -43,6 +43,7 @@ from football.forecasting.publication import (
     PublishedBaselineForecastV1,
 )
 from football.forecasting.scoring import Sprint2Scorer
+from football.forecasting.uncertainty import BootstrapPolicyV1, paired_moving_block_bootstrap
 
 COMPETITION = UUID("10000000-0000-4000-8000-000000000001")
 SEASON = UUID("20000000-0000-4000-8000-000000000001")
@@ -111,6 +112,11 @@ def test_batch_modeler_fits_prior_history_and_emits_every_raw_baseline() -> None
         EvaluationMatchOutcomeV1(UUID(int=102), cutoff, 0, 0, 5, 5, cutoff + timedelta(hours=2)),
     )
     metrics = Sprint2Scorer().evaluate(forecasts, target_outcomes)
+    comparison_rows = Sprint2Scorer().comparison_rows(forecasts, target_outcomes)
+    bootstrap = paired_moving_block_bootstrap(
+        Sprint2Scorer().paired_metric_series(comparison_rows),
+        BootstrapPolicyV1(replicates=20, block_size=2, seed=7),
+    )
 
     assert metrics.elo_result.sample_count == 2
     assert metrics.dixon_coles_result.sample_count == 2
@@ -120,6 +126,13 @@ def test_batch_modeler_fits_prior_history_and_emits_every_raw_baseline() -> None
     assert metrics.result_reference.sample_count == 2
     assert metrics.goal_reference.joint_score_nll > 0.0
     assert metrics.corner_reference.total.negative_log_likelihood > 0.0
+    assert len(comparison_rows) == 2
+    assert {interval.comparison for interval in bootstrap.intervals} >= {
+        "elo_vs_result_reference",
+        "dixon_coles_vs_result_reference",
+        "dixon_coles_goals_vs_goal_reference",
+        "corner_poisson_vs_corner_reference",
+    }
 
 
 def test_executor_persists_complete_batch_before_revealing_target_outcomes() -> None:

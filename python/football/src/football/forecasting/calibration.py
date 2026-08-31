@@ -23,6 +23,132 @@ class CalibrationContractError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class BinaryPlattCalibratorV1:
+    state: PlattClassStateV1
+    contract: str = "BinaryPlattCalibratorV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "BinaryPlattCalibratorV1":
+            raise CalibrationContractError("unsupported binary Platt calibrator contract")
+
+    @classmethod
+    def fit(
+        cls, probabilities: tuple[float, ...], targets: tuple[float, ...]
+    ) -> BinaryPlattCalibratorV1:
+        _binary_training(probabilities, targets)
+        return cls(_fit_platt_class(probabilities, targets))
+
+    def calibrate(self, probability: float) -> float:
+        return _platt_probability(probability, self.state)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "slope": self.state.slope,
+            "intercept": self.state.intercept,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryIsotonicCalibratorV1:
+    state: IsotonicClassStateV1
+    contract: str = "BinaryIsotonicCalibratorV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "BinaryIsotonicCalibratorV1":
+            raise CalibrationContractError("unsupported binary isotonic calibrator contract")
+
+    @classmethod
+    def fit(
+        cls, probabilities: tuple[float, ...], targets: tuple[float, ...]
+    ) -> BinaryIsotonicCalibratorV1:
+        _binary_training(probabilities, targets)
+        return cls(_fit_isotonic_class(probabilities, targets))
+
+    def calibrate(self, probability: float) -> float:
+        return _isotonic_probability(probability, self.state)
+
+    def to_dict(self) -> dict[str, object]:
+        return {"contract": self.contract, **_isotonic_dict(self.state)}
+
+
+@dataclass(frozen=True, slots=True)
+class MulticlassVectorCalibratorV1:
+    weights: tuple[tuple[float, float, float], ...]
+    intercepts: tuple[float, float, float]
+    contract: str = "MulticlassVectorCalibratorV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "MulticlassVectorCalibratorV1":
+            raise CalibrationContractError("unsupported multiclass vector calibrator contract")
+        if len(self.weights) != 3 or any(len(row) != 3 for row in self.weights):
+            raise CalibrationContractError("multiclass vector weights must be three by three")
+        for value in (*self.intercepts, *(item for row in self.weights for item in row)):
+            _finite(value, "multiclass vector parameter")
+
+    @classmethod
+    def fit(
+        cls,
+        observations: tuple[EvaluatedMatchResultV1, ...],
+        *,
+        calibration_cutoff: datetime,
+    ) -> MulticlassVectorCalibratorV1:
+        _training_observations(observations, calibration_cutoff)
+        logits = tuple(
+            tuple(math.log(max(value, _EPSILON)) for value in _probabilities(item.probabilities))
+            for item in observations
+        )
+        targets = tuple(_outcomes().index(item.outcome) for item in observations)
+
+        def objective(parameters: tuple[float, ...]) -> float:
+            weights = tuple(
+                tuple(parameters[row * 3 + column] for column in range(3)) for row in range(3)
+            )
+            intercepts = parameters[9:12]
+            loss = 0.0
+            for values, target in zip(logits, targets, strict=True):
+                calibrated = _softmax(
+                    tuple(
+                        sum(weights[row][column] * values[column] for column in range(3))
+                        + intercepts[row]
+                        for row in range(3)
+                    )
+                )
+                loss -= math.log(max(calibrated[target], _EPSILON))
+            return loss + 1e-8 * sum(value * value for value in parameters)
+
+        initial = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0)
+        result = minimize(objective, initial, method="L-BFGS-B")
+        if not bool(result.success) or any(not math.isfinite(float(value)) for value in result.x):
+            raise CalibrationContractError(
+                f"multiclass vector calibration did not converge: {result.message}"
+            )
+        values = tuple(float(value) for value in result.x)
+        weights = tuple(
+            (values[index], values[index + 1], values[index + 2]) for index in (0, 3, 6)
+        )
+        return cls(weights, (values[9], values[10], values[11]))
+
+    def calibrate(self, probabilities: MatchResultProbabilitiesV1) -> MatchResultProbabilitiesV1:
+        logits = tuple(math.log(max(value, _EPSILON)) for value in _probabilities(probabilities))
+        values = _softmax(
+            tuple(
+                sum(self.weights[row][column] * logits[column] for column in range(3))
+                + self.intercepts[row]
+                for row in range(3)
+            )
+        )
+        return MatchResultProbabilitiesV1(*values)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "weights": [list(row) for row in self.weights],
+            "intercepts": list(self.intercepts),
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class PlattClassStateV1:
     slope: float
     intercept: float
@@ -337,6 +463,26 @@ def _training_observations(
     observed = {item.outcome for item in observations}
     if observed != set(_outcomes()):
         raise CalibrationContractError("calibration requires every match-result class")
+
+
+def _binary_training(probabilities: tuple[float, ...], targets: tuple[float, ...]) -> None:
+    if not probabilities or len(probabilities) != len(targets):
+        raise CalibrationContractError("binary calibration probabilities and targets must align")
+    if any(not 0.0 <= probability <= 1.0 for probability in probabilities):
+        raise CalibrationContractError("binary calibration probabilities must remain in [0, 1]")
+    if any(target not in (0.0, 1.0) for target in targets) or min(targets) == max(targets):
+        raise CalibrationContractError("binary calibration requires positive and negative events")
+
+
+def _probabilities(probabilities: MatchResultProbabilitiesV1) -> tuple[float, float, float]:
+    return probabilities.home, probabilities.draw, probabilities.away
+
+
+def _softmax(values: tuple[float, ...]) -> tuple[float, float, float]:
+    maximum = max(values)
+    weights = tuple(math.exp(value - maximum) for value in values)
+    total = sum(weights)
+    return weights[0] / total, weights[1] / total, weights[2] / total
 
 
 def _outcomes() -> tuple[MatchOutcome, MatchOutcome, MatchOutcome]:

@@ -42,10 +42,15 @@ Raw execution scoring also implements joint goal-score negative log likelihood, 
 MAE, RMSE, and Poisson deviance; and home, away, and total corner negative log likelihood, CRPS,
 MAE, and RMSE for both corner families and the simple reference.
 
-Calibration is a separate artifact layer. One-vs-rest Platt and isotonic calibrators emit normalized
-1X2 probabilities. Raw forecasts remain immutable. A configurable gate compares raw and calibrated
-out-of-sample log loss, Brier, and ECE; calibration is rejected when permitted regressions are
-exceeded or too few metrics improve.
+Calibration is a separate challenger layer. Authoritative 1X2 analysis uses multiclass vector
+calibration so the simplex is preserved; Over 2.5 and BTTS use binary Platt and isotonic
+challengers. Each chronological batch trains only from earlier out-of-sample predictions whose
+outcomes were already known. Raw forecasts remain immutable. Acceptance requires ECE improvement
+without exceeding the locked log-loss or Brier regression allowances.
+
+Uncertainty uses one shared set of deterministic paired chronological moving-block resamples across
+candidate/reference metrics: 2,000 replicates, block size 10, 95% intervals, and explicit seed
+`20260831`. Evidence retains replicate deltas rather than only interval summaries.
 
 ## Leakage invariants
 
@@ -61,12 +66,13 @@ exceeded or too few metrics improve.
 ## Current evidence boundary
 
 Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
-exclusion, metric mathematics, immutable reporting, and retry behavior. Batch execution tests now
-also prove persistence-before-reveal, four-artifact/four-forecast publication per target, portable
-state reload, and semantic retry convergence. The approved corpus now has
+exclusion, metric mathematics, immutable reporting, and retry behavior. Batch execution tests also
+prove persistence-before-reveal, four-artifact/four-forecast publication per target, portable state
+reload, and semantic retry convergence. The approved corpus has
 380 registered, completed, scored, corner-labelled, and UTC-resolved matches through exact immutable
 lifecycle, kickoff, and corner claims. The immutable plan resolves 280 eligible targets after 100
-warm-up exclusions, across 146 eligible batches. The executor is not yet connected to the
-authoritative operator command, and no repository command has yet executed full model refits and
-forecasts across that target set. See
+warm-up exclusions, across 146 eligible batches. The authoritative operator command now composes
+the executor, scoring, paired bootstrap, chronological calibration, and immutable JSON/Parquet/SVG
+evidence publication. Complete execution stops for baseline-policy review; the implementation does
+not assert that the corpus has passed predictive-quality or reproduction gates. See
 [Sprint 2 phase gate](sprint2-phase-gate.md).

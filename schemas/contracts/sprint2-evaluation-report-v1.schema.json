@@ -15,6 +15,8 @@
     "raw_match_result_metrics",
     "calibrated_match_result_metrics",
     "calibration_accepted",
+    "evidence_manifest_path",
+    "evidence_manifest_sha256",
     "findings"
   ],
   "properties": {
@@ -34,6 +36,14 @@
       "oneOf": [{"type": "null"}, {"$ref": "#/$defs/metrics"}]
     },
     "calibration_accepted": {"type": ["boolean", "null"]},
+    "evidence_manifest_path": {
+      "type": ["string", "null"],
+      "pattern": "^[^/\\\\][^\\\\]*$"
+    },
+    "evidence_manifest_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "findings": {
       "type": "array",
       "uniqueItems": true,

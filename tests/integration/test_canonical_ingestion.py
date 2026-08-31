@@ -25,6 +25,7 @@ from football.forecasting.dataset import (
     PointInTimeMatchDatasetProvider,
     WalkForwardDatasetSpecV1,
 )
+from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.gate import Sprint2GateService
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.kickoff import KickoffClaimError, Sprint2KickoffClaimPublisher
@@ -1471,9 +1472,14 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     assert (outcomes[0].home_corners, outcomes[0].away_corners) == (2, 1)
     assert len(history) == 1
     assert (history[0].home_score, history[0].away_score) == (0, 0)
-    gate = Sprint2GateService(connection, tmp_path / "gate-resolved").evaluate(corpus)
-    assert gate.stage == "walk-forward-execution"
-    assert "1 batches" in gate.findings[0]
+    gate = Sprint2GateService(
+        connection,
+        tmp_path / "gate-resolved",
+        data_root=tmp_path,
+        provenance=Sprint2EvidenceProvenanceV1("7" * 40, "8" * 64),
+    ).evaluate(corpus)
+    assert gate.stage == "target-plan-coverage"
+    assert "0 eligible targets" in gate.findings[0]
     gate_payload = json.loads(gate.json_path.read_text(encoding="utf-8"))
     assert gate_payload["coverage"]["corner_labelled_targets"] == 1
 
