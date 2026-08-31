@@ -18,6 +18,7 @@ from football.forecasting.dataset import (
     ImmutableWalkForwardTargetPlanStore,
     PointInTimeMatchDatasetProvider,
     WalkForwardDatasetSpecV1,
+    WalkForwardTargetBatchV1,
     build_walk_forward_target_plan,
 )
 from football.forecasting.kickoff import (
@@ -102,6 +103,9 @@ def test_completed_history_uses_strict_football_cutoff_and_exact_lineage() -> No
         COMPETITION,
         SEASON,
         CUTOFF,
+        "bitemporal",
+        timedelta(hours=2),
+        CUTOFF,
     )
 
 
@@ -167,6 +171,32 @@ def test_walk_forward_plan_uses_only_prior_batches_for_history_eligibility() -> 
         contexts,
     )
     assert repeated == plan
+
+
+def test_retrospective_plan_excludes_outcomes_not_available_before_cutoff() -> None:
+    first = CUTOFF
+    overlapping = first + timedelta(minutes=10)
+    later = first + timedelta(hours=2, minutes=10)
+    contexts = (
+        ForecastMatchContextV1(UUID(int=20), COMPETITION, SEASON, first, HOME, AWAY),
+        ForecastMatchContextV1(UUID(int=21), COMPETITION, SEASON, overlapping, HOME, AWAY),
+        ForecastMatchContextV1(UUID(int=22), COMPETITION, SEASON, later, HOME, AWAY),
+    )
+
+    plan = build_walk_forward_target_plan(
+        _walk_forward_spec(minimum_team_history=1, minimum_competition_history=1),
+        COMPETITION,
+        SEASON,
+        contexts,
+    )
+
+    assert plan.excluded_target_count == 2
+    assert plan.batches == (
+        WalkForwardTargetBatchV1(
+            later,
+            (EligibleForecastTargetV1(contexts[2], 1, 1, 1),),
+        ),
+    )
 
 
 def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separately() -> None:

@@ -31,7 +31,8 @@ calling outcome reveal, then updates sequential state only for later batches.
 Because Open Data does not establish original provider-availability timestamps, the approved
 `retrospective-fixed-snapshot-v1` EPL corpus assigns completed regulation-time outcomes a
 conservative availability time of kickoff plus two hours. Other knowledge modes retain the exact
-governed claim availability time. Same-kickoff matches remain isolated in one batch.
+governed claim availability time. Same-kickoff matches remain isolated in one batch, and closely
+staggered earlier kickoffs do not enter history before that boundary.
 
 ## Immutable identity
 

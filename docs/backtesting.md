@@ -60,6 +60,8 @@ candidate/reference metrics: 2,000 replicates, block size 10, 95% intervals, and
 - Target contexts contain no scores or post-match statistics.
 - Historical observations use the exact source snapshot and bitemporal knowledge cutoff.
 - Same-kickoff matches are forecast as one chronological batch.
+- Earlier staggered kickoffs remain outside training history until their retrospective two-hour
+  outcome-availability boundary has passed.
 - Calibration outcomes require `outcome_known_at < calibration_cutoff`.
 - Evaluation outcomes remain separate from persisted forecast payloads.
 - Outcome reveal requires explicit frozen target IDs and exact lifecycle, corner-label, dataset,

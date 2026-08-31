@@ -346,6 +346,10 @@ class PointInTimeMatchDatasetProvider:
                 WHERE match.competition_id = %s
                   AND match.season_id = %s
                   AND resolved.kickoff_at < %s
+                  AND (
+                      %s <> 'retrospective-fixed-snapshot-v1'
+                      OR resolved.kickoff_at + %s < %s
+                  )
                   AND observation.home_team_id IS NOT NULL
                   AND observation.away_team_id IS NOT NULL
                   AND observation.home_score IS NOT NULL
@@ -362,6 +366,9 @@ class PointInTimeMatchDatasetProvider:
                     LIFECYCLE_CLAIM_VERSION,
                     competition_id,
                     season_id,
+                    scope.football_cutoff,
+                    scope.knowledge_mode,
+                    RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
                     scope.football_cutoff,
                 ),
             ).fetchall()
@@ -585,10 +592,16 @@ def build_walk_forward_target_plan(
             grouped[-1].append(context)
     team_history: defaultdict[UUID, int] = defaultdict(int)
     competition_history = 0
+    pending: list[ForecastMatchContextV1] = []
     batches: list[WalkForwardTargetBatchV1] = []
     excluded = 0
     for group in grouped:
         _require_distinct_batch_teams(group)
+        available, pending = _available_history(spec, group[0].kickoff_at, pending)
+        for context in available:
+            team_history[context.home_team_id] += 1
+            team_history[context.away_team_id] += 1
+        competition_history += len(available)
         targets = tuple(
             EligibleForecastTargetV1(
                 context=context,
@@ -604,10 +617,7 @@ def build_walk_forward_target_plan(
         excluded += len(group) - len(targets)
         if targets:
             batches.append(WalkForwardTargetBatchV1(group[0].kickoff_at, targets))
-        for context in group:
-            team_history[context.home_team_id] += 1
-            team_history[context.away_team_id] += 1
-        competition_history += len(group)
+        pending.extend(group)
     return WalkForwardTargetPlanV1(
         spec=spec,
         competition_id=competition_id,
@@ -616,6 +626,21 @@ def build_walk_forward_target_plan(
         corpus_match_count=len(contexts),
         excluded_target_count=excluded,
     )
+
+
+def _available_history(
+    spec: WalkForwardDatasetSpecV1,
+    cutoff: datetime,
+    pending: list[ForecastMatchContextV1],
+) -> tuple[tuple[ForecastMatchContextV1, ...], list[ForecastMatchContextV1]]:
+    lag = (
+        RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG
+        if spec.knowledge_mode == "retrospective-fixed-snapshot-v1"
+        else timedelta(0)
+    )
+    available = tuple(context for context in pending if context.kickoff_at + lag < cutoff)
+    remaining = [context for context in pending if context.kickoff_at + lag >= cutoff]
+    return available, remaining
 
 
 def _require_distinct_batch_teams(group: list[ForecastMatchContextV1]) -> None:
