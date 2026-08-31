@@ -298,6 +298,9 @@ def test_target_plan_publishes_immutable_schema_valid_evidence(tmp_path: Path) -
     assert published.status == "published"
     assert repeated.status == "verified_existing"
     assert repeated.relative_path == published.relative_path
+    assert repeated.relative_path == (
+        f"target-set={plan.target_set_sha256}/plan={plan.sha256}/WalkForwardTargetPlanV1.json"
+    )
     payload = plan.to_dict()
     schema_path = (
         Path(__file__).parents[3] / "schemas/contracts/walk-forward-target-plan-v1.schema.json"

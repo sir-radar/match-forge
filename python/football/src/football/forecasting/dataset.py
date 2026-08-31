@@ -241,6 +241,10 @@ class WalkForwardTargetPlanV1:
     def to_bytes(self) -> bytes:
         return canonical_json_bytes(self.to_dict()) + b"\n"
 
+    @property
+    def sha256(self) -> str:
+        return sha256_bytes(self.to_bytes())
+
 
 @dataclass(frozen=True, slots=True)
 class PublishedWalkForwardTargetPlanV1:
@@ -256,7 +260,9 @@ class ImmutableWalkForwardTargetPlanStore:
         self._files = ImmutableFileStore(root)
 
     def publish(self, plan: WalkForwardTargetPlanV1) -> PublishedWalkForwardTargetPlanV1:
-        relative_path = f"target-set={plan.target_set_sha256}/WalkForwardTargetPlanV1.json"
+        relative_path = (
+            f"target-set={plan.target_set_sha256}/plan={plan.sha256}/WalkForwardTargetPlanV1.json"
+        )
         write = self._files.publish(relative_path, plan.to_bytes())
         return PublishedWalkForwardTargetPlanV1(
             plan=plan,

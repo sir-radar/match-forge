@@ -42,10 +42,13 @@ specification. The immutable JSON plan is validated by
 `schemas/contracts/walk-forward-target-plan-v1.schema.json` and stored at:
 
 ```text
-target-set=<sha256>/WalkForwardTargetPlanV1.json
+target-set=<target-sha256>/plan=<full-plan-sha256>/WalkForwardTargetPlanV1.json
 ```
 
-An identical publication verifies existing bytes rather than replacing them.
+The outer checksum identifies the forecast target universe. The nested full-plan checksum also
+binds dataset specification and eligibility-history counts, so two plans with the same targets but
+different evidence cannot collide. An identical publication verifies existing bytes rather than
+replacing them.
 
 ## Current corpus evidence
 
