@@ -36,6 +36,24 @@ R_pre = R_initial + (R_previous - R_initial) * 0.5 ^ (d / L)
 Time decay may be disabled. Competition weights default to `1`. Opponent strength is represented
 by the rating difference inside the expected-score calculation.
 
+## 1X2 probability adapter
+
+Elo expected score is not a home-win probability. Sprint 2 execution projects pre-match home and
+away ratings through `EloOneXTwoAdapterV1`, a Davidson-style three-outcome model. It applies the
+configured Elo home advantage and uses draw propensity `0.5` under algorithm version
+`elo-davidson-1x2-v1`:
+
+```text
+w_home = exp(log(10) * (R_h + H) / 400)
+w_away = exp(log(10) * R_a / 400)
+w_draw = 0.5 * sqrt(w_home * w_away)
+P(outcome) = w_outcome / (w_home + w_draw + w_away)
+```
+
+This V1 value is frozen before the authoritative evaluation run. It is configuration and artifact
+lineage, not a result selected after seeing evaluation scores. Changing it creates a different fit
+identity.
+
 ## Versioning and storage
 
 `EloConfig` includes every baseline parameter. Its canonical JSON SHA-256 and lowercase model
@@ -59,6 +77,7 @@ Unit tests fix the formulas, ordering, decay, configuration identity, and invali
 Fresh PostgreSQL integration tests cover migration replay, model registration, immutable publication,
 idempotent retries, canonical foreign keys, and point-in-time lookup.
 
-Parameter fitting, walk-forward evaluation, probability calibration, market-derived probabilities,
-and corner models remain subsequent Sprint 2 work. The separate Dixon–Coles score baseline is
-documented in [Dixon–Coles goal baseline](dixon-coles.md).
+The raw walk-forward executor and immutable artifact/forecast publication are implemented, but the
+authoritative operator run and phase-gate evidence remain pending. Probability calibration remains
+a separate challenger layer. The Dixon–Coles score baseline is documented in
+[Dixon–Coles goal baseline](dixon-coles.md).
