@@ -20,6 +20,8 @@ Date: 2026-08-31
   lifecycle lineage.
 - Versioned immutable corner labels with exact event semantics, canonical team attribution,
   dataset checksums, validator evidence, and lifecycle lineage.
+- Immutable label-free walk-forward target plan with prior-batch 10-match team and 100-match
+  competition history eligibility, separate outcome reveal, and exact target checksum.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
@@ -38,7 +40,7 @@ Final `make check` passed on 2026-08-31:
 - Ruff formatting and lint passed.
 - Strict MyPy passed for 74 source files.
 - Static health analysis reported 0 issues.
-- 133 Python tests passed.
+- 138 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -130,6 +132,13 @@ ID/name `30` / `Pass` and whose nested pass type is exactly ID/name `61` / `Corn
 other events whose payload says `From Corner`. Labels remain separate from provider observations
 and label-free forecast contexts. The gate now stops at `corner-label-coverage` unless at least 95%
 of scored targets have governed labels; it no longer advances with a hard-coded zero label count.
+
+`WalkForwardTargetPlanV1` then resolved 280 eligible targets after 100 warm-up exclusions, across
+146 eligible kickoff batches from `2015-10-31T13:45:00Z` through `2016-05-17T20:00:00Z`. Minimum
+eligible home-team, away-team, and competition histories are exactly 10, 10, and 100. Target-set
+checksum `c5b9ff5860d9d00d55ab58fe3dc044d41d95af49501d27275fdc2e0831bff362` reproduced, immutable
+publication retry returned `verified_existing`, and separate governed outcome reveal covered
+280/280 targets. This freezes the evaluation universe but is not model execution evidence.
 
 ## Operator command
 

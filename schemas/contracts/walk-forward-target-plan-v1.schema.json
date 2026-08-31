@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "WalkForwardTargetPlanV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "spec",
+    "competition_id",
+    "season_id",
+    "target_set_sha256",
+    "corpus_match_count",
+    "target_count",
+    "excluded_target_count",
+    "batches"
+  ],
+  "properties": {
+    "contract": {"const": "WalkForwardTargetPlanV1"},
+    "spec": {"$ref": "#/$defs/spec"},
+    "competition_id": {"type": "string", "format": "uuid"},
+    "season_id": {"type": "string", "format": "uuid"},
+    "target_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "corpus_match_count": {"type": "integer", "minimum": 0},
+    "target_count": {"type": "integer", "minimum": 0},
+    "excluded_target_count": {"type": "integer", "minimum": 0},
+    "batches": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/batch"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "spec": {
+      "type": "object",
+      "required": [
+        "contract",
+        "dataset_version_id",
+        "source_snapshot_id",
+        "feature_set_version",
+        "knowledge_cutoff",
+        "knowledge_mode",
+        "quality_policy_sha256",
+        "minimum_team_history",
+        "minimum_competition_history"
+      ],
+      "properties": {
+        "contract": {"const": "WalkForwardDatasetSpecV1"},
+        "dataset_version_id": {"type": "string", "format": "uuid"},
+        "source_snapshot_id": {"type": "string", "format": "uuid"},
+        "feature_set_version": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "knowledge_cutoff": {"type": "string", "format": "date-time"},
+        "knowledge_mode": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "quality_policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "minimum_team_history": {"type": "integer", "minimum": 1},
+        "minimum_competition_history": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "required": [
+        "contract",
+        "match_id",
+        "competition_id",
+        "season_id",
+        "kickoff_at",
+        "home_team_id",
+        "away_team_id"
+      ],
+      "properties": {
+        "contract": {"const": "ForecastMatchContextV1"},
+        "match_id": {"type": "string", "format": "uuid"},
+        "competition_id": {"type": "string", "format": "uuid"},
+        "season_id": {"type": "string", "format": "uuid"},
+        "kickoff_at": {"type": "string", "format": "date-time"},
+        "home_team_id": {"type": "string", "format": "uuid"},
+        "away_team_id": {"type": "string", "format": "uuid"}
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "context",
+        "home_history_matches",
+        "away_history_matches",
+        "competition_history_matches"
+      ],
+      "properties": {
+        "context": {"$ref": "#/$defs/context"},
+        "home_history_matches": {"type": "integer", "minimum": 0},
+        "away_history_matches": {"type": "integer", "minimum": 0},
+        "competition_history_matches": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "batch": {
+      "type": "object",
+      "required": ["kickoff_at", "targets"],
+      "properties": {
+        "kickoff_at": {"type": "string", "format": "date-time"},
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/target"}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
