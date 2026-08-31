@@ -178,6 +178,7 @@ def test_executor_persists_complete_batch_before_revealing_target_outcomes() -> 
     assert result.batch_count == 1
     assert result.target_count == 2
     assert result.persisted_forecast_count == 8
+    assert result.persisted_batches == (persistence.persisted,)
     assert result.metrics.elo_result.sample_count == 2
     assert provider.target_revealed_after_persistence
 
@@ -222,6 +223,7 @@ def test_batch_publisher_freezes_four_artifacts_and_forecasts_with_retry(
     assert first == retry
     assert first.forecast_count == 4
     assert len(first.model_artifact_ids) == 4
+    assert len(first.forecast_ids) == 4
     assert len(list(tmp_path.glob("models/family=*/artifact=*/model-state-v1.json"))) == 4
     assert len(list(tmp_path.glob("forecasts/match=*/cutoff=*/variant=*/forecast=*.json"))) == 4
 
@@ -267,6 +269,7 @@ class _Dataset:
 class _Persistence:
     def __init__(self) -> None:
         self.published = False
+        self.persisted: PersistedSprint2BatchV1 | None = None
 
     def publish_batch(
         self,
@@ -275,7 +278,7 @@ class _Persistence:
         forecasts: tuple[Sprint2RawForecastV1, ...],
     ) -> PersistedSprint2BatchV1:
         self.published = True
-        return PersistedSprint2BatchV1(
+        self.persisted = PersistedSprint2BatchV1(
             cutoff=START + timedelta(days=84),
             target_match_ids=(UUID(int=101), UUID(int=102)),
             model_artifact_ids=(
@@ -284,8 +287,10 @@ class _Persistence:
                 UUID(int=203),
                 UUID(int=204),
             ),
+            forecast_ids=tuple(UUID(int=index) for index in range(301, 309)),
             forecast_count=8,
         )
+        return self.persisted
 
 
 class _ArtifactPublisher:

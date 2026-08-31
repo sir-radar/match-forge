@@ -19,7 +19,7 @@ from football.forecasting.dataset import (
     EvaluationMatchOutcomeV1,
     PublishedWalkForwardTargetPlanV1,
 )
-from football.forecasting.execution import Sprint2RawForecastV1
+from football.forecasting.execution import PersistedSprint2BatchV1, Sprint2RawForecastV1
 from football.forecasting.scoring import Sprint2ComparisonRowV1, Sprint2RawMetricsV1
 from football.forecasting.uncertainty import Sprint2BootstrapResultV1
 from football.storage.raw import ImmutableFileStore, ImmutableWrite
@@ -115,6 +115,7 @@ class Sprint2EvaluationEvidenceStore:
         *,
         evaluation_run_id: UUID,
         target_plan: PublishedWalkForwardTargetPlanV1,
+        persisted_batches: tuple[PersistedSprint2BatchV1, ...],
         forecasts: tuple[Sprint2RawForecastV1, ...],
         outcomes: tuple[EvaluationMatchOutcomeV1, ...],
         raw_metrics: Sprint2RawMetricsV1,
@@ -123,10 +124,15 @@ class Sprint2EvaluationEvidenceStore:
         calibration: Sprint2CalibrationAnalysisV1,
         provenance: Sprint2EvidenceProvenanceV1,
     ) -> PublishedSprint2EvaluationEvidenceV1:
-        _validate_population(target_plan, forecasts, outcomes, comparison_rows)
+        _validate_population(target_plan, persisted_batches, forecasts, outcomes, comparison_rows)
         base = f"run={evaluation_run_id}"
         writes = (
-            self._table(base, "predictions", _prediction_rows(forecasts), _PREDICTION_SCHEMA),
+            self._table(
+                base,
+                "predictions",
+                _prediction_rows(forecasts, persisted_batches),
+                _PREDICTION_SCHEMA,
+            ),
             self._table(base, "outcomes", _outcome_rows(outcomes), _OUTCOME_SCHEMA),
             self._table(
                 base,
@@ -228,6 +234,7 @@ class Sprint2EvaluationEvidenceStore:
 
 def _validate_population(
     target_plan: PublishedWalkForwardTargetPlanV1,
+    persisted_batches: tuple[PersistedSprint2BatchV1, ...],
     forecasts: tuple[Sprint2RawForecastV1, ...],
     outcomes: tuple[EvaluationMatchOutcomeV1, ...],
     comparisons: tuple[Sprint2ComparisonRowV1, ...],
@@ -246,16 +253,36 @@ def _validate_population(
         len(values) != len(target_ids) or set(values) != set(target_ids) for values in populations
     ):
         raise EvidencePublicationError("evaluation evidence populations do not match target plan")
+    persisted_ids = tuple(
+        match_id for batch in persisted_batches for match_id in batch.target_match_ids
+    )
+    if len(persisted_batches) != len(target_plan.plan.batches) or persisted_ids != target_ids:
+        raise EvidencePublicationError("persisted forecast lineage does not match target plan")
+    for planned, persisted in zip(target_plan.plan.batches, persisted_batches, strict=True):
+        if persisted.cutoff != planned.kickoff_at or persisted.target_match_ids != tuple(
+            target.context.match_id for target in planned.targets
+        ):
+            raise EvidencePublicationError("persisted forecast lineage conflicts with target batch")
 
 
 def _prediction_rows(
     forecasts: tuple[Sprint2RawForecastV1, ...],
+    persisted_batches: tuple[PersistedSprint2BatchV1, ...],
 ) -> tuple[dict[str, object], ...]:
+    lineage = _forecast_lineage(persisted_batches)
     return tuple(
         {
             "match_id": str(item.context.match_id),
             "kickoff_at": item.context.to_dict()["kickoff_at"],
             "forecast_context_sha256": item.context.sha256,
+            "elo_model_artifact_id": str(lineage[item.context.match_id][0][0]),
+            "dixon_coles_model_artifact_id": str(lineage[item.context.match_id][0][1]),
+            "corner_poisson_model_artifact_id": str(lineage[item.context.match_id][0][2]),
+            "corner_negative_binomial_model_artifact_id": str(lineage[item.context.match_id][0][3]),
+            "elo_forecast_id": str(lineage[item.context.match_id][1][0]),
+            "dixon_coles_forecast_id": str(lineage[item.context.match_id][1][1]),
+            "corner_poisson_forecast_id": str(lineage[item.context.match_id][1][2]),
+            "corner_negative_binomial_forecast_id": str(lineage[item.context.match_id][1][3]),
             "elo_home": item.elo_result.home,
             "elo_draw": item.elo_result.draw,
             "elo_away": item.elo_result.away,
@@ -275,6 +302,20 @@ def _prediction_rows(
         }
         for item in forecasts
     )
+
+
+def _forecast_lineage(
+    persisted_batches: tuple[PersistedSprint2BatchV1, ...],
+) -> dict[UUID, tuple[tuple[UUID, UUID, UUID, UUID], tuple[UUID, UUID, UUID, UUID]]]:
+    lineage: dict[UUID, tuple[tuple[UUID, UUID, UUID, UUID], tuple[UUID, UUID, UUID, UUID]]] = {}
+    for batch in persisted_batches:
+        for index, match_id in enumerate(batch.target_match_ids):
+            offset = index * 4
+            forecast_ids = batch.forecast_ids[offset : offset + 4]
+            if len(forecast_ids) != 4:
+                raise EvidencePublicationError("persisted target forecast lineage is incomplete")
+            lineage[match_id] = (batch.model_artifact_ids, forecast_ids)
+    return lineage
 
 
 def _outcome_rows(
@@ -416,6 +457,14 @@ _PREDICTION_SCHEMA = pa.schema(
         ("match_id", pa.string()),
         ("kickoff_at", pa.string()),
         ("forecast_context_sha256", pa.string()),
+        ("elo_model_artifact_id", pa.string()),
+        ("dixon_coles_model_artifact_id", pa.string()),
+        ("corner_poisson_model_artifact_id", pa.string()),
+        ("corner_negative_binomial_model_artifact_id", pa.string()),
+        ("elo_forecast_id", pa.string()),
+        ("dixon_coles_forecast_id", pa.string()),
+        ("corner_poisson_forecast_id", pa.string()),
+        ("corner_negative_binomial_forecast_id", pa.string()),
         ("elo_home", pa.float64()),
         ("elo_draw", pa.float64()),
         ("elo_away", pa.float64()),

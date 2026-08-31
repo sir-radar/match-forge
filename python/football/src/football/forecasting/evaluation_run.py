@@ -71,6 +71,7 @@ class Sprint2EvaluationRunner:
         evidence = self._evidence_store.publish(
             evaluation_run_id=evaluation_run_id,
             target_plan=target_plan,
+            persisted_batches=execution.persisted_batches,
             forecasts=execution.forecasts,
             outcomes=execution.outcomes,
             raw_metrics=execution.metrics,

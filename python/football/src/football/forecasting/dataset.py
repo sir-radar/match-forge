@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -332,7 +333,9 @@ class PointInTimeMatchDatasetProvider:
                        observation.away_score
                 FROM football.matches AS match
                 JOIN LATERAL (
-                    SELECT kickoff.kickoff_at, kickoff.match_observation_id
+                    SELECT kickoff.kickoff_at, kickoff.match_observation_id,
+                           lifecycle.id AS lifecycle_claim_id,
+                           lifecycle.known_from AS lifecycle_known_from
                     FROM football.match_kickoff_claims AS kickoff
                     JOIN football.match_lifecycle_claims AS lifecycle
                       ON lifecycle.id = kickoff.lifecycle_claim_id
@@ -349,13 +352,19 @@ class PointInTimeMatchDatasetProvider:
                 ) AS resolved ON TRUE
                 JOIN football.match_observations AS observation
                   ON observation.id = resolved.match_observation_id
+                JOIN football.match_corner_labels AS corner
+                  ON corner.lifecycle_claim_id = resolved.lifecycle_claim_id
+                 AND corner.match_id = match.id
+                 AND corner.claim_version = %s
+                 AND corner.known_from <= %s
                 WHERE match.competition_id = %s
                   AND match.season_id = %s
                   AND resolved.kickoff_at < %s
-                  AND (
-                      %s <> 'retrospective-fixed-snapshot-v1'
-                      OR resolved.kickoff_at + %s < %s
-                  )
+                  AND CASE
+                      WHEN %s = 'retrospective-fixed-snapshot-v1'
+                      THEN resolved.kickoff_at + %s
+                      ELSE GREATEST(resolved.lifecycle_known_from, corner.known_from)
+                  END < %s
                   AND observation.home_team_id IS NOT NULL
                   AND observation.away_team_id IS NOT NULL
                   AND observation.home_score IS NOT NULL
@@ -370,6 +379,8 @@ class PointInTimeMatchDatasetProvider:
                     scope.knowledge_cutoff,
                     scope.dataset_version_id,
                     LIFECYCLE_CLAIM_VERSION,
+                    CORNER_LABEL_VERSION,
+                    scope.knowledge_cutoff,
                     competition_id,
                     season_id,
                     scope.football_cutoff,
@@ -486,7 +497,82 @@ class PointInTimeMatchDatasetProvider:
                     season_id,
                 ),
             ).fetchall()
-        return build_walk_forward_target_plan(spec, competition_id, season_id, tuple(rows))
+        contexts = tuple(rows)
+        availability = self._outcome_availability(
+            spec, tuple(context.match_id for context in contexts)
+        )
+        common_contexts = tuple(context for context in contexts if context.match_id in availability)
+        return build_walk_forward_target_plan(
+            spec,
+            competition_id,
+            season_id,
+            common_contexts,
+            outcome_known_at_by_match=availability,
+        )
+
+    def _outcome_availability(
+        self,
+        spec: WalkForwardDatasetSpecV1,
+        match_ids: tuple[UUID, ...],
+    ) -> dict[UUID, datetime]:
+        if not match_ids:
+            return {}
+        with self._connection.cursor() as cursor:
+            rows = cursor.execute(
+                """
+                SELECT match.id,
+                       CASE
+                           WHEN %s = 'retrospective-fixed-snapshot-v1'
+                           THEN resolved.kickoff_at + %s
+                           ELSE GREATEST(resolved.lifecycle_known_from, corner.known_from)
+                       END AS outcome_known_at
+                FROM football.matches AS match
+                JOIN LATERAL (
+                    SELECT kickoff.kickoff_at, kickoff.match_observation_id,
+                           lifecycle.id AS lifecycle_claim_id,
+                           lifecycle.known_from AS lifecycle_known_from
+                    FROM football.match_kickoff_claims AS kickoff
+                    JOIN football.match_lifecycle_claims AS lifecycle
+                      ON lifecycle.id = kickoff.lifecycle_claim_id
+                    WHERE kickoff.match_id = match.id
+                      AND kickoff.claim_version = %s
+                      AND kickoff.timezone_name = %s
+                      AND kickoff.tzdata_version = %s
+                      AND kickoff.known_from <= %s
+                      AND lifecycle.known_from <= %s
+                      AND lifecycle.dataset_version_id = %s
+                      AND lifecycle.claim_version = %s
+                    ORDER BY kickoff.known_from DESC, kickoff.id DESC
+                    LIMIT 1
+                ) AS resolved ON TRUE
+                JOIN football.match_observations AS observation
+                  ON observation.id = resolved.match_observation_id
+                JOIN football.match_corner_labels AS corner
+                  ON corner.lifecycle_claim_id = resolved.lifecycle_claim_id
+                 AND corner.match_id = match.id
+                 AND corner.claim_version = %s
+                 AND corner.known_from <= %s
+                WHERE match.id = ANY(%s)
+                  AND observation.home_score IS NOT NULL
+                  AND observation.away_score IS NOT NULL
+                ORDER BY match.id
+                """,
+                (
+                    spec.knowledge_mode,
+                    RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
+                    KICKOFF_CLAIM_VERSION,
+                    KICKOFF_TIMEZONE,
+                    TZDATA_VERSION,
+                    spec.knowledge_cutoff,
+                    spec.knowledge_cutoff,
+                    spec.dataset_version_id,
+                    LIFECYCLE_CLAIM_VERSION,
+                    CORNER_LABEL_VERSION,
+                    spec.knowledge_cutoff,
+                    list(match_ids),
+                ),
+            ).fetchall()
+        return {UUID(str(match_id)): known_at for match_id, known_at in rows}
 
     def reveal_outcomes(
         self,
@@ -580,6 +666,8 @@ def build_walk_forward_target_plan(
     competition_id: UUID,
     season_id: UUID,
     contexts: tuple[ForecastMatchContextV1, ...],
+    *,
+    outcome_known_at_by_match: Mapping[UUID, datetime] | None = None,
 ) -> WalkForwardTargetPlanV1:
     identifiers = [context.match_id for context in contexts]
     if len(identifiers) != len(set(identifiers)):
@@ -590,6 +678,7 @@ def build_walk_forward_target_plan(
     ):
         raise ForecastingDatasetError("walk-forward context is outside requested corpus")
     ordered = sorted(contexts, key=lambda context: (context.kickoff_at, str(context.match_id)))
+    availability = _planning_outcome_availability(spec, tuple(ordered), outcome_known_at_by_match)
     grouped: list[list[ForecastMatchContextV1]] = []
     for context in ordered:
         if not grouped or grouped[-1][0].kickoff_at != context.kickoff_at:
@@ -603,7 +692,7 @@ def build_walk_forward_target_plan(
     excluded = 0
     for group in grouped:
         _require_distinct_batch_teams(group)
-        available, pending = _available_history(spec, group[0].kickoff_at, pending)
+        available, pending = _available_history(group[0].kickoff_at, pending, availability)
         for context in available:
             team_history[context.home_team_id] += 1
             team_history[context.away_team_id] += 1
@@ -635,18 +724,47 @@ def build_walk_forward_target_plan(
 
 
 def _available_history(
-    spec: WalkForwardDatasetSpecV1,
     cutoff: datetime,
     pending: list[ForecastMatchContextV1],
+    outcome_known_at_by_match: Mapping[UUID, datetime],
 ) -> tuple[tuple[ForecastMatchContextV1, ...], list[ForecastMatchContextV1]]:
-    lag = (
-        RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG
-        if spec.knowledge_mode == "retrospective-fixed-snapshot-v1"
-        else timedelta(0)
+    available = tuple(
+        context for context in pending if outcome_known_at_by_match[context.match_id] < cutoff
     )
-    available = tuple(context for context in pending if context.kickoff_at + lag < cutoff)
-    remaining = [context for context in pending if context.kickoff_at + lag >= cutoff]
+    remaining = [
+        context for context in pending if outcome_known_at_by_match[context.match_id] >= cutoff
+    ]
     return available, remaining
+
+
+def _planning_outcome_availability(
+    spec: WalkForwardDatasetSpecV1,
+    contexts: tuple[ForecastMatchContextV1, ...],
+    provided: Mapping[UUID, datetime] | None,
+) -> dict[UUID, datetime]:
+    if provided is None:
+        if spec.knowledge_mode != "retrospective-fixed-snapshot-v1":
+            raise ForecastingDatasetError(
+                "bitemporal walk-forward planning requires governed outcome availability"
+            )
+        availability = {
+            context.match_id: context.kickoff_at + RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG
+            for context in contexts
+        }
+    else:
+        availability = dict(provided)
+    if set(availability) != {context.match_id for context in contexts}:
+        raise ForecastingDatasetError(
+            "walk-forward outcome availability does not match the common target population"
+        )
+    for context in contexts:
+        known_at = availability[context.match_id]
+        _aware(known_at, "outcome_known_at")
+        if known_at < context.kickoff_at or known_at > spec.knowledge_cutoff:
+            raise ForecastingDatasetError(
+                "walk-forward outcome availability is outside its governed time range"
+            )
+    return availability
 
 
 def _require_distinct_batch_teams(group: list[ForecastMatchContextV1]) -> None:

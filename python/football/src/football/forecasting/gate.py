@@ -153,14 +153,16 @@ class Sprint2GateService:
         evaluation_run_id = _evaluation_id(
             completed_at, requested, coverage, "baseline-policy-review", findings
         )
-        scope = plan.scope_for(plan.batches[0])
+        scope = plan.scope_for(plan.batches[-1])
+        cutoff_start = plan.batches[0].kickoff_at
+        cutoff_end = plan.batches[-1].kickoff_at
         try:
             run = self._runner(provider, policy, completed_at).run(
                 evaluation_run_id=evaluation_run_id,
                 target_plan=target_plan,
                 provenance=self._provenance,
             )
-        except RuntimeError as error:
+        except (RuntimeError, ValueError) as error:
             return self._publish_report(
                 Sprint2EvaluationReportV1(
                     evaluation_run_id=evaluation_run_id,
@@ -172,6 +174,8 @@ class Sprint2GateService:
                     status="FAIL",
                     completed_at=completed_at,
                     raw_match_result_metrics=None,
+                    evaluation_football_cutoff_start=cutoff_start,
+                    evaluation_football_cutoff_end=cutoff_end,
                     findings=(f"walk-forward evaluation failed: {error}",),
                 ),
                 register=True,
@@ -188,6 +192,8 @@ class Sprint2GateService:
             raw_match_result_metrics=run.execution.metrics.dixon_coles_result,
             evidence_manifest_path=run.evidence.manifest_relative_path,
             evidence_manifest_sha256=run.evidence.manifest_sha256,
+            evaluation_football_cutoff_start=cutoff_start,
+            evaluation_football_cutoff_end=cutoff_end,
             findings=findings,
         )
         return self._publish_report(report, register=True)
@@ -363,7 +369,7 @@ class Sprint2GateService:
                 SELECT lifecycle.dataset_version_id, lifecycle.source_snapshot_id,
                        validation.policy_sha256,
                        GREATEST(max(lifecycle.known_from), max(kickoff.known_from),
-                                max(corner.known_from)),
+                                COALESCE(max(corner.known_from), max(lifecycle.known_from))),
                        count(DISTINCT lifecycle.match_id)
                 FROM football.match_lifecycle_claims AS lifecycle
                 JOIN football.matches AS match ON match.id = lifecycle.match_id
@@ -372,9 +378,11 @@ class Sprint2GateService:
                  AND kickoff.claim_version = %s
                  AND kickoff.timezone_name = %s
                  AND kickoff.tzdata_version = %s
-                JOIN football.match_corner_labels AS corner
+                LEFT JOIN football.match_corner_labels AS corner
                   ON corner.lifecycle_claim_id = lifecycle.id
                  AND corner.claim_version = %s
+                JOIN football.match_observations AS observation
+                  ON observation.id = lifecycle.match_observation_id
                 JOIN football.validation_runs AS validation
                   ON validation.id = lifecycle.validation_run_id
                  AND validation.dataset_version_id = lifecycle.dataset_version_id
@@ -382,6 +390,8 @@ class Sprint2GateService:
                  AND validation.status IN ('passed', 'warnings')
                 WHERE match.season_id = %s
                   AND lifecycle.claim_version = %s
+                  AND observation.home_score IS NOT NULL
+                  AND observation.away_score IS NOT NULL
                 GROUP BY lifecycle.dataset_version_id, lifecycle.source_snapshot_id,
                          validation.policy_sha256
                 ORDER BY lifecycle.dataset_version_id

@@ -8,6 +8,7 @@ from uuid import UUID
 
 import pytest
 from football.forecasting.contracts import PointInTimeScopeV1
+from football.forecasting.corner_labels import CORNER_LABEL_VERSION
 from football.forecasting.dataset import (
     RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
     CompletedMatchV1,
@@ -100,6 +101,8 @@ def test_completed_history_uses_strict_football_cutoff_and_exact_lineage() -> No
         CUTOFF,
         DATASET,
         LIFECYCLE_CLAIM_VERSION,
+        CORNER_LABEL_VERSION,
+        CUTOFF,
         COMPETITION,
         SEASON,
         CUTOFF,
@@ -199,6 +202,46 @@ def test_retrospective_plan_excludes_outcomes_not_available_before_cutoff() -> N
     )
 
 
+def test_bitemporal_plan_uses_governed_outcome_availability() -> None:
+    first = CUTOFF
+    overlapping = first + timedelta(minutes=10)
+    later = first + timedelta(hours=3)
+    contexts = (
+        ForecastMatchContextV1(UUID(int=30), COMPETITION, SEASON, first, HOME, AWAY),
+        ForecastMatchContextV1(UUID(int=31), COMPETITION, SEASON, overlapping, HOME, AWAY),
+        ForecastMatchContextV1(UUID(int=32), COMPETITION, SEASON, later, HOME, AWAY),
+    )
+    spec = WalkForwardDatasetSpecV1(
+        dataset_version_id=DATASET,
+        source_snapshot_id=SNAPSHOT,
+        feature_set_version="sprint2-team-counts-v1",
+        knowledge_cutoff=later + timedelta(days=1),
+        knowledge_mode="bitemporal",
+        quality_policy_sha256="a" * 64,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+    )
+
+    plan = build_walk_forward_target_plan(
+        spec,
+        COMPETITION,
+        SEASON,
+        contexts,
+        outcome_known_at_by_match={
+            contexts[0].match_id: first + timedelta(hours=2),
+            contexts[1].match_id: overlapping + timedelta(hours=4),
+            contexts[2].match_id: later + timedelta(hours=2),
+        },
+    )
+
+    assert plan.batches == (
+        WalkForwardTargetBatchV1(
+            later,
+            (EligibleForecastTargetV1(contexts[2], 1, 1, 1),),
+        ),
+    )
+
+
 def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separately() -> None:
     context = ForecastMatchContextV1(MATCH, COMPETITION, SEASON, CUTOFF, HOME, AWAY)
     outcome = EvaluationMatchOutcomeV1(MATCH, CUTOFF, 2, 1, 7, 4, CUTOFF)
@@ -206,6 +249,7 @@ def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separat
         [
             _Cursor(one=("published",)),
             _Cursor(many=[context]),
+            _Cursor(many=[(MATCH, CUTOFF + timedelta(hours=2))]),
             _Cursor(one=("published",)),
             _Cursor(many=[outcome]),
         ]
@@ -223,12 +267,16 @@ def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separat
     assert "home_score" not in plan_select
     assert "away_score" not in plan_select
     assert "corners" not in plan_select
-    outcome_query = connection.used[3].statement
+    availability_query = connection.used[2].statement
+    assert "home_score" not in availability_query.split("FROM football.matches", maxsplit=1)[0]
+    assert "home_corners" not in availability_query
+    assert "match_corner_labels" in availability_query
+    outcome_query = connection.used[4].statement
     assert "home_score" in outcome_query
     assert "home_corners" in outcome_query
     assert "match_corner_labels" in outcome_query
     assert "kickoff.kickoff_at + %s" in outcome_query
-    assert connection.used[3].parameters[:2] == (
+    assert connection.used[4].parameters[:2] == (
         "retrospective-fixed-snapshot-v1",
         timedelta(hours=2),
     )
@@ -329,7 +377,7 @@ def _walk_forward_spec(
         dataset_version_id=DATASET,
         source_snapshot_id=SNAPSHOT,
         feature_set_version="sprint2-team-counts-v1",
-        knowledge_cutoff=CUTOFF,
+        knowledge_cutoff=CUTOFF + timedelta(days=365),
         knowledge_mode="retrospective-fixed-snapshot-v1",
         quality_policy_sha256="a" * 64,
         minimum_team_history=minimum_team_history,

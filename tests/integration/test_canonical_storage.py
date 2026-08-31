@@ -706,11 +706,25 @@ def test_model_artifact_publication_reconciles_identical_retry(
     )
     publisher = ModelArtifactPublisher(connection, tmp_path)
 
+    with connection.transaction(force_rollback=True):
+        orphaned = publisher.publish(
+            model_artifact_id=artifact_id,
+            fit_spec=fit_spec,
+            state={"contract": "DixonColesModelStateV1", "home_advantage": 0.2},
+            created_at=now,
+        )
+        assert orphaned.status == "published"
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT count(*) FROM football.model_artifacts WHERE fit_spec_sha256 = %s",
+            (fit_spec.sha256,),
+        ).fetchone() == (0,)
+
     first = publisher.publish(
         model_artifact_id=artifact_id,
         fit_spec=fit_spec,
         state={"contract": "DixonColesModelStateV1", "home_advantage": 0.2},
-        created_at=now,
+        created_at=now + timedelta(hours=1),
     )
     with connection.cursor() as cursor:
         retry_artifact_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
@@ -722,6 +736,7 @@ def test_model_artifact_publication_reconciles_identical_retry(
     )
 
     assert first.status == "published"
+    assert first.manifest.created_at == now
     assert retry.status == "verified_existing"
     assert retry.manifest.model_artifact_id == artifact_id
     with connection.cursor() as cursor:

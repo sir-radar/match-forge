@@ -26,7 +26,11 @@ from football.forecasting.evidence import (
     Sprint2EvaluationEvidenceStore,
     Sprint2EvidenceProvenanceV1,
 )
-from football.forecasting.execution import Sprint2ExecutionResultV1, Sprint2RawForecastV1
+from football.forecasting.execution import (
+    PersistedSprint2BatchV1,
+    Sprint2ExecutionResultV1,
+    Sprint2RawForecastV1,
+)
 from football.forecasting.scoring import Sprint2Scorer
 from football.forecasting.uncertainty import (
     BootstrapPolicyV1,
@@ -40,6 +44,7 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
     run_id = UUID(int=900)
     forecast, outcome, plan = _evidence_inputs()
     plan_publication = ImmutableWalkForwardTargetPlanStore(tmp_path).publish(plan)
+    persisted = _persisted_batch(plan)
     scorer = Sprint2Scorer()
     metrics = scorer.evaluate((forecast,), (outcome,))
     comparisons = scorer.comparison_rows((forecast,), (outcome,))
@@ -53,6 +58,7 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
     first = store.publish(
         evaluation_run_id=run_id,
         target_plan=plan_publication,
+        persisted_batches=(persisted,),
         forecasts=(forecast,),
         outcomes=(outcome,),
         raw_metrics=metrics,
@@ -64,6 +70,7 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
     retry = store.publish(
         evaluation_run_id=run_id,
         target_plan=plan_publication,
+        persisted_batches=(persisted,),
         forecasts=(forecast,),
         outcomes=(outcome,),
         raw_metrics=metrics,
@@ -92,6 +99,8 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
     prediction_file = next(item for item in first.manifest.files if item.name == "predictions")
     table = parquet.read_table(tmp_path / prediction_file.relative_path)
     assert table.num_rows == 1
+    assert table.column("elo_model_artifact_id")[0].as_py() == str(UUID(int=100))
+    assert table.column("elo_forecast_id")[0].as_py() == str(UUID(int=200))
     payload = json.loads((tmp_path / first.manifest_relative_path).read_text(encoding="utf-8"))
     assert payload["target_set_sha256"] == plan.target_set_sha256
     assert payload["bootstrap_policy"]["seed"] == 5
@@ -100,7 +109,10 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
 def test_evaluation_runner_executes_and_retains_analysis(tmp_path: Path) -> None:
     forecast, outcome, plan = _evidence_inputs()
     metrics = Sprint2Scorer().evaluate((forecast,), (outcome,))
-    executor = _Executor(Sprint2ExecutionResultV1(1, 1, 4, (forecast,), (outcome,), metrics))
+    persisted = _persisted_batch(plan)
+    executor = _Executor(
+        Sprint2ExecutionResultV1(1, 1, 4, (forecast,), (outcome,), metrics, (persisted,))
+    )
     target_plan = ImmutableWalkForwardTargetPlanStore(tmp_path).publish(plan)
     runner = Sprint2EvaluationRunner(
         executor=executor,
@@ -184,3 +196,18 @@ def _evidence_inputs() -> tuple[
         spec, context.competition_id, context.season_id, (batch,), 101, 100
     )
     return forecast, outcome, plan
+
+
+def _persisted_batch(plan: WalkForwardTargetPlanV1) -> PersistedSprint2BatchV1:
+    return PersistedSprint2BatchV1(
+        cutoff=plan.batches[0].kickoff_at,
+        target_match_ids=(plan.batches[0].targets[0].context.match_id,),
+        model_artifact_ids=(
+            UUID(int=100),
+            UUID(int=101),
+            UUID(int=102),
+            UUID(int=103),
+        ),
+        forecast_ids=tuple(UUID(int=index) for index in range(200, 204)),
+        forecast_count=4,
+    )

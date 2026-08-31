@@ -151,6 +151,7 @@ class PersistedSprint2BatchV1:
     cutoff: datetime
     target_match_ids: tuple[UUID, ...]
     model_artifact_ids: tuple[UUID, UUID, UUID, UUID]
+    forecast_ids: tuple[UUID, ...]
     forecast_count: int
 
     def __post_init__(self) -> None:
@@ -169,6 +170,12 @@ class PersistedSprint2BatchV1:
             raise Sprint2ExecutionError(
                 "persisted Sprint 2 batch must contain four forecasts per target"
             )
+        if len(self.forecast_ids) != self.forecast_count or len(self.forecast_ids) != len(
+            set(self.forecast_ids)
+        ):
+            raise Sprint2ExecutionError(
+                "persisted Sprint 2 batch requires one unique identity per forecast"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,6 +186,7 @@ class Sprint2ExecutionResultV1:
     forecasts: tuple[Sprint2RawForecastV1, ...]
     outcomes: tuple[EvaluationMatchOutcomeV1, ...]
     metrics: Sprint2RawMetricsV1
+    persisted_batches: tuple[PersistedSprint2BatchV1, ...]
 
 
 class Sprint2DatasetPort(Protocol):
@@ -222,6 +230,7 @@ class Sprint2WalkForwardExecutor:
             raise Sprint2ExecutionError("Sprint 2 execution plan has no eligible batches")
         all_forecasts: list[Sprint2RawForecastV1] = []
         all_outcomes: list[EvaluationMatchOutcomeV1] = []
+        persisted_batches: list[PersistedSprint2BatchV1] = []
         persisted_forecasts = 0
         for batch in plan.batches:
             scope = plan.scope_for(batch)
@@ -241,6 +250,7 @@ class Sprint2WalkForwardExecutor:
             all_forecasts.extend(forecasts)
             all_outcomes.extend(target_outcomes)
             persisted_forecasts += persisted.forecast_count
+            persisted_batches.append(persisted)
         from football.forecasting.scoring import Sprint2Scorer
 
         metrics = Sprint2Scorer().evaluate(tuple(all_forecasts), tuple(all_outcomes))
@@ -253,6 +263,7 @@ class Sprint2WalkForwardExecutor:
             forecasts=tuple(all_forecasts),
             outcomes=tuple(all_outcomes),
             metrics=metrics,
+            persisted_batches=tuple(persisted_batches),
         )
 
 

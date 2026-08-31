@@ -17,6 +17,8 @@
     "calibration_accepted",
     "evidence_manifest_path",
     "evidence_manifest_sha256",
+    "evaluation_football_cutoff_start",
+    "evaluation_football_cutoff_end",
     "findings"
   ],
   "properties": {
@@ -38,12 +40,14 @@
     "calibration_accepted": {"type": ["boolean", "null"]},
     "evidence_manifest_path": {
       "type": ["string", "null"],
-      "pattern": "^[^/\\\\][^\\\\]*$"
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))[^\\\\/\\u0000-\\u001f]+(?:/[^\\\\/\\u0000-\\u001f]+)*$"
     },
     "evidence_manifest_sha256": {
       "type": ["string", "null"],
       "pattern": "^[0-9a-f]{64}$"
     },
+    "evaluation_football_cutoff_start": {"type": ["string", "null"], "format": "date-time"},
+    "evaluation_football_cutoff_end": {"type": ["string", "null"], "format": "date-time"},
     "findings": {
       "type": "array",
       "uniqueItems": true,

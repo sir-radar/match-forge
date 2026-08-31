@@ -10,7 +10,9 @@ evidence.
 `PointInTimeMatchDatasetProvider` applies the dual cutoffs before models receive data. It resolves
 chronology through immutable kickoff claims linked to the exact lifecycle dataset; it does not read
 timezone-naive provider values as UTC. Forecast contexts are label-free and have a canonical
-checksum. Same-kickoff targets remain one batch. `WalkForwardTargetPlanV1` applies the frozen
+checksum. The evaluator freezes one common outcome-complete population before applying warm-up
+rules; missing governed corner labels cannot silently become a later 100% execution requirement.
+Same-kickoff targets remain one batch. `WalkForwardTargetPlanV1` applies the frozen
 10-match team and 100-match competition minimums from prior batches only, then retains the ordered
 label-free target set and checksum. See [Walk-forward target plan](walk-forward-target-plan.md).
 
@@ -19,7 +21,8 @@ retraining frequency. Evaluation observations keep prediction time, kickoff time
 `outcome_known_at` separate. Calibration rejects any outcome not known strictly before its fit
 cutoff. Under `retrospective-fixed-snapshot-v1`, the approved EPL regulation-time corpus uses the
 existing conservative two-hour post-kickoff outcome-availability rule; strict bitemporal modes use
-the governed claim timestamps instead.
+the governed lifecycle and corner-claim timestamps instead. Both planning and history queries
+require `outcome_known_at < football_cutoff` before a completed result can train a later batch.
 
 `Sprint2WalkForwardExecutor` consumes the frozen target plan through explicit dataset and
 persistence ports. For each batch it loads only prior eligible history, fits Elo, Dixon–Coles,
@@ -53,6 +56,9 @@ without exceeding the locked log-loss or Brier regression allowances.
 Uncertainty uses one shared set of deterministic paired chronological moving-block resamples across
 candidate/reference metrics: 2,000 replicates, block size 10, 95% intervals, and explicit seed
 `20260831`. Evidence retains replicate deltas rather than only interval summaries.
+Prediction evidence also records the exact four model-artifact UUIDs and four persisted forecast
+UUIDs for every target. The evaluation report records the first and final football cutoffs and uses
+the final batch scope rather than presenting the first batch as the scope of the whole run.
 
 ## Leakage invariants
 

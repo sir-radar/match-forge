@@ -78,9 +78,7 @@ class PortableModelArtifactStore:
         }
         state_payload = canonical_json_bytes(portable_state) + b"\n"
         state_sha256 = sha256_bytes(canonical_json_bytes(portable_state))
-        artifact_root = (
-            f"models/family={fit_spec.model_family.lower()}/artifact={model_artifact_id}"
-        )
+        artifact_root = _artifact_root(model_artifact_id, fit_spec)
         state_write = self._files.publish(f"{artifact_root}/model-state-v1.json", state_payload)
         manifest = ModelArtifactManifestV1(
             model_artifact_id=model_artifact_id,
@@ -119,6 +117,34 @@ class PortableModelArtifactStore:
             manifest_sha256=manifest_write.sha256,
             status=status,
         )
+
+    def existing_created_at(
+        self, model_artifact_id: UUID, fit_spec: ModelFitSpecV1
+    ) -> datetime | None:
+        manifest_path = (
+            f"{_artifact_root(model_artifact_id, fit_spec)}/model-artifact-manifest-v1.json"
+        )
+        path = self._files.path_for(manifest_path)
+        if not path.exists() and not path.is_symlink():
+            return None
+        if not path.is_file() or path.is_symlink():
+            raise ArtifactPublicationError("existing model artifact manifest is invalid")
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ArtifactPublicationError("existing model artifact manifest is invalid") from error
+        if not isinstance(payload, dict) or (
+            payload.get("contract") != "ModelArtifactManifestV1"
+            or payload.get("model_artifact_id") != str(model_artifact_id)
+            or payload.get("fit_spec_sha256") != fit_spec.sha256
+        ):
+            raise ArtifactPublicationError("existing model artifact manifest identity conflicts")
+        try:
+            created_at = datetime.fromisoformat(str(payload["created_at"]).replace("Z", "+00:00"))
+        except (KeyError, ValueError) as error:
+            raise ArtifactPublicationError("existing artifact created_at is invalid") from error
+        _aware(created_at, "existing artifact created_at")
+        return created_at
 
     def load(
         self,
@@ -341,7 +367,11 @@ class ModelArtifactPublisher:
                 (fit_spec.sha256,),
             ).fetchone()
             resolved_id = model_artifact_id if existing is None else UUID(str(existing[0]))
-            resolved_created_at = created_at if existing is None else existing[1]
+            resolved_created_at = (
+                self._store.existing_created_at(resolved_id, fit_spec) or created_at
+                if existing is None
+                else existing[1]
+            )
             artifact = self._store.publish(
                 model_artifact_id=resolved_id,
                 fit_spec=fit_spec,
@@ -360,6 +390,10 @@ class ModelArtifactPublisher:
             manifest_sha256=artifact.manifest_sha256,
             status="published",
         )
+
+
+def _artifact_root(model_artifact_id: UUID, fit_spec: ModelFitSpecV1) -> str:
+    return f"models/family={fit_spec.model_family.lower()}/artifact={model_artifact_id}"
 
 
 def _validate_compatibility(
