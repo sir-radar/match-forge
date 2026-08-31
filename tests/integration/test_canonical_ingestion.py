@@ -21,7 +21,10 @@ from football.forecasting.corner_labels import (
     CornerLabelError,
     Sprint2CornerLabelPublisher,
 )
-from football.forecasting.dataset import PointInTimeMatchDatasetProvider
+from football.forecasting.dataset import (
+    PointInTimeMatchDatasetProvider,
+    WalkForwardDatasetSpecV1,
+)
 from football.forecasting.gate import Sprint2GateService
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.kickoff import KickoffClaimError, Sprint2KickoffClaimPublisher
@@ -1438,6 +1441,17 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     season_id = UUID(str(canonical_scope[1]))
     point_in_time = PointInTimeMatchDatasetProvider(connection)
     batch = point_in_time.forecast_batch(scope, competition_id, season_id)
+    walk_forward_spec = WalkForwardDatasetSpecV1(
+        dataset_version_id=scope.dataset_version_id,
+        source_snapshot_id=scope.source_snapshot_id,
+        feature_set_version=scope.feature_set_version,
+        knowledge_cutoff=scope.knowledge_cutoff,
+        knowledge_mode=scope.knowledge_mode,
+        quality_policy_sha256=scope.quality_policy_sha256,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+    )
+    outcomes = point_in_time.reveal_outcomes(walk_forward_spec, (batch.matches[0].match_id,))
     history_scope = PointInTimeScopeV1(
         dataset_version_id=scope.dataset_version_id,
         source_snapshot_id=scope.source_snapshot_id,
@@ -1452,6 +1466,9 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
 
     assert len(batch.matches) == 1
     assert "score" not in batch.matches[0].to_dict()
+    assert "corner" not in batch.matches[0].to_dict()
+    assert (outcomes[0].home_score, outcomes[0].away_score) == (0, 0)
+    assert (outcomes[0].home_corners, outcomes[0].away_corners) == (2, 1)
     assert len(history) == 1
     assert (history[0].home_score, history[0].away_score) == (0, 0)
     gate = Sprint2GateService(connection, tmp_path / "gate-resolved").evaluate(corpus)
