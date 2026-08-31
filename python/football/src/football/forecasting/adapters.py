@@ -3,7 +3,11 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from football.forecasting.contracts import MatchResultProbabilitiesV1
+from football.forecasting.contracts import (
+    CornerForecastPayloadV1,
+    GoalForecastPayloadV1,
+    MatchResultProbabilitiesV1,
+)
 from football.forecasting.corner import CornerForecast
 from football.forecasting.dixon_coles import GoalForecast
 
@@ -50,6 +54,40 @@ def dixon_coles_result_probabilities(forecast: GoalForecast) -> MatchResultProba
         home=forecast.markets.home_win,
         draw=forecast.markets.draw,
         away=forecast.markets.away_win,
+    )
+
+
+def goal_forecast_payload(forecast: GoalForecast) -> GoalForecastPayloadV1:
+    under_4_5 = sum(
+        forecast.exact_score_probability(home_goals, away_goals)
+        for home_goals in range(5)
+        for away_goals in range(5 - home_goals)
+    )
+    return GoalForecastPayloadV1(
+        lambda_home=forecast.lambda_home,
+        lambda_away=forecast.lambda_away,
+        score_labels=forecast.score_matrix.labels,
+        score_probabilities=forecast.score_matrix.probabilities,
+        over_0_5=_bounded_probability(1.0 - forecast.exact_score_probability(0, 0), "over_0_5"),
+        over_1_5=forecast.markets.over_1_5,
+        over_2_5=forecast.markets.over_2_5,
+        over_3_5=forecast.markets.over_3_5,
+        over_4_5=_bounded_probability(1.0 - under_4_5, "over_4_5"),
+        btts_yes=forecast.markets.both_teams_to_score,
+        home_clean_sheet=forecast.markets.home_clean_sheet,
+        away_clean_sheet=forecast.markets.away_clean_sheet,
+        low_score_correlation=forecast.low_score_correlation,
+    )
+
+
+def corner_forecast_payload(forecast: CornerForecast) -> CornerForecastPayloadV1:
+    return CornerForecastPayloadV1(
+        distribution=forecast.distribution,
+        lambda_home=forecast.lambda_home,
+        lambda_away=forecast.lambda_away,
+        home_variance=forecast.home_variance,
+        away_variance=forecast.away_variance,
+        dispersion=forecast.dispersion,
     )
 
 
@@ -100,3 +138,9 @@ class CornerTotalDistributionV1:
 def _finite(value: float, field_name: str) -> None:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise ForecastAdapterError(f"{field_name} must be finite")
+
+
+def _bounded_probability(value: float, field_name: str) -> float:
+    if not math.isfinite(value) or value < -1e-12 or value > 1.0 + 1e-12:
+        raise ForecastAdapterError(f"{field_name} calculation produced an invalid probability")
+    return min(max(value, 0.0), 1.0)

@@ -205,6 +205,21 @@ class TeamEloModel:
             state[match.away_team_id] = _TeamState(away_post, match.kickoff_at)
         return EloRun(self.config, tuple(rated))
 
+    def rating_before(self, run: EloRun, team_id: UUID, cutoff: datetime) -> float:
+        if cutoff.tzinfo is None or cutoff.utcoffset() is None:
+            raise EloContractError("rating cutoff must include a timezone")
+        if run.config != self.config:
+            raise EloContractError("Elo run does not match model configuration")
+        latest = next(
+            (rating for rating in reversed(run.history) if rating.team_id == team_id),
+            None,
+        )
+        if latest is None:
+            return self.config.initial_rating
+        if cutoff <= latest.rating_timestamp:
+            raise EloContractError("rating cutoff precedes latest completed match")
+        return self._decayed_rating(latest.rating, latest.rating_timestamp, cutoff)
+
     def _pre_match_rating(
         self, state: dict[UUID, _TeamState], team_id: UUID, kickoff_at: datetime
     ) -> float:
@@ -216,13 +231,15 @@ class TeamEloModel:
             raise EloContractError("one team cannot play two matches at the same timestamp")
         if elapsed_days < 0:
             raise EloContractError("Elo matches must be processed chronologically")
+        return self._decayed_rating(previous.rating, previous.last_played_at, kickoff_at)
+
+    def _decayed_rating(self, rating: float, rating_timestamp: datetime, cutoff: datetime) -> float:
+        elapsed_days = (cutoff - rating_timestamp).total_seconds() / 86_400.0
         half_life = self.config.time_decay_half_life_days
         if half_life is None:
-            return previous.rating
+            return rating
         retained = math.pow(0.5, elapsed_days / half_life)
-        return (
-            self.config.initial_rating + (previous.rating - self.config.initial_rating) * retained
-        )
+        return self.config.initial_rating + (rating - self.config.initial_rating) * retained
 
 
 def _expected_home(home_rating: float, away_rating: float, home_advantage: float) -> float:

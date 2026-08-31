@@ -30,7 +30,7 @@ from football.forecasting.dixon_coles import (
     DixonColesFit,
     DixonColesParameters,
 )
-from football.forecasting.elo import EloRun
+from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
 from football.storage.raw import ImmutableFileStore
 
 ArtifactPublicationStatus = Literal["published", "verified_existing"]
@@ -406,22 +406,85 @@ def serialize_elo_run(run: EloRun) -> dict[str, object]:
     return {
         "contract": "EloModelStateV1",
         "config": run.config.to_dict(),
-        "ratings": [
+        "matches": [
             {
-                "match_id": str(rating.match_id),
-                "competition_id": str(rating.competition_id),
-                "team_id": str(rating.team_id),
-                "opponent_team_id": str(rating.opponent_team_id),
-                "rating_timestamp": _utc(rating.rating_timestamp),
-                "is_home": rating.is_home,
-                "pre_match_rating": rating.pre_match_rating,
-                "rating": rating.rating,
-                "expected_score": rating.expected_score,
-                "actual_score": rating.actual_score,
+                "match_id": str(match.match_id),
+                "competition_id": str(match.competition_id),
+                "kickoff_at": _utc(match.kickoff_at),
+                "home_team_id": str(match.home_team_id),
+                "away_team_id": str(match.away_team_id),
+                "home_score": match.home_score,
+                "away_score": match.away_score,
+                "home_pre_match_rating": match.home_pre_match_rating,
+                "away_pre_match_rating": match.away_pre_match_rating,
+                "expected_home_score": match.expected_home_score,
+                "actual_home_score": match.actual_home_score,
+                "home_post_match_rating": match.home_post_match_rating,
+                "away_post_match_rating": match.away_post_match_rating,
             }
-            for rating in run.history
+            for match in run.matches
         ],
+        "ratings": _serialize_elo_ratings(run),
     }
+
+
+def _serialize_elo_ratings(run: EloRun) -> list[dict[str, object]]:
+    return [
+        {
+            "match_id": str(rating.match_id),
+            "competition_id": str(rating.competition_id),
+            "team_id": str(rating.team_id),
+            "opponent_team_id": str(rating.opponent_team_id),
+            "rating_timestamp": _utc(rating.rating_timestamp),
+            "is_home": rating.is_home,
+            "pre_match_rating": rating.pre_match_rating,
+            "rating": rating.rating,
+            "expected_score": rating.expected_score,
+            "actual_score": rating.actual_score,
+        }
+        for rating in run.history
+    ]
+
+
+def deserialize_elo_run(state: Mapping[str, object]) -> EloRun:
+    if state.get("contract") != "EloModelStateV1":
+        raise ArtifactPublicationError("unsupported Elo model state")
+    config_values = _object_mapping(state.get("config"), "Elo config")
+    config = EloConfig(
+        model_version=_string(config_values, "model_version"),
+        initial_rating=_float(config_values, "initial_rating"),
+        k_factor=_float(config_values, "k_factor"),
+        home_advantage=_float(config_values, "home_advantage"),
+        time_decay_half_life_days=_optional_float(config_values, "time_decay_half_life_days"),
+        competition_weights=_uuid_float_mapping(config_values, "competition_weights"),
+    )
+    raw_matches = state.get("matches")
+    if not isinstance(raw_matches, list):
+        raise ArtifactPublicationError("Elo model state matches must be a list")
+    matches = tuple(_deserialize_rated_elo_match(value) for value in raw_matches)
+    run = EloRun(config=config, matches=matches)
+    if state.get("ratings") != _serialize_elo_ratings(run):
+        raise ArtifactPublicationError("Elo rating history conflicts with match state")
+    return run
+
+
+def _deserialize_rated_elo_match(value: object) -> RatedEloMatch:
+    match = _object_mapping(value, "rated Elo match")
+    return RatedEloMatch(
+        match_id=_uuid(match, "match_id"),
+        competition_id=_uuid(match, "competition_id"),
+        kickoff_at=_datetime(match, "kickoff_at"),
+        home_team_id=_uuid(match, "home_team_id"),
+        away_team_id=_uuid(match, "away_team_id"),
+        home_score=_integer(match, "home_score"),
+        away_score=_integer(match, "away_score"),
+        home_pre_match_rating=_float(match, "home_pre_match_rating"),
+        away_pre_match_rating=_float(match, "away_pre_match_rating"),
+        expected_home_score=_float(match, "expected_home_score"),
+        actual_home_score=_float(match, "actual_home_score"),
+        home_post_match_rating=_float(match, "home_post_match_rating"),
+        away_post_match_rating=_float(match, "away_post_match_rating"),
+    )
 
 
 def serialize_dixon_coles_fit(fit: DixonColesFit) -> dict[str, object]:
@@ -614,6 +677,14 @@ def _datetime(values: Mapping[str, object], key: str) -> datetime:
         raise ArtifactPublicationError(f"model state {key} must be a timestamp") from error
     _aware(parsed, key)
     return parsed
+
+
+def _uuid(values: Mapping[str, object], key: str) -> UUID:
+    value = _string(values, key)
+    try:
+        return UUID(value)
+    except ValueError as error:
+        raise ArtifactPublicationError(f"model state {key} must be a UUID") from error
 
 
 def _uuid_float_mapping(values: Mapping[str, object], key: str) -> dict[UUID, float]:

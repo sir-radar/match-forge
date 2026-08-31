@@ -41,7 +41,14 @@ class ImmutableForecastStore:
             f"forecasts/match={forecast.match_id}/cutoff={cutoff}/"
             f"variant={forecast.probability_variant.lower()}/forecast={forecast.forecast_id}.json"
         )
-        write = self._files.publish(relative_path, forecast_payload_bytes(forecast.match_result))
+        write = self._files.publish(
+            relative_path,
+            forecast_payload_bytes(
+                forecast.match_result,
+                goal=forecast.goal,
+                corners=forecast.corners,
+            ),
+        )
         if write.sha256 != forecast.payload_sha256:
             raise ForecastPublicationError("published payload checksum does not match forecast")
         return PublishedBaselineForecastV1(

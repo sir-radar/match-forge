@@ -7,7 +7,9 @@ from football.forecasting.adapters import (
     CornerTotalDistributionV1,
     EloOneXTwoAdapterV1,
     ForecastAdapterError,
+    corner_forecast_payload,
     dixon_coles_result_probabilities,
+    goal_forecast_payload,
 )
 from football.forecasting.corner import CornerForecast
 from football.forecasting.dixon_coles import GoalForecast, GoalMarkets, ScoreMatrix
@@ -58,6 +60,36 @@ def test_dixon_coles_adapter_preserves_existing_1x2_probabilities() -> None:
     probabilities = dixon_coles_result_probabilities(forecast)
 
     assert (probabilities.home, probabilities.draw, probabilities.away) == (0.5, 0.3, 0.2)
+
+
+def test_model_adapters_preserve_complete_goal_and_corner_payloads() -> None:
+    goal_forecast = GoalForecast(
+        lambda_home=1.2,
+        lambda_away=0.8,
+        low_score_correlation=0.0,
+        score_matrix=ScoreMatrix(
+            labels=("0", "1", "2+"),
+            probabilities=((0.12, 0.10, 0.08), (0.11, 0.14, 0.10), (0.09, 0.12, 0.14)),
+        ),
+        markets=GoalMarkets(0.5, 0.3, 0.2, 0.5, 0.3, 0.1, 0.4, 0.4, 0.3),
+    )
+    corner_forecast = CornerForecast(
+        distribution="negative_binomial",
+        lambda_home=5.0,
+        lambda_away=4.0,
+        home_variance=7.5,
+        away_variance=5.6,
+        dispersion=0.1,
+    )
+
+    goal = goal_forecast_payload(goal_forecast)
+    corners = corner_forecast_payload(corner_forecast)
+
+    assert goal.score_labels == goal_forecast.score_matrix.labels
+    assert goal.over_0_5 > goal.over_4_5
+    assert goal.btts_yes == goal_forecast.markets.both_teams_to_score
+    assert corners.distribution == "negative_binomial"
+    assert corners.lambda_home == corner_forecast.lambda_home
 
 
 def test_corner_total_distribution_is_convolution_with_intervals() -> None:
