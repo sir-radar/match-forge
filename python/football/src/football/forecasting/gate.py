@@ -10,6 +10,7 @@ from uuid import UUID, uuid5
 from psycopg import Connection
 
 from football.contracts.source import canonical_json_bytes
+from football.forecasting.corner_labels import CORNER_LABEL_VERSION
 from football.forecasting.governance import (
     EvaluationCorpusV1,
     EvaluationCoverageV1,
@@ -25,6 +26,7 @@ from football.forecasting.kickoff import (
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
 
 _EVALUATION_NAMESPACE = UUID("4ae2a83b-7efb-4c2c-98bf-70e818c6f6d1")
+_MINIMUM_CORNER_LABEL_PERCENT = 95
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +137,18 @@ class Sprint2GateService:
                     "chronological walk-forward evaluation did not run",
                 ),
             )
+        required_corner_labels = _minimum_corner_labels(coverage.scored_targets)
+        if coverage.corner_labelled_targets < required_corner_labels:
+            return (
+                coverage,
+                "corner-label-coverage",
+                (
+                    f"primary evaluation has {coverage.corner_labelled_targets} "
+                    f"corner-labelled targets; minimum is {required_corner_labels} "
+                    f"({_MINIMUM_CORNER_LABEL_PERCENT}% of scored targets)",
+                    "chronological walk-forward evaluation did not run",
+                ),
+            )
         return (
             coverage,
             "walk-forward-execution",
@@ -186,6 +200,12 @@ class Sprint2GateService:
                         WHERE claim.id IS NOT NULL
                           AND observation.home_score IS NOT NULL
                           AND observation.away_score IS NOT NULL
+                    ),
+                    count(DISTINCT match.id) FILTER (
+                        WHERE claim.id IS NOT NULL
+                          AND observation.home_score IS NOT NULL
+                          AND observation.away_score IS NOT NULL
+                          AND corner.id IS NOT NULL
                     )
                 FROM football.matches AS match
                 LEFT JOIN football.match_lifecycle_claims AS claim
@@ -194,9 +214,13 @@ class Sprint2GateService:
                  AND claim.lifecycle = 'completed'
                 LEFT JOIN football.match_observations AS observation
                   ON observation.id = claim.match_observation_id
+                LEFT JOIN football.match_corner_labels AS corner
+                  ON corner.match_id = match.id
+                 AND corner.lifecycle_claim_id = claim.id
+                 AND corner.claim_version = %s
                 WHERE match.season_id = %s
                 """,
-                (LIFECYCLE_CLAIM_VERSION, season_id),
+                (LIFECYCLE_CLAIM_VERSION, CORNER_LABEL_VERSION, season_id),
             ).fetchone()
         if row is None:
             return EvaluationCoverageV1()
@@ -204,7 +228,7 @@ class Sprint2GateService:
             registered_matches=int(row[0]),
             completed_matches=int(row[1]),
             scored_targets=int(row[2]),
-            corner_labelled_targets=0,
+            corner_labelled_targets=int(row[3]),
         )
 
 
@@ -224,3 +248,7 @@ def _evaluation_id(
     }
     digest = hashlib.sha256(canonical_json_bytes(identity)).hexdigest()
     return uuid5(_EVALUATION_NAMESPACE, digest)
+
+
+def _minimum_corner_labels(scored_targets: int) -> int:
+    return (scored_targets * _MINIMUM_CORNER_LABEL_PERCENT + 99) // 100

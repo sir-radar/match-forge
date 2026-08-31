@@ -18,6 +18,8 @@ Date: 2026-08-31
   validation lineage.
 - Versioned immutable kickoff claims with exact local-time, competition, timezone-data, and
   lifecycle lineage.
+- Versioned immutable corner labels with exact event semantics, canonical team attribution,
+  dataset checksums, validator evidence, and lifecycle lineage.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
@@ -25,18 +27,18 @@ Date: 2026-08-31
 `make integration` passed on 2026-08-31:
 
 - Fresh temporary PostgreSQL database created.
-- All migrations through `202608302100` applied successfully.
+- All migrations through `202608302200` applied successfully.
 - Second migration pass reported no pending migrations.
-- 45 integration tests passed, including cross-snapshot kickoff and history resolution and
-  rejection of unsupported competition geography.
+- 46 integration tests passed, including governed corner-label publication, immutable retry,
+  checksum rejection, cross-snapshot kickoff/history resolution, and unsupported geography.
 - PostgreSQL 18.6, Redis 8.10, and Go operational checks passed.
 
 Final `make check` passed on 2026-08-31:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 72 source files.
+- Strict MyPy passed for 74 source files.
 - Static health analysis reported 0 issues.
-- 128 Python tests passed.
+- 133 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -59,8 +61,14 @@ Before kickoff resolution, `make sprint2-evaluate` retained run
 timezone-naive local date/time but 0 governed UTC instants.
 
 `football resolve sprint2-kickoffs` then published 380 claims across 199 chronological batches. An
-identical retry returned `verified_existing`. The post-resolution gate produced evaluation run
-`f4f6e4cd-0d85-5066-974e-fc5f1ea0d76b`.
+identical retry returned `verified_existing`.
+
+`football resolve sprint2-corners` published 380 labels from 4,107 exact StatsBomb corner-pass
+events. All 380 labels have distinct deterministic hashes, lifecycle claims, event resources, and
+dataset files; all resolve to one dataset and validator run. Match totals range from 1 to 25, and
+13 matches legitimately contain a zero count for one team. An identical retry returned
+`verified_existing`. The post-label gate produced evaluation run
+`17bbf737-b235-557f-b882-8b6ef5951740`.
 
 ```text
 Status: FAIL
@@ -68,7 +76,7 @@ Stage: walk-forward-execution
 Registered matches: 380
 Completed matches: 380
 Scored targets: 380
-Corner-labelled targets: 0
+Corner-labelled targets: 380
 ```
 
 The pinned StatsBomb revision
@@ -117,6 +125,12 @@ TZif checksum. The resulting 380 distinct claim hashes cover 199 UTC batches fro
 `2015-08-08T12:45:00Z` through `2016-05-17T20:00:00Z`. All 380 raw
 `match_observations.kickoff_at` values remain null.
 
+`statsbomb-pass-type-61-corner-v1` counts only events whose provider event type is exactly
+ID/name `30` / `Pass` and whose nested pass type is exactly ID/name `61` / `Corner`. This excludes
+other events whose payload says `From Corner`. Labels remain separate from provider observations
+and label-free forecast contexts. The gate now stops at `corner-label-coverage` unless at least 95%
+of scored targets have governed labels; it no longer advances with a hard-coded zero label count.
+
 ## Operator command
 
 ```bash
@@ -132,8 +146,9 @@ The command retains:
 
 Underlying CLI exit code `7` means `FAIL`; Make reports a failed target. The report identifies the
 first blocking stage. A missing approved corpus is `corpus-resolution`; insufficient scored matches
-is `coverage`; unresolved timezone-safe ordering is `chronology-resolution`; missing retained model
-execution is `walk-forward-execution`. No failed preflight emits placeholder model metrics.
+is `coverage`; unresolved timezone-safe ordering is `chronology-resolution`; corner-label coverage
+below 95% is `corner-label-coverage`; missing retained model execution is
+`walk-forward-execution`. No failed preflight emits placeholder model metrics.
 
 ## Required next gate action
 

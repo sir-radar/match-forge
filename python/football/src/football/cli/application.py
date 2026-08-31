@@ -8,6 +8,10 @@ from uuid import UUID
 from psycopg import Connection
 
 from football.datasets import StatsBombEventDatasetPublisher
+from football.forecasting.corner_labels import (
+    CornerLabelPublicationResult,
+    Sprint2CornerLabelPublisher,
+)
 from football.forecasting.gate import Sprint2GateService, Sprint2GateSummary
 from football.forecasting.kickoff import (
     KickoffClaimPublicationResult,
@@ -89,6 +93,9 @@ class FootballApplication:
 
     def resolve_sprint2_kickoffs(self) -> KickoffClaimPublicationResult:
         return Sprint2KickoffClaimPublisher(self._connection).publish()
+
+    def resolve_sprint2_corners(self) -> CornerLabelPublicationResult:
+        return Sprint2CornerLabelPublisher(self._connection, self._data_root).publish()
 
     def ingest_competitions(self) -> CompetitionIngestionSummary:
         provider = self._require_provider()

@@ -12,6 +12,7 @@ football validate season <id>
 football validate season <id> --competition-id <id>
 football resolve sprint2-lifecycle
 football resolve sprint2-kickoffs
+football resolve sprint2-corners
 football evaluate sprint2
 ```
 
@@ -45,6 +46,11 @@ completion. See [Match lifecycle claims](lifecycle-claims.md).
 `football resolve sprint2-kickoffs` preserves timezone-naive provider date/time and publishes
 separate UTC claims using exact lifecycle and competition facts, `Europe/London`, and pinned
 `tzdata 2026.3`. See [Match kickoff claims](kickoff-claims.md).
+
+`football resolve sprint2-corners` publishes immutable home/away corner labels from exact
+StatsBomb `Pass` / pass-type `Corner` ID-and-name semantics. Each label binds the completed
+lifecycle claim, canonical teams, validated event file and checksums, source lineage, and validator
+run. It does not add outcomes to pre-match forecast contexts. See [Match corner labels](corner-labels.md).
 
 `football evaluate sprint2` runs the pinned `Sprint2BaselineGatePolicyV1` workflow until the first
 blocking stage. It starts with the approved StatsBomb EPL 2015/16 corpus
