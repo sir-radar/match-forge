@@ -17,6 +17,10 @@ import pytest
 from football.contracts import SourceResource, SourceSnapshot
 from football.datasets import DatasetPublicationError, StatsBombEventDatasetPublisher
 from football.forecasting.contracts import PointInTimeScopeV1
+from football.forecasting.corner_labels import (
+    CornerLabelError,
+    Sprint2CornerLabelPublisher,
+)
 from football.forecasting.dataset import PointInTimeMatchDatasetProvider
 from football.forecasting.gate import Sprint2GateService
 from football.forecasting.governance import EvaluationCorpusV1
@@ -232,13 +236,34 @@ def _event_payload(*, second_type: str = "Pass") -> list[dict[str, object]]:
     ]
 
 
-def _terminal_event_payload() -> list[dict[str, object]]:
+def _terminal_event_payload(
+    *, home_corners: int = 0, away_corners: int = 0
+) -> list[dict[str, object]]:
     events = _event_payload()
+    for offset, team_id, team_name in (
+        *[(index, 779, "Argentina") for index in range(home_corners)],
+        *[(home_corners + index, 771, "France") for index in range(away_corners)],
+    ):
+        events.append(
+            {
+                "id": f"{offset + 5:08d}-5555-4555-8555-555555555555",
+                "index": offset + 3,
+                "period": 2,
+                "timestamp": f"00:0{offset + 1}:00.000",
+                "minute": 46 + offset,
+                "second": 0,
+                "type": {"id": 30, "name": "Pass"},
+                "possession_team": {"id": team_id, "name": team_name},
+                "team": {"id": team_id, "name": team_name},
+                "pass": {"type": {"id": 61, "name": "Corner"}},
+            }
+        )
+    terminal_index = len(events) + 1
     events.extend(
         (
             {
                 "id": "33333333-3333-4333-8333-333333333333",
-                "index": 3,
+                "index": terminal_index,
                 "period": 2,
                 "timestamp": "00:50:00.000",
                 "minute": 95,
@@ -248,7 +273,7 @@ def _terminal_event_payload() -> list[dict[str, object]]:
             },
             {
                 "id": "44444444-4444-4444-8444-444444444444",
-                "index": 4,
+                "index": terminal_index + 1,
                 "period": 2,
                 "timestamp": "00:50:00.000",
                 "minute": 95,
@@ -1257,7 +1282,7 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
         competition_is_international=False,
         season_name="2015/2016",
     )
-    events = _terminal_event_payload()
+    events = _terminal_event_payload(home_corners=2, away_corners=1)
     detail_payloads = {
         "data/events/3869685.json": _json_bytes(events),
         "data/lineups/3869685.json": _json_bytes(_lineup_payload()),
@@ -1301,7 +1326,7 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     with connection.cursor() as cursor:
         claim = cursor.execute(
             """
-            SELECT claim.lifecycle, claim.claim_version, claim.terminal_period,
+            SELECT claim.id, claim.lifecycle, claim.claim_version, claim.terminal_period,
                    claim.terminal_event_count, observation.lifecycle,
                    observation.source_snapshot_id, claim.source_snapshot_id,
                    claim.dataset_version_id, claim.validation_run_id
@@ -1311,7 +1336,9 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
             """
         ).fetchone()
 
-    assert claim == (
+    assert claim is not None
+    lifecycle_claim_id = UUID(str(claim[0]))
+    assert claim[1:] == (
         "completed",
         "statsbomb-terminal-event-score-v1",
         2,
@@ -1350,6 +1377,37 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
         "2026.3",
         datetime(2022, 12, 18, 17, 0, tzinfo=UTC),
         None,
+    )
+    unresolved_corners = Sprint2GateService(
+        connection, tmp_path / "gate-unresolved-corners"
+    ).evaluate(corpus)
+    assert unresolved_corners.stage == "corner-label-coverage"
+    assert "minimum is 1 (95% of scored targets)" in unresolved_corners.findings[0]
+
+    corner_publisher = Sprint2CornerLabelPublisher(connection, tmp_path)
+    first_corners = corner_publisher.publish(corpus)
+    second_corners = corner_publisher.publish(corpus)
+
+    assert first_corners.status == "published"
+    assert first_corners.labels == 1
+    assert first_corners.corner_events == 3
+    assert second_corners.status == "verified_existing"
+    with connection.cursor() as cursor:
+        corner_label = cursor.execute(
+            """
+            SELECT label.claim_version, label.home_corners, label.away_corners,
+                   label.dataset_version_id, label.validation_run_id,
+                   label.lifecycle_claim_id
+            FROM football.match_corner_labels AS label
+            """
+        ).fetchone()
+    assert corner_label == (
+        "statsbomb-pass-type-61-corner-v1",
+        2,
+        1,
+        dataset.dataset_version_id,
+        validation.validation_run_id,
+        lifecycle_claim_id,
     )
 
     scope = PointInTimeScopeV1(
@@ -1399,6 +1457,46 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     gate = Sprint2GateService(connection, tmp_path / "gate-resolved").evaluate(corpus)
     assert gate.stage == "walk-forward-execution"
     assert "1 batches" in gate.findings[0]
+    gate_payload = json.loads(gate.json_path.read_text(encoding="utf-8"))
+    assert gate_payload["coverage"]["corner_labelled_targets"] == 1
+
+
+def test_rejects_corner_labels_after_registered_parquet_mutation(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="7" * 40,
+        acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC),
+        events=_terminal_event_payload(home_corners=1),
+        home_score=0,
+        away_score=0,
+    )
+    StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(acquisition)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+    ).validate(dataset.dataset_version_id)
+    corpus = EvaluationCorpusV1(
+        provider_competition_id=43,
+        provider_season_id=106,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=1,
+    )
+    Sprint2LifecycleClaimPublisher(connection).publish(corpus)
+    dataset.files[0].absolute_path.write_bytes(b"mutated")
+
+    with pytest.raises(CornerLabelError, match="checksum mismatch"):
+        Sprint2CornerLabelPublisher(connection, tmp_path).publish(corpus)
+
+    with connection.cursor() as cursor:
+        assert cursor.execute("SELECT count(*) FROM football.match_corner_labels").fetchone() == (
+            0,
+        )
 
 
 def test_rejects_completed_claim_without_terminal_event_evidence(

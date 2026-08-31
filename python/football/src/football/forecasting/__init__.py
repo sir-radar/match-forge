@@ -59,6 +59,14 @@ from football.forecasting.corner import (
     CornerModels,
     CornerParameters,
 )
+from football.forecasting.corner_labels import (
+    CORNER_LABEL_VERSION,
+    CornerCountsV1,
+    CornerLabelError,
+    CornerLabelPublicationResult,
+    Sprint2CornerLabelPublisher,
+    extract_statsbomb_corner_counts,
+)
 from football.forecasting.dataset import (
     CompletedMatchV1,
     ForecastBatchV1,
@@ -141,6 +149,7 @@ __all__ = [
     "CalibrationGatePolicyV1",
     "CornerTotalDistributionV1",
     "CornerContractError",
+    "CornerCountsV1",
     "CornerFeatures",
     "CornerFixture",
     "CornerFit",
@@ -151,6 +160,9 @@ __all__ = [
     "CornerModelConfig",
     "CornerModels",
     "CornerParameters",
+    "CornerLabelError",
+    "CornerLabelPublicationResult",
+    "CORNER_LABEL_VERSION",
     "CompletedMatchV1",
     "CountDistributionSummaryV1",
     "DixonColesConfig",
@@ -217,6 +229,7 @@ __all__ = [
     "ReliabilityBinV1",
     "ScoreMatrix",
     "Sprint2EvaluationReportV1",
+    "Sprint2CornerLabelPublisher",
     "TeamEloModel",
     "WalkForwardEvaluator",
     "WalkForwardPolicyV1",
@@ -226,6 +239,7 @@ __all__ = [
     "deserialize_dixon_coles_fit",
     "evaluate_calibration_gate",
     "evaluate_match_results",
+    "extract_statsbomb_corner_counts",
     "forecast_payload_sha256",
     "forecast_payload_bytes",
     "forecast_payload_dict",

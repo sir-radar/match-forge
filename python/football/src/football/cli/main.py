@@ -13,6 +13,7 @@ from psycopg import Connection
 
 from football.cli.application import FootballApplication
 from football.datasets import DatasetPublicationError
+from football.forecasting.corner_labels import CornerLabelError
 from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
@@ -97,6 +98,10 @@ def build_parser() -> argparse.ArgumentParser:
         "sprint2-kickoffs",
         help="publish UTC kickoff claims for the approved Sprint 2 corpus",
     )
+    resolve_scopes.add_parser(
+        "sprint2-corners",
+        help="publish corner outcome labels for the approved Sprint 2 corpus",
+    )
 
     evaluate = commands.add_parser("evaluate", help="run phase-gated historical evaluation")
     evaluate_scopes = evaluate.add_subparsers(dest="scope", required=True)
@@ -165,6 +170,7 @@ def run(
         return 3
     except (
         CanonicalIngestionError,
+        CornerLabelError,
         DatasetPublicationError,
         DatasetValidationError,
         IngestionReportError,
@@ -238,11 +244,21 @@ def _execute(application: FootballApplication, args: argparse.Namespace, output:
                 file=output,
             )
             return 0
-        kickoffs = application.resolve_sprint2_kickoffs()
+        if args.scope == "sprint2-kickoffs":
+            kickoffs = application.resolve_sprint2_kickoffs()
+            print(
+                "resolved Sprint 2 kickoffs: "
+                f"status={kickoffs.status} claims={kickoffs.claims} "
+                f"chronological_batches={kickoffs.chronological_batches}",
+                file=output,
+            )
+            return 0
+        corners = application.resolve_sprint2_corners()
         print(
-            "resolved Sprint 2 kickoffs: "
-            f"status={kickoffs.status} claims={kickoffs.claims} "
-            f"chronological_batches={kickoffs.chronological_batches}",
+            "resolved Sprint 2 corners: "
+            f"status={corners.status} labels={corners.labels} "
+            f"corner_events={corners.corner_events} "
+            f"dataset_version_id={corners.dataset_version_id}",
             file=output,
         )
         return 0
