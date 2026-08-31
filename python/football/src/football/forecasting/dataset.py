@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -20,6 +20,8 @@ from football.forecasting.kickoff import (
 )
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
 from football.storage.raw import ImmutableFileStore
+
+RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG = timedelta(hours=2)
 
 
 class ForecastingDatasetError(RuntimeError):
@@ -489,7 +491,11 @@ class PointInTimeMatchDatasetProvider:
                 SELECT match.id AS match_id, kickoff.kickoff_at,
                        observation.home_score, observation.away_score,
                        corner.home_corners, corner.away_corners,
-                       GREATEST(lifecycle.known_from, corner.known_from) AS outcome_known_at
+                       CASE
+                           WHEN %s = 'retrospective-fixed-snapshot-v1'
+                           THEN kickoff.kickoff_at + %s
+                           ELSE GREATEST(lifecycle.known_from, corner.known_from)
+                       END AS outcome_known_at
                 FROM football.matches AS match
                 JOIN football.match_kickoff_claims AS kickoff
                   ON kickoff.match_id = match.id
@@ -515,6 +521,8 @@ class PointInTimeMatchDatasetProvider:
                 ORDER BY kickoff.kickoff_at, match.id
                 """,
                 (
+                    spec.knowledge_mode,
+                    RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
                     KICKOFF_CLAIM_VERSION,
                     KICKOFF_TIMEZONE,
                     TZDATA_VERSION,

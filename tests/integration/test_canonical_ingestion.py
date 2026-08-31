@@ -1470,6 +1470,7 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     assert "corner" not in batch.matches[0].to_dict()
     assert (outcomes[0].home_score, outcomes[0].away_score) == (0, 0)
     assert (outcomes[0].home_corners, outcomes[0].away_corners) == (2, 1)
+    assert outcomes[0].outcome_known_at == outcomes[0].kickoff_at + timedelta(hours=2)
     assert len(history) == 1
     assert (history[0].home_score, history[0].away_score) == (0, 0)
     gate = Sprint2GateService(

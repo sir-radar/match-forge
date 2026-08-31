@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 from uuid import UUID
@@ -9,6 +9,7 @@ from uuid import UUID
 import pytest
 from football.forecasting.contracts import PointInTimeScopeV1
 from football.forecasting.dataset import (
+    RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
     CompletedMatchV1,
     EligibleForecastTargetV1,
     EvaluationMatchOutcomeV1,
@@ -196,6 +197,12 @@ def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separat
     assert "home_score" in outcome_query
     assert "home_corners" in outcome_query
     assert "match_corner_labels" in outcome_query
+    assert "kickoff.kickoff_at + %s" in outcome_query
+    assert connection.used[3].parameters[:2] == (
+        "retrospective-fixed-snapshot-v1",
+        timedelta(hours=2),
+    )
+    assert timedelta(hours=2) == RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG
     assert revealed == (outcome,)
 
 

@@ -17,7 +17,9 @@ label-free target set and checksum. See [Walk-forward target plan](walk-forward-
 `WalkForwardEvaluator` defines expanding or rolling training windows, evaluation duration, and
 retraining frequency. Evaluation observations keep prediction time, kickoff time, and
 `outcome_known_at` separate. Calibration rejects any outcome not known strictly before its fit
-cutoff.
+cutoff. Under `retrospective-fixed-snapshot-v1`, the approved EPL regulation-time corpus uses the
+existing conservative two-hour post-kickoff outcome-availability rule; strict bitemporal modes use
+the governed claim timestamps instead.
 
 `Sprint2WalkForwardExecutor` consumes the frozen target plan through explicit dataset and
 persistence ports. For each batch it loads only prior eligible history, fits Elo, Dixon–Coles,

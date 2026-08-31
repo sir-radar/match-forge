@@ -25,8 +25,13 @@ no scores, results, corner outcomes, shots, possession, or other post-match targ
 
 `PointInTimeMatchDatasetProvider.reveal_outcomes` is a separate call for explicit frozen target
 UUIDs. It requires exact lifecycle, kickoff, dataset, corner-label, and knowledge-cutoff lineage and
-returns `EvaluationMatchOutcomeV1` rows. The future evaluator must persist every forecast in a batch
-before calling outcome reveal, then update models only for later batches.
+returns `EvaluationMatchOutcomeV1` rows. The evaluator persists every forecast in a batch before
+calling outcome reveal, then updates sequential state only for later batches.
+
+Because Open Data does not establish original provider-availability timestamps, the approved
+`retrospective-fixed-snapshot-v1` EPL corpus assigns completed regulation-time outcomes a
+conservative availability time of kickoff plus two hours. Other knowledge modes retain the exact
+governed claim availability time. Same-kickoff matches remain isolated in one batch.
 
 ## Immutable identity
 

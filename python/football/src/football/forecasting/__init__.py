@@ -84,6 +84,7 @@ from football.forecasting.corner_labels import (
     extract_statsbomb_corner_counts,
 )
 from football.forecasting.dataset import (
+    RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
     CompletedMatchV1,
     EligibleForecastTargetV1,
     EvaluationMatchOutcomeV1,
@@ -321,6 +322,7 @@ __all__ = [
     "PostgresEloHistory",
     "ProbabilityVariant",
     "RatedEloMatch",
+    "RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG",
     "ReliabilityBinV1",
     "ScoreMatrix",
     "FittedSprint2BatchV1",
