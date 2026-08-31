@@ -261,6 +261,148 @@ class MatchResultProbabilitiesV1:
 
 
 @dataclass(frozen=True, slots=True)
+class GoalForecastPayloadV1:
+    lambda_home: float
+    lambda_away: float
+    score_labels: tuple[str, ...]
+    score_probabilities: tuple[tuple[float, ...], ...]
+    over_0_5: float
+    over_1_5: float
+    over_2_5: float
+    over_3_5: float
+    over_4_5: float
+    btts_yes: float
+    home_clean_sheet: float
+    away_clean_sheet: float
+    low_score_correlation: float = 0.0
+    contract: str = "GoalForecastPayloadV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "GoalForecastPayloadV1":
+            raise ForecastContractError("unsupported goal forecast payload contract")
+        _non_negative_finite(self.lambda_home, "lambda_home")
+        _non_negative_finite(self.lambda_away, "lambda_away")
+        if (
+            isinstance(self.low_score_correlation, bool)
+            or not isinstance(self.low_score_correlation, (int, float))
+            or not math.isfinite(self.low_score_correlation)
+        ):
+            raise ForecastContractError("low_score_correlation must be finite")
+        if len(self.score_labels) < 3 or len(self.score_labels) != len(set(self.score_labels)):
+            raise ForecastContractError("goal score labels must be unique and contain a tail")
+        if not self.score_labels[-1].endswith("+"):
+            raise ForecastContractError("goal score labels must end with an inclusive tail bucket")
+        size = len(self.score_labels)
+        if len(self.score_probabilities) != size or any(
+            len(row) != size for row in self.score_probabilities
+        ):
+            raise ForecastContractError("goal score probability matrix must match its labels")
+        probabilities = tuple(value for row in self.score_probabilities for value in row)
+        for value in probabilities:
+            _probability(value, "score")
+        if not math.isclose(sum(probabilities), 1.0, abs_tol=1e-12):
+            raise ForecastContractError("goal score probabilities must sum to one")
+        totals = (
+            self.over_0_5,
+            self.over_1_5,
+            self.over_2_5,
+            self.over_3_5,
+            self.over_4_5,
+        )
+        for field_name, value in (
+            ("over_0_5", self.over_0_5),
+            ("over_1_5", self.over_1_5),
+            ("over_2_5", self.over_2_5),
+            ("over_3_5", self.over_3_5),
+            ("over_4_5", self.over_4_5),
+            ("btts_yes", self.btts_yes),
+            ("home_clean_sheet", self.home_clean_sheet),
+            ("away_clean_sheet", self.away_clean_sheet),
+        ):
+            _probability(value, field_name)
+        if any(left < right for left, right in zip(totals, totals[1:], strict=False)):
+            raise ForecastContractError("goal over probabilities must be monotonic")
+
+    def to_dict(self) -> dict[str, object]:
+        totals = {
+            threshold: {"over": probability, "under": 1.0 - probability}
+            for threshold, probability in (
+                ("0.5", self.over_0_5),
+                ("1.5", self.over_1_5),
+                ("2.5", self.over_2_5),
+                ("3.5", self.over_3_5),
+                ("4.5", self.over_4_5),
+            )
+        }
+        return {
+            "contract": self.contract,
+            "lambda_home": self.lambda_home,
+            "lambda_away": self.lambda_away,
+            "low_score_correlation": self.low_score_correlation,
+            "expected_total_goals": self.lambda_home + self.lambda_away,
+            "score_labels": list(self.score_labels),
+            "score_probabilities": [list(row) for row in self.score_probabilities],
+            "totals": totals,
+            "btts": {"yes": self.btts_yes, "no": 1.0 - self.btts_yes},
+            "clean_sheets": {
+                "home": self.home_clean_sheet,
+                "away": self.away_clean_sheet,
+            },
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class CornerForecastPayloadV1:
+    distribution: Literal["poisson", "negative_binomial"]
+    lambda_home: float
+    lambda_away: float
+    home_variance: float
+    away_variance: float
+    dispersion: float | None
+    contract: str = "CornerForecastPayloadV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "CornerForecastPayloadV1":
+            raise ForecastContractError("unsupported corner forecast payload contract")
+        if self.distribution not in ("poisson", "negative_binomial"):
+            raise ForecastContractError("unsupported corner forecast distribution")
+        for field_name, value in (
+            ("lambda_home", self.lambda_home),
+            ("lambda_away", self.lambda_away),
+            ("home_variance", self.home_variance),
+            ("away_variance", self.away_variance),
+        ):
+            _non_negative_finite(value, field_name)
+        if self.distribution == "poisson":
+            if self.dispersion is not None:
+                raise ForecastContractError("Poisson corner forecast cannot have dispersion")
+            if not math.isclose(self.home_variance, self.lambda_home, abs_tol=1e-12) or not (
+                math.isclose(self.away_variance, self.lambda_away, abs_tol=1e-12)
+            ):
+                raise ForecastContractError("Poisson corner variance must equal its mean")
+        else:
+            if self.dispersion is None:
+                raise ForecastContractError("negative-binomial corner forecast requires dispersion")
+            _positive_finite(self.dispersion, "dispersion")
+            if self.home_variance < self.lambda_home or self.away_variance < self.lambda_away:
+                raise ForecastContractError(
+                    "negative-binomial corner variance must not be below its mean"
+                )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "distribution": self.distribution,
+            "lambda_home": self.lambda_home,
+            "lambda_away": self.lambda_away,
+            "expected_total_corners": self.lambda_home + self.lambda_away,
+            "home_variance": self.home_variance,
+            "away_variance": self.away_variance,
+            "dispersion": self.dispersion,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class BaselineForecastV1:
     forecast_id: UUID
     match_id: UUID
@@ -271,6 +413,8 @@ class BaselineForecastV1:
     forecast_context_sha256: str
     payload_sha256: str
     match_result: MatchResultProbabilitiesV1 | None = None
+    goal: GoalForecastPayloadV1 | None = None
+    corners: CornerForecastPayloadV1 | None = None
     calibrator_artifact_id: UUID | None = None
     probability_contract_version: str = "match-result-probabilities-v1"
     output_version: str = "baseline-forecast-v1"
@@ -292,7 +436,9 @@ class BaselineForecastV1:
         _sha256(self.payload_sha256, "payload_sha256")
         _version(self.probability_contract_version, "probability_contract_version")
         _version(self.output_version, "output_version")
-        if self.payload_sha256 != forecast_payload_sha256(self.match_result):
+        if self.payload_sha256 != forecast_payload_sha256(
+            self.match_result, goal=self.goal, corners=self.corners
+        ):
             raise ForecastContractError("payload_sha256 does not match forecast payload")
         if self.probability_variant == "MODEL_RAW" and self.calibrator_artifact_id is not None:
             raise ForecastContractError("raw forecast cannot reference a calibrator artifact")
@@ -308,7 +454,7 @@ class BaselineForecastV1:
         return sha256_bytes(canonical_json_bytes(self.semantic_dict()))
 
     def semantic_dict(self) -> dict[str, object]:
-        return {
+        identity: dict[str, object] = {
             "contract": self.contract,
             "match_id": str(self.match_id),
             "prediction_cutoff": _utc(self.prediction_cutoff),
@@ -324,6 +470,11 @@ class BaselineForecastV1:
             "payload_sha256": self.payload_sha256,
             "match_result": self.match_result.to_dict() if self.match_result else None,
         }
+        if self.goal is not None:
+            identity["goal"] = self.goal.to_dict()
+        if self.corners is not None:
+            identity["corners"] = self.corners.to_dict()
+        return identity
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -338,19 +489,37 @@ class BaselineForecastV1:
 
 def forecast_payload_dict(
     match_result: MatchResultProbabilitiesV1 | None,
+    *,
+    goal: GoalForecastPayloadV1 | None = None,
+    corners: CornerForecastPayloadV1 | None = None,
 ) -> dict[str, object]:
-    return {
+    payload: dict[str, object] = {
         "contract": "BaselineForecastPayloadV1",
         "match_result": match_result.to_dict() if match_result else None,
     }
+    if goal is not None:
+        payload["goal"] = goal.to_dict()
+    if corners is not None:
+        payload["corners"] = corners.to_dict()
+    return payload
 
 
-def forecast_payload_bytes(match_result: MatchResultProbabilitiesV1 | None) -> bytes:
-    return canonical_json_bytes(forecast_payload_dict(match_result))
+def forecast_payload_bytes(
+    match_result: MatchResultProbabilitiesV1 | None,
+    *,
+    goal: GoalForecastPayloadV1 | None = None,
+    corners: CornerForecastPayloadV1 | None = None,
+) -> bytes:
+    return canonical_json_bytes(forecast_payload_dict(match_result, goal=goal, corners=corners))
 
 
-def forecast_payload_sha256(match_result: MatchResultProbabilitiesV1 | None) -> str:
-    return sha256_bytes(forecast_payload_bytes(match_result))
+def forecast_payload_sha256(
+    match_result: MatchResultProbabilitiesV1 | None,
+    *,
+    goal: GoalForecastPayloadV1 | None = None,
+    corners: CornerForecastPayloadV1 | None = None,
+) -> str:
+    return sha256_bytes(forecast_payload_bytes(match_result, goal=goal, corners=corners))
 
 
 def _model_family(value: str) -> None:
@@ -366,6 +535,32 @@ def _version(value: str, field_name: str) -> None:
 def _sha256(value: str, field_name: str) -> None:
     if not SHA256_PATTERN.fullmatch(value):
         raise ForecastContractError(f"{field_name} must be a lowercase SHA-256")
+
+
+def _probability(value: float, field_name: str) -> None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or not 0.0 <= value <= 1.0
+    ):
+        raise ForecastContractError(f"{field_name} probability must be finite in [0, 1]")
+
+
+def _non_negative_finite(value: float, field_name: str) -> None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or value < 0.0
+    ):
+        raise ForecastContractError(f"{field_name} must be finite and non-negative")
+
+
+def _positive_finite(value: float, field_name: str) -> None:
+    _non_negative_finite(value, field_name)
+    if value <= 0.0:
+        raise ForecastContractError(f"{field_name} must be positive")
 
 
 def _aware(value: datetime, field_name: str) -> None:

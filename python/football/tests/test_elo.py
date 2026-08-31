@@ -113,6 +113,25 @@ def test_rejects_duplicate_match_and_same_team_timestamp() -> None:
         model.rate((match, simultaneous))
 
 
+def test_rating_before_uses_latest_completed_state_and_applies_decay() -> None:
+    config = EloConfig(
+        model_version="elo-snapshot-v1",
+        initial_rating=1500.0,
+        time_decay_half_life_days=10.0,
+    )
+    model = TeamEloModel(config)
+    run = model.rate((_match(home_score=1, away_score=0),))
+    home_at_match = run.matches[0].home_post_match_rating
+    cutoff = KICKOFF + timedelta(days=10)
+
+    assert model.rating_before(run, HOME, cutoff) == pytest.approx(
+        1500.0 + (home_at_match - 1500.0) * 0.5
+    )
+    assert model.rating_before(run, THIRD, cutoff) == 1500.0
+    with pytest.raises(EloContractError, match="precedes latest completed match"):
+        model.rating_before(run, HOME, KICKOFF - timedelta(seconds=1))
+
+
 def test_config_identity_is_stable_and_validated() -> None:
     first = EloConfig(
         model_version="elo-config-v1",

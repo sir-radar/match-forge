@@ -19,6 +19,13 @@ retraining frequency. Evaluation observations keep prediction time, kickoff time
 `outcome_known_at` separate. Calibration rejects any outcome not known strictly before its fit
 cutoff.
 
+`Sprint2WalkForwardExecutor` consumes the frozen target plan through explicit dataset and
+persistence ports. For each batch it loads only prior eligible history, fits Elo, Dixon–Coles,
+corner Poisson, and corner Negative Binomial state, forecasts every target, persists all four raw
+forecasts, and only then requests target outcomes. Reference result, goal-Poisson, and
+corner-Poisson forecasts are computed from the same prior history and retained in execution
+results for common-target scoring.
+
 ## Match-result metrics
 
 Sprint 2 implements:
@@ -30,6 +37,10 @@ Sprint 2 implements:
 - Reliability bins.
 - Expected Calibration Error.
 - Brier uncertainty, resolution, and reliability decomposition.
+
+Raw execution scoring also implements joint goal-score negative log likelihood, total-goal CRPS,
+MAE, RMSE, and Poisson deviance; and home, away, and total corner negative log likelihood, CRPS,
+MAE, and RMSE for both corner families and the simple reference.
 
 Calibration is a separate artifact layer. One-vs-rest Platt and isotonic calibrators emit normalized
 1X2 probabilities. Raw forecasts remain immutable. A configurable gate compares raw and calibrated
@@ -50,9 +61,12 @@ exceeded or too few metrics improve.
 ## Current evidence boundary
 
 Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
-exclusion, metric mathematics, immutable reporting, and retry behavior. The approved corpus now has
+exclusion, metric mathematics, immutable reporting, and retry behavior. Batch execution tests now
+also prove persistence-before-reveal, four-artifact/four-forecast publication per target, portable
+state reload, and semantic retry convergence. The approved corpus now has
 380 registered, completed, scored, corner-labelled, and UTC-resolved matches through exact immutable
 lifecycle, kickoff, and corner claims. The immutable plan resolves 280 eligible targets after 100
-warm-up exclusions, across 146 eligible batches. No repository command has yet executed full model
-refits and forecasts across that target set. See
+warm-up exclusions, across 146 eligible batches. The executor is not yet connected to the
+authoritative operator command, and no repository command has yet executed full model refits and
+forecasts across that target set. See
 [Sprint 2 phase gate](sprint2-phase-gate.md).

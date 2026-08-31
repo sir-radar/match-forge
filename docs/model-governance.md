@@ -17,8 +17,10 @@ Canonical model state uses JSON, never pickle. Each artifact has:
 - Dataset, source, feature, football-time, knowledge-time, knowledge-mode, and quality lineage.
 
 Loaders verify manifest bytes, state bytes, schema support, serializer support, compatibility, and
-logical identity before returning state. Dixon-Coles and corner round-trip tests compare predictions
-before and after serialization.
+logical identity before returning state. Elo, Dixon-Coles, and corner round-trip tests compare
+forecast state or predictions before and after serialization. Elo artifact state includes the
+versioned draw-aware 1X2 adapter configuration so a changed draw mapping cannot reuse an existing
+fit identity.
 
 ## Forecast identity
 
@@ -26,6 +28,11 @@ Forecasts bind canonical match ID, prediction cutoff, point-in-time scope, label
 checksum, exact primary artifact IDs, optional calibrator artifact ID, probability contract,
 output version, and payload checksum. Raw and calibrated variants are distinct. Semantic retries
 converge on one registered forecast even when caller UUIDs differ.
+
+`Sprint2BatchPublisher` publishes four exact artifacts per chronological batch and one raw forecast
+per model family and target. Artifact bytes are published, reloaded, and validated before forecast
+publication. A partial retry converges through deterministic fit and forecast identities; target
+outcomes remain outside every immutable payload.
 
 ## Evaluation and promotion
 

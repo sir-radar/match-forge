@@ -12,8 +12,10 @@ from football.forecasting.artifacts import (
     PortableModelArtifactStore,
     deserialize_corner_fit,
     deserialize_dixon_coles_fit,
+    deserialize_elo_run,
     serialize_corner_fit,
     serialize_dixon_coles_fit,
+    serialize_elo_run,
 )
 from football.forecasting.contracts import ModelFamily, ModelFitSpecV1, PointInTimeScopeV1
 from football.forecasting.corner import (
@@ -30,6 +32,7 @@ from football.forecasting.dixon_coles import (
     DixonColesModel,
     DixonColesParameters,
 )
+from football.forecasting.elo import EloConfig, EloMatch, TeamEloModel
 from football.storage.raw import ImmutableFileConflict
 
 DATASET_ID = UUID("10000000-0000-4000-8000-000000000001")
@@ -188,6 +191,31 @@ def test_corner_serializer_preserves_distribution_and_sorted_effects() -> None:
     original_forecast = CornerModels(config).forecast(original_fit, fixture)
     restored_forecast = CornerModels(restored.config).forecast(restored, fixture)
     assert restored_forecast == original_forecast
+
+
+def test_elo_serializer_round_trip_preserves_forecast_state() -> None:
+    config = EloConfig(model_version="elo-v1", time_decay_half_life_days=None)
+    original = TeamEloModel(config).rate(
+        (
+            EloMatch(
+                match_id=UUID(int=1),
+                competition_id=COMPETITION_ID,
+                kickoff_at=CUTOFF,
+                home_team_id=TEAM_A,
+                away_team_id=TEAM_B,
+                home_score=2,
+                away_score=0,
+            ),
+        )
+    )
+
+    restored = deserialize_elo_run(serialize_elo_run(original))
+
+    assert restored == original
+    next_cutoff = CUTOFF.replace(day=30)
+    assert TeamEloModel(restored.config).rating_before(
+        restored, TEAM_A, next_cutoff
+    ) == pytest.approx(TeamEloModel(config).rating_before(original, TEAM_A, next_cutoff))
 
 
 def _fit_spec(model_family: ModelFamily) -> ModelFitSpecV1:

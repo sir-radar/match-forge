@@ -22,6 +22,10 @@ Date: 2026-08-31
   dataset checksums, validator evidence, and lifecycle lineage.
 - Immutable label-free walk-forward target plan with prior-batch 10-match team and 100-match
   competition history eligibility, separate outcome reveal, and exact target checksum.
+- Raw batch execution with prior-history fitting, same-batch forecast freezing,
+  persistence-before-outcome reveal, and common-target goal/result/corner scoring.
+- Four portable model artifacts and four immutable raw forecasts per target, with artifact reload
+  validation and retry convergence.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
@@ -31,16 +35,17 @@ Date: 2026-08-31
 - Fresh temporary PostgreSQL database created.
 - All migrations through `202608302200` applied successfully.
 - Second migration pass reported no pending migrations.
-- 46 integration tests passed, including governed corner-label publication, immutable retry,
-  checksum rejection, cross-snapshot kickoff/history resolution, and unsupported geography.
+- 47 integration tests passed, including governed corner-label publication, immutable batch
+  fit/forecast retry, checksum rejection, cross-snapshot kickoff/history resolution, and
+  unsupported geography.
 - PostgreSQL 18.6, Redis 8.10, and Go operational checks passed.
 
 Final `make check` passed on 2026-08-31:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 74 source files.
+- Strict MyPy passed for 78 source files.
 - Static health analysis reported 0 issues.
-- 138 Python tests passed.
+- 145 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -53,8 +58,9 @@ that repeatedly fits the baseline models on canonical historical windows, freeze
 outcome reveal, scores those out-of-sample forecasts, compares calibration challengers, and
 publishes real evaluation metrics and calibration plots.
 
-Implementation and deterministic tests pass, but implementation is not predictive-quality
-evidence. No model artifact is approved by this gate.
+Implementation and deterministic tests pass, but the raw executor is not yet connected to the
+operator gate and implementation is not predictive-quality evidence. No model artifact is approved
+by this gate.
 
 ## Executed phase gate
 

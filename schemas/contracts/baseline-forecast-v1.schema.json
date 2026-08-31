@@ -80,6 +80,110 @@
           "additionalProperties": false
         }
       ]
+    },
+    "goal": {
+      "type": "object",
+      "required": [
+        "contract",
+        "lambda_home",
+        "lambda_away",
+        "low_score_correlation",
+        "expected_total_goals",
+        "score_labels",
+        "score_probabilities",
+        "totals",
+        "btts",
+        "clean_sheets"
+      ],
+      "properties": {
+        "contract": {"const": "GoalForecastPayloadV1"},
+        "lambda_home": {"type": "number", "minimum": 0},
+        "lambda_away": {"type": "number", "minimum": 0},
+        "low_score_correlation": {"type": "number"},
+        "expected_total_goals": {"type": "number", "minimum": 0},
+        "score_labels": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "score_probabilities": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "items": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "totals": {
+          "type": "object",
+          "required": ["0.5", "1.5", "2.5", "3.5", "4.5"],
+          "properties": {
+            "0.5": {"$ref": "#/$defs/binary_probability"},
+            "1.5": {"$ref": "#/$defs/binary_probability"},
+            "2.5": {"$ref": "#/$defs/binary_probability"},
+            "3.5": {"$ref": "#/$defs/binary_probability"},
+            "4.5": {"$ref": "#/$defs/binary_probability"}
+          },
+          "additionalProperties": false
+        },
+        "btts": {"$ref": "#/$defs/yes_no_probability"},
+        "clean_sheets": {
+          "type": "object",
+          "required": ["home", "away"],
+          "properties": {
+            "home": {"type": "number", "minimum": 0, "maximum": 1},
+            "away": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "corners": {
+      "type": "object",
+      "required": [
+        "contract",
+        "distribution",
+        "lambda_home",
+        "lambda_away",
+        "expected_total_corners",
+        "home_variance",
+        "away_variance",
+        "dispersion"
+      ],
+      "properties": {
+        "contract": {"const": "CornerForecastPayloadV1"},
+        "distribution": {"enum": ["poisson", "negative_binomial"]},
+        "lambda_home": {"type": "number", "minimum": 0},
+        "lambda_away": {"type": "number", "minimum": 0},
+        "expected_total_corners": {"type": "number", "minimum": 0},
+        "home_variance": {"type": "number", "minimum": 0},
+        "away_variance": {"type": "number", "minimum": 0},
+        "dispersion": {"type": ["number", "null"], "exclusiveMinimum": 0}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "binary_probability": {
+      "type": "object",
+      "required": ["over", "under"],
+      "properties": {
+        "over": {"type": "number", "minimum": 0, "maximum": 1},
+        "under": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "yes_no_probability": {
+      "type": "object",
+      "required": ["yes", "no"],
+      "properties": {
+        "yes": {"type": "number", "minimum": 0, "maximum": 1},
+        "no": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

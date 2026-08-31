@@ -12,7 +12,7 @@ from typing import Any
 
 import psycopg
 import pytest
-from football.forecasting.artifacts import ModelArtifactPublisher
+from football.forecasting.artifacts import ModelArtifactPublisher, PortableModelArtifactStore
 from football.forecasting.contracts import (
     BaselineForecastV1,
     MatchResultProbabilitiesV1,
@@ -21,7 +21,20 @@ from football.forecasting.contracts import (
     PointInTimeScopeV1,
     forecast_payload_sha256,
 )
+from football.forecasting.corner import CornerModelConfig
+from football.forecasting.dataset import (
+    CompletedMatchV1,
+    EvaluationMatchOutcomeV1,
+    ForecastMatchContextV1,
+)
+from football.forecasting.dixon_coles import DixonColesConfig
+from football.forecasting.elo import EloConfig
 from football.forecasting.evaluation import EvaluatedMatchResultV1, evaluate_match_results
+from football.forecasting.execution import Sprint2BatchModeler, Sprint2ExecutionPolicyV1
+from football.forecasting.execution_publication import (
+    Sprint2BatchPublisher,
+    Sprint2ExecutionProvenanceV1,
+)
 from football.forecasting.governance import (
     EvaluationReportPublisher,
     GovernancePublicationError,
@@ -844,6 +857,163 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
             (forecast_id,),
         ).fetchall()
     assert roles == [("PRIMARY",), ("PRIMARY",)]
+
+
+def test_sprint2_batch_publication_registers_complete_retry_safe_batch(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    _provider_id, snapshot_id, _resource_id = _source_lineage(
+        connection, f"sprint2_{uuid.uuid4().hex}"
+    )
+    published_at = datetime(2026, 8, 31, 12, 0, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        dataset_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
+        competition_id = cursor.execute(
+            "INSERT INTO football.competitions DEFAULT VALUES RETURNING id"
+        ).fetchone()[0]
+        season_id = cursor.execute(
+            "INSERT INTO football.seasons (competition_id) VALUES (%s) RETURNING id",
+            (competition_id,),
+        ).fetchone()[0]
+        target_match_id = cursor.execute(
+            """
+            INSERT INTO football.matches (competition_id, season_id)
+            VALUES (%s, %s) RETURNING id
+            """,
+            (competition_id, season_id),
+        ).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO football.dataset_versions
+                (id, source_snapshot_id, dataset_name, layer, identity_hash,
+                 schema_version, schema_sha256, normalizer_version, manifest_path,
+                 manifest_sha256, status, published_at)
+            VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
+                    'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+            """,
+            (
+                dataset_id,
+                snapshot_id,
+                dataset_id.hex * 2,
+                "1" * 64,
+                f"manifests/{dataset_id}.json",
+                "2" * 64,
+                published_at,
+            ),
+        )
+    teams = tuple(uuid.UUID(int=index) for index in range(1, 5))
+    start = datetime(2015, 8, 1, 14, 0, tzinfo=UTC)
+    schedule = (
+        (0, 1, 2, 0),
+        (2, 3, 1, 0),
+        (1, 2, 1, 1),
+        (3, 0, 0, 1),
+        (0, 2, 3, 1),
+        (1, 3, 2, 1),
+        (2, 0, 1, 1),
+        (3, 1, 0, 2),
+        (0, 3, 2, 1),
+        (2, 1, 0, 0),
+        (1, 0, 1, 2),
+        (3, 2, 1, 1),
+    )
+    history = tuple(
+        CompletedMatchV1(
+            match_id=uuid.UUID(int=index + 1),
+            competition_id=competition_id,
+            season_id=season_id,
+            kickoff_at=start + timedelta(days=index * 7),
+            home_team_id=teams[home],
+            away_team_id=teams[away],
+            home_score=home_score,
+            away_score=away_score,
+        )
+        for index, (home, away, home_score, away_score) in enumerate(schedule)
+    )
+    outcomes = tuple(
+        EvaluationMatchOutcomeV1(
+            match_id=match.match_id,
+            kickoff_at=match.kickoff_at,
+            home_score=match.home_score,
+            away_score=match.away_score,
+            home_corners=4 + index % 4,
+            away_corners=3 + (index + 1) % 3,
+            outcome_known_at=match.kickoff_at + timedelta(hours=2),
+        )
+        for index, match in enumerate(history)
+    )
+    cutoff = history[-1].kickoff_at + timedelta(days=7)
+    policy = Sprint2ExecutionPolicyV1(
+        elo_config=EloConfig(model_version="sprint2-elo-v1", time_decay_half_life_days=None),
+        dixon_coles_config=DixonColesConfig(
+            model_version="sprint2-dixon-coles-v1",
+            time_decay_half_life_days=None,
+            max_iterations=400,
+        ),
+        corner_config=CornerModelConfig(
+            model_version="sprint2-corners-v1",
+            time_decay_half_life_days=None,
+            max_iterations=400,
+        ),
+    )
+    modeler = Sprint2BatchModeler(policy)
+    fitted = modeler.fit(history, outcomes, cutoff)
+    forecasts = modeler.forecast_batch(
+        fitted,
+        (
+            ForecastMatchContextV1(
+                target_match_id,
+                competition_id,
+                season_id,
+                cutoff,
+                teams[0],
+                teams[1],
+            ),
+        ),
+    )
+    scope = PointInTimeScopeV1(
+        dataset_version_id=dataset_id,
+        source_snapshot_id=snapshot_id,
+        feature_set_version=policy.feature_set_version,
+        football_cutoff=cutoff,
+        knowledge_cutoff=published_at,
+        knowledge_mode="retrospective-fixed-snapshot-v1",
+        quality_policy_sha256="3" * 64,
+        target_set_sha256="4" * 64,
+    )
+    publisher = Sprint2BatchPublisher(
+        artifact_publisher=ModelArtifactPublisher(connection, tmp_path),
+        artifact_loader=PortableModelArtifactStore(tmp_path),
+        forecast_publisher=BaselineForecastPublisher(connection, tmp_path),
+        policy=policy,
+        provenance=Sprint2ExecutionProvenanceV1(
+            code_commit_sha="5" * 40,
+            dependency_lock_sha256="6" * 64,
+            published_at=published_at,
+        ),
+    )
+
+    first = publisher.publish_batch(scope, fitted, forecasts)
+    retry = publisher.publish_batch(scope, fitted, forecasts)
+
+    assert retry == first
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT count(*) FROM football.model_artifacts WHERE id = ANY(%s)",
+            (list(first.model_artifact_ids),),
+        ).fetchone() == (4,)
+        assert cursor.execute(
+            "SELECT count(*) FROM football.baseline_forecasts WHERE match_id = %s",
+            (target_match_id,),
+        ).fetchone() == (4,)
+        assert cursor.execute(
+            """
+            SELECT count(*) FROM football.forecast_artifacts AS relation
+            JOIN football.baseline_forecasts AS forecast ON forecast.id = relation.forecast_id
+            WHERE forecast.match_id = %s
+            """,
+            (target_match_id,),
+        ).fetchone() == (4,)
 
 
 def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
