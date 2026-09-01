@@ -73,11 +73,11 @@ the locked total-goal CRPS uncertainty limit still rejects the baseline.
   `-0.0070044470485929695`.
 - Dixon-Coles 1X2 passes: Log Loss upper delta is `-0.022486676168745324`, RPS upper delta is
   `-0.00964547950364307`, and the point-improvement requirement passes.
-- Dixon-Coles goal joint-NLL passes with upper delta `-0.008999741311145601`; its combined NLL and
-  CRPS point delta improves by `-0.051053914316576854`; and MAE delta passes at
-  `0.015090145608229135`.
+- Dixon-Coles goal joint-NLL passes with upper delta `-0.008999741311145601`; its NLL point delta
+  improves by `-0.051053914316576854`, satisfying the policy's at-least-one proper-score point
+  improvement check; and MAE delta passes at `0.015090145608229135`.
 - Dixon-Coles total-goal CRPS upper delta is `0.04227649806467279` against `0.02`, the sole
-  predictive blocker.
+  predictive blocker. Its point delta is also inferior at `+0.01763435119191425`.
 - Corner Poisson now passes every locked predictive check: NLL upper delta
   `0.010213157951468797`, CRPS upper delta `0.01626512742751341`, point improvement
   `-0.00390558919980915`, and MAE delta `-0.010237161540371936`.
@@ -190,6 +190,32 @@ SLSQP and rejects non-stationary solver success. Corner v2 applies the training-
 regularization strength `256.0`. Dixon-Coles v3 applies the training-only selected centered-effect
 regularization strength `16.0` without shrinking the global scoring level. The resulting complete
 locked-policy evaluation produces the metrics above and remains `FAIL`.
+
+## Goal CRPS diagnostic
+
+Retained clean run `7023ae81-d58b-53f4-9fde-b396166fb845` localizes the remaining failure to
+heterogeneous total-goal CRPS, not model execution, calibration, coverage, or reproducibility. The
+paired chronological moving-block distribution has median delta `+0.018055900362088505`, 2.5th
+percentile `-0.006630599951364998`, 97.5th percentile `+0.0422727025769912`, and range
+`[-0.022020445307986435, +0.06537431046976983]`. Of 2,000 replicates, 1,857 are above zero and 880
+are above the locked `+0.02` limit.
+
+Performance alternates across chronological blocks instead of improving monotonically with
+history. Monthly point deltas are `+0.04752264730722793` in November, `+0.04720657445622578` in
+January, and `+0.03754301839952209` in February, but `-0.007879608438146694` in March and
+`-0.0033731751089293364` in April. Realized totals of zero, three, and six-or-more contribute
+positive deltas of `+0.042403927006358665`, `+0.03594556256337469`, and
+`+0.05775784962480092`; totals of four and five improve. Large individual losses occur in both
+directions: overestimated totals in low-scoring matches and underestimated totals in high-scoring
+matches. This is residual match/team heterogeneity, not a single global-rate bias suitable for a
+post-hoc correction.
+
+A follow-up using only the original 100-match warm-up compared time-decay half-lives `30`, `60`,
+`90`, `180`, `365`, and disabled, with v3 regularization fixed at `16.0`. Disabling decay produced
+the best pooled fold CRPS (`1.1110657803319448`) versus `1.111639373897392` at 365 days, a gain of
+only `0.0005735935654472`, while moving over-2.5 signed bias from `-0.15711259116505255` to
+`-0.1588878731118199`. This marginal, bias-worsening difference does not justify an adaptive v4
+challenger after observing the gate. Retain v3 evidence, do not change policy, and do not promote.
 
 ## Operator command
 
