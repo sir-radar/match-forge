@@ -266,8 +266,33 @@ promoted. No Gamma-frailty modification or retry, alternate challenger, implemen
 authoritative challenger rerun, threshold or policy change, or promotion is authorized under this
 route.
 
+## Phase-priority override
+
+On 2026-09-01, after retaining the Sprint 2 `FAIL` and closing challenger work, the repository
+owner explicitly reprioritized Phase 1B and Phase 2B foundation work despite the predictive gate
+result.
+
+This authorization is limited to:
+
+```text
+Phase 1B
+multi-source automated data acquisition,
+resolution, quarantine, and acceptance evidence
+
+Phase 2B
+foundation hardening, dependency invalidation,
+rebuild, observability, CI, recovery, integrity,
+competition rules, and gate evidence
+```
+
+This priority change does not alter `Sprint2BaselineGatePolicyV1`, its thresholds, the frozen
+target plan, retained evaluation evidence, the `FAIL` result, or the no-promotion decision. It does
+not reopen Sprint 2 challenger work or authorize Gamma-frailty work, another goal-model family, an
+authoritative challenger rerun, or Phase 3.
+
 ## Required next action
 
-Preserve the Sprint 2 `FAIL` and stop challenger work. Reopening requires a new explicit
-repository-owner governance decision and route redraw. Phase 1B, Phase 2B, and later modelling
-remain blocked unless the repository owner explicitly changes the phase priority or gate contract.
+Proceed with bounded Phase 1B and Phase 2B tasks under their existing acceptance contracts. Retain
+the Sprint 2 `FAIL` as authoritative evidence and stop at the Phase 1B/Phase 2B gate for review.
+Phase 3 and later modelling remain blocked unless their prerequisites pass or the repository owner
+makes a separate explicit governance decision.
