@@ -30,8 +30,10 @@ output version, and payload checksum. Raw and calibrated variants are distinct. 
 converge on one registered forecast even when caller UUIDs differ.
 
 `Sprint2BatchPublisher` publishes four exact artifacts per chronological batch and one raw forecast
-per model family and target. Artifact bytes are published, reloaded, and validated before forecast
-publication. A partial retry converges through deterministic fit and forecast identities; target
+per model family and target. Artifact bytes are published, reloaded, deserialized, used to reproduce
+the batch predictions, and compared with the pre-serialization predictions before forecast
+publication. The maximum reload probability delta is retained in evaluation evidence. A partial
+retry converges through deterministic fit and forecast identities; target
 outcomes remain outside every immutable payload. If filesystem publication completes before a
 database transaction commits, retry recovers the immutable manifest creation time before
 reconciliation instead of generating conflicting manifest bytes.
@@ -42,6 +44,11 @@ Evaluation reports are canonical immutable JSON registered in PostgreSQL with po
 dataset/source lineage, target set, checksum, completion time, and `PASS`,
 `PASS_WITH_WARNINGS`, or `FAIL` status. Reports record the evaluation football-cutoff range, and
 retained prediction rows bind every target to its exact fitted artifacts and persisted forecasts.
+
+Complete Sprint 2 reports embed `Sprint2BaselineGateDecisionV1`: five ordered dimension results plus
+every actual, operator, locked threshold, and blocking designation. Evidence manifests and previous
+reports remain immutable; a repeated review creates a new run. Equivalent-run reproduction requires
+matching clean-worktree provenance, source identity, target set, code, lock, and analysis policies.
 
 Promotion events are append-only. Approval requires a non-failed evaluation. Baseline approval
 cannot target a calibration artifact; calibration approval requires one. Retirements remain explicit

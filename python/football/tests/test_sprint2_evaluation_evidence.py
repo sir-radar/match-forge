@@ -88,6 +88,7 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
         "predictions",
         "outcomes",
         "comparison_rows",
+        "subgroup_diagnostics",
         "raw_metrics",
         "paired_bootstrap",
         "calibration_predictions",
@@ -104,6 +105,22 @@ def test_evaluation_evidence_is_immutable_complete_and_machine_readable(
     payload = json.loads((tmp_path / first.manifest_relative_path).read_text(encoding="utf-8"))
     assert payload["target_set_sha256"] == plan.target_set_sha256
     assert payload["bootstrap_policy"]["seed"] == 5
+    assert payload["artifact_reload_max_probability_delta"] == 0.0
+    subgroup_file = next(
+        item for item in first.manifest.files if item.name == "subgroup_diagnostics"
+    )
+    subgroup_table = parquet.read_table(tmp_path / subgroup_file.relative_path)
+    assert set(subgroup_table.column("dimension").to_pylist()) == {
+        "overall",
+        "monthly",
+        "team",
+        "competition",
+        "home_away",
+        "realized_1x2",
+        "probability_decile",
+        "goal_range",
+        "corner_range",
+    }
 
 
 def test_evaluation_runner_executes_and_retains_analysis(tmp_path: Path) -> None:
