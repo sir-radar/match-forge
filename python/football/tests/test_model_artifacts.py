@@ -77,6 +77,8 @@ def test_portable_artifact_publication_is_canonical_and_idempotent(tmp_path: Pat
         str(TEAM_B): -0.1,
         str(TEAM_A): 0.1,
     }
+    assert payload["state"]["config"]["optimizer"] == "slsqp-analytic-gradient-v2"
+    assert payload["state"]["config"]["gradient_tolerance"] == 1e-3
     loaded = store.load(first, expected_feature_contract_version="sprint2-features-v1")
     restored = deserialize_dixon_coles_fit(loaded.state)
     original = _dixon_coles_fit()
@@ -103,6 +105,50 @@ def test_portable_artifact_recovers_created_at_for_orphan_manifest(tmp_path: Pat
 
     assert store.existing_created_at(ARTIFACT_ID, fit_spec) == CUTOFF
     assert store.existing_created_at(UUID(int=999), fit_spec) is None
+
+
+def test_model_state_loaders_preserve_legacy_optimizer_and_unregularized_configs() -> None:
+    legacy_dixon_config = DixonColesConfig(
+        model_version="dixon-coles-v1",
+        optimizer="lbfgsb-finite-difference-v1",
+    )
+    legacy_dixon = replace(
+        _dixon_coles_fit(),
+        config=legacy_dixon_config,
+        config_sha256=legacy_dixon_config.sha256,
+    )
+    legacy_corner_config = CornerModelConfig(model_version="corner-v1")
+    legacy_corner = CornerFit(
+        model_version="corner-v1",
+        config=legacy_corner_config,
+        config_sha256=legacy_corner_config.sha256,
+        training_sha256=SHA_B,
+        training_match_count=12,
+        training_cutoff=CUTOFF,
+        distribution="poisson",
+        parameters=CornerParameters(
+            intercept=1.0,
+            team_corner_strengths={TEAM_A: 0.1, TEAM_B: -0.1},
+            opponent_concession_strengths={TEAM_A: -0.2, TEAM_B: 0.2},
+            competition_effects={COMPETITION_ID: 0.0},
+        ),
+        negative_log_likelihood=20.0,
+        aic=60.0,
+        converged=True,
+    )
+
+    dixon_state = serialize_dixon_coles_fit(legacy_dixon)
+    corner_state = serialize_corner_fit(legacy_corner)
+    dixon_config_state = dixon_state["config"]
+    corner_config_state = corner_state["config"]
+    assert isinstance(dixon_config_state, dict)
+    assert isinstance(corner_config_state, dict)
+    assert "optimizer" not in dixon_config_state
+    assert "effect_regularization" not in corner_config_state
+    assert (
+        deserialize_dixon_coles_fit(dixon_state).config.optimizer == "lbfgsb-finite-difference-v1"
+    )
+    assert deserialize_corner_fit(corner_state).config.effect_regularization == 0.0
 
 
 def test_portable_artifact_rejects_mutation_and_non_finite_state(tmp_path: Path) -> None:
@@ -160,9 +206,9 @@ def test_artifact_loader_rejects_corrupt_missing_or_incompatible_files(tmp_path:
 
 
 def test_corner_serializer_preserves_distribution_and_sorted_effects() -> None:
-    config = CornerModelConfig(model_version="corner-v1")
+    config = CornerModelConfig(model_version="corner-v2", effect_regularization=4.0)
     original_fit = CornerFit(
-        model_version="corner-v1",
+        model_version="corner-v2",
         config=config,
         config_sha256=config.sha256,
         training_sha256=SHA_B,
@@ -185,8 +231,11 @@ def test_corner_serializer_preserves_distribution_and_sorted_effects() -> None:
     state = serialize_corner_fit(original_fit)
 
     parameters = state["parameters"]
+    serialized_config = state["config"]
     assert isinstance(parameters, dict)
+    assert isinstance(serialized_config, dict)
     assert state["distribution"] == "negative_binomial"
+    assert serialized_config["effect_regularization"] == 4.0
     assert list(parameters["team_corner_strengths"]) == [str(TEAM_B), str(TEAM_A)]
     assert parameters["feature_scales"] == {
         "possession_tendency": 0.1,
@@ -195,6 +244,7 @@ def test_corner_serializer_preserves_distribution_and_sorted_effects() -> None:
         "recent_corners": 1.5,
     }
     restored = deserialize_corner_fit(state)
+    assert restored.config.effect_regularization == 4.0
     fixture = CornerFixture(
         competition_id=COMPETITION_ID,
         home_team_id=TEAM_A,

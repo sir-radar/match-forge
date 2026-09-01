@@ -35,6 +35,22 @@ Team attack and opponent-concession effects each sum to zero. One competition is
 Training feature means and scales are retained with the fitted parameters so forecasts apply the
 same transformation.
 
+Sprint 2 corner version 2 applies the same L2 penalty to the complete team-attack and
+opponent-concession effect vectors:
+
+```text
+penalized objective = negative log likelihood
+                    + 0.5 * 256.0 * sum(team and opponent effects squared)
+```
+
+The stored negative log likelihood and AIC remain unpenalized likelihood evidence. The penalty is
+part of the model configuration and artifact identity. It was frozen using only the 100 matches
+before the first evaluation target: four chronological folds trained on 60, 70, 80, and 90 matches
+and validated on each following 10 matches. Candidate penalties were `0`, `0.25`, `1`, `4`, `16`,
+`64`, `256`, `1024`, and `4096`; `256` minimized both pooled total-corner NLL (`2.726728089087454`)
+and CRPS (`1.9679545241859124`) across 40 validation forecasts. No evaluation-target outcome,
+bookmaker input, gate threshold, or target-plan rule participated in selection.
+
 ## Distribution comparison
 
 The Poisson baseline assumes `variance = mean`. NB2 adds fitted dispersion `alpha`:
@@ -43,10 +59,10 @@ The Poisson baseline assumes `variance = mean`. NB2 adds fitted dispersion `alph
 variance = mean + alpha * mean^2
 ```
 
-Both models use the same weighted observations, feature design, bounds, and optimizer. The result
-records observed mean and variance, flags empirical overdispersion, and selects the lower-AIC model.
-This is model evidence, not a deployment decision; walk-forward out-of-sample scoring remains the
-next required gate.
+Both models use the same weighted observations, feature design, effect penalty, bounds, and
+optimizer. The result records observed mean and variance, flags empirical overdispersion, and
+selects the lower-AIC model. This is model evidence, not a deployment decision; walk-forward
+out-of-sample scoring remains the required gate.
 
 Forecasts expose home and away expected corners, variances, and exact count probabilities for the
 selected distribution. Configuration and ordered training facts have canonical SHA-256 identities.

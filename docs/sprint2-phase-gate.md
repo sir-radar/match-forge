@@ -34,6 +34,10 @@ Date: 2026-09-01
   regression dimension results, including actuals and thresholds.
 - Required subgroup diagnostics retained as deterministic Parquet evidence.
 - Equivalent clean-run comparison and recorded artifact reload prediction deltas.
+- Dixon-Coles v2 analytic-gradient fitting with fail-closed projected-gradient stationarity checks;
+  legacy v1 artifacts remain immutable and loadable.
+- Corner v2 team-effect shrinkage selected only from chronological folds inside the 100-match
+  pre-evaluation training window.
 
 ## Verified
 
@@ -50,9 +54,9 @@ Date: 2026-09-01
 Final `make check` passed on 2026-09-01:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 85 source files.
+- Strict MyPy passed for 87 source files.
 - Static health analysis reported 0 issues.
-- 158 Python tests passed.
+- 163 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -60,17 +64,22 @@ Final `make check` passed on 2026-09-01:
 
 ## Locked policy result
 
-Sprint 2 remains `FAIL`. This is now a predictive result, not an evidence-production gap.
+Sprint 2 remains `FAIL`. The remediated models now complete the gate, but the locked predictive and
+calibration policies still reject the baseline.
 
-- Elo and Dixon-Coles 1X2 comparisons satisfy their non-inferiority limits; at least one improves
-  both Log Loss and RPS.
-- Dixon-Coles goal NLL and CRPS deltas are exactly `0.0`; non-inferiority passes, but the required
-  point-estimate improvement does not.
-- Corner Poisson NLL upper delta is `0.1334293494138387` against `0.03`.
-- Corner Poisson CRPS upper delta is `0.2042466708474623` against `0.05`.
-- Corner Poisson point deltas are `+0.07474906843946444` NLL and
-  `+0.11220273633078141` CRPS, so neither improves.
-- Corner MAE point delta is `+0.13830595219167047`, within the `+0.15` limit.
+- Elo passes: Log Loss upper delta is `-0.002278372399708321` and RPS upper delta is
+  `-0.0070044470485929695`.
+- Dixon-Coles 1X2 RPS passes at `0.000025281796599528133`, and its point estimate improves, but its
+  Log Loss upper delta is `0.02103149367734792` against `0.02`.
+- Dixon-Coles goal joint-NLL upper delta is `0.0754164751231697` against `0.02`; total-goal CRPS
+  upper delta is `0.1022486784846666` against `0.02`; and the required point improvement fails at
+  `+0.0015479498064976409`.
+- Corner Poisson now passes every locked predictive check: NLL upper delta
+  `0.010213157951468797`, CRPS upper delta `0.01626512742751341`, point improvement
+  `-0.00390558919980915`, and MAE delta `-0.010237161540371936`.
+- Over-2.5 ECE is `0.1190710626259451` against `0.1`; all other locked calibration checks pass.
+- Coverage and regression dimensions pass with 280/280 targets and zero leakage, probability,
+  normalization, runtime, test, bypass, or regression-budget failures.
 
 No threshold changed. No baseline or calibration artifact was promoted.
 
@@ -92,11 +101,12 @@ dataset files; all resolve to one dataset and validator run. Match totals range 
 
 ```text
 Status: FAIL
-Stage: walk-forward-execution
+Stage: complete
 Registered matches: 380
 Completed matches: 380
 Scored targets: 380
 Corner-labelled targets: 380
+Walk-forward targets: 280
 ```
 
 The pinned StatsBomb revision
@@ -166,6 +176,12 @@ calibration bins, and six calibration comparisons. Raw Dixon-Coles 1X2 log loss 
 same target set and identical prediction, outcome, metric, bootstrap, and calibration file hashes.
 These immutable runs remain unchanged; new complete runs record the policy decision separately in
 their own report.
+
+The remediation review did not alter the target plan, policy thresholds, retained v1 evidence, or
+promotion state. Dixon-Coles v2 replaces the false-success finite-difference fit with analytic
+SLSQP and rejects non-stationary solver success. Corner v2 applies the training-only selected
+regularization strength `256.0`. The resulting complete locked-policy evaluation produces the
+metrics above and remains `FAIL`.
 
 ## Operator command
 

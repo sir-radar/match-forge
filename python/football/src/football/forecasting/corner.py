@@ -97,6 +97,7 @@ class CornerModelConfig:
     time_decay_half_life_days: float | None = 180.0
     max_iterations: int = 1_000
     tolerance: float = 1e-9
+    effect_regularization: float = 0.0
 
     def __post_init__(self) -> None:
         if not isinstance(self.model_version, str) or not _MODEL_VERSION.fullmatch(
@@ -114,18 +115,24 @@ class CornerModelConfig:
         ):
             raise CornerContractError("max_iterations must be a positive integer")
         _positive(self.tolerance, "tolerance")
+        _finite(self.effect_regularization, "effect regularization")
+        if self.effect_regularization < 0.0:
+            raise CornerContractError("effect regularization must be non-negative")
 
     @property
     def sha256(self) -> str:
         return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        values: dict[str, object] = {
             "model_version": self.model_version,
             "time_decay_half_life_days": self.time_decay_half_life_days,
             "max_iterations": self.max_iterations,
             "tolerance": self.tolerance,
         }
+        if self.effect_regularization > 0.0:
+            values["effect_regularization"] = self.effect_regularization
+        return values
 
     def match_weight(self, age_days: float) -> float:
         _finite(age_days, "match age")
@@ -411,9 +418,9 @@ class CornerModels:
             )
             bounds.append(_LOG_DISPERSION_BOUNDS)
 
-        def objective(values: Sequence[float]) -> float:
+        def negative_log_likelihood(values: Sequence[float]) -> float:
             unpacked = _unpack(values, team_count, competition_count, distribution)
-            negative_log_likelihood = 0.0
+            total = 0.0
             for row in context.rows:
                 expected = _row_expected(
                     row,
@@ -429,8 +436,17 @@ class CornerModels:
                     log_probability = _negative_binomial_log_probability(
                         row.corners, expected, unpacked.dispersion
                     )
-                negative_log_likelihood -= row.weight * log_probability
-            return negative_log_likelihood
+                total -= row.weight * log_probability
+            return total
+
+        def objective(values: Sequence[float]) -> float:
+            unpacked = _unpack(values, team_count, competition_count, distribution)
+            effect_energy = sum(value * value for value in unpacked.team_effects) + sum(
+                value * value for value in unpacked.opponent_effects
+            )
+            return negative_log_likelihood(values) + 0.5 * self.config.effect_regularization * (
+                effect_energy
+            )
 
         result = minimize(
             objective,
@@ -444,6 +460,7 @@ class CornerModels:
                 f"{distribution} corner optimizer did not converge: {result.message}"
             )
         unpacked = _unpack(result.x, team_count, competition_count, distribution)
+        fitted_negative_log_likelihood = negative_log_likelihood(result.x)
         parameters = CornerParameters(
             intercept=unpacked.intercept,
             team_corner_strengths=dict(zip(context.team_ids, unpacked.team_effects, strict=True)),
@@ -472,8 +489,8 @@ class CornerModels:
             training_cutoff=context.cutoff,
             distribution=distribution,
             parameters=parameters,
-            negative_log_likelihood=float(result.fun),
-            aic=2.0 * parameter_count + 2.0 * float(result.fun),
+            negative_log_likelihood=fitted_negative_log_likelihood,
+            aic=2.0 * parameter_count + 2.0 * fitted_negative_log_likelihood,
             converged=True,
         )
 

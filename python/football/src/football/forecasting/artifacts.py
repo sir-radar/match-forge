@@ -28,6 +28,7 @@ from football.forecasting.corner import (
 from football.forecasting.dixon_coles import (
     DixonColesConfig,
     DixonColesFit,
+    DixonColesOptimizer,
     DixonColesParameters,
 )
 from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
@@ -566,12 +567,23 @@ def deserialize_dixon_coles_fit(state: Mapping[str, object]) -> DixonColesFit:
     if state.get("contract") != "DixonColesModelStateV1":
         raise ArtifactPublicationError("unsupported Dixon-Coles model state")
     config_values = _object_mapping(state.get("config"), "Dixon-Coles config")
+    optimizer = (
+        _string(config_values, "optimizer")
+        if "optimizer" in config_values
+        else "lbfgsb-finite-difference-v1"
+    )
     config = DixonColesConfig(
         model_version=_string(config_values, "model_version"),
         time_decay_half_life_days=_optional_float(config_values, "time_decay_half_life_days"),
         score_matrix_tail_start=_integer(config_values, "score_matrix_tail_start"),
         max_iterations=_integer(config_values, "max_iterations"),
         tolerance=_float(config_values, "tolerance"),
+        optimizer=cast(DixonColesOptimizer, optimizer),
+        gradient_tolerance=(
+            _float(config_values, "gradient_tolerance")
+            if "gradient_tolerance" in config_values
+            else 1e-3
+        ),
     )
     config_sha256 = _string(state, "config_sha256")
     if config.sha256 != config_sha256:
@@ -604,6 +616,11 @@ def deserialize_corner_fit(state: Mapping[str, object]) -> CornerFit:
         time_decay_half_life_days=_optional_float(config_values, "time_decay_half_life_days"),
         max_iterations=_integer(config_values, "max_iterations"),
         tolerance=_float(config_values, "tolerance"),
+        effect_regularization=(
+            _float(config_values, "effect_regularization")
+            if "effect_regularization" in config_values
+            else 0.0
+        ),
     )
     config_sha256 = _string(state, "config_sha256")
     if config.sha256 != config_sha256:

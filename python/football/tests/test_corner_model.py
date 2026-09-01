@@ -94,6 +94,26 @@ def test_time_decay_and_configuration_identity_are_deterministic() -> None:
     assert config.match_weight(100.0) == pytest.approx(0.25)
 
 
+def test_effect_regularization_is_versioned_and_shrinks_team_effects() -> None:
+    unregularized_config = CornerModelConfig(
+        model_version="corners-shrinkage-v2",
+        time_decay_half_life_days=None,
+        effect_regularization=0.0,
+    )
+    regularized_config = CornerModelConfig(
+        model_version="corners-shrinkage-v2",
+        time_decay_half_life_days=None,
+        effect_regularization=4.0,
+    )
+
+    unregularized = CornerModels(unregularized_config).fit(_asymmetric_matches()).poisson
+    regularized = CornerModels(regularized_config).fit(_asymmetric_matches()).poisson
+
+    assert unregularized_config.sha256 != regularized_config.sha256
+    assert regularized.config.effect_regularization == 4.0
+    assert _effect_energy(regularized) < _effect_energy(unregularized)
+
+
 def test_forecast_uses_team_opponent_home_competition_and_pre_match_features() -> None:
     config = CornerModelConfig(model_version="corners-formula-v1")
     parameters = CornerParameters(
@@ -157,6 +177,8 @@ def test_rejects_leaky_or_invalid_feature_and_match_inputs() -> None:
         _match(1, -1, 4)
     with pytest.raises(CornerContractError, match="at least one match"):
         CornerModels(CornerModelConfig(model_version="corners-empty-v1")).fit(())
+    with pytest.raises(CornerContractError, match="effect regularization"):
+        CornerModelConfig(model_version="corners-invalid-v2", effect_regularization=-1.0)
 
 
 def _overdispersed_matches() -> tuple[CornerMatch, ...]:
@@ -181,6 +203,29 @@ def _overdispersed_matches() -> tuple[CornerMatch, ...]:
     return tuple(
         _match(index, home_corners, away_corners)
         for index, (home_corners, away_corners) in enumerate(corner_pairs, start=1)
+    )
+
+
+def _asymmetric_matches() -> tuple[CornerMatch, ...]:
+    return tuple(
+        CornerMatch(
+            match_id=UUID(int=index),
+            competition_id=COMPETITION,
+            kickoff_at=KICKOFF + timedelta(days=index),
+            home_team_id=TEAM_A if index % 2 else TEAM_B,
+            away_team_id=TEAM_B if index % 2 else TEAM_A,
+            home_corners=9 if index % 2 else 2,
+            away_corners=2 if index % 2 else 8,
+            home_features=FEATURES,
+            away_features=FEATURES,
+        )
+        for index in range(1, 25)
+    )
+
+
+def _effect_energy(fit: CornerFit) -> float:
+    return sum(value * value for value in fit.parameters.team_corner_strengths.values()) + sum(
+        value * value for value in fit.parameters.opponent_concession_strengths.values()
     )
 
 
