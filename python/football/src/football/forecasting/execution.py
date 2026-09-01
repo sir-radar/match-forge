@@ -57,7 +57,9 @@ class Sprint2ExecutionError(RuntimeError):
 class Sprint2ExecutionPolicyV1:
     elo_config: EloConfig = field(default_factory=lambda: EloConfig(model_version="sprint2-elo-v1"))
     dixon_coles_config: DixonColesConfig = field(
-        default_factory=lambda: DixonColesConfig(model_version="sprint2-dixon-coles-v2")
+        default_factory=lambda: DixonColesConfig(
+            model_version="sprint2-dixon-coles-v3", effect_regularization=16.0
+        )
     )
     corner_config: CornerModelConfig = field(
         default_factory=lambda: CornerModelConfig(

@@ -44,6 +44,7 @@ class DixonColesConfig:
     tolerance: float = 1e-12
     optimizer: DixonColesOptimizer = "slsqp-analytic-gradient-v2"
     gradient_tolerance: float = 1e-3
+    effect_regularization: float = 0.0
 
     def __post_init__(self) -> None:
         if not isinstance(self.model_version, str) or not _MODEL_VERSION.fullmatch(
@@ -75,6 +76,9 @@ class DixonColesConfig:
         ):
             raise DixonColesContractError("unsupported Dixon-Coles optimizer")
         _positive(self.gradient_tolerance, "gradient tolerance")
+        _finite(self.effect_regularization, "effect regularization")
+        if self.effect_regularization < 0.0:
+            raise DixonColesContractError("effect regularization must be non-negative")
 
     @property
     def sha256(self) -> str:
@@ -91,6 +95,8 @@ class DixonColesConfig:
         if self.optimizer != "lbfgsb-finite-difference-v1":
             values["optimizer"] = self.optimizer
             values["gradient_tolerance"] = self.gradient_tolerance
+        if self.effect_regularization > 0.0:
+            values["effect_regularization"] = self.effect_regularization
         return values
 
     def match_weight(self, age_days: float) -> float:
@@ -256,12 +262,33 @@ class DixonColesModel:
         )
 
         def objective_and_gradient(values: Sequence[float]) -> tuple[float, tuple[float, ...]]:
-            return _negative_log_likelihood_and_gradient(
+            likelihood, gradient = _negative_log_likelihood_and_gradient(
                 values,
                 ordered,
                 weights,
                 team_indexes,
                 len(team_ids),
+            )
+            attacks, defenses, _home_advantage, _correlation = _unpack(values, len(team_ids))
+            penalty, attack_penalty, defense_penalty = _effect_regularization(
+                attacks,
+                defenses,
+                self.config.effect_regularization,
+            )
+            free_attack_gradient = tuple(
+                gradient[index] + attack_penalty[index] - attack_penalty[-1]
+                for index in range(len(team_ids) - 1)
+            )
+            defense_start = len(team_ids) - 1
+            defense_gradient = tuple(
+                gradient[defense_start + index] + defense_penalty[index]
+                for index in range(len(team_ids))
+            )
+            return likelihood + penalty, (
+                *free_attack_gradient,
+                *defense_gradient,
+                gradient[-2],
+                gradient[-1],
             )
 
         if self.config.optimizer == "lbfgsb-finite-difference-v1":
@@ -298,6 +325,13 @@ class DixonColesModel:
                     f"projected gradient {stationarity} exceeds {self.config.gradient_tolerance}"
                 )
         attacks, defenses, home_advantage, correlation = _unpack(result.x, len(team_ids))
+        fitted_negative_log_likelihood = _negative_log_likelihood_and_gradient(
+            result.x,
+            ordered,
+            weights,
+            team_indexes,
+            len(team_ids),
+        )[0]
         parameters = DixonColesParameters(
             attack_strengths=dict(zip(team_ids, attacks, strict=True)),
             defense_strengths=dict(zip(team_ids, defenses, strict=True)),
@@ -312,7 +346,7 @@ class DixonColesModel:
             training_match_count=len(ordered),
             training_cutoff=cutoff,
             parameters=parameters,
-            negative_log_likelihood=float(result.fun),
+            negative_log_likelihood=fitted_negative_log_likelihood,
             converged=True,
         )
 
@@ -440,6 +474,26 @@ def _negative_log_likelihood_and_gradient(
         home_advantage_gradient,
         correlation_gradient,
     )
+
+
+def _effect_regularization(
+    attacks: Sequence[float],
+    defenses: Sequence[float],
+    strength: float,
+) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+    defense_mean = sum(defenses) / len(defenses)
+    centered_defenses = tuple(value - defense_mean for value in defenses)
+    attack_gradient = tuple(strength * value for value in attacks)
+    defense_gradient = tuple(strength * value for value in centered_defenses)
+    penalty = (
+        0.5
+        * strength
+        * (
+            sum(value * value for value in attacks)
+            + sum(value * value for value in centered_defenses)
+        )
+    )
+    return penalty, attack_gradient, defense_gradient
 
 
 def _tau_with_derivatives(

@@ -584,6 +584,11 @@ def deserialize_dixon_coles_fit(state: Mapping[str, object]) -> DixonColesFit:
             if "gradient_tolerance" in config_values
             else 1e-3
         ),
+        effect_regularization=(
+            _float(config_values, "effect_regularization")
+            if "effect_regularization" in config_values
+            else 0.0
+        ),
     )
     config_sha256 = _string(state, "config_sha256")
     if config.sha256 != config_sha256:

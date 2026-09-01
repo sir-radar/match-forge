@@ -41,6 +41,14 @@ def test_configuration_identity_and_time_decay_are_deterministic() -> None:
         DixonColesConfig(model_version="dc-v2", optimizer="unsupported")  # type: ignore[arg-type]
     with pytest.raises(DixonColesContractError, match="gradient tolerance"):
         DixonColesConfig(model_version="dc-v2", gradient_tolerance=0.0)
+    with pytest.raises(DixonColesContractError, match="effect regularization"):
+        DixonColesConfig(model_version="dc-v3", effect_regularization=-1.0)
+    with pytest.raises(DixonColesContractError, match="effect regularization"):
+        DixonColesConfig(model_version="dc-v3", effect_regularization=math.nan)
+
+    regularized = DixonColesConfig(model_version="dc-v3", effect_regularization=16.0)
+    assert regularized.to_dict()["effect_regularization"] == 16.0
+    assert regularized.sha256 != DixonColesConfig(model_version="dc-v3").sha256
 
 
 def test_forecast_uses_team_strengths_home_advantage_and_low_score_correction() -> None:
@@ -211,6 +219,66 @@ def test_analytic_gradient_matches_central_difference() -> None:
         )[0]
         numerical = (upper_value - lower_value) / (2.0 * step)
         assert derivative == pytest.approx(numerical, abs=1e-6)
+
+
+def test_effect_regularization_preserves_global_defense_level() -> None:
+    penalty, attack_gradient, defense_gradient = dixon_coles_module._effect_regularization(
+        (0.3, -0.1, -0.2),
+        (0.6, -0.2, 0.2),
+        16.0,
+    )
+    shifted = dixon_coles_module._effect_regularization(
+        (0.3, -0.1, -0.2),
+        (10.6, 9.8, 10.2),
+        16.0,
+    )
+
+    assert shifted[0] == pytest.approx(penalty)
+    assert shifted[1] == pytest.approx(attack_gradient)
+    assert shifted[2] == pytest.approx(defense_gradient)
+    assert sum(defense_gradient) == pytest.approx(0.0)
+
+
+def test_effect_regularization_shrinks_team_variation_without_polluting_likelihood() -> None:
+    matches = _balanced_training_matches()
+    raw = DixonColesModel(
+        DixonColesConfig(model_version="dc-unregularized", time_decay_half_life_days=None)
+    ).fit(matches)
+    regularized = DixonColesModel(
+        DixonColesConfig(
+            model_version="dc-regularized",
+            time_decay_half_life_days=None,
+            effect_regularization=16.0,
+        )
+    ).fit(matches)
+
+    def variation(parameters: DixonColesParameters) -> float:
+        defenses = tuple(parameters.defense_strengths.values())
+        defense_mean = sum(defenses) / len(defenses)
+        return sum(value * value for value in parameters.attack_strengths.values()) + sum(
+            (value - defense_mean) ** 2 for value in defenses
+        )
+
+    team_ids = tuple(sorted({TEAM_A, TEAM_B, TEAM_C, TEAM_D}, key=str))
+    team_indexes = {team_id: index for index, team_id in enumerate(team_ids)}
+    attacks = tuple(regularized.parameters.attack_strengths[team_id] for team_id in team_ids)
+    defenses = tuple(regularized.parameters.defense_strengths[team_id] for team_id in team_ids)
+    values = (
+        *attacks[:-1],
+        *defenses,
+        regularized.parameters.home_advantage,
+        regularized.parameters.low_score_correlation,
+    )
+    likelihood, _gradient = dixon_coles_module._negative_log_likelihood_and_gradient(
+        values,
+        matches,
+        (1.0,) * len(matches),
+        team_indexes,
+        len(team_ids),
+    )
+
+    assert variation(regularized.parameters) < variation(raw.parameters)
+    assert regularized.negative_log_likelihood == pytest.approx(likelihood)
 
 
 def test_rejects_invalid_matches_parameters_and_unknown_teams() -> None:

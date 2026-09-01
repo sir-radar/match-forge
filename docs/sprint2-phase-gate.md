@@ -36,6 +36,8 @@ Date: 2026-09-01
 - Equivalent clean-run comparison and recorded artifact reload prediction deltas.
 - Dixon-Coles v2 analytic-gradient fitting with fail-closed projected-gradient stationarity checks;
   legacy v1 artifacts remain immutable and loadable.
+- Dixon-Coles v3 centered team-effect shrinkage selected only from chronological folds inside the
+  100-match pre-evaluation training window; v1 and v2 artifacts remain immutable and loadable.
 - Corner v2 team-effect shrinkage selected only from chronological folds inside the 100-match
   pre-evaluation training window.
 
@@ -56,7 +58,7 @@ Final `make check` passed on 2026-09-01:
 - Ruff formatting and lint passed.
 - Strict MyPy passed for 87 source files.
 - Static health analysis reported 0 issues.
-- 163 Python tests passed.
+- 165 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -64,22 +66,27 @@ Final `make check` passed on 2026-09-01:
 
 ## Locked policy result
 
-Sprint 2 remains `FAIL`. The remediated models now complete the gate, but the locked predictive and
-calibration policies still reject the baseline.
+Sprint 2 remains `FAIL`. Dixon-Coles v3 clears every prior predictive and calibration blocker, but
+the locked total-goal CRPS uncertainty limit still rejects the baseline.
 
 - Elo passes: Log Loss upper delta is `-0.002278372399708321` and RPS upper delta is
   `-0.0070044470485929695`.
-- Dixon-Coles 1X2 RPS passes at `0.000025281796599528133`, and its point estimate improves, but its
-  Log Loss upper delta is `0.02103149367734792` against `0.02`.
-- Dixon-Coles goal joint-NLL upper delta is `0.0754164751231697` against `0.02`; total-goal CRPS
-  upper delta is `0.1022486784846666` against `0.02`; and the required point improvement fails at
-  `+0.0015479498064976409`.
+- Dixon-Coles 1X2 passes: Log Loss upper delta is `-0.022486676168745324`, RPS upper delta is
+  `-0.00964547950364307`, and the point-improvement requirement passes.
+- Dixon-Coles goal joint-NLL passes with upper delta `-0.008999741311145601`; its combined NLL and
+  CRPS point delta improves by `-0.051053914316576854`; and MAE delta passes at
+  `0.015090145608229135`.
+- Dixon-Coles total-goal CRPS upper delta is `0.04227649806467279` against `0.02`, the sole
+  predictive blocker.
 - Corner Poisson now passes every locked predictive check: NLL upper delta
   `0.010213157951468797`, CRPS upper delta `0.01626512742751341`, point improvement
   `-0.00390558919980915`, and MAE delta `-0.010237161540371936`.
-- Over-2.5 ECE is `0.1190710626259451` against `0.1`; all other locked calibration checks pass.
+- Calibration passes: 1X2 macro ECE is `0.04145927309850988`, over-2.5 ECE is
+  `0.06437202688037094`, BTTS ECE is `0.038261377483660326`, and maximum absolute bias is
+  `0.03976628154312785`.
 - Coverage and regression dimensions pass with 280/280 targets and zero leakage, probability,
-  normalization, runtime, test, bypass, or regression-budget failures.
+  normalization, runtime, test, bypass, or regression-budget failures. Equivalent clean runs are
+  required to close reproducibility for the final commit.
 
 No threshold changed. No baseline or calibration artifact was promoted.
 
@@ -180,8 +187,9 @@ their own report.
 The remediation review did not alter the target plan, policy thresholds, retained v1 evidence, or
 promotion state. Dixon-Coles v2 replaces the false-success finite-difference fit with analytic
 SLSQP and rejects non-stationary solver success. Corner v2 applies the training-only selected
-regularization strength `256.0`. The resulting complete locked-policy evaluation produces the
-metrics above and remains `FAIL`.
+regularization strength `256.0`. Dixon-Coles v3 applies the training-only selected centered-effect
+regularization strength `16.0` without shrinking the global scoring level. The resulting complete
+locked-policy evaluation produces the metrics above and remains `FAIL`.
 
 ## Operator command
 

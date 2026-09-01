@@ -26,6 +26,15 @@ Version 1 finite-difference L-BFGS-B artifacts remain loadable but are immutable
 as version 2 fits. Model configuration and ordered training facts each receive canonical SHA-256
 identities.
 
+Version 3 adds L2 shrinkage to attack effects and defensive deviations from their fitted mean. The
+defensive mean remains unpenalized because it owns the global scoring level. Stored likelihood is
+the unpenalized fitted likelihood; regularization changes fitting only. The strength `16.0` was
+selected before evaluation from the first 100 eligible historical matches using four chronological
+folds: train on 60, 70, 80, and 90 matches, then validate on the next 10. Candidates were `0`,
+`0.0625`, `0.25`, `1`, `4`, `16`, `64`, and `256`; `16` minimized both pooled joint-score NLL
+(`3.3150864845851955`) and total-goal CRPS (`1.1116393742134087`). No evaluation target was used
+for selection. Versions 1 and 2 remain immutable and loadable.
+
 ## Low-score correction
 
 Independent Poisson score probability is multiplied by `tau` only for these scores:
