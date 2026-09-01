@@ -76,7 +76,7 @@ check: format-check lint test build
 
 sprint2-evaluate: up
 	@test -z "$$(git status --porcelain)" || { echo "Sprint 2 evaluation requires a clean worktree" >&2; exit 2; }
-	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" evaluate sprint2
+	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" --authoritative-worktree-clean evaluate sprint2
 
 prototype-bootstrap:
 	@test -x $(UV) || { echo "missing $(UV); run make bootstrap" >&2; exit 3; }

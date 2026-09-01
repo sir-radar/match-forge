@@ -11,6 +11,12 @@ from psycopg import Connection
 
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.artifacts import ModelArtifactPublisher, PortableModelArtifactStore
+from football.forecasting.baseline_policy import (
+    Sprint2BaselineGatePolicyV1,
+    collect_sprint2_baseline_gate_actuals,
+    compare_equivalent_clean_runs,
+    unreproduced_run,
+)
 from football.forecasting.corner_labels import CORNER_LABEL_VERSION
 from football.forecasting.dataset import (
     ImmutableWalkForwardTargetPlanStore,
@@ -21,6 +27,7 @@ from football.forecasting.evaluation_run import Sprint2EvaluationRunner
 from football.forecasting.evidence import (
     Sprint2EvaluationEvidenceStore,
     Sprint2EvidenceProvenanceV1,
+    find_equivalent_clean_manifest,
 )
 from football.forecasting.execution import (
     Sprint2BatchModeler,
@@ -145,13 +152,9 @@ class Sprint2GateService:
                 ),
                 completed_at,
             )
-        findings = (
-            "retained raw walk-forward, paired bootstrap, and chronological calibration "
-            "evidence requires baseline policy review",
-            "no baseline or calibration artifact was promoted",
-        )
+        findings = ("applying locked Sprint 2 baseline policy to retained evidence",)
         evaluation_run_id = _evaluation_id(
-            completed_at, requested, coverage, "baseline-policy-review", findings
+            completed_at, requested, coverage, "baseline-policy-evaluation", findings
         )
         scope = plan.scope_for(plan.batches[-1])
         cutoff_start = plan.batches[0].kickoff_at
@@ -180,21 +183,39 @@ class Sprint2GateService:
                 ),
                 register=True,
             )
+        current_manifest = run.evidence.manifest
+        reproduction_manifest = find_equivalent_clean_manifest(self._report_root, current_manifest)
+        reproducibility = (
+            compare_equivalent_clean_runs(current_manifest, reproduction_manifest)
+            if reproduction_manifest is not None
+            else unreproduced_run(current_manifest)
+        )
+        actuals = collect_sprint2_baseline_gate_actuals(
+            execution=run.execution,
+            bootstrap=run.bootstrap,
+            calibration=run.calibration,
+            planned_target_count=plan.target_count,
+            corpus_scored_targets=coverage.scored_targets,
+            corner_labelled_targets=coverage.corner_labelled_targets,
+            reproducibility=reproducibility,
+        )
+        decision = Sprint2BaselineGatePolicyV1().evaluate(actuals)
         report = Sprint2EvaluationReportV1(
             evaluation_run_id=evaluation_run_id,
-            policy_version="sprint2-baseline-gate-v1",
+            policy_version=decision.policy_version,
             corpus=requested,
             coverage=coverage,
-            stage="baseline-policy-review",
+            stage="complete",
             scope=scope,
-            status="FAIL",
+            status=decision.status,
             completed_at=completed_at,
             raw_match_result_metrics=run.execution.metrics.dixon_coles_result,
+            baseline_gate_decision=decision,
             evidence_manifest_path=run.evidence.manifest_relative_path,
             evidence_manifest_sha256=run.evidence.manifest_sha256,
             evaluation_football_cutoff_start=cutoff_start,
             evaluation_football_cutoff_end=cutoff_end,
-            findings=findings,
+            findings=decision.findings,
         )
         return self._publish_report(report, register=True)
 

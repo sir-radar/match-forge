@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from dataclasses import dataclass
+from datetime import UTC
 from io import BytesIO
 from pathlib import Path
 from typing import Literal
@@ -35,17 +37,21 @@ class EvidencePublicationError(RuntimeError):
 class Sprint2EvidenceProvenanceV1:
     code_commit_sha: str
     dependency_lock_sha256: str
+    authoritative_worktree_clean: bool = False
 
     def __post_init__(self) -> None:
         if not SHA1_PATTERN.fullmatch(self.code_commit_sha):
             raise EvidencePublicationError("evidence code commit must be a Git SHA")
         if not SHA256_PATTERN.fullmatch(self.dependency_lock_sha256):
             raise EvidencePublicationError("evidence dependency lock must be a SHA-256")
+        if not isinstance(self.authoritative_worktree_clean, bool):
+            raise EvidencePublicationError("evidence worktree status must be boolean")
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, object]:
         return {
             "code_commit_sha": self.code_commit_sha,
             "dependency_lock_sha256": self.dependency_lock_sha256,
+            "authoritative_worktree_clean": self.authoritative_worktree_clean,
         }
 
 
@@ -79,6 +85,7 @@ class Sprint2EvaluationEvidenceManifestV1:
     bootstrap_policy: dict[str, object]
     calibration_policy: dict[str, object]
     files: tuple[EvaluationEvidenceFileV1, ...]
+    artifact_reload_max_probability_delta: float = 0.0
     contract: str = "Sprint2EvaluationEvidenceManifestV1"
 
     def to_dict(self) -> dict[str, object]:
@@ -91,6 +98,7 @@ class Sprint2EvaluationEvidenceManifestV1:
             "provenance": self.provenance.to_dict(),
             "bootstrap_policy": self.bootstrap_policy,
             "calibration_policy": self.calibration_policy,
+            "artifact_reload_max_probability_delta": (self.artifact_reload_max_probability_delta),
             "files": [item.to_dict() for item in self.files],
         }
 
@@ -139,6 +147,12 @@ class Sprint2EvaluationEvidenceStore:
                 "comparison_rows",
                 tuple(row.to_dict() for row in comparison_rows),
                 _COMPARISON_SCHEMA,
+            ),
+            self._table(
+                base,
+                "subgroup_diagnostics",
+                _subgroup_rows(forecasts, outcomes, comparison_rows),
+                _SUBGROUP_SCHEMA,
             ),
             self._json(
                 base,
@@ -195,6 +209,9 @@ class Sprint2EvaluationEvidenceStore:
             provenance=provenance,
             bootstrap_policy=bootstrap.policy.to_dict(),
             calibration_policy=calibration.policy.to_dict(),
+            artifact_reload_max_probability_delta=max(
+                batch.artifact_reload_max_probability_delta for batch in persisted_batches
+            ),
             files=tuple(item[0] for item in writes),
         )
         manifest_path = f"{base}/Sprint2EvaluationEvidenceManifestV1.json"
@@ -340,6 +357,76 @@ def _bootstrap_rows(result: Sprint2BootstrapResultV1) -> tuple[dict[str, object]
     )
 
 
+def _subgroup_rows(
+    forecasts: tuple[Sprint2RawForecastV1, ...],
+    outcomes: tuple[EvaluationMatchOutcomeV1, ...],
+    comparisons: tuple[Sprint2ComparisonRowV1, ...],
+) -> tuple[dict[str, object], ...]:
+    forecast_by_match = {item.context.match_id: item for item in forecasts}
+    outcome_by_match = {item.match_id: item for item in outcomes}
+    grouped: dict[tuple[str, str], list[Sprint2ComparisonRowV1]] = defaultdict(list)
+    for comparison in comparisons:
+        forecast = forecast_by_match[comparison.match_id]
+        outcome = outcome_by_match[comparison.match_id]
+        for membership in _subgroup_memberships(forecast, outcome):
+            grouped[membership].append(comparison)
+    return tuple(
+        {
+            "dimension": dimension,
+            "subgroup": subgroup,
+            "sample_count": len(rows),
+            **{
+                metric: sum(float(getattr(row, metric)) for row in rows) / len(rows)
+                for metric in _COMPARISON_METRIC_NAMES
+            },
+        }
+        for (dimension, subgroup), rows in sorted(grouped.items())
+    )
+
+
+def _subgroup_memberships(
+    forecast: Sprint2RawForecastV1,
+    outcome: EvaluationMatchOutcomeV1,
+) -> tuple[tuple[str, str], ...]:
+    context = forecast.context
+    realized = (
+        "HOME"
+        if outcome.home_score > outcome.away_score
+        else "AWAY"
+        if outcome.home_score < outcome.away_score
+        else "DRAW"
+    )
+    probability_index = {"HOME": 0, "DRAW": 1, "AWAY": 2}[realized]
+    elo = (forecast.elo_result.home, forecast.elo_result.draw, forecast.elo_result.away)
+    dixon_coles = (
+        forecast.dixon_coles_result.home,
+        forecast.dixon_coles_result.draw,
+        forecast.dixon_coles_result.away,
+    )
+    return (
+        ("overall", "all"),
+        ("monthly", context.kickoff_at.astimezone(UTC).strftime("%Y-%m")),
+        ("team", str(context.home_team_id)),
+        ("team", str(context.away_team_id)),
+        ("competition", str(context.competition_id)),
+        ("home_away", f"home:{context.home_team_id}"),
+        ("home_away", f"away:{context.away_team_id}"),
+        ("realized_1x2", realized),
+        ("probability_decile", f"elo:{_decile(elo[probability_index])}"),
+        (
+            "probability_decile",
+            f"dixon_coles:{_decile(dixon_coles[probability_index])}",
+        ),
+        ("goal_range", f"exact_total:{outcome.home_score + outcome.away_score}"),
+        ("corner_range", f"exact_total:{outcome.home_corners + outcome.away_corners}"),
+    )
+
+
+def _decile(probability: float) -> str:
+    index = min(int(probability * 10), 9)
+    return f"{index / 10:.1f}-{(index + 1) / 10:.1f}"
+
+
 def _parquet(rows: tuple[dict[str, object], ...], schema: pa.Schema) -> bytes:
     table = pa.Table.from_pylist(list(rows), schema=schema)
     buffer = BytesIO()
@@ -369,6 +456,70 @@ def _evidence_file(
 
 def _json_text(payload: dict[str, object]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def find_equivalent_clean_manifest(
+    root: Path,
+    current: Sprint2EvaluationEvidenceManifestV1,
+) -> Sprint2EvaluationEvidenceManifestV1 | None:
+    for path in sorted(root.glob("run=*/Sprint2EvaluationEvidenceManifestV1.json")):
+        candidate = load_evidence_manifest(path)
+        if _equivalent_clean_manifest(current, candidate):
+            return candidate
+    return None
+
+
+def load_evidence_manifest(path: Path) -> Sprint2EvaluationEvidenceManifestV1:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        provenance = payload["provenance"]
+        files = tuple(
+            EvaluationEvidenceFileV1(
+                name=item["name"],
+                relative_path=item["relative_path"],
+                media_type=item["media_type"],
+                physical_sha256=item["physical_sha256"],
+                size_bytes=item["size_bytes"],
+                row_count=item["row_count"],
+            )
+            for item in payload["files"]
+        )
+        return Sprint2EvaluationEvidenceManifestV1(
+            evaluation_run_id=UUID(payload["evaluation_run_id"]),
+            target_set_sha256=payload["target_set_sha256"],
+            target_plan_path=payload["target_plan_path"],
+            target_plan_sha256=payload["target_plan_sha256"],
+            provenance=Sprint2EvidenceProvenanceV1(
+                provenance["code_commit_sha"],
+                provenance["dependency_lock_sha256"],
+                provenance.get("authoritative_worktree_clean", False),
+            ),
+            bootstrap_policy=payload["bootstrap_policy"],
+            calibration_policy=payload["calibration_policy"],
+            files=files,
+            artifact_reload_max_probability_delta=payload.get(
+                "artifact_reload_max_probability_delta", 0.0
+            ),
+            contract=payload["contract"],
+        )
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+        raise EvidencePublicationError(f"invalid evaluation evidence manifest: {path}") from error
+
+
+def _equivalent_clean_manifest(
+    current: Sprint2EvaluationEvidenceManifestV1,
+    candidate: Sprint2EvaluationEvidenceManifestV1,
+) -> bool:
+    return (
+        candidate.evaluation_run_id != current.evaluation_run_id
+        and current.provenance.authoritative_worktree_clean
+        and candidate.provenance.authoritative_worktree_clean
+        and candidate.target_set_sha256 == current.target_set_sha256
+        and candidate.provenance.code_commit_sha == current.provenance.code_commit_sha
+        and candidate.provenance.dependency_lock_sha256 == current.provenance.dependency_lock_sha256
+        and candidate.bootstrap_policy == current.bootstrap_policy
+        and candidate.calibration_policy == current.calibration_policy
+    )
 
 
 def _reliability_svg(calibration: Sprint2CalibrationAnalysisV1) -> str:
@@ -495,34 +646,38 @@ _OUTCOME_SCHEMA = pa.schema(
     ]
 )
 
+_COMPARISON_METRIC_NAMES = (
+    "elo_log_loss",
+    "elo_rps",
+    "dixon_coles_log_loss",
+    "dixon_coles_rps",
+    "result_reference_log_loss",
+    "result_reference_rps",
+    "goal_joint_nll",
+    "goal_total_crps",
+    "goal_total_absolute_error",
+    "goal_reference_joint_nll",
+    "goal_reference_total_crps",
+    "goal_reference_total_absolute_error",
+    "corner_poisson_total_nll",
+    "corner_poisson_total_crps",
+    "corner_poisson_total_absolute_error",
+    "corner_negative_binomial_total_nll",
+    "corner_negative_binomial_total_crps",
+    "corner_negative_binomial_total_absolute_error",
+    "corner_reference_total_nll",
+    "corner_reference_total_crps",
+    "corner_reference_total_absolute_error",
+)
+
 _COMPARISON_SCHEMA = pa.schema(
     [("match_id", pa.string()), ("kickoff_at", pa.string())]
-    + [
-        (name, pa.float64())
-        for name in (
-            "elo_log_loss",
-            "elo_rps",
-            "dixon_coles_log_loss",
-            "dixon_coles_rps",
-            "result_reference_log_loss",
-            "result_reference_rps",
-            "goal_joint_nll",
-            "goal_total_crps",
-            "goal_total_absolute_error",
-            "goal_reference_joint_nll",
-            "goal_reference_total_crps",
-            "goal_reference_total_absolute_error",
-            "corner_poisson_total_nll",
-            "corner_poisson_total_crps",
-            "corner_poisson_total_absolute_error",
-            "corner_negative_binomial_total_nll",
-            "corner_negative_binomial_total_crps",
-            "corner_negative_binomial_total_absolute_error",
-            "corner_reference_total_nll",
-            "corner_reference_total_crps",
-            "corner_reference_total_absolute_error",
-        )
-    ]
+    + [(name, pa.float64()) for name in _COMPARISON_METRIC_NAMES]
+)
+
+_SUBGROUP_SCHEMA = pa.schema(
+    [("dimension", pa.string()), ("subgroup", pa.string()), ("sample_count", pa.int64())]
+    + [(name, pa.float64()) for name in _COMPARISON_METRIC_NAMES]
 )
 
 _BOOTSTRAP_SCHEMA = pa.schema(

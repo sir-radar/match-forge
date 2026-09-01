@@ -38,6 +38,9 @@
       "oneOf": [{"type": "null"}, {"$ref": "#/$defs/metrics"}]
     },
     "calibration_accepted": {"type": ["boolean", "null"]},
+    "baseline_gate_decision": {
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/baseline_gate_decision"}]
+    },
     "evidence_manifest_path": {
       "type": ["string", "null"],
       "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))[^\\\\/\\u0000-\\u001f]+(?:/[^\\\\/\\u0000-\\u001f]+)*$"
@@ -168,6 +171,56 @@
             "additionalProperties": false
           }
         }
+      },
+      "additionalProperties": false
+    },
+    "baseline_gate_decision": {
+      "type": "object",
+      "required": ["contract", "policy_version", "status", "dimensions", "findings"],
+      "properties": {
+        "contract": {"const": "Sprint2BaselineGateDecisionV1"},
+        "policy_version": {"const": "sprint2-baseline-gate-policy-v1"},
+        "status": {"enum": ["PASS", "PASS_WITH_WARNINGS", "FAIL"]},
+        "dimensions": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {"$ref": "#/$defs/gate_dimension"}
+        },
+        "findings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "additionalProperties": false
+    },
+    "gate_dimension": {
+      "type": "object",
+      "required": ["name", "status", "checks"],
+      "properties": {
+        "name": {
+          "enum": ["predictive", "calibration", "coverage", "reproducibility", "regression"]
+        },
+        "status": {"enum": ["PASS", "FAIL"]},
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/gate_check"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "gate_check": {
+      "type": "object",
+      "required": ["key", "status", "actual", "operator", "threshold", "blocking"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1},
+        "status": {"enum": ["PASS", "FAIL"]},
+        "actual": {"type": ["boolean", "integer", "number", "string", "null"]},
+        "operator": {"enum": ["<=", "<", ">=", "==", "within", "recorded"]},
+        "threshold": {"type": ["boolean", "integer", "number", "string", "null"]},
+        "blocking": {"type": "boolean"}
       },
       "additionalProperties": false
     }

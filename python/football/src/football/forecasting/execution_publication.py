@@ -31,6 +31,7 @@ from football.forecasting.contracts import (
 from football.forecasting.execution import (
     FittedSprint2BatchV1,
     PersistedSprint2BatchV1,
+    Sprint2BatchModeler,
     Sprint2ExecutionError,
     Sprint2ExecutionPolicyV1,
     Sprint2RawForecastV1,
@@ -110,7 +111,8 @@ class Sprint2BatchPublisher:
         forecasts: tuple[Sprint2RawForecastV1, ...],
     ) -> PersistedSprint2BatchV1:
         self._validate_batch(scope, fitted, forecasts)
-        artifacts = self._publish_artifacts(scope, fitted)
+        artifacts, loaded = self._publish_artifacts(scope, fitted)
+        reload_delta = self._reload_prediction_delta(fitted, forecasts, loaded)
         published_forecasts = tuple(
             self._publish_target(scope, forecast, artifacts) for forecast in forecasts
         )
@@ -129,6 +131,7 @@ class Sprint2BatchPublisher:
                 for publication in target_publications
             ),
             forecast_count=sum(len(target) for target in published_forecasts),
+            artifact_reload_max_probability_delta=reload_delta,
         )
 
     def _validate_batch(
@@ -156,8 +159,12 @@ class Sprint2BatchPublisher:
 
     def _publish_artifacts(
         self, scope: PointInTimeScopeV1, fitted: FittedSprint2BatchV1
-    ) -> dict[ModelFamily, PublishedModelArtifactV1]:
+    ) -> tuple[
+        dict[ModelFamily, PublishedModelArtifactV1],
+        dict[ModelFamily, LoadedPortableModelStateV1],
+    ]:
         publications: dict[ModelFamily, PublishedModelArtifactV1] = {}
+        loaded_states: dict[ModelFamily, LoadedPortableModelStateV1] = {}
         for item in self._artifact_inputs(fitted):
             fit_spec = ModelFitSpecV1(
                 model_family=item.family,
@@ -179,7 +186,35 @@ class Sprint2BatchPublisher:
             )
             _verify_loaded_state(item.family, item.state, loaded)
             publications[item.family] = publication
-        return publications
+            loaded_states[item.family] = loaded
+        return publications, loaded_states
+
+    def _reload_prediction_delta(
+        self,
+        fitted: FittedSprint2BatchV1,
+        forecasts: tuple[Sprint2RawForecastV1, ...],
+        loaded: Mapping[ModelFamily, LoadedPortableModelStateV1],
+    ) -> float:
+        reloaded = FittedSprint2BatchV1(
+            cutoff=fitted.cutoff,
+            training_match_count=fitted.training_match_count,
+            elo_run=deserialize_elo_run(loaded["TEAM_ELO"].state),
+            dixon_coles_fit=deserialize_dixon_coles_fit(loaded["DIXON_COLES_GOALS"].state),
+            corner_poisson_fit=deserialize_corner_fit(loaded["CORNER_POISSON"].state),
+            corner_negative_binomial_fit=deserialize_corner_fit(
+                loaded["CORNER_NEGATIVE_BINOMIAL"].state
+            ),
+            result_reference=fitted.result_reference,
+            goal_reference=fitted.goal_reference,
+            corner_reference=fitted.corner_reference,
+        )
+        reproduced = Sprint2BatchModeler(self._policy).forecast_batch(
+            reloaded, tuple(item.context for item in forecasts)
+        )
+        return max(
+            _maximum_numeric_delta(expected.to_dict(), actual.to_dict())
+            for expected, actual in zip(forecasts, reproduced, strict=True)
+        )
 
     def _artifact_inputs(self, fitted: FittedSprint2BatchV1) -> tuple[_ArtifactInput, ...]:
         adapter = EloOneXTwoAdapterV1(
@@ -330,6 +365,35 @@ def _verify_loaded_state(
         deserialize_dixon_coles_fit(loaded.state)
     else:
         deserialize_corner_fit(loaded.state)
+
+
+def _maximum_numeric_delta(expected: object, actual: object) -> float:
+    if isinstance(expected, bool) or isinstance(actual, bool):
+        if expected != actual:
+            raise Sprint2ExecutionError("reloaded forecast structure changed")
+        return 0.0
+    if isinstance(expected, (int, float)) and isinstance(actual, (int, float)):
+        return abs(float(expected) - float(actual))
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        if expected.keys() != actual.keys():
+            raise Sprint2ExecutionError("reloaded forecast structure changed")
+        return max(
+            (_maximum_numeric_delta(expected[key], actual[key]) for key in expected),
+            default=0.0,
+        )
+    if isinstance(expected, (list, tuple)) and isinstance(actual, (list, tuple)):
+        if len(expected) != len(actual):
+            raise Sprint2ExecutionError("reloaded forecast structure changed")
+        return max(
+            (
+                _maximum_numeric_delta(left, right)
+                for left, right in zip(expected, actual, strict=True)
+            ),
+            default=0.0,
+        )
+    if expected != actual:
+        raise Sprint2ExecutionError("reloaded forecast structure changed")
+    return 0.0
 
 
 def _aware(value: datetime, field_name: str) -> None:

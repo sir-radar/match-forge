@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from uuid import UUID
 
 from psycopg import Connection, Cursor
@@ -18,6 +18,9 @@ from football.contracts.source import (
 from football.forecasting.contracts import ModelFamily, PointInTimeScopeV1
 from football.forecasting.evaluation import MatchResultMetricsV1
 from football.storage.raw import ImmutableFileStore
+
+if TYPE_CHECKING:
+    from football.forecasting.baseline_policy import Sprint2BaselineGateDecisionV1
 
 EvaluationStatus = Literal["PASS", "PASS_WITH_WARNINGS", "FAIL"]
 PromotionDesignation = Literal["BASELINE_APPROVED", "CALIBRATION_APPROVED", "RETIRED"]
@@ -129,6 +132,7 @@ class Sprint2EvaluationReportV1:
     stage: str = "complete"
     calibrated_match_result_metrics: MatchResultMetricsV1 | None = None
     calibration_accepted: bool | None = None
+    baseline_gate_decision: Sprint2BaselineGateDecisionV1 | None = None
     evidence_manifest_path: str | None = None
     evidence_manifest_sha256: str | None = None
     evaluation_football_cutoff_start: datetime | None = None
@@ -149,6 +153,18 @@ class Sprint2EvaluationReportV1:
         if len(self.findings) != len(set(self.findings)):
             raise GovernanceContractError("evaluation findings must be unique")
         self._validate_evidence_manifest()
+        self._validate_baseline_gate_decision()
+
+    def _validate_baseline_gate_decision(self) -> None:
+        decision = self.baseline_gate_decision
+        if decision is None:
+            return
+        if decision.status != self.status or decision.policy_version != self.policy_version:
+            raise GovernanceContractError("baseline gate decision conflicts with report")
+        if self.stage != "complete" or self.evidence_manifest_path is None:
+            raise GovernanceContractError(
+                "baseline gate decision requires complete retained evidence"
+            )
 
     def _validate_evaluation_cutoffs(self) -> None:
         start = self.evaluation_football_cutoff_start
@@ -220,6 +236,11 @@ class Sprint2EvaluationReportV1:
                 else None
             ),
             "calibration_accepted": self.calibration_accepted,
+            "baseline_gate_decision": (
+                self.baseline_gate_decision.to_dict()
+                if self.baseline_gate_decision is not None
+                else None
+            ),
             "evidence_manifest_path": self.evidence_manifest_path,
             "evidence_manifest_sha256": self.evidence_manifest_sha256,
             "evaluation_football_cutoff_start": (
@@ -564,6 +585,16 @@ def _evaluation_markdown(report: Sprint2EvaluationReportV1) -> str:
                 f"- Manifest SHA-256: `{report.evidence_manifest_sha256}`",
             )
         )
+    if report.baseline_gate_decision is not None:
+        lines.extend(("", "## Locked baseline policy", ""))
+        for dimension in report.baseline_gate_decision.dimensions:
+            lines.append(f"### {dimension.name.replace('_', ' ').title()}: {dimension.status}")
+            lines.append("")
+            lines.extend(
+                f"- `{check.key}`: **{check.status}**; actual `{check.actual}` "
+                f"{check.operator} threshold `{check.threshold}`"
+                for check in dimension.checks
+            )
     lines.extend(("", "## Findings", ""))
     lines.extend(f"- {finding}" for finding in report.findings)
     return "\n".join(lines) + "\n"

@@ -60,6 +60,17 @@ Prediction evidence also records the exact four model-artifact UUIDs and four pe
 UUIDs for every target. The evaluation report records the first and final football cutoffs and uses
 the final batch scope rather than presenting the first batch as the scope of the whole run.
 
+`Sprint2BaselineGatePolicyV1` is a pure evaluator over retained actuals. It records each locked
+actual, comparison operator, threshold, blocking status, and PASS/FAIL result under predictive,
+calibration, coverage, reproducibility, and regression dimensions. A complete report derives its
+overall status from those dimensions; it does not alter evidence, thresholds, artifacts, or
+promotion state.
+
+Every new complete run also retains `subgroup_diagnostics.parquet`. It covers overall, month,
+canonical team, competition, home/away team role, realized 1X2, realized-probability decile, exact
+goal total, and exact corner total. Goal and corner totals remain exact grouping keys because the
+locked policy defines no broader range boundaries.
+
 ## Leakage invariants
 
 - Training matches have `kickoff_at < football_cutoff`.
@@ -78,11 +89,13 @@ the final batch scope rather than presenting the first batch as the scope of the
 Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
 exclusion, metric mathematics, immutable reporting, and retry behavior. Batch execution tests also
 prove persistence-before-reveal, four-artifact/four-forecast publication per target, portable state
-reload, and semantic retry convergence. The approved corpus has
-380 registered, completed, scored, corner-labelled, and UTC-resolved matches through exact immutable
-lifecycle, kickoff, and corner claims. The immutable plan resolves 280 eligible targets after 100
-warm-up exclusions, across 146 eligible batches. The authoritative operator command now composes
+reload with an explicit maximum prediction delta, and semantic retry convergence. The approved
+corpus has 380 registered, completed, scored, corner-labelled, and UTC-resolved matches through exact
+immutable lifecycle, kickoff, and corner claims. The immutable plan resolves 280 eligible targets
+after 100 warm-up exclusions, across 146 eligible batches. The authoritative operator command now composes
 the executor, scoring, paired bootstrap, chronological calibration, and immutable JSON/Parquet/SVG
-evidence publication. Complete execution stops for baseline-policy review; the implementation does
-not assert that the corpus has passed predictive-quality or reproduction gates. See
+evidence publication. Complete execution applies the locked policy and records the decision in
+`Sprint2EvaluationReportV1`. Reproducibility compares two runs only when target set, Git commit,
+dependency lock, bootstrap policy, calibration policy, and enforced clean-worktree provenance are
+equivalent. See
 [Sprint 2 phase gate](sprint2-phase-gate.md).

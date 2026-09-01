@@ -222,6 +222,7 @@ def test_batch_publisher_freezes_four_artifacts_and_forecasts_with_retry(
 
     assert first == retry
     assert first.forecast_count == 4
+    assert first.artifact_reload_max_probability_delta == 0.0
     assert len(first.model_artifact_ids) == 4
     assert len(first.forecast_ids) == 4
     assert len(list(tmp_path.glob("models/family=*/artifact=*/model-state-v1.json"))) == 4

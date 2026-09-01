@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
 import pytest
+from football.forecasting.baseline_policy import (
+    Sprint2BaselineGateDecisionV1,
+    Sprint2GateCheckV1,
+    Sprint2GateDimensionV1,
+)
 from football.forecasting.contracts import MatchResultProbabilitiesV1, PointInTimeScopeV1
 from football.forecasting.evaluation import (
     EvaluatedMatchResultV1,
@@ -102,6 +108,44 @@ def test_evaluation_report_rejects_mutation_and_incoherent_status(tmp_path: Path
             evidence_manifest_path="run=evidence/manifest.json",
             findings=("review pending",),
         )
+
+
+def test_evaluation_report_records_machine_readable_baseline_policy(tmp_path: Path) -> None:
+    check = Sprint2GateCheckV1("coverage.targets", "PASS", 280, ">=", 250)
+    decision = Sprint2BaselineGateDecisionV1(
+        status="PASS",
+        dimensions=tuple(
+            Sprint2GateDimensionV1(name, "PASS", (check,))
+            for name in (
+                "predictive",
+                "calibration",
+                "coverage",
+                "reproducibility",
+                "regression",
+            )
+        ),
+        findings=(),
+    )
+    base = _report()
+    report = replace(
+        base,
+        policy_version=decision.policy_version,
+        baseline_gate_decision=decision,
+    )
+
+    publication = ImmutableEvaluationReportStore(tmp_path).publish(report)
+    payload = json.loads((tmp_path / publication.relative_path).read_text(encoding="utf-8"))
+    schema = json.loads(
+        (PROJECT_ROOT / "schemas/contracts/sprint2-evaluation-report-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+    assert payload["baseline_gate_decision"]["dimensions"][0]["name"] == "predictive"
+    assert "## Locked baseline policy" in (tmp_path / publication.markdown_relative_path).read_text(
+        encoding="utf-8"
+    )
 
 
 def test_failed_preflight_report_requires_no_fabricated_scope_or_metrics(tmp_path: Path) -> None:

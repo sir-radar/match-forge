@@ -153,6 +153,7 @@ class PersistedSprint2BatchV1:
     model_artifact_ids: tuple[UUID, UUID, UUID, UUID]
     forecast_ids: tuple[UUID, ...]
     forecast_count: int
+    artifact_reload_max_probability_delta: float = 0.0
 
     def __post_init__(self) -> None:
         _aware(self.cutoff, "persisted batch cutoff")
@@ -176,6 +177,11 @@ class PersistedSprint2BatchV1:
             raise Sprint2ExecutionError(
                 "persisted Sprint 2 batch requires one unique identity per forecast"
             )
+        if (
+            not math.isfinite(self.artifact_reload_max_probability_delta)
+            or self.artifact_reload_max_probability_delta < 0.0
+        ):
+            raise Sprint2ExecutionError("artifact reload probability delta is invalid")
 
 
 @dataclass(frozen=True, slots=True)

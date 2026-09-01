@@ -70,6 +70,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--dependency-lock-sha256", help="dependency lock SHA-256 for evaluation artifacts"
     )
+    parser.add_argument(
+        "--authoritative-worktree-clean",
+        action="store_true",
+        help="record the caller's enforced clean-worktree precondition",
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
     ingest = commands.add_parser("ingest", help="acquire and ingest provider data")
@@ -168,7 +173,11 @@ def run(
         )
         with connection_factory(database_url) as connection:
             evaluation_provenance = (
-                Sprint2EvidenceProvenanceV1(code_commit_sha, dependency_lock_sha256)
+                Sprint2EvidenceProvenanceV1(
+                    code_commit_sha,
+                    dependency_lock_sha256,
+                    args.authoritative_worktree_clean,
+                )
                 if code_commit_sha and dependency_lock_sha256
                 else None
             )
