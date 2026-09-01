@@ -246,8 +246,28 @@ clean run for a new Git commit records insufficient reproduction; a second equiv
 satisfy that dimension. Predictive failures still keep this corpus at `FAIL`. No failed preflight
 emits placeholder model metrics.
 
-## Required next gate action
+## Post-gate governance decision
 
-Retain the failed result and review model changes against the same locked policy. Do not move
-thresholds, promote any model, or begin a later phase. Any challenger requires new immutable
-evidence and the same phase-gate review.
+On 2026-09-01, the repository owner selected:
+
+```text
+RETAIN_FAIL_AND_STOP
+```
+
+One provisional shared Gamma-Poisson match-frailty family was tested in a precommitted disposable
+feasibility prototype. Mathematical coherence, portable artifact round-trip, and scope integrity
+passed. Stable deterministic fitting across every required synthetic case and the governed real
+100-match warm-up was not demonstrated, so the result was `PROTOTYPE_FAIL`. No prototype defect
+was identified, and no convergence or stationarity threshold was relaxed after observing the
+result. The authoritative 280 targets were not loaded for challenger scoring.
+
+Selected challenger is `NONE`. Dixon-Coles v3 remains retained failed evidence and is not
+promoted. No Gamma-frailty modification or retry, alternate challenger, implementation,
+authoritative challenger rerun, threshold or policy change, or promotion is authorized under this
+route.
+
+## Required next action
+
+Preserve the Sprint 2 `FAIL` and stop challenger work. Reopening requires a new explicit
+repository-owner governance decision and route redraw. Phase 1B, Phase 2B, and later modelling
+remain blocked unless the repository owner explicitly changes the phase priority or gate contract.
