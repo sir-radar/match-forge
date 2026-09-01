@@ -18,9 +18,13 @@ lambda_home = exp(attack_h + defence_vulnerability_a + home_advantage)
 lambda_away = exp(attack_a + defence_vulnerability_h)
 ```
 
-Attack effects sum to zero, removing the model's translation ambiguity. L-BFGS-B fitting uses
-explicit finite bounds and fails closed when it does not converge. Model configuration and ordered
-training facts each receive canonical SHA-256 identities.
+Attack effects sum to zero, removing the model's translation ambiguity. Version 2 uses SLSQP with
+an analytic likelihood gradient, explicit finite bounds, and a strict `1e-12` function tolerance.
+A solver success flag is insufficient: the fit also rejects a non-finite objective, an invalid
+low-score correction, or a projected gradient above the versioned `1e-3` stationarity tolerance.
+Version 1 finite-difference L-BFGS-B artifacts remain loadable but are immutable and are not reused
+as version 2 fits. Model configuration and ordered training facts each receive canonical SHA-256
+identities.
 
 ## Low-score correction
 

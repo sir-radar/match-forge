@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import math
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from uuid import UUID
 
+import football.forecasting.dixon_coles as dixon_coles_module
 import pytest
 from football.forecasting.dixon_coles import (
     DixonColesConfig,
     DixonColesContractError,
+    DixonColesFitError,
     DixonColesModel,
     DixonColesParameters,
     GoalMatch,
@@ -34,6 +37,10 @@ def test_configuration_identity_and_time_decay_are_deterministic() -> None:
         DixonColesConfig(model_version="Invalid Version")
     with pytest.raises(DixonColesContractError, match="half-life"):
         DixonColesConfig(model_version="dc-v2", time_decay_half_life_days=0.0)
+    with pytest.raises(DixonColesContractError, match="optimizer"):
+        DixonColesConfig(model_version="dc-v2", optimizer="unsupported")  # type: ignore[arg-type]
+    with pytest.raises(DixonColesContractError, match="gradient tolerance"):
+        DixonColesConfig(model_version="dc-v2", gradient_tolerance=0.0)
 
 
 def test_forecast_uses_team_strengths_home_advantage_and_low_score_correction() -> None:
@@ -100,6 +107,7 @@ def test_fit_estimates_identifiable_finite_parameters() -> None:
     )
 
     fitted = model.fit(matches)
+    repeated = model.fit(matches)
 
     assert fitted.converged
     assert fitted.training_match_count == len(matches)
@@ -109,9 +117,100 @@ def test_fit_estimates_identifiable_finite_parameters() -> None:
     assert all(math.isfinite(value) for value in fitted.parameters.attack_strengths.values())
     assert all(math.isfinite(value) for value in fitted.parameters.defense_strengths.values())
     assert math.isfinite(fitted.negative_log_likelihood)
+    assert repeated == fitted
     forecast = model.forecast(fitted.parameters, TEAM_A, TEAM_D)
     assert forecast.lambda_home > 0.0
     assert forecast.lambda_away > 0.0
+
+
+def test_fit_rejects_false_optimizer_success_with_nonstationary_gradient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def false_success(objective: object, initial: list[float], **_: object) -> object:
+        value = objective(initial)  # type: ignore[operator]
+        objective_value = value[0] if isinstance(value, tuple) else value
+        return SimpleNamespace(
+            success=True,
+            message="false success",
+            fun=objective_value,
+            x=initial,
+            jac=[1.0] * len(initial),
+        )
+
+    monkeypatch.setattr(dixon_coles_module, "minimize", false_success)
+    model = DixonColesModel(
+        DixonColesConfig(model_version="dc-stationarity-v2", time_decay_half_life_days=None)
+    )
+
+    with pytest.raises(DixonColesFitError, match="stationary"):
+        model.fit(_balanced_training_matches())
+
+
+def test_v2_uses_analytic_slsqp_with_strict_function_tolerance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def successful_fit(objective: object, initial: list[float], **kwargs: object) -> object:
+        captured.update(kwargs)
+        value, gradient = objective(initial)  # type: ignore[operator]
+        return SimpleNamespace(
+            success=True,
+            message="converged",
+            fun=value,
+            x=initial,
+            jac=[0.0] * len(gradient),
+        )
+
+    monkeypatch.setattr(dixon_coles_module, "minimize", successful_fit)
+    config = DixonColesConfig(
+        model_version="dc-analytic-slsqp-v2",
+        time_decay_half_life_days=None,
+        gradient_tolerance=2e-4,
+    )
+
+    DixonColesModel(config).fit(_balanced_training_matches())
+
+    assert config.optimizer == "slsqp-analytic-gradient-v2"
+    assert config.tolerance == 1e-12
+    assert captured["method"] == "SLSQP"
+    assert captured["jac"] is True
+    assert captured["options"] == {
+        "maxiter": config.max_iterations,
+        "ftol": config.tolerance,
+    }
+
+
+def test_analytic_gradient_matches_central_difference() -> None:
+    matches = _balanced_training_matches()
+    team_ids = tuple(
+        sorted({team for match in matches for team in (match.home_team_id, match.away_team_id)})
+    )
+    team_indexes = {team_id: index for index, team_id in enumerate(team_ids)}
+    values = [0.05, -0.03, 0.02, 0.1, -0.05, 0.03, 0.08, 0.12, -0.04]
+
+    _, gradient = dixon_coles_module._negative_log_likelihood_and_gradient(
+        values,
+        matches,
+        (1.0,) * len(matches),
+        team_indexes,
+        len(team_ids),
+    )
+
+    step = 1e-6
+    for index, derivative in enumerate(gradient):
+        lower = values.copy()
+        upper = values.copy()
+        lower[index] -= step
+        upper[index] += step
+        lower_value = dixon_coles_module._negative_log_likelihood_and_gradient(
+            lower, matches, (1.0,) * len(matches), team_indexes, len(team_ids)
+        )[0]
+        upper_value = dixon_coles_module._negative_log_likelihood_and_gradient(
+            upper, matches, (1.0,) * len(matches), team_indexes, len(team_ids)
+        )[0]
+        numerical = (upper_value - lower_value) / (2.0 * step)
+        assert derivative == pytest.approx(numerical, abs=1e-6)
 
 
 def test_rejects_invalid_matches_parameters_and_unknown_teams() -> None:

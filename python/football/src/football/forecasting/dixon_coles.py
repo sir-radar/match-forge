@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from types import MappingProxyType
+from typing import Literal
 from uuid import UUID
 
 from scipy.optimize import minimize
@@ -18,6 +19,12 @@ _MODEL_VERSION = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 _PARAMETER_BOUND = 3.0
 _HOME_ADVANTAGE_BOUND = 1.5
 _CORRELATION_BOUND = 0.25
+_INVALID_OBJECTIVE = 1e100
+
+DixonColesOptimizer = Literal[
+    "lbfgsb-finite-difference-v1",
+    "slsqp-analytic-gradient-v2",
+]
 
 
 class DixonColesContractError(ValueError):
@@ -34,7 +41,9 @@ class DixonColesConfig:
     time_decay_half_life_days: float | None = 365.0
     score_matrix_tail_start: int = 5
     max_iterations: int = 1_000
-    tolerance: float = 1e-9
+    tolerance: float = 1e-12
+    optimizer: DixonColesOptimizer = "slsqp-analytic-gradient-v2"
+    gradient_tolerance: float = 1e-3
 
     def __post_init__(self) -> None:
         if not isinstance(self.model_version, str) or not _MODEL_VERSION.fullmatch(
@@ -60,19 +69,29 @@ class DixonColesConfig:
         ):
             raise DixonColesContractError("max_iterations must be a positive integer")
         _positive(self.tolerance, "tolerance")
+        if self.optimizer not in (
+            "lbfgsb-finite-difference-v1",
+            "slsqp-analytic-gradient-v2",
+        ):
+            raise DixonColesContractError("unsupported Dixon-Coles optimizer")
+        _positive(self.gradient_tolerance, "gradient tolerance")
 
     @property
     def sha256(self) -> str:
         return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        values: dict[str, object] = {
             "model_version": self.model_version,
             "time_decay_half_life_days": self.time_decay_half_life_days,
             "score_matrix_tail_start": self.score_matrix_tail_start,
             "max_iterations": self.max_iterations,
             "tolerance": self.tolerance,
         }
+        if self.optimizer != "lbfgsb-finite-difference-v1":
+            values["optimizer"] = self.optimizer
+            values["gradient_tolerance"] = self.gradient_tolerance
+        return values
 
     def match_weight(self, age_days: float) -> float:
         _finite(age_days, "match age")
@@ -236,40 +255,48 @@ class DixonColesModel:
             + [(-_CORRELATION_BOUND, _CORRELATION_BOUND)]
         )
 
-        def objective(values: Sequence[float]) -> float:
-            attacks, defenses, home_advantage, correlation = _unpack(values, len(team_ids))
-            negative_log_likelihood = 0.0
-            for match, weight in zip(ordered, weights, strict=True):
-                home_index = team_indexes[match.home_team_id]
-                away_index = team_indexes[match.away_team_id]
-                lambda_home = math.exp(attacks[home_index] + defenses[away_index] + home_advantage)
-                lambda_away = math.exp(attacks[away_index] + defenses[home_index])
-                correction = _tau(
-                    match.home_goals,
-                    match.away_goals,
-                    lambda_home,
-                    lambda_away,
-                    correlation,
-                )
-                if correction <= 0.0 or not math.isfinite(correction):
-                    return 1e100
-                log_probability = (
-                    _poisson_log_probability(match.home_goals, lambda_home)
-                    + _poisson_log_probability(match.away_goals, lambda_away)
-                    + math.log(correction)
-                )
-                negative_log_likelihood -= weight * log_probability
-            return negative_log_likelihood
+        def objective_and_gradient(values: Sequence[float]) -> tuple[float, tuple[float, ...]]:
+            return _negative_log_likelihood_and_gradient(
+                values,
+                ordered,
+                weights,
+                team_indexes,
+                len(team_ids),
+            )
 
-        result = minimize(
-            objective,
-            initial,
-            method="L-BFGS-B",
-            bounds=bounds,
-            options={"maxiter": self.config.max_iterations, "ftol": self.config.tolerance},
-        )
-        if not bool(result.success) or not math.isfinite(float(result.fun)):
+        if self.config.optimizer == "lbfgsb-finite-difference-v1":
+            result = minimize(
+                lambda values: objective_and_gradient(values)[0],
+                initial,
+                method="L-BFGS-B",
+                bounds=bounds,
+                options={"maxiter": self.config.max_iterations, "ftol": self.config.tolerance},
+            )
+        else:
+            result = minimize(
+                objective_and_gradient,
+                initial,
+                method="SLSQP",
+                jac=True,
+                bounds=bounds,
+                options={
+                    "maxiter": self.config.max_iterations,
+                    "ftol": self.config.tolerance,
+                },
+            )
+        if (
+            not bool(result.success)
+            or not math.isfinite(float(result.fun))
+            or float(result.fun) >= _INVALID_OBJECTIVE
+        ):
             raise DixonColesFitError(f"Dixon-Coles optimizer did not converge: {result.message}")
+        if self.config.optimizer == "slsqp-analytic-gradient-v2":
+            stationarity = _projected_gradient_max(result.x, result.jac, bounds)
+            if not math.isfinite(stationarity) or stationarity > self.config.gradient_tolerance:
+                raise DixonColesFitError(
+                    "Dixon-Coles optimizer reported success without a stationary solution: "
+                    f"projected gradient {stationarity} exceeds {self.config.gradient_tolerance}"
+                )
         attacks, defenses, home_advantage, correlation = _unpack(result.x, len(team_ids))
         parameters = DixonColesParameters(
             attack_strengths=dict(zip(team_ids, attacks, strict=True)),
@@ -362,6 +389,99 @@ def _unpack(
     return attacks, defenses, float(values[-2]), float(values[-1])
 
 
+def _negative_log_likelihood_and_gradient(
+    values: Sequence[float],
+    matches: tuple[GoalMatch, ...],
+    weights: tuple[float, ...],
+    team_indexes: Mapping[UUID, int],
+    team_count: int,
+) -> tuple[float, tuple[float, ...]]:
+    attacks, defenses, home_advantage, correlation = _unpack(values, team_count)
+    attack_gradient = [0.0] * team_count
+    defense_gradient = [0.0] * team_count
+    home_advantage_gradient = 0.0
+    correlation_gradient = 0.0
+    negative_log_likelihood = 0.0
+    for match, weight in zip(matches, weights, strict=True):
+        home_index = team_indexes[match.home_team_id]
+        away_index = team_indexes[match.away_team_id]
+        lambda_home = math.exp(attacks[home_index] + defenses[away_index] + home_advantage)
+        lambda_away = math.exp(attacks[away_index] + defenses[home_index])
+        correction, home_correction, away_correction, correlation_correction = (
+            _tau_with_derivatives(
+                match.home_goals,
+                match.away_goals,
+                lambda_home,
+                lambda_away,
+                correlation,
+            )
+        )
+        if correction <= 0.0 or not math.isfinite(correction):
+            return _INVALID_OBJECTIVE, tuple(0.0 for _ in values)
+        negative_log_likelihood -= weight * (
+            _poisson_log_probability(match.home_goals, lambda_home)
+            + _poisson_log_probability(match.away_goals, lambda_away)
+            + math.log(correction)
+        )
+        home_gradient = weight * (lambda_home - match.home_goals - home_correction / correction)
+        away_gradient = weight * (lambda_away - match.away_goals - away_correction / correction)
+        attack_gradient[home_index] += home_gradient
+        attack_gradient[away_index] += away_gradient
+        defense_gradient[away_index] += home_gradient
+        defense_gradient[home_index] += away_gradient
+        home_advantage_gradient += home_gradient
+        correlation_gradient -= weight * correlation_correction / correction
+    free_attack_gradient = tuple(
+        attack_gradient[index] - attack_gradient[-1] for index in range(team_count - 1)
+    )
+    return negative_log_likelihood, (
+        *free_attack_gradient,
+        *defense_gradient,
+        home_advantage_gradient,
+        correlation_gradient,
+    )
+
+
+def _tau_with_derivatives(
+    home_goals: int,
+    away_goals: int,
+    lambda_home: float,
+    lambda_away: float,
+    correlation: float,
+) -> tuple[float, float, float, float]:
+    if home_goals == 0 and away_goals == 0:
+        product = lambda_home * lambda_away
+        derivative = -product * correlation
+        return 1.0 - product * correlation, derivative, derivative, -product
+    if home_goals == 0 and away_goals == 1:
+        return 1.0 + lambda_home * correlation, lambda_home * correlation, 0.0, lambda_home
+    if home_goals == 1 and away_goals == 0:
+        return 1.0 + lambda_away * correlation, 0.0, lambda_away * correlation, lambda_away
+    if home_goals == 1 and away_goals == 1:
+        return 1.0 - correlation, 0.0, 0.0, -1.0
+    return 1.0, 0.0, 0.0, 0.0
+
+
+def _projected_gradient_max(
+    values: Sequence[float],
+    gradient: Sequence[float],
+    bounds: Sequence[tuple[float, float]],
+) -> float:
+    if len(values) != len(gradient) or len(values) != len(bounds):
+        return math.inf
+    projected: list[float] = []
+    for value, derivative, (lower, upper) in zip(values, gradient, bounds, strict=True):
+        if not math.isfinite(float(derivative)):
+            return math.inf
+        at_lower = value <= lower or math.isclose(value, lower, abs_tol=1e-12)
+        at_upper = value >= upper or math.isclose(value, upper, abs_tol=1e-12)
+        if (at_lower and derivative > 0.0) or (at_upper and derivative < 0.0):
+            projected.append(0.0)
+        else:
+            projected.append(abs(float(derivative)))
+    return max(projected, default=0.0)
+
+
 def _score_matrix(
     lambda_home: float,
     lambda_away: float,
@@ -427,15 +547,7 @@ def _tau(
     lambda_away: float,
     correlation: float,
 ) -> float:
-    if home_goals == 0 and away_goals == 0:
-        return 1.0 - lambda_home * lambda_away * correlation
-    if home_goals == 0 and away_goals == 1:
-        return 1.0 + lambda_home * correlation
-    if home_goals == 1 and away_goals == 0:
-        return 1.0 + lambda_away * correlation
-    if home_goals == 1 and away_goals == 1:
-        return 1.0 - correlation
-    return 1.0
+    return _tau_with_derivatives(home_goals, away_goals, lambda_home, lambda_away, correlation)[0]
 
 
 def _poisson_probability(goals: int, expected_goals: float) -> float:
