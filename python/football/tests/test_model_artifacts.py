@@ -91,6 +91,20 @@ def test_portable_artifact_publication_is_canonical_and_idempotent(tmp_path: Pat
     assert restored_forecast.markets == original_forecast.markets
 
 
+def test_portable_artifact_recovers_created_at_for_orphan_manifest(tmp_path: Path) -> None:
+    store = PortableModelArtifactStore(tmp_path)
+    fit_spec = _fit_spec("DIXON_COLES_GOALS")
+    store.publish(
+        model_artifact_id=ARTIFACT_ID,
+        fit_spec=fit_spec,
+        state=serialize_dixon_coles_fit(_dixon_coles_fit()),
+        created_at=CUTOFF,
+    )
+
+    assert store.existing_created_at(ARTIFACT_ID, fit_spec) == CUTOFF
+    assert store.existing_created_at(UUID(int=999), fit_spec) is None
+
+
 def test_portable_artifact_rejects_mutation_and_non_finite_state(tmp_path: Path) -> None:
     store = PortableModelArtifactStore(tmp_path)
     fit_spec = _fit_spec("DIXON_COLES_GOALS")

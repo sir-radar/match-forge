@@ -52,12 +52,15 @@ StatsBomb `Pass` / pass-type `Corner` ID-and-name semantics. Each label binds th
 lifecycle claim, canonical teams, validated event file and checksums, source lineage, and validator
 run. It does not add outcomes to pre-match forecast contexts. See [Match corner labels](corner-labels.md).
 
-`football evaluate sprint2` runs the pinned `Sprint2BaselineGatePolicyV1` workflow until the first
-blocking stage. It starts with the approved StatsBomb EPL 2015/16 corpus
-(`competition_id=2`, `season_id=27`), retains an immutable JSON and Markdown report, and returns
-exit code `7` for `FAIL`. Missing corpus data produces `null` scope and metric fields; the command
-never substitutes synthetic matches or zero-valued metrics. `make sprint2-evaluate` propagates this
-as a failed Make target. Later modelling phases remain blocked.
+`football evaluate sprint2` runs the pinned Sprint 2 workflow until the first blocking stage. It
+starts with the approved StatsBomb EPL 2015/16 corpus (`competition_id=2`, `season_id=27`). A
+complete execution retains an immutable report plus JSON, Parquet, bootstrap, calibration, and SVG
+evidence, then returns exit code `7` at `baseline-policy-review`. Missing corpus data produces
+`null` scope and metric fields; the command never substitutes synthetic matches or zero-valued
+metrics. `make sprint2-evaluate` supplies repository provenance and propagates FAIL as a failed Make
+target. Later modelling phases remain blocked.
+
+The Make target refuses a dirty worktree so the recorded commit identifies the executed code.
 
 ## Configuration
 
@@ -69,9 +72,16 @@ export FOOTBALL_DATA_ROOT='.local/football-data'
 export FOOTBALL_STATSBOMB_GIT_SHA='<40-character-lowercase-git-sha>'
 export FOOTBALL_QUALITY_POLICY='schemas/quality/statsbomb-quality-policy-v1.json'
 export FOOTBALL_SPRINT2_REPORT_ROOT='.local/reports/sprint2'
+export FOOTBALL_CODE_COMMIT_SHA='<40-character-lowercase-git-sha>'
+export FOOTBALL_DEPENDENCY_LOCK_SHA256='<64-character-lowercase-sha256>'
 ```
 
-`FOOTBALL_STATSBOMB_GIT_SHA` is required only for ingestion. Other defaults target the repository's local Compose database, `.local/football-data`, `.local/reports/sprint2`, and checked-in quality policy. Equivalent global options are `--database-url`, `--data-root`, `--report-root`, `--source-git-sha`, and `--quality-policy`; place them before the command.
+`FOOTBALL_STATSBOMB_GIT_SHA` is required only for ingestion. The code and dependency checksums are
+required when an eligible evaluation reaches execution; the Make target derives them from `HEAD`
+and `uv.lock`. Other defaults target the repository's local Compose database,
+`.local/football-data`, `.local/reports/sprint2`, and checked-in quality policy. Equivalent global
+options include `--code-commit-sha` and `--dependency-lock-sha256`; place global options before the
+command.
 
 The CLI assumes production migrations are current. It never migrates PostgreSQL automatically.
 

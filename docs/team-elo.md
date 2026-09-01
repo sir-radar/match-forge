@@ -77,7 +77,8 @@ Unit tests fix the formulas, ordering, decay, configuration identity, and invali
 Fresh PostgreSQL integration tests cover migration replay, model registration, immutable publication,
 idempotent retries, canonical foreign keys, and point-in-time lookup.
 
-The raw walk-forward executor and immutable artifact/forecast publication are implemented, but the
-authoritative operator run and phase-gate evidence remain pending. Probability calibration remains
-a separate challenger layer. The Dixon–Coles score baseline is documented in
+The operator has executed the raw walk-forward evaluator and retained immutable artifact, forecast,
+metric, bootstrap, and calibration evidence. The phase gate remains `FAIL / baseline-policy-review`;
+no model is approved or promoted automatically. Probability calibration remains a separate
+challenger layer. The Dixon–Coles score baseline is documented in
 [Dixon–Coles goal baseline](dixon-coles.md).

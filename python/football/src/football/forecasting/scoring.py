@@ -3,7 +3,9 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from functools import partial
+from uuid import UUID
 
 from scipy.signal import fftconvolve
 
@@ -20,6 +22,7 @@ from football.forecasting.evaluation import (
     evaluate_match_results,
 )
 from football.forecasting.execution import Sprint2RawForecastV1
+from football.forecasting.uncertainty import PairedMetricSeriesV1
 
 _MAX_COUNT = 10_000
 
@@ -100,6 +103,44 @@ class Sprint2RawMetricsV1:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class Sprint2ComparisonRowV1:
+    match_id: UUID
+    kickoff_at: datetime
+    elo_log_loss: float
+    elo_rps: float
+    dixon_coles_log_loss: float
+    dixon_coles_rps: float
+    result_reference_log_loss: float
+    result_reference_rps: float
+    goal_joint_nll: float
+    goal_total_crps: float
+    goal_total_absolute_error: float
+    goal_reference_joint_nll: float
+    goal_reference_total_crps: float
+    goal_reference_total_absolute_error: float
+    corner_poisson_total_nll: float
+    corner_poisson_total_crps: float
+    corner_poisson_total_absolute_error: float
+    corner_negative_binomial_total_nll: float
+    corner_negative_binomial_total_crps: float
+    corner_negative_binomial_total_absolute_error: float
+    corner_reference_total_nll: float
+    corner_reference_total_crps: float
+    corner_reference_total_absolute_error: float
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "match_id": str(self.match_id),
+            "kickoff_at": self.kickoff_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+            **{
+                field: getattr(self, field)
+                for field in self.__dataclass_fields__
+                if field not in ("match_id", "kickoff_at")
+            },
+        }
+
+
 class Sprint2Scorer:
     def evaluate(
         self,
@@ -121,6 +162,174 @@ class Sprint2Scorer:
             ),
             corner_reference=_corner_metrics(aligned, lambda forecast: forecast.corner_reference),
         )
+
+    def comparison_rows(
+        self,
+        forecasts: tuple[Sprint2RawForecastV1, ...],
+        outcomes: tuple[EvaluationMatchOutcomeV1, ...],
+    ) -> tuple[Sprint2ComparisonRowV1, ...]:
+        return tuple(
+            _comparison_row(forecast, outcome) for forecast, outcome in _align(forecasts, outcomes)
+        )
+
+    @staticmethod
+    def paired_metric_series(
+        rows: tuple[Sprint2ComparisonRowV1, ...],
+    ) -> tuple[PairedMetricSeriesV1, ...]:
+        if not rows:
+            raise Sprint2ScoringError("paired comparison requires target scores")
+        definitions = (
+            ("elo_vs_result_reference", "log_loss", "elo_log_loss", "result_reference_log_loss"),
+            (
+                "elo_vs_result_reference",
+                "ranked_probability_score",
+                "elo_rps",
+                "result_reference_rps",
+            ),
+            (
+                "dixon_coles_vs_result_reference",
+                "log_loss",
+                "dixon_coles_log_loss",
+                "result_reference_log_loss",
+            ),
+            (
+                "dixon_coles_vs_result_reference",
+                "ranked_probability_score",
+                "dixon_coles_rps",
+                "result_reference_rps",
+            ),
+            (
+                "dixon_coles_goals_vs_goal_reference",
+                "joint_score_nll",
+                "goal_joint_nll",
+                "goal_reference_joint_nll",
+            ),
+            (
+                "dixon_coles_goals_vs_goal_reference",
+                "total_crps",
+                "goal_total_crps",
+                "goal_reference_total_crps",
+            ),
+            (
+                "dixon_coles_goals_vs_goal_reference",
+                "total_mae",
+                "goal_total_absolute_error",
+                "goal_reference_total_absolute_error",
+            ),
+            (
+                "corner_poisson_vs_corner_reference",
+                "total_nll",
+                "corner_poisson_total_nll",
+                "corner_reference_total_nll",
+            ),
+            (
+                "corner_poisson_vs_corner_reference",
+                "total_crps",
+                "corner_poisson_total_crps",
+                "corner_reference_total_crps",
+            ),
+            (
+                "corner_poisson_vs_corner_reference",
+                "total_mae",
+                "corner_poisson_total_absolute_error",
+                "corner_reference_total_absolute_error",
+            ),
+            (
+                "corner_negative_binomial_vs_corner_poisson",
+                "total_nll",
+                "corner_negative_binomial_total_nll",
+                "corner_poisson_total_nll",
+            ),
+            (
+                "corner_negative_binomial_vs_corner_poisson",
+                "total_crps",
+                "corner_negative_binomial_total_crps",
+                "corner_poisson_total_crps",
+            ),
+        )
+        return tuple(
+            PairedMetricSeriesV1(
+                comparison=comparison,
+                metric=metric,
+                candidate=tuple(float(getattr(row, candidate)) for row in rows),
+                reference=tuple(float(getattr(row, reference)) for row in rows),
+            )
+            for comparison, metric, candidate, reference in definitions
+        )
+
+
+def _comparison_row(
+    forecast: Sprint2RawForecastV1, outcome: EvaluationMatchOutcomeV1
+) -> Sprint2ComparisonRowV1:
+    elo = _result_losses(forecast.elo_result, outcome)
+    dixon_coles = _result_losses(forecast.dixon_coles_result, outcome)
+    result_reference = _result_losses(forecast.result_reference, outcome)
+    goal = _goal_losses(forecast.goal, outcome)
+    goal_reference = _goal_losses(forecast.goal_reference, outcome)
+    corner_poisson = _corner_total_losses(forecast.corner_poisson, outcome)
+    corner_negative_binomial = _corner_total_losses(forecast.corner_negative_binomial, outcome)
+    corner_reference = _corner_total_losses(forecast.corner_reference, outcome)
+    return Sprint2ComparisonRowV1(
+        match_id=forecast.context.match_id,
+        kickoff_at=forecast.context.kickoff_at,
+        elo_log_loss=elo[0],
+        elo_rps=elo[1],
+        dixon_coles_log_loss=dixon_coles[0],
+        dixon_coles_rps=dixon_coles[1],
+        result_reference_log_loss=result_reference[0],
+        result_reference_rps=result_reference[1],
+        goal_joint_nll=goal[0],
+        goal_total_crps=goal[1],
+        goal_total_absolute_error=goal[2],
+        goal_reference_joint_nll=goal_reference[0],
+        goal_reference_total_crps=goal_reference[1],
+        goal_reference_total_absolute_error=goal_reference[2],
+        corner_poisson_total_nll=corner_poisson[0],
+        corner_poisson_total_crps=corner_poisson[1],
+        corner_poisson_total_absolute_error=corner_poisson[2],
+        corner_negative_binomial_total_nll=corner_negative_binomial[0],
+        corner_negative_binomial_total_crps=corner_negative_binomial[1],
+        corner_negative_binomial_total_absolute_error=corner_negative_binomial[2],
+        corner_reference_total_nll=corner_reference[0],
+        corner_reference_total_crps=corner_reference[1],
+        corner_reference_total_absolute_error=corner_reference[2],
+    )
+
+
+def _result_losses(
+    probabilities: MatchResultProbabilitiesV1, outcome: EvaluationMatchOutcomeV1
+) -> tuple[float, float]:
+    values = (probabilities.home, probabilities.draw, probabilities.away)
+    resolved = _outcome(outcome)
+    outcome_index = ("HOME", "DRAW", "AWAY").index(resolved)
+    actual = tuple(float(index == outcome_index) for index in range(3))
+    ranked = sum((sum(values[:index]) - sum(actual[:index])) ** 2 for index in (1, 2)) / 2.0
+    return _negative_log(values[outcome_index]), ranked
+
+
+def _goal_losses(
+    payload: GoalForecastPayloadV1, outcome: EvaluationMatchOutcomeV1
+) -> tuple[float, float, float]:
+    observed_total = outcome.home_score + outcome.away_score
+    expected_total = payload.lambda_home + payload.lambda_away
+    return (
+        _negative_log(_goal_probability(outcome.home_score, outcome.away_score, payload)),
+        _crps(partial(_goal_total_probability, payload=payload), observed_total),
+        abs(expected_total - observed_total),
+    )
+
+
+def _corner_total_losses(
+    payload: CornerForecastPayloadV1, outcome: EvaluationMatchOutcomeV1
+) -> tuple[float, float, float]:
+    observed_total = outcome.home_corners + outcome.away_corners
+    distribution = _corner_total_distribution(payload)
+    probability = partial(_stored_probability, values=distribution)
+    return (
+        _negative_log(probability(observed_total)),
+        _crps(probability, observed_total),
+        abs(payload.lambda_home + payload.lambda_away - observed_total),
+    )
 
 
 AlignedForecast = tuple[Sprint2RawForecastV1, EvaluationMatchOutcomeV1]

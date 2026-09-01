@@ -32,13 +32,16 @@ converge on one registered forecast even when caller UUIDs differ.
 `Sprint2BatchPublisher` publishes four exact artifacts per chronological batch and one raw forecast
 per model family and target. Artifact bytes are published, reloaded, and validated before forecast
 publication. A partial retry converges through deterministic fit and forecast identities; target
-outcomes remain outside every immutable payload.
+outcomes remain outside every immutable payload. If filesystem publication completes before a
+database transaction commits, retry recovers the immutable manifest creation time before
+reconciliation instead of generating conflicting manifest bytes.
 
 ## Evaluation and promotion
 
 Evaluation reports are canonical immutable JSON registered in PostgreSQL with policy version,
 dataset/source lineage, target set, checksum, completion time, and `PASS`,
-`PASS_WITH_WARNINGS`, or `FAIL` status.
+`PASS_WITH_WARNINGS`, or `FAIL` status. Reports record the evaluation football-cutoff range, and
+retained prediction rows bind every target to its exact fitted artifacts and persisted forecasts.
 
 Promotion events are append-only. Approval requires a non-failed evaluation. Baseline approval
 cannot target a calibration artifact; calibration approval requires one. Retirements remain explicit

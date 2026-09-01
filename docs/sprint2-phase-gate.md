@@ -26,6 +26,9 @@ Date: 2026-08-31
   persistence-before-outcome reveal, and common-target goal/result/corner scoring.
 - Four portable model artifacts and four immutable raw forecasts per target, with artifact reload
   validation and retry convergence.
+- Exact per-target artifact and forecast identities in retained prediction evidence.
+- Common outcome-complete target planning and governed bitemporal outcome availability.
+- Evaluation football-cutoff ranges and retry recovery for orphaned immutable artifact manifests.
 - Durable preflight failure evidence without fabricated scopes or metrics.
 
 ## Verified
@@ -43,9 +46,9 @@ Date: 2026-08-31
 Final `make check` passed on 2026-08-31:
 
 - Ruff formatting and lint passed.
-- Strict MyPy passed for 78 source files.
+- Strict MyPy passed for 85 source files.
 - Static health analysis reported 0 issues.
-- 145 Python tests passed.
+- 154 Python tests passed.
 - Rust formatting, lint, test, and build passed.
 - Go vet, lint, test, and build passed.
 - Migration and shell validation passed.
@@ -53,14 +56,11 @@ Final `make check` passed on 2026-08-31:
 
 ## Blocking evidence gap
 
-Sprint 2 cannot receive `PASS` or model promotion yet. Repository has no completed end-to-end run
-that repeatedly fits the baseline models on canonical historical windows, freezes forecasts before
-outcome reveal, scores those out-of-sample forecasts, compares calibration challengers, and
-publishes real evaluation metrics and calibration plots.
-
-Implementation and deterministic tests pass, but the raw executor is not yet connected to the
-operator gate and implementation is not predictive-quality evidence. No model artifact is approved
-by this gate.
+Sprint 2 cannot receive `PASS` or model promotion yet. The end-to-end operator now fits every
+chronological window, freezes forecasts before outcome reveal, scores out-of-sample forecasts,
+compares calibration challengers, and retains JSON, Parquet, and SVG evidence. The remaining gate is
+the locked baseline-policy, subgroup, and reproducibility review. Execution evidence exists, but it
+has not been approved as predictive-quality evidence. No model artifact is approved by this gate.
 
 ## Executed phase gate
 
@@ -75,8 +75,8 @@ identical retry returned `verified_existing`.
 events. All 380 labels have distinct deterministic hashes, lifecycle claims, event resources, and
 dataset files; all resolve to one dataset and validator run. Match totals range from 1 to 25, and
 13 matches legitimately contain a zero count for one team. An identical retry returned
-`verified_existing`. The post-label gate produced evaluation run
-`17bbf737-b235-557f-b882-8b6ef5951740`.
+`verified_existing`. The post-label preflight produced evaluation run
+`17bbf737-b235-557f-b882-8b6ef5951740`; later clean-tree execution advanced beyond this stage.
 
 ```text
 Status: FAIL
@@ -144,7 +144,14 @@ of scored targets have governed labels; it no longer advances with a hard-coded 
 eligible home-team, away-team, and competition histories are exactly 10, 10, and 100. Target-set
 checksum `c5b9ff5860d9d00d55ab58fe3dc044d41d95af49501d27275fdc2e0831bff362` reproduced, immutable
 publication retry returned `verified_existing`, and separate governed outcome reveal covered
-280/280 targets. This freezes the evaluation universe but is not model execution evidence.
+280/280 targets. The plan is the immutable input to the retained model-execution evidence.
+
+Clean-tree review run `f348f40b-3935-5a33-922b-a539c99b0353` retained 280 predictions and
+outcomes, 24,000 paired-bootstrap rows, 1,680 chronological calibration predictions, 200
+calibration bins, and six calibration comparisons. Raw Dixon-Coles 1X2 log loss was
+`1.0817300589925896`, Brier score was `0.6546549038961231`, and RPS was
+`0.22571978686699795`. The run stopped at `FAIL / baseline-policy-review`; those values are review
+evidence, not an approval or promotion decision.
 
 ## Operator command
 
@@ -157,17 +164,24 @@ The command retains:
 ```text
 .local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationReportV1.json
 .local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationReportV1.md
+.local/reports/sprint2/run=<evaluation-run-id>/Sprint2EvaluationEvidenceManifestV1.json
+.local/reports/sprint2/run=<evaluation-run-id>/*.parquet
+.local/reports/sprint2/run=<evaluation-run-id>/*.svg
 ```
 
 Underlying CLI exit code `7` means `FAIL`; Make reports a failed target. The report identifies the
 first blocking stage. A missing approved corpus is `corpus-resolution`; insufficient scored matches
 is `coverage`; unresolved timezone-safe ordering is `chronology-resolution`; corner-label coverage
-below 95% is `corner-label-coverage`; missing retained model execution is
-`walk-forward-execution`. No failed preflight emits placeholder model metrics.
+below 95% is `corner-label-coverage`; ambiguous dataset provenance is `execution-lineage`; an
+undersized frozen target set is `target-plan-coverage`; and a model or publication failure is
+`walk-forward-execution`. A complete run retains raw predictions, outcomes, proper scores, paired
+chronological moving-block bootstrap evidence, chronological calibration diagnostics, and plots,
+then stops at `FAIL / baseline-policy-review`. No failed preflight emits placeholder model metrics.
 
 ## Required next gate action
 
-Run the complete retained chronological evaluation: repeated model fitting, forecast-before-outcome
-persistence, proper scoring, calibration analysis, subgroup regressions, and promotion review. Stop
-for review after that gate evidence is produced. No later phase is authorized while status remains
-`FAIL`.
+Inspect the retained evidence, reproduce it with `make sprint2-evaluate`, complete the locked
+baseline-policy and engineering review, and record the gate decision separately. No baseline or
+calibration challenger is promoted automatically. Subgroup and reproducibility review remain
+required before a PASS. No
+later phase is authorized while status remains `FAIL`.

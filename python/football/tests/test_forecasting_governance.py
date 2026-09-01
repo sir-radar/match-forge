@@ -48,12 +48,22 @@ def test_evaluation_report_is_canonical_immutable_and_retry_safe(tmp_path: Path)
     payload = json.loads((tmp_path / first.relative_path).read_text(encoding="utf-8"))
     assert payload == report.to_dict()
     assert payload["raw_match_result_metrics"]["sample_count"] == 3
+    assert payload["evidence_manifest_path"] == (
+        f"run={EVALUATION_ID}/Sprint2EvaluationEvidenceManifestV1.json"
+    )
+    assert payload["evidence_manifest_sha256"] == "c" * 64
+    assert payload["evaluation_football_cutoff_start"] == (
+        CUTOFF - timedelta(days=2)
+    ).isoformat().replace("+00:00", "Z")
+    assert payload["evaluation_football_cutoff_end"] == CUTOFF.isoformat().replace("+00:00", "Z")
     schema = json.loads(
         (PROJECT_ROOT / "schemas/contracts/sprint2-evaluation-report-v1.schema.json").read_text(
             encoding="utf-8"
         )
     )
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+    invalid = dict(payload, evidence_manifest_path="../manifest.json")
+    assert list(Draft202012Validator(schema).iter_errors(invalid))
 
 
 def test_evaluation_report_rejects_mutation_and_incoherent_status(tmp_path: Path) -> None:
@@ -80,6 +90,17 @@ def test_evaluation_report_rejects_mutation_and_incoherent_status(tmp_path: Path
             status="FAIL",
             completed_at=CUTOFF,
             raw_match_result_metrics=_metrics(),
+        )
+    with pytest.raises(GovernanceContractError, match="evidence manifest"):
+        Sprint2EvaluationReportV1(
+            evaluation_run_id=EVALUATION_ID,
+            policy_version="sprint2-gate-v1",
+            scope=_scope(),
+            status="FAIL",
+            completed_at=CUTOFF,
+            raw_match_result_metrics=_metrics(),
+            evidence_manifest_path="run=evidence/manifest.json",
+            findings=("review pending",),
         )
 
 
@@ -158,6 +179,10 @@ def _report() -> Sprint2EvaluationReportV1:
             corner_labelled_targets=300,
         ),
         stage="complete",
+        evidence_manifest_path=(f"run={EVALUATION_ID}/Sprint2EvaluationEvidenceManifestV1.json"),
+        evidence_manifest_sha256="c" * 64,
+        evaluation_football_cutoff_start=CUTOFF - timedelta(days=2),
+        evaluation_football_cutoff_end=CUTOFF,
     )
 
 

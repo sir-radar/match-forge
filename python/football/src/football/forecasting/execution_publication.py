@@ -123,6 +123,11 @@ class Sprint2BatchPublisher:
                 artifacts["CORNER_POISSON"].manifest.model_artifact_id,
                 artifacts["CORNER_NEGATIVE_BINOMIAL"].manifest.model_artifact_id,
             ),
+            forecast_ids=tuple(
+                publication.forecast.forecast_id
+                for target_publications in published_forecasts
+                for publication in target_publications
+            ),
             forecast_count=sum(len(target) for target in published_forecasts),
         )
 

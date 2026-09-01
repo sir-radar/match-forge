@@ -25,8 +25,14 @@ no scores, results, corner outcomes, shots, possession, or other post-match targ
 
 `PointInTimeMatchDatasetProvider.reveal_outcomes` is a separate call for explicit frozen target
 UUIDs. It requires exact lifecycle, kickoff, dataset, corner-label, and knowledge-cutoff lineage and
-returns `EvaluationMatchOutcomeV1` rows. The future evaluator must persist every forecast in a batch
-before calling outcome reveal, then update models only for later batches.
+returns `EvaluationMatchOutcomeV1` rows. The evaluator persists every forecast in a batch before
+calling outcome reveal, then updates sequential state only for later batches.
+
+Because Open Data does not establish original provider-availability timestamps, the approved
+`retrospective-fixed-snapshot-v1` EPL corpus assigns completed regulation-time outcomes a
+conservative availability time of kickoff plus two hours. Other knowledge modes retain the exact
+governed claim availability time. Same-kickoff matches remain isolated in one batch, and closely
+staggered earlier kickoffs do not enter history before that boundary.
 
 ## Immutable identity
 
@@ -36,10 +42,13 @@ specification. The immutable JSON plan is validated by
 `schemas/contracts/walk-forward-target-plan-v1.schema.json` and stored at:
 
 ```text
-target-set=<sha256>/WalkForwardTargetPlanV1.json
+target-set=<target-sha256>/plan=<full-plan-sha256>/WalkForwardTargetPlanV1.json
 ```
 
-An identical publication verifies existing bytes rather than replacing them.
+The outer checksum identifies the forecast target universe. The nested full-plan checksum also
+binds dataset specification and eligibility-history counts, so two plans with the same targets but
+different evidence cannot collide. An identical publication verifies existing bytes rather than
+replacing them.
 
 ## Current corpus evidence
 

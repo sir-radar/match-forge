@@ -9,7 +9,12 @@ from uuid import UUID
 
 from psycopg import Connection, Cursor
 
-from football.contracts.source import canonical_json_bytes
+from football.contracts.source import (
+    SHA256_PATTERN,
+    SourceContractError,
+    canonical_json_bytes,
+    validate_relative_posix_path,
+)
 from football.forecasting.contracts import ModelFamily, PointInTimeScopeV1
 from football.forecasting.evaluation import MatchResultMetricsV1
 from football.storage.raw import ImmutableFileStore
@@ -124,6 +129,10 @@ class Sprint2EvaluationReportV1:
     stage: str = "complete"
     calibrated_match_result_metrics: MatchResultMetricsV1 | None = None
     calibration_accepted: bool | None = None
+    evidence_manifest_path: str | None = None
+    evidence_manifest_sha256: str | None = None
+    evaluation_football_cutoff_start: datetime | None = None
+    evaluation_football_cutoff_end: datetime | None = None
     findings: tuple[str, ...] = ()
     contract: str = "Sprint2EvaluationReportV1"
 
@@ -134,10 +143,44 @@ class Sprint2EvaluationReportV1:
             raise GovernanceContractError("policy_version is invalid")
         _aware(self.completed_at, "completed_at")
         self._validate_status_contract()
+        self._validate_evaluation_cutoffs()
         if any(not finding.strip() for finding in self.findings):
             raise GovernanceContractError("evaluation findings must not be empty")
         if len(self.findings) != len(set(self.findings)):
             raise GovernanceContractError("evaluation findings must be unique")
+        self._validate_evidence_manifest()
+
+    def _validate_evaluation_cutoffs(self) -> None:
+        start = self.evaluation_football_cutoff_start
+        end = self.evaluation_football_cutoff_end
+        if (start is None) != (end is None):
+            raise GovernanceContractError(
+                "evaluation football cutoff start and end must appear together"
+            )
+        if start is None or end is None:
+            return
+        _aware(start, "evaluation_football_cutoff_start")
+        _aware(end, "evaluation_football_cutoff_end")
+        if start > end:
+            raise GovernanceContractError("evaluation football cutoff range is invalid")
+        if self.scope is None or self.scope.football_cutoff != end:
+            raise GovernanceContractError(
+                "evaluation scope must represent the final football cutoff"
+            )
+
+    def _validate_evidence_manifest(self) -> None:
+        if (self.evidence_manifest_path is None) != (self.evidence_manifest_sha256 is None):
+            raise GovernanceContractError(
+                "evidence manifest path and checksum must appear together"
+            )
+        if self.evidence_manifest_path is None:
+            return
+        try:
+            validate_relative_posix_path(self.evidence_manifest_path)
+        except SourceContractError as error:
+            raise GovernanceContractError("evidence manifest path is invalid") from error
+        if not SHA256_PATTERN.fullmatch(self.evidence_manifest_sha256 or ""):
+            raise GovernanceContractError("evidence manifest checksum is invalid")
 
     def _validate_status_contract(self) -> None:
         if self.status not in ("PASS", "PASS_WITH_WARNINGS", "FAIL"):
@@ -177,6 +220,18 @@ class Sprint2EvaluationReportV1:
                 else None
             ),
             "calibration_accepted": self.calibration_accepted,
+            "evidence_manifest_path": self.evidence_manifest_path,
+            "evidence_manifest_sha256": self.evidence_manifest_sha256,
+            "evaluation_football_cutoff_start": (
+                _utc(self.evaluation_football_cutoff_start)
+                if self.evaluation_football_cutoff_start
+                else None
+            ),
+            "evaluation_football_cutoff_end": (
+                _utc(self.evaluation_football_cutoff_end)
+                if self.evaluation_football_cutoff_end
+                else None
+            ),
             "findings": list(self.findings),
         }
 
@@ -470,6 +525,13 @@ def _evaluation_markdown(report: Sprint2EvaluationReportV1) -> str:
                 f"- Dataset version: `{scope.dataset_version_id}`",
                 f"- Source snapshot: `{scope.source_snapshot_id}`",
                 f"- Knowledge mode: `{scope.knowledge_mode}`",
+                f"- Evaluation football cutoff start: "
+                f"`{_utc(report.evaluation_football_cutoff_start)}`"
+                if report.evaluation_football_cutoff_start
+                else "- Evaluation football cutoff start: `not resolved`",
+                f"- Evaluation football cutoff end: `{_utc(report.evaluation_football_cutoff_end)}`"
+                if report.evaluation_football_cutoff_end
+                else "- Evaluation football cutoff end: `not resolved`",
                 f"- Target set SHA-256: `{scope.target_set_sha256}`",
             )
         )
@@ -490,6 +552,16 @@ def _evaluation_markdown(report: Sprint2EvaluationReportV1) -> str:
             (
                 f"- Calibrated log loss: `{calibrated.log_loss}`",
                 f"- Calibration accepted: `{report.calibration_accepted}`",
+            )
+        )
+    lines.extend(("", "## Retained evidence", ""))
+    if report.evidence_manifest_path is None:
+        lines.append("Not produced.")
+    else:
+        lines.extend(
+            (
+                f"- Manifest: `{report.evidence_manifest_path}`",
+                f"- Manifest SHA-256: `{report.evidence_manifest_sha256}`",
             )
         )
     lines.extend(("", "## Findings", ""))

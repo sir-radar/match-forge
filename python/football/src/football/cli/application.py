@@ -12,6 +12,7 @@ from football.forecasting.corner_labels import (
     CornerLabelPublicationResult,
     Sprint2CornerLabelPublisher,
 )
+from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.gate import Sprint2GateService, Sprint2GateSummary
 from football.forecasting.kickoff import (
     KickoffClaimPublicationResult,
@@ -78,15 +79,22 @@ class FootballApplication:
         provider: FootballDataProvider | None,
         quality_policy_path: Path,
         report_root: Path,
+        evaluation_provenance: Sprint2EvidenceProvenanceV1 | None = None,
     ) -> None:
         self._connection = connection
         self._data_root = data_root.resolve()
         self._provider = provider
         self._quality_policy_path = quality_policy_path.resolve()
         self._report_root = report_root.resolve()
+        self._evaluation_provenance = evaluation_provenance
 
     def evaluate_sprint2(self) -> Sprint2GateSummary:
-        return Sprint2GateService(self._connection, self._report_root).evaluate()
+        return Sprint2GateService(
+            self._connection,
+            self._report_root,
+            data_root=self._data_root,
+            provenance=self._evaluation_provenance,
+        ).evaluate()
 
     def resolve_sprint2_lifecycle(self) -> LifecycleClaimPublicationResult:
         return Sprint2LifecycleClaimPublisher(self._connection).publish()

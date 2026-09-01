@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Barrier
 from typing import Any, cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import psycopg
 import pyarrow.parquet as pq
@@ -25,6 +25,7 @@ from football.forecasting.dataset import (
     PointInTimeMatchDatasetProvider,
     WalkForwardDatasetSpecV1,
 )
+from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.gate import Sprint2GateService
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.kickoff import KickoffClaimError, Sprint2KickoffClaimPublisher
@@ -1469,13 +1470,154 @@ def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(
     assert "corner" not in batch.matches[0].to_dict()
     assert (outcomes[0].home_score, outcomes[0].away_score) == (0, 0)
     assert (outcomes[0].home_corners, outcomes[0].away_corners) == (2, 1)
+    assert outcomes[0].outcome_known_at == outcomes[0].kickoff_at + timedelta(hours=2)
     assert len(history) == 1
     assert (history[0].home_score, history[0].away_score) == (0, 0)
-    gate = Sprint2GateService(connection, tmp_path / "gate-resolved").evaluate(corpus)
-    assert gate.stage == "walk-forward-execution"
-    assert "1 batches" in gate.findings[0]
+    gate = Sprint2GateService(
+        connection,
+        tmp_path / "gate-resolved",
+        data_root=tmp_path,
+        provenance=Sprint2EvidenceProvenanceV1("7" * 40, "8" * 64),
+    ).evaluate(corpus)
+    assert gate.stage == "target-plan-coverage"
+    assert "0 eligible targets" in gate.findings[0]
     gate_payload = json.loads(gate.json_path.read_text(encoding="utf-8"))
     assert gate_payload["coverage"]["corner_labelled_targets"] == 1
+
+    with connection.cursor() as cursor:
+        kickoff_claim_id = cursor.execute(
+            "SELECT id FROM football.match_kickoff_claims WHERE lifecycle_claim_id = %s",
+            (lifecycle_claim_id,),
+        ).fetchone()[0]
+        corner_label_id = cursor.execute(
+            "SELECT id FROM football.match_corner_labels WHERE lifecycle_claim_id = %s",
+            (lifecycle_claim_id,),
+        ).fetchone()[0]
+        base_observation_id = cursor.execute(
+            "SELECT match_observation_id FROM football.match_lifecycle_claims WHERE id = %s",
+            (lifecycle_claim_id,),
+        ).fetchone()[0]
+        for index in range(1, 20):
+            cloned_match_id = uuid4()
+            cloned_observation_id = cursor.execute(
+                """
+                WITH cloned_match AS (
+                    INSERT INTO football.matches (id, competition_id, season_id)
+                    SELECT %s, competition_id, season_id
+                    FROM football.matches WHERE id = %s
+                )
+                INSERT INTO football.match_observations
+                    (match_id, provider_id, provider_match_id, match_date, kick_off_local,
+                     home_team_id, away_team_id, home_score, away_score, lifecycle, known_from,
+                     source_snapshot_id, source_resource_id, acquired_at)
+                SELECT %s, provider_id, %s, match_date + %s, kick_off_local,
+                       home_team_id, away_team_id, home_score, away_score, lifecycle, known_from,
+                       source_snapshot_id, source_resource_id, acquired_at
+                FROM football.match_observations WHERE id = %s
+                RETURNING id
+                """,
+                (
+                    cloned_match_id,
+                    batch.matches[0].match_id,
+                    cloned_match_id,
+                    f"partial-corner-{index}",
+                    index,
+                    base_observation_id,
+                ),
+            ).fetchone()[0]
+            cloned_lifecycle_id = uuid4()
+            cursor.execute(
+                """
+                INSERT INTO football.match_lifecycle_claims
+                    (id, match_id, lifecycle, claim_version, claim_sha256,
+                     match_observation_id, dataset_version_id, source_snapshot_id,
+                     source_resource_id, dataset_file_id, validation_run_id, known_from,
+                     terminal_period, terminal_event_count, max_period, evidence)
+                SELECT %s, %s, lifecycle, claim_version, %s, %s, dataset_version_id,
+                       source_snapshot_id, source_resource_id, dataset_file_id,
+                       validation_run_id, known_from, terminal_period, terminal_event_count,
+                       max_period, evidence
+                FROM football.match_lifecycle_claims WHERE id = %s
+                """,
+                (
+                    cloned_lifecycle_id,
+                    cloned_match_id,
+                    f"d{index:063x}",
+                    cloned_observation_id,
+                    lifecycle_claim_id,
+                ),
+            )
+            cloned_kickoff_id = uuid4()
+            cursor.execute(
+                """
+                INSERT INTO football.match_kickoff_claims
+                    (id, match_id, competition_id, season_id, claim_version, claim_sha256,
+                     lifecycle_claim_id, match_observation_id, competition_observation_id,
+                     local_match_date, local_kickoff_time, timezone_name, tzdata_version,
+                     tzif_sha256, kickoff_at, known_from, evidence)
+                SELECT %s, %s, competition_id, season_id, claim_version, %s, %s, %s,
+                       competition_observation_id, local_match_date + %s, local_kickoff_time,
+                       timezone_name, tzdata_version, tzif_sha256,
+                       kickoff_at + %s * INTERVAL '1 day', known_from, evidence
+                FROM football.match_kickoff_claims WHERE id = %s
+                """,
+                (
+                    cloned_kickoff_id,
+                    cloned_match_id,
+                    f"e{index:063x}",
+                    cloned_lifecycle_id,
+                    cloned_observation_id,
+                    index,
+                    index,
+                    kickoff_claim_id,
+                ),
+            )
+            if index < 19:
+                cursor.execute(
+                    """
+                    INSERT INTO football.match_corner_labels
+                        (id, match_id, claim_version, claim_sha256, lifecycle_claim_id,
+                         match_observation_id, dataset_version_id, source_snapshot_id,
+                         source_resource_id, dataset_file_id, validation_run_id, home_team_id,
+                         away_team_id, home_corners, away_corners, provider_event_type_id,
+                         provider_event_type_name, provider_pass_type_id,
+                         provider_pass_type_name, known_from, evidence)
+                    SELECT %s, %s, claim_version, %s, %s, %s, dataset_version_id,
+                           source_snapshot_id, source_resource_id, dataset_file_id,
+                           validation_run_id, home_team_id, away_team_id, home_corners,
+                           away_corners, provider_event_type_id, provider_event_type_name,
+                           provider_pass_type_id, provider_pass_type_name, known_from, evidence
+                    FROM football.match_corner_labels WHERE id = %s
+                    """,
+                    (
+                        uuid4(),
+                        cloned_match_id,
+                        f"f{index:063x}",
+                        cloned_lifecycle_id,
+                        cloned_observation_id,
+                        corner_label_id,
+                    ),
+                )
+
+    partial_corpus = EvaluationCorpusV1(
+        provider_competition_id=2,
+        provider_season_id=27,
+        minimum_team_history=1,
+        minimum_competition_history=1,
+        minimum_scored_targets=19,
+    )
+    partial_gate = Sprint2GateService(
+        connection,
+        tmp_path / "gate-partial-corners",
+        data_root=tmp_path,
+        provenance=Sprint2EvidenceProvenanceV1("9" * 40, "a" * 64),
+    ).evaluate(partial_corpus)
+    partial_payload = json.loads(partial_gate.json_path.read_text(encoding="utf-8"))
+
+    assert partial_payload["coverage"]["scored_targets"] == 20
+    assert partial_payload["coverage"]["corner_labelled_targets"] == 19
+    assert partial_gate.stage == "target-plan-coverage"
+    assert "18 eligible targets; minimum is 19" in partial_gate.findings[0]
 
 
 def test_rejects_corner_labels_after_registered_parquet_mutation(

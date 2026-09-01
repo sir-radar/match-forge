@@ -14,6 +14,7 @@ from psycopg import Connection
 from football.cli.application import FootballApplication
 from football.datasets import DatasetPublicationError
 from football.forecasting.corner_labels import CornerLabelError
+from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
@@ -65,6 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--report-root", type=Path, help="Sprint 2 evaluation report root")
     parser.add_argument("--source-git-sha", help="pinned StatsBomb Open Data Git SHA")
     parser.add_argument("--quality-policy", type=Path, help="quality policy JSON path")
+    parser.add_argument("--code-commit-sha", help="code Git SHA for evaluation artifacts")
+    parser.add_argument(
+        "--dependency-lock-sha256", help="dependency lock SHA-256 for evaluation artifacts"
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
     ingest = commands.add_parser("ingest", help="acquire and ingest provider data")
@@ -137,6 +142,10 @@ def run(
         environment.get("FOOTBALL_QUALITY_POLICY", str(DEFAULT_QUALITY_POLICY))
     )
     source_git_sha = args.source_git_sha or environment.get("FOOTBALL_STATSBOMB_GIT_SHA")
+    code_commit_sha = args.code_commit_sha or environment.get("FOOTBALL_CODE_COMMIT_SHA")
+    dependency_lock_sha256 = args.dependency_lock_sha256 or environment.get(
+        "FOOTBALL_DEPENDENCY_LOCK_SHA256"
+    )
     if args.command == "ingest" and not source_git_sha:
         print(
             "error: source Git SHA is required; set FOOTBALL_STATSBOMB_GIT_SHA or --source-git-sha",
@@ -158,8 +167,18 @@ def run(
             else None
         )
         with connection_factory(database_url) as connection:
+            evaluation_provenance = (
+                Sprint2EvidenceProvenanceV1(code_commit_sha, dependency_lock_sha256)
+                if code_commit_sha and dependency_lock_sha256
+                else None
+            )
             application = FootballApplication(
-                connection, data_root, provider, quality_policy, report_root
+                connection,
+                data_root,
+                provider,
+                quality_policy,
+                report_root,
+                evaluation_provenance,
             )
             return _execute(application, args, output)
     except ValueError as error:
