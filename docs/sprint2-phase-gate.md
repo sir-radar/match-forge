@@ -268,9 +268,8 @@ route.
 
 ## Phase-priority override
 
-On 2026-09-01, after retaining the Sprint 2 `FAIL` and closing challenger work, the repository
-owner explicitly reprioritized Phase 1B and Phase 2B foundation work despite the predictive gate
-result.
+On 2026-09-01, after retaining the Sprint 2 `FAIL` and closing challenger work, the repository owner
+explicitly reprioritized Phase 1B and Phase 2B foundation work despite the predictive gate result.
 
 This authorization is limited to:
 
@@ -286,13 +285,20 @@ competition rules, and gate evidence
 ```
 
 This priority change does not alter `Sprint2BaselineGatePolicyV1`, its thresholds, the frozen
-target plan, retained evaluation evidence, the `FAIL` result, or the no-promotion decision. It does
-not reopen Sprint 2 challenger work or authorize Gamma-frailty work, another goal-model family, an
-authoritative challenger rerun, or Phase 3.
+target plan, retained evaluation evidence, the `FAIL` result, or the no-promotion decision.
+
+It does not reopen Sprint 2 challenger work or authorize Gamma-frailty work, another goal-model
+family, an authoritative challenger rerun, or Phase 3.
+
+Phase 1B and Phase 2B may be implemented and verified while the Sprint 2 predictive gate remains
+`FAIL`, but their completion does not satisfy or waive the Sprint 2 predictive prerequisite for
+Phase 3.
 
 ## Required next action
 
 Proceed with bounded Phase 1B and Phase 2B tasks under their existing acceptance contracts. Retain
 the Sprint 2 `FAIL` as authoritative evidence and stop at the Phase 1B/Phase 2B gate for review.
-Phase 3 and later modelling remain blocked unless their prerequisites pass or the repository owner
-makes a separate explicit governance decision.
+
+Phase 3 and later modelling remain blocked under the current governance state even if Phase 1B and
+Phase 2B pass. Authorizing Phase 3 while Sprint 2 remains `FAIL`, or otherwise changing the current
+phase prerequisites, requires a separate explicit repository-owner governance decision.
