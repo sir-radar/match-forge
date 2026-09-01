@@ -79,6 +79,7 @@ def test_portable_artifact_publication_is_canonical_and_idempotent(tmp_path: Pat
     }
     assert payload["state"]["config"]["optimizer"] == "slsqp-analytic-gradient-v2"
     assert payload["state"]["config"]["gradient_tolerance"] == 1e-3
+    assert payload["state"]["config"]["effect_regularization"] == 16.0
     loaded = store.load(first, expected_feature_contract_version="sprint2-features-v1")
     restored = deserialize_dixon_coles_fit(loaded.state)
     original = _dixon_coles_fit()
@@ -144,10 +145,12 @@ def test_model_state_loaders_preserve_legacy_optimizer_and_unregularized_configs
     assert isinstance(dixon_config_state, dict)
     assert isinstance(corner_config_state, dict)
     assert "optimizer" not in dixon_config_state
+    assert "effect_regularization" not in dixon_config_state
     assert "effect_regularization" not in corner_config_state
     assert (
         deserialize_dixon_coles_fit(dixon_state).config.optimizer == "lbfgsb-finite-difference-v1"
     )
+    assert deserialize_dixon_coles_fit(dixon_state).config.effect_regularization == 0.0
     assert deserialize_corner_fit(corner_state).config.effect_regularization == 0.0
 
 
@@ -304,9 +307,9 @@ def _fit_spec(model_family: ModelFamily) -> ModelFitSpecV1:
 
 
 def _dixon_coles_fit() -> DixonColesFit:
-    config = DixonColesConfig(model_version="dixon-coles-v1")
+    config = DixonColesConfig(model_version="dixon-coles-v3", effect_regularization=16.0)
     return DixonColesFit(
-        model_version="dixon-coles-v1",
+        model_version="dixon-coles-v3",
         config=config,
         config_sha256=config.sha256,
         training_sha256=SHA_B,
