@@ -10,6 +10,7 @@ from football.providers.capabilities import (
     ProviderCapabilityRegistryV1,
     ProviderCapabilityV1,
     ProviderResourceCapabilityV1,
+    ProviderRoleV1,
     ProviderScopeV1,
 )
 from football.providers.statsbomb import StatsBombOpenDataAdapter
@@ -22,6 +23,7 @@ __all__ = [
     "ProviderCapabilityV1",
     "ProviderFetchError",
     "ProviderResourceCapabilityV1",
+    "ProviderRoleV1",
     "ProviderScopeV1",
     "StatsBombOpenDataAdapter",
 ]
