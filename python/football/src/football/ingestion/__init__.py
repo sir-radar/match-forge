@@ -5,6 +5,14 @@ from football.ingestion.acquisition import (
     SourceAcquirer,
     SourceIntegrityError,
 )
+from football.ingestion.automatic import (
+    ACQUISITION_STAGES_V1,
+    AcquisitionStageV1,
+    AcquisitionStepV1,
+    AutomaticAcquisitionError,
+    AutomaticAcquisitionFlowV1,
+    AutomaticAcquisitionResultV1,
+)
 from football.ingestion.canonical import (
     CanonicalIngestionResult,
     StatsBombCanonicalIngestor,
@@ -13,6 +21,12 @@ from football.ingestion.errors import CanonicalIngestionError, RetryableIngestio
 
 __all__ = [
     "AcquisitionResult",
+    "ACQUISITION_STAGES_V1",
+    "AcquisitionStageV1",
+    "AcquisitionStepV1",
+    "AutomaticAcquisitionError",
+    "AutomaticAcquisitionFlowV1",
+    "AutomaticAcquisitionResultV1",
     "CanonicalIngestionError",
     "CanonicalIngestionResult",
     "RetryableIngestionError",
