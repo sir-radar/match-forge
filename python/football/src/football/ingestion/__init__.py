@@ -18,6 +18,13 @@ from football.ingestion.canonical import (
     StatsBombCanonicalIngestor,
 )
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
+from football.ingestion.match_resolution import (
+    MatchResolutionContextV1,
+    MatchResolutionError,
+    MatchResolutionResultV1,
+    MatchResolutionStatusV1,
+    resolve_match_candidates,
+)
 from football.ingestion.resolution import (
     ResolutionDecisionError,
     ResolutionDecisionV1,
@@ -38,6 +45,11 @@ __all__ = [
     "ResolutionDecisionError",
     "ResolutionDecisionV1",
     "ResolutionStatusV1",
+    "MatchResolutionContextV1",
+    "MatchResolutionError",
+    "MatchResolutionResultV1",
+    "MatchResolutionStatusV1",
+    "resolve_match_candidates",
     "SourceAcquirer",
     "SourceIntegrityError",
     "StatsBombCanonicalIngestor",
