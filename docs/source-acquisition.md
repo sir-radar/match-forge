@@ -27,6 +27,17 @@ The current StatsBomb Open Data adapter declares the accepted World Cup 2022 and
 credential reference. This registry describes capability, not global source authority; later
 reconciliation policy remains responsible for field-level source selection.
 
+Provider roles use the versioned `tier_a` (event intelligence), `tier_b`
+(match/statistical enrichment), and `tier_c` (market benchmark) vocabulary. A
+provider may declare more than one role; roles describe supplied capability, not
+trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
+
+TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
+API (`/v1/`). It is not enabled until credentials, account timezone/language,
+coverage scopes, and licensing/terms approval are recorded. Its aggregate
+statistics cannot substitute for Tier A event geometry, and provider-defined
+fields such as `dangerous_attacks` retain provider provenance.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.

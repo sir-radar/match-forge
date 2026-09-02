@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 from types import MappingProxyType
+from typing import Literal
 
 from football.contracts.source import PROVIDER_PATTERN, canonical_json_bytes
 
@@ -13,6 +14,10 @@ _VERSION_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 class ProviderCapabilityError(ValueError):
     """A provider capability declaration violates its versioned contract."""
+
+
+ProviderRoleV1 = Literal["tier_a", "tier_b", "tier_c"]
+_PROVIDER_ROLES = frozenset(("tier_a", "tier_b", "tier_c"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +85,7 @@ class ProviderCapabilityV1:
     rate_limit_per_minute: int | None
     credential_ref: str | None
     adapter_version: str
+    roles: tuple[ProviderRoleV1, ...]
     contract: str = "ProviderCapabilityV1"
 
     def __post_init__(self) -> None:
@@ -105,6 +111,7 @@ class ProviderCapabilityV1:
             "rate_limit_per_minute": self.rate_limit_per_minute,
             "credential_ref": self.credential_ref,
             "adapter_version": self.adapter_version,
+            "roles": list(self.roles),
         }
 
 
@@ -143,6 +150,12 @@ def _validate_capability_identity(capability: ProviderCapabilityV1) -> None:
         raise ProviderCapabilityError("provider terms and update semantics are required")
     if not _VERSION_PATTERN.fullmatch(capability.adapter_version):
         raise ProviderCapabilityError("adapter_version is invalid")
+    if not capability.roles:
+        raise ProviderCapabilityError("provider capability requires roles")
+    if len(capability.roles) != len(set(capability.roles)):
+        raise ProviderCapabilityError("provider capability roles must be unique")
+    if any(role not in _PROVIDER_ROLES for role in capability.roles):
+        raise ProviderCapabilityError("provider capability role is unsupported")
 
 
 def _validate_capability_resources(capability: ProviderCapabilityV1) -> None:

@@ -68,6 +68,7 @@ class StatsBombOpenDataAdapter:
         rate_limit_per_minute=None,
         credential_ref=None,
         adapter_version="statsbomb-open-data-v1",
+        roles=("tier_a",),
     )
 
     def __init__(
