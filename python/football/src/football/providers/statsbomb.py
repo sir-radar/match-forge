@@ -11,6 +11,11 @@ from football.providers.base import (
     ProviderConfigurationError,
     ProviderFetchError,
 )
+from football.providers.capabilities import (
+    ProviderCapabilityV1,
+    ProviderResourceCapabilityV1,
+    ProviderScopeV1,
+)
 
 _RESOURCE_PATTERN = re.compile(
     r"^data/(competitions\.json|matches/[1-9][0-9]*/[1-9][0-9]*\.json|"
@@ -43,6 +48,27 @@ class StatsBombOpenDataAdapter:
     repository = "https://github.com/statsbomb/open-data"
     timeout_seconds = 60.0
     max_resource_bytes = 128 * 1024 * 1024
+    capability = ProviderCapabilityV1(
+        provider_id=provider_code,
+        enabled=True,
+        terms_status="open_data_non_commercial_research",
+        supported_scopes=(
+            ProviderScopeV1("2", "27", ("fixtures_results", "lineups", "events")),
+            ProviderScopeV1("43", "106", ("fixtures_results", "lineups", "events", "360")),
+        ),
+        resources=(
+            ProviderResourceCapabilityV1("fixtures_results"),
+            ProviderResourceCapabilityV1("lineups"),
+            ProviderResourceCapabilityV1("events"),
+            ProviderResourceCapabilityV1("360"),
+        ),
+        update_semantics="commit_pinned_snapshot",
+        incremental_cursor_support=False,
+        webhook_support=False,
+        rate_limit_per_minute=None,
+        credential_ref=None,
+        adapter_version="statsbomb-open-data-v1",
+    )
 
     def __init__(
         self,

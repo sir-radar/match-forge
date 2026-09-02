@@ -14,6 +14,19 @@ FootballDataProvider
 
 Canonical ingestion consumes this boundary only after re-verifying the immutable manifest and every declared resource. See [Canonical ingestion](canonical-ingestion.md). Normalized event publication then consumes the same verified acquisition and registered canonical catalogue. See [Event datasets](event-datasets.md). Published event datasets receive policy-driven [data validation](data-validation.md), and each ingestion publishes immutable [ingestion reports](ingestion-reports.md). 360 normalization remains a later phase.
 
+## Provider capability registry
+
+Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
+records terms status, supported competition/season scopes, resource-level historical coverage,
+update semantics, cursor/webhook support, rate limits, credential references, and adapter version.
+The registry stores only non-secret credential references; API keys and tokens never belong in the
+capability declaration.
+
+The current StatsBomb Open Data adapter declares the accepted World Cup 2022 and Premier League
+2015/16 scopes. Its commit-pinned snapshot contract is enabled for research use without a
+credential reference. This registry describes capability, not global source authority; later
+reconciliation policy remains responsible for field-level source selection.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
