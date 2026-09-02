@@ -47,6 +47,10 @@ Raw execution scoring also implements joint goal-score negative log likelihood, 
 MAE, RMSE, and Poisson deviance; and home, away, and total corner negative log likelihood, CRPS,
 MAE, and RMSE for both corner families and the simple reference.
 
+Count distributions expand support until at least `1 - 1e-12` probability mass is captured, with a
+hard limit of 1,000,000 counts. Scoring fails explicitly if a valid distribution still exceeds that
+bounded support; probability mass is never silently clipped.
+
 Calibration is a separate challenger layer. Authoritative 1X2 analysis uses multiclass vector
 calibration so the simplex is preserved; Over 2.5 and BTTS use binary Platt and isotonic
 challengers. Each chronological batch trains only from earlier out-of-sample predictions whose
