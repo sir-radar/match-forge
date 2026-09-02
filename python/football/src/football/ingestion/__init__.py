@@ -35,6 +35,12 @@ from football.ingestion.match_resolution import (
     MatchResolutionStatusV1,
     resolve_match_candidates,
 )
+from football.ingestion.quarantine import (
+    QuarantineReasonV1,
+    QuarantineRecordError,
+    QuarantineRecordV1,
+    QuarantineStatusV1,
+)
 from football.ingestion.resolution import (
     ResolutionDecisionError,
     ResolutionDecisionV1,
@@ -55,6 +61,10 @@ __all__ = [
     "EventStreamReconciliationError",
     "EventStreamReconciliationV1",
     "ProviderEventStreamV1",
+    "QuarantineReasonV1",
+    "QuarantineRecordError",
+    "QuarantineRecordV1",
+    "QuarantineStatusV1",
     "ConflictRecordError",
     "ConflictRecordV1",
     "ConflictDispositionV1",
