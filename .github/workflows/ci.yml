@@ -18,6 +18,10 @@ jobs:
     name: Deterministic checks
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    env:
+      # The repository rust-toolchain.toml pins the macOS arm64 target. Override
+      # its channel selector on Linux; rustup resolves 1.97.1 for this host.
+      RUSTUP_TOOLCHAIN: 1.97.1
 
     steps:
       - name: Check out repository
