@@ -64,5 +64,9 @@ optimizer. The result records observed mean and variance, flags empirical overdi
 selects the lower-AIC model. This is model evidence, not a deployment decision; walk-forward
 out-of-sample scoring remains the required gate.
 
+NB2 fitting uses a moment-based start plus a deterministic lower-dispersion restart and selects the
+lowest finite converged objective. This keeps equivalent fits stable when numerical line-search
+behavior differs across supported hosts.
+
 Forecasts expose home and away expected corners, variances, and exact count probabilities for the
 selected distribution. Configuration and ordered training facts have canonical SHA-256 identities.

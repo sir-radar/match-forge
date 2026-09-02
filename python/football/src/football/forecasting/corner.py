@@ -409,10 +409,13 @@ class CornerModels:
         initial[intercept_index] = min(max(math.log(observed_mean), -_EFFECT_BOUND), _EFFECT_BOUND)
         bounds = [(-_EFFECT_BOUND, _EFFECT_BOUND)] * base_parameter_count
         if distribution == "negative_binomial":
-            initial_dispersion = max((variance - observed_mean) / (observed_mean**2), 0.01)
+            initial_dispersion = (variance - observed_mean) / (observed_mean**2)
             initial.append(
                 min(
-                    max(math.log(initial_dispersion), _LOG_DISPERSION_BOUNDS[0]),
+                    max(
+                        math.log(max(initial_dispersion, math.exp(_LOG_DISPERSION_BOUNDS[0]))),
+                        _LOG_DISPERSION_BOUNDS[0],
+                    ),
                     _LOG_DISPERSION_BOUNDS[1],
                 )
             )
@@ -448,17 +451,35 @@ class CornerModels:
                 effect_energy
             )
 
-        result = minimize(
-            objective,
-            initial,
-            method="L-BFGS-B",
-            bounds=bounds,
-            options={"maxiter": self.config.max_iterations, "ftol": self.config.tolerance},
-        )
-        if not bool(result.success) or not math.isfinite(float(result.fun)):
-            raise CornerFitError(
-                f"{distribution} corner optimizer did not converge: {result.message}"
+        starts = [initial]
+        if distribution == "negative_binomial":
+            lower_dispersion_start = initial.copy()
+            lower_dispersion_start[-1] = _LOG_DISPERSION_BOUNDS[0]
+            starts.append(lower_dispersion_start)
+        results = [
+            minimize(
+                objective,
+                start,
+                method="L-BFGS-B",
+                bounds=bounds,
+                options={
+                    "maxiter": self.config.max_iterations,
+                    "maxls": 50,
+                    "ftol": self.config.tolerance,
+                },
             )
+            for start in starts
+        ]
+        valid_results = [
+            result
+            for result in results
+            if bool(result.success) and math.isfinite(float(result.fun))
+        ]
+        if not valid_results:
+            raise CornerFitError(
+                f"{distribution} corner optimizer did not converge: {results[0].message}"
+            )
+        result = min(valid_results, key=lambda candidate: float(candidate.fun))
         unpacked = _unpack(result.x, team_count, competition_count, distribution)
         fitted_negative_log_likelihood = negative_log_likelihood(result.x)
         parameters = CornerParameters(
