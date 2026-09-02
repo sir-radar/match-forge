@@ -59,3 +59,10 @@ Git SHA, dependency-lock checksum, and canonical JSON configuration. Its
 checksum is the build identity. A source correction marks the old derived
 state affected or stale; rebuilding with a new specification publishes a new
 dataset version and leaves the historical dataset addressable.
+
+`DatasetRebuildRequestV1` is the durable operator/worker hand-off. It binds a
+dataset reference to the exact build-spec checksum, records whether the
+request came from a source correction, manual replay, or failed publication,
+and carries an explicit attempt and status. Retries create a new request
+snapshot or advance durable request state; they never overwrite the prior
+dataset version.
