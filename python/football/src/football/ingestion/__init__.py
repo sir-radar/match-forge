@@ -35,6 +35,13 @@ from football.ingestion.match_resolution import (
     MatchResolutionStatusV1,
     resolve_match_candidates,
 )
+from football.ingestion.partial_failure import (
+    AggregateProcessingStatusV1,
+    PartialFailureError,
+    PartialFailureReportV1,
+    ResourceProcessingResultV1,
+    ResourceProcessingStatusV1,
+)
 from football.ingestion.quarantine import (
     QuarantineReasonV1,
     QuarantineRecordError,
@@ -66,6 +73,11 @@ __all__ = [
     "EventStreamReconciliationError",
     "EventStreamReconciliationV1",
     "ProviderEventStreamV1",
+    "AggregateProcessingStatusV1",
+    "PartialFailureError",
+    "PartialFailureReportV1",
+    "ResourceProcessingResultV1",
+    "ResourceProcessingStatusV1",
     "QuarantineReasonV1",
     "QuarantineRecordError",
     "QuarantineRecordV1",
