@@ -21,6 +21,9 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     validation = parser.parse_args(["validate", "season", "106"])
     lifecycle = parser.parse_args(["resolve", "sprint2-lifecycle"])
     kickoffs = parser.parse_args(["resolve", "sprint2-kickoffs"])
+    provider_status = parser.parse_args(
+        ["provider", "status", "--provider-id", "statsbomb_open_data"]
+    )
 
     assert (competitions.command, competitions.scope) == ("ingest", "competitions")
     assert (season.command, season.scope, season.season_id) == ("ingest", "season", 106)
@@ -32,6 +35,22 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     )
     assert (lifecycle.command, lifecycle.scope) == ("resolve", "sprint2-lifecycle")
     assert (kickoffs.command, kickoffs.scope) == ("resolve", "sprint2-kickoffs")
+    assert (provider_status.command, provider_status.scope, provider_status.provider_id) == (
+        "provider",
+        "status",
+        "statsbomb_open_data",
+    )
+
+
+def test_provider_status_is_read_only_and_does_not_connect() -> None:
+    stdout = StringIO()
+    stderr = StringIO()
+
+    exit_code = run(["provider", "status"], environ={}, stdout=stdout, stderr=stderr)
+
+    assert exit_code == 0
+    assert stderr.getvalue() == ""
+    assert '"provider_id": "statsbomb_open_data"' in stdout.getvalue()
 
 
 @pytest.mark.parametrize("value", ("0", "-1", "abc", "1.5"))

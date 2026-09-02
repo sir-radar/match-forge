@@ -14,6 +14,8 @@ football resolve sprint2-lifecycle
 football resolve sprint2-kickoffs
 football resolve sprint2-corners
 football evaluate sprint2
+football provider status
+football provider status --provider-id <id>
 ```
 
 Competition ingestion acquires the commit-pinned StatsBomb catalog and publishes canonical competitions and seasons. Season ingestion refreshes that catalog, resolves exactly one competition, acquires and ingests the season match list, acquires every match lineup and event resource, publishes one normalized event dataset, and validates it. An empty season succeeds without publishing or validating a dataset.
@@ -84,6 +86,10 @@ options include `--code-commit-sha` and `--dependency-lock-sha256`; place global
 command.
 
 The CLI assumes production migrations are current. It never migrates PostgreSQL automatically.
+
+`football provider status` is read-only and reports registered capability
+declarations without connecting to PostgreSQL or a provider. Sync, backfill,
+and cursor mutation commands remain gated on the durable worker contracts.
 
 ## Exit codes
 
