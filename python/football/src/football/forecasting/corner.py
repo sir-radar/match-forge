@@ -410,6 +410,7 @@ class CornerModels:
         bounds = [(-_EFFECT_BOUND, _EFFECT_BOUND)] * base_parameter_count
         if distribution == "negative_binomial":
             initial_dispersion = (variance - observed_mean) / (observed_mean**2)
+            dispersion_at_boundary = variance <= observed_mean
             initial.append(
                 min(
                     max(
@@ -419,7 +420,17 @@ class CornerModels:
                     _LOG_DISPERSION_BOUNDS[1],
                 )
             )
-            bounds.append(_LOG_DISPERSION_BOUNDS)
+            # A negative-binomial variance cannot be below its mean.  When the
+            # observed data is under-dispersed, the likelihood optimum is the
+            # smallest allowed dispersion.  Locking that parameter to the
+            # boundary avoids platform-dependent optimizer excursions into
+            # pathological tails while preserving free dispersion fitting for
+            # genuinely over-dispersed data.
+            bounds.append(
+                (_LOG_DISPERSION_BOUNDS[0], _LOG_DISPERSION_BOUNDS[0])
+                if dispersion_at_boundary
+                else _LOG_DISPERSION_BOUNDS
+            )
 
         def negative_log_likelihood(values: Sequence[float]) -> float:
             unpacked = _unpack(values, team_count, competition_count, distribution)
@@ -452,7 +463,7 @@ class CornerModels:
             )
 
         starts = [initial]
-        if distribution == "negative_binomial":
+        if distribution == "negative_binomial" and not dispersion_at_boundary:
             lower_dispersion_start = initial.copy()
             lower_dispersion_start[-1] = _LOG_DISPERSION_BOUNDS[0]
             starts.append(lower_dispersion_start)
