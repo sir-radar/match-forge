@@ -1,5 +1,6 @@
 """Machine-readable report and manifest contract boundary."""
 
+from football.contracts.competition import CompetitionRulesError, CompetitionRulesV1
 from football.contracts.dependencies import (
     DependencyContractError,
     DependencyEdgeV1,
@@ -25,6 +26,8 @@ __all__ = [
     "DependencyGraphV1",
     "DependencyStateV1",
     "DerivedStateRecordV1",
+    "CompetitionRulesError",
+    "CompetitionRulesV1",
     "IntegrityCheckStatusV1",
     "IntegrityContractError",
     "IntegrityVerificationReportV1",
