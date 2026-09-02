@@ -48,3 +48,9 @@ identity, source checksums, canonical candidates, reason code, evidence,
 policy version, attempt history, and review status. Network failure remains a
 retryable acquisition-run error, not a data-quarantine reason. Raw evidence is
 never deleted or rewritten; reprocessing creates new history.
+
+Eligible changes create append-only `QuarantineReprocessRequestV1` records for
+mapping review, schema fixes, provider corrections, or policy versioning. Each
+request points to the source quarantine record and trigger evidence; it never
+rewrites the prior quarantine attempt or silently reuses a new policy as old
+evidence.

@@ -41,6 +41,11 @@ from football.ingestion.quarantine import (
     QuarantineRecordV1,
     QuarantineStatusV1,
 )
+from football.ingestion.quarantine_reprocess import (
+    QuarantineReprocessError,
+    QuarantineReprocessRequestV1,
+    ReprocessTriggerV1,
+)
 from football.ingestion.resolution import (
     ResolutionDecisionError,
     ResolutionDecisionV1,
@@ -65,6 +70,9 @@ __all__ = [
     "QuarantineRecordError",
     "QuarantineRecordV1",
     "QuarantineStatusV1",
+    "QuarantineReprocessError",
+    "QuarantineReprocessRequestV1",
+    "ReprocessTriggerV1",
     "ConflictRecordError",
     "ConflictRecordV1",
     "ConflictDispositionV1",
