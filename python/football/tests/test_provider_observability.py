@@ -27,6 +27,23 @@ def test_observability_surfaces_staleness_and_open_circuit() -> None:
     assert snapshot.alert_conditions == ("PROVIDER_OR_RESOURCE_STALE", "PROVIDER_CIRCUIT_OPEN")
 
 
+def test_observability_surfaces_operational_backlogs_and_schema_failures() -> None:
+    snapshot = _snapshot(
+        quarantine_count=0,
+        schema_compatibility_failure_count=1,
+        resolution_review_backlog_count=2,
+        dataset_rebuild_queue_count=1,
+        stale_dependency_count=3,
+    )
+
+    assert snapshot.alert_conditions == (
+        "SCHEMA_COMPATIBILITY_FAILURES_PRESENT",
+        "RESOLUTION_REVIEW_BACKLOG_PRESENT",
+        "DATASET_REBUILD_QUEUE_NON_EMPTY",
+        "STALE_DEPENDENCIES_PRESENT",
+    )
+
+
 def test_observability_rejects_invalid_counts_and_timestamps() -> None:
     with pytest.raises(ProviderObservabilityError, match="cannot exceed"):
         _snapshot(resolution_attempt_count=1, resolution_success_count=2)

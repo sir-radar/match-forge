@@ -45,6 +45,12 @@ class ProviderObservabilitySnapshotV1:
     cursor_lag_seconds: int | None
     circuit_state: CircuitStateV1
     contract: str = "ProviderObservabilitySnapshotV1"
+    schema_compatibility_failure_count: int = 0
+    quota_exhaustion_count: int = 0
+    resolution_review_backlog_count: int = 0
+    dataset_rebuild_queue_count: int = 0
+    stale_dependency_count: int = 0
+    last_cursor_advanced_at: datetime | None = None
 
     def __post_init__(self) -> None:
         _validate_identity(self)
@@ -60,23 +66,8 @@ class ProviderObservabilitySnapshotV1:
 
     @property
     def alert_conditions(self) -> tuple[str, ...]:
-        alerts: list[str] = []
-        if self.freshness_status == "NEVER_SUCCEEDED":
-            alerts.append("PROVIDER_NEVER_SUCCEEDED")
-        elif self.freshness_status == "STALE":
-            alerts.append("PROVIDER_OR_RESOURCE_STALE")
-        if self.circuit_state == "OPEN":
-            alerts.append("PROVIDER_CIRCUIT_OPEN")
-        if self.validation_failure_count:
-            alerts.append("VALIDATION_FAILURES_PRESENT")
-        if self.quarantine_count:
-            alerts.append("QUARANTINE_ITEMS_PRESENT")
-        if self.unresolved_conflict_count:
-            alerts.append("UNRESOLVED_CONFLICTS_PRESENT")
-        if self.publication_failure_count:
-            alerts.append("PUBLICATION_FAILURES_PRESENT")
-        if self.reconciliation_failure_count:
-            alerts.append("RECONCILIATION_FAILURES_PRESENT")
+        alerts = _freshness_alerts(self)
+        alerts.extend(_failure_alerts(self))
         return tuple(alerts)
 
     @property
@@ -111,6 +102,12 @@ class ProviderObservabilitySnapshotV1:
             "change_set_emission_count": self.change_set_emission_count,
             "cursor_lag_seconds": self.cursor_lag_seconds,
             "circuit_state": self.circuit_state,
+            "schema_compatibility_failure_count": self.schema_compatibility_failure_count,
+            "quota_exhaustion_count": self.quota_exhaustion_count,
+            "resolution_review_backlog_count": self.resolution_review_backlog_count,
+            "dataset_rebuild_queue_count": self.dataset_rebuild_queue_count,
+            "stale_dependency_count": self.stale_dependency_count,
+            "last_cursor_advanced_at": _iso(self.last_cursor_advanced_at),
             "alert_conditions": list(self.alert_conditions),
         }
 
@@ -139,6 +136,7 @@ def _validate_timestamps(snapshot: ProviderObservabilitySnapshotV1) -> None:
         ("last_successful_sync_at", snapshot.last_successful_sync_at),
         ("last_successful_acquisition_at", snapshot.last_successful_acquisition_at),
         ("last_successful_publication_at", snapshot.last_successful_publication_at),
+        ("last_cursor_advanced_at", snapshot.last_cursor_advanced_at),
     ):
         if value is not None:
             _validate_timestamp(value, name)
@@ -163,6 +161,11 @@ def _validate_counts(snapshot: ProviderObservabilitySnapshotV1) -> None:
         "publication_failure_count",
         "reconciliation_failure_count",
         "change_set_emission_count",
+        "schema_compatibility_failure_count",
+        "quota_exhaustion_count",
+        "resolution_review_backlog_count",
+        "dataset_rebuild_queue_count",
+        "stale_dependency_count",
     )
     if any(getattr(snapshot, name) < 0 for name in count_fields):
         raise ProviderObservabilityError("observability counts must not be negative")
@@ -170,6 +173,33 @@ def _validate_counts(snapshot: ProviderObservabilitySnapshotV1) -> None:
         raise ProviderObservabilityError("resolution successes cannot exceed attempts")
     if snapshot.cursor_lag_seconds is not None and snapshot.cursor_lag_seconds < 0:
         raise ProviderObservabilityError("cursor lag must not be negative")
+
+
+def _freshness_alerts(snapshot: ProviderObservabilitySnapshotV1) -> list[str]:
+    alerts: list[str] = []
+    if snapshot.freshness_status == "NEVER_SUCCEEDED":
+        alerts.append("PROVIDER_NEVER_SUCCEEDED")
+    elif snapshot.freshness_status == "STALE":
+        alerts.append("PROVIDER_OR_RESOURCE_STALE")
+    if snapshot.circuit_state == "OPEN":
+        alerts.append("PROVIDER_CIRCUIT_OPEN")
+    return alerts
+
+
+def _failure_alerts(snapshot: ProviderObservabilitySnapshotV1) -> list[str]:
+    checks = (
+        (snapshot.validation_failure_count, "VALIDATION_FAILURES_PRESENT"),
+        (snapshot.quarantine_count, "QUARANTINE_ITEMS_PRESENT"),
+        (snapshot.unresolved_conflict_count, "UNRESOLVED_CONFLICTS_PRESENT"),
+        (snapshot.publication_failure_count, "PUBLICATION_FAILURES_PRESENT"),
+        (snapshot.reconciliation_failure_count, "RECONCILIATION_FAILURES_PRESENT"),
+        (snapshot.schema_compatibility_failure_count, "SCHEMA_COMPATIBILITY_FAILURES_PRESENT"),
+        (snapshot.quota_exhaustion_count, "QUOTA_EXHAUSTION_PRESENT"),
+        (snapshot.resolution_review_backlog_count, "RESOLUTION_REVIEW_BACKLOG_PRESENT"),
+        (snapshot.dataset_rebuild_queue_count, "DATASET_REBUILD_QUEUE_NON_EMPTY"),
+        (snapshot.stale_dependency_count, "STALE_DEPENDENCIES_PRESENT"),
+    )
+    return [code for count, code in checks if count]
 
 
 def _iso(value: datetime | None) -> str | None:
