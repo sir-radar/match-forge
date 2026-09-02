@@ -4,7 +4,7 @@ import hashlib
 import math
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from statistics import fmean, pvariance
 from types import MappingProxyType
@@ -404,13 +404,16 @@ class CornerModels:
         base_parameter_count = 2 * (team_count - 1) + (competition_count - 1) + 6
         observed_mean, variance = _weighted_moments(context.rows)
         observed_mean = max(observed_mean, 0.1)
+        if distribution == "negative_binomial" and variance <= observed_mean:
+            return self._fit_underdispersed_negative_binomial(
+                context, team_count, competition_count
+            )
         initial = [0.0] * base_parameter_count
         intercept_index = 2 * (team_count - 1) + (competition_count - 1)
         initial[intercept_index] = min(max(math.log(observed_mean), -_EFFECT_BOUND), _EFFECT_BOUND)
         bounds = [(-_EFFECT_BOUND, _EFFECT_BOUND)] * base_parameter_count
         if distribution == "negative_binomial":
             initial_dispersion = (variance - observed_mean) / (observed_mean**2)
-            dispersion_at_boundary = variance <= observed_mean
             initial.append(
                 min(
                     max(
@@ -420,17 +423,7 @@ class CornerModels:
                     _LOG_DISPERSION_BOUNDS[1],
                 )
             )
-            # A negative-binomial variance cannot be below its mean.  When the
-            # observed data is under-dispersed, the likelihood optimum is the
-            # smallest allowed dispersion.  Locking that parameter to the
-            # boundary avoids platform-dependent optimizer excursions into
-            # pathological tails while preserving free dispersion fitting for
-            # genuinely over-dispersed data.
-            bounds.append(
-                (_LOG_DISPERSION_BOUNDS[0], _LOG_DISPERSION_BOUNDS[0])
-                if dispersion_at_boundary
-                else _LOG_DISPERSION_BOUNDS
-            )
+            bounds.append(_LOG_DISPERSION_BOUNDS)
 
         def negative_log_likelihood(values: Sequence[float]) -> float:
             unpacked = _unpack(values, team_count, competition_count, distribution)
@@ -463,7 +456,7 @@ class CornerModels:
             )
 
         starts = [initial]
-        if distribution == "negative_binomial" and not dispersion_at_boundary:
+        if distribution == "negative_binomial":
             lower_dispersion_start = initial.copy()
             lower_dispersion_start[-1] = _LOG_DISPERSION_BOUNDS[0]
             starts.append(lower_dispersion_start)
@@ -524,6 +517,44 @@ class CornerModels:
             negative_log_likelihood=fitted_negative_log_likelihood,
             aic=2.0 * parameter_count + 2.0 * fitted_negative_log_likelihood,
             converged=True,
+        )
+
+    def _fit_underdispersed_negative_binomial(
+        self, context: _FitContext, team_count: int, competition_count: int
+    ) -> CornerFit:
+        """Use the Poisson boundary when the data cannot support overdispersion."""
+        poisson_fit = self._fit_distribution(context, "poisson")
+        dispersion = math.exp(_LOG_DISPERSION_BOUNDS[0])
+        parameters = replace(poisson_fit.parameters, dispersion=dispersion)
+        negative_log_likelihood = sum(
+            -row.weight
+            * _negative_binomial_log_probability(
+                row.corners,
+                self._expected(
+                    parameters,
+                    context.team_ids[row.team_index],
+                    context.team_ids[row.opponent_index],
+                    context.competition_ids[row.competition_index],
+                    row.is_home,
+                    row.features,
+                ),
+                dispersion,
+            )
+            for row in context.rows
+        )
+        parameter_count = 2 * (team_count - 1) + (competition_count - 1) + 7
+        return CornerFit(
+            model_version=self.config.model_version,
+            config=self.config,
+            config_sha256=self.config.sha256,
+            training_sha256=context.training_sha256,
+            training_match_count=len(context.matches),
+            training_cutoff=context.cutoff,
+            distribution="negative_binomial",
+            parameters=parameters,
+            negative_log_likelihood=negative_log_likelihood,
+            aic=2.0 * parameter_count + 2.0 * negative_log_likelihood,
+            converged=poisson_fit.converged,
         )
 
     @staticmethod
