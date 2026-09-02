@@ -116,6 +116,13 @@ exhaustion, resolution-review backlog, dataset-rebuild queue depth, stale
 dependency count, and cursor-advance time. These fields make the required
 foundation health signals consumable without requiring a dashboard.
 
+`ProviderPlatformAcceptanceReportV1` records the reviewed Phase 1B gate. It
+requires explicit evidence references and reports provider schema/runtime
+safety, secret-reference boundaries, resolution, quarantine/reprocessing,
+cross-source reconciliation, and trusted change-set publication. Overall PASS
+requires at least two approved provider namespaces exercised end-to-end;
+missing evidence remains `NOT_RUN` and a single exercised provider is `FAIL`.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
