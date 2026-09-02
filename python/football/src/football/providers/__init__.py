@@ -13,6 +13,12 @@ from football.providers.capabilities import (
     ProviderRoleV1,
     ProviderScopeV1,
 )
+from football.providers.credentials import (
+    CredentialTypeV1,
+    ProviderConfigV1,
+    ProviderCredentialError,
+    ProviderCredentialRefV1,
+)
 from football.providers.runtime_policy import (
     JitterModeV1,
     ProviderRuntimePolicyError,
@@ -36,10 +42,14 @@ __all__ = [
     "ProviderCapabilityError",
     "ProviderCapabilityRegistryV1",
     "ProviderCapabilityV1",
+    "ProviderConfigV1",
+    "ProviderCredentialError",
+    "ProviderCredentialRefV1",
     "ProviderFetchError",
     "ProviderResourceCapabilityV1",
     "ProviderRoleV1",
     "ProviderScopeV1",
+    "CredentialTypeV1",
     "ProviderSyncPolicyError",
     "ProviderSyncPolicyV1",
     "ProviderRuntimePolicyError",
