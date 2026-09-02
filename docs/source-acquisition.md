@@ -111,6 +111,11 @@ conflict, publication, or reconciliation failures. Spike and drop thresholds
 remain versioned operational configuration; consumers compare these snapshots
 without changing the recorded evidence.
 
+Phase 2B extends the same snapshot with schema-compatibility failures, quota
+exhaustion, resolution-review backlog, dataset-rebuild queue depth, stale
+dependency count, and cursor-advance time. These fields make the required
+foundation health signals consumable without requiring a dashboard.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
