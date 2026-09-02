@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections.abc import Callable, Mapping
@@ -20,6 +21,8 @@ from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
 from football.providers import (
     FootballDataProvider,
+    ProviderCapabilityError,
+    ProviderCapabilityRegistryV1,
     ProviderFetchError,
     StatsBombOpenDataAdapter,
 )
@@ -116,6 +119,11 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate = commands.add_parser("evaluate", help="run phase-gated historical evaluation")
     evaluate_scopes = evaluate.add_subparsers(dest="scope", required=True)
     evaluate_scopes.add_parser("sprint2", help="run the authoritative Sprint 2 baseline gate")
+
+    provider = commands.add_parser("provider", help="inspect provider operations")
+    provider_scopes = provider.add_subparsers(dest="scope", required=True)
+    provider_status = provider_scopes.add_parser("status", help="show provider capabilities")
+    provider_status.add_argument("--provider-id", help="show one registered provider")
     return parser
 
 
@@ -164,6 +172,20 @@ def run(
             file=errors,
         )
         return 2
+    if args.command == "provider" and args.scope == "status":
+        try:
+            capabilities = ProviderCapabilityRegistryV1((StatsBombOpenDataAdapter.capability,))
+            selected = (
+                (capabilities.get(args.provider_id),) if args.provider_id else capabilities.all()
+            )
+        except ProviderCapabilityError as error:
+            print(f"error: {error}", file=errors)
+            return 2
+        print(
+            json.dumps([capability.to_dict() for capability in selected], sort_keys=True),
+            file=output,
+        )
+        return 0
 
     try:
         provider = (
