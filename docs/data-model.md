@@ -43,6 +43,13 @@ Observation uniqueness prevents the same immutable snapshot from publishing the 
 
 Concurrent first-seen identity creation must place canonical-row creation and provider mapping in one transaction. Under contention, PostgreSQL may abort the losing transaction with an exclusion violation or deadlock detection; both preserve one committed canonical identity. The ingestion layer must classify that outcome as retryable and read the winning mapping on retry.
 
+Cross-provider identity decisions are append-only `ResolutionDecisionV1` records.
+They retain evidence references, candidate canonical IDs, versioned rule and
+confidence, actor/reason, status, and optional supersession. Similar names do
+not auto-merge entities; unresolved ambiguity remains review-required or
+quarantined, and corrections supersede prior decisions instead of rewriting
+history.
+
 ## Match and lineup structure
 
 Lineups are decomposed into:
