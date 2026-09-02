@@ -17,6 +17,7 @@ from football.ingestion.canonical import (
     CanonicalIngestionResult,
     StatsBombCanonicalIngestor,
 )
+from football.ingestion.change_sets import CanonicalChangeSetV1, ChangeSetError
 from football.ingestion.conflicts import (
     ConflictDispositionV1,
     ConflictRecordError,
@@ -70,6 +71,8 @@ __all__ = [
     "AutomaticAcquisitionResultV1",
     "CanonicalIngestionError",
     "CanonicalIngestionResult",
+    "CanonicalChangeSetV1",
+    "ChangeSetError",
     "EventStreamReconciliationError",
     "EventStreamReconciliationV1",
     "ProviderEventStreamV1",

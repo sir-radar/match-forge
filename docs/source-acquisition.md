@@ -91,6 +91,12 @@ resource contract completes; retries converge on the same resource revision.
 `PARTIAL`, or `FAILED`; one bad resource never silently invalidates or marks
 unprocessed resources as complete.
 
+Trusted publication emits immutable `CanonicalChangeSetV1` evidence binding sync
+runs, source-resource checksums, affected canonical IDs, added/superseding
+observations, analytical partitions, football/knowledge-time ranges, and both
+resolution and quality policy versions. Downstream eligibility responds to this
+change set, never to raw provider notifications.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
