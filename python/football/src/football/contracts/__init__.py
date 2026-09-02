@@ -18,6 +18,11 @@ from football.contracts.integrity import (
     IntegrityContractError,
     IntegrityVerificationReportV1,
 )
+from football.contracts.provider_acceptance import (
+    ProviderAcceptanceError,
+    ProviderAcceptanceStatusV1,
+    ProviderPlatformAcceptanceReportV1,
+)
 from football.contracts.source import (
     ManifestResource,
     SourceManifest,
@@ -39,6 +44,9 @@ __all__ = [
     "IntegrityCheckStatusV1",
     "IntegrityContractError",
     "IntegrityVerificationReportV1",
+    "ProviderAcceptanceError",
+    "ProviderAcceptanceStatusV1",
+    "ProviderPlatformAcceptanceReportV1",
     "ManifestResource",
     "SourceManifest",
     "SourceResource",
