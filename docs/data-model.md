@@ -50,6 +50,11 @@ not auto-merge entities; unresolved ambiguity remains review-required or
 quarantined, and corrections supersede prior decisions instead of rewriting
 history.
 
+Provider corrections append `BitemporalCorrectionV1` records linking the prior
+and replacement observations, exact source lineage, football-valid range, and
+knowledge time. Existing observations remain immutable, so historical queries
+continue to reproduce what was known at each cutoff.
+
 `DataResolutionPolicyV1` is scoped to one domain/resource/field. It records
 eligible providers, explicit precedence, freshness/completeness requirements,
 accepted validation states, conflict tolerance, and escalation action. Provider
