@@ -51,6 +51,14 @@ bounded exponential backoff with jitter, circuit-breaker thresholds/cool-down,
 probe cadence, and stale-data escalation. Runtime degradation is observable and
 must not silently publish missing data or create an unbounded retry storm.
 
+Provider resources declare `ProviderResourceContractV1` with explicit schema,
+adapter, parser, and normalizer versions plus required/optional fields and
+enumerations. Compatibility inspection accepts additive fields, surfaces
+unknown enum values as warnings without relabeling them, and quarantines
+missing required fields or unsupported explicit schema versions. Historical
+fixtures for each declared contract remain deterministic evidence for adapter
+upgrades.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
