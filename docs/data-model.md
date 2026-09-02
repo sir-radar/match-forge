@@ -50,6 +50,12 @@ not auto-merge entities; unresolved ambiguity remains review-required or
 quarantined, and corrections supersede prior decisions instead of rewriting
 history.
 
+`DataResolutionPolicyV1` is scoped to one domain/resource/field. It records
+eligible providers, explicit precedence, freshness/completeness requirements,
+accepted validation states, conflict tolerance, and escalation action. Provider
+precedence is never global; losing observations remain preserved and every
+selected fact resolves against this versioned policy.
+
 Match resolution requires canonical competition, season, home-team, away-team,
 and timezone-aware kickoff context. A single context-qualified candidate may be
 auto-accepted; ambiguity is review-required and no candidate is quarantined.
