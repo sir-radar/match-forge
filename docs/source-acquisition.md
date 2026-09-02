@@ -86,6 +86,11 @@ operational attempts, `provider_resource_cursors` records checkpoints,
 trusted downstream changes. Cursor advancement is valid only after the linked
 resource contract completes; retries converge on the same resource revision.
 
+`PartialFailureReportV1` isolates each resource outcome as `SUCCEEDED`,
+`RETRYABLE`, `QUARANTINED`, or `FAILED`. Aggregate status is `SUCCEEDED`,
+`PARTIAL`, or `FAILED`; one bad resource never silently invalidates or marks
+unprocessed resources as complete.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
