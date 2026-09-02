@@ -18,6 +18,12 @@ class DatasetBuildSpecError(ValueError):
     """A deterministic dataset build specification violates its contract."""
 
 
+RebuildRequestReasonV1 = Literal["SOURCE_CORRECTION", "MANUAL_REPLAY", "FAILED_PUBLICATION"]
+RebuildRequestStatusV1 = Literal["REQUESTED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"]
+_REBUILD_REASONS = frozenset(("SOURCE_CORRECTION", "MANUAL_REPLAY", "FAILED_PUBLICATION"))
+_REBUILD_STATUSES = frozenset(("REQUESTED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"))
+
+
 @dataclass(frozen=True, slots=True)
 class DatasetBuildSpecV1:
     """Immutable inputs and policy identity for one dataset build."""
@@ -105,6 +111,54 @@ def _validate_cutoffs(spec: DatasetBuildSpecV1) -> None:
 
 def _iso(value: datetime | None) -> str | None:
     return value.isoformat() if value is not None else None
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetRebuildRequestV1:
+    """Durable, idempotent request to produce a new dataset version."""
+
+    request_id: str
+    dataset_ref: str
+    build_spec_sha256: str
+    requested_at: datetime
+    reason: RebuildRequestReasonV1
+    status: RebuildRequestStatusV1
+    attempt: int = 1
+    source_change_set_ref: str | None = None
+    contract: str = "DatasetRebuildRequestV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "DatasetRebuildRequestV1":
+            raise DatasetBuildSpecError("unsupported dataset rebuild request contract")
+        if not self.request_id or not self.dataset_ref:
+            raise DatasetBuildSpecError("rebuild request identity is required")
+        if not SHA256_PATTERN.fullmatch(self.build_spec_sha256):
+            raise DatasetBuildSpecError("rebuild request build spec must be a SHA-256")
+        if self.requested_at.tzinfo is None or self.requested_at.utcoffset() is None:
+            raise DatasetBuildSpecError("rebuild request timestamp must include a timezone")
+        if self.reason not in _REBUILD_REASONS:
+            raise DatasetBuildSpecError("rebuild request reason is unsupported")
+        if self.status not in _REBUILD_STATUSES:
+            raise DatasetBuildSpecError("rebuild request status is unsupported")
+        if self.attempt <= 0:
+            raise DatasetBuildSpecError("rebuild request attempt must be positive")
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "request_id": self.request_id,
+            "dataset_ref": self.dataset_ref,
+            "build_spec_sha256": self.build_spec_sha256,
+            "requested_at": self.requested_at.isoformat(),
+            "reason": self.reason,
+            "status": self.status,
+            "attempt": self.attempt,
+            "source_change_set_ref": self.source_change_set_ref,
+        }
 
 
 @dataclass(frozen=True)
