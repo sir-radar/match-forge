@@ -18,6 +18,11 @@ from football.ingestion.canonical import (
     StatsBombCanonicalIngestor,
 )
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
+from football.ingestion.resolution import (
+    ResolutionDecisionError,
+    ResolutionDecisionV1,
+    ResolutionStatusV1,
+)
 
 __all__ = [
     "AcquisitionResult",
@@ -30,6 +35,9 @@ __all__ = [
     "CanonicalIngestionError",
     "CanonicalIngestionResult",
     "RetryableIngestionError",
+    "ResolutionDecisionError",
+    "ResolutionDecisionV1",
+    "ResolutionStatusV1",
     "SourceAcquirer",
     "SourceIntegrityError",
     "StatsBombCanonicalIngestor",
