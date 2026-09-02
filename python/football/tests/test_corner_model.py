@@ -49,6 +49,22 @@ def test_fit_compares_poisson_and_negative_binomial_on_overdispersed_counts() ->
     assert comparison.poisson.parameters.feature_scales.shot_rate == 1.0
 
 
+def test_negative_binomial_locks_dispersion_for_underdispersed_history() -> None:
+    model = CornerModels(
+        CornerModelConfig(
+            model_version="corners-underdispersed-v1",
+            time_decay_half_life_days=None,
+        )
+    )
+
+    comparison = model.fit(
+        tuple(_match(index, 4 + index % 2, 5 - index % 2) for index in range(1, 13))
+    )
+
+    assert comparison.observed_variance < comparison.observed_mean
+    assert comparison.negative_binomial.parameters.dispersion == pytest.approx(math.exp(-8.0))
+
+
 def test_forecast_exposes_coherent_poisson_and_negative_binomial_distributions() -> None:
     model = CornerModels(
         CornerModelConfig(

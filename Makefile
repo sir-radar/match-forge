@@ -13,7 +13,7 @@ export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
 .PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check sprint2-evaluate \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
-	prototype-gate-a prototype-clean
+	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
 bootstrap:
 	./scripts/bootstrap.sh
@@ -99,3 +99,12 @@ prototype-gate-a: prototype-up prototype-test prototype-run
 
 prototype-clean:
 	$(UV) run python -m experiments.sprint1_roundtrip.cli clean
+
+codex-luna:
+	codex -m gpt-5.6-luna
+
+codex-terra:
+	codex -m gpt-5.6-terra
+
+codex-sol:
+	codex -m gpt-5.6-sol

@@ -24,7 +24,8 @@ from football.forecasting.evaluation import (
 from football.forecasting.execution import Sprint2RawForecastV1
 from football.forecasting.uncertainty import PairedMetricSeriesV1
 
-_MAX_COUNT = 10_000
+# Bound support expansion so overdispersed tails are captured without unbounded scoring work.
+_MAX_COUNT_LIMIT = 1_000_000
 
 
 class Sprint2ScoringError(RuntimeError):
@@ -484,7 +485,7 @@ def _count_metrics(items: tuple[_CountItem, ...]) -> CountMetricsV1:
 def _crps(probability: Callable[[int], float], observed: int) -> float:
     cumulative = 0.0
     score = 0.0
-    for count in range(_MAX_COUNT + 1):
+    for count in range(_MAX_COUNT_LIMIT + 1):
         mass = probability(count)
         if not math.isfinite(mass) or mass < 0.0 or mass > 1.0:
             raise Sprint2ScoringError("count distribution produced invalid probability")
@@ -532,7 +533,7 @@ def _corner_total_distribution(payload: CornerForecastPayloadV1) -> tuple[float,
 def _finite_distribution(probability: Callable[[int], float]) -> tuple[float, ...]:
     values: list[float] = []
     cumulative = 0.0
-    for count in range(_MAX_COUNT + 1):
+    for count in range(_MAX_COUNT_LIMIT + 1):
         mass = probability(count)
         if not math.isfinite(mass) or mass < 0.0 or mass > 1.0:
             raise Sprint2ScoringError("count distribution produced invalid probability")

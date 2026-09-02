@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
+import pytest
 from football.forecasting.artifacts import (
     PortableModelArtifactStore,
     PublishedModelArtifactV1,
@@ -42,7 +43,7 @@ from football.forecasting.publication import (
     ImmutableForecastStore,
     PublishedBaselineForecastV1,
 )
-from football.forecasting.scoring import Sprint2Scorer
+from football.forecasting.scoring import Sprint2Scorer, _corner_probability, _finite_distribution
 from football.forecasting.uncertainty import BootstrapPolicyV1, paired_moving_block_bootstrap
 
 COMPETITION = UUID("10000000-0000-4000-8000-000000000001")
@@ -181,6 +182,15 @@ def test_executor_persists_complete_batch_before_revealing_target_outcomes() -> 
     assert result.persisted_batches == (persistence.persisted,)
     assert result.metrics.elo_result.sample_count == 2
     assert provider.target_revealed_after_persistence
+
+
+def test_scoring_support_extends_for_valid_overdispersed_corner_tails() -> None:
+    distribution = _finite_distribution(
+        lambda count: _corner_probability(count, expected=100.0, dispersion=54.598)
+    )
+
+    assert len(distribution) > 10_000
+    assert sum(distribution) == pytest.approx(1.0, abs=1e-12)
 
 
 def test_batch_publisher_freezes_four_artifacts_and_forecasts_with_retry(
