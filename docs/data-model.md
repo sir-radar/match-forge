@@ -21,6 +21,17 @@ canonical UUIDv7
 
 Canonical identities exist for competitions, seasons, teams, players, matches, and events. Provider identifiers remain text within a provider namespace; they are never primary keys.
 
+## Dependency lineage
+
+`DependencyEdgeV1` records immutable directed lineage between versioned source,
+canonical, dataset, model, forecast, evaluation, and simulation evidence. A
+`DependencyGraphV1` provides deterministic upstream/dependent lookups so a
+trusted source correction can identify affected derived evidence without
+mutating or deleting the historical artifact. State classifications are
+append-only evidence (`VALID`, `STALE`, `SUPERSEDED`,
+`AFFECTED_BY_SOURCE_CORRECTION`, and `REBUILD_REQUIRED`); a rebuild produces a
+new version rather than rewriting the old node.
+
 Season provider identity is composite:
 
 ```text
