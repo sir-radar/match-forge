@@ -29,7 +29,7 @@ flowchart LR
     rust["Rust simulation boundary"]
 ```
 
-Python owns data acquisition, canonical ingestion, normalization, validation, and reporting. Go currently owns only `/healthz`, `/readyz`, `/version`, and graceful HTTP lifecycle. Rust currently owns only the dependency-free deterministic seed boundary for the future simulator.
+Python owns data acquisition, canonical ingestion, normalization, validation, reporting, and provider synchronization workers. Go currently owns only `/healthz`, `/readyz`, `/version`, and graceful HTTP lifecycle. Rust currently owns only the dependency-free deterministic seed boundary for the future simulator.
 
 ## Python component boundaries
 

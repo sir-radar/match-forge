@@ -65,6 +65,13 @@ URL, and policy references are persisted. Tokens never enter source control,
 manifests, logs, exceptions, artifacts, or reports. Credential rotation changes
 the reference metadata, not provider identity or historical source lineage.
 
+`ProviderSyncWorkerV1` remains Python-owned. Its callback performs one complete
+acquisition/validation/publication cycle and advances durable progress only
+after that cycle is safe to retry. The worker supports cooperative shutdown
+between cycles; restart is therefore at-least-once and relies on durable
+cursor/job identity for semantic convergence. Go may expose controls later but
+does not own provider normalization or reconciliation.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.

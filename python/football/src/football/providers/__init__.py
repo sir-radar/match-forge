@@ -35,6 +35,7 @@ from football.providers.sync_policy import (
     ProviderSyncPolicyError,
     ProviderSyncPolicyV1,
 )
+from football.providers.worker import ProviderSyncWorkerError, ProviderSyncWorkerV1
 
 __all__ = [
     "FootballDataProvider",
@@ -52,6 +53,8 @@ __all__ = [
     "CredentialTypeV1",
     "ProviderSyncPolicyError",
     "ProviderSyncPolicyV1",
+    "ProviderSyncWorkerError",
+    "ProviderSyncWorkerV1",
     "ProviderRuntimePolicyError",
     "ProviderRuntimePolicyV1",
     "ProviderResourceContractV1",
