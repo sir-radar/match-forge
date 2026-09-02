@@ -8,6 +8,11 @@ from football.contracts.dependencies import (
     DependencyStateV1,
     DerivedStateRecordV1,
 )
+from football.contracts.foundation import (
+    FoundationEvidenceStatusV1,
+    FoundationHardeningReportV1,
+    FoundationReportError,
+)
 from football.contracts.integrity import (
     IntegrityCheckStatusV1,
     IntegrityContractError,
@@ -28,6 +33,9 @@ __all__ = [
     "DerivedStateRecordV1",
     "CompetitionRulesError",
     "CompetitionRulesV1",
+    "FoundationEvidenceStatusV1",
+    "FoundationHardeningReportV1",
+    "FoundationReportError",
     "IntegrityCheckStatusV1",
     "IntegrityContractError",
     "IntegrityVerificationReportV1",
