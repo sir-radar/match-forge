@@ -50,6 +50,11 @@ not auto-merge entities; unresolved ambiguity remains review-required or
 quarantined, and corrections supersede prior decisions instead of rewriting
 history.
 
+Match resolution requires canonical competition, season, home-team, away-team,
+and timezone-aware kickoff context. A single context-qualified candidate may be
+auto-accepted; ambiguity is review-required and no candidate is quarantined.
+Names or date similarity alone never merge provider matches.
+
 ## Match and lineup structure
 
 Lineups are decomposed into:
