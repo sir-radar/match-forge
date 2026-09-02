@@ -23,6 +23,11 @@ from football.ingestion.conflicts import (
     ConflictRecordV1,
 )
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
+from football.ingestion.event_streams import (
+    EventStreamReconciliationError,
+    EventStreamReconciliationV1,
+    ProviderEventStreamV1,
+)
 from football.ingestion.match_resolution import (
     MatchResolutionContextV1,
     MatchResolutionError,
@@ -47,6 +52,9 @@ __all__ = [
     "AutomaticAcquisitionResultV1",
     "CanonicalIngestionError",
     "CanonicalIngestionResult",
+    "EventStreamReconciliationError",
+    "EventStreamReconciliationV1",
+    "ProviderEventStreamV1",
     "ConflictRecordError",
     "ConflictRecordV1",
     "ConflictDispositionV1",
