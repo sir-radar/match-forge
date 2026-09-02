@@ -72,6 +72,12 @@ between cycles; restart is therefore at-least-once and relies on durable
 cursor/job identity for semantic convergence. Go may expose controls later but
 does not own provider normalization or reconciliation.
 
+`AutomaticAcquisitionFlowV1` fixes the steady-state order: discover, checkpoint,
+acquire, preserve, validate, normalize, resolve, reconcile, quarantine, publish,
+advance the cursor, emit a change set, then trigger downstream eligibility.
+Failure stops the flow before later stages; a successful fetch is never treated
+as canonical publication.
+
 Durable synchronization state is relational: `provider_sync_runs` records
 operational attempts, `provider_resource_cursors` records checkpoints,
 `acquisition_jobs` provides at-least-once semantic identity,
