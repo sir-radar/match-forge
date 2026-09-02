@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from football.contracts.source import (
@@ -9,6 +12,99 @@ from football.contracts.source import (
     canonical_json_bytes,
     validate_relative_posix_path,
 )
+
+
+class DatasetBuildSpecError(ValueError):
+    """A deterministic dataset build specification violates its contract."""
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetBuildSpecV1:
+    """Immutable inputs and policy identity for one dataset build."""
+
+    dataset_contract: str
+    dataset_version: str
+    source_input_refs: tuple[str, ...]
+    canonical_input_refs: tuple[str, ...]
+    football_cutoff: datetime | None
+    knowledge_cutoff: datetime | None
+    knowledge_mode: Literal["historical", "current"] | None
+    feature_versions: tuple[str, ...]
+    quality_policy_version: str
+    resolution_policy_version: str
+    code_git_sha: str
+    dependency_lock_sha256: str
+    configuration: dict[str, object]
+    contract: str = "DatasetBuildSpecV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "DatasetBuildSpecV1":
+            raise DatasetBuildSpecError("unsupported dataset build specification contract")
+        if not self.dataset_contract or not self.dataset_version:
+            raise DatasetBuildSpecError("dataset contract and version are required")
+        _require_unique_refs(self.source_input_refs, "source inputs")
+        _require_unique_refs(self.canonical_input_refs, "canonical inputs")
+        if not self.source_input_refs and not self.canonical_input_refs:
+            raise DatasetBuildSpecError("dataset build requires immutable input references")
+        if not self.feature_versions or any(not value for value in self.feature_versions):
+            raise DatasetBuildSpecError("feature versions are required")
+        if not self.quality_policy_version or not self.resolution_policy_version:
+            raise DatasetBuildSpecError("quality and resolution policy versions are required")
+        if not SHA1_PATTERN.fullmatch(self.code_git_sha):
+            raise DatasetBuildSpecError("code_git_sha must be a 40-character lowercase Git SHA")
+        if not SHA256_PATTERN.fullmatch(self.dependency_lock_sha256):
+            raise DatasetBuildSpecError("dependency lock must be a SHA-256")
+        if self.knowledge_mode not in {None, "historical", "current"}:
+            raise DatasetBuildSpecError("knowledge mode is unsupported")
+        _validate_cutoffs(self)
+        try:
+            canonical_json_bytes(self.configuration)
+        except (TypeError, ValueError) as error:
+            raise DatasetBuildSpecError("configuration must be canonical JSON") from error
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "dataset_contract": self.dataset_contract,
+            "dataset_version": self.dataset_version,
+            "source_input_refs": list(self.source_input_refs),
+            "canonical_input_refs": list(self.canonical_input_refs),
+            "football_cutoff": _iso(self.football_cutoff),
+            "knowledge_cutoff": _iso(self.knowledge_cutoff),
+            "knowledge_mode": self.knowledge_mode,
+            "feature_versions": list(self.feature_versions),
+            "quality_policy_version": self.quality_policy_version,
+            "resolution_policy_version": self.resolution_policy_version,
+            "code_git_sha": self.code_git_sha,
+            "dependency_lock_sha256": self.dependency_lock_sha256,
+            "configuration": self.configuration,
+        }
+
+
+def _require_unique_refs(values: tuple[str, ...], label: str) -> None:
+    if any(not value for value in values):
+        raise DatasetBuildSpecError(f"{label} must not contain empty references")
+    if len(values) != len(set(values)):
+        raise DatasetBuildSpecError(f"{label} must be unique")
+
+
+def _validate_cutoffs(spec: DatasetBuildSpecV1) -> None:
+    for name, value in (
+        ("football_cutoff", spec.football_cutoff),
+        ("knowledge_cutoff", spec.knowledge_cutoff),
+    ):
+        if value is not None and (value.tzinfo is None or value.utcoffset() is None):
+            raise DatasetBuildSpecError(f"{name} must include a timezone")
+    if spec.knowledge_mode == "historical" and spec.knowledge_cutoff is None:
+        raise DatasetBuildSpecError("historical knowledge mode requires a cutoff")
+
+
+def _iso(value: datetime | None) -> str | None:
+    return value.isoformat() if value is not None else None
 
 
 @dataclass(frozen=True)
