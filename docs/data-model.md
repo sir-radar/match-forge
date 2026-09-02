@@ -56,6 +56,12 @@ accepted validation states, conflict tolerance, and escalation action. Provider
 precedence is never global; losing observations remain preserved and every
 selected fact resolves against this versioned policy.
 
+Conflicts are append-only `ConflictRecordV1` records. Every source observation
+reference is retained; policy evaluation records `RESOLVED`, `REVIEW_REQUIRED`,
+or `QUARANTINED` without averaging or silently dropping values. A resolved
+record names the selected observation explicitly, while unresolved conflicts
+remain blocked from canonical publication.
+
 Match resolution requires canonical competition, season, home-team, away-team,
 and timezone-aware kickoff context. A single context-qualified candidate may be
 auto-accepted; ambiguity is review-required and no candidate is quarantined.
