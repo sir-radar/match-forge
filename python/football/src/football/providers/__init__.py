@@ -13,6 +13,11 @@ from football.providers.capabilities import (
     ProviderRoleV1,
     ProviderScopeV1,
 )
+from football.providers.runtime_policy import (
+    JitterModeV1,
+    ProviderRuntimePolicyError,
+    ProviderRuntimePolicyV1,
+)
 from football.providers.statsbomb import StatsBombOpenDataAdapter
 from football.providers.sync_policy import (
     CursorStrategyV1,
@@ -32,6 +37,9 @@ __all__ = [
     "ProviderScopeV1",
     "ProviderSyncPolicyError",
     "ProviderSyncPolicyV1",
+    "ProviderRuntimePolicyError",
+    "ProviderRuntimePolicyV1",
     "StatsBombOpenDataAdapter",
     "CursorStrategyV1",
+    "JitterModeV1",
 ]

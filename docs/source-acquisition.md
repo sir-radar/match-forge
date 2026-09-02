@@ -45,6 +45,12 @@ timeouts, bounded retry delays, rate/burst limits, freshness objective, and
 adapter version. A webhook can trigger work, but scheduled reconciliation
 remains required for recovery; a missing update is never treated as valid data.
 
+Provider-specific `ProviderRuntimePolicyV1` separately governs request timeout,
+concurrency, steady/burst limits, quota budgets, retryable status/error classes,
+bounded exponential backoff with jitter, circuit-breaker thresholds/cool-down,
+probe cadence, and stale-data escalation. Runtime degradation is observable and
+must not silently publish missing data or create an unbounded retry storm.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
