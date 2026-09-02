@@ -7,6 +7,11 @@ from football.contracts.dependencies import (
     DependencyStateV1,
     DerivedStateRecordV1,
 )
+from football.contracts.integrity import (
+    IntegrityCheckStatusV1,
+    IntegrityContractError,
+    IntegrityVerificationReportV1,
+)
 from football.contracts.source import (
     ManifestResource,
     SourceManifest,
@@ -20,6 +25,9 @@ __all__ = [
     "DependencyGraphV1",
     "DependencyStateV1",
     "DerivedStateRecordV1",
+    "IntegrityCheckStatusV1",
+    "IntegrityContractError",
+    "IntegrityVerificationReportV1",
     "ManifestResource",
     "SourceManifest",
     "SourceResource",
