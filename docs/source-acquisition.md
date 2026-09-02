@@ -38,6 +38,13 @@ coverage scopes, and licensing/terms approval are recorded. Its aggregate
 statistics cannot substitute for Tier A event geometry, and provider-defined
 fields such as `dangerous_attacks` retain provider provenance.
 
+Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
+resource and competition/season scope to configurable discovery cadence,
+look-ahead/backfill windows, historical-backfill mode, cursor strategy,
+timeouts, bounded retry delays, rate/burst limits, freshness objective, and
+adapter version. A webhook can trigger work, but scheduled reconciliation
+remains required for recovery; a missing update is never treated as valid data.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
