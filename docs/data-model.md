@@ -32,6 +32,11 @@ append-only evidence (`VALID`, `STALE`, `SUPERSEDED`,
 `AFFECTED_BY_SOURCE_CORRECTION`, and `REBUILD_REQUIRED`); a rebuild produces a
 new version rather than rewriting the old node.
 
+`DerivedStateRecordV1` appends each state transition with its reason and, when
+available, the causing `CanonicalChangeSetV1`. Downstream consumers can mark
+datasets, features, artifacts, forecasts, and evaluations stale or rebuildable
+while preserving the exact historical node and its original lineage.
+
 Season provider identity is composite:
 
 ```text

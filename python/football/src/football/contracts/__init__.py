@@ -5,6 +5,7 @@ from football.contracts.dependencies import (
     DependencyEdgeV1,
     DependencyGraphV1,
     DependencyStateV1,
+    DerivedStateRecordV1,
 )
 from football.contracts.source import (
     ManifestResource,
@@ -18,6 +19,7 @@ __all__ = [
     "DependencyEdgeV1",
     "DependencyGraphV1",
     "DependencyStateV1",
+    "DerivedStateRecordV1",
     "ManifestResource",
     "SourceManifest",
     "SourceResource",
