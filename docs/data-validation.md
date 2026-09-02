@@ -42,3 +42,9 @@ INFO/none   → passed
 `validation_runs` binds dataset version, source snapshot, quality-policy version and checksum, validator version, status, and original execution time. `validation_findings` stores deterministic finding identity, severity, action, scope, evidence, optional dataset file, and optional source resource.
 
 Composite foreign keys prevent findings from referencing a file from another dataset or a resource from another source snapshot. Dataset version, manifest checksum, policy checksum, and validator version determine validation-run identity. An identical rerun verifies the existing run and findings without changing timestamps. Advisory locking serializes concurrent registration.
+
+Phase 1B quarantine uses `QuarantineRecordV1` to preserve provider/resource
+identity, source checksums, canonical candidates, reason code, evidence,
+policy version, attempt history, and review status. Network failure remains a
+retryable acquisition-run error, not a data-quarantine reason. Raw evidence is
+never deleted or rewritten; reprocessing creates new history.
