@@ -49,3 +49,13 @@ Dataset identity hashes the normalized contract, normalizer, provider revision, 
 Parquet is written beneath a recognizable staging path, read back with the exact Arrow schema, and checked for row count and logical checksum before exclusive hard-link publication. Existing files are never overwritten. An identical rerun verifies existing bytes without changing modification time. A conflicting or malformed artifact fails closed.
 
 After every file and the `DatasetManifestV1` manifest are immutable, one PostgreSQL transaction registers `dataset_versions`, every resource in the exact source-manifest scope as `dataset_inputs`, and `dataset_files`. Advisory locking serializes concurrent registration of the same identity. Database failure can leave valid immutable files but no registry rows; rerunning reconciles that state without rewriting artifacts.
+
+## Deterministic rebuild identity
+
+`DatasetBuildSpecV1` records the immutable source and canonical input
+references, dataset contract/version, point-in-time football and knowledge
+cutoffs, knowledge mode, feature versions, quality/resolution policies, code
+Git SHA, dependency-lock checksum, and canonical JSON configuration. Its
+checksum is the build identity. A source correction marks the old derived
+state affected or stale; rebuilding with a new specification publishes a new
+dataset version and leaves the historical dataset addressable.
