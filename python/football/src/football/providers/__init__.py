@@ -19,6 +19,12 @@ from football.providers.credentials import (
     ProviderCredentialError,
     ProviderCredentialRefV1,
 )
+from football.providers.observability import (
+    CircuitStateV1,
+    FreshnessStatusV1,
+    ProviderObservabilityError,
+    ProviderObservabilitySnapshotV1,
+)
 from football.providers.runtime_policy import (
     JitterModeV1,
     ProviderRuntimePolicyError,
@@ -63,4 +69,8 @@ __all__ = [
     "StatsBombOpenDataAdapter",
     "CursorStrategyV1",
     "JitterModeV1",
+    "CircuitStateV1",
+    "FreshnessStatusV1",
+    "ProviderObservabilityError",
+    "ProviderObservabilitySnapshotV1",
 ]

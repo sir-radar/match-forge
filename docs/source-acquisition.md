@@ -97,6 +97,20 @@ observations, analytical partitions, football/knowledge-time ranges, and both
 resolution and quality policy versions. Downstream eligibility responds to this
 change set, never to raw provider notifications.
 
+## Observability
+
+Each provider/resource observation is emitted as an immutable,
+machine-readable `ProviderObservabilitySnapshotV1`. It records freshness
+timestamps and target, discovery/fetch/unchanged counts, acquired bytes,
+validation and resolution outcomes, quarantine and conflict backlog, retries,
+rate-limit responses, processing latency, publication/reconciliation failures,
+change-set emissions, cursor lag, and circuit state. The snapshot exposes a
+deterministic freshness status and alert-condition codes for stale or never
+successful resources, open circuits, and present validation, quarantine,
+conflict, publication, or reconciliation failures. Spike and drop thresholds
+remain versioned operational configuration; consumers compare these snapshots
+without changing the recorded evidence.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
