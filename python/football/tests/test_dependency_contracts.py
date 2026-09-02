@@ -1,7 +1,12 @@
 from datetime import UTC, datetime
 
 import pytest
-from football.contracts import DependencyContractError, DependencyEdgeV1, DependencyGraphV1
+from football.contracts import (
+    DependencyContractError,
+    DependencyEdgeV1,
+    DependencyGraphV1,
+    DerivedStateRecordV1,
+)
 
 
 def test_dependency_graph_exposes_immutable_lineage_queries() -> None:
@@ -26,6 +31,32 @@ def test_dependency_graph_rejects_duplicate_edge_ids() -> None:
     edge = _edge("edge-1", "source-1", "source", "dataset")
     with pytest.raises(DependencyContractError, match="IDs must be unique"):
         DependencyGraphV1((edge, edge))
+
+
+def test_derived_state_is_append_only_transition_evidence() -> None:
+    record = DerivedStateRecordV1(
+        record_id="state-1",
+        node_ref="dataset-1",
+        node_kind="curated_dataset",
+        state="REBUILD_REQUIRED",
+        prior_state="VALID",
+        recorded_at=datetime(2026, 9, 2, 12, 0, tzinfo=UTC),
+        reason="source correction affects dataset input",
+        source_change_set_ref="change-set-1",
+    )
+
+    assert record.to_dict()["state"] == "REBUILD_REQUIRED"
+    assert len(record.sha256) == 64
+    with pytest.raises(DependencyContractError, match="transition"):
+        DerivedStateRecordV1(
+            record_id="state-2",
+            node_ref="dataset-1",
+            node_kind="curated_dataset",
+            state="VALID",
+            prior_state="VALID",
+            recorded_at=datetime(2026, 9, 2, 12, 0, tzinfo=UTC),
+            reason="duplicate state",
+        )
 
 
 def _edge(

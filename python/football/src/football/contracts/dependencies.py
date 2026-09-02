@@ -105,3 +105,49 @@ class DependencyGraphV1:
             "contract": self.contract,
             "edges": [edge.to_dict() for edge in self.edges],
         }
+
+
+@dataclass(frozen=True, slots=True)
+class DerivedStateRecordV1:
+    """Append-only state evidence for a derived node after upstream change."""
+
+    record_id: str
+    node_ref: str
+    node_kind: str
+    state: DependencyStateV1
+    recorded_at: datetime
+    reason: str
+    source_change_set_ref: str | None = None
+    prior_state: DependencyStateV1 | None = None
+    contract: str = "DerivedStateRecordV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "DerivedStateRecordV1":
+            raise DependencyContractError("unsupported derived state contract")
+        if not all((self.record_id, self.node_ref, self.node_kind, self.reason)):
+            raise DependencyContractError("derived state identity and reason are required")
+        if self.state not in _STATES or (
+            self.prior_state is not None and self.prior_state not in _STATES
+        ):
+            raise DependencyContractError("derived state is unsupported")
+        if self.recorded_at.tzinfo is None or self.recorded_at.utcoffset() is None:
+            raise DependencyContractError("derived state timestamp must include a timezone")
+        if self.prior_state == self.state:
+            raise DependencyContractError("derived state must record a transition")
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "record_id": self.record_id,
+            "node_ref": self.node_ref,
+            "node_kind": self.node_kind,
+            "state": self.state,
+            "recorded_at": self.recorded_at.isoformat(),
+            "reason": self.reason,
+            "source_change_set_ref": self.source_change_set_ref,
+            "prior_state": self.prior_state,
+        }
