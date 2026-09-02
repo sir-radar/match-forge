@@ -30,6 +30,7 @@ from football.ingestion.resolution import (
     ResolutionDecisionV1,
     ResolutionStatusV1,
 )
+from football.ingestion.resolution_policy import DataResolutionPolicyV1, ResolutionPolicyError
 
 __all__ = [
     "AcquisitionResult",
@@ -45,6 +46,8 @@ __all__ = [
     "ResolutionDecisionError",
     "ResolutionDecisionV1",
     "ResolutionStatusV1",
+    "DataResolutionPolicyV1",
+    "ResolutionPolicyError",
     "MatchResolutionContextV1",
     "MatchResolutionError",
     "MatchResolutionResultV1",
