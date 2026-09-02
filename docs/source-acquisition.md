@@ -72,6 +72,14 @@ between cycles; restart is therefore at-least-once and relies on durable
 cursor/job identity for semantic convergence. Go may expose controls later but
 does not own provider normalization or reconciliation.
 
+Durable synchronization state is relational: `provider_sync_runs` records
+operational attempts, `provider_resource_cursors` records checkpoints,
+`acquisition_jobs` provides at-least-once semantic identity,
+`acquired_resources` binds published bytes to source lineage,
+`quarantine_records` isolates unsafe units, and `canonical_change_sets` records
+trusted downstream changes. Cursor advancement is valid only after the linked
+resource contract completes; retries converge on the same resource revision.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
