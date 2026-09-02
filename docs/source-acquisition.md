@@ -59,6 +59,12 @@ missing required fields or unsupported explicit schema versions. Historical
 fixtures for each declared contract remain deterministic evidence for adapter
 upgrades.
 
+Authenticated providers use `ProviderCredentialRefV1` and `ProviderConfigV1`.
+Only non-secret URI references, credential type, rotation metadata, HTTPS base
+URL, and policy references are persisted. Tokens never enter source control,
+manifests, logs, exceptions, artifacts, or reports. Credential rotation changes
+the reference metadata, not provider identity or historical source lineage.
+
 ## StatsBomb Open Data
 
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
