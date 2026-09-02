@@ -10,6 +10,12 @@ Publication requires the exact acquisition-manifest scope and each event resourc
 
 Each StatsBomb event resource produces one Parquet file using `schemas/arrow/normalized-events-v1.json`, schema version `v1`, and normalizer `statsbomb-normalizer-v1`. Rows are ordered by `event_index`, which remains authoritative when football timestamps repeat.
 
+Cross-provider streams remain separate `ProviderEventStreamV1` values with
+their own source order and lineage. `EventStreamReconciliationV1` permits an
+authoritative stream; multi-provider fusion fails closed until a separately
+versioned alignment contract exists. Aggregate providers cannot manufacture
+missing event geometry.
+
 Normalized rows contain:
 
 - canonical and provider event, match, team, and player identifiers;
