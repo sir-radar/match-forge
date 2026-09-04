@@ -10,9 +10,9 @@ from types import MappingProxyType
 
 from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.providers.football_data_uk import (
+    FootballDataUkHistoricalCsvReceiptV1,
     FootballDataUkHistoricalLeagueCsvV1,
     FootballDataUkSourceResourceError,
-    FootballDataUkSourceResourceV1,
 )
 from football.providers.schema_contract import SchemaCompatibilityResultV1
 from football.storage.raw import ImmutableFileConflict, ImmutableFileStore, ImmutableWrite
@@ -108,14 +108,14 @@ class FootballDataUkCoverageEvidenceStoreV1:
 
 @dataclass(frozen=True, slots=True)
 class FootballDataUkCsvValidationV1:
-    receipt: FootballDataUkSourceResourceV1
+    receipt: FootballDataUkHistoricalCsvReceiptV1
     schema: SchemaCompatibilityResultV1
     coverage: FootballDataUkCoverageReportV1
     records: tuple[FootballDataUkCsvRecordV1, ...]
 
 
 def parse_football_data_uk_csv(
-    receipt: FootballDataUkSourceResourceV1,
+    receipt: FootballDataUkHistoricalCsvReceiptV1,
     payload: bytes,
 ) -> FootballDataUkCsvValidationV1:
     """Parse one receipt-verified historical CSV without normalizing its semantics."""
@@ -144,7 +144,7 @@ def parse_football_data_uk_csv(
     )
 
 
-def _verify_payload(receipt: FootballDataUkSourceResourceV1, payload: bytes) -> None:
+def _verify_payload(receipt: FootballDataUkHistoricalCsvReceiptV1, payload: bytes) -> None:
     if len(payload) != receipt.raw_byte_size or sha256_bytes(payload) != receipt.raw_sha256:
         raise FootballDataUkSourceResourceError(
             "payload does not match source receipt byte size and SHA-256"
@@ -169,7 +169,7 @@ def _read_csv(payload: bytes) -> tuple[tuple[str, ...], tuple[tuple[str, ...], .
 
 
 def _coverage_report(
-    receipt: FootballDataUkSourceResourceV1,
+    receipt: FootballDataUkHistoricalCsvReceiptV1,
     header: tuple[str, ...],
     records: tuple[FootballDataUkCsvRecordV1, ...],
 ) -> FootballDataUkCoverageReportV1:

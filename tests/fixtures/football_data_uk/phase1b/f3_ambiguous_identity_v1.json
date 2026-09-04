@@ -1,0 +1,9 @@
+{
+  "contract": "F3FixtureSourceV1",
+  "fixture_contract_version": "football-data-uk-phase1b-f3-v1",
+  "fixture_id": "football_data_uk_phase1b_f3_ambiguous_identity_v1",
+  "fixture_locator": "fixture://football_data_uk/phase1b/f3/ambiguous_identity_v1.csv",
+  "raw_byte_size": 105,
+  "raw_sha256": "454db91b77f703459bcf376f9ccba2acab3414516c5889cdbc97a8e55a20b9bd",
+  "source_kind": "CONTRACT_FIXTURE"
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Protocol
 
 from football.contracts.source import SHA256_PATTERN, SourceResource, sha256_bytes
 from football.providers.base import (
@@ -37,6 +37,25 @@ _RESOURCE_METADATA: dict[tuple[FootballDataUkResourceTypeV1, str], _ResourceMeta
         "FootballDataUkHistoricalLeagueCsvV1",
     ),
 }
+
+
+class FootballDataUkHistoricalCsvReceiptV1(Protocol):
+    """Immutable bytes and source metadata accepted by the CSV parser."""
+
+    @property
+    def resource_type(self) -> FootballDataUkResourceTypeV1: ...
+
+    @property
+    def raw_byte_size(self) -> int: ...
+
+    @property
+    def raw_sha256(self) -> str: ...
+
+    @property
+    def resource_identity(self) -> str: ...
+
+    @property
+    def provider_competition_code(self) -> str | None: ...
 
 
 class FootballDataUkSourceResourceError(ValueError):

@@ -6,7 +6,8 @@ from datetime import date, datetime, time
 from types import MappingProxyType
 from typing import Literal
 
-from football.providers import FootballDataUkCsvRecordV1, FootballDataUkSourceResourceV1
+from football.providers import FootballDataUkCsvRecordV1
+from football.providers.football_data_uk import FootballDataUkHistoricalCsvReceiptV1
 
 _AGGREGATE_FIELDS = frozenset(
     (
@@ -71,7 +72,7 @@ class FootballDataUkNormalizedMatchV1:
 
 
 def normalize_football_data_uk_record(
-    receipt: FootballDataUkSourceResourceV1,
+    receipt: FootballDataUkHistoricalCsvReceiptV1,
     record: FootballDataUkCsvRecordV1,
 ) -> FootballDataUkNormalizedMatchV1:
     """Normalize one aggregate row without creating event-level data."""
