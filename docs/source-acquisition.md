@@ -196,6 +196,13 @@ when that reviewed mapping agrees with one context-qualified canonical candidate
 An unreviewed label is never auto-merged: it remains review-required when
 candidates exist and is quarantined when none exist.
 
+`FootballDataUkMatchResolutionContextV1` requires those reviewed canonical
+competition, season, and ordered team IDs together with the provider match date.
+`resolve_football_data_uk_match` auto-accepts only one date-compatible canonical
+candidate, recording an append-only `ResolutionDecisionV1`. No candidate or a
+date mismatch is quarantined; multiple candidates require review. Scores and
+results are deliberately absent from match identity.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:

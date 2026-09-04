@@ -42,6 +42,13 @@ from football.providers.football_data_uk_csv import (
     FootballDataUkFieldCoverageV1,
     parse_football_data_uk_csv,
 )
+from football.providers.football_data_uk_match_resolution import (
+    FootballDataUkCanonicalMatchCandidateV1,
+    FootballDataUkMatchResolutionContextV1,
+    FootballDataUkMatchResolutionError,
+    FootballDataUkMatchResolutionV1,
+    resolve_football_data_uk_match,
+)
 from football.providers.football_data_uk_overlap import (
     FootballDataUkOverlapPrefixSelectionV1,
     FootballDataUkOverlapSelectionError,
@@ -119,6 +126,11 @@ __all__ = [
     "FootballDataUkOverlapPrefixSelectionV1",
     "FootballDataUkOverlapSelectionError",
     "select_football_data_uk_overlap_prefix",
+    "FootballDataUkCanonicalMatchCandidateV1",
+    "FootballDataUkMatchResolutionContextV1",
+    "FootballDataUkMatchResolutionError",
+    "FootballDataUkMatchResolutionV1",
+    "resolve_football_data_uk_match",
     "FootballDataUkAcquiredResourceV1",
     "FootballDataUkAcquirerV1",
     "FootballDataUkAcquisitionError",
