@@ -32,7 +32,8 @@ class FootballDataUkRawStoreV1:
                 "immutable raw bytes conflict with source receipt"
             ) from error
 
-    def relative_path(self, receipt: FootballDataUkSourceResourceV1) -> str:
+    @staticmethod
+    def relative_path(receipt: FootballDataUkSourceResourceV1) -> str:
         source_path_digest = sha256_bytes(receipt.source_path.encode("utf-8"))
         filename = receipt.source_path.rsplit("/", maxsplit=1)[-1]
         return (
