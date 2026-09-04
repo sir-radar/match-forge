@@ -65,6 +65,12 @@ from football.ingestion.quarantine_reprocess import (
     QuarantineReprocessRequestV1,
     ReprocessTriggerV1,
 )
+from football.ingestion.quarantine_reprocess_storage import (
+    PostgresQuarantineReprocessRequestStoreV1,
+    QuarantineReprocessRegistrationStatusV1,
+    QuarantineReprocessStorageError,
+    RegisteredQuarantineReprocessRequestV1,
+)
 from football.ingestion.quarantine_storage import (
     PostgresQuarantineRecordStoreV1,
     QuarantineRecordRegistrationStatusV1,
@@ -124,6 +130,10 @@ __all__ = [
     "RegisteredQuarantineRecordV1",
     "QuarantineReprocessError",
     "QuarantineReprocessRequestV1",
+    "PostgresQuarantineReprocessRequestStoreV1",
+    "QuarantineReprocessRegistrationStatusV1",
+    "QuarantineReprocessStorageError",
+    "RegisteredQuarantineReprocessRequestV1",
     "ReprocessTriggerV1",
     "ConflictRecordError",
     "ConflictRecordV1",
