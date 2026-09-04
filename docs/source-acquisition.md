@@ -232,6 +232,13 @@ evidence; both CSV resources remain pending downstream parse and validation.
 Any existing provider, snapshot, or resource with incompatible metadata fails
 explicitly rather than rewriting provenance.
 
+`PostgresResolutionDecisionStoreV1` persists each existing
+`ResolutionDecisionV1` as an append-only semantic record. Its decision SHA-256
+is the unique key; an identical retry verifies the stored fields, while a
+different record at that key fails. Canonical candidate, selected, and
+superseded decision references must be UUIDs at this PostgreSQL boundary. The
+store alone creates no resolution decision and publishes no canonical fact.
+
 `FootballDataUkTeamCrosswalkV1` maps an exact provider label only after review.
 `resolve_football_data_uk_team` creates an append-only `ResolutionDecisionV1`
 when that reviewed mapping agrees with one context-qualified canonical candidate.
