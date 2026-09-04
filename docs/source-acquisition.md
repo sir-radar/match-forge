@@ -149,6 +149,13 @@ locator: later acquisition records immutable raw-byte SHA-256 identities and
 the observed MatchForge acquisition time. It must not claim strict historical
 provider knowledge time or alter Sprint 2 evidence.
 
+`FootballDataUkSourceResourceV1` is the content-addressed receipt for each
+captured resource. It binds the frozen path, HTTP response metadata, byte size,
+SHA-256, MatchForge observation time, adapter/parser/normalizer versions, and
+the matching MatchForge resource contract. It records no provider-native schema
+version and classifies historical knowledge as `retrospective`; the resource
+cannot imply when Football-Data.co.uk first knew a historical row.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
