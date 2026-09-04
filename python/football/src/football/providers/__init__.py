@@ -26,6 +26,7 @@ from football.providers.football_data_uk import (
     FootballDataUkSourceResourceError,
     FootballDataUkSourceResourceV1,
 )
+from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.observability import (
     CircuitStateV1,
     FreshnessStatusV1,
@@ -79,6 +80,7 @@ __all__ = [
     "FootballDataUkHistoricalLeagueCsvV1",
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
+    "FootballDataUkRawStoreV1",
     "CursorStrategyV1",
     "JitterModeV1",
     "CircuitStateV1",
