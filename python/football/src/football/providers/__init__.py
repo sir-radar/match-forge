@@ -23,6 +23,8 @@ from football.providers.credentials import (
 from football.providers.football_data_uk import (
     FootballDataUkAdapter,
     FootballDataUkHistoricalLeagueCsvV1,
+    FootballDataUkSourceResourceError,
+    FootballDataUkSourceResourceV1,
 )
 from football.providers.observability import (
     CircuitStateV1,
@@ -75,6 +77,8 @@ __all__ = [
     "StatsBombOpenDataAdapter",
     "FootballDataUkAdapter",
     "FootballDataUkHistoricalLeagueCsvV1",
+    "FootballDataUkSourceResourceError",
+    "FootballDataUkSourceResourceV1",
     "CursorStrategyV1",
     "JitterModeV1",
     "CircuitStateV1",

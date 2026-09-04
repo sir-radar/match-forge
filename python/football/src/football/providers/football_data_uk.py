@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Literal
 
-from football.contracts.source import SourceResource
+from football.contracts.source import SHA256_PATTERN, SourceResource, sha256_bytes
 from football.providers.base import (
     HttpTransport,
     ProviderConfigurationError,
@@ -16,6 +19,149 @@ from football.providers.capabilities import (
 from football.providers.schema_contract import ProviderResourceContractV1
 
 _CSV_PATH_PATTERN = re.compile(r"^mmz4281/(1516|2526)/E0\.csv$")
+_NOTES_PATH = "notes.txt"
+
+FootballDataUkResourceTypeV1 = Literal["schema_semantics_and_attribution", "historical_league_csv"]
+_ResourceMetadata = tuple[str | None, str | None, str]
+_RESOURCE_METADATA: dict[tuple[FootballDataUkResourceTypeV1, str], _ResourceMetadata] = {
+    ("schema_semantics_and_attribution", _NOTES_PATH): (None, None, "FootballDataUkNotesV1"),
+    ("historical_league_csv", "mmz4281/2526/E0.csv"): (
+        "E0",
+        "2526",
+        "FootballDataUkHistoricalLeagueCsvV1",
+    ),
+    ("historical_league_csv", "mmz4281/1516/E0.csv"): (
+        "E0",
+        "1516",
+        "FootballDataUkHistoricalLeagueCsvV1",
+    ),
+}
+
+
+class FootballDataUkSourceResourceError(ValueError):
+    """A frozen Football-Data source resource lacks trustworthy lineage."""
+
+
+@dataclass(frozen=True, slots=True)
+class FootballDataUkSourceResourceV1:
+    """Content-addressed source evidence for one Phase 1B provider resource."""
+
+    resource_type: FootballDataUkResourceTypeV1
+    source_path: str
+    observed_by_matchforge_at: datetime
+    http_status: int
+    content_type: str
+    raw_byte_size: int
+    raw_sha256: str
+    http_etag: str | None = None
+    http_last_modified: str | None = None
+    provider_id: str = field(default="football_data_uk", init=False)
+    source_host: str = field(default="www.football-data.co.uk", init=False)
+    provider_schema_version: None = field(default=None, init=False)
+    adapter_version: str = field(default="football-data-uk-v1", init=False)
+    parser_version: str = field(default="football-data-uk-csv-parser-v1", init=False)
+    normalizer_version: str = field(default="football-data-uk-normalizer-v1", init=False)
+    contract: str = "FootballDataUkSourceResourceV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "FootballDataUkSourceResourceV1":
+            raise FootballDataUkSourceResourceError("unsupported source resource contract")
+        if (self.resource_type, self.source_path) not in _RESOURCE_METADATA:
+            raise FootballDataUkSourceResourceError(
+                "resource is outside the frozen Phase 1B corpus"
+            )
+        observed_at = self.observed_by_matchforge_at
+        if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+            raise FootballDataUkSourceResourceError("observed time must include a timezone")
+        if self.http_status != 200 or not self.content_type:
+            raise FootballDataUkSourceResourceError(
+                "successful source acquisition requires HTTP 200 and content type"
+            )
+        if self.raw_byte_size <= 0:
+            raise FootballDataUkSourceResourceError("raw byte size must be positive")
+        if not SHA256_PATTERN.fullmatch(self.raw_sha256):
+            raise FootballDataUkSourceResourceError("raw SHA-256 is invalid")
+        metadata = (self.http_etag, self.http_last_modified)
+        if any(value == "" for value in metadata if value is not None):
+            raise FootballDataUkSourceResourceError("HTTP metadata must not be empty when present")
+
+    @classmethod
+    def from_payload(
+        cls,
+        *,
+        resource_type: FootballDataUkResourceTypeV1,
+        source_path: str,
+        payload: bytes,
+        observed_by_matchforge_at: datetime,
+        http_status: int,
+        content_type: str,
+        http_etag: str | None = None,
+        http_last_modified: str | None = None,
+    ) -> FootballDataUkSourceResourceV1:
+        return cls(
+            resource_type=resource_type,
+            source_path=source_path,
+            observed_by_matchforge_at=observed_by_matchforge_at,
+            http_status=http_status,
+            content_type=content_type,
+            raw_byte_size=len(payload),
+            raw_sha256=sha256_bytes(payload),
+            http_etag=http_etag,
+            http_last_modified=http_last_modified,
+        )
+
+    @property
+    def resource_identity(self) -> str:
+        return f"{self.provider_id}/{self.source_path}/sha256/{self.raw_sha256}"
+
+    @property
+    def provider_competition_code(self) -> str | None:
+        return _RESOURCE_METADATA[(self.resource_type, self.source_path)][0]
+
+    @property
+    def provider_season_code(self) -> str | None:
+        return _RESOURCE_METADATA[(self.resource_type, self.source_path)][1]
+
+    @property
+    def provider_resource_contract_version(self) -> str:
+        return _RESOURCE_METADATA[(self.resource_type, self.source_path)][2]
+
+    @property
+    def knowledge_mode(self) -> Literal["retrospective"]:
+        return "retrospective"
+
+    @property
+    def known_from(self) -> datetime:
+        return self.observed_by_matchforge_at
+
+    @property
+    def historical_provider_known_at(self) -> None:
+        return None
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "provider_id": self.provider_id,
+            "resource_type": self.resource_type,
+            "source_host": self.source_host,
+            "source_path": self.source_path,
+            "provider_competition_code": self.provider_competition_code,
+            "provider_season_code": self.provider_season_code,
+            "observed_by_matchforge_at": self.observed_by_matchforge_at.isoformat(),
+            "http_status": self.http_status,
+            "content_type": self.content_type,
+            "http_etag": self.http_etag,
+            "http_last_modified": self.http_last_modified,
+            "raw_byte_size": self.raw_byte_size,
+            "raw_sha256": self.raw_sha256,
+            "provider_schema_version": self.provider_schema_version,
+            "provider_resource_contract_version": self.provider_resource_contract_version,
+            "adapter_version": self.adapter_version,
+            "parser_version": self.parser_version,
+            "normalizer_version": self.normalizer_version,
+            "knowledge_mode": self.knowledge_mode,
+        }
+
 
 FootballDataUkHistoricalLeagueCsvV1 = ProviderResourceContractV1(
     provider_id="football_data_uk",
