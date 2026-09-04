@@ -69,6 +69,15 @@ def test_normalization_rejects_inconsistent_result_or_invalid_aggregate_count() 
         normalize_football_data_uk_record(_receipt(), FootballDataUkCsvRecordV1(1, values))
 
 
+def test_normalization_accepts_four_digit_provider_dates() -> None:
+    values = _base_values()
+    values["Date"] = "03/01/2016"
+
+    normalized = normalize_football_data_uk_record(_receipt(), FootballDataUkCsvRecordV1(1, values))
+
+    assert normalized.provider_match_date == date(2016, 1, 3)
+
+
 def _receipt() -> FootballDataUkSourceResourceV1:
     return FootballDataUkSourceResourceV1.from_payload(
         resource_type="historical_league_csv",

@@ -114,10 +114,12 @@ def _required_text(values: Mapping[str, str], field: str) -> str:
 
 
 def _date(value: str) -> date:
-    try:
-        return datetime.strptime(value, "%d/%m/%y").date()
-    except ValueError as error:
-        raise FootballDataUkNormalizationError("Date must use dd/mm/yy") from error
+    for format_string in ("%d/%m/%y", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(value, format_string).date()
+        except ValueError:
+            continue
+    raise FootballDataUkNormalizationError("Date must use dd/mm/yy or dd/mm/yyyy")
 
 
 def _time(value: str) -> time | None:
