@@ -53,6 +53,12 @@ from football.providers.football_data_uk_evidence import (
     FootballDataUkAcquisitionEvidenceStoreV1,
     FootballDataUkAcquisitionEvidenceV1,
 )
+from football.providers.football_data_uk_lifecycle import (
+    FootballDataUkLifecycleRegistrationError,
+    FootballDataUkPostgresLifecycleRegistryV1,
+    LifecycleRegistrationStatusV1,
+    RegisteredFootballDataUkLifecycleV1,
+)
 from football.providers.football_data_uk_match_resolution import (
     FootballDataUkCanonicalMatchCandidateV1,
     FootballDataUkMatchResolutionContextV1,
@@ -143,6 +149,10 @@ __all__ = [
     "resolve_football_data_uk_team",
     "FootballDataUkPostgresSourceRegistryV1",
     "FootballDataUkSourceRegistrationError",
+    "FootballDataUkLifecycleRegistrationError",
+    "FootballDataUkPostgresLifecycleRegistryV1",
+    "LifecycleRegistrationStatusV1",
+    "RegisteredFootballDataUkLifecycleV1",
     "FootballDataUkOverlapPrefixSelectionV1",
     "FootballDataUkOverlapSelectionError",
     "select_football_data_uk_overlap_prefix",
