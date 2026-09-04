@@ -135,6 +135,20 @@ StatsBomb attribution is retained in every source manifest:
 Data provided by StatsBomb
 ```
 
+## Football-Data.co.uk Phase 1B proof
+
+`FootballDataUkAdapter` is restricted to the approved Phase 1B corpus:
+`notes.txt`, Premier League `E0/2526`, and Premier League `E0/1516`. It uses
+the `football_data_uk` namespace, direct provider-published CSV resources, no
+credentials, and the Tier B match/statistical-enrichment role. Its
+`FootballDataUkHistoricalLeagueCsvV1` contract requires result fields,
+preserves additive columns, and quarantines missing or duplicate headers.
+
+This adapter does not expose event, lineup, or 360 resources. A URL is only a
+locator: later acquisition records immutable raw-byte SHA-256 identities and
+the observed MatchForge acquisition time. It must not claim strict historical
+provider knowledge time or alter Sprint 2 evidence.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:

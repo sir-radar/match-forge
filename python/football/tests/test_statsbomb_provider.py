@@ -9,8 +9,8 @@ from football.providers import (
     ProviderConfigurationError,
     ProviderFetchError,
     StatsBombOpenDataAdapter,
+    UrllibHttpTransport,
 )
-from football.providers.statsbomb import UrllibHttpTransport
 
 
 @dataclass
@@ -80,9 +80,7 @@ def test_default_transport_enforces_resource_size_limit(monkeypatch: pytest.Monk
             assert size == 5
             return b"12345"
 
-    monkeypatch.setattr(
-        "football.providers.statsbomb.urlopen", lambda *_args, **_kwargs: Response()
-    )
+    monkeypatch.setattr("football.providers.base.urlopen", lambda *_args, **_kwargs: Response())
 
     with pytest.raises(ProviderFetchError, match="exceeds 4 bytes"):
         UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)
@@ -92,7 +90,7 @@ def test_default_transport_wraps_network_failures(monkeypatch: pytest.MonkeyPatc
     def unavailable(*_args: object, **_kwargs: object) -> None:
         raise URLError("offline")
 
-    monkeypatch.setattr("football.providers.statsbomb.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
 
     with pytest.raises(ProviderFetchError, match="provider fetch failed"):
         UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)

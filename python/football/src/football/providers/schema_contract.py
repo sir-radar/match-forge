@@ -107,6 +107,17 @@ class ProviderResourceContractV1:
             reason="provider enum value is unknown" if unknown_enums else None,
         )
 
+    def inspect_columns(self, columns: tuple[str, ...]) -> SchemaCompatibilityResultV1:
+        """Check a tabular header without inventing values or provider versions."""
+
+        invalid_columns = not columns or any(not column for column in columns)
+        if invalid_columns or len(columns) != len(set(columns)):
+            return SchemaCompatibilityResultV1(
+                status="quarantine",
+                reason="CSV header is empty or contains duplicate columns",
+            )
+        return self.inspect({column: None for column in columns})
+
 
 def _validate_fields(fields: tuple[str, ...], label: str) -> None:
     if any(not field for field in fields):

@@ -4,6 +4,7 @@ from football.providers.base import (
     FootballDataProvider,
     ProviderConfigurationError,
     ProviderFetchError,
+    UrllibHttpTransport,
 )
 from football.providers.capabilities import (
     ProviderCapabilityError,
@@ -18,6 +19,10 @@ from football.providers.credentials import (
     ProviderConfigV1,
     ProviderCredentialError,
     ProviderCredentialRefV1,
+)
+from football.providers.football_data_uk import (
+    FootballDataUkAdapter,
+    FootballDataUkHistoricalLeagueCsvV1,
 )
 from football.providers.observability import (
     CircuitStateV1,
@@ -53,6 +58,7 @@ __all__ = [
     "ProviderCredentialError",
     "ProviderCredentialRefV1",
     "ProviderFetchError",
+    "UrllibHttpTransport",
     "ProviderResourceCapabilityV1",
     "ProviderRoleV1",
     "ProviderScopeV1",
@@ -67,6 +73,8 @@ __all__ = [
     "ProviderSchemaContractError",
     "SchemaCompatibilityResultV1",
     "StatsBombOpenDataAdapter",
+    "FootballDataUkAdapter",
+    "FootballDataUkHistoricalLeagueCsvV1",
     "CursorStrategyV1",
     "JitterModeV1",
     "CircuitStateV1",

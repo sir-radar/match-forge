@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import cast
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 
 from football.contracts.source import SourceContractError, SourceResource, SourceSnapshot
 from football.providers.base import (
     HttpTransport,
     ProviderConfigurationError,
-    ProviderFetchError,
+    UrllibHttpTransport,
 )
 from football.providers.capabilities import (
     ProviderCapabilityV1,
@@ -22,25 +19,6 @@ _RESOURCE_PATTERN = re.compile(
     r"lineups/[1-9][0-9]*\.json|events/[1-9][0-9]*\.json|"
     r"three-sixty/[1-9][0-9]*\.json)$"
 )
-
-
-class UrllibHttpTransport:
-    def get(self, url: str, *, timeout_seconds: float, max_bytes: int) -> bytes:
-        request = Request(
-            url,
-            headers={
-                "Accept": "application/json",
-                "User-Agent": "football-forecasting/0.1 source-acquisition",
-            },
-        )
-        try:
-            with urlopen(request, timeout=timeout_seconds) as response:
-                payload = cast(bytes, response.read(max_bytes + 1))
-        except (HTTPError, URLError, OSError) as error:
-            raise ProviderFetchError(f"provider fetch failed for {url}") from error
-        if len(payload) > max_bytes:
-            raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes: {url}")
-        return payload
 
 
 class StatsBombOpenDataAdapter:
@@ -89,7 +67,10 @@ class StatsBombOpenDataAdapter:
             )
         except SourceContractError as error:
             raise ProviderConfigurationError(str(error)) from error
-        self._transport = transport or UrllibHttpTransport()
+        self._transport = transport or UrllibHttpTransport(
+            "football-forecasting/0.1 statsbomb-open-data-acquisition",
+            accept="application/json",
+        )
 
     @property
     def snapshot(self) -> SourceSnapshot:
