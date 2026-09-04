@@ -228,9 +228,18 @@ the `football_data_uk` provider as `file_download`, records the receipt-bundle
 SHA-256 as the source-snapshot revision, and registers each raw resource using
 its exact path, byte size, SHA-256, media type, and MatchForge observation time.
 `notes.txt` is `not_applicable` to CSV parsing and already valid as acquisition
-evidence; both CSV resources remain pending downstream parse and validation.
-Any existing provider, snapshot, or resource with incompatible metadata fails
-explicitly rather than rewriting provenance.
+evidence. R2 remains pending downstream parse and validation; R3 may reach the
+separate bounded P1 publication path only after its reviewed resolution and
+reconciliation checks. Any existing provider, snapshot, or resource with
+incompatible metadata fails explicitly rather than rewriting provenance.
+
+`FootballDataUkPostgresTrustedPublicationV1` is limited to the frozen R3 P1
+overlap resource. It verifies the reviewed `AUTO_ACCEPTED` match decision before
+adding each completed score observation, keeps the source snapshot/resource and
+MatchForge observation time, and emits one immutable `CanonicalChangeSetV1`.
+The caller supplies the reviewed quality-policy version. Repeating identical
+evidence verifies existing observations and the existing change set; this path
+does not advance a provider cursor or resolve quarantined records.
 
 `PostgresResolutionDecisionStoreV1` persists each existing
 `ResolutionDecisionV1` as an append-only semantic record. Its decision SHA-256
