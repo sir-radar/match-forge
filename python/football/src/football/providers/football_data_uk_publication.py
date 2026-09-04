@@ -130,7 +130,7 @@ def _verify_source(
 ) -> tuple[str, datetime]:
     row = cursor.execute(
         """
-        SELECT provider.code, resource.sha256, resource.acquired_at
+        SELECT provider.code, resource.sha256, resource.acquired_at, snapshot.source_kind
         FROM football.source_resources AS resource
         JOIN football.source_snapshots AS snapshot ON snapshot.id = resource.source_snapshot_id
         JOIN football.providers AS provider ON provider.id = snapshot.provider_id
@@ -139,7 +139,7 @@ def _verify_source(
         """,
         (source_resource_id, source.snapshot_id, source.provider_id),
     ).fetchone()
-    if row is None or row[0] != "football_data_uk":
+    if row is None or row[0] != "football_data_uk" or row[3] != "REAL_PROVIDER":
         raise FootballDataUkTrustedPublicationError("trusted source is not Football-Data evidence")
     return str(row[1]), row[2]
 
@@ -230,14 +230,15 @@ def _change_set(
         change_set.sha256,
         "published",
         Jsonb(change_set.to_dict()),
+        "REAL_PROVIDER",
         change_set.created_at,
     )
     inserted = (
         cursor.execute(
             """
         INSERT INTO football.canonical_change_sets
-            (sync_run_id, change_key, status, changes, published_at)
-        VALUES (%s, %s, %s, %s, %s)
+            (sync_run_id, change_key, status, changes, publication_scope, published_at)
+        VALUES (%s, %s, %s, %s, %s, %s)
         ON CONFLICT (change_key) DO NOTHING
         """,
             values,
@@ -246,7 +247,7 @@ def _change_set(
     )
     row = cursor.execute(
         """
-        SELECT id, sync_run_id, change_key, status, changes, published_at
+        SELECT id, sync_run_id, change_key, status, changes, publication_scope, published_at
         FROM football.canonical_change_sets
         WHERE change_key = %s
         """,

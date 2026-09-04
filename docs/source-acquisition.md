@@ -86,6 +86,24 @@ operational attempts, `provider_resource_cursors` records checkpoints,
 trusted downstream changes. Cursor advancement is valid only after the linked
 resource contract completes; retries converge on the same resource revision.
 
+## Contract fixtures
+
+Contract fixtures exercise a provider adapter without becoming provider evidence.
+Their source snapshot has `source_kind = CONTRACT_FIXTURE`, a required immutable
+`fixture_id`, and the same provider ID as the adapter under test. Real sources
+use `source_kind = REAL_PROVIDER`; existing source rows retain that meaning by
+default. `fixture_processing_attempts` and `quarantine_resolution_outcomes`
+append each failed, reviewed, and reprocessed result without replacing the
+original quarantine.
+
+Fixture-backed `CanonicalChangeSetV1` records use
+`publication_scope = CONTRACT_FIXTURE`. They are acceptance-only: fixture
+snapshots cannot create normal analytical datasets, and downstream model or
+rebuild readers must consume only `REAL_PROVIDER` change sets. A successful
+fixture publication therefore proves the publication path without affecting
+provider coverage, missingness, model training, evaluation, features, ratings,
+forecasting, or continuous learning.
+
 `PartialFailureReportV1` isolates each resource outcome as `SUCCEEDED`,
 `RETRYABLE`, `QUARANTINED`, or `FAILED`. Aggregate status is `SUCCEEDED`,
 `PARTIAL`, or `FAILED`; one bad resource never silently invalidates or marks

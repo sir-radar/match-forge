@@ -51,6 +51,13 @@ This permits the same provider season identifier under different competitions wi
 
 Source paths must be relative and cannot contain parent traversal. Checksums use a constrained 64-character lowercase hexadecimal domain.
 
+Contract fixtures are explicit source records, not a provider alias or a naming
+convention. A fixture snapshot has `source_kind = CONTRACT_FIXTURE` and a
+required `fixture_id`; a real source has `source_kind = REAL_PROVIDER` and no
+fixture ID. The fixture registry binds processing attempts to that source class.
+Normal analytical dataset creation rejects fixture snapshots, so fixture rows
+cannot become model input through the dataset path.
+
 ## Canonical and historical records
 
 Canonical tables contain stable identity and relationships only. Mutable names, match status, scores, provider metadata, and similar source facts live in observation tables.
