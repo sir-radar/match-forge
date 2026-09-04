@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Protocol, cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -19,6 +20,25 @@ class HttpTransport(Protocol):
     def get(self, url: str, *, timeout_seconds: float, max_bytes: int) -> bytes: ...
 
 
+@dataclass(frozen=True, slots=True)
+class HttpResponseV1:
+    payload: bytes
+    status: int
+    content_type: str
+    etag: str | None
+    last_modified: str | None
+
+    def __post_init__(self) -> None:
+        if not 100 <= self.status <= 599 or not self.content_type:
+            raise ProviderFetchError("HTTP response status and content type are required")
+
+
+class HttpResponseTransport(HttpTransport, Protocol):
+    def get_response(
+        self, url: str, *, timeout_seconds: float, max_bytes: int
+    ) -> HttpResponseV1: ...
+
+
 class UrllibHttpTransport:
     """Bounded unauthenticated HTTPS transport for public provider resources."""
 
@@ -31,6 +51,9 @@ class UrllibHttpTransport:
         self._accept = accept
 
     def get(self, url: str, *, timeout_seconds: float, max_bytes: int) -> bytes:
+        return self.get_response(url, timeout_seconds=timeout_seconds, max_bytes=max_bytes).payload
+
+    def get_response(self, url: str, *, timeout_seconds: float, max_bytes: int) -> HttpResponseV1:
         request = Request(
             url,
             headers={"Accept": self._accept, "User-Agent": self._user_agent},
@@ -42,7 +65,14 @@ class UrllibHttpTransport:
             raise ProviderFetchError(f"provider fetch failed for {url}") from error
         if len(payload) > max_bytes:
             raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes: {url}")
-        return payload
+        headers = response.headers
+        return HttpResponseV1(
+            payload=payload,
+            status=getattr(response, "status", 200),
+            content_type=headers.get_content_type(),
+            etag=headers.get("ETag"),
+            last_modified=headers.get("Last-Modified"),
+        )
 
 
 class FootballDataProvider(Protocol):

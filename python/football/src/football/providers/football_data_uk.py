@@ -7,6 +7,7 @@ from typing import Literal
 
 from football.contracts.source import SHA256_PATTERN, SourceResource, sha256_bytes
 from football.providers.base import (
+    HttpResponseV1,
     HttpTransport,
     ProviderConfigurationError,
     UrllibHttpTransport,
@@ -53,6 +54,7 @@ class FootballDataUkSourceResourceV1:
     content_type: str
     raw_byte_size: int
     raw_sha256: str
+    request_started_at: datetime | None = None
     http_etag: str | None = None
     http_last_modified: str | None = None
     provider_id: str = field(default="football_data_uk", init=False)
@@ -73,6 +75,12 @@ class FootballDataUkSourceResourceV1:
         observed_at = self.observed_by_matchforge_at
         if observed_at.tzinfo is None or observed_at.utcoffset() is None:
             raise FootballDataUkSourceResourceError("observed time must include a timezone")
+        request_started_at = self.request_started_at or observed_at
+        if request_started_at.tzinfo is None or request_started_at.utcoffset() is None:
+            raise FootballDataUkSourceResourceError("request start time must include a timezone")
+        if request_started_at > observed_at:
+            raise FootballDataUkSourceResourceError("request start time follows observation time")
+        object.__setattr__(self, "request_started_at", request_started_at)
         if self.http_status != 200 or not self.content_type:
             raise FootballDataUkSourceResourceError(
                 "successful source acquisition requires HTTP 200 and content type"
@@ -93,6 +101,7 @@ class FootballDataUkSourceResourceV1:
         source_path: str,
         payload: bytes,
         observed_by_matchforge_at: datetime,
+        request_started_at: datetime | None = None,
         http_status: int,
         content_type: str,
         http_etag: str | None = None,
@@ -102,6 +111,7 @@ class FootballDataUkSourceResourceV1:
             resource_type=resource_type,
             source_path=source_path,
             observed_by_matchforge_at=observed_by_matchforge_at,
+            request_started_at=request_started_at,
             http_status=http_status,
             content_type=content_type,
             raw_byte_size=len(payload),
@@ -139,6 +149,9 @@ class FootballDataUkSourceResourceV1:
         return None
 
     def to_dict(self) -> dict[str, object]:
+        request_started_at = self.request_started_at
+        if request_started_at is None:
+            raise AssertionError("validated source receipt lacks request start time")
         return {
             "contract": self.contract,
             "provider_id": self.provider_id,
@@ -148,6 +161,7 @@ class FootballDataUkSourceResourceV1:
             "provider_competition_code": self.provider_competition_code,
             "provider_season_code": self.provider_season_code,
             "observed_by_matchforge_at": self.observed_by_matchforge_at.isoformat(),
+            "request_started_at": request_started_at.isoformat(),
             "http_status": self.http_status,
             "content_type": self.content_type,
             "http_etag": self.http_etag,
@@ -256,15 +270,40 @@ class FootballDataUkAdapter:
         return SourceResource(path, "text/csv")
 
     def fetch(self, resource: SourceResource) -> bytes:
+        return self._get(resource)
+
+    def fetch_with_metadata(self, resource: SourceResource) -> HttpResponseV1:
+        self._validate_resource(resource)
+        get_response = getattr(self._transport, "get_response", None)
+        if not callable(get_response):
+            raise ProviderConfigurationError("transport cannot capture HTTP response metadata")
+        response = get_response(
+            f"{self.repository}/{resource.path}",
+            timeout_seconds=self.timeout_seconds,
+            max_bytes=self.max_resource_bytes,
+        )
+        if not isinstance(response, HttpResponseV1):
+            raise ProviderConfigurationError("transport returned invalid HTTP response metadata")
+        return response
+
+    def frozen_resources(self) -> tuple[SourceResource, ...]:
+        return (
+            self.notes(),
+            self.historical_league_csv(division="E0", season_code="2526"),
+            self.historical_league_csv(division="E0", season_code="1516"),
+        )
+
+    def _validate_resource(self, resource: SourceResource) -> None:
         if resource == self.notes():
-            return self._get(resource)
+            return
         if resource.media_type == "text/csv" and _CSV_PATH_PATTERN.fullmatch(resource.path):
-            return self._get(resource)
+            return
         raise ProviderConfigurationError(
             f"unsupported Football-Data resource path: {resource.path}"
         )
 
     def _get(self, resource: SourceResource) -> bytes:
+        self._validate_resource(resource)
         return self._transport.get(
             f"{self.repository}/{resource.path}",
             timeout_seconds=self.timeout_seconds,

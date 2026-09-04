@@ -2,6 +2,8 @@
 
 from football.providers.base import (
     FootballDataProvider,
+    HttpResponseTransport,
+    HttpResponseV1,
     ProviderConfigurationError,
     ProviderFetchError,
     UrllibHttpTransport,
@@ -25,6 +27,12 @@ from football.providers.football_data_uk import (
     FootballDataUkHistoricalLeagueCsvV1,
     FootballDataUkSourceResourceError,
     FootballDataUkSourceResourceV1,
+)
+from football.providers.football_data_uk_acquisition import (
+    FootballDataUkAcquiredResourceV1,
+    FootballDataUkAcquirerV1,
+    FootballDataUkAcquisitionError,
+    FootballDataUkAcquisitionResultV1,
 )
 from football.providers.football_data_uk_csv import (
     FootballDataUkCoverageReportV1,
@@ -61,6 +69,8 @@ from football.providers.worker import ProviderSyncWorkerError, ProviderSyncWorke
 
 __all__ = [
     "FootballDataProvider",
+    "HttpResponseTransport",
+    "HttpResponseV1",
     "ProviderConfigurationError",
     "ProviderCapabilityError",
     "ProviderCapabilityRegistryV1",
@@ -89,6 +99,10 @@ __all__ = [
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
     "FootballDataUkRawStoreV1",
+    "FootballDataUkAcquiredResourceV1",
+    "FootballDataUkAcquirerV1",
+    "FootballDataUkAcquisitionError",
+    "FootballDataUkAcquisitionResultV1",
     "FootballDataUkCoverageReportV1",
     "FootballDataUkCsvRecordV1",
     "FootballDataUkCsvValidationError",
