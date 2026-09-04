@@ -103,7 +103,7 @@ def _verify_payload(receipt: FootballDataUkSourceResourceV1, payload: bytes) -> 
 
 def _read_csv(payload: bytes) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]]:
     try:
-        reader = csv.reader(StringIO(payload.decode("utf-8"), newline=""))
+        reader = csv.reader(StringIO(payload.decode("utf-8-sig"), newline=""))
         header = tuple(next(reader))
     except UnicodeDecodeError as error:
         raise FootballDataUkCsvValidationError("CSV must be valid UTF-8") from error
