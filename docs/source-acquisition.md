@@ -218,6 +218,10 @@ record indexes, and provider team universe. Each coverage report binds its own
 raw resource SHA-256, while selected rows bind R3; changing any source bytes
 creates a different manifest identity.
 
+`FootballDataUkAcceptanceCorpusStoreV1` publishes that manifest immutably,
+without copying any provider payload. A same-manifest retry verifies the existing
+artifact; a different bounded corpus receives a distinct content-addressed path.
+
 `FootballDataUkTeamCrosswalkV1` maps an exact provider label only after review.
 `resolve_football_data_uk_team` creates an append-only `ResolutionDecisionV1`
 when that reviewed mapping agrees with one context-qualified canonical candidate.

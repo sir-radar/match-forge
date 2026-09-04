@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import cast
 
 import pytest
@@ -8,6 +9,7 @@ from football.normalization import normalize_football_data_uk_record
 from football.providers import (
     FootballDataUkAcceptanceCorpusError,
     FootballDataUkAcceptanceCorpusManifestV1,
+    FootballDataUkAcceptanceCorpusStoreV1,
     FootballDataUkSourceResourceV1,
     parse_football_data_uk_csv,
 )
@@ -77,6 +79,43 @@ def test_acceptance_manifest_rejects_coverage_not_bound_to_its_frozen_resource()
             overlap_season_coverage=overlap_validation.coverage,
             overlap_selection=selection,
         )
+
+
+def test_acceptance_manifest_is_immutably_publishable(tmp_path: Path) -> None:
+    manifest = _manifest()
+    store = FootballDataUkAcceptanceCorpusStoreV1(tmp_path)
+
+    write = store.publish(manifest)
+    retry = store.publish(manifest)
+
+    assert write.path.read_bytes() == manifest.to_bytes()
+    assert retry.status == "verified_existing"
+
+
+def _manifest() -> FootballDataUkAcceptanceCorpusManifestV1:
+    notes = _receipt("schema_semantics_and_attribution", "notes.txt", b"terms")
+    current = _receipt("historical_league_csv", "mmz4281/2526/E0.csv", _csv("26"))
+    overlap = _receipt("historical_league_csv", "mmz4281/1516/E0.csv", _csv("16"))
+    current_validation = parse_football_data_uk_csv(current, _csv("26"))
+    overlap_validation = parse_football_data_uk_csv(overlap, _csv("16"))
+    selection = select_football_data_uk_overlap_prefix(
+        tuple(
+            normalize_football_data_uk_record(overlap, record)
+            for record in overlap_validation.records
+        ),
+        corners_declared=True,
+        trusted_record_indexes=frozenset((1,)),
+    )
+    return FootballDataUkAcceptanceCorpusManifestV1(
+        corpus_id="football-data-uk-phase1b-p1-v1",
+        created_at=datetime(2026, 9, 4, 16, 0, tzinfo=UTC),
+        notes_resource=notes,
+        current_season_resource=current,
+        current_season_coverage=current_validation.coverage,
+        overlap_season_resource=overlap,
+        overlap_season_coverage=overlap_validation.coverage,
+        overlap_selection=selection,
+    )
 
 
 def _receipt(
