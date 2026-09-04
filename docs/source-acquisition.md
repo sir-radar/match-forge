@@ -180,6 +180,11 @@ immutable raw payload and its checksum remain unchanged. This prevents a valid
 provider `Div` header from becoming a different field name while retaining the
 exact bytes that supplied it.
 
+`FootballDataUkCoverageEvidenceStoreV1` publishes the complete per-column
+coverage report as an immutable JSON artifact keyed by its canonical report
+SHA-256. A retry verifies the exact existing report; it cannot rewrite
+missingness evidence for the same identity.
+
 `normalize_football_data_uk_record` then produces a provider-normalized
 match-level observation only. It validates full-time and half-time score/result
 consistency, preserves a timezone-naive provider date/time, and retains all raw

@@ -39,6 +39,7 @@ from football.providers.football_data_uk_acquisition import (
     FootballDataUkAcquisitionResultV1,
 )
 from football.providers.football_data_uk_csv import (
+    FootballDataUkCoverageEvidenceStoreV1,
     FootballDataUkCoverageReportV1,
     FootballDataUkCsvRecordV1,
     FootballDataUkCsvValidationError,
@@ -147,6 +148,7 @@ __all__ = [
     "FootballDataUkAcquisitionError",
     "FootballDataUkAcquisitionResultV1",
     "FootballDataUkCoverageReportV1",
+    "FootballDataUkCoverageEvidenceStoreV1",
     "FootballDataUkCsvRecordV1",
     "FootballDataUkCsvValidationError",
     "FootballDataUkCsvValidationV1",

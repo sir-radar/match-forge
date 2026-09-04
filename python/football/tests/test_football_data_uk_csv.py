@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from football.providers import (
+    FootballDataUkCoverageEvidenceStoreV1,
     FootballDataUkCsvValidationError,
     FootballDataUkSourceResourceV1,
     parse_football_data_uk_csv,
@@ -57,6 +59,21 @@ def test_csv_parser_accepts_a_utf8_bom_without_mutating_raw_source_bytes() -> No
     assert result.schema.status == "accepted"
     assert result.coverage.header[0] == "Div"
     assert result.coverage.row_count == 1
+
+
+def test_coverage_report_is_hashable_and_immutably_publishable(tmp_path: Path) -> None:
+    payload = (
+        b"Div,Date,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HTHG,HTAG,HTR\nE0,01/01/26,A,B,1,0,H,0,0,D\n"
+    )
+    coverage = parse_football_data_uk_csv(_receipt(payload), payload).coverage
+    store = FootballDataUkCoverageEvidenceStoreV1(tmp_path)
+
+    write = store.publish(coverage)
+    retry = store.publish(coverage)
+
+    assert write.path.read_bytes() == coverage.to_bytes()
+    assert retry.status == "verified_existing"
+    assert len(coverage.sha256) == 64
 
 
 def test_csv_parser_reports_schema_quarantine_and_rejects_non_rectangular_rows() -> None:
