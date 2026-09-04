@@ -3,11 +3,13 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
 from football.contracts.source import canonical_json_bytes
 from football.providers.football_data_uk import FootballDataUkSourceResourceV1
 from football.providers.football_data_uk_csv import FootballDataUkCoverageReportV1
 from football.providers.football_data_uk_overlap import FootballDataUkOverlapPrefixSelectionV1
+from football.storage.raw import ImmutableFileConflict, ImmutableFileStore, ImmutableWrite
 
 
 class FootballDataUkAcceptanceCorpusError(ValueError):
@@ -89,6 +91,31 @@ class FootballDataUkAcceptanceCorpusManifestV1:
             "p1_trusted_record_indexes": sorted(selection.selected_trusted_record_indexes),
             "p1_provider_team_labels": sorted(selection.provider_team_labels),
         }
+
+    def to_bytes(self) -> bytes:
+        return canonical_json_bytes(self.to_dict()) + b"\n"
+
+
+class FootballDataUkAcceptanceCorpusStoreV1:
+    """Publish the bounded acceptance corpus identity without copying provider bytes."""
+
+    def __init__(self, data_root: Path) -> None:
+        self._files = ImmutableFileStore(data_root)
+
+    def publish(self, manifest: FootballDataUkAcceptanceCorpusManifestV1) -> ImmutableWrite:
+        try:
+            return self._files.publish(self.relative_path(manifest), manifest.to_bytes())
+        except ImmutableFileConflict as error:
+            raise FootballDataUkAcceptanceCorpusError(
+                "immutable acceptance corpus conflicts with its identity"
+            ) from error
+
+    @staticmethod
+    def relative_path(manifest: FootballDataUkAcceptanceCorpusManifestV1) -> str:
+        return (
+            "manifests/provider=football_data_uk/"
+            f"corpus_sha256={manifest.sha256}/acceptance-corpus-manifest-v1.json"
+        )
 
 
 def _require_resource(
