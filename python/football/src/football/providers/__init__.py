@@ -47,6 +47,13 @@ from football.providers.football_data_uk_overlap import (
     FootballDataUkOverlapSelectionError,
     select_football_data_uk_overlap_prefix,
 )
+from football.providers.football_data_uk_resolution import (
+    FootballDataUkTeamCrosswalkRegistryV1,
+    FootballDataUkTeamCrosswalkV1,
+    FootballDataUkTeamResolutionError,
+    FootballDataUkTeamResolutionV1,
+    resolve_football_data_uk_team,
+)
 from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.observability import (
     CircuitStateV1,
@@ -104,6 +111,11 @@ __all__ = [
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
     "FootballDataUkRawStoreV1",
+    "FootballDataUkTeamCrosswalkRegistryV1",
+    "FootballDataUkTeamCrosswalkV1",
+    "FootballDataUkTeamResolutionError",
+    "FootballDataUkTeamResolutionV1",
+    "resolve_football_data_uk_team",
     "FootballDataUkOverlapPrefixSelectionV1",
     "FootballDataUkOverlapSelectionError",
     "select_football_data_uk_overlap_prefix",
