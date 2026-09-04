@@ -176,6 +176,13 @@ columns. Recognized shots, corners, fouls, cards, booking points, free kicks,
 offsides, and woodwork fields remain provider aggregate statistics; this path
 does not create events, lineups, or 360 data.
 
+`FootballDataUkAcquirerV1` is the only bounded live-acquisition entry point for
+this proof. It requests `notes.txt`, E0/2526, then E0/1516; captures request
+start and observed completion time plus HTTP status/content type/ETag/Last-
+Modified; creates the content-addressed receipt; and writes the receipt-verified
+bytes immutably before returning. It cannot accept paths outside that frozen
+three-resource scope.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
