@@ -29,6 +29,7 @@ def test_overlap_prefix_uses_source_order_and_selects_shortest_complete_prefix()
     assert selection.provider_team_labels == frozenset(("A", "B", "C", "D", "E", "F"))
     assert [record.csv_record_index for record in selection.ordered_records] == [1, 2, 3]
     assert [record.csv_record_index for record in selection.selected_records] == [1, 2, 3]
+    assert selection.selected_trusted_record_indexes == frozenset((2,))
 
 
 def test_overlap_prefix_fails_when_no_trusted_match_exists() -> None:
