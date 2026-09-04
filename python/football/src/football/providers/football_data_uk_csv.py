@@ -5,6 +5,7 @@ import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass
 from io import StringIO
+from pathlib import Path
 from types import MappingProxyType
 
 from football.contracts.source import canonical_json_bytes, sha256_bytes
@@ -14,6 +15,7 @@ from football.providers.football_data_uk import (
     FootballDataUkSourceResourceV1,
 )
 from football.providers.schema_contract import SchemaCompatibilityResultV1
+from football.storage.raw import ImmutableFileConflict, ImmutableFileStore, ImmutableWrite
 
 
 class FootballDataUkCsvValidationError(ValueError):
@@ -54,6 +56,54 @@ class FootballDataUkCoverageReportV1:
             if field.column == column:
                 return field
         raise KeyError(f"coverage column is not present: {column}")
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "resource_identity": self.resource_identity,
+            "source_resource_sha256": self.source_resource_sha256,
+            "header": list(self.header),
+            "header_sha256": self.header_sha256,
+            "row_count": self.row_count,
+            "fields": [
+                {
+                    "column": field.column,
+                    "non_null_count": field.non_null_count,
+                    "null_count": field.null_count,
+                    "coverage_ratio": field.coverage_ratio,
+                }
+                for field in self.fields
+            ],
+        }
+
+    def to_bytes(self) -> bytes:
+        return canonical_json_bytes(self.to_dict()) + b"\n"
+
+
+class FootballDataUkCoverageEvidenceStoreV1:
+    """Publish immutable CSV coverage evidence for one raw resource identity."""
+
+    def __init__(self, data_root: Path) -> None:
+        self._files = ImmutableFileStore(data_root)
+
+    def publish(self, coverage: FootballDataUkCoverageReportV1) -> ImmutableWrite:
+        try:
+            return self._files.publish(self.relative_path(coverage), coverage.to_bytes())
+        except ImmutableFileConflict as error:
+            raise FootballDataUkCsvValidationError(
+                "immutable coverage evidence conflicts with its identity"
+            ) from error
+
+    @staticmethod
+    def relative_path(coverage: FootballDataUkCoverageReportV1) -> str:
+        return (
+            "reports/provider=football_data_uk/"
+            f"coverage_sha256={coverage.sha256}/coverage-report-v1.json"
+        )
 
 
 @dataclass(frozen=True, slots=True)
