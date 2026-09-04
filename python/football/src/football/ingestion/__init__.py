@@ -69,6 +69,12 @@ from football.ingestion.resolution_policy import (
     EscalationActionV1,
     ResolutionPolicyError,
 )
+from football.ingestion.resolution_storage import (
+    PostgresResolutionDecisionStoreV1,
+    RegisteredResolutionDecisionV1,
+    ResolutionDecisionRegistrationStatusV1,
+    ResolutionDecisionStorageError,
+)
 
 __all__ = [
     "AcquisitionResult",
@@ -110,6 +116,10 @@ __all__ = [
     "ResolutionDecisionError",
     "ResolutionDecisionV1",
     "ResolutionStatusV1",
+    "PostgresResolutionDecisionStoreV1",
+    "RegisteredResolutionDecisionV1",
+    "ResolutionDecisionRegistrationStatusV1",
+    "ResolutionDecisionStorageError",
     "DataResolutionPolicyV1",
     "EscalationActionV1",
     "ResolutionPolicyError",
