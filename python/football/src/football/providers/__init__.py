@@ -71,6 +71,13 @@ from football.providers.football_data_uk_overlap import (
     FootballDataUkOverlapSelectionError,
     select_football_data_uk_overlap_prefix,
 )
+from football.providers.football_data_uk_publication import (
+    FootballDataUkPostgresTrustedPublicationV1,
+    FootballDataUkTrustedP1MatchV1,
+    FootballDataUkTrustedPublicationError,
+    RegisteredFootballDataUkTrustedPublicationV1,
+    TrustedPublicationStatusV1,
+)
 from football.providers.football_data_uk_registration import (
     FootballDataUkPostgresSourceRegistryV1,
     FootballDataUkSourceRegistrationError,
@@ -160,6 +167,11 @@ __all__ = [
     "FootballDataUkMatchResolutionContextV1",
     "FootballDataUkMatchResolutionError",
     "FootballDataUkMatchResolutionV1",
+    "FootballDataUkPostgresTrustedPublicationV1",
+    "FootballDataUkTrustedP1MatchV1",
+    "FootballDataUkTrustedPublicationError",
+    "RegisteredFootballDataUkTrustedPublicationV1",
+    "TrustedPublicationStatusV1",
     "resolve_football_data_uk_match",
     "FootballDataUkAcquiredResourceV1",
     "FootballDataUkAcquirerV1",

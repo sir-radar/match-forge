@@ -47,6 +47,8 @@ It is linked to the R3 job and resource, has reason
 references.
 
 Replaying the same frozen evidence returned `verified_existing` for both the
-lifecycle and quarantine record, with the same IDs. The run created no provider
-cursor row, no observation rows for the frozen snapshot, and no change set.
+lifecycle and quarantine record, with the same IDs. The controlled discrepancy
+created no provider cursor, observation, or change set. Trusted corroborating
+P1 rows are recorded separately in
+[`football-data-uk-p1-trusted-publication-2026-09-04.md`](football-data-uk-p1-trusted-publication-2026-09-04.md).
 Sprint 2 remains `FAIL`; Phase 3 remains blocked.
