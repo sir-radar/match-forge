@@ -18,6 +18,12 @@ from football.ingestion.canonical import (
     StatsBombCanonicalIngestor,
 )
 from football.ingestion.change_sets import CanonicalChangeSetV1, ChangeSetError
+from football.ingestion.conflict_storage import (
+    PostgresReconciliationConflictStoreV1,
+    ReconciliationConflictRegistrationStatusV1,
+    ReconciliationConflictStorageError,
+    RegisteredReconciliationConflictV1,
+)
 from football.ingestion.conflicts import (
     ConflictDispositionV1,
     ConflictRecordError,
@@ -90,6 +96,10 @@ __all__ = [
     "CorrectionRecordError",
     "CanonicalChangeSetV1",
     "ChangeSetError",
+    "PostgresReconciliationConflictStoreV1",
+    "ReconciliationConflictRegistrationStatusV1",
+    "ReconciliationConflictStorageError",
+    "RegisteredReconciliationConflictV1",
     "EventStreamReconciliationError",
     "EventStreamReconciliationV1",
     "ProviderEventStreamV1",
