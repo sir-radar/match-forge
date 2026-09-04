@@ -169,6 +169,13 @@ resource checksum, preserves additive columns, and rejects malformed rows.
 Missing required fields return schema quarantine evidence rather than a
 partially normalized dataset.
 
+`normalize_football_data_uk_record` then produces a provider-normalized
+match-level observation only. It validates full-time and half-time score/result
+consistency, preserves a timezone-naive provider date/time, and retains all raw
+columns. Recognized shots, corners, fouls, cards, booking points, free kicks,
+offsides, and woodwork fields remain provider aggregate statistics; this path
+does not create events, lineups, or 360 data.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
