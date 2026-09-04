@@ -46,6 +46,11 @@ from football.providers.football_data_uk_csv import (
     FootballDataUkFieldCoverageV1,
     parse_football_data_uk_csv,
 )
+from football.providers.football_data_uk_evidence import (
+    FootballDataUkAcquisitionEvidenceError,
+    FootballDataUkAcquisitionEvidenceStoreV1,
+    FootballDataUkAcquisitionEvidenceV1,
+)
 from football.providers.football_data_uk_match_resolution import (
     FootballDataUkCanonicalMatchCandidateV1,
     FootballDataUkMatchResolutionContextV1,
@@ -147,6 +152,9 @@ __all__ = [
     "FootballDataUkCsvValidationV1",
     "FootballDataUkFieldCoverageV1",
     "parse_football_data_uk_csv",
+    "FootballDataUkAcquisitionEvidenceError",
+    "FootballDataUkAcquisitionEvidenceStoreV1",
+    "FootballDataUkAcquisitionEvidenceV1",
     "CursorStrategyV1",
     "JitterModeV1",
     "CircuitStateV1",

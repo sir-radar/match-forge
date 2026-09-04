@@ -162,6 +162,12 @@ same provider path with changed bytes therefore receives a separate immutable
 file. A same-byte retry verifies the existing file; a receipt/payload mismatch
 fails before any write.
 
+`FootballDataUkAcquisitionEvidenceStoreV1` immutably publishes the ordered R1,
+R2, and R3 source receipts separately from raw bytes. Its identity hashes the
+full receipt metadata, including request/observation times and HTTP metadata;
+same-evidence retries verify the prior file, while changed evidence produces a
+separate record.
+
 `parse_football_data_uk_csv` validates receipt-matched UTF-8 CSV bytes before
 provider normalization. It keeps header order, records a deterministic header
 SHA-256, reports per-column non-null/null counts and coverage for that exact
