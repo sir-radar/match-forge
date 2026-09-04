@@ -222,6 +222,16 @@ creates a different manifest identity.
 without copying any provider payload. A same-manifest retry verifies the existing
 artifact; a different bounded corpus receives a distinct content-addressed path.
 
+`FootballDataUkPostgresSourceRegistryV1` registers the frozen receipt bundle in
+PostgreSQL before any resolution or canonical publication. It creates or verifies
+the `football_data_uk` provider as `file_download`, records the receipt-bundle
+SHA-256 as the source-snapshot revision, and registers each raw resource using
+its exact path, byte size, SHA-256, media type, and MatchForge observation time.
+`notes.txt` is `not_applicable` to CSV parsing and already valid as acquisition
+evidence; both CSV resources remain pending downstream parse and validation.
+Any existing provider, snapshot, or resource with incompatible metadata fails
+explicitly rather than rewriting provenance.
+
 `FootballDataUkTeamCrosswalkV1` maps an exact provider label only after review.
 `resolve_football_data_uk_team` creates an append-only `ResolutionDecisionV1`
 when that reviewed mapping agrees with one context-qualified canonical candidate.
