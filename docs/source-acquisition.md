@@ -192,6 +192,11 @@ columns. Recognized shots, corners, fouls, cards, booking points, free kicks,
 offsides, and woodwork fields remain provider aggregate statistics; this path
 does not create events, lineups, or 360 data.
 
+The frozen CSV contract accepts provider `Date` values in either `dd/mm/yy` or
+`dd/mm/yyyy` form. Both normalize to the same calendar date while the original
+field remains in the immutable raw row; no timezone or kickoff instant is
+invented.
+
 `FootballDataUkAcquirerV1` is the only bounded live-acquisition entry point for
 this proof. It requests `notes.txt`, E0/2526, then E0/1516; captures request
 start and observed completion time plus HTTP status/content type/ETag/Last-
