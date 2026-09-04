@@ -99,6 +99,7 @@ class _Cursor:
                 "football_data_uk",
                 "a" * 64,
                 datetime(2026, 9, 4, 16, 20, tzinfo=UTC),
+                "REAL_PROVIDER",
             )
         elif "SELECT status, selected_canonical_id" in query:
             match = _match()
@@ -140,6 +141,7 @@ class _Cursor:
                 values[2],
                 cast(Any, values[3]).obj,
                 values[4],
+                values[5],
             )
         else:
             raise AssertionError(f"unexpected query: {query}")
