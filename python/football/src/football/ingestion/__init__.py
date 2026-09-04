@@ -22,6 +22,10 @@ from football.ingestion.conflicts import (
     ConflictDispositionV1,
     ConflictRecordError,
     ConflictRecordV1,
+    FieldObservationV1,
+    FieldReconciliationStatusV1,
+    FieldReconciliationV1,
+    reconcile_field_observations,
 )
 from football.ingestion.corrections import BitemporalCorrectionV1, CorrectionRecordError
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
@@ -60,7 +64,11 @@ from football.ingestion.resolution import (
     ResolutionDecisionV1,
     ResolutionStatusV1,
 )
-from football.ingestion.resolution_policy import DataResolutionPolicyV1, ResolutionPolicyError
+from football.ingestion.resolution_policy import (
+    DataResolutionPolicyV1,
+    EscalationActionV1,
+    ResolutionPolicyError,
+)
 
 __all__ = [
     "AcquisitionResult",
@@ -94,11 +102,16 @@ __all__ = [
     "ConflictRecordError",
     "ConflictRecordV1",
     "ConflictDispositionV1",
+    "FieldObservationV1",
+    "FieldReconciliationStatusV1",
+    "FieldReconciliationV1",
+    "reconcile_field_observations",
     "RetryableIngestionError",
     "ResolutionDecisionError",
     "ResolutionDecisionV1",
     "ResolutionStatusV1",
     "DataResolutionPolicyV1",
+    "EscalationActionV1",
     "ResolutionPolicyError",
     "MatchResolutionContextV1",
     "MatchResolutionError",

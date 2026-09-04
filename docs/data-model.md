@@ -83,6 +83,13 @@ or `QUARANTINED` without averaging or silently dropping values. A resolved
 record names the selected observation explicitly, while unresolved conflicts
 remain blocked from canonical publication.
 
+`reconcile_field_observations` records agreement as `CORROBORATED` only when
+all eligible provider observations are within the field policy's tolerance. A
+disagreement never picks a source from precedence implicitly: it records a
+`REVIEW_REQUIRED` or `QUARANTINED` conflict with no winner. The bounded
+Football-Data score route uses quarantine, retaining StatsBomb's pre-existing
+Sprint 2 authority and both provider observations.
+
 Match resolution requires canonical competition, season, home-team, away-team,
 and timezone-aware kickoff context. A single context-qualified candidate may be
 auto-accepted; ambiguity is review-required and no candidate is quarantined.
