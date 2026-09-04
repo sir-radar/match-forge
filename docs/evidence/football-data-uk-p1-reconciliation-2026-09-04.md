@@ -35,5 +35,18 @@ selected no winner. PostgreSQL conflict ID:
 `2f76ac98a735a08a0d0720d6dfb8f9231473ddf81c5e104af3d35e105218aad6`.
 An identical retry returned `verified_existing`.
 
-No canonical observation or `CanonicalChangeSetV1` was emitted. Sprint 2
-remains `FAIL`; Phase 3 remains blocked.
+## Lifecycle and quarantine storage
+
+The local acceptance database now has frozen lifecycle rows for the three
+receipts: sync run `01a06e71-a6b9-75dc-886c-9f722feaea6b`, three acquisition
+jobs, and three acquired-resource links. The controlled discrepancy is stored
+as open quarantine record `01a06e71-a6c5-76a8-91d0-c72f362c68e5`, with finding
+key `d9088c18d455c202c64be24138b591fc2c3237cf4885b9e5d61751c73375629f`.
+It is linked to the R3 job and resource, has reason
+`CONFLICT_UNRESOLVED`, and keeps the two synthetic score pairs and both source
+references.
+
+Replaying the same frozen evidence returned `verified_existing` for both the
+lifecycle and quarantine record, with the same IDs. The run created no provider
+cursor row, no observation rows for the frozen snapshot, and no change set.
+Sprint 2 remains `FAIL`; Phase 3 remains blocked.
