@@ -156,6 +156,12 @@ the matching MatchForge resource contract. It records no provider-native schema
 version and classifies historical knowledge as `retrospective`; the resource
 cannot imply when Football-Data.co.uk first knew a historical row.
 
+`FootballDataUkRawStoreV1` writes a receipt-verified payload beneath a path
+containing both the source-path digest and raw SHA-256. A later capture at the
+same provider path with changed bytes therefore receives a separate immutable
+file. A same-byte retry verifies the existing file; a receipt/payload mismatch
+fails before any write.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
