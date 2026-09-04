@@ -162,6 +162,13 @@ same provider path with changed bytes therefore receives a separate immutable
 file. A same-byte retry verifies the existing file; a receipt/payload mismatch
 fails before any write.
 
+`parse_football_data_uk_csv` validates receipt-matched UTF-8 CSV bytes before
+provider normalization. It keeps header order, records a deterministic header
+SHA-256, reports per-column non-null/null counts and coverage for that exact
+resource checksum, preserves additive columns, and rejects malformed rows.
+Missing required fields return schema quarantine evidence rather than a
+partially normalized dataset.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
