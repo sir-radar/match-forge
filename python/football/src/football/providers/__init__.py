@@ -42,6 +42,11 @@ from football.providers.football_data_uk_csv import (
     FootballDataUkFieldCoverageV1,
     parse_football_data_uk_csv,
 )
+from football.providers.football_data_uk_overlap import (
+    FootballDataUkOverlapPrefixSelectionV1,
+    FootballDataUkOverlapSelectionError,
+    select_football_data_uk_overlap_prefix,
+)
 from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.observability import (
     CircuitStateV1,
@@ -99,6 +104,9 @@ __all__ = [
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
     "FootballDataUkRawStoreV1",
+    "FootballDataUkOverlapPrefixSelectionV1",
+    "FootballDataUkOverlapSelectionError",
+    "select_football_data_uk_overlap_prefix",
     "FootballDataUkAcquiredResourceV1",
     "FootballDataUkAcquirerV1",
     "FootballDataUkAcquisitionError",

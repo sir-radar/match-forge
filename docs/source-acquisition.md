@@ -183,6 +183,13 @@ Modified; creates the content-addressed receipt; and writes the receipt-verified
 bytes immutably before returning. It cannot accept paths outside that frozen
 three-resource scope.
 
+`FootballDataUkOverlapPrefixSelectionV1` applies the frozen P1 source order:
+provider match date, valid local kickoff time when present, then CSV record
+index. It selects the shortest prefix covering the R3 team universe, a valid
+HC/AC pair when those columns exist, and a record explicitly supplied as trusted
+by later canonical-resolution evidence. It neither resolves identities nor
+derives trust from names, scores, or provider IDs.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
