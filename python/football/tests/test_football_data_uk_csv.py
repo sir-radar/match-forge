@@ -46,6 +46,19 @@ def test_csv_parser_produces_ordered_header_fingerprint_and_resource_local_cover
     assert result.records[1].values["HomeTeam"] == "C"
 
 
+def test_csv_parser_accepts_a_utf8_bom_without_mutating_raw_source_bytes() -> None:
+    payload = (
+        b"\xef\xbb\xbfDiv,Date,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HTHG,HTAG,HTR\n"
+        b"E0,01/01/26,A,B,1,0,H,0,0,D\n"
+    )
+
+    result = parse_football_data_uk_csv(_receipt(payload), payload)
+
+    assert result.schema.status == "accepted"
+    assert result.coverage.header[0] == "Div"
+    assert result.coverage.row_count == 1
+
+
 def test_csv_parser_reports_schema_quarantine_and_rejects_non_rectangular_rows() -> None:
     missing_required = b"Div,Date,HomeTeam\nE0,01/01/26,A\n"
     quarantined = parse_football_data_uk_csv(_receipt(missing_required), missing_required)

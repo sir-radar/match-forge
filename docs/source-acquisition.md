@@ -175,6 +175,11 @@ resource checksum, preserves additive columns, and rejects malformed rows.
 Missing required fields return schema quarantine evidence rather than a
 partially normalized dataset.
 
+A leading UTF-8 BOM is treated only as an encoding marker during parsing; the
+immutable raw payload and its checksum remain unchanged. This prevents a valid
+provider `Div` header from becoming a different field name while retaining the
+exact bytes that supplied it.
+
 `normalize_football_data_uk_record` then produces a provider-normalized
 match-level observation only. It validates full-time and half-time score/result
 consistency, preserves a timezone-naive provider date/time, and retains all raw
