@@ -190,6 +190,12 @@ HC/AC pair when those columns exist, and a record explicitly supplied as trusted
 by later canonical-resolution evidence. It neither resolves identities nor
 derives trust from names, scores, or provider IDs.
 
+`FootballDataUkTeamCrosswalkV1` maps an exact provider label only after review.
+`resolve_football_data_uk_team` creates an append-only `ResolutionDecisionV1`
+when that reviewed mapping agrees with one context-qualified canonical candidate.
+An unreviewed label is never auto-merged: it remains review-required when
+candidates exist and is quarantined when none exist.
+
 ## Immutable layout
 
 The local production store writes beneath a configured data root:
