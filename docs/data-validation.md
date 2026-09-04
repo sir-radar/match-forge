@@ -49,6 +49,11 @@ policy version, attempt history, and review status. Network failure remains a
 retryable acquisition-run error, not a data-quarantine reason. Raw evidence is
 never deleted or rewritten; reprocessing creates new history.
 
+`PostgresQuarantineRecordStoreV1` registers active records only after matching
+their provider and source checksums to an acquired resource and its acquisition
+job. Terminal transitions remain reprocessing work; initial records persist as
+`open` while retaining their full `QuarantineRecordV1` details.
+
 Eligible changes create append-only `QuarantineReprocessRequestV1` records for
 mapping review, schema fixes, provider corrections, or policy versioning. Each
 request points to the source quarantine record and trigger evidence; it never
