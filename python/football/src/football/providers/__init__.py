@@ -26,6 +26,14 @@ from football.providers.football_data_uk import (
     FootballDataUkSourceResourceError,
     FootballDataUkSourceResourceV1,
 )
+from football.providers.football_data_uk_csv import (
+    FootballDataUkCoverageReportV1,
+    FootballDataUkCsvRecordV1,
+    FootballDataUkCsvValidationError,
+    FootballDataUkCsvValidationV1,
+    FootballDataUkFieldCoverageV1,
+    parse_football_data_uk_csv,
+)
 from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.observability import (
     CircuitStateV1,
@@ -81,6 +89,12 @@ __all__ = [
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
     "FootballDataUkRawStoreV1",
+    "FootballDataUkCoverageReportV1",
+    "FootballDataUkCsvRecordV1",
+    "FootballDataUkCsvValidationError",
+    "FootballDataUkCsvValidationV1",
+    "FootballDataUkFieldCoverageV1",
+    "parse_football_data_uk_csv",
     "CursorStrategyV1",
     "JitterModeV1",
     "CircuitStateV1",
