@@ -28,6 +28,10 @@ from football.providers.football_data_uk import (
     FootballDataUkSourceResourceError,
     FootballDataUkSourceResourceV1,
 )
+from football.providers.football_data_uk_acceptance import (
+    FootballDataUkAcceptanceCorpusError,
+    FootballDataUkAcceptanceCorpusManifestV1,
+)
 from football.providers.football_data_uk_acquisition import (
     FootballDataUkAcquiredResourceV1,
     FootballDataUkAcquirerV1,
@@ -117,6 +121,8 @@ __all__ = [
     "FootballDataUkHistoricalLeagueCsvV1",
     "FootballDataUkSourceResourceError",
     "FootballDataUkSourceResourceV1",
+    "FootballDataUkAcceptanceCorpusError",
+    "FootballDataUkAcceptanceCorpusManifestV1",
     "FootballDataUkRawStoreV1",
     "FootballDataUkTeamCrosswalkRegistryV1",
     "FootballDataUkTeamCrosswalkV1",

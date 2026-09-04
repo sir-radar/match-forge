@@ -18,6 +18,7 @@ class FootballDataUkOverlapPrefixSelectionV1:
     provider_team_labels: frozenset[str]
     ordered_records: tuple[FootballDataUkNormalizedMatchV1, ...]
     selected_records: tuple[FootballDataUkNormalizedMatchV1, ...]
+    selected_trusted_record_indexes: frozenset[int]
 
 
 def select_football_data_uk_overlap_prefix(
@@ -54,6 +55,11 @@ def select_football_data_uk_overlap_prefix(
                 provider_team_labels=provider_team_labels,
                 ordered_records=ordered_records,
                 selected_records=tuple(selected_records),
+                selected_trusted_record_indexes=frozenset(
+                    record.csv_record_index
+                    for record in selected_records
+                    if record.csv_record_index in trusted_record_indexes
+                ),
             )
     raise FootballDataUkOverlapSelectionError(
         "overlap prefix cannot satisfy team, corner, and trusted match conditions"

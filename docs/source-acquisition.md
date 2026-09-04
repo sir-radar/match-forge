@@ -190,6 +190,13 @@ HC/AC pair when those columns exist, and a record explicitly supplied as trusted
 by later canonical-resolution evidence. It neither resolves identities nor
 derives trust from names, scores, or provider IDs.
 
+`FootballDataUkAcceptanceCorpusManifestV1` freezes the exact bounded proof
+inputs: content-addressed R1/R2/R3 receipts, R2 and R3 coverage reports, the
+P1 selection-rule version, ordered selected CSV record indexes, trusted selected
+record indexes, and provider team universe. Each coverage report binds its own
+raw resource SHA-256, while selected rows bind R3; changing any source bytes
+creates a different manifest identity.
+
 `FootballDataUkTeamCrosswalkV1` maps an exact provider label only after review.
 `resolve_football_data_uk_team` creates an append-only `ResolutionDecisionV1`
 when that reviewed mapping agrees with one context-qualified canonical candidate.
