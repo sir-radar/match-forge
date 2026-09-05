@@ -473,9 +473,11 @@ def _seed_source(connection: Connection[Any]) -> _RecoverySeed:
                  source_snapshot_id, feature_set_version, probability_variant, payload_path,
                  payload_sha256, target_set_sha256, knowledge_cutoff, knowledge_mode,
                  quality_policy_sha256, forecast_context_sha256, probability_contract_version,
-                 output_version, status, published_at)
+                 output_version, competition_rules_id, competition_rules_sha256, outcome_scope,
+                 status, published_at)
             VALUES (%s, %s, %s, %s, %s, %s, 'recovery-v1', 'MODEL_RAW', %s, %s, %s,
-                    %s, 'recovery-v1', %s, %s, 'recovery-v1', 'recovery-v1', 'published', %s)
+                    %s, 'recovery-v1', %s, %s, 'recovery-v1', 'recovery-v1', 'recovery-v1',
+                    %s, 'REGULATION_TIME', 'published', %s)
             """,
             (
                 forecast_id,
@@ -490,6 +492,7 @@ def _seed_source(connection: Connection[Any]) -> _RecoverySeed:
                 timestamp,
                 _checksum(marker, "quality-policy"),
                 _checksum(marker, "forecast-context"),
+                _checksum(marker, "competition-rules"),
                 timestamp,
             ),
         )
@@ -505,14 +508,17 @@ def _seed_source(connection: Connection[Any]) -> _RecoverySeed:
             """
             INSERT INTO football.sprint2_evaluation_runs
                 (id, policy_version, dataset_version_id, source_snapshot_id, target_set_sha256,
-                 report_path, report_sha256, status, completed_at)
-            VALUES (%s, 'recovery-v1', %s, %s, %s, %s, %s, 'FAIL', %s)
+                 competition_rules_id, competition_rules_sha256, outcome_scope, report_path,
+                 report_sha256, status, completed_at)
+            VALUES (%s, 'recovery-v1', %s, %s, %s, 'recovery-v1', %s, 'REGULATION_TIME',
+                    %s, %s, 'FAIL', %s)
             """,
             (
                 evaluation_id,
                 dataset_id,
                 snapshot_id,
                 _checksum(marker, "target-set"),
+                _checksum(marker, "competition-rules"),
                 f"reports/{marker}.json",
                 _checksum(marker, "evaluation-report"),
                 timestamp,

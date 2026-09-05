@@ -103,9 +103,10 @@ class PostgresForecastRegistry:
                  source_snapshot_id, feature_set_version, probability_variant,
                  payload_path, payload_sha256, target_set_sha256, knowledge_cutoff,
                  knowledge_mode, quality_policy_sha256, forecast_context_sha256,
-                 probability_contract_version, output_version, status, published_at)
+                 probability_contract_version, output_version, competition_rules_id,
+                 competition_rules_sha256, outcome_scope, status, published_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, 'published', %s)
+                    %s, %s, %s, %s, %s, %s, 'published', %s)
             ON CONFLICT (semantic_sha256) DO NOTHING
             """,
             (
@@ -126,6 +127,9 @@ class PostgresForecastRegistry:
                 forecast.forecast_context_sha256,
                 forecast.probability_contract_version,
                 forecast.output_version,
+                forecast.competition_rules.rules_id,
+                forecast.competition_rules.sha256,
+                forecast.competition_rules.outcome_scope,
                 publication.published_at,
             ),
         ).rowcount
@@ -135,7 +139,8 @@ class PostgresForecastRegistry:
                    source_snapshot_id, feature_set_version, probability_variant,
                    payload_path, payload_sha256, target_set_sha256, knowledge_cutoff,
                    knowledge_mode, quality_policy_sha256, forecast_context_sha256,
-                   probability_contract_version, output_version, status, published_at
+                   probability_contract_version, output_version, competition_rules_id,
+                   competition_rules_sha256, outcome_scope, status, published_at
             FROM football.baseline_forecasts WHERE semantic_sha256 = %s
             """,
             (forecast.semantic_sha256,),
@@ -158,6 +163,9 @@ class PostgresForecastRegistry:
             forecast.forecast_context_sha256,
             forecast.probability_contract_version,
             forecast.output_version,
+            forecast.competition_rules.rules_id,
+            forecast.competition_rules.sha256,
+            forecast.competition_rules.outcome_scope,
             "published",
             publication.published_at,
         )

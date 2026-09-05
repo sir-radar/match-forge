@@ -11,6 +11,7 @@ from typing import Any
 import psycopg
 import pytest
 from football.cli.main import run
+from football.forecasting.governance import EvaluationCorpusV1
 from jsonschema import Draft202012Validator, FormatChecker
 from psycopg import Connection
 
@@ -178,6 +179,7 @@ def test_cli_evaluate_sprint2_retains_failed_corpus_report(
         "minimum_team_history": 10,
         "minimum_competition_history": 100,
         "minimum_scored_targets": 250,
+        "competition_rules": EvaluationCorpusV1().competition_rules.to_dict(),
     }
     assert reports[0].with_suffix(".md").is_file()
 

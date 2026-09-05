@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
+from football.contracts.competition import CompetitionRulesV1
 from football.contracts.source import (
     SHA1_PATTERN,
     SHA256_PATTERN,
@@ -408,6 +409,7 @@ class BaselineForecastV1:
     match_id: UUID
     prediction_cutoff: datetime
     scope: PointInTimeScopeV1
+    competition_rules: CompetitionRulesV1
     probability_variant: ProbabilityVariant
     model_artifact_ids: tuple[UUID, ...]
     forecast_context_sha256: str
@@ -459,6 +461,7 @@ class BaselineForecastV1:
             "match_id": str(self.match_id),
             "prediction_cutoff": _utc(self.prediction_cutoff),
             "scope": self.scope.to_dict(),
+            "competition_rules": self.competition_rules.to_dict(),
             "probability_variant": self.probability_variant,
             "probability_contract_version": self.probability_contract_version,
             "output_version": self.output_version,

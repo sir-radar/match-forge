@@ -9,6 +9,7 @@ from uuid import UUID
 
 from psycopg import Connection, Cursor
 
+from football.contracts.competition import CompetitionRulesV1
 from football.contracts.dependencies import DependencyNodeV1
 from football.contracts.source import (
     SHA256_PATTERN,
@@ -42,6 +43,22 @@ _MODEL_FAMILIES = {
     "CORNER_NEGATIVE_BINOMIAL",
     *_CALIBRATION_FAMILIES,
 }
+_SPRINT2_COMPETITION_RULES = CompetitionRulesV1(
+    rules_id="premier-league-epl-2015-16-regulation-v1",
+    competition_ref="statsbomb_open_data:competition:2",
+    competition_format="LEAGUE",
+    tie_structure="ROUND_ROBIN",
+    outcome_scope="REGULATION_TIME",
+    extra_time_policy="NEVER",
+    shootout_policy="NEVER",
+    neutral_venue_policy="NOT_APPLICABLE",
+    policy_version="competition-rules-v1",
+    source_refs=(
+        "statsbomb_open_data/competition/2",
+        "football_data_uk/mmz4281/1516/E0.csv/sha256/"
+        "bd3502a18c38a1597fd9af62e2366b4015006d3528dd4d18b311bd6237bbc085",
+    ),
+)
 
 
 class GovernanceContractError(ValueError):
@@ -60,6 +77,7 @@ class EvaluationCorpusV1:
     minimum_team_history: int = 10
     minimum_competition_history: int = 100
     minimum_scored_targets: int = 250
+    competition_rules: CompetitionRulesV1 = _SPRINT2_COMPETITION_RULES
 
     def __post_init__(self) -> None:
         if not _VERSION_PATTERN.fullmatch(self.provider_code):
@@ -73,6 +91,11 @@ class EvaluationCorpusV1:
         ):
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise GovernanceContractError(f"{field_name} must be a positive integer")
+        expected_competition_ref = (
+            f"{self.provider_code}:competition:{self.provider_competition_id}"
+        )
+        if self.competition_rules.competition_ref != expected_competition_ref:
+            raise GovernanceContractError("competition rules do not match the evaluation corpus")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -82,6 +105,7 @@ class EvaluationCorpusV1:
             "minimum_team_history": self.minimum_team_history,
             "minimum_competition_history": self.minimum_competition_history,
             "minimum_scored_targets": self.minimum_scored_targets,
+            "competition_rules": self.competition_rules.to_dict(),
         }
 
 
@@ -317,8 +341,9 @@ class PostgresEvaluationRegistry:
                 """
                 INSERT INTO football.sprint2_evaluation_runs
                     (id, policy_version, dataset_version_id, source_snapshot_id,
-                     target_set_sha256, report_path, report_sha256, status, completed_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     target_set_sha256, competition_rules_id, competition_rules_sha256,
+                     outcome_scope, report_path, report_sha256, status, completed_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO NOTHING
                 """,
                 (
@@ -327,6 +352,9 @@ class PostgresEvaluationRegistry:
                     report.scope.dataset_version_id,
                     report.scope.source_snapshot_id,
                     report.scope.target_set_sha256,
+                    report.corpus.competition_rules.rules_id,
+                    report.corpus.competition_rules.sha256,
+                    report.corpus.competition_rules.outcome_scope,
                     publication.relative_path,
                     publication.report_sha256,
                     report.status,
@@ -336,7 +364,8 @@ class PostgresEvaluationRegistry:
             row = cursor.execute(
                 """
                 SELECT id, policy_version, dataset_version_id, source_snapshot_id,
-                       target_set_sha256, report_path, report_sha256, status, completed_at
+                       target_set_sha256, competition_rules_id, competition_rules_sha256,
+                       outcome_scope, report_path, report_sha256, status, completed_at
                 FROM football.sprint2_evaluation_runs WHERE id = %s
                 """,
                 (report.evaluation_run_id,),
@@ -347,6 +376,9 @@ class PostgresEvaluationRegistry:
                 report.scope.dataset_version_id,
                 report.scope.source_snapshot_id,
                 report.scope.target_set_sha256,
+                report.corpus.competition_rules.rules_id,
+                report.corpus.competition_rules.sha256,
+                report.corpus.competition_rules.outcome_scope,
                 publication.relative_path,
                 publication.report_sha256,
                 report.status,

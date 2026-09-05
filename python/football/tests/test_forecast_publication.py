@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+from football.contracts import CompetitionRulesV1
 from football.forecasting.contracts import (
     BaselineForecastV1,
     CornerForecastPayloadV1,
@@ -82,6 +83,7 @@ def test_forecast_store_preserves_full_goal_and_corner_probability_payloads(
         match_id=MATCH_ID,
         prediction_cutoff=CUTOFF,
         scope=_scope(),
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_RAW",
         model_artifact_ids=(ARTIFACT_ID,),
         forecast_context_sha256="d" * 64,
@@ -117,6 +119,7 @@ def test_forecast_store_rejects_mutation_at_immutable_identity(tmp_path: Path) -
         match_id=forecast.match_id,
         prediction_cutoff=forecast.prediction_cutoff,
         scope=forecast.scope,
+        competition_rules=forecast.competition_rules,
         probability_variant="MODEL_RAW",
         model_artifact_ids=forecast.model_artifact_ids,
         forecast_context_sha256=forecast.forecast_context_sha256,
@@ -138,6 +141,7 @@ def test_forecast_contract_rejects_payload_hash_or_reused_calibrator() -> None:
             match_id=MATCH_ID,
             prediction_cutoff=CUTOFF,
             scope=_scope(),
+            competition_rules=_competition_rules(),
             probability_variant="MODEL_RAW",
             model_artifact_ids=(ARTIFACT_ID,),
             forecast_context_sha256="d" * 64,
@@ -150,6 +154,7 @@ def test_forecast_contract_rejects_payload_hash_or_reused_calibrator() -> None:
             match_id=MATCH_ID,
             prediction_cutoff=CUTOFF,
             scope=_scope(),
+            competition_rules=_competition_rules(),
             probability_variant="MODEL_CALIBRATED",
             model_artifact_ids=(CALIBRATOR_ID,),
             forecast_context_sha256="d" * 64,
@@ -166,6 +171,7 @@ def _forecast() -> BaselineForecastV1:
         match_id=MATCH_ID,
         prediction_cutoff=CUTOFF,
         scope=_scope(),
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_RAW",
         model_artifact_ids=(ARTIFACT_ID,),
         forecast_context_sha256="d" * 64,
@@ -184,4 +190,19 @@ def _scope() -> PointInTimeScopeV1:
         knowledge_mode="bitemporal",
         quality_policy_sha256="b" * 64,
         target_set_sha256="c" * 64,
+    )
+
+
+def _competition_rules() -> CompetitionRulesV1:
+    return CompetitionRulesV1(
+        rules_id="rules-epl-v1",
+        competition_ref="statsbomb_open_data:competition:2",
+        competition_format="LEAGUE",
+        tie_structure="ROUND_ROBIN",
+        outcome_scope="REGULATION_TIME",
+        extra_time_policy="NEVER",
+        shootout_policy="NEVER",
+        neutral_venue_policy="NOT_APPLICABLE",
+        policy_version="competition-rules-v1",
+        source_refs=("competition-catalog-v1",),
     )

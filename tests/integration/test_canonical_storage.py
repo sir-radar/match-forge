@@ -12,6 +12,7 @@ from typing import Any
 
 import psycopg
 import pytest
+from football.contracts import CompetitionRulesV1
 from football.forecasting.artifacts import ModelArtifactPublisher, PortableModelArtifactStore
 from football.forecasting.contracts import (
     BaselineForecastV1,
@@ -56,6 +57,21 @@ from psycopg.errors import (
 )
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+
+
+def _competition_rules() -> CompetitionRulesV1:
+    return CompetitionRulesV1(
+        rules_id="test-league-v1",
+        competition_ref="test:competition:1",
+        competition_format="LEAGUE",
+        tie_structure="ROUND_ROBIN",
+        outcome_scope="REGULATION_TIME",
+        extra_time_policy="NEVER",
+        shootout_policy="NEVER",
+        neutral_venue_policy="NOT_APPLICABLE",
+        policy_version="competition-rules-v1",
+        source_refs=("test-catalog",),
+    )
 
 
 @pytest.fixture
@@ -851,6 +867,7 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
         match_id=match_id,
         prediction_cutoff=now,
         scope=scope,
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_RAW",
         model_artifact_ids=(first_artifact_id, second_artifact_id),
         forecast_context_sha256="d" * 64,
@@ -874,6 +891,17 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
                 (forecast_id,),
             ).fetchone()[0]
             == 1
+        )
+        assert cursor.execute(
+            """
+            SELECT competition_rules_id, competition_rules_sha256, outcome_scope
+            FROM football.baseline_forecasts WHERE id = %s
+            """,
+            (forecast_id,),
+        ).fetchone() == (
+            forecast.competition_rules.rules_id,
+            forecast.competition_rules.sha256,
+            forecast.competition_rules.outcome_scope,
         )
         roles = cursor.execute(
             """
@@ -1066,6 +1094,7 @@ def test_sprint2_batch_publication_registers_complete_retry_safe_batch(
             dependency_lock_sha256="6" * 64,
             published_at=published_at,
         ),
+        competition_rules=_competition_rules(),
     )
 
     first = publisher.publish_batch(scope, fitted, forecasts)
@@ -1217,6 +1246,17 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
             "SELECT report_sha256 FROM football.sprint2_evaluation_runs WHERE id = %s",
             (evaluation_id,),
         ).fetchone() == (first_report.report_sha256,)
+        assert cursor.execute(
+            """
+            SELECT competition_rules_id, competition_rules_sha256, outcome_scope
+            FROM football.sprint2_evaluation_runs WHERE id = %s
+            """,
+            (evaluation_id,),
+        ).fetchone() == (
+            report.corpus.competition_rules.rules_id,
+            report.corpus.competition_rules.sha256,
+            report.corpus.competition_rules.outcome_scope,
+        )
         assert cursor.execute(
             """
                 SELECT count(*) FROM football.dependency_edges

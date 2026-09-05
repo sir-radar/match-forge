@@ -14,7 +14,7 @@ from uuid import UUID, uuid4
 import psycopg
 import pyarrow.parquet as pq
 import pytest
-from football.contracts import SourceResource, SourceSnapshot
+from football.contracts import CompetitionRulesV1, SourceResource, SourceSnapshot
 from football.datasets import (
     DatasetBuildSpecV1,
     DatasetPublicationError,
@@ -84,6 +84,21 @@ class FixtureProvider:
 
 def _json_bytes(value: object) -> bytes:
     return json.dumps(value, ensure_ascii=False).encode("utf-8")
+
+
+def _competition_rules(provider_competition_id: int) -> CompetitionRulesV1:
+    return CompetitionRulesV1(
+        rules_id=f"test-competition-{provider_competition_id}-v1",
+        competition_ref=f"statsbomb_open_data:competition:{provider_competition_id}",
+        competition_format="LEAGUE",
+        tie_structure="ROUND_ROBIN",
+        outcome_scope="REGULATION_TIME",
+        extra_time_policy="NEVER",
+        shootout_policy="NEVER",
+        neutral_venue_policy="NOT_APPLICABLE",
+        policy_version="competition-rules-v1",
+        source_refs=(f"test-competition-{provider_competition_id}",),
+    )
 
 
 def _competition_payload(
@@ -1978,6 +1993,7 @@ def test_rejects_corner_labels_after_registered_parquet_mutation(
     corpus = EvaluationCorpusV1(
         provider_competition_id=43,
         provider_season_id=106,
+        competition_rules=_competition_rules(43),
         minimum_team_history=1,
         minimum_competition_history=1,
         minimum_scored_targets=1,
@@ -2017,6 +2033,7 @@ def test_rejects_completed_claim_without_terminal_event_evidence(
     corpus = EvaluationCorpusV1(
         provider_competition_id=43,
         provider_season_id=106,
+        competition_rules=_competition_rules(43),
         minimum_team_history=1,
         minimum_competition_history=1,
         minimum_scored_targets=1,
@@ -2054,6 +2071,7 @@ def test_rejects_london_kickoff_claim_for_international_competition(
     corpus = EvaluationCorpusV1(
         provider_competition_id=43,
         provider_season_id=106,
+        competition_rules=_competition_rules(43),
         minimum_team_history=1,
         minimum_competition_history=1,
         minimum_scored_targets=1,
@@ -2092,6 +2110,7 @@ def test_rejects_completed_claim_from_quarantined_score_evidence(
     corpus = EvaluationCorpusV1(
         provider_competition_id=43,
         provider_season_id=106,
+        competition_rules=_competition_rules(43),
         minimum_team_history=1,
         minimum_competition_history=1,
         minimum_scored_targets=1,
