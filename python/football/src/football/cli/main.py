@@ -9,6 +9,7 @@ from contextlib import AbstractContextManager
 from datetime import datetime
 from pathlib import Path
 from typing import Any, TextIO
+from uuid import UUID
 
 import psycopg
 from psycopg import Connection
@@ -20,6 +21,7 @@ from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
+from football.integrity import IntegrityArtifactKind
 from football.providers import (
     FootballDataProvider,
     ProviderCapabilityError,
@@ -72,6 +74,13 @@ def observed_at(value: str) -> datetime:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise argparse.ArgumentTypeError("as-of must include a timezone")
     return parsed
+
+
+def immutable_identifier(value: str) -> UUID:
+    try:
+        return UUID(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("identifier must be a UUID") from error
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -148,6 +157,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="configured ProviderSyncPolicyRegistryV1 JSON path",
     )
+
+    integrity = commands.add_parser("integrity", help="verify registered immutable bytes")
+    integrity_scopes = integrity.add_subparsers(dest="scope", required=True)
+    for scope in ("raw", "dataset", "model"):
+        check = integrity_scopes.add_parser(scope, help=f"verify one registered {scope}")
+        check.add_argument("artifact_id", type=immutable_identifier)
     return parser
 
 
@@ -311,6 +326,16 @@ def _provider_status_preflight(
 
 
 def _execute(application: FootballApplication, args: argparse.Namespace, output: TextIO) -> int:
+    if args.command == "integrity":
+        integrity_kinds: dict[str, IntegrityArtifactKind] = {
+            "raw": "RAW_RESOURCE",
+            "dataset": "DATASET",
+            "model": "MODEL_ARTIFACT",
+        }
+        artifact_kind = integrity_kinds[args.scope]
+        result = application.verify_integrity(artifact_kind, args.artifact_id)
+        print(json.dumps(result.to_dict(), sort_keys=True), file=output)
+        return 0 if result.status == "PASS" else 4
     if args.command == "provider" and args.scope == "status":
         status = application.provider_status(
             args.provider_id,

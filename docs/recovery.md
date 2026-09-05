@@ -11,6 +11,16 @@ Reports bind a policy version, code Git SHA, and dependency-lock checksum. They
 are evidence, not a backup implementation: operators must populate them from
 an actual restore and integrity run, and historical artifacts remain immutable.
 
+## Immutable byte verification
+
+`football integrity raw <source_resource_id>`, `football integrity dataset <dataset_id>`,
+and `football integrity model <model_artifact_id>` inspect only registered files beneath the
+configured data root. Each command compares the stored SHA-256 and byte size with the actual file.
+Dataset checks also compare its database registration, manifest, Parquet bytes, and logical checksum.
+Model checks compare its registration, manifest, every registered file, and the portable model-state
+checksum. A missing, unreadable, changed, or contradictory registration fails; the command never
+repairs or changes stored data.
+
 ## Local PostgreSQL restore proof
 
 Run `make postgres-restore-test` to prove local PostgreSQL recovery. It creates

@@ -24,6 +24,11 @@ from football.forecasting.lifecycle import (
     Sprint2LifecycleClaimPublisher,
 )
 from football.ingestion import SourceAcquirer, StatsBombCanonicalIngestor
+from football.integrity import (
+    IntegrityArtifactKind,
+    IntegrityVerificationResult,
+    PostgresIntegrityVerifier,
+)
 from football.providers import (
     FootballDataProvider,
     PostgresProviderObservabilityStoreV1,
@@ -126,6 +131,16 @@ class FootballApplication:
 
     def resolve_sprint2_corners(self) -> CornerLabelPublicationResult:
         return Sprint2CornerLabelPublisher(self._connection, self._data_root).publish()
+
+    def verify_integrity(
+        self, artifact_kind: IntegrityArtifactKind, artifact_id: UUID
+    ) -> IntegrityVerificationResult:
+        verifier = PostgresIntegrityVerifier(self._connection, self._data_root)
+        if artifact_kind == "RAW_RESOURCE":
+            return verifier.verify_raw_resource(artifact_id)
+        if artifact_kind == "DATASET":
+            return verifier.verify_dataset(artifact_id)
+        return verifier.verify_model_artifact(artifact_id)
 
     def provider_status(
         self,
