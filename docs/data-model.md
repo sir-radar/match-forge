@@ -23,19 +23,16 @@ Canonical identities exist for competitions, seasons, teams, players, matches, a
 
 ## Dependency lineage
 
-`DependencyEdgeV1` records immutable directed lineage between versioned source,
-canonical, dataset, model, forecast, evaluation, and simulation evidence. A
-`DependencyGraphV1` provides deterministic upstream/dependent lookups so a
-trusted source correction can identify affected derived evidence without
-mutating or deleting the historical artifact. State classifications are
-append-only evidence (`VALID`, `STALE`, `SUPERSEDED`,
-`AFFECTED_BY_SOURCE_CORRECTION`, and `REBUILD_REQUIRED`); a rebuild produces a
-new version rather than rewriting the old node.
+`DependencyEdgeV1` records immutable directed links between source resources,
+observations, datasets, model artifacts, forecasts, and evaluations.
+`dependency_edges` has a logical unique key, so retries return the same link.
 
-`DerivedStateRecordV1` appends each state transition with its reason and, when
-available, the causing `CanonicalChangeSetV1`. Downstream consumers can mark
-datasets, features, artifacts, forecasts, and evaluations stale or rebuildable
-while preserving the exact historical node and its original lineage.
+`derived_state_events` records only specific correction results:
+`REBUILD_REQUIRED`, `AFFECTED_BY_SOURCE_CORRECTION`, and `SUPERSEDED`. No event
+means `VALID`. Both tables reject updates and deletes. A state event must name a
+trusted real-provider `CanonicalChangeSetV1`; fixture change sets cannot start
+this path. A replacement is a new object and a new `DERIVED_FROM` link; old
+objects and their recorded bytes remain available.
 
 Season provider identity is composite:
 

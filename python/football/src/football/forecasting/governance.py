@@ -9,6 +9,7 @@ from uuid import UUID
 
 from psycopg import Connection, Cursor
 
+from football.contracts.dependencies import DependencyNodeV1
 from football.contracts.source import (
     SHA256_PATTERN,
     SourceContractError,
@@ -17,6 +18,7 @@ from football.contracts.source import (
 )
 from football.forecasting.contracts import ModelFamily, PointInTimeScopeV1
 from football.forecasting.evaluation import MatchResultMetricsV1
+from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.raw import ImmutableFileStore
 
 if TYPE_CHECKING:
@@ -354,6 +356,12 @@ class PostgresEvaluationRegistry:
                 raise GovernancePublicationError(
                     f"evaluation report conflicts with registry: {report.evaluation_run_id}"
                 )
+            PostgresDependencyStoreV1().register_dependency(
+                cursor,
+                upstream=DependencyNodeV1("DATASET", report.scope.dataset_version_id),
+                relationship="EVALUATED_WITH",
+                downstream=DependencyNodeV1("EVALUATION", report.evaluation_run_id),
+            )
         return "published" if inserted else "verified_existing"
 
 

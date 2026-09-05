@@ -10,9 +10,11 @@ from uuid import UUID, uuid5
 
 from psycopg import Connection, Cursor
 
+from football.contracts.dependencies import DependencyNodeV1
 from football.contracts.source import canonical_json_bytes
 from football.datasets.contracts import DatasetManifest, DatasetManifestFile
 from football.ingestion.acquisition import AcquisitionResult
+from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.ingestion.registration import VerifiedSource, verify_acquisition
 from football.normalization.statsbomb_events import (
     EVENT_SCHEMA_SHA256,
@@ -464,6 +466,15 @@ def _register_dataset(
         )
     _register_files(cursor, dataset_id, files)
     _verify_registration(cursor, dataset_id, source, files)
+    dependency_store = PostgresDependencyStoreV1()
+    dataset = DependencyNodeV1("DATASET", dataset_id)
+    for source_resource_id in source.resource_ids.values():
+        dependency_store.register_dependency(
+            cursor,
+            upstream=DependencyNodeV1("SOURCE_RESOURCE", source_resource_id),
+            relationship="INPUT_TO",
+            downstream=dataset,
+        )
 
 
 def _register_files(

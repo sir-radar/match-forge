@@ -34,6 +34,15 @@ from football.ingestion.conflicts import (
     reconcile_field_observations,
 )
 from football.ingestion.corrections import BitemporalCorrectionV1, CorrectionRecordError
+from football.ingestion.dependencies import (
+    CorrectionPropagationResultV1,
+    DependencyRegistrationStatusV1,
+    DependencyStorageError,
+    PostgresDependencyStoreV1,
+    RegisteredDependencyEdgeV1,
+    RegisteredDerivedStateEventV1,
+    SourceCorrectionPropagatorV1,
+)
 from football.ingestion.errors import CanonicalIngestionError, RetryableIngestionError
 from football.ingestion.event_streams import (
     EventStreamReconciliationError,
@@ -106,6 +115,13 @@ __all__ = [
     "CanonicalIngestionResult",
     "BitemporalCorrectionV1",
     "CorrectionRecordError",
+    "CorrectionPropagationResultV1",
+    "DependencyRegistrationStatusV1",
+    "DependencyStorageError",
+    "PostgresDependencyStoreV1",
+    "RegisteredDependencyEdgeV1",
+    "RegisteredDerivedStateEventV1",
+    "SourceCorrectionPropagatorV1",
     "CanonicalChangeSetV1",
     "ChangeSetError",
     "PostgresReconciliationConflictStoreV1",
