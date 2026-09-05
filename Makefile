@@ -11,7 +11,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check sprint2-evaluate \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check postgres-restore-test sprint2-evaluate \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -71,6 +71,9 @@ integration: build
 	docker compose up -d --wait
 	./scripts/storage-integration.sh
 	./scripts/integration.sh
+
+postgres-restore-test: up
+	./scripts/storage-integration.sh
 
 check: format-check lint test build
 
