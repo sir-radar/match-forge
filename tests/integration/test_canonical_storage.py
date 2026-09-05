@@ -43,6 +43,7 @@ from football.forecasting.governance import (
     Sprint2EvaluationReportV1,
 )
 from football.forecasting.publication import BaselineForecastPublisher
+from football.retirement import PostgresArtifactRetirementStore
 from football.temporal.repository import PointInTimeRepository
 from psycopg import Connection
 from psycopg.errors import (
@@ -50,6 +51,7 @@ from psycopg.errors import (
     DeadlockDetected,
     ExclusionViolation,
     ForeignKeyViolation,
+    RaiseException,
     UniqueViolation,
 )
 
@@ -892,6 +894,44 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
         ).fetchone()
     assert roles == [("PRIMARY",), ("PRIMARY",)]
     assert dependency_count == (2,)
+
+    retirements = PostgresArtifactRetirementStore(connection)
+    retired = retirements.retire_forecast(
+        forecast_id,
+        evidence_reference="tests/integration/test_canonical_storage.py",
+        recorded_at=now,
+        code_commit_sha="a" * 40,
+    )
+    retry_retired = retirements.retire_forecast(
+        forecast_id,
+        evidence_reference="tests/integration/test_canonical_storage.py",
+        recorded_at=now,
+        code_commit_sha="a" * 40,
+    )
+
+    assert retired.status == "inserted"
+    assert retry_retired.status == "verified_existing"
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT payload_sha256 FROM football.baseline_forecasts WHERE id = %s",
+            (forecast_id,),
+        ).fetchone() == (forecast.payload_sha256,)
+        assert cursor.execute(
+            "SELECT count(*) FROM football.forecast_artifacts WHERE forecast_id = %s",
+            (forecast_id,),
+        ).fetchone() == (2,)
+        assert cursor.execute(
+            """
+            SELECT count(*) FROM football.dependency_edges
+            WHERE downstream_kind = 'FORECAST' AND downstream_id = %s
+            """,
+            (forecast_id,),
+        ).fetchone() == (2,)
+        with pytest.raises(RaiseException, match="append-only"), connection.transaction():
+            cursor.execute(
+                "UPDATE football.artifact_retirement_events SET reason = 'changed' WHERE id = %s",
+                (retired.event.retirement_event_id,),
+            )
 
 
 def test_sprint2_batch_publication_registers_complete_retry_safe_batch(

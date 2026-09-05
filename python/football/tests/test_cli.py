@@ -28,6 +28,15 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     lifecycle = parser.parse_args(["resolve", "sprint2-lifecycle"])
     kickoffs = parser.parse_args(["resolve", "sprint2-kickoffs"])
     integrity = parser.parse_args(["integrity", "dataset", "10000000-0000-4000-8000-000000000001"])
+    hard_gate = parser.parse_args(["integrity", "hard-gate"])
+    retire = parser.parse_args(
+        [
+            "retire",
+            "approved-test-forecast-lineage",
+            "--evidence-reference",
+            "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
+        ]
+    )
     provider_status = parser.parse_args(
         ["provider", "status", "--provider-id", "statsbomb_open_data"]
     )
@@ -46,6 +55,12 @@ def test_parser_accepts_required_sprint1_commands() -> None:
         "integrity",
         "dataset",
         "10000000-0000-4000-8000-000000000001",
+    )
+    assert (hard_gate.command, hard_gate.scope) == ("integrity", "hard-gate")
+    assert (retire.command, retire.scope, retire.evidence_reference) == (
+        "retire",
+        "approved-test-forecast-lineage",
+        "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
     )
     assert (provider_status.command, provider_status.scope, provider_status.provider_id) == (
         "provider",
