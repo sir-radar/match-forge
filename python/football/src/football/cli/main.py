@@ -6,6 +6,7 @@ import os
 import sys
 from collections.abc import Callable, Mapping
 from contextlib import AbstractContextManager
+from datetime import datetime
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -24,6 +25,7 @@ from football.providers import (
     ProviderCapabilityError,
     ProviderCapabilityRegistryV1,
     ProviderFetchError,
+    ProviderSyncPolicyRegistryV1,
     StatsBombOpenDataAdapter,
 )
 from football.reports import IngestionReportError
@@ -59,6 +61,16 @@ def positive_identifier(value: str) -> int:
         raise argparse.ArgumentTypeError("identifier must be a positive integer") from error
     if parsed <= 0 or str(parsed) != value:
         raise argparse.ArgumentTypeError("identifier must be a positive integer")
+    return parsed
+
+
+def observed_at(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("as-of must be an ISO-8601 timestamp") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise argparse.ArgumentTypeError("as-of must include a timezone")
     return parsed
 
 
@@ -122,8 +134,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     provider = commands.add_parser("provider", help="inspect provider operations")
     provider_scopes = provider.add_subparsers(dest="scope", required=True)
-    provider_status = provider_scopes.add_parser("status", help="show provider capabilities")
+    provider_status = provider_scopes.add_parser(
+        "status", help="show provider status or capabilities"
+    )
     provider_status.add_argument("--provider-id", help="show one registered provider")
+    provider_status.add_argument(
+        "--resource-key", help="provider resource key for lifecycle status"
+    )
+    provider_status.add_argument("--scope-key", help="provider lifecycle scope key")
+    provider_status.add_argument("--as-of", type=observed_at, help="timezone-aware status clock")
+    provider_status.add_argument(
+        "--provider-sync-policy-config",
+        type=Path,
+        help="configured ProviderSyncPolicyRegistryV1 JSON path",
+    )
     return parser
 
 
@@ -172,20 +196,9 @@ def run(
             file=errors,
         )
         return 2
-    if args.command == "provider" and args.scope == "status":
-        try:
-            capabilities = ProviderCapabilityRegistryV1((StatsBombOpenDataAdapter.capability,))
-            selected = (
-                (capabilities.get(args.provider_id),) if args.provider_id else capabilities.all()
-            )
-        except ProviderCapabilityError as error:
-            print(f"error: {error}", file=errors)
-            return 2
-        print(
-            json.dumps([capability.to_dict() for capability in selected], sort_keys=True),
-            file=output,
-        )
-        return 0
+    provider_status_result = _provider_status_preflight(args, output, errors)
+    if provider_status_result is not None:
+        return provider_status_result
 
     try:
         provider = (
@@ -203,6 +216,11 @@ def run(
                 if code_commit_sha and dependency_lock_sha256
                 else None
             )
+            provider_sync_policies = (
+                ProviderSyncPolicyRegistryV1.from_path(args.provider_sync_policy_config)
+                if args.command == "provider" and args.scope == "status"
+                else None
+            )
             application = FootballApplication(
                 connection,
                 data_root,
@@ -210,6 +228,7 @@ def run(
                 quality_policy,
                 report_root,
                 evaluation_provenance,
+                provider_sync_policies,
             )
             return _execute(application, args, output)
     except ValueError as error:
@@ -246,7 +265,61 @@ def _needs_quality_policy(command: str, scope: str) -> bool:
     return command in ("validate", "evaluate") or (command == "ingest" and scope == "season")
 
 
+def _provider_status_requested(args: argparse.Namespace) -> bool:
+    return any(
+        (
+            args.resource_key,
+            args.scope_key,
+            args.as_of,
+            args.provider_sync_policy_config,
+        )
+    )
+
+
+def _provider_status_preflight(
+    args: argparse.Namespace, output: TextIO, errors: TextIO
+) -> int | None:
+    if args.command != "provider" or args.scope != "status":
+        return None
+    if _provider_status_requested(args):
+        if all(
+            (
+                args.provider_id,
+                args.resource_key,
+                args.scope_key,
+                args.as_of,
+                args.provider_sync_policy_config,
+            )
+        ):
+            return None
+        print(
+            "error: provider status requires --provider-id, --resource-key, --scope-key, "
+            "--as-of, and --provider-sync-policy-config",
+            file=errors,
+        )
+        return 2
+    try:
+        capabilities = ProviderCapabilityRegistryV1((StatsBombOpenDataAdapter.capability,))
+        selected = (capabilities.get(args.provider_id),) if args.provider_id else capabilities.all()
+    except ProviderCapabilityError as error:
+        print(f"error: {error}", file=errors)
+        return 2
+    print(
+        json.dumps([capability.to_dict() for capability in selected], sort_keys=True), file=output
+    )
+    return 0
+
+
 def _execute(application: FootballApplication, args: argparse.Namespace, output: TextIO) -> int:
+    if args.command == "provider" and args.scope == "status":
+        status = application.provider_status(
+            args.provider_id,
+            args.resource_key,
+            args.scope_key,
+            args.as_of,
+        )
+        print(json.dumps(status.to_dict(), sort_keys=True), file=output)
+        return 0
     if args.command == "ingest" and args.scope == "competitions":
         competition_result = application.ingest_competitions()
         print(

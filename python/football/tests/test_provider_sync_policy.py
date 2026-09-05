@@ -7,6 +7,10 @@ from football.providers import (
     CursorStrategyV1,
     ProviderScopeV1,
     ProviderSyncPolicyError,
+    ProviderSyncPolicyRegistration,
+    ProviderSyncPolicyRegistryError,
+    ProviderSyncPolicyRegistryV1,
+    ProviderSyncPolicyScopeBinding,
     ProviderSyncPolicyV1,
 )
 
@@ -35,6 +39,115 @@ def test_sync_policy_rejects_unbounded_or_invalid_runtime_values() -> None:
         _policy(backoff_initial_seconds=10.0, backoff_max_seconds=1.0)
     with pytest.raises(ProviderSyncPolicyError, match="cursor strategy"):
         _policy(cursor_strategy=cast(CursorStrategyV1, "poll_everything"))
+
+
+def test_sync_policy_registry_resolves_a_bound_policy_deterministically() -> None:
+    registry = _registry()
+
+    first = registry.resolve("provider", "fixtures", "competition=competition/season=season")
+    second = registry.resolve("provider", "fixtures", "competition=competition/season=season")
+
+    assert first == second
+    assert first.policy_version == "provider-policy-v1"
+    assert first.policy.freshness_target_seconds == 15 * 60
+    assert len(first.policy.sha256) == 64
+
+
+@pytest.mark.parametrize(
+    ("provider_id", "resource_key", "scope_key"),
+    (
+        ("unknown", "fixtures", "competition=competition/season=season"),
+        ("provider", "stats", "competition=competition/season=season"),
+        ("provider", "fixtures", "global"),
+    ),
+)
+def test_sync_policy_registry_fails_closed_for_unbound_scope(
+    provider_id: str, resource_key: str, scope_key: str
+) -> None:
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="unresolved"):
+        _registry().resolve(provider_id, resource_key, scope_key)
+
+
+def test_sync_policy_registry_fails_closed_for_unknown_policy_version() -> None:
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="version is unresolved"):
+        _registry().resolve_version("provider", "unknown-policy-v7")
+
+
+def test_sync_policy_registry_rejects_duplicate_binding_and_invalid_policy_relationships() -> None:
+    registration = ProviderSyncPolicyRegistration("provider-policy-v1", _policy())
+    binding = ProviderSyncPolicyScopeBinding(
+        "provider", "fixtures", "competition=competition/season=season", "provider-policy-v1"
+    )
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="bindings must be unique"):
+        ProviderSyncPolicyRegistryV1((registration,), (binding, binding))
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="not enabled"):
+        ProviderSyncPolicyRegistryV1(
+            (registration,),
+            (
+                ProviderSyncPolicyScopeBinding(
+                    "provider", "missing", binding.scope_key, binding.policy_version
+                ),
+            ),
+        )
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="unknown policy version"):
+        ProviderSyncPolicyRegistryV1(
+            (registration,),
+            (
+                ProviderSyncPolicyScopeBinding(
+                    "other_provider", "fixtures", binding.scope_key, binding.policy_version
+                ),
+            ),
+        )
+
+
+def test_sync_policy_registry_rejects_a_policy_version_with_different_bytes() -> None:
+    with pytest.raises(ProviderSyncPolicyRegistryError, match="different policy SHA"):
+        ProviderSyncPolicyRegistryV1(
+            (
+                ProviderSyncPolicyRegistration("provider-policy-v1", _policy()),
+                ProviderSyncPolicyRegistration(
+                    "provider-policy-v1", _policy(discovery_cadence_seconds=901)
+                ),
+            ),
+            (),
+        )
+
+
+def test_sync_policy_registry_parses_only_the_existing_policy_contract() -> None:
+    policy = _policy().to_dict()
+    registry = ProviderSyncPolicyRegistryV1.from_dict(
+        {
+            "contract": "ProviderSyncPolicyRegistryV1",
+            "registrations": [{"policy_version": "provider-policy-v1", "policy": policy}],
+            "bindings": [
+                {
+                    "provider_id": "provider",
+                    "resource_key": "fixtures",
+                    "scope_key": "competition=competition/season=season",
+                    "policy_version": "provider-policy-v1",
+                }
+            ],
+        }
+    )
+
+    assert (
+        registry.resolve("provider", "fixtures", "competition=competition/season=season").policy
+        == _policy()
+    )
+
+
+def _registry() -> ProviderSyncPolicyRegistryV1:
+    return ProviderSyncPolicyRegistryV1(
+        (ProviderSyncPolicyRegistration("provider-policy-v1", _policy()),),
+        (
+            ProviderSyncPolicyScopeBinding(
+                "provider",
+                "fixtures",
+                "competition=competition/season=season",
+                "provider-policy-v1",
+            ),
+        ),
+    )
 
 
 def _policy(
