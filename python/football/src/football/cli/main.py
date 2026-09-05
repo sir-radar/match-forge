@@ -174,6 +174,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="exclude the approved synthetic forecast rows from hard-gate scope",
     )
     retire_test.add_argument("--evidence-reference", required=True)
+    retire_evaluation = retire_scopes.add_parser(
+        "approved-test-evaluation-lineage",
+        help="exclude the approved synthetic evaluation rows from hard-gate scope",
+    )
+    retire_evaluation.add_argument("--evidence-reference", required=True)
     return parser
 
 
@@ -462,7 +467,12 @@ def _execute_retirement(
             file=errors,
         )
         return 2
-    events = application.retire_approved_synthetic_forecasts(
+    retire = (
+        application.retire_approved_synthetic_forecasts
+        if args.scope == "approved-test-forecast-lineage"
+        else application.retire_approved_synthetic_evaluations
+    )
+    events = retire(
         evidence_reference=args.evidence_reference,
         recorded_at=datetime.now(UTC),
         code_commit_sha=code_commit_sha,

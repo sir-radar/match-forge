@@ -46,6 +46,7 @@ from football.reports import (
 )
 from football.retirement import (
     RegisteredArtifactRetirementV1,
+    retire_approved_synthetic_evaluations,
     retire_approved_synthetic_forecasts,
 )
 from football.validation import QualityPolicy, StatsBombDatasetValidator
@@ -163,6 +164,20 @@ class FootballApplication:
         code_commit_sha: str,
     ) -> tuple[RegisteredArtifactRetirementV1, ...]:
         return retire_approved_synthetic_forecasts(
+            self._connection,
+            evidence_reference=evidence_reference,
+            recorded_at=recorded_at,
+            code_commit_sha=code_commit_sha,
+        )
+
+    def retire_approved_synthetic_evaluations(
+        self,
+        *,
+        evidence_reference: str,
+        recorded_at: datetime,
+        code_commit_sha: str,
+    ) -> tuple[RegisteredArtifactRetirementV1, ...]:
+        return retire_approved_synthetic_evaluations(
             self._connection,
             evidence_reference=evidence_reference,
             recorded_at=recorded_at,

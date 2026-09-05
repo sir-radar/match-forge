@@ -1190,6 +1190,21 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
     assert retry_report.status == "verified_existing"
     assert first_event.status == "published"
     assert retry_event.status == "verified_existing"
+    retirement_store = PostgresArtifactRetirementStore(connection)
+    first_retirement = retirement_store.retire_evaluation(
+        evaluation_id,
+        evidence_reference="tests/integration/test_canonical_storage.py",
+        recorded_at=now,
+        code_commit_sha="a" * 40,
+    )
+    retry_retirement = retirement_store.retire_evaluation(
+        evaluation_id,
+        evidence_reference="tests/integration/test_canonical_storage.py",
+        recorded_at=now,
+        code_commit_sha="a" * 40,
+    )
+    assert first_retirement.status == "inserted"
+    assert retry_retirement.status == "verified_existing"
     with connection.cursor() as cursor:
         assert (
             cursor.execute(
@@ -1198,6 +1213,10 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
             ).fetchone()[0]
             == 1
         )
+        assert cursor.execute(
+            "SELECT report_sha256 FROM football.sprint2_evaluation_runs WHERE id = %s",
+            (evaluation_id,),
+        ).fetchone() == (first_report.report_sha256,)
         assert cursor.execute(
             """
                 SELECT count(*) FROM football.dependency_edges

@@ -8,7 +8,7 @@ from uuid import UUID
 
 from football.contracts.source import canonical_json_bytes
 
-ArtifactRetirementObjectKindV1 = Literal["FORECAST"]
+ArtifactRetirementObjectKindV1 = Literal["FORECAST", "EVALUATION"]
 ArtifactRetirementScopeV1 = Literal["TEST_ONLY_HARD_GATE_EXCLUSION"]
 ArtifactRetirementReasonV1 = Literal["SYNTHETIC_TEST_LINEAGE"]
 
@@ -33,7 +33,7 @@ class ArtifactRetirementEventV1:
     def __post_init__(self) -> None:
         if self.contract != "ArtifactRetirementEventV1":
             raise ArtifactRetirementContractError("unsupported artifact retirement contract")
-        if self.object_kind != "FORECAST":
+        if self.object_kind not in {"FORECAST", "EVALUATION"}:
             raise ArtifactRetirementContractError("artifact retirement object kind is unsupported")
         if self.retirement_scope != "TEST_ONLY_HARD_GATE_EXCLUSION":
             raise ArtifactRetirementContractError("artifact retirement scope is unsupported")

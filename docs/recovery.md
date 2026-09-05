@@ -21,20 +21,25 @@ Model checks compare its registration, manifest, every registered file, and the 
 checksum. A missing, unreadable, changed, or contradictory registration fails; the command never
 repairs or changes stored data.
 
-## Retained test-only forecast lineage
+## Retained test-only forecast and evaluation lineage
 
-`artifact_retirement_events` is append-only. It can retain the approved synthetic forecast rows
-while excluding only those explicit IDs from the production hard-gate population. It never changes
-forecast bytes, artifact links, or dependency edges. Record the approved events with:
+`artifact_retirement_events` is append-only. It can retain approved synthetic forecast and
+evaluation rows while excluding only their explicit IDs from the production hard-gate population.
+It never changes forecast or evaluation bytes, artifact links, or dependency edges. Record approved
+events with:
 
 ```text
 football --code-commit-sha <git-sha> retire approved-test-forecast-lineage \
   --evidence-reference <decision-reference>
+
+football --code-commit-sha <git-sha> retire approved-test-evaluation-lineage \
+  --evidence-reference <decision-reference>
 ```
 
 Then run `football integrity hard-gate`. Its output reports production failures separately from
-retired test-only physical failures, plus retained artifact-link and lineage counts. No source
-kind, timestamp, missing-byte pattern, or other heuristic can exclude a forecast.
+retired forecast and evaluation physical failures, plus retained artifact-link and lineage counts.
+No source kind, timestamp, missing-byte pattern, or other heuristic can exclude a forecast or
+evaluation.
 
 ## Local PostgreSQL restore proof
 

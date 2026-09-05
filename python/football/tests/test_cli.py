@@ -37,6 +37,14 @@ def test_parser_accepts_required_sprint1_commands() -> None:
             "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
         ]
     )
+    retire_evaluation = parser.parse_args(
+        [
+            "retire",
+            "approved-test-evaluation-lineage",
+            "--evidence-reference",
+            "decision:APPROVE_APPEND_ONLY_SYNTHETIC_EVALUATION_RETIREMENT",
+        ]
+    )
     provider_status = parser.parse_args(
         ["provider", "status", "--provider-id", "statsbomb_open_data"]
     )
@@ -61,6 +69,10 @@ def test_parser_accepts_required_sprint1_commands() -> None:
         "retire",
         "approved-test-forecast-lineage",
         "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
+    )
+    assert (retire_evaluation.command, retire_evaluation.scope) == (
+        "retire",
+        "approved-test-evaluation-lineage",
     )
     assert (provider_status.command, provider_status.scope, provider_status.provider_id) == (
         "provider",

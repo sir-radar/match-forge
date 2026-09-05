@@ -34,6 +34,16 @@ def test_unknown_retirement_target_fails_closed(connection: Connection[Any]) -> 
         )
 
 
+def test_unknown_evaluation_retirement_target_fails_closed(connection: Connection[Any]) -> None:
+    with pytest.raises(ArtifactRetirementError, match="not registered"):
+        PostgresArtifactRetirementStore(connection).retire_evaluation(
+            uuid4(),
+            evidence_reference="test",
+            recorded_at=datetime(2026, 9, 5, 17, 0, tzinfo=UTC),
+            code_commit_sha="a" * 40,
+        )
+
+
 def test_database_rejects_invalid_retirement_object_kind(connection: Connection[Any]) -> None:
     with (
         pytest.raises(CheckViolation, match="artifact_retirement_events_object_kind_check"),

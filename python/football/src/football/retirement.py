@@ -6,8 +6,9 @@ from typing import Any, Literal, cast
 from uuid import UUID
 
 from psycopg import Connection
+from psycopg.errors import ForeignKeyViolation
 
-from football.contracts.retirement import ArtifactRetirementEventV1
+from football.contracts.retirement import ArtifactRetirementEventV1, ArtifactRetirementObjectKindV1
 
 RetirementRegistrationStatusV1 = Literal["inserted", "verified_existing"]
 
@@ -36,6 +37,13 @@ APPROVED_SYNTHETIC_FORECAST_IDS = (
     UUID("412ad71a-5b7d-5434-9d16-63c83b94fad6"),
     UUID("42716031-6b19-5fad-8b45-18dfb85238c1"),
     UUID("0eae5c6a-ba99-549c-a95c-763fa7eeaf77"),
+)
+
+APPROVED_SYNTHETIC_EVALUATION_IDS = (
+    UUID("01a04fd2-a0a9-7b81-bc06-9916dd4a6bc5"),
+    UUID("01a051c0-2be2-75d9-bc51-52b8848f90f1"),
+    UUID("01a051c4-8906-72a3-9d2c-70f4f6f419d9"),
+    UUID("01a06fc4-d748-7267-9236-0037c8254c3e"),
 )
 
 
@@ -72,15 +80,62 @@ class PostgresArtifactRetirementStore:
             raise ArtifactRetirementError("artifact retirement IDs must be unique and non-empty")
         with self._connection.transaction(), self._connection.cursor() as cursor:
             registered = tuple(
-                self._retire(cursor, forecast_id, evidence_reference, recorded_at, code_commit_sha)
+                self._retire(
+                    cursor,
+                    "FORECAST",
+                    forecast_id,
+                    evidence_reference,
+                    recorded_at,
+                    code_commit_sha,
+                )
                 for forecast_id in forecast_ids
+            )
+        return registered
+
+    def retire_evaluation(
+        self,
+        evaluation_id: UUID,
+        *,
+        evidence_reference: str,
+        recorded_at: datetime,
+        code_commit_sha: str,
+    ) -> RegisteredArtifactRetirementV1:
+        return self.retire_evaluations(
+            (evaluation_id,),
+            evidence_reference=evidence_reference,
+            recorded_at=recorded_at,
+            code_commit_sha=code_commit_sha,
+        )[0]
+
+    def retire_evaluations(
+        self,
+        evaluation_ids: tuple[UUID, ...],
+        *,
+        evidence_reference: str,
+        recorded_at: datetime,
+        code_commit_sha: str,
+    ) -> tuple[RegisteredArtifactRetirementV1, ...]:
+        if not evaluation_ids or len(set(evaluation_ids)) != len(evaluation_ids):
+            raise ArtifactRetirementError("artifact retirement IDs must be unique and non-empty")
+        with self._connection.transaction(), self._connection.cursor() as cursor:
+            registered = tuple(
+                self._retire(
+                    cursor,
+                    "EVALUATION",
+                    evaluation_id,
+                    evidence_reference,
+                    recorded_at,
+                    code_commit_sha,
+                )
+                for evaluation_id in evaluation_ids
             )
         return registered
 
     @staticmethod
     def _retire(
         cursor: Any,
-        forecast_id: UUID,
+        object_kind: ArtifactRetirementObjectKindV1,
+        object_id: UUID,
         evidence_reference: str,
         recorded_at: datetime,
         code_commit_sha: str,
@@ -91,28 +146,24 @@ class PostgresArtifactRetirementStore:
                 INSERT INTO football.artifact_retirement_events
                     (object_kind, object_id, retirement_scope, reason, evidence_reference,
                      recorded_at, code_commit_sha)
-                VALUES ('FORECAST', %s, 'TEST_ONLY_HARD_GATE_EXCLUSION',
+                VALUES (%s, %s, 'TEST_ONLY_HARD_GATE_EXCLUSION',
                         'SYNTHETIC_TEST_LINEAGE', %s, %s, %s)
                 ON CONFLICT (object_kind, object_id, retirement_scope, reason) DO NOTHING
                 """,
-                (forecast_id, evidence_reference, recorded_at, code_commit_sha),
+                (object_kind, object_id, evidence_reference, recorded_at, code_commit_sha),
             ).rowcount
-        except Exception as error:
-            if "foreign key" in str(error).lower():
-                raise ArtifactRetirementError(
-                    "artifact retirement target is not registered"
-                ) from error
-            raise
+        except ForeignKeyViolation as error:
+            raise ArtifactRetirementError("artifact retirement target is not registered") from error
         row = cursor.execute(
             """
             SELECT id, object_kind, object_id, retirement_scope, reason, evidence_reference,
                    recorded_at, code_commit_sha, contract_version
             FROM football.artifact_retirement_events
-            WHERE object_kind = 'FORECAST' AND object_id = %s
+            WHERE object_kind = %s AND object_id = %s
               AND retirement_scope = 'TEST_ONLY_HARD_GATE_EXCLUSION'
               AND reason = 'SYNTHETIC_TEST_LINEAGE'
             """,
-            (forecast_id,),
+            (object_kind, object_id),
         ).fetchone()
         if row is None:
             raise ArtifactRetirementError("artifact retirement was not registered")
@@ -168,6 +219,43 @@ def retire_approved_synthetic_forecasts(
         raise ArtifactRetirementError("approved synthetic forecast lineage conflicts with evidence")
     return PostgresArtifactRetirementStore(connection).retire_forecasts(
         APPROVED_SYNTHETIC_FORECAST_IDS,
+        evidence_reference=evidence_reference,
+        recorded_at=recorded_at,
+        code_commit_sha=code_commit_sha,
+    )
+
+
+def retire_approved_synthetic_evaluations(
+    connection: Connection[Any],
+    *,
+    evidence_reference: str,
+    recorded_at: datetime,
+    code_commit_sha: str,
+) -> tuple[RegisteredArtifactRetirementV1, ...]:
+    with connection.cursor() as cursor:
+        rows = tuple(
+            cursor.execute(
+                """
+                SELECT evaluation.id, snapshot.source_identity, snapshot.source_revision
+                FROM football.sprint2_evaluation_runs AS evaluation
+                JOIN football.source_snapshots AS snapshot
+                  ON snapshot.id = evaluation.source_snapshot_id
+                WHERE evaluation.id = ANY(%s)
+                ORDER BY evaluation.id
+                """,
+                (list(APPROVED_SYNTHETIC_EVALUATION_IDS),),
+            )
+        )
+    if {UUID(str(row[0])) for row in rows} != set(APPROVED_SYNTHETIC_EVALUATION_IDS):
+        raise ArtifactRetirementError("approved synthetic evaluation set is incomplete")
+    if any(
+        not str(row[1]).startswith("example/open-data/") or str(row[2]) != "b" * 40 for row in rows
+    ):
+        raise ArtifactRetirementError(
+            "approved synthetic evaluation lineage conflicts with evidence"
+        )
+    return PostgresArtifactRetirementStore(connection).retire_evaluations(
+        APPROVED_SYNTHETIC_EVALUATION_IDS,
         evidence_reference=evidence_reference,
         recorded_at=recorded_at,
         code_commit_sha=code_commit_sha,
