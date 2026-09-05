@@ -53,6 +53,36 @@ def test_provider_status_is_read_only_and_does_not_connect() -> None:
     assert '"provider_id": "statsbomb_open_data"' in stdout.getvalue()
 
 
+def test_provider_status_rejects_partial_lifecycle_scope_before_connecting() -> None:
+    stdout = StringIO()
+    stderr = StringIO()
+
+    exit_code = run(
+        ["provider", "status", "--provider-id", "statsbomb_open_data", "--resource-key", "events"],
+        environ={},
+        stdout=stdout,
+        stderr=stderr,
+    )
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert "--provider-sync-policy-config" in stderr.getvalue()
+
+
+def test_provider_status_does_not_accept_a_cli_freshness_target() -> None:
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(
+            [
+                "provider",
+                "status",
+                "--provider-id",
+                "statsbomb_open_data",
+                "--freshness-target",
+                "60",
+            ]
+        )
+
+
 @pytest.mark.parametrize("value", ("0", "-1", "abc", "1.5"))
 def test_positive_identifier_rejects_invalid_values(value: str) -> None:
     with pytest.raises(argparse.ArgumentTypeError, match="positive integer"):

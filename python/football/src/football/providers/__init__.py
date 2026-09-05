@@ -96,6 +96,10 @@ from football.providers.observability import (
     ProviderObservabilityError,
     ProviderObservabilitySnapshotV1,
 )
+from football.providers.observability_store import (
+    PostgresProviderObservabilityStoreV1,
+    ProviderObservabilityStoreError,
+)
 from football.providers.runtime_policy import (
     JitterModeV1,
     ProviderRuntimePolicyError,
@@ -110,6 +114,10 @@ from football.providers.statsbomb import StatsBombOpenDataAdapter
 from football.providers.sync_policy import (
     CursorStrategyV1,
     ProviderSyncPolicyError,
+    ProviderSyncPolicyRegistration,
+    ProviderSyncPolicyRegistryError,
+    ProviderSyncPolicyRegistryV1,
+    ProviderSyncPolicyScopeBinding,
     ProviderSyncPolicyV1,
 )
 from football.providers.worker import ProviderSyncWorkerError, ProviderSyncWorkerV1
@@ -132,6 +140,10 @@ __all__ = [
     "ProviderScopeV1",
     "CredentialTypeV1",
     "ProviderSyncPolicyError",
+    "ProviderSyncPolicyRegistration",
+    "ProviderSyncPolicyRegistryError",
+    "ProviderSyncPolicyRegistryV1",
+    "ProviderSyncPolicyScopeBinding",
     "ProviderSyncPolicyV1",
     "ProviderSyncWorkerError",
     "ProviderSyncWorkerV1",
@@ -193,4 +205,6 @@ __all__ = [
     "FreshnessStatusV1",
     "ProviderObservabilityError",
     "ProviderObservabilitySnapshotV1",
+    "PostgresProviderObservabilityStoreV1",
+    "ProviderObservabilityStoreError",
 ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -23,7 +24,12 @@ from football.forecasting.lifecycle import (
     Sprint2LifecycleClaimPublisher,
 )
 from football.ingestion import SourceAcquirer, StatsBombCanonicalIngestor
-from football.providers import FootballDataProvider
+from football.providers import (
+    FootballDataProvider,
+    PostgresProviderObservabilityStoreV1,
+    ProviderObservabilitySnapshotV1,
+    ProviderSyncPolicyRegistryV1,
+)
 from football.reports import (
     ReportSource,
     publish_competition_ingestion_report,
@@ -71,6 +77,20 @@ class SeasonValidationSummary:
     findings: int
 
 
+@dataclass(frozen=True)
+class ProviderStatusSummary:
+    snapshot: ProviderObservabilitySnapshotV1
+    policy_version: str
+    policy_sha256: str
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "policy_version": self.policy_version,
+            "policy_sha256": self.policy_sha256,
+            "snapshot": self.snapshot.to_dict(),
+        }
+
+
 class FootballApplication:
     def __init__(
         self,
@@ -80,6 +100,7 @@ class FootballApplication:
         quality_policy_path: Path,
         report_root: Path,
         evaluation_provenance: Sprint2EvidenceProvenanceV1 | None = None,
+        provider_sync_policies: ProviderSyncPolicyRegistryV1 | None = None,
     ) -> None:
         self._connection = connection
         self._data_root = data_root.resolve()
@@ -87,6 +108,7 @@ class FootballApplication:
         self._quality_policy_path = quality_policy_path.resolve()
         self._report_root = report_root.resolve()
         self._evaluation_provenance = evaluation_provenance
+        self._provider_sync_policies = provider_sync_policies
 
     def evaluate_sprint2(self) -> Sprint2GateSummary:
         return Sprint2GateService(
@@ -104,6 +126,31 @@ class FootballApplication:
 
     def resolve_sprint2_corners(self) -> CornerLabelPublicationResult:
         return Sprint2CornerLabelPublisher(self._connection, self._data_root).publish()
+
+    def provider_status(
+        self,
+        provider_id: str,
+        resource_key: str,
+        scope_key: str,
+        observed_at: datetime,
+    ) -> ProviderStatusSummary:
+        if self._provider_sync_policies is None:
+            raise ValueError("provider sync policy is unresolved for provider/resource/scope")
+        registration = self._provider_sync_policies.resolve(provider_id, resource_key, scope_key)
+        with self._connection.cursor() as cursor:
+            snapshot = PostgresProviderObservabilityStoreV1().snapshot(
+                cursor,
+                policies=self._provider_sync_policies,
+                provider_id=provider_id,
+                resource_key=resource_key,
+                scope_key=scope_key,
+                observed_at=observed_at,
+            )
+        return ProviderStatusSummary(
+            snapshot=snapshot,
+            policy_version=registration.policy_version,
+            policy_sha256=registration.policy.sha256,
+        )
 
     def ingest_competitions(self) -> CompetitionIngestionSummary:
         provider = self._require_provider()

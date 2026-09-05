@@ -11,6 +11,7 @@ def test_observability_snapshot_is_machine_readable_and_hashable() -> None:
     payload = snapshot.to_dict()
     assert payload["contract"] == "ProviderObservabilitySnapshotV1"
     assert payload["freshness_status"] == "FRESH"
+    assert payload["last_successful_validation_at"] == "2026-09-02T11:58:00+00:00"
     assert payload["alert_conditions"] == ["QUARANTINE_ITEMS_PRESENT"]
     assert len(snapshot.sha256) == 64
 
@@ -44,6 +45,12 @@ def test_observability_surfaces_operational_backlogs_and_schema_failures() -> No
     )
 
 
+def test_observability_surfaces_processing_failures() -> None:
+    snapshot = _snapshot(quarantine_count=0, processing_failure_count=1)
+
+    assert snapshot.alert_conditions == ("PROCESSING_FAILURES_PRESENT",)
+
+
 def test_observability_rejects_invalid_counts_and_timestamps() -> None:
     with pytest.raises(ProviderObservabilityError, match="cannot exceed"):
         _snapshot(resolution_attempt_count=1, resolution_success_count=2)
@@ -58,6 +65,7 @@ def _snapshot(**overrides: object) -> ProviderObservabilitySnapshotV1:
         "observed_at": datetime(2026, 9, 2, 12, 0, tzinfo=UTC),
         "last_successful_sync_at": datetime(2026, 9, 2, 11, 59, tzinfo=UTC),
         "last_successful_acquisition_at": datetime(2026, 9, 2, 11, 59, tzinfo=UTC),
+        "last_successful_validation_at": datetime(2026, 9, 2, 11, 58, tzinfo=UTC),
         "last_successful_publication_at": datetime(2026, 9, 2, 11, 59, tzinfo=UTC),
         "freshness_target_seconds": 3600,
         "discovered_count": 3,

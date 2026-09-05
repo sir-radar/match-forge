@@ -51,6 +51,8 @@ class ProviderObservabilitySnapshotV1:
     dataset_rebuild_queue_count: int = 0
     stale_dependency_count: int = 0
     last_cursor_advanced_at: datetime | None = None
+    processing_failure_count: int = 0
+    last_successful_validation_at: datetime | None = None
 
     def __post_init__(self) -> None:
         _validate_identity(self)
@@ -82,6 +84,7 @@ class ProviderObservabilitySnapshotV1:
             "observed_at": self.observed_at.isoformat(),
             "last_successful_sync_at": _iso(self.last_successful_sync_at),
             "last_successful_acquisition_at": _iso(self.last_successful_acquisition_at),
+            "last_successful_validation_at": _iso(self.last_successful_validation_at),
             "last_successful_publication_at": _iso(self.last_successful_publication_at),
             "freshness_target_seconds": self.freshness_target_seconds,
             "freshness_status": self.freshness_status,
@@ -108,6 +111,7 @@ class ProviderObservabilitySnapshotV1:
             "dataset_rebuild_queue_count": self.dataset_rebuild_queue_count,
             "stale_dependency_count": self.stale_dependency_count,
             "last_cursor_advanced_at": _iso(self.last_cursor_advanced_at),
+            "processing_failure_count": self.processing_failure_count,
             "alert_conditions": list(self.alert_conditions),
         }
 
@@ -135,6 +139,7 @@ def _validate_timestamps(snapshot: ProviderObservabilitySnapshotV1) -> None:
     for name, value in (
         ("last_successful_sync_at", snapshot.last_successful_sync_at),
         ("last_successful_acquisition_at", snapshot.last_successful_acquisition_at),
+        ("last_successful_validation_at", snapshot.last_successful_validation_at),
         ("last_successful_publication_at", snapshot.last_successful_publication_at),
         ("last_cursor_advanced_at", snapshot.last_cursor_advanced_at),
     ):
@@ -166,6 +171,7 @@ def _validate_counts(snapshot: ProviderObservabilitySnapshotV1) -> None:
         "resolution_review_backlog_count",
         "dataset_rebuild_queue_count",
         "stale_dependency_count",
+        "processing_failure_count",
     )
     if any(getattr(snapshot, name) < 0 for name in count_fields):
         raise ProviderObservabilityError("observability counts must not be negative")
@@ -193,6 +199,7 @@ def _failure_alerts(snapshot: ProviderObservabilitySnapshotV1) -> list[str]:
         (snapshot.unresolved_conflict_count, "UNRESOLVED_CONFLICTS_PRESENT"),
         (snapshot.publication_failure_count, "PUBLICATION_FAILURES_PRESENT"),
         (snapshot.reconciliation_failure_count, "RECONCILIATION_FAILURES_PRESENT"),
+        (snapshot.processing_failure_count, "PROCESSING_FAILURES_PRESENT"),
         (snapshot.schema_compatibility_failure_count, "SCHEMA_COMPATIBILITY_FAILURES_PRESENT"),
         (snapshot.quota_exhaustion_count, "QUOTA_EXHAUSTION_PRESENT"),
         (snapshot.resolution_review_backlog_count, "RESOLUTION_REVIEW_BACKLOG_PRESENT"),
