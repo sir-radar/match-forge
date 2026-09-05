@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID, uuid5
 
+from football.contracts.competition import CompetitionRulesV1
 from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.forecasting.adapters import EloOneXTwoAdapterV1
 from football.forecasting.artifacts import (
@@ -97,12 +98,14 @@ class Sprint2BatchPublisher:
         forecast_publisher: Sprint2ForecastPublisherPort,
         policy: Sprint2ExecutionPolicyV1,
         provenance: Sprint2ExecutionProvenanceV1,
+        competition_rules: CompetitionRulesV1,
     ) -> None:
         self._artifacts = artifact_publisher
         self._loader = artifact_loader
         self._forecasts = forecast_publisher
         self._policy = policy
         self._provenance = provenance
+        self._competition_rules = competition_rules
 
     def publish_batch(
         self,
@@ -277,6 +280,7 @@ class Sprint2BatchPublisher:
                 artifacts["TEAM_ELO"].manifest.model_artifact_id,
                 "team-elo",
                 context_sha256,
+                self._competition_rules,
                 match_result=raw.elo_result,
             ),
             _forecast(
@@ -285,6 +289,7 @@ class Sprint2BatchPublisher:
                 artifacts["DIXON_COLES_GOALS"].manifest.model_artifact_id,
                 "dixon-coles-goals",
                 context_sha256,
+                self._competition_rules,
                 match_result=raw.dixon_coles_result,
                 goal=raw.goal,
             ),
@@ -294,6 +299,7 @@ class Sprint2BatchPublisher:
                 artifacts["CORNER_POISSON"].manifest.model_artifact_id,
                 "corner-poisson",
                 context_sha256,
+                self._competition_rules,
                 corners=raw.corner_poisson,
             ),
             _forecast(
@@ -302,6 +308,7 @@ class Sprint2BatchPublisher:
                 artifacts["CORNER_NEGATIVE_BINOMIAL"].manifest.model_artifact_id,
                 "corner-negative-binomial",
                 context_sha256,
+                self._competition_rules,
                 corners=raw.corner_negative_binomial,
             ),
         )
@@ -317,6 +324,7 @@ def _forecast(
     artifact_id: UUID,
     family: str,
     context_sha256: str,
+    competition_rules: CompetitionRulesV1,
     *,
     match_result: MatchResultProbabilitiesV1 | None = None,
     goal: GoalForecastPayloadV1 | None = None,
@@ -331,6 +339,7 @@ def _forecast(
                 "scope": scope.to_dict(),
                 "match_id": str(raw.context.match_id),
                 "artifact_id": str(artifact_id),
+                "competition_rules": competition_rules.to_dict(),
                 "forecast_context_sha256": context_sha256,
                 "payload_sha256": payload_sha256,
             }
@@ -341,6 +350,7 @@ def _forecast(
         match_id=raw.context.match_id,
         prediction_cutoff=raw.context.kickoff_at,
         scope=scope,
+        competition_rules=competition_rules,
         probability_variant="MODEL_RAW",
         model_artifact_ids=(artifact_id,),
         forecast_context_sha256=context_sha256,

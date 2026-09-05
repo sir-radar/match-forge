@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+from football.contracts import CompetitionRulesV1
 from football.forecasting.artifacts import (
     PortableModelArtifactStore,
     PublishedModelArtifactV1,
@@ -225,6 +226,7 @@ def test_batch_publisher_freezes_four_artifacts_and_forecasts_with_retry(
             dependency_lock_sha256="d" * 64,
             published_at=cutoff + timedelta(days=2),
         ),
+        competition_rules=_competition_rules(),
     )
 
     first = publisher.publish_batch(scope, fitted, forecasts)
@@ -378,6 +380,21 @@ def _history_outcomes(
             outcome_known_at=match.kickoff_at + timedelta(hours=2),
         )
         for index, match in enumerate(history)
+    )
+
+
+def _competition_rules() -> CompetitionRulesV1:
+    return CompetitionRulesV1(
+        rules_id="test-league-v1",
+        competition_ref="test:competition:1",
+        competition_format="LEAGUE",
+        tie_structure="ROUND_ROBIN",
+        outcome_scope="REGULATION_TIME",
+        extra_time_policy="NEVER",
+        shootout_policy="NEVER",
+        neutral_venue_policy="NOT_APPLICABLE",
+        policy_version="competition-rules-v1",
+        source_refs=("test-catalog",),
     )
 
 

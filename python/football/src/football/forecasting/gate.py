@@ -9,6 +9,7 @@ from uuid import UUID, uuid5
 
 from psycopg import Connection
 
+from football.contracts.competition import CompetitionRulesV1
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.artifacts import ModelArtifactPublisher, PortableModelArtifactStore
 from football.forecasting.baseline_policy import (
@@ -160,7 +161,7 @@ class Sprint2GateService:
         cutoff_start = plan.batches[0].kickoff_at
         cutoff_end = plan.batches[-1].kickoff_at
         try:
-            run = self._runner(provider, policy, completed_at).run(
+            run = self._runner(provider, policy, completed_at, requested.competition_rules).run(
                 evaluation_run_id=evaluation_run_id,
                 target_plan=target_plan,
                 provenance=self._provenance,
@@ -224,6 +225,7 @@ class Sprint2GateService:
         provider: PointInTimeMatchDatasetProvider,
         policy: Sprint2ExecutionPolicyV1,
         completed_at: datetime,
+        competition_rules: CompetitionRulesV1,
     ) -> Sprint2EvaluationRunner:
         if self._data_root is None or self._provenance is None:
             raise RuntimeError("Sprint 2 execution configuration is missing")
@@ -237,6 +239,7 @@ class Sprint2GateService:
                 self._provenance.dependency_lock_sha256,
                 completed_at,
             ),
+            competition_rules=competition_rules,
         )
         executor = Sprint2WalkForwardExecutor(
             provider=provider,

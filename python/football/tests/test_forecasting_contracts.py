@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+from football.contracts import CompetitionRulesV1
 from football.forecasting.contracts import (
     ArtifactCompatibilityV1,
     ArtifactFileV1,
@@ -143,6 +144,7 @@ def test_raw_forecast_identity_is_stable_and_contains_no_outcome() -> None:
         match_id=MATCH_ID,
         prediction_cutoff=CUTOFF,
         scope=_scope(),
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_RAW",
         model_artifact_ids=(ARTIFACT_ID,),
         forecast_context_sha256=SHA_C,
@@ -154,6 +156,7 @@ def test_raw_forecast_identity_is_stable_and_contains_no_outcome() -> None:
         match_id=MATCH_ID,
         prediction_cutoff=CUTOFF,
         scope=_scope(),
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_RAW",
         model_artifact_ids=(ARTIFACT_ID,),
         forecast_context_sha256=SHA_C,
@@ -162,6 +165,7 @@ def test_raw_forecast_identity_is_stable_and_contains_no_outcome() -> None:
     )
 
     assert forecast.semantic_sha256 == same_semantics.semantic_sha256
+    assert forecast.competition_rules.outcome_scope == "REGULATION_TIME"
     assert "outcome" not in forecast.to_dict()
     assert "home_score" not in forecast.to_dict()
     _validate_schema("baseline-forecast-v1.schema.json", forecast.to_dict())
@@ -174,6 +178,7 @@ def test_calibrated_forecasts_require_a_distinct_calibrator_artifact() -> None:
             match_id=MATCH_ID,
             prediction_cutoff=CUTOFF,
             scope=_scope(),
+            competition_rules=_competition_rules(),
             probability_variant="MODEL_CALIBRATED",
             model_artifact_ids=(ARTIFACT_ID,),
             forecast_context_sha256=SHA_C,
@@ -185,6 +190,7 @@ def test_calibrated_forecasts_require_a_distinct_calibrator_artifact() -> None:
         match_id=MATCH_ID,
         prediction_cutoff=CUTOFF,
         scope=_scope(),
+        competition_rules=_competition_rules(),
         probability_variant="MODEL_CALIBRATED",
         model_artifact_ids=(ARTIFACT_ID,),
         forecast_context_sha256=SHA_C,
@@ -246,6 +252,21 @@ def _scope() -> PointInTimeScopeV1:
         knowledge_mode="bitemporal",
         quality_policy_sha256=SHA_B,
         target_set_sha256=SHA_C,
+    )
+
+
+def _competition_rules() -> CompetitionRulesV1:
+    return CompetitionRulesV1(
+        rules_id="rules-epl-v1",
+        competition_ref="statsbomb_open_data:competition:2",
+        competition_format="LEAGUE",
+        tie_structure="ROUND_ROBIN",
+        outcome_scope="REGULATION_TIME",
+        extra_time_policy="NEVER",
+        shootout_policy="NEVER",
+        neutral_venue_policy="NOT_APPLICABLE",
+        policy_version="competition-rules-v1",
+        source_refs=("competition-catalog-v1",),
     )
 
 
