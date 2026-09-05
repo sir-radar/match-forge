@@ -9,6 +9,7 @@ from football.datasets.contracts import (
 )
 from football.datasets.events import (
     DatasetPublicationError,
+    DatasetVerificationResult,
     EventDatasetPublicationResult,
     StatsBombEventDatasetPublisher,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "DatasetBuildSpecV1",
     "DatasetRebuildRequestV1",
     "DatasetPublicationError",
+    "DatasetVerificationResult",
     "RebuildRequestReasonV1",
     "RebuildRequestStatusV1",
     "EventDatasetPublicationResult",

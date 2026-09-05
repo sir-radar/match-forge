@@ -4,7 +4,7 @@ import json
 import os
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Barrier
@@ -15,7 +15,11 @@ import psycopg
 import pyarrow.parquet as pq
 import pytest
 from football.contracts import SourceResource, SourceSnapshot
-from football.datasets import DatasetPublicationError, StatsBombEventDatasetPublisher
+from football.datasets import (
+    DatasetBuildSpecV1,
+    DatasetPublicationError,
+    StatsBombEventDatasetPublisher,
+)
 from football.forecasting.contracts import PointInTimeScopeV1
 from football.forecasting.corner_labels import (
     CornerLabelError,
@@ -37,9 +41,12 @@ from football.ingestion import (
     SourceIntegrityError,
     StatsBombCanonicalIngestor,
 )
+from football.ingestion.dependencies import SourceCorrectionPropagatorV1
+from football.normalization.statsbomb_events import NORMALIZER_VERSION
 from football.validation import QualityPolicy, StatsBombDatasetValidator
 from jsonschema import validate as validate_json
 from psycopg import Connection
+from psycopg.types.json import Jsonb
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
@@ -348,6 +355,143 @@ def _acquire_bundle(
     provider = FixtureProvider(source_git_sha, payloads)
     resources = tuple(SourceResource(path) for path in payloads)
     return SourceAcquirer(data_root, clock=lambda: acquired_at).acquire(provider, resources)
+
+
+def _event_build_spec(
+    connection: Connection[Any],
+    source_snapshot_id: UUID,
+    *,
+    knowledge_cutoff: datetime | None = None,
+) -> DatasetBuildSpecV1:
+    with connection.cursor() as cursor:
+        source_inputs = tuple(
+            f"source_resource:{resource_id}:{checksum}"
+            for resource_id, checksum in cursor.execute(
+                """
+                SELECT id, sha256
+                FROM football.source_resources
+                WHERE source_snapshot_id = %s
+                ORDER BY provider_path
+                """,
+                (source_snapshot_id,),
+            )
+        )
+        canonical_inputs = tuple(
+            f"canonical_event:{event_id}"
+            for (event_id,) in cursor.execute(
+                """
+                SELECT event_id
+                FROM football.event_observations
+                WHERE source_snapshot_id = %s
+                ORDER BY event_id
+                """,
+                (source_snapshot_id,),
+            )
+        )
+    return DatasetBuildSpecV1(
+        dataset_contract="statsbomb_normalized_events",
+        dataset_version="v1",
+        source_input_refs=source_inputs,
+        canonical_input_refs=canonical_inputs,
+        football_cutoff=datetime(2022, 12, 18, 17, 0, tzinfo=UTC),
+        knowledge_cutoff=knowledge_cutoff or datetime(2026, 9, 5, 9, 0, tzinfo=UTC),
+        knowledge_mode="historical",
+        feature_versions=(NORMALIZER_VERSION,),
+        quality_policy_version="statsbomb-quality-policy-v3",
+        resolution_policy_version="statsbomb-resolution-v1",
+        code_git_sha="a" * 40,
+        dependency_lock_sha256="b" * 64,
+        configuration={"competition_id": 43, "season_id": 106},
+    )
+
+
+def _trusted_dataset_correction(connection: Connection[Any], source_snapshot_id: UUID) -> UUID:
+    recorded_at = datetime(2026, 9, 5, 10, 0, tzinfo=UTC)
+    with connection.cursor() as cursor:
+        provider_id, source_revision = cursor.execute(
+            """
+            SELECT snapshot.provider_id, snapshot.source_revision
+            FROM football.source_snapshots AS snapshot
+            WHERE snapshot.id = %s
+            """,
+            (source_snapshot_id,),
+        ).fetchone()
+        resource_id, provider_path, checksum = cursor.execute(
+            """
+            SELECT id, provider_path, sha256
+            FROM football.source_resources
+            WHERE source_snapshot_id = %s AND provider_path = 'data/events/3869685.json'
+            """,
+            (source_snapshot_id,),
+        ).fetchone()
+        sync_run_id = cursor.execute(
+            """
+            INSERT INTO football.provider_sync_runs
+                (provider_id, policy_version, status, run_key, started_at, completed_at)
+            VALUES (%s, 'dataset-rebuild-v1', 'succeeded', %s, %s, %s)
+            RETURNING id
+            """,
+            (provider_id, uuid4().hex * 2, recorded_at, recorded_at),
+        ).fetchone()[0]
+        job_id = cursor.execute(
+            """
+            INSERT INTO football.acquisition_jobs
+                (sync_run_id, provider_id, resource_key, scope_key, resource_identity,
+                 resource_revision, status)
+            VALUES (%s, %s, %s, 'global', %s, %s, 'validated')
+            RETURNING id
+            """,
+            (
+                sync_run_id,
+                provider_id,
+                provider_path,
+                f"statsbomb-open-data/{source_snapshot_id}",
+                source_revision,
+            ),
+        ).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO football.acquired_resources
+                (acquisition_job_id, source_snapshot_id, source_resource_id, raw_path, raw_sha256,
+                 size_bytes, status, acquired_at)
+            VALUES (%s, %s, %s, %s, %s, 1, 'validated', %s)
+            """,
+            (
+                job_id,
+                source_snapshot_id,
+                resource_id,
+                f"raw/{provider_path}",
+                checksum,
+                recorded_at,
+            ),
+        )
+        change_set_id = cursor.execute(
+            """
+            INSERT INTO football.canonical_change_sets
+                (sync_run_id, change_key, status, changes, publication_scope, published_at)
+            VALUES (%s, %s, 'published', %s, 'REAL_PROVIDER', %s)
+            RETURNING id
+            """,
+            (
+                sync_run_id,
+                uuid4().hex * 2,
+                Jsonb(
+                    {
+                        "source_resources": [
+                            {
+                                "resource_ref": f"statsbomb_open_data/{provider_path}",
+                                "sha256": checksum,
+                            }
+                        ],
+                        "added_observation_refs": [],
+                        "superseding_observation_refs": [],
+                    }
+                ),
+                recorded_at,
+            ),
+        ).fetchone()[0]
+        SourceCorrectionPropagatorV1().propagate(cursor, UUID(str(change_set_id)))
+    return UUID(str(change_set_id))
 
 
 def _provider_id(connection: Connection[Any]) -> UUID:
@@ -1145,6 +1289,198 @@ def test_publishes_and_registers_normalized_event_dataset_idempotently(
             "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18",
         )
     ]
+
+
+def test_explicit_build_spec_reuses_verified_dataset_and_changes_identity_only_for_semantic_change(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="a" * 40,
+        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    spec = _event_build_spec(connection, canonical.source_snapshot_id)
+    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+
+    first = publisher.publish(acquisition, spec)
+    retry = publisher.publish(acquisition, spec)
+    changed_spec = replace(spec, quality_policy_version="statsbomb-quality-policy-v4")
+    changed = publisher.publish(acquisition, changed_spec)
+
+    assert first.dataset_version_id == retry.dataset_version_id
+    assert first.build_spec_sha256 == retry.build_spec_sha256 == spec.sha256
+    assert changed.dataset_version_id != first.dataset_version_id
+    assert changed.build_spec_sha256 == changed_spec.sha256
+    assert first.files[0].logical_sha256 == retry.files[0].logical_sha256
+    assert first.files[0].physical_sha256 == retry.files[0].physical_sha256
+    verified = publisher.verify(first.dataset_version_id)
+    assert verified.status == "verified"
+    with connection.cursor() as cursor:
+        count = cursor.execute(
+            "SELECT count(*) FROM football.dataset_versions WHERE build_spec_sha256 IN (%s, %s)",
+            (spec.sha256, changed_spec.sha256),
+        ).fetchone()
+    assert count == (2,)
+
+
+def test_explicit_build_spec_rejects_source_or_canonical_input_drift_before_publication(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="b" * 40,
+        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    spec = _event_build_spec(connection, canonical.source_snapshot_id)
+
+    with pytest.raises(DatasetPublicationError, match="source inputs"):
+        StatsBombEventDatasetPublisher(connection, tmp_path).publish(
+            acquisition,
+            replace(spec, source_input_refs=spec.source_input_refs[:-1]),
+        )
+
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT count(*) FROM football.dataset_versions WHERE source_snapshot_id = %s",
+            (canonical.source_snapshot_id,),
+        ).fetchone() == (0,)
+
+
+def test_trusted_correction_rebuilds_a_new_dataset_and_preserves_the_old_dataset(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    first_acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="c" * 40,
+        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    first_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(first_acquisition)
+    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+    first = publisher.publish(
+        first_acquisition,
+        _event_build_spec(connection, first_canonical.source_snapshot_id),
+    )
+    first_file_bytes = first.files[0].absolute_path.read_bytes()
+    first_manifest_bytes = first.manifest_path.read_bytes()
+    change_set_id = _trusted_dataset_correction(connection, first_canonical.source_snapshot_id)
+
+    second_acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="d" * 40,
+        acquired_at=datetime(2026, 9, 5, 11, 0, tzinfo=UTC),
+        events=_event_payload(second_type="Carry"),
+    )
+    second_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(second_acquisition)
+    historical_spec = _event_build_spec(connection, second_canonical.source_snapshot_id)
+
+    with pytest.raises(DatasetPublicationError, match="not known by the knowledge cutoff"):
+        publisher.publish(second_acquisition, historical_spec)
+
+    second_spec = _event_build_spec(
+        connection,
+        second_canonical.source_snapshot_id,
+        knowledge_cutoff=datetime(2026, 9, 5, 12, 0, tzinfo=UTC),
+    )
+
+    with pytest.raises(DatasetPublicationError, match="source inputs"):
+        publisher.publish(
+            second_acquisition,
+            replace(second_spec, source_input_refs=second_spec.source_input_refs[:-1]),
+            supersedes_dataset_id=first.dataset_version_id,
+            cause_change_set_id=change_set_id,
+        )
+    with connection.cursor() as cursor:
+        state = cursor.execute(
+            """
+            SELECT state FROM football.derived_state_events
+            WHERE object_kind = 'DATASET' AND object_id = %s
+            ORDER BY recorded_at DESC, id DESC LIMIT 1
+            """,
+            (first.dataset_version_id,),
+        ).fetchone()
+    assert state == ("REBUILD_REQUIRED",)
+
+    second = publisher.publish(
+        second_acquisition,
+        second_spec,
+        supersedes_dataset_id=first.dataset_version_id,
+        cause_change_set_id=change_set_id,
+    )
+    retry = publisher.publish(
+        second_acquisition,
+        second_spec,
+        supersedes_dataset_id=first.dataset_version_id,
+        cause_change_set_id=change_set_id,
+    )
+
+    assert second.dataset_version_id != first.dataset_version_id
+    assert retry.dataset_version_id == second.dataset_version_id
+    assert first.files[0].absolute_path.read_bytes() == first_file_bytes
+    assert first.manifest_path.read_bytes() == first_manifest_bytes
+    assert publisher.verify(first.dataset_version_id).status == "verified"
+    assert publisher.verify(second.dataset_version_id).status == "verified"
+    with connection.cursor() as cursor:
+        old_state = cursor.execute(
+            """
+            SELECT state FROM football.derived_state_events
+            WHERE object_kind = 'DATASET' AND object_id = %s
+            ORDER BY recorded_at, id
+            """,
+            (first.dataset_version_id,),
+        ).fetchall()
+        lineage = cursor.execute(
+            """
+            SELECT count(*) FROM football.dependency_edges
+            WHERE upstream_kind = 'DATASET' AND upstream_id = %s
+              AND relationship = 'DERIVED_FROM' AND downstream_kind = 'DATASET'
+              AND downstream_id = %s
+            """,
+            (first.dataset_version_id, second.dataset_version_id),
+        ).fetchone()
+        source_snapshots = cursor.execute(
+            """
+            SELECT source_snapshot_id FROM football.dataset_versions
+            WHERE id IN (%s, %s) ORDER BY id
+            """,
+            (first.dataset_version_id, second.dataset_version_id),
+        ).fetchall()
+    assert old_state == [("REBUILD_REQUIRED",), ("SUPERSEDED",)]
+    assert lineage == (1,)
+    assert len(source_snapshots) == 2
+    assert source_snapshots[0] != source_snapshots[1]
+
+
+def test_explicit_build_spec_recovers_after_file_publication_database_rollback(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    acquisition = _acquire_bundle(
+        tmp_path,
+        source_git_sha="e" * 40,
+        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+        events=_event_payload(),
+    )
+    canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+    spec = _event_build_spec(connection, canonical.source_snapshot_id)
+    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+
+    with connection.transaction(force_rollback=True):
+        orphaned = publisher.publish(acquisition, spec)
+
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT count(*) FROM football.dataset_versions WHERE id = %s",
+            (orphaned.dataset_version_id,),
+        ).fetchone() == (0,)
+    recovered = publisher.publish(acquisition, spec)
+
+    assert recovered.dataset_version_id == orphaned.dataset_version_id
+    assert recovered.status == "verified_published"
+    assert publisher.verify(recovered.dataset_version_id).status == "verified"
 
 
 def test_dataset_publication_requires_canonical_source_registration(

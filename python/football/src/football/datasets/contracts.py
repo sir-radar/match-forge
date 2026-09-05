@@ -199,6 +199,8 @@ class DatasetManifest:
     source_git_sha: str
     normalizer_version: str
     files: tuple[DatasetManifestFile, ...]
+    build_spec: DatasetBuildSpecV1 | None = None
+    build_spec_sha256: str | None = None
     contract: str = "DatasetManifestV1"
 
     def __post_init__(self) -> None:
@@ -215,9 +217,13 @@ class DatasetManifest:
         paths = [file.relative_path for file in self.files]
         if len(paths) != len(set(paths)):
             raise ValueError("dataset manifest file paths must be unique")
+        if (self.build_spec is None) != (self.build_spec_sha256 is None):
+            raise ValueError("dataset manifest build specification is incomplete")
+        if self.build_spec is not None and self.build_spec_sha256 != self.build_spec.sha256:
+            raise ValueError("dataset manifest build specification checksum conflicts")
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "contract": self.contract,
             "dataset_version_id": str(self.dataset_version_id),
             "dataset_name": self.dataset_name,
@@ -227,6 +233,10 @@ class DatasetManifest:
             "normalizer_version": self.normalizer_version,
             "files": [file.to_dict() for file in self.files],
         }
+        if self.build_spec is not None:
+            payload["build_spec"] = self.build_spec.to_dict()
+            payload["build_spec_sha256"] = self.build_spec_sha256
+        return payload
 
     def to_bytes(self) -> bytes:
         return canonical_json_bytes(self.to_dict()) + b"\n"
