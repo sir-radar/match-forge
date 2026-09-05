@@ -529,10 +529,11 @@ def _open_quarantine(connection: Connection[Any], job_id: UUID, resource_id: UUI
         cursor.execute(
             """
             INSERT INTO football.quarantine_records
-                (acquisition_job_id, source_resource_id, finding_key, reason_code, details, status)
-            VALUES (%s, %s, %s, 'TEST_FAILURE', '{}'::jsonb, 'open')
+                (acquisition_job_id, source_resource_id, finding_key, reason_code, details, status,
+                 created_at)
+            VALUES (%s, %s, %s, 'TEST_FAILURE', '{}'::jsonb, 'open', %s)
             """,
-            (job_id, resource_id, "6" * 64),
+            (job_id, resource_id, "6" * 64, datetime(2026, 9, 5, 11, 50, tzinfo=UTC)),
         )
 
 
