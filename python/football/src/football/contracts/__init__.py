@@ -27,6 +27,10 @@ from football.contracts.provider_acceptance import (
     ProviderAcceptanceStatusV1,
     ProviderPlatformAcceptanceReportV1,
 )
+from football.contracts.retirement import (
+    ArtifactRetirementContractError,
+    ArtifactRetirementEventV1,
+)
 from football.contracts.source import (
     ManifestResource,
     SourceManifest,
@@ -55,6 +59,8 @@ __all__ = [
     "ProviderAcceptanceError",
     "ProviderAcceptanceStatusV1",
     "ProviderPlatformAcceptanceReportV1",
+    "ArtifactRetirementContractError",
+    "ArtifactRetirementEventV1",
     "ManifestResource",
     "SourceManifest",
     "SourceResource",

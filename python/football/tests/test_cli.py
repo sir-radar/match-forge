@@ -5,7 +5,13 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
-from football.cli.main import DEFAULT_QUALITY_POLICY, build_parser, positive_identifier, run
+from football.cli.main import (
+    DEFAULT_QUALITY_POLICY,
+    build_parser,
+    immutable_identifier,
+    positive_identifier,
+    run,
+)
 
 
 def test_default_quality_policy_is_available() -> None:
@@ -21,6 +27,24 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     validation = parser.parse_args(["validate", "season", "106"])
     lifecycle = parser.parse_args(["resolve", "sprint2-lifecycle"])
     kickoffs = parser.parse_args(["resolve", "sprint2-kickoffs"])
+    integrity = parser.parse_args(["integrity", "dataset", "10000000-0000-4000-8000-000000000001"])
+    hard_gate = parser.parse_args(["integrity", "hard-gate"])
+    retire = parser.parse_args(
+        [
+            "retire",
+            "approved-test-forecast-lineage",
+            "--evidence-reference",
+            "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
+        ]
+    )
+    retire_evaluation = parser.parse_args(
+        [
+            "retire",
+            "approved-test-evaluation-lineage",
+            "--evidence-reference",
+            "decision:APPROVE_APPEND_ONLY_SYNTHETIC_EVALUATION_RETIREMENT",
+        ]
+    )
     provider_status = parser.parse_args(
         ["provider", "status", "--provider-id", "statsbomb_open_data"]
     )
@@ -35,6 +59,21 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     )
     assert (lifecycle.command, lifecycle.scope) == ("resolve", "sprint2-lifecycle")
     assert (kickoffs.command, kickoffs.scope) == ("resolve", "sprint2-kickoffs")
+    assert (integrity.command, integrity.scope, str(integrity.artifact_id)) == (
+        "integrity",
+        "dataset",
+        "10000000-0000-4000-8000-000000000001",
+    )
+    assert (hard_gate.command, hard_gate.scope) == ("integrity", "hard-gate")
+    assert (retire.command, retire.scope, retire.evidence_reference) == (
+        "retire",
+        "approved-test-forecast-lineage",
+        "decision:APPROVE_APPEND_ONLY_TEST_LINEAGE_RETIREMENT",
+    )
+    assert (retire_evaluation.command, retire_evaluation.scope) == (
+        "retire",
+        "approved-test-evaluation-lineage",
+    )
     assert (provider_status.command, provider_status.scope, provider_status.provider_id) == (
         "provider",
         "status",
@@ -87,6 +126,11 @@ def test_provider_status_does_not_accept_a_cli_freshness_target() -> None:
 def test_positive_identifier_rejects_invalid_values(value: str) -> None:
     with pytest.raises(argparse.ArgumentTypeError, match="positive integer"):
         positive_identifier(value)
+
+
+def test_integrity_identifier_rejects_non_uuid() -> None:
+    with pytest.raises(argparse.ArgumentTypeError, match="UUID"):
+        immutable_identifier("not-a-uuid")
 
 
 def test_ingest_requires_pinned_source_revision_before_connecting() -> None:

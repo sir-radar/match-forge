@@ -6,9 +6,10 @@ import os
 import sys
 from collections.abc import Callable, Mapping
 from contextlib import AbstractContextManager
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
+from uuid import UUID
 
 import psycopg
 from psycopg import Connection
@@ -20,6 +21,7 @@ from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
+from football.integrity import IntegrityArtifactKind
 from football.providers import (
     FootballDataProvider,
     ProviderCapabilityError,
@@ -72,6 +74,13 @@ def observed_at(value: str) -> datetime:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise argparse.ArgumentTypeError("as-of must include a timezone")
     return parsed
+
+
+def immutable_identifier(value: str) -> UUID:
+    try:
+        return UUID(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("identifier must be a UUID") from error
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -148,6 +157,28 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="configured ProviderSyncPolicyRegistryV1 JSON path",
     )
+
+    integrity = commands.add_parser("integrity", help="verify registered immutable bytes")
+    integrity_scopes = integrity.add_subparsers(dest="scope", required=True)
+    for scope in ("raw", "dataset", "model"):
+        check = integrity_scopes.add_parser(scope, help=f"verify one registered {scope}")
+        check.add_argument("artifact_id", type=immutable_identifier)
+    integrity_scopes.add_parser(
+        "hard-gate", help="verify production forecast and evaluation hard-gate scope"
+    )
+
+    retire = commands.add_parser("retire", help="record governed immutable-artifact retirement")
+    retire_scopes = retire.add_subparsers(dest="scope", required=True)
+    retire_test = retire_scopes.add_parser(
+        "approved-test-forecast-lineage",
+        help="exclude the approved synthetic forecast rows from hard-gate scope",
+    )
+    retire_test.add_argument("--evidence-reference", required=True)
+    retire_evaluation = retire_scopes.add_parser(
+        "approved-test-evaluation-lineage",
+        help="exclude the approved synthetic evaluation rows from hard-gate scope",
+    )
+    retire_evaluation.add_argument("--evidence-reference", required=True)
     return parser
 
 
@@ -230,7 +261,7 @@ def run(
                 evaluation_provenance,
                 provider_sync_policies,
             )
-            return _execute(application, args, output)
+            return _execute(application, args, output, errors, code_commit_sha)
     except ValueError as error:
         print(f"error: {error}", file=errors)
         return 2
@@ -310,7 +341,17 @@ def _provider_status_preflight(
     return 0
 
 
-def _execute(application: FootballApplication, args: argparse.Namespace, output: TextIO) -> int:
+def _execute(
+    application: FootballApplication,
+    args: argparse.Namespace,
+    output: TextIO,
+    errors: TextIO,
+    code_commit_sha: str | None,
+) -> int:
+    if args.command == "integrity":
+        return _execute_integrity(application, args, output)
+    if args.command == "retire":
+        return _execute_retirement(application, args, output, errors, code_commit_sha)
     if args.command == "provider" and args.scope == "status":
         status = application.provider_status(
             args.provider_id,
@@ -394,3 +435,53 @@ def _execute(application: FootballApplication, args: argparse.Namespace, output:
         file=output,
     )
     return {"quarantined": 5, "failed": 6}.get(validation_result.status, 0)
+
+
+def _execute_integrity(
+    application: FootballApplication, args: argparse.Namespace, output: TextIO
+) -> int:
+    if args.scope == "hard-gate":
+        hard_gate = application.verify_forecast_evaluation_hard_gate()
+        print(json.dumps(hard_gate.to_dict(), sort_keys=True), file=output)
+        return 0 if hard_gate.status == "PASS" else 4
+    integrity_kinds: dict[str, IntegrityArtifactKind] = {
+        "raw": "RAW_RESOURCE",
+        "dataset": "DATASET",
+        "model": "MODEL_ARTIFACT",
+    }
+    result = application.verify_integrity(integrity_kinds[args.scope], args.artifact_id)
+    print(json.dumps(result.to_dict(), sort_keys=True), file=output)
+    return 0 if result.status == "PASS" else 4
+
+
+def _execute_retirement(
+    application: FootballApplication,
+    args: argparse.Namespace,
+    output: TextIO,
+    errors: TextIO,
+    code_commit_sha: str | None,
+) -> int:
+    if not code_commit_sha:
+        print(
+            "error: code Git SHA is required; set FOOTBALL_CODE_COMMIT_SHA or --code-commit-sha",
+            file=errors,
+        )
+        return 2
+    retire = (
+        application.retire_approved_synthetic_forecasts
+        if args.scope == "approved-test-forecast-lineage"
+        else application.retire_approved_synthetic_evaluations
+    )
+    events = retire(
+        evidence_reference=args.evidence_reference,
+        recorded_at=datetime.now(UTC),
+        code_commit_sha=code_commit_sha,
+    )
+    print(
+        json.dumps(
+            {"events": [event.event.to_dict() | {"status": event.status} for event in events]},
+            sort_keys=True,
+        ),
+        file=output,
+    )
+    return 0
