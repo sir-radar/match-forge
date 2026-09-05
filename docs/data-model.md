@@ -127,7 +127,7 @@ Within one source snapshot, provider event IDs and `(provider_match_id, event_in
 
 ## Dataset registry
 
-`dataset_versions` registers immutable normalized dataset identity, schema and normalizer versions, source snapshot, manifest checksum, and publication state. `dataset_inputs` binds each version to source resources from the same snapshot through composite foreign keys. `dataset_files` records relative Parquet paths, physical and logical SHA-256 checksums, row counts, sizes, and schema checksum.
+`dataset_versions` registers immutable normalized dataset identity, schema and normalizer versions, source snapshot, manifest checksum, optional `DatasetBuildSpecV1` checksum, and publication state. `dataset_inputs` binds each version to source resources from the same snapshot through composite foreign keys. `dataset_files` records relative Parquet paths, physical and logical SHA-256 checksums, row counts, sizes, and schema checksum. The optional build-spec checksum applies only to new explicit rebuilds; null on older rows means the original exact build request was not available and has not been invented.
 
 Filesystem publication precedes database registration. A registration rollback therefore cannot erase an already published immutable artifact; an identical rerun verifies the files and manifest, then reconciles missing PostgreSQL rows. See [Event datasets](event-datasets.md).
 

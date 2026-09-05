@@ -42,7 +42,7 @@ manifests/datasets/
     dataset-manifest-v1.json
 ```
 
-Dataset identity hashes the normalized contract, normalizer, provider revision, exact source scope, canonical partitions, and logical row content. Parquet options are fixed. Clean writes with the same inputs produce the same physical and logical checksums.
+Dataset identity hashes the normalized contract, normalizer, provider revision, exact source scope, canonical partitions, and logical row content. An explicit rebuild also hashes the complete `DatasetBuildSpecV1` and the resolved source-resource and canonical-event inputs. Parquet options are fixed. Clean writes with the same inputs produce the same physical and logical checksums.
 
 ## Publication and recovery
 
@@ -66,3 +66,28 @@ request came from a source correction, manual replay, or failed publication,
 and carries an explicit attempt and status. Retries create a new request
 snapshot or advance durable request state; they never overwrite the prior
 dataset version.
+
+For the StatsBomb normalized-event builder, `source_input_refs` must be the
+sorted registered values `source_resource:<uuid>:<sha256>`, one per resource
+in the pinned acquisition manifest. `canonical_input_refs` must be the sorted
+`canonical_event:<uuid>` values resolved from that source snapshot. The builder
+rejects a request when either list does not match the registered inputs, so it
+cannot follow a mutable latest-source alias.
+
+For `knowledge_mode = historical`, the builder also rejects a pinned source
+whose acquisition time is later than `knowledge_cutoff`. A later correction can
+therefore only produce a new dataset under a build specification whose recorded
+knowledge cutoff permits that source; it cannot rewrite an earlier historical
+view.
+
+New explicit builds store the build-spec SHA-256 in `dataset_versions` and in
+the immutable `DatasetManifestV1`. Older dataset rows remain valid with no
+build-spec checksum because their original build inputs cannot be reconstructed
+without guessing.
+
+`StatsBombEventDatasetPublisher.verify(dataset_id)` reads the manifest and
+Parquet files again, compares logical and physical file checksums, confirms the
+registered identity, and checks that every source input has a dependency edge.
+For a trusted correction, a successful replacement registers `D1 → D2` as a
+`DERIVED_FROM` edge before appending `SUPERSEDED` for D1. Failed replacement
+attempts leave D1 `REBUILD_REQUIRED`.
