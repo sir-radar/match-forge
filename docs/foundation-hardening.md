@@ -11,3 +11,6 @@ category keeps it `NOT_RUN`, and warnings are preserved as
 `PASS_WITH_WARNINGS`. This report does not alter Sprint 2 evidence or authorize
 Phase 3; it is the foundation gate evidence required for later governance
 review.
+
+The current executed gate record is
+[`evidence/phase1b2b-gate-2026-09-06.md`](evidence/phase1b2b-gate-2026-09-06.md).
