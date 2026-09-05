@@ -13,4 +13,4 @@ Phase 3; it is the foundation gate evidence required for later governance
 review.
 
 The current executed gate record is
-[`evidence/phase1b2b-gate-2026-09-06.md`](evidence/phase1b2b-gate-2026-09-06.md).
+[`evidence/phase1b2b-gate-2026-09-06-outcome-scope.md`](evidence/phase1b2b-gate-2026-09-06-outcome-scope.md).
