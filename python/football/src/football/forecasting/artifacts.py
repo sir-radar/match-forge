@@ -11,6 +11,7 @@ from uuid import UUID
 
 from psycopg import Connection, Cursor
 
+from football.contracts.dependencies import DependencyNodeV1
 from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.forecasting.contracts import (
     ArtifactCompatibilityV1,
@@ -32,6 +33,7 @@ from football.forecasting.dixon_coles import (
     DixonColesParameters,
 )
 from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
+from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.raw import ImmutableFileStore
 
 ArtifactPublicationStatus = Literal["published", "verified_existing"]
@@ -196,6 +198,7 @@ class PostgresModelArtifactRegistry:
             for file in manifest.files:
                 inserted += self._register_file(cursor, manifest.model_artifact_id, file)
             inserted += self._register_input(cursor, manifest.model_artifact_id, fit_spec)
+            self._register_dependency(cursor, manifest.model_artifact_id, fit_spec)
         return "published" if inserted else "verified_existing"
 
     @staticmethod
@@ -339,6 +342,17 @@ class PostgresModelArtifactRegistry:
             )
         return inserted
 
+    @staticmethod
+    def _register_dependency(
+        cursor: Cursor[Any], model_artifact_id: UUID, fit_spec: ModelFitSpecV1
+    ) -> None:
+        PostgresDependencyStoreV1().register_dependency(
+            cursor,
+            upstream=DependencyNodeV1("DATASET", fit_spec.scope.dataset_version_id),
+            relationship="FITTED_FROM",
+            downstream=DependencyNodeV1("MODEL_ARTIFACT", model_artifact_id),
+        )
+
 
 class ModelArtifactPublisher:
     """Publish portable bytes before atomically reconciling their database identity."""
@@ -383,6 +397,7 @@ class ModelArtifactPublisher:
             for file in artifact.manifest.files:
                 inserted += PostgresModelArtifactRegistry._register_file(cursor, resolved_id, file)
             inserted += PostgresModelArtifactRegistry._register_input(cursor, resolved_id, fit_spec)
+            PostgresModelArtifactRegistry._register_dependency(cursor, resolved_id, fit_spec)
         if artifact.status == "verified_existing" and not inserted:
             return artifact
         return PublishedModelArtifactV1(

@@ -8,7 +8,9 @@ from uuid import UUID
 
 from psycopg import Connection, Cursor
 
+from football.contracts.dependencies import DependencyNodeV1
 from football.forecasting.contracts import BaselineForecastV1, forecast_payload_bytes
+from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.raw import ImmutableFileStore
 
 ForecastPublicationStatus = Literal["published", "verified_existing"]
@@ -77,12 +79,16 @@ class PostgresForecastRegistry:
                 inserted += self._register_artifact(
                     cursor, forecast.forecast_id, artifact_id, "PRIMARY"
                 )
+                self._register_dependency(cursor, artifact_id, forecast.forecast_id)
             if forecast.calibrator_artifact_id is not None:
                 inserted += self._register_artifact(
                     cursor,
                     forecast.forecast_id,
                     forecast.calibrator_artifact_id,
                     "CALIBRATOR",
+                )
+                self._register_dependency(
+                    cursor, forecast.calibrator_artifact_id, forecast.forecast_id
                 )
         return "published" if inserted else "verified_existing"
 
@@ -190,6 +196,15 @@ class PostgresForecastRegistry:
             )
         return inserted
 
+    @staticmethod
+    def _register_dependency(cursor: Cursor[Any], artifact_id: UUID, forecast_id: UUID) -> None:
+        PostgresDependencyStoreV1().register_dependency(
+            cursor,
+            upstream=DependencyNodeV1("MODEL_ARTIFACT", artifact_id),
+            relationship="FORECAST_WITH",
+            downstream=DependencyNodeV1("FORECAST", forecast_id),
+        )
+
 
 class BaselineForecastPublisher:
     def __init__(self, connection: Connection[Any], data_root: Path) -> None:
@@ -222,12 +237,20 @@ class BaselineForecastPublisher:
                 inserted += PostgresForecastRegistry._register_artifact(
                     cursor, resolved_forecast.forecast_id, artifact_id, "PRIMARY"
                 )
+                PostgresForecastRegistry._register_dependency(
+                    cursor, artifact_id, resolved_forecast.forecast_id
+                )
             if resolved_forecast.calibrator_artifact_id is not None:
                 inserted += PostgresForecastRegistry._register_artifact(
                     cursor,
                     resolved_forecast.forecast_id,
                     resolved_forecast.calibrator_artifact_id,
                     "CALIBRATOR",
+                )
+                PostgresForecastRegistry._register_dependency(
+                    cursor,
+                    resolved_forecast.calibrator_artifact_id,
+                    resolved_forecast.forecast_id,
                 )
         if publication.status == "verified_existing" and not inserted:
             return publication

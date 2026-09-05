@@ -761,6 +761,15 @@ def test_model_artifact_publication_reconciles_identical_retry(
             ).fetchone()[0]
             == 1
         )
+        assert cursor.execute(
+            """
+                SELECT count(*) FROM football.dependency_edges
+                WHERE upstream_kind = 'DATASET' AND upstream_id = %s
+                  AND relationship = 'FITTED_FROM'
+                  AND downstream_kind = 'MODEL_ARTIFACT' AND downstream_id = %s
+                """,
+            (dataset_id, artifact_id),
+        ).fetchone() == (1,)
 
 
 def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
@@ -871,7 +880,18 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
             """,
             (forecast_id,),
         ).fetchall()
+        dependency_count = cursor.execute(
+            """
+            SELECT count(*) FROM football.dependency_edges
+            WHERE upstream_kind = 'MODEL_ARTIFACT'
+              AND downstream_kind = 'FORECAST'
+              AND downstream_id = %s
+              AND relationship = 'FORECAST_WITH'
+            """,
+            (forecast_id,),
+        ).fetchone()
     assert roles == [("PRIMARY",), ("PRIMARY",)]
+    assert dependency_count == (2,)
 
 
 def test_sprint2_batch_publication_registers_complete_retry_safe_batch(
@@ -1138,6 +1158,15 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
             ).fetchone()[0]
             == 1
         )
+        assert cursor.execute(
+            """
+                SELECT count(*) FROM football.dependency_edges
+                WHERE upstream_kind = 'DATASET' AND upstream_id = %s
+                  AND relationship = 'EVALUATED_WITH'
+                  AND downstream_kind = 'EVALUATION' AND downstream_id = %s
+                """,
+            (dataset_id, evaluation_id),
+        ).fetchone() == (1,)
     with pytest.raises(GovernancePublicationError, match="calibration artifact"):
         promotion_registry.record(
             ModelPromotionEventV1(

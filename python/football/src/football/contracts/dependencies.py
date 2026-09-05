@@ -4,62 +4,97 @@ import hashlib
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
+from uuid import UUID
 
 from football.contracts.source import canonical_json_bytes
 
-DependencyStateV1 = Literal[
-    "VALID",
-    "STALE",
-    "SUPERSEDED",
-    "AFFECTED_BY_SOURCE_CORRECTION",
-    "REBUILD_REQUIRED",
+DependencyObjectKindV1 = Literal[
+    "SOURCE_RESOURCE",
+    "CANONICAL_OBSERVATION",
+    "DATASET",
+    "MODEL_ARTIFACT",
+    "FORECAST",
+    "EVALUATION",
 ]
-_STATES = frozenset(
-    ("VALID", "STALE", "SUPERSEDED", "AFFECTED_BY_SOURCE_CORRECTION", "REBUILD_REQUIRED")
+DependencyRelationshipV1 = Literal[
+    "INPUT_TO",
+    "DERIVED_FROM",
+    "BUILT_FROM",
+    "FITTED_FROM",
+    "FORECAST_WITH",
+    "EVALUATED_WITH",
+]
+DerivedStateV1 = Literal[
+    "REBUILD_REQUIRED",
+    "AFFECTED_BY_SOURCE_CORRECTION",
+    "SUPERSEDED",
+]
+EffectiveDerivedStateV1 = Literal[
+    "VALID",
+    "REBUILD_REQUIRED",
+    "AFFECTED_BY_SOURCE_CORRECTION",
+    "SUPERSEDED",
+]
+
+_OBJECT_KINDS = frozenset(
+    (
+        "SOURCE_RESOURCE",
+        "CANONICAL_OBSERVATION",
+        "DATASET",
+        "MODEL_ARTIFACT",
+        "FORECAST",
+        "EVALUATION",
+    )
 )
+_RELATIONSHIPS = frozenset(
+    (
+        "INPUT_TO",
+        "DERIVED_FROM",
+        "BUILT_FROM",
+        "FITTED_FROM",
+        "FORECAST_WITH",
+        "EVALUATED_WITH",
+    )
+)
+_DERIVED_STATES = frozenset(("REBUILD_REQUIRED", "AFFECTED_BY_SOURCE_CORRECTION", "SUPERSEDED"))
 
 
 class DependencyContractError(ValueError):
-    """A dependency edge or graph violates its immutable lineage contract."""
+    """A dependency edge or state event violates its immutable contract."""
+
+
+@dataclass(frozen=True, slots=True)
+class DependencyNodeV1:
+    kind: DependencyObjectKindV1
+    object_id: UUID
+
+    def __post_init__(self) -> None:
+        if self.kind not in _OBJECT_KINDS:
+            raise DependencyContractError("dependency object kind is unsupported")
 
 
 @dataclass(frozen=True, slots=True)
 class DependencyEdgeV1:
-    """One immutable, directed lineage edge between versioned evidence nodes."""
+    """One immutable directed edge between durable MatchForge objects."""
 
-    edge_id: str
-    upstream_ref: str
-    upstream_kind: str
-    downstream_ref: str
-    downstream_kind: str
-    state: DependencyStateV1
+    edge_id: UUID
+    upstream: DependencyNodeV1
+    relationship: DependencyRelationshipV1
+    downstream: DependencyNodeV1
     created_at: datetime
-    source_change_set_ref: str | None = None
-    revision: int = 1
+    contract_version: str = "dependency-edge-v1"
     contract: str = "DependencyEdgeV1"
 
     def __post_init__(self) -> None:
         if self.contract != "DependencyEdgeV1":
             raise DependencyContractError("unsupported dependency edge contract")
-        if any(
-            not value
-            for value in (
-                self.edge_id,
-                self.upstream_ref,
-                self.upstream_kind,
-                self.downstream_ref,
-                self.downstream_kind,
-            )
-        ):
-            raise DependencyContractError("dependency edge identity and node kinds are required")
-        if self.upstream_ref == self.downstream_ref:
+        if self.relationship not in _RELATIONSHIPS:
+            raise DependencyContractError("dependency relationship is unsupported")
+        if self.upstream == self.downstream:
             raise DependencyContractError("dependency edge cannot point to itself")
-        if self.state not in _STATES:
-            raise DependencyContractError("dependency state is unsupported")
-        if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
-            raise DependencyContractError("dependency edge timestamp must include a timezone")
-        if self.revision <= 0:
-            raise DependencyContractError("dependency edge revision must be positive")
+        if not self.contract_version:
+            raise DependencyContractError("dependency edge contract version is required")
+        _aware(self.created_at, "dependency edge timestamp")
 
     @property
     def sha256(self) -> str:
@@ -68,21 +103,20 @@ class DependencyEdgeV1:
     def to_dict(self) -> dict[str, object]:
         return {
             "contract": self.contract,
-            "edge_id": self.edge_id,
-            "upstream_ref": self.upstream_ref,
-            "upstream_kind": self.upstream_kind,
-            "downstream_ref": self.downstream_ref,
-            "downstream_kind": self.downstream_kind,
-            "state": self.state,
+            "edge_id": str(self.edge_id),
+            "upstream_kind": self.upstream.kind,
+            "upstream_id": str(self.upstream.object_id),
+            "relationship": self.relationship,
+            "downstream_kind": self.downstream.kind,
+            "downstream_id": str(self.downstream.object_id),
+            "contract_version": self.contract_version,
             "created_at": self.created_at.isoformat(),
-            "source_change_set_ref": self.source_change_set_ref,
-            "revision": self.revision,
         }
 
 
 @dataclass(frozen=True, slots=True)
 class DependencyGraphV1:
-    """An immutable collection of lineage edges with deterministic lookups."""
+    """A deterministic in-memory view of immutable dependency edges."""
 
     edges: tuple[DependencyEdgeV1, ...]
     contract: str = "DependencyGraphV1"
@@ -94,11 +128,11 @@ class DependencyGraphV1:
         if len(edge_ids) != len(set(edge_ids)):
             raise DependencyContractError("dependency edge IDs must be unique")
 
-    def dependents_of(self, upstream_ref: str) -> tuple[DependencyEdgeV1, ...]:
-        return tuple(edge for edge in self.edges if edge.upstream_ref == upstream_ref)
+    def dependents_of(self, node: DependencyNodeV1) -> tuple[DependencyEdgeV1, ...]:
+        return tuple(edge for edge in self.edges if edge.upstream == node)
 
-    def dependencies_of(self, downstream_ref: str) -> tuple[DependencyEdgeV1, ...]:
-        return tuple(edge for edge in self.edges if edge.downstream_ref == downstream_ref)
+    def dependencies_of(self, node: DependencyNodeV1) -> tuple[DependencyEdgeV1, ...]:
+        return tuple(edge for edge in self.edges if edge.downstream == node)
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -109,31 +143,26 @@ class DependencyGraphV1:
 
 @dataclass(frozen=True, slots=True)
 class DerivedStateRecordV1:
-    """Append-only state evidence for a derived node after upstream change."""
+    """Append-only state evidence caused by one trusted change set."""
 
-    record_id: str
-    node_ref: str
-    node_kind: str
-    state: DependencyStateV1
-    recorded_at: datetime
+    state_event_id: UUID
+    node: DependencyNodeV1
+    state: DerivedStateV1
     reason: str
-    source_change_set_ref: str | None = None
-    prior_state: DependencyStateV1 | None = None
+    cause_change_set_id: UUID
+    recorded_at: datetime
     contract: str = "DerivedStateRecordV1"
 
     def __post_init__(self) -> None:
         if self.contract != "DerivedStateRecordV1":
             raise DependencyContractError("unsupported derived state contract")
-        if not all((self.record_id, self.node_ref, self.node_kind, self.reason)):
-            raise DependencyContractError("derived state identity and reason are required")
-        if self.state not in _STATES or (
-            self.prior_state is not None and self.prior_state not in _STATES
-        ):
+        if self.node.kind in ("SOURCE_RESOURCE", "CANONICAL_OBSERVATION"):
+            raise DependencyContractError("source objects cannot have derived state events")
+        if self.state not in _DERIVED_STATES:
             raise DependencyContractError("derived state is unsupported")
-        if self.recorded_at.tzinfo is None or self.recorded_at.utcoffset() is None:
-            raise DependencyContractError("derived state timestamp must include a timezone")
-        if self.prior_state == self.state:
-            raise DependencyContractError("derived state must record a transition")
+        if not self.reason:
+            raise DependencyContractError("derived state reason is required")
+        _aware(self.recorded_at, "derived state timestamp")
 
     @property
     def sha256(self) -> str:
@@ -142,12 +171,16 @@ class DerivedStateRecordV1:
     def to_dict(self) -> dict[str, object]:
         return {
             "contract": self.contract,
-            "record_id": self.record_id,
-            "node_ref": self.node_ref,
-            "node_kind": self.node_kind,
+            "state_event_id": str(self.state_event_id),
+            "object_kind": self.node.kind,
+            "object_id": str(self.node.object_id),
             "state": self.state,
-            "recorded_at": self.recorded_at.isoformat(),
             "reason": self.reason,
-            "source_change_set_ref": self.source_change_set_ref,
-            "prior_state": self.prior_state,
+            "cause_change_set_id": str(self.cause_change_set_id),
+            "recorded_at": self.recorded_at.isoformat(),
         }
+
+
+def _aware(value: datetime, label: str) -> None:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise DependencyContractError(f"{label} must include a timezone")
