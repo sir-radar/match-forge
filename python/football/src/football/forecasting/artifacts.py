@@ -32,6 +32,10 @@ from football.forecasting.dixon_coles import (
     DixonColesOptimizer,
     DixonColesParameters,
 )
+from football.forecasting.dixon_coles_nb2 import (
+    DixonColesNB2Fit,
+    DixonColesNB2ResidualDispersionModel,
+)
 from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
 from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.raw import ImmutableFileStore
@@ -623,6 +627,63 @@ def deserialize_dixon_coles_fit(state: Mapping[str, object]) -> DixonColesFit:
             low_score_correlation=_float(parameters, "low_score_correlation"),
         ),
         negative_log_likelihood=_float(state, "negative_log_likelihood"),
+        converged=_boolean(state, "converged"),
+    )
+
+
+def serialize_dixon_coles_nb2_fit(fit: DixonColesNB2Fit) -> dict[str, object]:
+    base_state = serialize_dixon_coles_fit(fit.base_fit)
+    base_state_sha256 = sha256_bytes(canonical_json_bytes(base_state))
+    expected_config_sha256 = DixonColesNB2ResidualDispersionModel(fit.base_fit.config).config_sha256
+    if fit.config_sha256 != expected_config_sha256:
+        raise ArtifactPublicationError("DCv3-NB2 config checksum does not match fitted state")
+    if not math.isfinite(fit.alpha) or fit.alpha < 0.0 or fit.alpha >= 100.0:
+        raise ArtifactPublicationError("DCv3-NB2 alpha is outside the supported fitted domain")
+    return {
+        "contract": "DixonColesNB2ResidualDispersionModelStateV1",
+        "algorithm_version": "dcv3-nb2-residual-dispersion-v1",
+        "base_dcv3": base_state,
+        "base_dcv3_state_sha256": base_state_sha256,
+        "config_sha256": fit.config_sha256,
+        "training_sha256": fit.training_sha256,
+        "conditional_joint_nll": fit.conditional_joint_nll,
+        "converged": fit.converged,
+        "dispersion": {
+            "parameterization": "nb2-mean-alpha-v1",
+            "alpha": fit.alpha,
+            "fit_policy": "conditional-weighted-joint-nll-v1",
+            "numerical_method": "bounded-scalar-v1",
+            "numerical_ceiling": 100.0,
+            "xatol": 1e-10,
+            "max_iterations": 500,
+        },
+    }
+
+
+def deserialize_dixon_coles_nb2_fit(state: Mapping[str, object]) -> DixonColesNB2Fit:
+    if state.get("contract") != "DixonColesNB2ResidualDispersionModelStateV1":
+        raise ArtifactPublicationError("unsupported DCv3-NB2 model state")
+    if _string(state, "algorithm_version") != "dcv3-nb2-residual-dispersion-v1":
+        raise ArtifactPublicationError("unsupported DCv3-NB2 algorithm version")
+    base_state = _object_mapping(state.get("base_dcv3"), "DCv3-NB2 base Dixon-Coles state")
+    if sha256_bytes(canonical_json_bytes(base_state)) != _string(state, "base_dcv3_state_sha256"):
+        raise ArtifactPublicationError("DCv3-NB2 base Dixon-Coles checksum mismatch")
+    base_fit = deserialize_dixon_coles_fit(base_state)
+    expected_config_sha256 = DixonColesNB2ResidualDispersionModel(base_fit.config).config_sha256
+    if _string(state, "config_sha256") != expected_config_sha256:
+        raise ArtifactPublicationError("DCv3-NB2 config checksum mismatch")
+    dispersion = _object_mapping(state.get("dispersion"), "DCv3-NB2 dispersion")
+    if _string(dispersion, "parameterization") != "nb2-mean-alpha-v1":
+        raise ArtifactPublicationError("unsupported DCv3-NB2 parameterization")
+    alpha = _float(dispersion, "alpha")
+    if alpha < 0.0 or alpha >= 100.0:
+        raise ArtifactPublicationError("DCv3-NB2 alpha is outside the supported fitted domain")
+    return DixonColesNB2Fit(
+        base_fit=base_fit,
+        alpha=alpha,
+        config_sha256=expected_config_sha256,
+        training_sha256=_string(state, "training_sha256"),
+        conditional_joint_nll=_float(state, "conditional_joint_nll"),
         converged=_boolean(state, "converged"),
     )
 

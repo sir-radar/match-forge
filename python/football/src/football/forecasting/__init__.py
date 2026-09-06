@@ -19,9 +19,11 @@ from football.forecasting.artifacts import (
     PublishedModelArtifactV1,
     deserialize_corner_fit,
     deserialize_dixon_coles_fit,
+    deserialize_dixon_coles_nb2_fit,
     deserialize_elo_run,
     serialize_corner_fit,
     serialize_dixon_coles_fit,
+    serialize_dixon_coles_nb2_fit,
     serialize_elo_run,
 )
 from football.forecasting.baseline_policy import (
@@ -125,6 +127,11 @@ from football.forecasting.dixon_coles import (
     GoalMarkets,
     GoalMatch,
     ScoreMatrix,
+)
+from football.forecasting.dixon_coles_nb2 import (
+    DixonColesNB2Fit,
+    DixonColesNB2GoalForecast,
+    DixonColesNB2ResidualDispersionModel,
 )
 from football.forecasting.elo import (
     EloConfig,
@@ -272,6 +279,9 @@ __all__ = [
     "DixonColesFit",
     "DixonColesFitError",
     "DixonColesModel",
+    "DixonColesNB2Fit",
+    "DixonColesNB2GoalForecast",
+    "DixonColesNB2ResidualDispersionModel",
     "DixonColesParameters",
     "EloConfig",
     "EloContractError",
@@ -397,6 +407,7 @@ __all__ = [
     "corner_forecast_payload",
     "deserialize_corner_fit",
     "deserialize_dixon_coles_fit",
+    "deserialize_dixon_coles_nb2_fit",
     "deserialize_elo_run",
     "evaluate_calibration_gate",
     "evaluate_match_results",
@@ -411,5 +422,6 @@ __all__ = [
     "paired_moving_block_bootstrap",
     "serialize_corner_fit",
     "serialize_dixon_coles_fit",
+    "serialize_dixon_coles_nb2_fit",
     "serialize_elo_run",
 ]
