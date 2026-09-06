@@ -12,5 +12,5 @@ category keeps it `NOT_RUN`, and warnings are preserved as
 Phase 3; it is the foundation gate evidence required for later governance
 review.
 
-The current executed gate record is
-[`evidence/phase1b2b-gate-2026-09-06-outcome-scope.md`](evidence/phase1b2b-gate-2026-09-06-outcome-scope.md).
+The current executed gate result is recorded in
+[`evidence/phase1b2b-gate-2026-09-06-outcome-scope-checksum-correction.md`](evidence/phase1b2b-gate-2026-09-06-outcome-scope-checksum-correction.md).
