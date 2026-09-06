@@ -164,6 +164,7 @@ Provider anomalies remain preserved when safe. Warnings identify excluded derive
 - [Sprint 2 backtesting](backtesting.md)
 - [Model governance](model-governance.md)
 - [Sprint 2 phase gate](sprint2-phase-gate.md)
+- [Current project status](project-status.md)
 - [ADR 0001: Python managed runtime pin](adr/0001-python-managed-runtime-pin.md)
 - [ADR 0002: Go analysis scope](adr/0002-go-127-golangci-analysis-scope.md)
 - [ADR 0003: Commit-pinned source acquisition](adr/0003-use-commit-pinned-source-acquisition.md)

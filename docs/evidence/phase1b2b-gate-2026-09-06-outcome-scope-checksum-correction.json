@@ -1,0 +1,27 @@
+{
+  "contract": "Phase1B2BGateChecksumCorrection",
+  "correction_id": "phase1b2b-gate-20260906-outcome-scope-checksum-correction",
+  "corrected_artifact": {
+    "git_blob_sha": "962c57e24941705c5bbab13eb4cf92537dd195a2",
+    "git_commit_sha": "31a91d3d77d5018fe0a2fc3546510c8d06304fa3",
+    "path": "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope.json",
+    "sha256": "a70084ece1f32d462e50c5e8227124d592df75a7a9fcea82b444e46a55ff1da2"
+  },
+  "corrected_checksum_claim": {
+    "evidence_record_path": "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope.md",
+    "incorrect_sha256": "a0e7215fc68aff86e82aa65de65036377814e8419ba79ba0c4e7cefa16f18af8"
+  },
+  "dependency_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e",
+  "evidence_refs": [
+    "docs/evidence/phase1b2b-gate-2026-09-05.md",
+    "docs/evidence/phase2b-competition-rules-2026-09-06.md",
+    "docs/evidence/phase2b-competition-rule-bindings-2026-09-06.md",
+    "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope.md"
+  ],
+  "gate_execution_code_git_sha": "30bd41a4d13c95fa0a7dd5391080d48e62a953d7",
+  "phase_1b_status": "PASS",
+  "phase_2b_status": "PASS",
+  "resulting_gate_status": "PASS",
+  "scope": "Corrects only the checksum claim; prior evidence remains unchanged.",
+  "supersedes": "The checksum claim only in docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope.md"
+}

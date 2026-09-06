@@ -1,0 +1,26 @@
+{
+  "contract": "ProjectStatusV1",
+  "updated_at": "2026-09-06T01:00:00Z",
+  "phase_1b": {
+    "status": "PASS",
+    "evidence_ref": "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope-checksum-correction.json"
+  },
+  "phase_2b": {
+    "status": "PASS",
+    "evidence_ref": "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope-checksum-correction.json"
+  },
+  "sprint_2": {
+    "status": "FAIL",
+    "owner_decision": "RETAIN_FAIL_AND_STOP",
+    "challenger_authorized": false,
+    "model_promoted": false,
+    "evidence_ref": "docs/sprint2-phase-gate.md"
+  },
+  "phase_3": {
+    "status": "BLOCKED",
+    "authorized": false,
+    "blocked_by": [
+      "sprint_2"
+    ]
+  }
+}
