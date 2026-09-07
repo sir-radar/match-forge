@@ -646,6 +646,8 @@ def serialize_dixon_coles_nb2_fit(fit: DixonColesNB2Fit) -> dict[str, object]:
         "base_dcv3_state_sha256": base_state_sha256,
         "config_sha256": fit.config_sha256,
         "training_sha256": fit.training_sha256,
+        "training_match_count": fit.base_fit.training_match_count,
+        "training_cutoff": fit.base_fit.training_cutoff.isoformat(),
         "conditional_joint_nll": fit.conditional_joint_nll,
         "converged": fit.converged,
         "dispersion": {
@@ -678,6 +680,12 @@ def deserialize_dixon_coles_nb2_fit(state: Mapping[str, object]) -> DixonColesNB
     alpha = _float(dispersion, "alpha")
     if alpha < 0.0 or alpha >= 100.0:
         raise ArtifactPublicationError("DCv3-NB2 alpha is outside the supported fitted domain")
+    training_match_count = _integer(state, "training_match_count")
+    training_cutoff = _datetime(state, "training_cutoff")
+    if training_match_count != base_fit.training_match_count:
+        raise ArtifactPublicationError("DCv3-NB2 training count does not match base state")
+    if training_cutoff != base_fit.training_cutoff:
+        raise ArtifactPublicationError("DCv3-NB2 training cutoff does not match base state")
     return DixonColesNB2Fit(
         base_fit=base_fit,
         alpha=alpha,

@@ -1,105 +1,247 @@
-# Sprint 2 backtesting
+# Backtesting and Point-in-Time Evaluation
 
-## Contract
+## Purpose
 
-Primary evaluation is chronological walk-forward. Random train/test splitting is not authoritative
-evidence.
+This document defines MatchForge's durable rules for historical forecasting, leakage prevention, chronological evaluation, and calibration fitting.
 
-`PointInTimeScopeV1` binds dataset and source snapshot identity, feature version,
-`football_cutoff`, `knowledge_cutoff`, `knowledge_mode`, quality policy, and target-set checksum.
-`PointInTimeMatchDatasetProvider` applies the dual cutoffs before models receive data. It resolves
-chronology through immutable kickoff claims linked to the exact lifecycle dataset; it does not read
-timezone-naive provider values as UTC. Forecast contexts are label-free and have a canonical
-checksum. The evaluator freezes one common outcome-complete population before applying warm-up
-rules; missing governed corner labels cannot silently become a later 100% execution requirement.
-Same-kickoff targets remain one batch. `WalkForwardTargetPlanV1` applies the frozen
-10-match team and 100-match competition minimums from prior batches only, then retains the ordered
-label-free target set and checksum. See [Walk-forward target plan](walk-forward-target-plan.md).
+Specific Sprint/phase corpora, thresholds, metrics, and current decisions live in their versioned policies/evidence and owner/Wayfinder decisions.
 
-`WalkForwardEvaluator` defines expanding or rolling training windows, evaluation duration, and
-retraining frequency. Evaluation observations keep prediction time, kickoff time, and
-`outcome_known_at` separate. Calibration rejects any outcome not known strictly before its fit
-cutoff. Under `retrospective-fixed-snapshot-v1`, the approved EPL regulation-time corpus uses the
-existing conservative two-hour post-kickoff outcome-availability rule; strict bitemporal modes use
-the governed lifecycle and corner-claim timestamps instead. Both planning and history queries
-require `outcome_known_at < football_cutoff` before a completed result can train a later batch.
+## Two time axes
 
-`Sprint2WalkForwardExecutor` consumes the frozen target plan through explicit dataset and
-persistence ports. For each batch it loads only prior eligible history, fits Elo, Dixon–Coles,
-corner Poisson, and corner Negative Binomial state, forecasts every target, persists all four raw
-forecasts, and only then requests target outcomes. Reference result, goal-Poisson, and
-corner-Poisson forecasts are computed from the same prior history and retained in execution
-results for common-target scoring.
+Every historical forecast must respect:
 
-## Match-result metrics
+```text
+football_cutoff
+knowledge_cutoff
+knowledge_mode
+```
 
-Sprint 2 implements:
+### Football time
 
-- Log loss.
-- Multiclass Brier score.
-- Ranked Probability Score.
-- Accuracy as a supporting metric.
-- Reliability bins.
-- Expected Calibration Error.
-- Brier uncertainty, resolution, and reliability decomposition.
+A training observation must be football-historically eligible for the target.
 
-Raw execution scoring also implements joint goal-score negative log likelihood, total-goal CRPS,
-MAE, RMSE, and Poisson deviance; and home, away, and total corner negative log likelihood, CRPS,
-MAE, and RMSE for both corner families and the simple reference.
+No event/result after the approved football cutoff may enter training or features.
 
-Count distributions expand support until at least `1 - 1e-12` probability mass is captured, with a
-hard limit of 1,000,000 counts. Scoring fails explicitly if a valid distribution still exceeds that
-bounded support; probability mass is never silently clipped.
+### Knowledge time
 
-Calibration is a separate challenger layer. Authoritative 1X2 analysis uses multiclass vector
-calibration so the simplex is preserved; Over 2.5 and BTTS use binary Platt and isotonic
-challengers. Each chronological batch trains only from earlier out-of-sample predictions whose
-outcomes were already known. Raw forecasts remain immutable. Acceptance requires ECE improvement
-without exceeding the locked log-loss or Brier regression allowances.
+A fact must also satisfy the approved rule for when MatchForge could know it.
 
-Uncertainty uses one shared set of deterministic paired chronological moving-block resamples across
-candidate/reference metrics: 2,000 replicates, block size 10, 95% intervals, and explicit seed
-`20260831`. Evidence retains replicate deltas rather than only interval summaries.
-Prediction evidence also records the exact four model-artifact UUIDs and four persisted forecast
-UUIDs for every target. The evaluation report records the first and final football cutoffs and uses
-the final batch scope rather than presenting the first batch as the scope of the whole run.
+Where historical provider availability cannot be proven, use the approved weaker retrospective knowledge mode rather than pretending strict historical availability is known.
 
-`Sprint2BaselineGatePolicyV1` is a pure evaluator over retained actuals. It records each locked
-actual, comparison operator, threshold, blocking status, and PASS/FAIL result under predictive,
-calibration, coverage, reproducibility, and regression dimensions. A complete report derives its
-overall status from those dimensions; it does not alter evidence, thresholds, artifacts, or
-promotion state.
+Do not collapse these concepts into one vague `as_of`.
 
-Every new complete run also retains `subgroup_diagnostics.parquet`. It covers overall, month,
-canonical team, competition, home/away team role, realized 1X2, realized-probability decile, exact
-goal total, and exact corner total. Goal and corner totals remain exact grouping keys because the
-locked policy defines no broader range boundaries.
+## Contract separation
 
-## Leakage invariants
+Use distinct contracts for:
 
-- Training matches have `kickoff_at < football_cutoff`.
-- Target contexts contain no scores or post-match statistics.
-- Historical observations use the exact source snapshot and bitemporal knowledge cutoff.
-- Same-kickoff matches are forecast as one chronological batch.
-- Earlier staggered kickoffs remain outside training history until their retrospective two-hour
-  outcome-availability boundary has passed.
-- Calibration outcomes require `outcome_known_at < calibration_cutoff`.
-- Evaluation outcomes remain separate from persisted forecast payloads.
-- Outcome reveal requires explicit frozen target IDs and exact lifecycle, corner-label, dataset,
-  kickoff, and knowledge-cutoff lineage.
+```text
+historical labelled training rows
+label-free pre-match forecast context
+post-prediction evaluation outcomes
+```
 
-## Current evidence boundary
+The pre-match forecast context must structurally exclude target:
 
-Unit and integration tests verify window chronology, same-time batching, calibration-cutoff
-exclusion, metric mathematics, immutable reporting, and retry behavior. Batch execution tests also
-prove persistence-before-reveal, four-artifact/four-forecast publication per target, portable state
-reload with an explicit maximum prediction delta, and semantic retry convergence. The approved
-corpus has 380 registered, completed, scored, corner-labelled, and UTC-resolved matches through exact
-immutable lifecycle, kickoff, and corner claims. The immutable plan resolves 280 eligible targets
-after 100 warm-up exclusions, across 146 eligible batches. The authoritative operator command now composes
-the executor, scoring, paired bootstrap, chronological calibration, and immutable JSON/Parquet/SVG
-evidence publication. Complete execution applies the locked policy and records the decision in
-`Sprint2EvaluationReportV1`. Reproducibility compares two runs only when target set, Git commit,
-dependency lock, bootstrap policy, calibration policy, and enforced clean-worktree provenance are
-equivalent. See
-[Sprint 2 phase gate](sprint2-phase-gate.md).
+- score;
+- result;
+- corners;
+- shots;
+- possession;
+- post-match statistics;
+- any other outcome-derived field.
+
+Do not rely on model code to ignore forbidden fields.
+
+## One point-in-time dataset authority
+
+Historical eligibility belongs to one provider-neutral point-in-time dataset layer.
+
+Conceptually:
+
+```text
+PointInTimeMatchDatasetProvider
+        ↓
+eligible MatchForge history
+        ↓
+Elo / Dixon-Coles / corner models / challengers / evaluator
+```
+
+Models must not independently query current database state for "previous matches".
+
+## Same-kickoff batching
+
+Matches that could not legitimately observe each other's outcomes must be forecast as one batch.
+
+Correct:
+
+```text
+state before batch
+→ fit/update only from previously known history
+→ forecast every target in the batch
+→ persist/freeze every forecast
+→ reveal outcomes
+→ update state for future batches
+```
+
+Forbidden:
+
+```text
+forecast A
+→ reveal A
+→ update model/calibration
+→ forecast simultaneous B
+```
+
+When temporal ordering is ambiguous, prefer conservative batching or exclusion.
+
+Any confirmed same-batch leakage is blocking regardless of metrics.
+
+## Walk-forward evaluation
+
+Authoritative football evaluation is chronological walk-forward evaluation.
+
+The evaluator owns:
+
+- training-window policy;
+- target selection;
+- minimum-history policy;
+- retraining cadence;
+- chronological batching;
+- target-outcome release;
+- metrics;
+- calibration comparison;
+- reporting.
+
+Models must not implement independent backtest loops.
+
+Do not use random train/test splitting as authoritative football forecasting evidence.
+
+## Reference models
+
+Complex models must be compared against compatible simpler references on the same governed targets.
+
+A model does not earn promotion because its standalone metric "looks good".
+
+Complexity must earn its place.
+
+## Proper scores
+
+Use the versioned evaluation policy.
+
+Common primary metrics include:
+
+- Log Loss;
+- Brier Score;
+- RPS;
+- NLL;
+- CRPS.
+
+Accuracy, MAE, and RMSE are supporting metrics unless a frozen policy says otherwise.
+
+Do not change the scoring policy after seeing authoritative results.
+
+## Paired comparison
+
+When uncertainty intervals are required, use the frozen paired resampling policy.
+
+Candidate and reference forecasts must use the same target blocks/samples.
+
+Do not use a different resampling design to rescue a failed candidate after results are known.
+
+## Calibration
+
+Calibration is a separate model layer.
+
+Never overwrite raw probabilities.
+
+Keep:
+
+```text
+MODEL_RAW
+MODEL_CALIBRATED
+```
+
+as distinct forecast variants.
+
+Calibration may train only on:
+
+```text
+previously generated out-of-sample predictions
++
+outcomes already known before the next calibration fit cutoff
+```
+
+Never fit calibration on:
+
+- base-model in-sample predictions;
+- future outcomes;
+- the target match;
+- the full season retrospectively and apply it as historical.
+
+Calibration follows the same same-kickoff batching rules.
+
+If calibration does not improve out-of-sample evidence, retaining raw probabilities is valid.
+
+## Leakage tests
+
+Historical modelling changes should test applicable cases:
+
+- future match excluded;
+- target match excluded;
+- target outcome inaccessible before forecast;
+- same-kickoff matches isolated;
+- historical corrections obey knowledge time;
+- current-state shortcuts cannot enter historical evaluation;
+- calibration target excluded;
+- feature lookbacks use prior history only.
+
+A leakage defect is a hard failure.
+
+## Authoritative target firewall
+
+When a Wayfinder route or owner decision forbids access to an authoritative target population:
+
+- do not load it;
+- do not inspect it;
+- do not join against it;
+- do not forecast it;
+- do not score it;
+- do not derive new target-level diagnostics from it;
+- do not tune against it.
+
+A feasibility or training-only route must remain isolated from forbidden target material.
+
+If the route defines `AUTHORITATIVE_TARGET_ACCESS` as a hard failure, any such access stops the route even if the model is technically correct.
+
+## Frozen admission protocols
+
+When a challenger has a precommitted training-only admission protocol:
+
+- keep target/fold definitions unchanged;
+- fit only from each fold's training history;
+- do not use validation outcomes for tuning;
+- apply the exact frozen inequalities;
+- do not round or add tolerance after seeing the result;
+- stop when a hard condition fails.
+
+Passing feasibility does not imply admission.
+
+Passing admission does not imply authoritative evaluation unless a later owner decision explicitly authorizes it.
+
+## Reproducibility
+
+An authoritative run must bind the applicable:
+
+- dataset/source snapshot identities;
+- build specification;
+- model artifact identities;
+- feature versions;
+- cutoffs;
+- knowledge mode;
+- evaluation policy;
+- code Git SHA;
+- dependency lock;
+- configuration;
+- random seed where used.
+
+A run is reproducible only when the same semantic specification reproduces the same logical target set and metrics within the documented tolerance.

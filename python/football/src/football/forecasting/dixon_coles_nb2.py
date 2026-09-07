@@ -144,9 +144,9 @@ class DixonColesNB2ResidualDispersionModel:
         if not bool(result.success) or not math.isfinite(float(result.fun)):
             raise DixonColesFitError(f"NB2 alpha optimizer did not converge: {result.message}")
         candidate = float(result.x)
-        candidate_objective = objective(candidate)
         if candidate >= _ALPHA_CEILING - _ALPHA_XATOL:
             raise DixonColesFitError("ALPHA_NOT_IDENTIFIED_WITHIN_NUMERICAL_DOMAIN")
+        candidate_objective = objective(candidate)
         if candidate_objective >= _INVALID_OBJECTIVE or boundary_objective >= _INVALID_OBJECTIVE:
             raise DixonColesFitError("NB2 alpha objective is not finite")
         alpha = 0.0 if candidate_objective >= boundary_objective - _ALPHA_XATOL else candidate
@@ -279,13 +279,16 @@ def _nb2_probability(goals: int, mean: float, alpha: float) -> float:
 def _support(mean: float, alpha: float) -> tuple[float, ...]:
     probabilities: list[float] = []
     total = 0.0
+    probability = _nb2_probability(0, mean, alpha)
     for goals in range(_HARD_SUPPORT_LIMIT):
-        probability = _nb2_probability(goals, mean, alpha)
         probabilities.append(probability)
         total += probability
         if 1.0 - total <= _TAIL_TOLERANCE * 0.01:
             _probability(total)
             return tuple(probabilities)
+        probability = _probability(
+            probability * mean * (1.0 + alpha * goals) / ((goals + 1.0) * (1.0 + alpha * mean))
+        )
     raise DixonColesFitError("NB2 tail support exhausted")
 
 
@@ -340,9 +343,7 @@ def _markets(
     totals = [0.0] * (len(home) + len(away) - 1)
     for home_goals, _home_probability in enumerate(home):
         for away_goals, _away_probability in enumerate(away):
-            probability = _joint_probability(
-                home_goals, away_goals, home_mean, away_mean, alpha, correlation
-            )
+            probability = _joint_bucket_probability(home_goals, away_goals, home, away, correlation)
             totals[home_goals + away_goals] += probability
             if home_goals > away_goals:
                 home_win += probability
