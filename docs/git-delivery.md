@@ -4,7 +4,7 @@
 
 This document defines the default Git workflow for implementation tasks.
 
-Follow the user's requested delivery mode. Analysis, review, planning, research, or explicitly local-only work does not require automatic commit/push/PR delivery.
+Follow the user's requested delivery mode. Analysis, review, planning, research, or explicitly local-only work does not require automatic commit/push/PR delivery. However, every fresh push of a task branch requires a reviewable PR; later pushes update that PR.
 
 ## Startup inspection
 
@@ -140,9 +140,9 @@ verify PR title/body match final diff
 final handoff
 ```
 
-Do not treat a passing local implementation as fully delivered when the agreed delivery mode requires commit, push, and PR.
+Once a task branch is pushed for the first time, creating its PR is mandatory. Do not treat pushed changes without a reviewable PR as delivered. Later pushes must update the existing PR.
 
-## Required completion state for PR delivery
+## Required completion state after a fresh push
 
 Before final handoff:
 
@@ -165,8 +165,8 @@ Unrelated pre-existing user changes may remain.
 The requirement is:
 
 ```text
-all changes belonging to this task
-must be delivered according to the agreed mode
+every fresh task-branch push
+must have a reviewable pull request
 ```
 
 not:
@@ -200,10 +200,10 @@ Do not describe the task as fully delivered when a required delivery step is blo
 
 ## Pull requests
 
-If PR delivery is required:
+For every fresh task-branch push:
 
 1. Check whether a PR already exists for the branch.
-2. Create or update the PR against the correct base branch.
+2. Create a PR against the correct base branch when none exists; otherwise update the existing PR.
 3. Ensure title and body describe the final diff.
 4. Include actual verification commands and results.
 5. Include contract/architecture impact where relevant.
@@ -211,6 +211,8 @@ If PR delivery is required:
 7. Update the PR body if later commits materially change the implementation.
 
 Never generate a generic PR description from the task statement without inspecting the final implementation.
+
+If PR creation is blocked after a fresh push, report the push and PR creation failure as a delivery blocker. Do not mark the task as delivered.
 
 Use `docs/engineering/pr-template.md`.
 

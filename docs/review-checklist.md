@@ -113,7 +113,7 @@ Any unresolved required issue returns the task to implementation or owner review
 - Are unrelated user changes preserved?
 - Are all task changes committed when the delivery mode requires it?
 - Is the final verified commit pushed when required?
-- Does the required PR exist?
+- Does a reviewable PR exist for every freshly pushed task branch?
 - Does the PR target the correct base branch?
 - Does the PR body match the final diff?
 - Are actual verification commands/results included?
