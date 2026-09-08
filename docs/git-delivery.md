@@ -37,7 +37,7 @@ Never:
 - include it in unrelated commits;
 - rewrite existing commits without authorization.
 
-Use a separate worktree when useful for isolation.
+Use a separate branch for task isolation. Do not use Git worktrees.
 
 ## One concern per branch
 
