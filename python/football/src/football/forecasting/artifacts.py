@@ -36,6 +36,10 @@ from football.forecasting.dixon_coles_nb2 import (
     DixonColesNB2Fit,
     DixonColesNB2ResidualDispersionModel,
 )
+from football.forecasting.dixon_coles_shared_match_pace import (
+    DixonColesSharedMatchPaceFit,
+    DixonColesSharedMatchPaceModel,
+)
 from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
 from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.raw import ImmutableFileStore
@@ -694,6 +698,100 @@ def deserialize_dixon_coles_nb2_fit(state: Mapping[str, object]) -> DixonColesNB
         conditional_joint_nll=_float(state, "conditional_joint_nll"),
         converged=_boolean(state, "converged"),
     )
+
+
+def serialize_dixon_coles_shared_match_pace_fit(
+    fit: DixonColesSharedMatchPaceFit,
+) -> dict[str, object]:
+    base_state = serialize_dixon_coles_fit(fit.base_fit)
+    base_state_sha256 = sha256_bytes(canonical_json_bytes(base_state))
+    expected_config_sha256 = DixonColesSharedMatchPaceModel(fit.base_fit.config).config_sha256
+    if fit.config_sha256 != expected_config_sha256:
+        raise ArtifactPublicationError(
+            "shared match pace config checksum does not match fitted state"
+        )
+    if not math.isfinite(fit.kappa) or not 0.0 < fit.kappa < 1.0:
+        raise ArtifactPublicationError(
+            "shared match pace kappa is outside the accepted fitted domain"
+        )
+    return {
+        "contract": "DixonColesSharedMatchPaceModelStateV1",
+        "algorithm_version": "dcv3-shared-match-pace-mixture-v1",
+        "base_dcv3": base_state,
+        "base_dcv3_state_sha256": base_state_sha256,
+        "config_sha256": fit.config_sha256,
+        "training_sha256": fit.training_sha256,
+        "training_match_count": fit.base_fit.training_match_count,
+        "training_cutoff": fit.base_fit.training_cutoff.isoformat(),
+        "weighted_joint_nll": fit.weighted_joint_nll,
+        "converged": fit.converged,
+        "pace": {
+            "distribution": "uniform-1-minus-kappa-to-1-plus-kappa-v1",
+            "kappa": fit.kappa,
+            "fit_policy": "conditional-weighted-exact-joint-nll-v1",
+            "numerical_method": "scipy-minimize-scalar-bounded-v1",
+            "bounds": [0.0, 1.0],
+            "xatol": 1e-10,
+            "max_iterations": 500,
+            "profile_points": 1001,
+            "stationarity_step": 1e-5,
+        },
+    }
+
+
+def deserialize_dixon_coles_shared_match_pace_fit(
+    state: Mapping[str, object],
+) -> DixonColesSharedMatchPaceFit:
+    if state.get("contract") != "DixonColesSharedMatchPaceModelStateV1":
+        raise ArtifactPublicationError("unsupported shared match pace model state")
+    if _string(state, "algorithm_version") != "dcv3-shared-match-pace-mixture-v1":
+        raise ArtifactPublicationError("unsupported shared match pace algorithm version")
+    base_state = _object_mapping(state.get("base_dcv3"), "shared match pace base Dixon-Coles state")
+    if sha256_bytes(canonical_json_bytes(base_state)) != _string(state, "base_dcv3_state_sha256"):
+        raise ArtifactPublicationError("shared match pace base Dixon-Coles checksum mismatch")
+    base_fit = deserialize_dixon_coles_fit(base_state)
+    expected_config_sha256 = DixonColesSharedMatchPaceModel(base_fit.config).config_sha256
+    if _string(state, "config_sha256") != expected_config_sha256:
+        raise ArtifactPublicationError("shared match pace config checksum mismatch")
+    pace = _object_mapping(state.get("pace"), "shared match pace")
+    _validate_shared_match_pace_state(pace)
+    kappa = _float(pace, "kappa")
+    if not 0.0 < kappa < 1.0:
+        raise ArtifactPublicationError(
+            "shared match pace kappa is outside the accepted fitted domain"
+        )
+    training_match_count = _integer(state, "training_match_count")
+    training_cutoff = _datetime(state, "training_cutoff")
+    if training_match_count != base_fit.training_match_count:
+        raise ArtifactPublicationError("shared match pace training count does not match base state")
+    if training_cutoff != base_fit.training_cutoff:
+        raise ArtifactPublicationError(
+            "shared match pace training cutoff does not match base state"
+        )
+    return DixonColesSharedMatchPaceFit(
+        base_fit=base_fit,
+        kappa=kappa,
+        config_sha256=expected_config_sha256,
+        training_sha256=_string(state, "training_sha256"),
+        weighted_joint_nll=_float(state, "weighted_joint_nll"),
+        converged=_boolean(state, "converged"),
+    )
+
+
+def _validate_shared_match_pace_state(pace: Mapping[str, object]) -> None:
+    if _string(pace, "distribution") != "uniform-1-minus-kappa-to-1-plus-kappa-v1":
+        raise ArtifactPublicationError("unsupported shared match pace distribution")
+    if _string(pace, "fit_policy") != "conditional-weighted-exact-joint-nll-v1":
+        raise ArtifactPublicationError("unsupported shared match pace fit policy")
+    if _string(pace, "numerical_method") != "scipy-minimize-scalar-bounded-v1":
+        raise ArtifactPublicationError("unsupported shared match pace numerical method")
+    bounds = pace.get("bounds")
+    if bounds != [0.0, 1.0]:
+        raise ArtifactPublicationError("unsupported shared match pace bounds")
+    if _float(pace, "xatol") != 1e-10 or _integer(pace, "max_iterations") != 500:
+        raise ArtifactPublicationError("unsupported shared match pace optimizer settings")
+    if _integer(pace, "profile_points") != 1001 or _float(pace, "stationarity_step") != 1e-5:
+        raise ArtifactPublicationError("unsupported shared match pace identifiability settings")
 
 
 def deserialize_corner_fit(state: Mapping[str, object]) -> CornerFit:
