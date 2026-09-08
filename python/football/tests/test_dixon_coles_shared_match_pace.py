@@ -4,6 +4,7 @@ import math
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 from uuid import UUID
 
 import football.forecasting.dixon_coles_shared_match_pace as shared_pace_module
@@ -27,6 +28,7 @@ from football.forecasting.dixon_coles_shared_match_pace import (
     DixonColesSharedMatchPaceGoalForecast,
     DixonColesSharedMatchPaceModel,
 )
+from scipy.integrate import quad
 
 TEAM_A = UUID("10000000-0000-4000-8000-000000000001")
 TEAM_B = UUID("10000000-0000-4000-8000-000000000002")
@@ -86,6 +88,141 @@ def test_kappa_zero_is_exact_frozen_dcv3() -> None:
     actual = DixonColesSharedMatchPaceModel(_config()).forecast(parameters, 0.0, TEAM_A, TEAM_B)
 
     assert actual == expected
+
+
+def test_near_zero_kappa_zero_total_probability_matches_stable_oracle() -> None:
+    mean = 0.05
+    kappa = 1e-8
+    half_width = mean * kappa
+    expected = (
+        math.exp(-(mean - half_width)) * (-math.expm1(-2.0 * half_width)) / (2.0 * half_width)
+    )
+
+    assert shared_pace_module._poisson_mixture_probability(0, mean, kappa) == pytest.approx(
+        expected,
+        abs=1e-12,
+    )
+
+
+def _independent_uniform_mixture_probability(goals: int, mean: float, kappa: float) -> float:
+    if goals == 0:
+        if kappa == 0.0:
+            return math.exp(-mean)
+        half_width = mean * kappa
+        return (
+            math.exp(-(mean - half_width)) * (-math.expm1(-2.0 * half_width)) / (2.0 * half_width)
+        )
+
+    def probability_at(pace: float) -> float:
+        rate = mean * (1.0 + kappa * pace)
+        if rate == 0.0:
+            return 1.0 if goals == 0 else 0.0
+        return math.exp(goals * math.log(rate) - rate - math.lgamma(goals + 1.0))
+
+    return float(quad(probability_at, -1.0, 1.0, epsabs=1e-14, epsrel=1e-14, limit=200)[0] / 2.0)
+
+
+@pytest.mark.parametrize(
+    ("mean", "kappa", "goals"),
+    (
+        (0.02, 0.0, 0),
+        (0.02, 1e-16, 0),
+        (0.05, 1e-12, 1),
+        (0.05, 1e-10, 2),
+        (0.05, 1e-8, 0),
+        (0.3, 1e-6, 5),
+        (1.4, 1e-4, 2),
+        (1.0, 0.99999e-4, 5),
+        (1.0, 1.00001e-4, 5),
+        (1.4, 3e-4, 10),
+        (3.0, 1e-3, 5),
+        (3.0, 0.4, 5),
+        (1.4, 0.999999, 5),
+        (0.02, 1.0, 10),
+        (50.0, 1e-8, 50),
+        (50.0, 0.4, 50),
+    ),
+)
+def test_mixture_probability_matches_independent_uniform_integral(
+    mean: float, kappa: float, goals: int
+) -> None:
+    expected = _independent_uniform_mixture_probability(goals, mean, kappa)
+
+    assert shared_pace_module._poisson_mixture_probability(goals, mean, kappa) == pytest.approx(
+        expected,
+        abs=1e-12,
+    )
+
+
+@pytest.mark.parametrize(
+    ("mean", "kappa", "goals"),
+    (
+        (2.375975151505306, math.nextafter(1e-4 / 2.375975151505306, math.inf), 2),
+        (1.0, 0.05, 0),
+        (3.0, 1.0 / 60.0, 5),
+        (50.0, 0.001, 50),
+    ),
+)
+def test_expanded_centered_regime_matches_independent_uniform_integral(
+    mean: float, kappa: float, goals: int
+) -> None:
+    expected = _independent_uniform_mixture_probability(goals, mean, kappa)
+
+    assert shared_pace_module._poisson_mixture_probability(goals, mean, kappa) == pytest.approx(
+        expected,
+        abs=1e-12,
+    )
+
+
+def test_expanded_centered_regime_covers_old_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mean = 2.375975151505306
+    kappa = math.nextafter(1e-4 / mean, math.inf)
+
+    def endpoint_called(*_args: object) -> float:
+        raise AssertionError("old endpoint evaluator was selected")
+
+    monkeypatch.setattr(shared_pace_module, "_log_regularized_gamma_difference", endpoint_called)
+
+    assert shared_pace_module._poisson_mixture_probability(2, mean, kappa) > 0.0
+
+
+def test_expanded_centered_regime_is_continuous_at_its_boundary() -> None:
+    mean = 50.0
+    boundary = 0.05 / mean
+
+    for kappa in (
+        math.nextafter(boundary, 0.0),
+        boundary,
+        math.nextafter(boundary, math.inf),
+    ):
+        expected = _independent_uniform_mixture_probability(50, mean, kappa)
+        assert shared_pace_module._poisson_mixture_probability(50, mean, kappa) == pytest.approx(
+            expected,
+            abs=1e-12,
+        )
+
+
+def test_endpoint_regime_preserves_legacy_endpoint_arithmetic(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mean = 2.375975151505306
+    kappa = 0.4
+    captured: dict[str, float] = {}
+    original = shared_pace_module._log_regularized_gamma_difference
+
+    def capture(shape: int, lower: float, upper: float) -> float:
+        captured.update({"lower": lower, "upper": upper})
+        return original(shape, lower, upper)
+
+    monkeypatch.setattr(shared_pace_module, "_log_regularized_gamma_difference", capture)
+    shared_pace_module._poisson_mixture_probability(2, mean, kappa)
+
+    assert captured == {
+        "lower": mean * (1.0 - kappa),
+        "upper": mean * (1.0 + kappa),
+    }
 
 
 def test_shared_pace_preserves_means_normalization_and_rho_marginals() -> None:
@@ -197,6 +334,30 @@ def test_synthetic_interior_fit_is_deterministic_and_input_order_independent() -
     assert serialize_dixon_coles_shared_match_pace_fit(
         first
     ) == serialize_dixon_coles_shared_match_pace_fit(second)
+
+
+def test_profile_does_not_compare_candidate_with_its_own_refined_basin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def objective(kappa: float) -> float:
+        return 1.0 + (kappa - 0.5) ** 2
+
+    def optimizer(_objective: object, **kwargs: object) -> SimpleNamespace:
+        lower, upper = cast(tuple[float, float], kwargs["bounds"])
+        candidate = 0.50000005 if (lower, upper) == (0.0, 1.0) else 0.49999995
+        return SimpleNamespace(
+            success=True,
+            fun=objective(candidate),
+            x=candidate,
+            nit=1,
+            message="forced",
+        )
+
+    monkeypatch.setattr(shared_pace_module, "minimize_scalar", optimizer)
+
+    assert shared_pace_module._fit_kappa(objective) == pytest.approx(
+        (0.50000005, objective(0.50000005))
+    )
 
 
 def test_stationarity_failure_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:

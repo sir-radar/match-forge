@@ -33,6 +33,8 @@ _STATIONARITY_STEP = 1e-5
 _TAIL_TOLERANCE = 1e-12
 _HARD_SUPPORT_LIMIT = 1_000_000
 _INVALID_OBJECTIVE = 1e100
+_CENTERED_SERIES_MAX_HALF_WIDTH = 0.05
+_CENTERED_SERIES_TERMS = 4
 
 
 @dataclass(frozen=True)
@@ -300,8 +302,16 @@ def _verify_profile(
     )
     if not minima:
         raise DixonColesFitError("NON_IDENTIFIABLE_PACE_PARAMETER")
-    refined = tuple(_refine_basin(objective, index) for index in minima)
-    for other_kappa, other_value in refined:
+    candidate_basins = tuple(
+        index
+        for index in minima
+        if (index - 1) * _PROFILE_STEP <= candidate <= (index + 1) * _PROFILE_STEP
+    )
+    candidate_basin = candidate_basins[0] if len(candidate_basins) == 1 else None
+    refined = tuple((index, *_refine_basin(objective, index)) for index in minima)
+    for index, other_kappa, other_value in refined:
+        if index == candidate_basin:
+            continue
         if abs(other_kappa - candidate) > 1e-8 and abs(other_value - value) <= tolerance:
             raise DixonColesFitError("AMBIGUOUS_OPTIMUM")
 
@@ -383,10 +393,48 @@ def _poisson_mixture_probability(goals: int, mean: float, kappa: float) -> float
     _kappa(kappa)
     if kappa == 0.0:
         return _probability(math.exp(goals * math.log(mean) - mean - gammaln(goals + 1.0)))
+    half_width = mean * kappa
+    if half_width <= _CENTERED_SERIES_MAX_HALF_WIDTH:
+        return _centered_mixture_probability(goals, mean, kappa)
     lower = mean * (1.0 - kappa)
     upper = mean * (1.0 + kappa)
     log_difference = _log_regularized_gamma_difference(goals + 1, lower, upper)
     return _probability(math.exp(log_difference - math.log(2.0 * kappa * mean)))
+
+
+def _centered_mixture_probability(goals: int, mean: float, kappa: float) -> float:
+    """Evaluate the frozen uniform mixture without endpoint subtraction.
+
+    With ``h = mean * kappa`` and ``t`` uniform on ``[-1, 1]``, the exact
+    mixture is the Poisson mass at ``mean`` times
+    ``sum(C(goals, j) * kappa**j * M_j(h))``, where
+    ``M_j(h) = integral(t**j * exp(-h * t), -1, 1) / 2``.  The finite
+    calculation integrates the Taylor series for ``exp(-h * t)`` through
+    degree seven.  For ``h <= 0.05``, its absolute mixture remainder is at
+    most ``exp(2h) * h**8 / 8! < 1.1e-15`` before binary64 rounding.
+    """
+    base_probability = math.exp(goals * math.log(mean) - mean - gammaln(goals + 1.0))
+    if base_probability == 0.0:
+        return 0.0
+    binomial_weight = 1.0
+    terms: list[float] = []
+    for power in range(goals + 1):
+        terms.append(binomial_weight * _centered_exponential_moment(power, mean * kappa))
+        if power < goals:
+            binomial_weight *= (goals - power) * kappa / (power + 1)
+    return _probability(base_probability * math.fsum(terms))
+
+
+def _centered_exponential_moment(power: int, half_width: float) -> float:
+    if power % 2 == 0:
+        return math.fsum(
+            half_width ** (2 * term) / ((power + 2 * term + 1) * math.factorial(2 * term))
+            for term in range(_CENTERED_SERIES_TERMS)
+        )
+    return -math.fsum(
+        half_width ** (2 * term + 1) / ((power + 2 * term + 2) * math.factorial(2 * term + 1))
+        for term in range(_CENTERED_SERIES_TERMS)
+    )
 
 
 def _log_regularized_gamma_difference(shape: int, lower: float, upper: float) -> float:
