@@ -67,9 +67,9 @@ Do not commit feature, fix, refactor, modelling, data, or migration work directl
 
 Do not mix tasks.
 
-Create an isolated task branch or worktree.
+Create an isolated task branch.
 
-If unrelated uncommitted user changes make switching unsafe, preserve them and use a separate worktree where practical.
+If unrelated uncommitted user changes make switching unsafe, stash them and use a separate branch where practical, then unstash them when new changes are finally pushed.
 
 ## Branch naming
 
@@ -194,7 +194,7 @@ then:
 2. Preserve all user work.
 3. Report the exact failed command and error.
 4. Report which delivery step remains incomplete.
-5. Leave task changes in a recoverable, clearly identified branch/worktree state.
+5. Leave task changes in a recoverable, clearly identified branch state.
 
 Do not describe the task as fully delivered when a required delivery step is blocked.
 
