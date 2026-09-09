@@ -99,8 +99,11 @@ class _CanonicalWriter:
         matches = {match.provider_id: self._match(match) for match in bundle.matches}
         for lineup in bundle.lineups:
             self._lineup(lineup, matches.get(lineup.provider_match_id))
+        event_rows: list[tuple[object, ...]] = []
         for resource in bundle.events:
-            self._events(resource, matches.get(resource.provider_match_id))
+            event_rows.extend(self._event_rows(resource, matches.get(resource.provider_match_id)))
+        if event_rows:
+            self._publish_event_batch(event_rows)
         return _result(bundle, self._source.snapshot_id, len(competitions))
 
     def _competitions(self, rows: tuple[CompetitionSeason, ...]) -> dict[str, UUID]:
@@ -446,7 +449,9 @@ class _CanonicalWriter:
                 player_ids.add(player.provider_id)
                 self._lineup_player(player, participation_id, lineup.source_path)
 
-    def _events(self, resource: MatchEvents, ingested_match_id: UUID | None) -> None:
+    def _event_rows(
+        self, resource: MatchEvents, ingested_match_id: UUID | None
+    ) -> list[tuple[object, ...]]:
         match_id = ingested_match_id or self._mapping_id(
             "match_provider_mappings",
             "match_id",
@@ -500,9 +505,9 @@ class _CanonicalWriter:
                     self._source.resource_ids[resource.source_path],
                 )
             )
-        self._publish_event_batch(resource.provider_match_id, rows)
+        return rows
 
-    def _publish_event_batch(self, provider_match_id: str, rows: list[tuple[object, ...]]) -> None:
+    def _publish_event_batch(self, rows: list[tuple[object, ...]]) -> None:
         self._prepare_event_stage()
         with self._cursor.copy(
             """
@@ -696,9 +701,7 @@ class _CanonicalWriter:
             ),
         )
         if self._cursor.rowcount != missing:
-            raise CanonicalIngestionError(
-                f"event batch publication is incomplete for match {provider_match_id}"
-            )
+            raise CanonicalIngestionError("event bundle publication is incomplete")
 
     def _prepare_event_stage(self) -> None:
         self._cursor.execute(
