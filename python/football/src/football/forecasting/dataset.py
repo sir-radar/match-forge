@@ -15,9 +15,10 @@ from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.forecasting.contracts import PointInTimeScopeV1
 from football.forecasting.corner_labels import CORNER_LABEL_VERSION
 from football.forecasting.kickoff import (
-    KICKOFF_CLAIM_VERSION,
-    KICKOFF_TIMEZONE,
     TZDATA_VERSION,
+    ApprovedKickoffPolicy,
+    KickoffClaimError,
+    approved_domestic_kickoff_policy,
 )
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
 from football.storage.raw import ImmutableFileStore
@@ -324,6 +325,13 @@ class PointInTimeMatchDatasetProvider:
         season_id: UUID,
     ) -> tuple[CompletedMatchV1, ...]:
         self._verify_scope(scope)
+        policy = self._kickoff_policy(
+            scope.dataset_version_id,
+            scope.source_snapshot_id,
+            scope.knowledge_cutoff,
+            competition_id,
+            season_id,
+        )
         with self._connection.cursor(row_factory=class_row(CompletedMatchV1)) as cursor:
             rows = cursor.execute(
                 """
@@ -372,8 +380,8 @@ class PointInTimeMatchDatasetProvider:
                 ORDER BY resolved.kickoff_at, match.id
                 """,
                 (
-                    KICKOFF_CLAIM_VERSION,
-                    KICKOFF_TIMEZONE,
+                    policy.claim_version,
+                    policy.timezone_name,
                     TZDATA_VERSION,
                     scope.knowledge_cutoff,
                     scope.knowledge_cutoff,
@@ -398,6 +406,13 @@ class PointInTimeMatchDatasetProvider:
         season_id: UUID,
     ) -> ForecastBatchV1:
         self._verify_scope(scope)
+        policy = self._kickoff_policy(
+            scope.dataset_version_id,
+            scope.source_snapshot_id,
+            scope.knowledge_cutoff,
+            competition_id,
+            season_id,
+        )
         with self._connection.cursor(row_factory=class_row(ForecastMatchContextV1)) as cursor:
             rows = cursor.execute(
                 """
@@ -431,8 +446,8 @@ class PointInTimeMatchDatasetProvider:
                 ORDER BY match.id
                 """,
                 (
-                    KICKOFF_CLAIM_VERSION,
-                    KICKOFF_TIMEZONE,
+                    policy.claim_version,
+                    policy.timezone_name,
                     TZDATA_VERSION,
                     scope.knowledge_cutoff,
                     scope.knowledge_cutoff,
@@ -454,6 +469,13 @@ class PointInTimeMatchDatasetProvider:
         season_id: UUID,
     ) -> WalkForwardTargetPlanV1:
         self._verify_dataset(spec.dataset_version_id, spec.source_snapshot_id)
+        policy = self._kickoff_policy(
+            spec.dataset_version_id,
+            spec.source_snapshot_id,
+            spec.knowledge_cutoff,
+            competition_id,
+            season_id,
+        )
         with self._connection.cursor(row_factory=class_row(ForecastMatchContextV1)) as cursor:
             rows = cursor.execute(
                 """
@@ -486,8 +508,8 @@ class PointInTimeMatchDatasetProvider:
                 ORDER BY resolved.kickoff_at, match.id
                 """,
                 (
-                    KICKOFF_CLAIM_VERSION,
-                    KICKOFF_TIMEZONE,
+                    policy.claim_version,
+                    policy.timezone_name,
                     TZDATA_VERSION,
                     spec.knowledge_cutoff,
                     spec.knowledge_cutoff,
@@ -499,7 +521,10 @@ class PointInTimeMatchDatasetProvider:
             ).fetchall()
         contexts = tuple(rows)
         availability = self._outcome_availability(
-            spec, tuple(context.match_id for context in contexts)
+            spec,
+            competition_id,
+            season_id,
+            tuple(context.match_id for context in contexts),
         )
         common_contexts = tuple(context for context in contexts if context.match_id in availability)
         return build_walk_forward_target_plan(
@@ -513,10 +538,19 @@ class PointInTimeMatchDatasetProvider:
     def _outcome_availability(
         self,
         spec: WalkForwardDatasetSpecV1,
+        competition_id: UUID,
+        season_id: UUID,
         match_ids: tuple[UUID, ...],
     ) -> dict[UUID, datetime]:
         if not match_ids:
             return {}
+        policy = self._kickoff_policy(
+            spec.dataset_version_id,
+            spec.source_snapshot_id,
+            spec.knowledge_cutoff,
+            competition_id,
+            season_id,
+        )
         with self._connection.cursor() as cursor:
             rows = cursor.execute(
                 """
@@ -560,8 +594,8 @@ class PointInTimeMatchDatasetProvider:
                 (
                     spec.knowledge_mode,
                     RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
-                    KICKOFF_CLAIM_VERSION,
-                    KICKOFF_TIMEZONE,
+                    policy.claim_version,
+                    policy.timezone_name,
                     TZDATA_VERSION,
                     spec.knowledge_cutoff,
                     spec.knowledge_cutoff,
@@ -584,6 +618,29 @@ class PointInTimeMatchDatasetProvider:
         if len(match_ids) != len(set(match_ids)):
             raise ForecastingDatasetError("duplicate outcome target")
         self._verify_dataset(spec.dataset_version_id, spec.source_snapshot_id)
+        with self._connection.cursor() as cursor:
+            identity = cursor.execute(
+                """
+                SELECT DISTINCT match.competition_id, match.season_id
+                FROM football.matches AS match
+                JOIN football.match_lifecycle_claims AS lifecycle ON lifecycle.match_id = match.id
+                WHERE lifecycle.dataset_version_id = %s
+                  AND lifecycle.source_snapshot_id = %s
+                  AND lifecycle.claim_version = %s
+                ORDER BY match.competition_id, match.season_id
+                LIMIT 2
+                """,
+                (spec.dataset_version_id, spec.source_snapshot_id, LIFECYCLE_CLAIM_VERSION),
+            ).fetchall()
+        if len(identity) != 1:
+            raise ForecastingDatasetError("point-in-time scope does not resolve to one season")
+        policy = self._kickoff_policy(
+            spec.dataset_version_id,
+            spec.source_snapshot_id,
+            spec.knowledge_cutoff,
+            UUID(str(identity[0][0])),
+            UUID(str(identity[0][1])),
+        )
         with self._connection.cursor(row_factory=class_row(EvaluationMatchOutcomeV1)) as cursor:
             rows = cursor.execute(
                 """
@@ -622,8 +679,8 @@ class PointInTimeMatchDatasetProvider:
                 (
                     spec.knowledge_mode,
                     RETROSPECTIVE_OUTCOME_AVAILABILITY_LAG,
-                    KICKOFF_CLAIM_VERSION,
-                    KICKOFF_TIMEZONE,
+                    policy.claim_version,
+                    policy.timezone_name,
                     TZDATA_VERSION,
                     spec.dataset_version_id,
                     LIFECYCLE_CLAIM_VERSION,
@@ -644,6 +701,54 @@ class PointInTimeMatchDatasetProvider:
 
     def _verify_scope(self, scope: PointInTimeScopeV1) -> None:
         self._verify_dataset(scope.dataset_version_id, scope.source_snapshot_id)
+
+    def _kickoff_policy(
+        self,
+        dataset_version_id: UUID,
+        source_snapshot_id: UUID,
+        knowledge_cutoff: datetime,
+        competition_id: UUID,
+        season_id: UUID,
+    ) -> ApprovedKickoffPolicy:
+        with self._connection.cursor() as cursor:
+            rows = cursor.execute(
+                """
+                SELECT DISTINCT snapshot.provider_id, fact.country_name, fact.is_international
+                FROM football.match_lifecycle_claims AS lifecycle
+                JOIN football.matches AS match ON match.id = lifecycle.match_id
+                JOIN football.source_snapshots AS snapshot
+                  ON snapshot.id = lifecycle.source_snapshot_id
+                JOIN football.competition_observations AS fact
+                  ON fact.competition_id = match.competition_id
+                 AND fact.provider_id = snapshot.provider_id
+                 AND football.known_at(fact.known_from, fact.known_to, %s)
+                WHERE lifecycle.dataset_version_id = %s
+                  AND lifecycle.source_snapshot_id = %s
+                  AND lifecycle.claim_version = %s
+                  AND lifecycle.lifecycle = 'completed'
+                  AND match.competition_id = %s
+                  AND match.season_id = %s
+                ORDER BY snapshot.provider_id, fact.country_name, fact.is_international
+                """,
+                (
+                    knowledge_cutoff,
+                    dataset_version_id,
+                    source_snapshot_id,
+                    LIFECYCLE_CLAIM_VERSION,
+                    competition_id,
+                    season_id,
+                ),
+            ).fetchall()
+        if len(rows) != 1 or rows[0][2] is True or rows[0][1] is None:
+            raise ForecastingDatasetError(
+                "point-in-time scope lacks one approved domestic kickoff policy"
+            )
+        try:
+            return approved_domestic_kickoff_policy(str(rows[0][1]))
+        except KickoffClaimError as error:
+            raise ForecastingDatasetError(
+                "point-in-time scope lacks one approved domestic kickoff policy"
+            ) from error
 
     def _verify_dataset(self, dataset_version_id: UUID, source_snapshot_id: UUID) -> None:
         with self._connection.cursor() as cursor:

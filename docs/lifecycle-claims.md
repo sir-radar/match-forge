@@ -45,6 +45,17 @@ The command publishes the complete approved corpus atomically. Partial corpus co
 terminal evidence, quarantined validation, ambiguous match metadata, or mismatched lineage fails the
 whole transaction.
 
+For an already-published, non-Sprint-2 StatsBomb dataset, the bounded explicit route requires both
+immutable identities and never selects a dataset or source snapshot by name or recency:
+
+```bash
+football resolve lifecycle --dataset-version <uuid> --source-snapshot <uuid>
+```
+
+It accepts only one published normalized StatsBomb event dataset with the supplied snapshot, one
+usable validator-v3 result, one canonical season represented by the registered event files, and
+exact match/source/file lineage. The Sprint 2 command remains fixed to its approved EPL corpus.
+
 The Sprint 2 gate counts only `completed` claims with the approved claim version. It does not count
 raw `available` provider statuses.
 

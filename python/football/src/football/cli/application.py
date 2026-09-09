@@ -135,11 +135,32 @@ class FootballApplication:
     def resolve_sprint2_lifecycle(self) -> LifecycleClaimPublicationResult:
         return Sprint2LifecycleClaimPublisher(self._connection).publish()
 
+    def resolve_lifecycle(
+        self, dataset_version_id: UUID, source_snapshot_id: UUID
+    ) -> LifecycleClaimPublicationResult:
+        return Sprint2LifecycleClaimPublisher(self._connection).publish_for_dataset(
+            dataset_version_id, source_snapshot_id
+        )
+
     def resolve_sprint2_kickoffs(self) -> KickoffClaimPublicationResult:
         return Sprint2KickoffClaimPublisher(self._connection).publish()
 
+    def resolve_kickoffs(
+        self, dataset_version_id: UUID, source_snapshot_id: UUID
+    ) -> KickoffClaimPublicationResult:
+        return Sprint2KickoffClaimPublisher(self._connection).publish_for_dataset(
+            dataset_version_id, source_snapshot_id
+        )
+
     def resolve_sprint2_corners(self) -> CornerLabelPublicationResult:
         return Sprint2CornerLabelPublisher(self._connection, self._data_root).publish()
+
+    def resolve_corners(
+        self, dataset_version_id: UUID, source_snapshot_id: UUID
+    ) -> CornerLabelPublicationResult:
+        return Sprint2CornerLabelPublisher(self._connection, self._data_root).publish_for_dataset(
+            dataset_version_id, source_snapshot_id
+        )
 
     def verify_integrity(
         self, artifact_kind: IntegrityArtifactKind, artifact_id: UUID
