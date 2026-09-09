@@ -11,6 +11,7 @@ from threading import Barrier
 from typing import Any, cast
 from uuid import UUID, uuid4
 
+import football.ingestion.canonical as canonical_module
 import psycopg
 import pyarrow.parquet as pq
 import pytest
@@ -1123,6 +1124,103 @@ def test_ingests_event_catalog_in_source_order_idempotently(
     ]
     assert resource_status == ("parsed", "valid", "validated")
     assert advisory_locks == (1,)
+
+
+def test_publishes_multiple_event_resources_in_one_complete_batch(
+    connection: Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    matches = _match_payload()
+    second_match = _match_payload()[0]
+    second_match["match_id"] = 3869686
+    second_match["match_date"] = "2022-12-17"
+    matches.append(second_match)
+    first_events = _event_payload()
+    second_events = _event_payload()
+    second_events[0]["id"] = "33333333-3333-4333-8333-333333333333"
+    second_events[1]["id"] = "44444444-4444-4444-8444-444444444444"
+    payloads = {
+        "data/competitions.json": _json_bytes(_competition_payload()),
+        "data/matches/43/106.json": _json_bytes(matches),
+        "data/events/3869685.json": _json_bytes(first_events),
+        "data/events/3869686.json": _json_bytes(second_events),
+        "data/lineups/3869685.json": _json_bytes(_lineup_payload()),
+        "data/lineups/3869686.json": _json_bytes(_lineup_payload()),
+    }
+    acquisition = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2026, 8, 30, 12, 0, tzinfo=UTC),
+    ).acquire(FixtureProvider("f" * 40, payloads), tuple(SourceResource(path) for path in payloads))
+    calls: list[tuple[tuple[object, ...], ...]] = []
+    original = canonical_module._CanonicalWriter._publish_event_batch
+
+    def capture_batch(
+        writer: canonical_module._CanonicalWriter, rows: list[tuple[object, ...]]
+    ) -> None:
+        batch = list(rows)
+        calls.append(tuple(batch))
+        original(writer, batch)
+
+    monkeypatch.setattr(canonical_module._CanonicalWriter, "_publish_event_batch", capture_batch)
+
+    result = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+
+    assert len(calls) == 1
+    assert len(calls[0]) == 4
+    assert {str(row[0]) for row in calls[0]} == {
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222",
+        "33333333-3333-4333-8333-333333333333",
+        "44444444-4444-4444-8444-444444444444",
+    }
+    with connection.cursor() as cursor:
+        counts = cursor.execute(
+            """
+                SELECT
+                    (SELECT count(*) FROM football.event_catalog AS catalog
+                     JOIN football.event_provider_mappings AS mapping
+                       ON mapping.event_id = catalog.id
+                     WHERE mapping.source_snapshot_id = %s),
+                    (SELECT count(*) FROM football.event_provider_mappings
+                     WHERE source_snapshot_id = %s),
+                    (SELECT count(*) FROM football.event_observations
+                     WHERE source_snapshot_id = %s)
+                """,
+            (result.source_snapshot_id, result.source_snapshot_id, result.source_snapshot_id),
+        ).fetchone()
+    assert counts == (4, 4, 4)
+
+
+def test_cross_resource_duplicate_provider_event_fails_closed_in_one_batch(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    matches = _match_payload()
+    second_match = _match_payload()[0]
+    second_match["match_id"] = 3869686
+    second_match["match_date"] = "2022-12-17"
+    matches.append(second_match)
+    duplicate_events = _event_payload()
+    payloads = {
+        "data/competitions.json": _json_bytes(_competition_payload()),
+        "data/matches/43/106.json": _json_bytes(matches),
+        "data/events/3869685.json": _json_bytes(_event_payload()),
+        "data/events/3869686.json": _json_bytes(duplicate_events),
+        "data/lineups/3869685.json": _json_bytes(_lineup_payload()),
+        "data/lineups/3869686.json": _json_bytes(_lineup_payload()),
+    }
+    acquisition = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2026, 8, 30, 12, 0, tzinfo=UTC),
+    ).acquire(FixtureProvider("e" * 40, payloads), tuple(SourceResource(path) for path in payloads))
+
+    with pytest.raises(CanonicalIngestionError, match="duplicate event identifiers"):
+        StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+
+    with connection.cursor() as cursor:
+        snapshots = cursor.execute(
+            "SELECT count(*) FROM football.source_snapshots WHERE source_revision = %s",
+            ("e" * 40,),
+        ).fetchone()
+    assert snapshots == (0,)
 
 
 def test_event_only_scope_preserves_entities_and_versions_event_facts(
