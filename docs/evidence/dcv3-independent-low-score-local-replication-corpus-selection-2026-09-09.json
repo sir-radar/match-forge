@@ -1,0 +1,108 @@
+{
+  "contract": "FrozenDCv3IndependentLowScoreLocalReplicationCorpusSelectionV1",
+  "status": "LOCAL_PINNED_METADATA_COPY_INCOMPLETE",
+  "source": {
+    "local_source_type": "cache",
+    "local_source_path": ".local/football-data/raw/provider=statsbomb_open_data/snapshot=4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "pinned_source_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "source_revision_verified": true,
+    "verification": "SourceManifestV1 at scope=10b6fd15e9892e77fa20daad831d4f9bce37d176cf2ce88300f3be410834f254 records the exact revision and catalog resource checksum."
+  },
+  "catalog": {
+    "path": "data/competitions.json",
+    "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+    "retained_sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+    "identity": "PASS"
+  },
+  "outcome_fields_used_for_selection": false,
+  "usable_pit_minimum_semantics": "TOTAL_CORPUS",
+  "protected_exclusions": [
+    {
+      "competition": "Premier League",
+      "season": "2015/2016",
+      "provider_competition_id": 2,
+      "provider_season_id": 27,
+      "reason": "protected_sprint_2"
+    },
+    {
+      "competition": "La Liga",
+      "season": "2015/2016",
+      "provider_competition_id": 11,
+      "provider_season_id": 27,
+      "reason": "consumed_independent_diagnostic"
+    },
+    {
+      "competition": "La Liga",
+      "season": "2016/2017",
+      "provider_competition_id": 11,
+      "provider_season_id": 2,
+      "reason": "failed_replication_corpus"
+    }
+  ],
+  "screening": {
+    "metadata_candidate_definition": "named senior domestic top-flight league in the verified provider catalog",
+    "catalog_metadata_candidates": 40,
+    "excluded_candidates": 3,
+    "remaining_candidates": 37,
+    "available_local_match_lists": 0,
+    "candidates_with_record_count_at_least_120": null,
+    "structurally_pit_feasible_candidates": null,
+    "complete_eligible_candidates": null,
+    "reason": "The cache has match lists only for excluded scopes data/matches/11/27.json and data/matches/11/2.json. No remaining candidate has a local match-list resource, so count, chronology, team-history, coverage, kickoff, pipeline, and ranking checks cannot be performed."
+  },
+  "unavailable_resources": [
+    "data/matches/2/44.json",
+    "data/matches/7/27.json",
+    "data/matches/7/108.json",
+    "data/matches/7/235.json",
+    "data/matches/9/27.json",
+    "data/matches/9/281.json",
+    "data/matches/11/1.json",
+    "data/matches/11/4.json",
+    "data/matches/11/21.json",
+    "data/matches/11/22.json",
+    "data/matches/11/23.json",
+    "data/matches/11/24.json",
+    "data/matches/11/25.json",
+    "data/matches/11/26.json",
+    "data/matches/11/37.json",
+    "data/matches/11/38.json",
+    "data/matches/11/39.json",
+    "data/matches/11/40.json",
+    "data/matches/11/41.json",
+    "data/matches/11/42.json",
+    "data/matches/11/90.json",
+    "data/matches/11/278.json",
+    "data/matches/12/27.json",
+    "data/matches/12/86.json",
+    "data/matches/37/4.json",
+    "data/matches/37/42.json",
+    "data/matches/37/90.json",
+    "data/matches/37/281.json",
+    "data/matches/44/107.json",
+    "data/matches/49/3.json",
+    "data/matches/49/107.json",
+    "data/matches/81/48.json",
+    "data/matches/81/275.json",
+    "data/matches/131/281.json",
+    "data/matches/135/281.json",
+    "data/matches/182/281.json",
+    "data/matches/1238/108.json"
+  ],
+  "selected_corpus": null,
+  "selection_frozen": false,
+  "boundaries": {
+    "frozen_dcv3": "UNCHANGED",
+    "laliga_2015_2016_diagnostic": "NOT_RETUNED",
+    "failed_laliga_2016_2017": "RETAINED_AND_EXCLUDED",
+    "candidate_models": "NOT_FIT",
+    "frozen_epl_280_outcomes": "NOT_ACCESSED",
+    "protected_epl_100_match_admission": "NOT_REUSED",
+    "authoritative_evaluation": "NOT_RUN_NOT_AUTHORIZED",
+    "sprint_2": "FAIL",
+    "model_promoted": false,
+    "phase_3": "BLOCKED_UNAUTHORIZED",
+    "production_model_changes": "NONE"
+  },
+  "selection_metadata_sha256": "dd83cce8b5b0456519d8116232089c213de382e4858ea3d437e05788a1c329c6"
+}
