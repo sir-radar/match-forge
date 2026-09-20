@@ -1,0 +1,39 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
+  "recorded_at": "2026-09-20T04:58:42Z",
+  "title": "Retain Sprint 2 FAIL, close the shared-pace route, and authorize Phase 3 research",
+  "map": "governance-status-reconciliation-2026-09-11",
+  "record_md": "docs/evidence/owner-decision-retain-sprint2-fail-close-shared-pace-phase3-research-2026-09-20.md",
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "sprint_2_owner_decision": "RETAIN_FAIL_AND_STOP",
+    "challenger_authorized": false,
+    "model_promoted": false,
+    "sprint2_gate_policy": "Sprint2BaselineGatePolicyV1"
+  },
+  "closes_routes": [
+    "DCV3_SHARED_MATCH_PACE_MIXTURE_V1"
+  ],
+  "authorizes": [
+    "phase3a research only: one bounded minimal leakage-safe xG goal-model hypothesis on approved qualified Tier-A event/shot data",
+    "evaluation v2 design and pre-registration as a new versioned experiment"
+  ],
+  "explicitly_not_authorized": [
+    "xT",
+    "VAEP",
+    "player models",
+    "lineup models",
+    "ensembles",
+    "simulation work",
+    "authoritative evaluation v2 scoring",
+    "model promotion"
+  ],
+  "prohibitions": [
+    "shared-pace admission retries and later-fold continuation",
+    "post-result tuning",
+    "admitting kappa=0 as success",
+    "changing admission semantics",
+    "reusing or extending the frozen 280-target Sprint 2 corpus"
+  ]
+}
