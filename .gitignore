@@ -18,3 +18,7 @@ target/
 dist/
 AGENTS.md
 PLAN.md
+
+.agents/
+.hermes/
+skills-lock.json
