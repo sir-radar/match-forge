@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -85,10 +85,34 @@ class Sprint2CornerLabelPublisher:
 
     def publish(self, corpus: EvaluationCorpusV1 | None = None) -> CornerLabelPublicationResult:
         requested = corpus or EvaluationCorpusV1()
+        return self._publish(lambda cursor: _resolve_season(cursor, requested), None, None)
+
+    def publish_for_dataset(
+        self, dataset_version_id: UUID, source_snapshot_id: UUID
+    ) -> CornerLabelPublicationResult:
+        return self._publish(
+            lambda cursor: _resolve_explicit_season(cursor, dataset_version_id, source_snapshot_id),
+            dataset_version_id,
+            source_snapshot_id,
+        )
+
+    def _publish(
+        self,
+        resolver: Callable[[Cursor[Any]], UUID],
+        expected_dataset_version_id: UUID | None,
+        expected_source_snapshot_id: UUID | None,
+    ) -> CornerLabelPublicationResult:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            season_id = _resolve_season(cursor, requested)
-            sources = _source_rows(cursor, season_id)
+            season_id = resolver(cursor)
+            sources = _source_rows(
+                cursor, season_id, expected_dataset_version_id, expected_source_snapshot_id
+            )
             dataset_version_id = _require_complete_dataset(cursor, season_id, sources)
+            if (
+                expected_dataset_version_id is not None
+                and dataset_version_id != expected_dataset_version_id
+            ):
+                raise CornerLabelError("explicit corner scope resolved a different dataset")
             cursor.execute(
                 "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
                 (f"corner-labels:{dataset_version_id}:{CORNER_LABEL_VERSION}",),
@@ -230,7 +254,58 @@ def _resolve_season(cursor: Cursor[Any], corpus: EvaluationCorpusV1) -> UUID:
     return UUID(str(rows[0][0]))
 
 
-def _source_rows(cursor: Cursor[Any], season_id: UUID) -> tuple[_Source, ...]:
+def _resolve_explicit_season(
+    cursor: Cursor[Any], dataset_version_id: UUID, source_snapshot_id: UUID
+) -> UUID:
+    dataset = cursor.execute(
+        """
+        SELECT dataset.source_snapshot_id, snapshot.provider_id, provider.code,
+               dataset.dataset_name, dataset.layer, dataset.status
+        FROM football.dataset_versions AS dataset
+        JOIN football.source_snapshots AS snapshot ON snapshot.id = dataset.source_snapshot_id
+        JOIN football.providers AS provider ON provider.id = snapshot.provider_id
+        WHERE dataset.id = %s
+        """,
+        (dataset_version_id,),
+    ).fetchone()
+    if dataset is None:
+        raise CornerLabelError("explicit corner dataset is unknown")
+    snapshot = cursor.execute(
+        "SELECT id FROM football.source_snapshots WHERE id = %s",
+        (source_snapshot_id,),
+    ).fetchone()
+    if snapshot is None:
+        raise CornerLabelError("explicit corner source snapshot is unknown")
+    if UUID(str(dataset[0])) != source_snapshot_id:
+        raise CornerLabelError("explicit corner dataset/source snapshot mismatch")
+    if tuple(dataset[3:]) != ("events", "normalized", "published"):
+        raise CornerLabelError("explicit corner dataset is not published normalized events")
+    if dataset[2] != "statsbomb_open_data":
+        raise CornerLabelError("corner labels require a StatsBomb dataset")
+    rows = cursor.execute(
+        """
+        SELECT DISTINCT match.season_id
+        FROM football.match_lifecycle_claims AS claim
+        JOIN football.matches AS match ON match.id = claim.match_id
+        WHERE claim.dataset_version_id = %s
+          AND claim.source_snapshot_id = %s
+          AND claim.claim_version = %s
+          AND claim.lifecycle = 'completed'
+        ORDER BY match.season_id
+        """,
+        (dataset_version_id, source_snapshot_id, LIFECYCLE_CLAIM_VERSION),
+    ).fetchall()
+    if len(rows) != 1:
+        raise CornerLabelError("explicit corner scope does not resolve to one canonical season")
+    return UUID(str(rows[0][0]))
+
+
+def _source_rows(
+    cursor: Cursor[Any],
+    season_id: UUID,
+    dataset_version_id: UUID | None = None,
+    source_snapshot_id: UUID | None = None,
+) -> tuple[_Source, ...]:
     rows = cursor.execute(
         """
         SELECT DISTINCT ON (claim.match_id)
@@ -248,9 +323,18 @@ def _source_rows(cursor: Cursor[Any], season_id: UUID) -> tuple[_Source, ...]:
         WHERE match.season_id = %s
           AND claim.claim_version = %s
           AND claim.lifecycle = 'completed'
+          AND (%s::uuid IS NULL OR claim.dataset_version_id = %s)
+          AND (%s::uuid IS NULL OR claim.source_snapshot_id = %s)
         ORDER BY claim.match_id, claim.known_from DESC, claim.created_at DESC, claim.id DESC
         """,
-        (season_id, LIFECYCLE_CLAIM_VERSION),
+        (
+            season_id,
+            LIFECYCLE_CLAIM_VERSION,
+            dataset_version_id,
+            dataset_version_id,
+            source_snapshot_id,
+            source_snapshot_id,
+        ),
     ).fetchall()
     return tuple(
         _Source(

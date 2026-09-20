@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import sleep
 from typing import Protocol, cast
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from football.contracts.source import SourceResource, SourceSnapshot
+
+_MAX_TRANSPORT_ATTEMPTS = 4
+_RETRY_DELAYS_SECONDS = (1.0, 2.0, 4.0)
+_RETRYABLE_HTTP_STATUSES = frozenset((408, 429, 500, 502, 503, 504))
 
 
 class ProviderConfigurationError(ValueError):
@@ -58,21 +63,39 @@ class UrllibHttpTransport:
             url,
             headers={"Accept": self._accept, "User-Agent": self._user_agent},
         )
-        try:
-            with urlopen(request, timeout=timeout_seconds) as response:
-                payload = cast(bytes, response.read(max_bytes + 1))
-        except (HTTPError, URLError, OSError) as error:
-            raise ProviderFetchError(f"provider fetch failed for {url}") from error
-        if len(payload) > max_bytes:
-            raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes: {url}")
-        headers = response.headers
-        return HttpResponseV1(
-            payload=payload,
-            status=getattr(response, "status", 200),
-            content_type=headers.get_content_type(),
-            etag=headers.get("ETag"),
-            last_modified=headers.get("Last-Modified"),
-        )
+        for attempt in range(1, _MAX_TRANSPORT_ATTEMPTS + 1):
+            failure: HTTPError | URLError | OSError
+            try:
+                with urlopen(request, timeout=timeout_seconds) as response:
+                    payload = cast(bytes, response.read(max_bytes + 1))
+            except HTTPError as error:
+                failure = error
+                retryable = error.code in _RETRYABLE_HTTP_STATUSES
+                status: int | None = error.code
+            except (URLError, OSError) as error:
+                failure = error
+                retryable = True
+                status = None
+            else:
+                if len(payload) > max_bytes:
+                    raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes: {url}")
+                headers = response.headers
+                return HttpResponseV1(
+                    payload=payload,
+                    status=getattr(response, "status", 200),
+                    content_type=headers.get_content_type(),
+                    etag=headers.get("ETag"),
+                    last_modified=headers.get("Last-Modified"),
+                )
+            if retryable and attempt < _MAX_TRANSPORT_ATTEMPTS:
+                sleep(_RETRY_DELAYS_SECONDS[attempt - 1])
+                continue
+            status_text = str(status) if status is not None else "none"
+            raise ProviderFetchError(
+                f"provider fetch failed for {url}: attempt {attempt}/{_MAX_TRANSPORT_ATTEMPTS}; "
+                f"exception={type(failure).__name__}; http_status={status_text}; {failure}"
+            ) from failure
+        raise AssertionError("bounded transport retry loop exited unexpectedly")
 
 
 class FootballDataProvider(Protocol):

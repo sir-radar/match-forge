@@ -12,6 +12,17 @@ validated normalized event dataset. It verifies each registered Parquet file aga
 checksum before reading it. Publication is atomic and idempotent; an identical retry returns
 `verified_existing`.
 
+For an already-published non-Sprint-2 StatsBomb dataset, use the explicit
+immutable route:
+
+```bash
+football resolve corners --dataset-version <uuid> --source-snapshot <uuid>
+```
+
+It requires complete lifecycle evidence tied to that exact dataset/source pair;
+it does not select another dataset from the same season. The fixed Sprint 2
+command remains bound to its EPL corpus.
+
 ## Exact StatsBomb rule
 
 One corner is counted only when all four provider fields agree:

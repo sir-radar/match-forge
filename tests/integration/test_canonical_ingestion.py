@@ -313,6 +313,55 @@ def _terminal_event_payload(
     return events
 
 
+def _four_half_end_regulation_event_payload() -> list[dict[str, object]]:
+    events = _event_payload()
+    events.extend(
+        (
+            {
+                "id": "55555555-5555-4555-8555-555555555555",
+                "index": 3,
+                "period": 1,
+                "timestamp": "00:45:00.000",
+                "minute": 45,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 779, "name": "Argentina"},
+            },
+            {
+                "id": "66666666-6666-4666-8666-666666666666",
+                "index": 4,
+                "period": 1,
+                "timestamp": "00:45:00.000",
+                "minute": 45,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 771, "name": "France"},
+            },
+            {
+                "id": "77777777-7777-4777-8777-777777777777",
+                "index": 5,
+                "period": 2,
+                "timestamp": "00:50:00.000",
+                "minute": 95,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 779, "name": "Argentina"},
+            },
+            {
+                "id": "88888888-8888-4888-8888-888888888888",
+                "index": 6,
+                "period": 2,
+                "timestamp": "00:50:00.000",
+                "minute": 95,
+                "second": 0,
+                "type": {"id": 34, "name": "Half End"},
+                "team": {"id": 771, "name": "France"},
+            },
+        )
+    )
+    return events
+
+
 def _acquire_bundle(
     data_root: Path,
     *,
@@ -1715,6 +1764,123 @@ def test_validates_normalized_event_dataset_and_registers_idempotent_run(
         datetime(2026, 8, 29, 9, 1, tzinfo=UTC),
     )
     assert counts == (1, 0)
+
+
+def test_publishes_explicit_dataset_lifecycle_claims_from_four_half_end_events(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    metadata = _acquire_bundle(
+        tmp_path,
+        source_git_sha="9" * 40,
+        acquired_at=datetime(2030, 8, 29, 8, 0, tzinfo=UTC),
+        home_score=0,
+        away_score=0,
+        competition_id=44,
+        season_id=107,
+        competition_country_name="Spain",
+        competition_name="La Liga",
+        competition_is_international=False,
+        season_name="2015/2016",
+    )
+    detail_payloads = {
+        "data/events/3869685.json": _json_bytes(_four_half_end_regulation_event_payload()),
+        "data/lineups/3869685.json": _json_bytes(_lineup_payload()),
+    }
+    details = SourceAcquirer(
+        tmp_path,
+        clock=lambda: datetime(2030, 8, 29, 9, 0, tzinfo=UTC),
+    ).acquire(
+        FixtureProvider("9" * 40, detail_payloads),
+        tuple(SourceResource(path) for path in detail_payloads),
+    )
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+    metadata_result = ingestor.ingest(metadata)
+    ingestor.ingest(details)
+    dataset = StatsBombEventDatasetPublisher(connection, tmp_path).publish(details)
+    policy_path = Path(__file__).parents[2] / "schemas/quality/statsbomb-quality-policy-v1.json"
+    validation = StatsBombDatasetValidator(
+        connection,
+        tmp_path,
+        QualityPolicy.from_path(policy_path),
+        clock=lambda: datetime(2030, 8, 29, 10, 0, tzinfo=UTC),
+    ).validate(dataset.dataset_version_id)
+
+    publisher = Sprint2LifecycleClaimPublisher(connection)
+    first = publisher.publish_for_dataset(
+        dataset.dataset_version_id,
+        dataset.source_snapshot_id,
+    )
+    second = publisher.publish_for_dataset(
+        dataset.dataset_version_id,
+        dataset.source_snapshot_id,
+    )
+
+    assert validation.status == "passed"
+    assert first.status == "published"
+    assert first.claims == 1
+    assert second.status == "verified_existing"
+    assert second.claims == 1
+    with pytest.raises(LifecycleClaimError, match="dataset is unknown"):
+        publisher.publish_for_dataset(uuid4(), dataset.source_snapshot_id)
+    with pytest.raises(LifecycleClaimError, match="source snapshot is unknown"):
+        publisher.publish_for_dataset(dataset.dataset_version_id, uuid4())
+    with pytest.raises(LifecycleClaimError, match="dataset/source snapshot mismatch"):
+        publisher.publish_for_dataset(
+            dataset.dataset_version_id, metadata_result.source_snapshot_id
+        )
+    with connection.cursor() as cursor:
+        claims = cursor.execute(
+            """
+            SELECT dataset_version_id, source_snapshot_id, terminal_event_count, max_period
+            FROM football.match_lifecycle_claims
+            WHERE dataset_version_id = %s
+            """,
+            (dataset.dataset_version_id,),
+        ).fetchall()
+    assert claims == [(dataset.dataset_version_id, dataset.source_snapshot_id, 2, 2)]
+    kickoff = Sprint2KickoffClaimPublisher(
+        connection, clock=lambda: datetime(2030, 8, 29, 11, 0, tzinfo=UTC)
+    ).publish_for_dataset(
+        dataset.dataset_version_id,
+        dataset.source_snapshot_id,
+    )
+    corner_labels = Sprint2CornerLabelPublisher(connection, tmp_path).publish_for_dataset(
+        dataset.dataset_version_id,
+        dataset.source_snapshot_id,
+    )
+    assert (kickoff.claims, kickoff.status) == (1, "published")
+    assert (corner_labels.labels, corner_labels.corner_events, corner_labels.status) == (
+        1,
+        0,
+        "published",
+    )
+    with connection.cursor() as cursor:
+        point_in_time_identity = cursor.execute(
+            """
+            SELECT match.competition_id, match.season_id
+            FROM football.matches AS match
+            JOIN football.match_lifecycle_claims AS claim ON claim.match_id = match.id
+            WHERE claim.dataset_version_id = %s
+            """,
+            (dataset.dataset_version_id,),
+        ).fetchone()
+    assert point_in_time_identity is not None
+    scope = PointInTimeScopeV1(
+        dataset_version_id=dataset.dataset_version_id,
+        source_snapshot_id=dataset.source_snapshot_id,
+        feature_set_version="sprint2-team-baselines-v1",
+        football_cutoff=datetime(2030, 8, 30, tzinfo=UTC),
+        knowledge_cutoff=datetime(2030, 8, 30, tzinfo=UTC),
+        knowledge_mode="retrospective-fixed-snapshot-v1",
+        quality_policy_sha256=QualityPolicy.from_path(policy_path).sha256,
+        target_set_sha256="1" * 64,
+    )
+    history = PointInTimeMatchDatasetProvider(connection).completed_history(
+        scope,
+        UUID(str(point_in_time_identity[0])),
+        UUID(str(point_in_time_identity[1])),
+    )
+    assert len(history) == 1
 
 
 def test_publishes_completed_lifecycle_claims_from_exact_validated_lineage(

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from urllib.error import URLError
+from email.message import Message
+from urllib.error import HTTPError, URLError
 
 import pytest
 from football.contracts.source import SourceResource
@@ -91,9 +92,105 @@ def test_default_transport_wraps_network_failures(monkeypatch: pytest.MonkeyPatc
         raise URLError("offline")
 
     monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.sleep", lambda _delay: None)
 
     with pytest.raises(ProviderFetchError, match="provider fetch failed"):
         UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)
+
+
+def test_default_transport_retries_a_transient_network_failure_then_succeeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = _response(b"[]")
+    attempts: list[str] = []
+    delays: list[float] = []
+
+    def fetch(request: object, **_kwargs: object) -> _Response:
+        attempts.append(str(request.full_url))  # type: ignore[attr-defined]
+        if len(attempts) == 1:
+            raise URLError("connection reset")
+        return response
+
+    monkeypatch.setattr("football.providers.base.urlopen", fetch)
+    monkeypatch.setattr("football.providers.base.sleep", delays.append)
+
+    payload = UrllibHttpTransport().get(
+        "https://example.test/data.json", timeout_seconds=1, max_bytes=4
+    )
+
+    assert payload == b"[]"
+    assert attempts == ["https://example.test/data.json"] * 2
+    assert delays == [1.0]
+
+
+def test_default_transport_fails_closed_after_bounded_transient_retries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts: list[str] = []
+    delays: list[float] = []
+
+    def unavailable(request: object, **_kwargs: object) -> None:
+        attempts.append(str(request.full_url))  # type: ignore[attr-defined]
+        raise URLError("offline")
+
+    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.sleep", delays.append)
+
+    with pytest.raises(
+        ProviderFetchError,
+        match=r"attempt 4/4; exception=URLError; http_status=none",
+    ):
+        UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)
+
+    assert attempts == ["https://example.test/data.json"] * 4
+    assert delays == [1.0, 2.0, 4.0]
+
+
+def test_default_transport_does_not_retry_a_permanent_http_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts = 0
+    delays: list[float] = []
+
+    def unavailable(*_args: object, **_kwargs: object) -> None:
+        nonlocal attempts
+        attempts += 1
+        raise HTTPError("https://example.test/missing.json", 404, "missing", Message(), None)
+
+    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.sleep", delays.append)
+
+    with pytest.raises(ProviderFetchError, match="http_status=404"):
+        UrllibHttpTransport().get(
+            "https://example.test/missing.json", timeout_seconds=1, max_bytes=4
+        )
+
+    assert attempts == 1
+    assert delays == []
+
+
+def test_default_transport_retries_a_transient_http_status_then_succeeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts = 0
+    delays: list[float] = []
+
+    def fetch(*_args: object, **_kwargs: object) -> _Response:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise HTTPError("https://example.test/data.json", 503, "unavailable", Message(), None)
+        return _response(b"[]")
+
+    monkeypatch.setattr("football.providers.base.urlopen", fetch)
+    monkeypatch.setattr("football.providers.base.sleep", delays.append)
+
+    assert (
+        UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)
+        == b"[]"
+    )
+    assert attempts == 2
+    assert delays == [1.0]
 
 
 def test_statsbomb_adapter_rejects_resources_outside_its_json_contract() -> None:
@@ -101,3 +198,32 @@ def test_statsbomb_adapter_rejects_resources_outside_its_json_contract() -> None
 
     with pytest.raises(ProviderConfigurationError, match="unsupported StatsBomb"):
         adapter.fetch(SourceResource("data/competitions.json", "text/plain"))
+
+
+class _Headers:
+    def get_content_type(self) -> str:
+        return "application/json"
+
+    def get(self, _name: str) -> None:
+        return None
+
+
+class _Response:
+    headers = _Headers()
+    status = 200
+
+    def __init__(self, payload: bytes) -> None:
+        self._payload = payload
+
+    def __enter__(self) -> _Response:
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        return None
+
+    def read(self, _size: int) -> bytes:
+        return self._payload
+
+
+def _response(payload: bytes) -> _Response:
+    return _Response(payload)

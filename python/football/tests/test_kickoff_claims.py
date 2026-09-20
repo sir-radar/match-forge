@@ -3,7 +3,11 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, time
 
 import pytest
-from football.forecasting.kickoff import KickoffClaimError, resolve_local_kickoff
+from football.forecasting.kickoff import (
+    KickoffClaimError,
+    Sprint2KickoffClaimPublisher,
+    resolve_local_kickoff,
+)
 
 
 def test_resolves_london_local_kickoff_with_pinned_summer_and_winter_rules() -> None:
@@ -12,6 +16,22 @@ def test_resolves_london_local_kickoff_with_pinned_summer_and_winter_rules() -> 
 
     assert summer == datetime(2015, 8, 8, 14, 0, tzinfo=UTC)
     assert winter == datetime(2015, 12, 26, 15, 0, tzinfo=UTC)
+
+
+def test_resolves_madrid_local_kickoff_with_pinned_summer_rules() -> None:
+    kickoff = resolve_local_kickoff(date(2015, 8, 21), time(20, 30), timezone_name="Europe/Madrid")
+
+    assert kickoff == datetime(2015, 8, 21, 18, 30, tzinfo=UTC)
+
+
+def test_rejects_an_unapproved_kickoff_policy() -> None:
+    with pytest.raises(KickoffClaimError, match="not approved"):
+        Sprint2KickoffClaimPublisher(
+            None,  # type: ignore[arg-type]
+            claim_version="statsbomb-spain-local-kickoff-v1",
+            country_name="Spain",
+            timezone_name="Europe/London",
+        )
 
 
 @pytest.mark.parametrize(

@@ -15,7 +15,10 @@ StatsBomb Open Data supplies `match_date` and timezone-naive `kick_off` for the 
 
 Nonexistent and ambiguous daylight-saving local times fail closed. Another country, international
 competition, timezone, or timezone-data version requires a separately reviewed claim rule. The
-current rule is `statsbomb-england-local-kickoff-v1`.
+approved rules are `statsbomb-england-local-kickoff-v1` for the Sprint 2 EPL corpus and
+`statsbomb-spain-local-kickoff-v1` for the diagnostic La Liga 2015/16 corpus. The latter accepts
+only domestic Spain competition facts and uses `Europe/Madrid` with the same pinned `tzdata 2026.3`
+runtime and recorded TZif checksum.
 
 ## Lineage and reproducibility
 
@@ -44,6 +47,25 @@ The command publishes the whole approved corpus atomically. Partial lifecycle co
 local time, ambiguous time, unsupported competition geography, or conflicting lineage fails the
 transaction.
 
+For an already-published non-Sprint-2 StatsBomb dataset, publish through the
+explicit immutable route:
+
+```bash
+football resolve kickoff --dataset-version <uuid> --source-snapshot <uuid>
+```
+
+The route requires the exact published normalized dataset/source pair and
+complete lifecycle evidence from that pair. It selects only one existing
+approved domestic policy from the exact competition fact at the lifecycle
+knowledge cutoff. The fixed Sprint 2 command remains bound to its EPL corpus.
+
 Point-in-time history and label-free forecast contexts consume exact approved kickoff claims. The
 authoritative historical evaluation declares `retrospective-fixed-snapshot-v1` knowledge mode
 because Open Data does not prove historical provider-availability timestamps.
+
+For point-in-time selection, the provider resolves the domestic country from the exact published
+dataset/source pair's lifecycle-bound competition fact at the requested knowledge cutoff. It then
+requires exactly one approved policy and binds both its claim version and timezone in every
+kickoff lookup. England resolves to `statsbomb-england-local-kickoff-v1` / `Europe/London`; Spain
+resolves to `statsbomb-spain-local-kickoff-v1` / `Europe/Madrid`. Unknown, international, or
+ambiguous scope facts fail closed; the provider never falls back to the England policy.

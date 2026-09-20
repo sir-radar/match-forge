@@ -81,13 +81,13 @@ class _Connection:
 
 def test_completed_history_uses_strict_football_cutoff_and_exact_lineage() -> None:
     match = CompletedMatchV1(MATCH, COMPETITION, SEASON, CUTOFF, HOME, AWAY, 2, 1)
-    connection = _Connection([_Cursor(one=("published",)), _Cursor(many=[match])])
+    connection = _Connection([_Cursor(one=("published",)), _policy_cursor(), _Cursor(many=[match])])
     provider = PointInTimeMatchDatasetProvider(cast(Connection[Any], connection))
 
     result = provider.completed_history(_scope(), COMPETITION, SEASON)
 
     assert result == (match,)
-    query = connection.used[1]
+    query = connection.used[2]
     assert "resolved.kickoff_at < %s" in query.statement
     assert "lifecycle.dataset_version_id = %s" in query.statement
     assert "lifecycle.known_from <= %s" in query.statement
@@ -114,13 +114,15 @@ def test_completed_history_uses_strict_football_cutoff_and_exact_lineage() -> No
 
 def test_forecast_batch_is_label_free_and_groups_same_time_targets() -> None:
     context = ForecastMatchContextV1(MATCH, COMPETITION, SEASON, CUTOFF, HOME, AWAY)
-    connection = _Connection([_Cursor(one=("published",)), _Cursor(many=[context])])
+    connection = _Connection(
+        [_Cursor(one=("published",)), _policy_cursor(), _Cursor(many=[context])]
+    )
     provider = PointInTimeMatchDatasetProvider(cast(Connection[Any], connection))
 
     batch = provider.forecast_batch(_scope(), COMPETITION, SEASON)
 
     assert batch.matches == (context,)
-    target_query = connection.used[1].statement
+    target_query = connection.used[2].statement
     select_clause = target_query.split("FROM football.matches", maxsplit=1)[0]
     assert "home_score" not in select_clause
     assert "away_score" not in select_clause
@@ -136,10 +138,48 @@ def test_provider_fails_closed_for_unregistered_scope_or_empty_batch() -> None:
     with pytest.raises(ForecastingDatasetError, match="published dataset/source"):
         provider.completed_history(_scope(), COMPETITION, SEASON)
 
-    empty = _Connection([_Cursor(one=("published",)), _Cursor(many=[])])
+    empty = _Connection([_Cursor(one=("published",)), _policy_cursor(), _Cursor(many=[])])
     provider = PointInTimeMatchDatasetProvider(cast(Connection[Any], empty))
     with pytest.raises(ForecastingDatasetError, match="no forecast targets"):
         provider.forecast_batch(_scope(), COMPETITION, SEASON)
+
+
+def test_provider_selects_the_exact_spain_claim_version_and_timezone() -> None:
+    connection = _Connection(
+        [
+            _Cursor(one=("published",)),
+            _policy_cursor(country_name="Spain"),
+            _Cursor(many=[]),
+        ]
+    )
+    provider = PointInTimeMatchDatasetProvider(cast(Connection[Any], connection))
+
+    with pytest.raises(ForecastingDatasetError, match="no forecast targets"):
+        provider.forecast_batch(_scope(), COMPETITION, SEASON)
+
+    assert connection.used[2].parameters[:2] == (
+        "statsbomb-spain-local-kickoff-v1",
+        "Europe/Madrid",
+    )
+
+
+@pytest.mark.parametrize(
+    "facts",
+    (
+        [(UUID(int=10), "France", False)],
+        [(UUID(int=10), "England", True)],
+        [(UUID(int=10), "England", False), (UUID(int=10), "Spain", False)],
+    ),
+)
+def test_provider_fails_closed_when_scope_does_not_resolve_one_approved_policy(
+    facts: list[object],
+) -> None:
+    provider = PointInTimeMatchDatasetProvider(
+        cast(Connection[Any], _Connection([_Cursor(many=facts)]))
+    )
+
+    with pytest.raises(ForecastingDatasetError, match="one approved domestic kickoff policy"):
+        provider._kickoff_policy(DATASET, SNAPSHOT, CUTOFF, COMPETITION, SEASON)
 
 
 def test_walk_forward_plan_uses_only_prior_batches_for_history_eligibility() -> None:
@@ -248,9 +288,13 @@ def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separat
     connection = _Connection(
         [
             _Cursor(one=("published",)),
+            _policy_cursor(),
             _Cursor(many=[context]),
+            _policy_cursor(),
             _Cursor(many=[(MATCH, CUTOFF + timedelta(hours=2))]),
             _Cursor(one=("published",)),
+            _Cursor(many=[(COMPETITION, SEASON)]),
+            _policy_cursor(),
             _Cursor(many=[outcome]),
         ]
     )
@@ -262,16 +306,16 @@ def test_walk_forward_plan_query_is_label_free_and_outcomes_are_revealed_separat
 
     assert plan.corpus_match_count == 1
     assert plan.batches == ()
-    plan_query = connection.used[1].statement
+    plan_query = connection.used[2].statement
     plan_select = plan_query.split("FROM football.matches", maxsplit=1)[0]
     assert "home_score" not in plan_select
     assert "away_score" not in plan_select
     assert "corners" not in plan_select
-    availability_query = connection.used[2].statement
+    availability_query = connection.used[4].statement
     assert "home_score" not in availability_query.split("FROM football.matches", maxsplit=1)[0]
     assert "home_corners" not in availability_query
     assert "match_corner_labels" in availability_query
-    outcome_query = connection.used[4].statement
+    outcome_query = connection.used[8].statement
     assert "home_score" in outcome_query
     assert "home_corners" in outcome_query
     assert "match_corner_labels" in outcome_query
@@ -314,7 +358,14 @@ def test_outcome_reveal_rejects_missing_or_duplicate_target_identity() -> None:
     provider = PointInTimeMatchDatasetProvider(
         cast(
             Connection[Any],
-            _Connection([_Cursor(one=("published",)), _Cursor(many=[])]),
+            _Connection(
+                [
+                    _Cursor(one=("published",)),
+                    _Cursor(many=[(COMPETITION, SEASON)]),
+                    _policy_cursor(),
+                    _Cursor(many=[]),
+                ]
+            ),
         )
     )
     with pytest.raises(ForecastingDatasetError, match="outcome evidence covers 0 of 1"):
@@ -355,6 +406,10 @@ def test_target_plan_publishes_immutable_schema_valid_evidence(tmp_path: Path) -
     )
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+
+
+def _policy_cursor(*, country_name: str = "England") -> _Cursor:
+    return _Cursor(many=[(UUID(int=10), country_name, False)])
 
 
 def _scope() -> PointInTimeScopeV1:

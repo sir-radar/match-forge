@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -72,8 +73,22 @@ class Sprint2LifecycleClaimPublisher:
 
     def publish(self, corpus: EvaluationCorpusV1 | None = None) -> LifecycleClaimPublicationResult:
         requested = corpus or EvaluationCorpusV1()
+        return self._publish(lambda cursor: _resolve_evidence(cursor, requested))
+
+    def publish_for_dataset(
+        self, dataset_version_id: UUID, source_snapshot_id: UUID
+    ) -> LifecycleClaimPublicationResult:
+        return self._publish(
+            lambda cursor: _resolve_explicit_evidence(
+                cursor, dataset_version_id, source_snapshot_id
+            )
+        )
+
+    def _publish(
+        self, resolver: Callable[[Cursor[Any]], _ResolvedEvidence]
+    ) -> LifecycleClaimPublicationResult:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            resolved = _resolve_evidence(cursor, requested)
+            resolved = resolver(cursor)
             cursor.execute(
                 "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
                 (f"lifecycle-claims:{resolved.dataset_version_id}",),
@@ -150,6 +165,93 @@ def _resolve_evidence(cursor: Cursor[Any], corpus: EvaluationCorpusV1) -> _Resol
         validation_run_id=UUID(str(first[6])),
         validation_status=str(first[7]),
         validation_completed_at=first[8],
+    )
+
+
+def _resolve_explicit_evidence(
+    cursor: Cursor[Any], dataset_version_id: UUID, source_snapshot_id: UUID
+) -> _ResolvedEvidence:
+    dataset = cursor.execute(
+        """
+        SELECT dataset.source_snapshot_id, snapshot.provider_id, snapshot.acquired_at,
+               provider.code, dataset.dataset_name, dataset.layer, dataset.status
+        FROM football.dataset_versions AS dataset
+        JOIN football.source_snapshots AS snapshot ON snapshot.id = dataset.source_snapshot_id
+        JOIN football.providers AS provider ON provider.id = snapshot.provider_id
+        WHERE dataset.id = %s
+        """,
+        (dataset_version_id,),
+    ).fetchone()
+    if dataset is None:
+        raise LifecycleClaimError("explicit lifecycle dataset is unknown")
+    snapshot = cursor.execute(
+        "SELECT id FROM football.source_snapshots WHERE id = %s",
+        (source_snapshot_id,),
+    ).fetchone()
+    if snapshot is None:
+        raise LifecycleClaimError("explicit lifecycle source snapshot is unknown")
+    if UUID(str(dataset[0])) != source_snapshot_id:
+        raise LifecycleClaimError("explicit lifecycle dataset/source snapshot mismatch")
+    if tuple(dataset[4:]) != ("events", "normalized", "published"):
+        raise LifecycleClaimError("explicit lifecycle dataset is not published normalized events")
+    if dataset[3] != "statsbomb_open_data":
+        raise LifecycleClaimError("lifecycle v1 requires a StatsBomb dataset")
+    validation_rows = cursor.execute(
+        """
+        SELECT id, status, completed_at
+        FROM football.validation_runs
+        WHERE dataset_version_id = %s
+          AND source_snapshot_id = %s
+          AND validator_version = %s
+          AND status IN ('passed', 'warnings')
+        ORDER BY id
+        """,
+        (dataset_version_id, source_snapshot_id, _VALIDATOR_VERSION),
+    ).fetchall()
+    if len(validation_rows) != 1:
+        raise LifecycleClaimError(
+            "explicit lifecycle scope lacks one passed or warning validator v3 result"
+        )
+    file_count = cursor.execute(
+        "SELECT count(*) FROM football.dataset_files WHERE dataset_version_id = %s",
+        (dataset_version_id,),
+    ).fetchone()
+    if file_count is None or int(file_count[0]) == 0:
+        raise LifecycleClaimError("explicit lifecycle scope lacks normalized event files")
+    corpus_rows = cursor.execute(
+        """
+        SELECT DISTINCT season.id, season.competition_id
+        FROM football.dataset_files AS file
+        JOIN football.event_observations AS event
+          ON event.source_snapshot_id = %s
+         AND event.provider_id = %s
+        JOIN football.matches AS match ON match.id = event.match_id
+        JOIN football.seasons AS season ON season.id = match.season_id
+        WHERE file.dataset_version_id = %s
+          AND file.relative_path =
+              'normalized/events/schema=v1/dataset=' || %s::text ||
+              '/competition_id=' || season.competition_id::text ||
+              '/season_id=' || season.id::text ||
+              '/match_id=' || match.id::text || '/events.parquet'
+        ORDER BY season.id
+        """,
+        (source_snapshot_id, dataset[1], dataset_version_id, dataset_version_id),
+    ).fetchall()
+    if len(corpus_rows) != 1:
+        raise LifecycleClaimError(
+            "explicit lifecycle scope does not resolve to one canonical season"
+        )
+    validation = validation_rows[0]
+    return _ResolvedEvidence(
+        season_id=UUID(str(corpus_rows[0][0])),
+        competition_id=UUID(str(corpus_rows[0][1])),
+        provider_id=UUID(str(dataset[1])),
+        dataset_version_id=dataset_version_id,
+        source_snapshot_id=source_snapshot_id,
+        dataset_acquired_at=dataset[2],
+        validation_run_id=UUID(str(validation[0])),
+        validation_status=str(validation[1]),
+        validation_completed_at=validation[2],
     )
 
 

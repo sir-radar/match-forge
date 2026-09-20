@@ -128,6 +128,24 @@ def build_parser() -> argparse.ArgumentParser:
         "sprint2-lifecycle",
         help="publish completed lifecycle claims for the approved Sprint 2 corpus",
     )
+    lifecycle = resolve_scopes.add_parser(
+        "lifecycle",
+        help="publish completed lifecycle claims for one explicit StatsBomb dataset",
+    )
+    lifecycle.add_argument("--dataset-version", required=True, type=immutable_identifier)
+    lifecycle.add_argument("--source-snapshot", required=True, type=immutable_identifier)
+    kickoff = resolve_scopes.add_parser(
+        "kickoff",
+        help="publish UTC kickoff claims for one explicit StatsBomb dataset",
+    )
+    kickoff.add_argument("--dataset-version", required=True, type=immutable_identifier)
+    kickoff.add_argument("--source-snapshot", required=True, type=immutable_identifier)
+    corners = resolve_scopes.add_parser(
+        "corners",
+        help="publish corner outcome labels for one explicit StatsBomb dataset",
+    )
+    corners.add_argument("--dataset-version", required=True, type=immutable_identifier)
+    corners.add_argument("--source-snapshot", required=True, type=immutable_identifier)
     resolve_scopes.add_parser(
         "sprint2-kickoffs",
         help="publish UTC kickoff claims for the approved Sprint 2 corpus",
@@ -398,34 +416,7 @@ def _execute(
         )
         return 0 if evaluation.status in ("PASS", "PASS_WITH_WARNINGS") else 7
     if args.command == "resolve":
-        if args.scope == "sprint2-lifecycle":
-            resolution = application.resolve_sprint2_lifecycle()
-            print(
-                "resolved Sprint 2 lifecycle: "
-                f"status={resolution.status} claims={resolution.claims} "
-                f"dataset_version_id={resolution.dataset_version_id} "
-                f"validation_run_id={resolution.validation_run_id}",
-                file=output,
-            )
-            return 0
-        if args.scope == "sprint2-kickoffs":
-            kickoffs = application.resolve_sprint2_kickoffs()
-            print(
-                "resolved Sprint 2 kickoffs: "
-                f"status={kickoffs.status} claims={kickoffs.claims} "
-                f"chronological_batches={kickoffs.chronological_batches}",
-                file=output,
-            )
-            return 0
-        corners = application.resolve_sprint2_corners()
-        print(
-            "resolved Sprint 2 corners: "
-            f"status={corners.status} labels={corners.labels} "
-            f"corner_events={corners.corner_events} "
-            f"dataset_version_id={corners.dataset_version_id}",
-            file=output,
-        )
-        return 0
+        return _execute_resolution(application, args, output)
     validation_result = application.validate_season(args.season_id, args.competition_id)
     print(
         f"validated season {validation_result.season_id}: "
@@ -435,6 +426,70 @@ def _execute(
         file=output,
     )
     return {"quarantined": 5, "failed": 6}.get(validation_result.status, 0)
+
+
+def _execute_resolution(
+    application: FootballApplication, args: argparse.Namespace, output: TextIO
+) -> int:
+    if args.scope == "lifecycle":
+        resolution = application.resolve_lifecycle(args.dataset_version, args.source_snapshot)
+        print(
+            "resolved lifecycle: "
+            f"status={resolution.status} claims={resolution.claims} "
+            f"dataset_version_id={resolution.dataset_version_id} "
+            f"validation_run_id={resolution.validation_run_id}",
+            file=output,
+        )
+        return 0
+    if args.scope == "kickoff":
+        kickoff_resolution = application.resolve_kickoffs(
+            args.dataset_version, args.source_snapshot
+        )
+        print(
+            "resolved kickoffs: "
+            f"status={kickoff_resolution.status} claims={kickoff_resolution.claims} "
+            f"chronological_batches={kickoff_resolution.chronological_batches}",
+            file=output,
+        )
+        return 0
+    if args.scope == "corners":
+        corner_resolution = application.resolve_corners(args.dataset_version, args.source_snapshot)
+        print(
+            "resolved corners: "
+            f"status={corner_resolution.status} labels={corner_resolution.labels} "
+            f"corner_events={corner_resolution.corner_events} "
+            f"dataset_version_id={corner_resolution.dataset_version_id}",
+            file=output,
+        )
+        return 0
+    if args.scope == "sprint2-lifecycle":
+        resolution = application.resolve_sprint2_lifecycle()
+        print(
+            "resolved Sprint 2 lifecycle: "
+            f"status={resolution.status} claims={resolution.claims} "
+            f"dataset_version_id={resolution.dataset_version_id} "
+            f"validation_run_id={resolution.validation_run_id}",
+            file=output,
+        )
+        return 0
+    if args.scope == "sprint2-kickoffs":
+        kickoffs = application.resolve_sprint2_kickoffs()
+        print(
+            "resolved Sprint 2 kickoffs: "
+            f"status={kickoffs.status} claims={kickoffs.claims} "
+            f"chronological_batches={kickoffs.chronological_batches}",
+            file=output,
+        )
+        return 0
+    corners = application.resolve_sprint2_corners()
+    print(
+        "resolved Sprint 2 corners: "
+        f"status={corners.status} labels={corners.labels} "
+        f"corner_events={corners.corner_events} "
+        f"dataset_version_id={corners.dataset_version_id}",
+        file=output,
+    )
+    return 0
 
 
 def _execute_integrity(

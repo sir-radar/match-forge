@@ -1,0 +1,116 @@
+{
+  "artifact": "StatsBombLigaFIsolatedExactSourceRecoveryV1",
+  "status": "SELECTED_REPLICATION_CORPUS_QUALIFICATION_FAILED",
+  "frozen_corpus": {
+    "provider": "statsbomb_open_data",
+    "provider_competition_id": 182,
+    "provider_season_id": 281,
+    "selected_matches": 240,
+    "pinned_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "match_list_sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+    "selection_metadata_sha256": "3288fc23a26362177160a3c86b619935176f8006b9568005f01d4afd7f855133",
+    "detail_path_set_sha256": "81b24d023a287955d79aff6dce3e0956313453c243bc5c804c9beecc3c4d67d7"
+  },
+  "isolation": {
+    "normal_governed_data_root": ".local/football-data",
+    "isolated_recovery_data_root": ".local/football-data-liga-f-recovery-2026-09-10",
+    "normal_database": "postgresql://127.0.0.1:55433/football",
+    "isolated_recovery_database": "postgresql://127.0.0.1:55433/football_liga_f_recovery_20260910",
+    "process_isolation": "PASS"
+  },
+  "historical_invalid_acquisition": {
+    "manifest_path": ".local/football-data/manifests/provider=statsbomb_open_data/snapshot=4b73468fc5b0f1950f9f66fada70ad3a4f9327cb/scope=b2096d0c3b58f34e7938f4eacef4508a15d4e0792bb9493f9d168987a6bc874f/source-manifest-v1.json",
+    "conflicting_path": "data/events/3911496.json",
+    "historical_manifest_sha256": "d54bc4fd931f278801dc20e6bca6be6660ea689ecd5ee7eae5d7a542340f17c2",
+    "historical_manifest_size_bytes": 1901120,
+    "pinned_git_sha256": "ee9742816f7cb842bf3875f3a609a68a319f82139589c50d054bd12ce1ceb7a1",
+    "pinned_git_size_bytes": 3025525,
+    "historical_manifest_preserved": true,
+    "truncated_bytes_quarantined_preserved": true,
+    "recovery_source_selected": "PINNED_GIT_OBJECT",
+    "old_source_state_reused": false
+  },
+  "exact_source_acquisition": {
+    "transport": "EXACT_COMMIT_SPARSE_GIT",
+    "detail_resources": 480,
+    "event_resources": 240,
+    "lineup_resources": 240,
+    "path_bound_event_identity": "PASS",
+    "path_bound_lineup_identity": "PASS",
+    "git_blob_identity": "PASS",
+    "per_file_sha256": "PASS",
+    "json_parser_validation": "PASS",
+    "missing": 0,
+    "unexpected": 0,
+    "serial_transport_equivalence": {
+      "comparable_resources": 479,
+      "equal": 479,
+      "different": 0,
+      "known_truncated_resource_classified_separately": "data/events/3911496.json"
+    },
+    "detail_manifest_sha256": "d1c13b1b5b11f94e4022beb71e7a52d19a209460ab2ac20501a78c535b6bd6d2"
+  },
+  "canonical_publication": {
+    "detail_source_snapshot_id": "01a089cc-db5f-7f42-bf7a-419f8eaec2d8",
+    "canonical_matches": 240,
+    "canonical_event_lineage": "PASS",
+    "dataset_version_id": "f5cb2724-6400-540d-aa12-44ba25f27369",
+    "dataset_identity_sha256": "f54fa768cb893cec099c8735135dcea2c495adb215f5bf3c398e7c531ee256f1",
+    "dataset_manifest_sha256": "f54fa768cb893cec099c8735135dcea2c495adb215f5bf3c398e7c531ee256f1",
+    "normalized_event_files": 240,
+    "dataset_integrity": "PASS",
+    "quality_validation": {
+      "status": "warnings",
+      "findings": 934,
+      "blocking_failure": false
+    }
+  },
+  "claims": {
+    "lifecycle": {
+      "contract": "statsbomb-terminal-event-score-v1",
+      "count": 240,
+      "first_run": "published",
+      "repeat_run": "verified_existing"
+    },
+    "kickoff": {
+      "contract": "statsbomb-spain-local-kickoff-v1",
+      "timezone": "Europe/Madrid",
+      "count": 240,
+      "chronological_batches": 208,
+      "first_run": "published",
+      "repeat_run": "verified_existing"
+    },
+    "corner": {
+      "contract": "statsbomb-pass-type-61-corner-v1",
+      "count": 240,
+      "first_run": "published",
+      "repeat_run": "verified_existing"
+    }
+  },
+  "point_in_time_qualification": {
+    "status": "FAIL",
+    "feature_set_version": "sprint2-team-counts-v1",
+    "minimum_team_history": 10,
+    "minimum_competition_history": 100,
+    "corpus_match_count": 240,
+    "expected_warm_up_excluded_target_count": 100,
+    "observed_warm_up_excluded_target_count": 102,
+    "expected_structural_target_count": 140,
+    "observed_structural_target_count": 138,
+    "first_failed_ticket": "Ticket 08: PIT/disjointness qualification",
+    "failure": "The existing point-in-time walk-forward contract excludes 102, rather than 100, targets at the frozen 10-team-match and 100-competition-match thresholds. The required 140 structural targets are therefore not available."
+  },
+  "protected_boundaries": {
+    "replication_outcomes_analyzed": false,
+    "replication_forecasts_generated": false,
+    "candidate_models_fit": false,
+    "frozen_epl_outcomes_accessed": false,
+    "authoritative_evaluation_run": false,
+    "model_promoted": false,
+    "phase_3_started": false
+  },
+  "provenance": {
+    "code_git_sha": "93c4c0b0d198e936153a5c4d365a2ce585666e31",
+    "dependency_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e"
+  }
+}

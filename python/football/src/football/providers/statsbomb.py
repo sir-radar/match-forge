@@ -32,6 +32,8 @@ class StatsBombOpenDataAdapter:
         terms_status="open_data_non_commercial_research",
         supported_scopes=(
             ProviderScopeV1("2", "27", ("fixtures_results", "lineups", "events")),
+            ProviderScopeV1("11", "27", ("fixtures_results", "lineups", "events")),
+            ProviderScopeV1("182", "281", ("fixtures_results", "lineups", "events")),
             ProviderScopeV1("43", "106", ("fixtures_results", "lineups", "events", "360")),
         ),
         resources=(

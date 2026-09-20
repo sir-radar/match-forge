@@ -26,6 +26,36 @@ def test_parser_accepts_required_sprint1_commands() -> None:
     explicit_season = parser.parse_args(["ingest", "season", "27", "--competition-id", "2"])
     validation = parser.parse_args(["validate", "season", "106"])
     lifecycle = parser.parse_args(["resolve", "sprint2-lifecycle"])
+    explicit_lifecycle = parser.parse_args(
+        [
+            "resolve",
+            "lifecycle",
+            "--dataset-version",
+            "10000000-0000-4000-8000-000000000001",
+            "--source-snapshot",
+            "20000000-0000-4000-8000-000000000002",
+        ]
+    )
+    explicit_kickoff = parser.parse_args(
+        [
+            "resolve",
+            "kickoff",
+            "--dataset-version",
+            "10000000-0000-4000-8000-000000000001",
+            "--source-snapshot",
+            "20000000-0000-4000-8000-000000000002",
+        ]
+    )
+    explicit_corners = parser.parse_args(
+        [
+            "resolve",
+            "corners",
+            "--dataset-version",
+            "10000000-0000-4000-8000-000000000001",
+            "--source-snapshot",
+            "20000000-0000-4000-8000-000000000002",
+        ]
+    )
     kickoffs = parser.parse_args(["resolve", "sprint2-kickoffs"])
     integrity = parser.parse_args(["integrity", "dataset", "10000000-0000-4000-8000-000000000001"])
     hard_gate = parser.parse_args(["integrity", "hard-gate"])
@@ -58,6 +88,11 @@ def test_parser_accepts_required_sprint1_commands() -> None:
         106,
     )
     assert (lifecycle.command, lifecycle.scope) == ("resolve", "sprint2-lifecycle")
+    assert (explicit_lifecycle.command, explicit_lifecycle.scope) == ("resolve", "lifecycle")
+    assert str(explicit_lifecycle.dataset_version) == "10000000-0000-4000-8000-000000000001"
+    assert str(explicit_lifecycle.source_snapshot) == "20000000-0000-4000-8000-000000000002"
+    assert (explicit_kickoff.command, explicit_kickoff.scope) == ("resolve", "kickoff")
+    assert (explicit_corners.command, explicit_corners.scope) == ("resolve", "corners")
     assert (kickoffs.command, kickoffs.scope) == ("resolve", "sprint2-kickoffs")
     assert (integrity.command, integrity.scope, str(integrity.artifact_id)) == (
         "integrity",

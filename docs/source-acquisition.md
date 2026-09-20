@@ -22,10 +22,10 @@ update semantics, cursor/webhook support, rate limits, credential references, an
 The registry stores only non-secret credential references; API keys and tokens never belong in the
 capability declaration.
 
-The current StatsBomb Open Data adapter declares the accepted World Cup 2022 and Premier League
-2015/16 scopes. Its commit-pinned snapshot contract is enabled for research use without a
-credential reference. This registry describes capability, not global source authority; later
-reconciliation policy remains responsible for field-level source selection.
+The current StatsBomb Open Data adapter declares the accepted World Cup 2022, Premier League
+2015/16, La Liga 2015/16, and Liga F 2023/24 scopes. Its commit-pinned snapshot contract is enabled
+for research use without a credential reference. This registry describes capability, not global
+source authority; later reconciliation policy remains responsible for field-level source selection.
 
 Provider roles use the versioned `tier_a` (event intelligence), `tier_b`
 (match/statistical enrichment), and `tier_c` (market benchmark) vocabulary. A
@@ -146,6 +146,12 @@ missing evidence remains `NOT_RUN` and a single exercised provider is `FAIL`.
 `StatsBombOpenDataAdapter` implements the provider boundary for competitions, season matches, lineups, and events. It also exposes StatsBomb 360 resources without adding them to the provider-neutral protocol.
 
 Every adapter instance requires a full 40-character lowercase Git commit SHA. Resource URLs use `raw.githubusercontent.com` with that immutable revision; branches and tags are rejected. Requests have a 60-second timeout and a 128 MiB per-resource limit. Provider identifiers must be positive integers.
+
+The shared HTTP transport retries only `URLError`, `OSError`, and HTTP 408, 429,
+500, 502, 503, or 504. It makes at most four attempts, with fixed delays of one,
+two, and four seconds between attempts. A terminal failure identifies the exact
+URL, attempt budget, exception class, HTTP status when available, and provider
+error; it does not publish a partial source manifest.
 
 StatsBomb attribution is retained in every source manifest:
 

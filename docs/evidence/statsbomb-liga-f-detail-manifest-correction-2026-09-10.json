@@ -1,0 +1,48 @@
+{
+  "artifact": "statsbomb_liga_f_detail_manifest_correction_v1",
+  "status": "BLOCKED",
+  "selected_corpus": {
+    "provider": "statsbomb_open_data",
+    "provider_competition_id": 182,
+    "provider_season_id": 281,
+    "selected_matches": 240,
+    "pinned_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "match_list_sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+    "detail_path_set_sha256": "81b24d023a287955d79aff6dce3e0956313453c243bc5c804c9beecc3c4d67d7"
+  },
+  "event_identity_correction": {
+    "previous_proposed_gate": "payload match_id",
+    "finding": "StatsBomb event payload has no top-level match_id",
+    "correct_source_contract": "path-bound provider match identity",
+    "event_resources": 240,
+    "lineup_resources": 240,
+    "path_member_git_blob_sha256_json_validation": "PASS",
+    "canonical_lineage_validation": "PENDING_TICKET_03"
+  },
+  "transport": {
+    "kind": "EXACT_COMMIT_SPARSE_GIT",
+    "checked_out_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "git_blob_verification": "PASS",
+    "transport_byte_equivalence": "BLOCKED_BY_PREEXISTING_MANIFEST"
+  },
+  "preexisting_manifest_conflict": {
+    "manifest_path": ".local/football-data/manifests/provider=statsbomb_open_data/snapshot=4b73468fc5b0f1950f9f66fada70ad3a4f9327cb/scope=b2096d0c3b58f34e7938f4eacef4508a15d4e0792bb9493f9d168987a6bc874f/source-manifest-v1.json",
+    "manifest_sha256": "69340688d6cfb0e989b1667932e7868d245f0d6fea6dbdffe3f4410dd4384202",
+    "resource_path": "data/events/3911496.json",
+    "manifest_recorded_sha256": "d54bc4fd931f278801dc20e6bca6be6660ea689ecd5ee7eae5d7a542340f17c2",
+    "manifest_recorded_size_bytes": 1901120,
+    "pinned_git_sha256": "ee9742816f7cb842bf3875f3a609a68a319f82139589c50d054bd12ce1ceb7a1",
+    "pinned_git_size_bytes": 3025525,
+    "reusable_existing_resources": 479,
+    "mismatched_existing_resources": 1,
+    "mismatched_bytes_quarantined": ".local/football-data/quarantine/statsbomb_open_data/snapshot=4b73468fc5b0f1950f9f66fada70ad3a4f9327cb/data/events/3911496.json"
+  },
+  "governed_result": {
+    "detail_manifest_publication": "NOT_COMPLETED",
+    "source_snapshot_registration": "NOT_COMPLETED",
+    "canonical_dataset_publication": "NOT_STARTED",
+    "blocker": "An immutable detail manifest already exists for the exact 480-resource scope but records a truncated event resource whose checksum and size disagree with the pinned Git object. SourceAcquirer refuses checksum-mismatched recovery as required.",
+    "required_owner_decision": "Authorize either an isolated governed data root for a new exact-source manifest or an explicit, recoverable treatment of the invalid pre-existing manifest. Do not overwrite the existing immutable manifest."
+  },
+  "repository_code_sha": "93c4c0b0d198e936153a5c4d365a2ce585666e31"
+}

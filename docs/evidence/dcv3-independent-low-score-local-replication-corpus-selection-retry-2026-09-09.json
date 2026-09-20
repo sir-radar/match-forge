@@ -1,0 +1,2760 @@
+{
+  "boundaries": {
+    "authoritative_evaluation": "NOT_RUN_NOT_AUTHORIZED",
+    "candidate_models": "NOT_FIT",
+    "frozen_dcv3": "UNCHANGED",
+    "frozen_epl_280_outcomes": "NOT_ACCESSED",
+    "laliga_2015_2016_diagnostic": "NOT_RETUNED",
+    "laliga_2016_2017_failed_replication": "RETAINED_EXCLUDED",
+    "model_promoted": false,
+    "phase_3": "BLOCKED_UNAUTHORIZED",
+    "production_model_changes": "NONE",
+    "protected_epl_100_match_admission": "NOT_REUSED",
+    "sprint_2": "FAIL"
+  },
+  "candidate_universe": {
+    "catalog_metadata_candidates": 40,
+    "excluded_before_screening": [
+      {
+        "provider_competition_id": 2,
+        "provider_season_id": 27,
+        "reason": "protected_sprint_2"
+      },
+      {
+        "provider_competition_id": 11,
+        "provider_season_id": 27,
+        "reason": "consumed_independent_diagnostic"
+      },
+      {
+        "provider_competition_id": 11,
+        "provider_season_id": 2,
+        "reason": "failed_replication_scope"
+      }
+    ],
+    "screened_candidates": 37
+  },
+  "candidates": [
+    {
+      "actual_provider_matches": 38,
+      "chronological_span": {
+        "first_match_date": "2003-08-16",
+        "last_match_date": "2004-05-15"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Premier League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 38
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/2/44.json",
+      "match_list_sha256": "bb4dda2763385050725507de76719f11d506b14a66148c7348950a02eadfcf35",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 2,
+      "provider_season_id": 44,
+      "season": "2003/2004",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 38,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 377,
+      "chronological_span": {
+        "first_match_date": "2015-08-07",
+        "last_match_date": "2016-05-14"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Ligue 1",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "France",
+      "coverage": {
+        "classification": "NEAR_COMPLETE",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 377
+      },
+      "deterministic_rank": 6,
+      "deterministic_rank_key": [
+        1,
+        1,
+        1,
+        -377,
+        -276,
+        1,
+        1,
+        7,
+        "2015-08-07"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/7/27.json",
+      "match_list_sha256": "733c7cf47bd7a19d9acae5add722c32b404664d949377057a280bd0b0f0d2464",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 7,
+      "provider_season_id": 27,
+      "season": "2015/2016",
+      "structurally_eligible_post_warmup_targets": 276,
+      "unique_provider_matches": 377,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 26,
+      "chronological_span": {
+        "first_match_date": "2021-08-29",
+        "last_match_date": "2022-05-21"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Ligue 1",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "France",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 306,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 26
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/7/108.json",
+      "match_list_sha256": "a3b2c322f18a621305720bbf79d68f581441de8657ca53b33901fcf867bf0c0f",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 7,
+      "provider_season_id": 108,
+      "season": "2021/2022",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 26,
+      "unique_teams": 18
+    },
+    {
+      "actual_provider_matches": 32,
+      "chronological_span": {
+        "first_match_date": "2022-08-06",
+        "last_match_date": "2023-06-03"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Ligue 1",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "France",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 32
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/7/235.json",
+      "match_list_sha256": "8cab2c24952ef2668d57bb7de6c2ba93227a38fba3a3dcd9d425e5749f515f8a",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 7,
+      "provider_season_id": 235,
+      "season": "2022/2023",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 32,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 34,
+      "chronological_span": {
+        "first_match_date": "2015-08-15",
+        "last_match_date": "2016-05-14"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "1. Bundesliga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Germany",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 306,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 34
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/9/27.json",
+      "match_list_sha256": "1fd6519dc64f268e40395a2e65c82f1feb9974c2705253a2af2c37aa34a5655d",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 9,
+      "provider_season_id": 27,
+      "season": "2015/2016",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 34,
+      "unique_teams": 18
+    },
+    {
+      "actual_provider_matches": 34,
+      "chronological_span": {
+        "first_match_date": "2023-08-19",
+        "last_match_date": "2024-05-18"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "1. Bundesliga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Germany",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 306,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 34
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/9/281.json",
+      "match_list_sha256": "13dff90f126d9f73da410ae3292b2773744657d3ba968a2b7a9c02135033581c",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 9,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 34,
+      "unique_teams": 18
+    },
+    {
+      "actual_provider_matches": 36,
+      "chronological_span": {
+        "first_match_date": "2017-08-20",
+        "last_match_date": "2018-05-20"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 36
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/1.json",
+      "match_list_sha256": "ac2b71812837bfabc08d538faee5dae6ae4cfbc4c03e2b8867d2d31a9eb379ac",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 1,
+      "season": "2017/2018",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 36,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 34,
+      "chronological_span": {
+        "first_match_date": "2018-08-18",
+        "last_match_date": "2019-05-19"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 34
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/4.json",
+      "match_list_sha256": "5406a8517de316b3b8ccf225a7f77f6ce48b4fa6a3aa4385aa7bf4651ce84706",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 4,
+      "season": "2018/2019",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 34,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 35,
+      "chronological_span": {
+        "first_match_date": "2009-09-12",
+        "last_match_date": "2010-05-16"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 35
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/21.json",
+      "match_list_sha256": "cdaadea54f8f6adc114b736482b8f65d24ffd8ae11eb4a0824dbbb947e698c77",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 21,
+      "season": "2009/2010",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 35,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 33,
+      "chronological_span": {
+        "first_match_date": "2010-08-29",
+        "last_match_date": "2011-05-11"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 33
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/22.json",
+      "match_list_sha256": "b2333589ea2a9ba1b8d74d129f54c4706fd3e2b56847c01a9a18301df027867c",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 22,
+      "season": "2010/2011",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 33,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 37,
+      "chronological_span": {
+        "first_match_date": "2011-08-29",
+        "last_match_date": "2012-05-12"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 37
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/23.json",
+      "match_list_sha256": "cd25028cbd799dee2ef76fd11b79865d950374b0c938cd36d0641c73987f5490",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 23,
+      "season": "2011/2012",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 37,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 32,
+      "chronological_span": {
+        "first_match_date": "2012-08-19",
+        "last_match_date": "2013-05-12"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 32
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/24.json",
+      "match_list_sha256": "ffe52aa5b2daaefd8f1a8a480575ef0caa4998c4eb61792f404a99720c87f0a2",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 24,
+      "season": "2012/2013",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 32,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 31,
+      "chronological_span": {
+        "first_match_date": "2013-08-18",
+        "last_match_date": "2014-05-17"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 31
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/25.json",
+      "match_list_sha256": "cb8a0255157fef62e30d6bcdd9d42973d77fc865f901454a47d435a9200fb551",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 25,
+      "season": "2013/2014",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 31,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 38,
+      "chronological_span": {
+        "first_match_date": "2014-08-24",
+        "last_match_date": "2015-05-23"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 38
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/26.json",
+      "match_list_sha256": "cbb307c273c20f3401ae5a18dcddb34cb76a4ee910503f947025a92df3412c4b",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 26,
+      "season": "2014/2015",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 38,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 7,
+      "chronological_span": {
+        "first_match_date": "2004-10-16",
+        "last_match_date": "2005-05-01"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 42,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 7
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/37.json",
+      "match_list_sha256": "eea8a3631fbd162d3fa0acfe004260407fcff5d03de3552650d97c9f4add5b4e",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 37,
+      "season": "2004/2005",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 7,
+      "unique_teams": 7
+    },
+    {
+      "actual_provider_matches": 17,
+      "chronological_span": {
+        "first_match_date": "2005-10-01",
+        "last_match_date": "2006-02-25"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 272,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 17
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/38.json",
+      "match_list_sha256": "be447aac4d614dc022488207f133a36bacaa13595ab09cb710190cf300780a68",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 38,
+      "season": "2005/2006",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 17,
+      "unique_teams": 17
+    },
+    {
+      "actual_provider_matches": 26,
+      "chronological_span": {
+        "first_match_date": "2006-08-28",
+        "last_match_date": "2007-06-17"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 26
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/39.json",
+      "match_list_sha256": "e8f2580376cb588a62c296564a41ad3a8f88580606fd85720426dee0af68bd56",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 39,
+      "season": "2006/2007",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 26,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 27,
+      "chronological_span": {
+        "first_match_date": "2007-08-26",
+        "last_match_date": "2008-05-17"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 27
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/40.json",
+      "match_list_sha256": "fc03587c12dffc5952b915dcf920a5556148f6deac5062466a9a3a41fedcbe8e",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 40,
+      "season": "2007/2008",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 27,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 31,
+      "chronological_span": {
+        "first_match_date": "2008-08-31",
+        "last_match_date": "2009-05-10"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 342,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 31
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/41.json",
+      "match_list_sha256": "1b13d9d1ca35b0024ec8a2b4b2d03dd4820952ecb12f37111a9b0081753b9345",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 41,
+      "season": "2008/2009",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 31,
+      "unique_teams": 19
+    },
+    {
+      "actual_provider_matches": 33,
+      "chronological_span": {
+        "first_match_date": "2019-09-21",
+        "last_match_date": "2020-07-19"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 33
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/42.json",
+      "match_list_sha256": "1002d78125854dc9c9e0fb4450cd2605213b1a3c93797f7a722d77de42cedc8b",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 42,
+      "season": "2019/2020",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 33,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 35,
+      "chronological_span": {
+        "first_match_date": "2020-09-27",
+        "last_match_date": "2021-05-16"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 342,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 35
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/90.json",
+      "match_list_sha256": "37f6d9026f9ea9ce6c53ebbcc7a349bab42ed0cde9c2bbb15dfb94e664949ba9",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 90,
+      "season": "2020/2021",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 35,
+      "unique_teams": 19
+    },
+    {
+      "actual_provider_matches": 1,
+      "chronological_span": {
+        "first_match_date": "1974-02-17",
+        "last_match_date": "1974-02-17"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "La Liga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 2,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 1
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/11/278.json",
+      "match_list_sha256": "b27b46f4554ba92bf7ddda20a9724495e218e5ab3628bc0f2cbfd9f1cc5ba63e",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 11,
+      "provider_season_id": 278,
+      "season": "1973/1974",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 1,
+      "unique_teams": 2
+    },
+    {
+      "actual_provider_matches": 380,
+      "chronological_span": {
+        "first_match_date": "2015-08-22",
+        "last_match_date": "2016-05-15"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Serie A",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Italy",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 380
+      },
+      "deterministic_rank": 3,
+      "deterministic_rank_key": [
+        0,
+        1,
+        1,
+        -380,
+        -280,
+        1,
+        1,
+        12,
+        "2015-08-22"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/12/27.json",
+      "match_list_sha256": "613cd3cc70699ba613cb1b3c27b4c8a01b0b5fa28415e09c928d020208905c7a",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 12,
+      "provider_season_id": 27,
+      "season": "2015/2016",
+      "structurally_eligible_post_warmup_targets": 280,
+      "unique_provider_matches": 380,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 1,
+      "chronological_span": {
+        "first_match_date": "1986-11-09",
+        "last_match_date": "1986-11-09"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Serie A",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Italy",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 2,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 1
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/12/86.json",
+      "match_list_sha256": "87281e46919ec41d383a864a0d1f767507542fc77c221135cd7569263dc60f29",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 12,
+      "provider_season_id": 86,
+      "season": "1986/1987",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 1,
+      "unique_teams": 2
+    },
+    {
+      "actual_provider_matches": 107,
+      "chronological_span": {
+        "first_match_date": "2018-09-09",
+        "last_match_date": "2019-05-11"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "NEAR_COMPLETE",
+        "inferred_double_round_robin_matches": 110,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 107
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/4.json",
+      "match_list_sha256": "c1e053daa38fa2c9f46ac75a40648da8955a711170250de847ccb98e2fd109ed",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 4,
+      "season": "2018/2019",
+      "structurally_eligible_post_warmup_targets": 7,
+      "unique_provider_matches": 107,
+      "unique_teams": 11
+    },
+    {
+      "actual_provider_matches": 87,
+      "chronological_span": {
+        "first_match_date": "2019-09-07",
+        "last_match_date": "2020-02-23"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 87
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/42.json",
+      "match_list_sha256": "d5d01eb688de0dea557ad39ace71e1ba6a7781f9a815011593c48f6f9cfe98a0",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 42,
+      "season": "2019/2020",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 87,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 131,
+      "chronological_span": {
+        "first_match_date": "2020-09-05",
+        "last_match_date": "2021-05-09"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "NEAR_COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 131
+      },
+      "deterministic_rank": 5,
+      "deterministic_rank_key": [
+        1,
+        1,
+        0,
+        -131,
+        -31,
+        0,
+        1,
+        37,
+        "2020-09-05"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/90.json",
+      "match_list_sha256": "a9ea5e5e3c6f7b2e070ab9c3f3c23d6757545d7a6aa81fa4fbb9c443218597c2",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 90,
+      "season": "2020/2021",
+      "structurally_eligible_post_warmup_targets": 31,
+      "unique_provider_matches": 131,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 132,
+      "chronological_span": {
+        "first_match_date": "2023-10-01",
+        "last_match_date": "2024-05-18"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 132
+      },
+      "deterministic_rank": 2,
+      "deterministic_rank_key": [
+        0,
+        1,
+        0,
+        -132,
+        -32,
+        0,
+        1,
+        37,
+        "2023-10-01"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/281.json",
+      "match_list_sha256": "f0f3a5509f0ca9a1b5315b3a78d86d1c4c6909be5d16f2999c2d2295d6f3a22e",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 32,
+      "unique_provider_matches": 132,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 6,
+      "chronological_span": {
+        "first_match_date": "2023-08-27",
+        "last_match_date": "2023-10-22"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Major League Soccer",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "United States of America",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 42,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 6
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/44/107.json",
+      "match_list_sha256": "40d2d668c9f0ac26349dd268ee3325b011031f6322612d0b728b80a1b3c6ff6d",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 44,
+      "provider_season_id": 107,
+      "season": "2023",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 6,
+      "unique_teams": 7
+    },
+    {
+      "actual_provider_matches": 36,
+      "chronological_span": {
+        "first_match_date": "2018-04-15",
+        "last_match_date": "2018-08-12"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "NWSL",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "United States of America",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 72,
+        "no_repeated_directed_home_away_pairs": false,
+        "observed_directed_home_away_pairs": 31
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/49/3.json",
+      "match_list_sha256": "33f87c47cc0d08b842ed052d84a7c7ff0f2b685850173595d72680bd8581dc8f",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 49,
+      "provider_season_id": 3,
+      "season": "2018",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 36,
+      "unique_teams": 9
+    },
+    {
+      "actual_provider_matches": 137,
+      "chronological_span": {
+        "first_match_date": "2023-03-25",
+        "last_match_date": "2023-11-12"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "NWSL",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "United States of America",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": false,
+        "observed_directed_home_away_pairs": 132
+      },
+      "deterministic_rank": 7,
+      "deterministic_rank_key": [
+        2,
+        1,
+        1,
+        -137,
+        -37,
+        1,
+        1,
+        49,
+        "2023-03-25"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/49/107.json",
+      "match_list_sha256": "75e333e1b196e60f62de86338eed82232bb1432e3f6bf7bafe867c9fdf8392b9",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 49,
+      "provider_season_id": 107,
+      "season": "2023",
+      "structurally_eligible_post_warmup_targets": 37,
+      "unique_provider_matches": 137,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 1,
+      "chronological_span": {
+        "first_match_date": "1997-10-25",
+        "last_match_date": "1997-10-25"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Liga Profesional",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Argentina",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 2,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 1
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/81/48.json",
+      "match_list_sha256": "7d9cdc7182642f977360cb6ba6e6f7e391603011a9dbabd81d3e5beacdd391c9",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 81,
+      "provider_season_id": 48,
+      "season": "1997/1998",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 1,
+      "unique_teams": 2
+    },
+    {
+      "actual_provider_matches": 1,
+      "chronological_span": {
+        "first_match_date": "1981-04-10",
+        "last_match_date": "1981-04-10"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Liga Profesional",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Argentina",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 2,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 1
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/81/275.json",
+      "match_list_sha256": "8af094567f1e6839a373bde431972e25f28cce00cae70bbcf5c90ad5cd1c0cb1",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 81,
+      "provider_season_id": 275,
+      "season": "1981",
+      "structurally_eligible_post_warmup_targets": 0,
+      "unique_provider_matches": 1,
+      "unique_teams": 2
+    },
+    {
+      "actual_provider_matches": 130,
+      "chronological_span": {
+        "first_match_date": "2023-09-16",
+        "last_match_date": "2024-05-19"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Serie A Women",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Italy",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 90,
+        "no_repeated_directed_home_away_pairs": false,
+        "observed_directed_home_away_pairs": 90
+      },
+      "deterministic_rank": 8,
+      "deterministic_rank_key": [
+        2,
+        1,
+        1,
+        -130,
+        -30,
+        1,
+        1,
+        131,
+        "2023-09-16"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/131/281.json",
+      "match_list_sha256": "9065d0279c94718cfb687306c4a329200783bd19e9f5796af2038ccbc86ae0fe",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 131,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 30,
+      "unique_provider_matches": 130,
+      "unique_teams": 10
+    },
+    {
+      "actual_provider_matches": 132,
+      "chronological_span": {
+        "first_match_date": "2023-09-15",
+        "last_match_date": "2024-05-20"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Frauen Bundesliga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Germany",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 132
+      },
+      "deterministic_rank": 4,
+      "deterministic_rank_key": [
+        0,
+        1,
+        1,
+        -132,
+        -32,
+        1,
+        1,
+        135,
+        "2023-09-15"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/135/281.json",
+      "match_list_sha256": "78d01ecb20035bb8bbd94001065ec0f92ea747cb053b4aafca8b1051be12a7d3",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 135,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 32,
+      "unique_provider_matches": 132,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 240,
+      "chronological_span": {
+        "first_match_date": "2023-09-15",
+        "last_match_date": "2024-06-16"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Liga F",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 240,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 240
+      },
+      "deterministic_rank": 1,
+      "deterministic_rank_key": [
+        0,
+        1,
+        0,
+        -240,
+        -140,
+        0,
+        1,
+        182,
+        "2023-09-15"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/182/281.json",
+      "match_list_sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 182,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 140,
+      "unique_provider_matches": 240,
+      "unique_teams": 16
+    },
+    {
+      "actual_provider_matches": 115,
+      "chronological_span": {
+        "first_match_date": "2021-11-19",
+        "last_match_date": "2022-03-20"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Indian Super league",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "India",
+      "coverage": {
+        "classification": "PARTIAL",
+        "inferred_double_round_robin_matches": 110,
+        "no_repeated_directed_home_away_pairs": false,
+        "observed_directed_home_away_pairs": 110
+      },
+      "hard_eligible": false,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/1238/108.json",
+      "match_list_sha256": "118501bdae13189c73e453177374b1f10ad4e0aa768c8d67a3e1251cc0255fd4",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": false,
+      "protected_overlap": 0,
+      "provider_competition_id": 1238,
+      "provider_season_id": 108,
+      "season": "2021/2022",
+      "structurally_eligible_post_warmup_targets": 15,
+      "unique_provider_matches": 115,
+      "unique_teams": 11
+    }
+  ],
+  "catalog": {
+    "identity": "PASS",
+    "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa"
+  },
+  "complete_cache_proof": {
+    "evidence_path": "docs/evidence/statsbomb-pinned-match-list-cache-completion-2026-09-09.json",
+    "evidence_sha256": "0fbcc9b793cc99c4a3c57e82dfb63647df272d7da256a37310b5f6641cddf259",
+    "json_parse": "PASS",
+    "materialized_candidate_resources": 37,
+    "required_candidate_resources": 37,
+    "source_byte_verification": "PASS",
+    "status": "PINNED_STATSBOMB_MATCH_LIST_CACHE_COMPLETE",
+    "unavailable_candidate_resources": 0
+  },
+  "contract": "FrozenDCv3IndependentLowScoreLocalReplicationCorpusSelectionRetryV1",
+  "outcome_fields_used_for_selection": false,
+  "ranking": {
+    "coverage_precedence": "COMPLETE coverage is applied before same-competition preference. This is the explicit resolution of the authorization's precedence conflict: a partial La Liga scope cannot outrank a COMPLETE other domestic top-flight scope merely by league label.",
+    "order_after_coverage": [
+      "same competition as original diagnostic: La Liga",
+      "senior domestic top-flight league",
+      "existing approved kickoff policy",
+      "larger actual provider match count",
+      "larger structurally eligible post-warmup target count",
+      "lower required infrastructure/governance work",
+      "existing pipeline compatibility",
+      "provider competition ID",
+      "earlier season-start chronology"
+    ],
+    "pipeline_order": {
+      "NO": 2,
+      "REVIEW": 1,
+      "YES": 0
+    }
+  },
+  "selected_corpus": {
+    "actual_provider_matches": 240,
+    "chronological_span": {
+      "first_match_date": "2023-09-15",
+      "last_match_date": "2024-06-16"
+    },
+    "chronology_team_metadata_sufficient": true,
+    "competition": "Liga F",
+    "competition_type": "senior_domestic_top_flight",
+    "country": "Spain",
+    "coverage": {
+      "classification": "COMPLETE",
+      "inferred_double_round_robin_matches": 240,
+      "no_repeated_directed_home_away_pairs": true,
+      "observed_directed_home_away_pairs": 240
+    },
+    "deterministic_rank": 1,
+    "deterministic_rank_key": [
+      0,
+      1,
+      0,
+      -240,
+      -140,
+      0,
+      1,
+      182,
+      "2023-09-15"
+    ],
+    "hard_eligible": true,
+    "infrastructure_governance_work": "provider_scope_declaration_review",
+    "kickoff_policy": {
+      "claim_version": "statsbomb-spain-local-kickoff-v1",
+      "status": "EXISTING_APPROVED",
+      "timezone": "Europe/Madrid"
+    },
+    "match_list_path": "data/matches/182/281.json",
+    "match_list_sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+    "pipeline_compatibility": {
+      "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+      "declared_supported_scopes": [
+        [
+          "2",
+          "27"
+        ],
+        [
+          "11",
+          "27"
+        ],
+        [
+          "43",
+          "106"
+        ]
+      ],
+      "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+      "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+      "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+      "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+      "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+      "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+      "status": "REVIEW"
+    },
+    "pit_feasible": true,
+    "protected_overlap": 0,
+    "provider_competition_id": 182,
+    "provider_season_id": 281,
+    "season": "2023/2024",
+    "structurally_eligible_post_warmup_targets": 140,
+    "unique_provider_matches": 240,
+    "unique_teams": 16
+  },
+  "selection_frozen": true,
+  "selection_metadata_sha256": "3288fc23a26362177160a3c86b619935176f8006b9568005f01d4afd7f855133",
+  "shortlist": [
+    {
+      "actual_provider_matches": 240,
+      "chronological_span": {
+        "first_match_date": "2023-09-15",
+        "last_match_date": "2024-06-16"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Liga F",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Spain",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 240,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 240
+      },
+      "deterministic_rank": 1,
+      "deterministic_rank_key": [
+        0,
+        1,
+        0,
+        -240,
+        -140,
+        0,
+        1,
+        182,
+        "2023-09-15"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-spain-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/Madrid"
+      },
+      "match_list_path": "data/matches/182/281.json",
+      "match_list_sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 182,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 140,
+      "unique_provider_matches": 240,
+      "unique_teams": 16
+    },
+    {
+      "actual_provider_matches": 132,
+      "chronological_span": {
+        "first_match_date": "2023-10-01",
+        "last_match_date": "2024-05-18"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 132
+      },
+      "deterministic_rank": 2,
+      "deterministic_rank_key": [
+        0,
+        1,
+        0,
+        -132,
+        -32,
+        0,
+        1,
+        37,
+        "2023-10-01"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/281.json",
+      "match_list_sha256": "f0f3a5509f0ca9a1b5315b3a78d86d1c4c6909be5d16f2999c2d2295d6f3a22e",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 32,
+      "unique_provider_matches": 132,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 380,
+      "chronological_span": {
+        "first_match_date": "2015-08-22",
+        "last_match_date": "2016-05-15"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Serie A",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Italy",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 380,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 380
+      },
+      "deterministic_rank": 3,
+      "deterministic_rank_key": [
+        0,
+        1,
+        1,
+        -380,
+        -280,
+        1,
+        1,
+        12,
+        "2015-08-22"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/12/27.json",
+      "match_list_sha256": "613cd3cc70699ba613cb1b3c27b4c8a01b0b5fa28415e09c928d020208905c7a",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 12,
+      "provider_season_id": 27,
+      "season": "2015/2016",
+      "structurally_eligible_post_warmup_targets": 280,
+      "unique_provider_matches": 380,
+      "unique_teams": 20
+    },
+    {
+      "actual_provider_matches": 132,
+      "chronological_span": {
+        "first_match_date": "2023-09-15",
+        "last_match_date": "2024-05-20"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "Frauen Bundesliga",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "Germany",
+      "coverage": {
+        "classification": "COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 132
+      },
+      "deterministic_rank": 4,
+      "deterministic_rank_key": [
+        0,
+        1,
+        1,
+        -132,
+        -32,
+        1,
+        1,
+        135,
+        "2023-09-15"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "new_kickoff_policy_research_required_and_provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": null,
+        "status": "NEW_KICKOFF_POLICY_RESEARCH_REQUIRED",
+        "timezone": null
+      },
+      "match_list_path": "data/matches/135/281.json",
+      "match_list_sha256": "78d01ecb20035bb8bbd94001065ec0f92ea747cb053b4aafca8b1051be12a7d3",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 135,
+      "provider_season_id": 281,
+      "season": "2023/2024",
+      "structurally_eligible_post_warmup_targets": 32,
+      "unique_provider_matches": 132,
+      "unique_teams": 12
+    },
+    {
+      "actual_provider_matches": 131,
+      "chronological_span": {
+        "first_match_date": "2020-09-05",
+        "last_match_date": "2021-05-09"
+      },
+      "chronology_team_metadata_sufficient": true,
+      "competition": "FA Women's Super League",
+      "competition_type": "senior_domestic_top_flight",
+      "country": "England",
+      "coverage": {
+        "classification": "NEAR_COMPLETE",
+        "inferred_double_round_robin_matches": 132,
+        "no_repeated_directed_home_away_pairs": true,
+        "observed_directed_home_away_pairs": 131
+      },
+      "deterministic_rank": 5,
+      "deterministic_rank_key": [
+        1,
+        1,
+        0,
+        -131,
+        -31,
+        0,
+        1,
+        37,
+        "2020-09-05"
+      ],
+      "hard_eligible": true,
+      "infrastructure_governance_work": "provider_scope_declaration_review",
+      "kickoff_policy": {
+        "claim_version": "statsbomb-england-local-kickoff-v1",
+        "status": "EXISTING_APPROVED",
+        "timezone": "Europe/London"
+      },
+      "match_list_path": "data/matches/37/90.json",
+      "match_list_sha256": "a9ea5e5e3c6f7b2e070ab9c3f3c23d6757545d7a6aa81fa4fbb9c443218597c2",
+      "pipeline_compatibility": {
+        "canonicalization": "PRESENT_GENERIC_STATSBOMB_CONTRACT",
+        "declared_supported_scopes": [
+          [
+            "2",
+            "27"
+          ],
+          [
+            "11",
+            "27"
+          ],
+          [
+            "43",
+            "106"
+          ]
+        ],
+        "event_ingestion": "PRESENT_GENERIC_RESOURCE_PATH_NOT_ACCESSED",
+        "kickoff_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "lifecycle_claims": "REVIEW_SCOPE_DECLARATION_REQUIRED",
+        "match_ingestion": "PRESENT_GENERIC_RESOURCE_PATH",
+        "pit_reconstruction": "REVIEW_SCOPE_QUALIFICATION_REQUIRED",
+        "reason": "The adapter has generic fixtures, lineups, and events resource paths and canonical ingestion support, but its versioned supported_scopes list does not declare this competition-season. No support change is authorized by this selection route.",
+        "status": "REVIEW"
+      },
+      "pit_feasible": true,
+      "protected_overlap": 0,
+      "provider_competition_id": 37,
+      "provider_season_id": 90,
+      "season": "2020/2021",
+      "structurally_eligible_post_warmup_targets": 31,
+      "unique_provider_matches": 131,
+      "unique_teams": 12
+    }
+  ],
+  "source": {
+    "local_cache_root": ".local/football-data/raw/provider=statsbomb_open_data/snapshot=4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "network_access": "NOT_USED",
+    "pinned_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "provider": "StatsBomb Open Data"
+  },
+  "status": "LOCAL_PINNED_REPLICATION_CORPUS_SELECTION_COMPLETE",
+  "structural_methods": {
+    "chronological_order": "local_match_date_then_local_kickoff_then_provider_match_id",
+    "coverage_method": "COMPLETE requires the observed team set's inferred double round-robin total and exactly one match for every directed home-away pair. NEAR_COMPLETE requires at least 90 percent of that inferred total and no repeated directed pair. Other coverage is PARTIAL. This is a structural cache classification, not a nominal league-size claim.",
+    "same_kickoff_batch_rule": "All matches sharing local match_date and kick_off are evaluated against state before that batch, then team and competition counts are advanced for the whole batch.",
+    "target_rule": "competition prior matches >= 100 and both teams have at least 10 prior appearances",
+    "warmup": "Competition prior matches must be at least 100; this implements the first-100-match WARMUP_ONLY rule without letting same-kickoff matches observe one another."
+  },
+  "summary": {
+    "candidates_screened": 37,
+    "candidates_with_at_least_120_matches": 8,
+    "complete_eligible_candidates": 4,
+    "structurally_pit_feasible_candidates": 8
+  },
+  "usable_pit_minimum_semantics": "TOTAL_CORPUS"
+}
