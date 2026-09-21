@@ -1,0 +1,35 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_PHASE3A_EVALUATION_V2_CORPUS_POLICY_V1",
+  "recorded_at": "2026-09-21T10:18:56Z",
+  "title": "Approve Phase 3A Evaluation V2 corpus policy",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: freeze evaluation corpus rules",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "development_dataset_version_id": "670662d6-6ed7-5fa1-ba3c-1cfd561e524f",
+  "proposal_sha256": "ffe512464ebb404ec86116902ff1a79260d58bfd934894c8c08c9c0828b67d79",
+  "record_md": "docs/evidence/owner-decision-approve-phase3a-evaluation-v2-corpus-policy-2026-09-21.md",
+  "authorizes": [
+    "development-only use of the approved StatsBomb La Liga 2015/16 source after applicable pre-registration gates",
+    "independent Evaluation V2 source qualification under the frozen eligibility policy"
+  ],
+  "explicitly_not_authorized": [
+    "authoritative Evaluation V2 corpus membership",
+    "authoritative Evaluation V2 execution",
+    "protected Sprint 2 EPL access",
+    "phase 3A implementation before complete pre-registration freeze",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "development_dataset_evaluation_v2_eligible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
