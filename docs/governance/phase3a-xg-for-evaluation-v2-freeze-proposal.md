@@ -6,7 +6,8 @@
 Proposal ID:                 PHASE3A_XG_FOR_EVALUATION_V2_FREEZE_PROPOSAL_V1
 Proposal status:             AWAITING_OWNER_DECISION
 Decision 1:                 APPROVED WITHOUT AMENDMENTS
-Decisions 2-5:              AWAITING_OWNER_DECISION
+Decision 2:                 APPROVED WITHOUT AMENDMENTS
+Decisions 3-5:              AWAITING_OWNER_DECISION
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
@@ -134,6 +135,17 @@ and feature contract, or return exact amendments. Approval does not authorize
 implementation until the approved pre-registration is frozen.
 
 ## Decision 2 — evaluation corpus
+
+```text
+Decision status: APPROVED WITHOUT AMENDMENTS
+Decision ID:     APPROVE_PHASE3A_EVALUATION_V2_CORPUS_POLICY_V1
+Recorded at:     2026-09-21T10:18:56Z
+```
+
+The repository owner approved this decision exactly as proposed. The approval
+freezes the development source and independent-corpus eligibility policy and
+authorizes bounded source qualification. It does not freeze authoritative
+corpus membership, IDs, or hashes and does not authorize Evaluation V2.
 
 ### Proposed freeze
 
