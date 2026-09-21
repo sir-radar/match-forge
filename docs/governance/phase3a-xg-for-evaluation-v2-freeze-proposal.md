@@ -5,6 +5,8 @@
 ```text
 Proposal ID:                 PHASE3A_XG_FOR_EVALUATION_V2_FREEZE_PROPOSAL_V1
 Proposal status:             AWAITING_OWNER_DECISION
+Decision 1:                 APPROVED WITHOUT AMENDMENTS
+Decisions 2-5:              AWAITING_OWNER_DECISION
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
@@ -49,6 +51,17 @@ below are conservative repository decisions chosen before evaluation outcomes:
   https://github.com/hudl/open-data
 
 ## Decision 1 — feature mathematics
+
+```text
+Decision status: APPROVED WITHOUT AMENDMENTS
+Decision ID:     APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1
+Recorded at:     2026-09-21T09:47:07Z
+```
+
+The repository owner approved this decision exactly as proposed. The approval
+freezes the feature mathematics but does not release implementation. The full
+pre-registration remains draft until Decisions 2–5 are resolved and the owner
+separately approves and freezes the completed document.
 
 ### Proposed freeze
 

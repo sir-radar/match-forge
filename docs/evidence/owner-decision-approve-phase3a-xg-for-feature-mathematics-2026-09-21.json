@@ -1,0 +1,33 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
+  "recorded_at": "2026-09-21T09:47:07Z",
+  "title": "Approve Phase 3A xG-for feature mathematics",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: freeze feature mathematics",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "feature_id": "MATCHFORGE_NPXG_FOR_LAST10_V1",
+  "proposal_sha256": "2e311979673d2259d947d9ad1ca9693a7a2a8e79597c5c2795de677d02820030",
+  "record_md": "docs/evidence/owner-decision-approve-phase3a-xg-for-feature-mathematics-2026-09-21.md",
+  "authorizes": [
+    "feature mathematics freeze only"
+  ],
+  "explicitly_not_authorized": [
+    "implementation or fitting before complete pre-registration freeze",
+    "decisions 2 through 5",
+    "authoritative evaluation v2 execution",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "phase3a_implementation_authorized": false,
+    "evaluation_v2_authorized": false,
+    "rust_changes_authorized": false,
+    "production_changes_authorized": false
+  }
+}
