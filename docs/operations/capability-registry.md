@@ -1,6 +1,6 @@
 # Capability and promotion registry — proposed schema
 
-**Critical:** the user supplied no actual registry export. The table below does **not** assert live capability states. Do not set `EVALUATION_READY`, `PRODUCTION_ENABLED`, `RETIRED`, etc. from Astra's suggested initial-state guesses. Reconcile actual repository and signed events before populating the authoritative registry.
+**Critical:** the repository does not contain an authoritative runtime capability registry. The table below does **not** assert live capability states. Do not set `EVALUATION_READY`, `PRODUCTION_ENABLED`, `RETIRED`, or any other state from roadmap proposals. Require tracked owner decisions and runtime evidence before populating an authoritative registry.
 
 ## Allowed states
 
@@ -10,15 +10,15 @@ Required record: `capability_id`, name, owner, state, state-event ID/timestamp, 
 
 ## Initial documentation-only inventory
 
-| Capability | Supplied-plan evidence | Runtime state to assign now |
+| Capability | Repository evidence or proposal | Runtime state to assign now |
 | --- | --- | --- |
-| Prior goals-only and dynamic reference implementations | Baseline work mentioned; live state not supplied | **Do not assign; verify** |
-| Single minimal Phase 3A xG hypothesis | Narrow **research** authorization reported | No production inference; verify |
+| Prior goals-only and dynamic reference implementations | Baseline work and retained evidence exist; runtime state is not recorded | **Do not assign; verify** |
+| Single minimal Phase 3A xG hypothesis | Narrow **research-only** authorization recorded | No production inference |
 | Wider xG/xGA, H2H, lineup, goalkeeper, threat, ensemble | Proposed research families | No production inference; verify |
 | Derby/unpredictability display tags | Display-only proposal | No production inference; verify |
 | Minimal Rust engine | Scaffold mentioned, separate authorization pending | **Not authorized for new implementation/activation by prior event** |
-| New simulation-validated product | Mandatory *future* product policy | **Not activated by this package** |
-| Automatic post-upset recalibration, derby probability coefficient, tag-induced probability adjustment | Explicitly excluded in supplied plan | Must not be enabled under this plan |
+| New simulation-validated product | Mandatory *future* product policy | **Not activated by any tracked decision** |
+| Automatic post-upset recalibration, derby probability coefficient, tag-induced probability adjustment | Explicitly excluded by the roadmap | Must not be enabled under this plan |
 
 ## State transition gates
 

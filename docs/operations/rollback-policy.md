@@ -1,6 +1,6 @@
 # Rollback, suspension and incident ownership
 
-**Status:** proposed operating contract. Actual command names and RPO/RTO/SLO numbers must be copied from the real repository after approval, not invented here.
+**Status:** proposed operating contract. Command names and RPO/RTO/SLO numbers must come from approved operational configuration, not be invented here.
 
 - Each release records a signed/hashed deployment manifest referencing application revision, DB migration, feature/model/calibrator versions, Rust build, validation policy, API version, capability state and rollback target.
 - Feature/model/calibrator/engine rollback changes *future* forecast routing only. Previously published forecasts, failed experiment records, simulation sidecars and decision events are immutable and retrievable.

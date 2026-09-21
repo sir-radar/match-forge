@@ -1,0 +1,647 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-fixed-variant":"#004c69","surface":"#0f131c","tertiary":"#c0c1ff","surface-container":"#1c1f29","primary-container":"#10b981","tertiary-fixed-dim":"#c0c1ff","primary":"#4edea3","surface-container-lowest":"#0a0e17","on-primary-fixed":"#002113","secondary-fixed":"#c4e7ff","error":"#ffb4ab","on-secondary-fixed":"#001e2c","on-tertiary":"#1000a9","surface-container-high":"#262a34","on-tertiary-fixed-variant":"#2f2ebe","secondary":"#7bd0ff","on-background":"#dfe2ef","on-primary":"#003824","surface-dim":"#0f131c","outline":"#86948a","secondary-fixed-dim":"#7bd0ff","on-tertiary-container":"#1d17b2","secondary-container":"#00a6e0","inverse-primary":"#006c49","inverse-surface":"#dfe2ef","surface-bright":"#353943","on-tertiary-fixed":"#07006c","background":"#0f131c","surface-variant":"#31353f","inverse-on-surface":"#2c303a","primary-fixed":"#6ffbbe","tertiary-fixed":"#e1e0ff","on-error":"#690005","surface-container-low":"#181b25","tertiary-container":"#9699ff","primary-fixed-dim":"#4edea3","on-secondary-container":"#00374d","on-surface":"#dfe2ef","on-primary-container":"#00422b","on-error-container":"#ffdad6","outline-variant":"#3c4a42","on-secondary":"#00354a","surface-tint":"#4edea3","on-primary-fixed-variant":"#005236","surface-container-highest":"#31353f","error-container":"#93000a","on-surface-variant":"#bbcabf"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-xl":"2rem","space-lg":"1.25rem","space-md":"0.75rem",margin:"1rem",gutter:"0.75rem","space-sm":"0.375rem","gutter-desktop":"1rem","space-xs":"0.25rem","margin-desktop":"1.5rem"},fontFamily:{"headline-xl":["Space Grotesk"],"body-md":["Geist"],"body-sm":["Geist"],"headline-lg":["Space Grotesk"],"label-md":["JetBrains Mono"],"headline-md":["Space Grotesk"],"headline-sm":["Space Grotesk"],"label-sm":["JetBrains Mono"],"body-lg":["Geist"],"headline-xl-mobile":["Space Grotesk"],"label-lg":["JetBrains Mono"]},fontSize:{"headline-xl":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md":["13px",{lineHeight:"18px",fontWeight:"400"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"headline-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.015em",fontWeight:"600"}],"label-md":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"500"}],"headline-md":["18px",{lineHeight:"26px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-sm":["15px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"600"}],"label-sm":["10px",{lineHeight:"12px",letterSpacing:"0.06em",fontWeight:"600"}],"body-lg":["15px",{lineHeight:"22px",fontWeight:"400"}],"headline-xl-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"700"}],"label-lg":["13px",{lineHeight:"18px",letterSpacing:"0.02em",fontWeight:"500"}]}}}};</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary selection:text-on-primary"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col justify-between pt-14 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 overflow-y-auto px-space-md py-space-md"><div class="flex items-center justify-between px-space-sm mb-space-sm"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Competitions</span><span class="font-label-sm text-label-sm text-primary bg-surface-container px-space-xs py-0.5 rounded">2024/25</span></div><div class="flex flex-col gap-0.5"><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider mt-space-xs">Top Leagues</div><a class="flex items-center justify-between px-space-sm py-1.5 rounded bg-surface-container-high text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">England - Premier League</span><span class="font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Spain - La Liga</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Germany - Bundesliga</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">9</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Italy - Serie A</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">France - Ligue 1</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">9</span></a><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider mt-space-sm">Continental</div><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">UEFA Champions League</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-secondary">16</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">UEFA Europa League</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">16</span></a></div></div><div class="p-space-md bg-surface-container-lowest flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant">Poisson Core v3.8</span></div><span class="font-label-sm text-label-sm text-outline">60 FPS</span></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-0 right-0 h-14 bg-surface-container-lowest/90 backdrop-blur-md z-40 px-gutter-desktop flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="MatchForge Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1W2BGvyvlDMyb4XgKekb_gXKyNxHbm4-xEHrKFlE_f5_SPWu_8UY1X-DqmCb9LS5fiXffSghy-WUOVAglG-Ouj5ec7d7J9CBPUctC2awCCScqN-O8lWUk2REXyrwJlgI953yAgXjNa-Wad1qgDY1eJUg1HD7ykDv1QBmOCt_tzK-cWLBheHma2-e7jyYEfRjAbbSbKOZ2X2XiUJgzuUDcFM0B8dIqazq6nm3h4tBAZmur7fn4eTNPmIuQ"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">MATCHFORGE</span></div><nav class="flex items-center gap-1" data-active-classes="bg-surface-container-high text-on-surface font-headline-sm"><a aria-current="page" class="px-space-sm py-1 rounded transition-colors bg-surface-container-high text-on-surface font-headline-sm" data-path="matches" href="#">Matches</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="competitions" href="#">Competitions</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="results" href="#">Results</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="documentation" href="#">Documentation</a></nav></div><div class="flex items-center gap-space-md"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2.5 text-outline text-[16px]">search</span><input class="w-72 h-7 pl-8 pr-12 rounded bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-colors" placeholder="Search teams, leagues or matches..." type="text"><span class="absolute right-2 font-label-sm text-label-sm text-outline bg-surface-container-highest px-1 py-0.5 rounded pointer-events-none">Ctrl+K</span></div><div class="flex items-center gap-space-xs font-label-sm text-label-sm bg-surface-container px-space-xs py-1 rounded"><span class="text-on-surface-variant">UTC+0 (London)</span><span class="text-outline">/</span><span class="text-outline">Local</span></div><div class="flex items-center gap-1 bg-surface-container-high px-space-xs py-1 rounded font-label-sm text-label-sm text-primary"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="">Feed: Live</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-14 flex-1 w-full px-space-lg py-space-md bg-surface"><div class="flex flex-col w-full">
+<!-- Synthetic Visual Backdrop Ambient Mesh -->
+<div class="relative w-full overflow-hidden">
+<!-- Top Research / Demo Notice Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-lowest px-space-md py-1.5 rounded-t mb-space-xs">
+<div class="flex items-center gap-space-sm">
+
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+          Poisson probabilistic matrix &amp; match simulations — Non-wagering quant benchmark
+        </span>
+</div>
+<div class="flex items-center gap-space-md font-label-sm text-label-sm text-outline">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary">memory</span>
+          Model: Dual-Poisson xG v4.2
+        </span>
+<span class="text-surface-container-highest">|</span>
+<span class="flex items-center gap-1 text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+          Convergence: 99.84%
+        </span>
+</div>
+</div>
+<!-- Main Content Header & Date Controls -->
+<div class="bg-surface-container-low p-space-md rounded-b mb-space-md shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<!-- Title & Subtitle -->
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined text-[24px]">calendar_view_day</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight truncate">Football Fixtures</h1>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-secondary px-1.5 py-0.5 rounded">6 Matches Scoped</span>
+</div>
+<p class="font-label-md text-label-md text-outline tracking-normal mt-0.5">
+              Saturday, 28 September 2026 • Gameweek 06/38 (Simulated Sequence)
+            </p>
+</div>
+</div>
+<!-- Date Stepper Navigator -->
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 rounded">
+<button class="group flex items-center gap-1 px-space-sm py-1.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm" title="Previous matchday" type="button">
+<span class="material-symbols-outlined text-[16px] transition-transform group-hover:-translate-x-0.5">chevron_left</span>
+<span class="font-label-sm text-label-sm">Prev Day</span>
+</button>
+<div class="px-space-md py-1 bg-primary text-on-primary font-label-md text-label-md rounded flex items-center gap-1.5 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary"></span>
+<span class="">Today (28 Sep)</span>
+</div>
+<button class="group flex items-center gap-1 px-space-sm py-1.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm" title="Next matchday" type="button">
+<span class="font-label-sm text-label-sm">Next Day</span>
+<span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-0.5">chevron_right</span>
+</button>
+<div class="w-px h-5 bg-surface-container-high mx-1"></div>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Select date from archive" type="button">
+<span class="material-symbols-outlined text-[17px]">calendar_month</span>
+</button>
+</div>
+</div>
+<!-- Parametric Filter Toolbar -->
+<div class="mt-space-md pt-space-md bg-surface-container/60 -mx-space-md -mb-space-md px-space-md py-space-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-sm">
+<!-- Status Filter Segment Chips -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 xl:pb-0">
+<button class="px-space-sm py-1 rounded bg-surface-bright text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="">All Fixtures</span>
+<span class="bg-surface-container-lowest px-1 py-0.2 rounded text-primary">18</span>
+</button>
+<button class="px-space-sm py-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="">Upcoming</span>
+<span class="text-outline">12</span>
+</button>
+<button class="px-space-sm py-1 rounded hover:bg-surface-container-high text-secondary hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="">Live Now</span>
+<span class="bg-secondary-container/40 text-secondary px-1 py-0.2 rounded">2</span>
+</button>
+<button class="px-space-sm py-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors" type="button">
+<span class="">Finished</span>
+<span class="text-outline">4</span>
+</button>
+</div>
+<!-- Filter Dropdowns & Rapid Search Filter -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<!-- Dropdown 1: Competitions -->
+<div class="relative flex items-center">
+<select class="appearance-none h-7 pl-2.5 pr-7 rounded bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container cursor-pointer">
+<option value="all">All Competitions (7)</option>
+<option value="epl">Premier League (England)</option>
+<option value="laliga">La Liga (Spain)</option>
+<option value="bundesliga">Bundesliga (Germany)</option>
+</select>
+<span class="material-symbols-outlined absolute right-1.5 text-outline text-[16px] pointer-events-none">arrow_drop_down</span>
+</div>
+<!-- Dropdown 2: Forecast Readiness -->
+<div class="relative flex items-center">
+<select class="appearance-none h-7 pl-2.5 pr-7 rounded bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container cursor-pointer">
+<option value="all">Forecast: All Statuses</option>
+<option value="ready">Model Ready (15)</option>
+<option value="pending">Monte Carlo Running (2)</option>
+<option value="archived">Post-Match Archive (1)</option>
+</select>
+<span class="material-symbols-outlined absolute right-1.5 text-outline text-[16px] pointer-events-none">arrow_drop_down</span>
+</div>
+<!-- Search Box -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-outline text-[15px]">filter_alt</span>
+<input class="h-7 w-44 pl-7 pr-2 rounded bg-surface-container-lowest font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container transition-colors" placeholder="Filter clubs..." type="text">
+</div>
+<button class="h-7 px-space-sm text-outline hover:text-primary font-label-sm text-label-sm transition-colors uppercase tracking-wider flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[14px]">restart_alt</span>
+<span class="">Reset</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Data Matrix Stream (Dense Table) -->
+<div class="w-full flex flex-col gap-space-md">
+<!-- ================= GROUP 1: PREMIER LEAGUE ================= -->
+<section class="flex flex-col bg-surface-container-low rounded overflow-hidden shadow-sm">
+<!-- Competition Group Header -->
+<header class="flex items-center justify-between px-space-md py-2 bg-surface-container-lowest cursor-pointer hover:bg-surface-container transition-colors select-none" onclick="toggleGroup('grp-epl', this)">
+<div class="flex items-center gap-space-sm">
+<span aria-hidden="true" class="text-[17px] leading-none">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">England · Premier League</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">3 Fixtures</span>
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase ml-space-xs">MD 06</span>
+</div>
+<div class="flex items-center gap-space-sm text-outline">
+<span class="font-label-sm text-label-sm">Simulations Synchronized</span>
+<span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-grp-epl">expand_less</span>
+</div>
+</header>
+<!-- Column Headers (Architectural Grid Alignment) -->
+<div class="grid grid-cols-12 items-center px-space-md py-1 bg-surface-container font-label-sm text-label-sm uppercase tracking-wider text-outline">
+<div class="col-span-2 flex items-center gap-1">Time • UTC+0</div>
+<div class="col-span-5">Fixture (Home vs Away)</div>
+<div class="col-span-1 text-center">Score</div>
+<div class="col-span-2">Contextual Tags</div>
+<div class="col-span-2 text-right pr-2">Analytical Engine</div>
+</div>
+<div class="flex flex-col" id="grp-epl">
+<!-- Row 1: Arsenal vs Chelsea -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-1')">
+<!-- Time / Status -->
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface">15:00</span>
+<span class="font-label-sm text-label-sm text-outline">Pre-game</span>
+</div>
+<!-- Match Teams & Badges -->
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Arsenal</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  ARS
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  CHE
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Chelsea</span>
+</div>
+</div>
+<!-- Score -->
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-outline">
+              — : —
+            </div>
+<!-- Tags -->
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-error-container/20 text-error flex items-center gap-1">
+<span class="w-1 h-1 rounded-full bg-error"></span>
+                DERBY
+              </span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-container-highest text-outline">
+                TOP 4
+              </span>
+</div>
+<!-- Forecast Badge & Chevron -->
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Forecast Ready
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-1">expand_more</span>
+</div>
+</div>
+<!-- Sub-Row Simulation Preview (Arsenal vs Chelsea Micro Inspect) -->
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-1">
+<div class="grid grid-cols-12 gap-space-md py-2">
+<div class="col-span-12 lg:col-span-6 flex flex-col justify-center gap-1.5">
+<div class="flex justify-between font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="">Simulated Outcome Probabilities (10,000 runs)</span>
+<span class="text-primary font-medium">Model: Dual Poisson xG</span>
+</div>
+<!-- 3-Way Segment Bar -->
+<div class="h-2 w-full flex rounded overflow-hidden bg-surface-container-high">
+<div class="h-full bg-primary" style="width: 52%" title="Arsenal Win: 52.4%"></div>
+<div class="h-full bg-outline" style="width: 26%" title="Draw: 26.1%"></div>
+<div class="h-full bg-secondary" style="width: 22%" title="Chelsea Win: 21.5%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-primary">ARS: 52.4%</span>
+<span class="text-outline">DRAW: 26.1%</span>
+<span class="text-secondary">CHE: 21.5%</span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 flex items-center justify-end gap-space-md font-label-sm text-label-sm">
+<div class="bg-surface-container px-space-sm py-1 rounded">
+<span class="text-outline">Expected Goals:</span>
+<span class="text-on-surface font-label-md text-label-md ml-1">1.94 vs 1.12 xG</span>
+</div>
+<button class="h-7 px-3 rounded bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center gap-1 hover:bg-primary-fixed transition-colors" type="button">
+<span class="">Inspect Full Matrix</span>
+<span class="material-symbols-outlined text-[15px]">analytics</span>
+</button>
+</div>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-high/40"></div>
+<!-- Row 2: Liverpool vs Everton -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-2')">
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface">17:30</span>
+<span class="font-label-sm text-label-sm text-outline">Pre-game</span>
+</div>
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Liverpool</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  LIV
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  EVE
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Everton</span>
+</div>
+</div>
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-outline">
+              — : —
+            </div>
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-error-container/20 text-error flex items-center gap-1">
+<span class="w-1 h-1 rounded-full bg-error"></span>
+                DERBY
+              </span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-container-highest text-outline">
+                MERSEYSIDE
+              </span>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Forecast Ready
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-2">expand_more</span>
+</div>
+</div>
+<!-- Micro inspect Liverool -->
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-2">
+<div class="grid grid-cols-12 gap-space-md py-2">
+<div class="col-span-12 lg:col-span-6 flex flex-col justify-center gap-1.5">
+<div class="flex justify-between font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="">Simulated Outcome Probabilities</span>
+<span class="text-primary font-medium">Poisson Delta: +0.42</span>
+</div>
+<div class="h-2 w-full flex rounded overflow-hidden bg-surface-container-high">
+<div class="h-full bg-primary" style="width: 68%" title="Liverpool: 68.2%"></div>
+<div class="h-full bg-outline" style="width: 20%" title="Draw: 20.1%"></div>
+<div class="h-full bg-secondary" style="width: 12%" title="Everton: 11.7%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-primary">LIV: 68.2%</span>
+<span class="text-outline">DRAW: 20.1%</span>
+<span class="text-secondary">EVE: 11.7%</span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 flex items-center justify-end gap-space-md font-label-sm text-label-sm">
+<div class="bg-surface-container px-space-sm py-1 rounded">
+<span class="text-outline">Expected Goals:</span>
+<span class="text-on-surface font-label-md text-label-md ml-1">2.45 vs 0.68 xG</span>
+</div>
+<button class="h-7 px-3 rounded bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center gap-1 hover:bg-primary-fixed transition-colors" type="button">
+<span class="">Inspect Full Matrix</span>
+<span class="material-symbols-outlined text-[15px]">analytics</span>
+</button>
+</div>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-high/40"></div>
+<!-- Row 3: Brighton vs Fulham -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-3')">
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface">20:00</span>
+<span class="font-label-sm text-label-sm text-outline">Pre-game</span>
+</div>
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Brighton</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  BHA
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  FUL
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Fulham</span>
+</div>
+</div>
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-outline">
+              — : —
+            </div>
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-outline">None</span>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-outline font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim animate-ping"></span>
+                Forecast Pending
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-3">expand_more</span>
+</div>
+</div>
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-3">
+<div class="flex items-center justify-between py-1.5 font-label-sm text-label-sm text-outline">
+<span class="">Monte Carlo iterations 6,240 / 10,000 running in cluster worker thread...</span>
+<span class="text-secondary">Estimated Readiness: 45s</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= GROUP 2: LA LIGA ================= -->
+<section class="flex flex-col bg-surface-container-low rounded overflow-hidden shadow-sm">
+<!-- Header -->
+<header class="flex items-center justify-between px-space-md py-2 bg-surface-container-lowest cursor-pointer hover:bg-surface-container transition-colors select-none" onclick="toggleGroup('grp-laliga', this)">
+<div class="flex items-center gap-space-sm">
+<span aria-hidden="true" class="text-[17px] leading-none">🇪🇸</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Spain · La Liga</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">2 Fixtures</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container/20 px-1.5 py-0.5 rounded uppercase">1 In-Play</span>
+</div>
+<div class="flex items-center gap-space-sm text-outline">
+<span class="font-label-sm text-label-sm">High Volatility Flagged</span>
+<span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-grp-laliga">expand_less</span>
+</div>
+</header>
+<!-- Column Headers -->
+<div class="grid grid-cols-12 items-center px-space-md py-1 bg-surface-container font-label-sm text-label-sm uppercase tracking-wider text-outline">
+<div class="col-span-2 flex items-center gap-1">Time • Status</div>
+<div class="col-span-5">Fixture (Home vs Away)</div>
+<div class="col-span-1 text-center">Score</div>
+<div class="col-span-2">Contextual Tags</div>
+<div class="col-span-2 text-right pr-2">Analytical Engine</div>
+</div>
+<div class="flex flex-col" id="grp-laliga">
+<!-- Row 4: LIVE Atlético Madrid vs Real Sociedad -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-4')">
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                63′
+              </span>
+<span class="font-label-sm text-label-sm bg-secondary-container/30 text-secondary px-1 py-0.2 rounded font-semibold">LIVE</span>
+</div>
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors font-semibold">Atlético Madrid</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  ATM
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  RSO
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Real Sociedad</span>
+</div>
+</div>
+<!-- Actual Live Score -->
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-primary font-bold bg-surface-container-lowest py-0.5 rounded">
+              1 – 0
+            </div>
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-tertiary-container/30 text-tertiary flex items-center gap-1">
+                xG SURGE
+              </span>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/15 text-secondary font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Pre-Match Ready
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-4">expand_more</span>
+</div>
+</div>
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-4">
+<div class="grid grid-cols-12 gap-space-md py-2">
+<div class="col-span-12 lg:col-span-6 flex flex-col justify-center gap-1.5">
+<div class="flex justify-between font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="">Current Win Expected Probability at 63′</span>
+<span class="text-secondary font-medium">Live In-Play Update</span>
+</div>
+<div class="h-2 w-full flex rounded overflow-hidden bg-surface-container-high">
+<div class="h-full bg-primary" style="width: 82%" title="ATM: 82%"></div>
+<div class="h-full bg-outline" style="width: 14%" title="Draw: 14%"></div>
+<div class="h-full bg-secondary" style="width: 4%" title="RSO: 4%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-primary">ATM: 82.0%</span>
+<span class="text-outline">DRAW: 14.0%</span>
+<span class="text-secondary">RSO: 4.0%</span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 flex items-center justify-end gap-space-md font-label-sm text-label-sm">
+<div class="bg-surface-container px-space-sm py-1 rounded">
+<span class="text-outline">Pre-Match Pred:</span>
+<span class="text-on-surface font-label-md text-label-md ml-1">1.62 vs 0.81 xG</span>
+</div>
+<button class="h-7 px-3 rounded bg-surface-container-high text-on-surface font-headline-sm text-headline-sm flex items-center gap-1 hover:bg-surface-bright transition-colors" type="button">
+<span class="">View Live Tracker</span>
+<span class="material-symbols-outlined text-[15px]">timeline</span>
+</button>
+</div>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-high/40"></div>
+<!-- Row 5: Real Madrid vs Barcelona -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-5')">
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface">20:00</span>
+<span class="font-label-sm text-label-sm text-outline">Pre-game</span>
+</div>
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Real Madrid</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  RMA
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  FCB
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Barcelona</span>
+</div>
+</div>
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-outline">
+              — : —
+            </div>
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-error-container text-error flex items-center gap-1 font-semibold">
+<span class="w-1 h-1 rounded-full bg-error"></span>
+                EL CLÁSICO
+              </span>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Forecast Ready
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-5">expand_more</span>
+</div>
+</div>
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-5">
+<div class="grid grid-cols-12 gap-space-md py-2">
+<div class="col-span-12 lg:col-span-6 flex flex-col justify-center gap-1.5">
+<div class="flex justify-between font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="">Simulation Balance: Razor Margin</span>
+<span class="text-primary font-medium">High Variance Event</span>
+</div>
+<div class="h-2 w-full flex rounded overflow-hidden bg-surface-container-high">
+<div class="h-full bg-primary" style="width: 41%" title="Real Madrid: 41.2%"></div>
+<div class="h-full bg-outline" style="width: 25%" title="Draw: 25.4%"></div>
+<div class="h-full bg-secondary" style="width: 34%" title="Barcelona: 33.4%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-primary">RMA: 41.2%</span>
+<span class="text-outline">DRAW: 25.4%</span>
+<span class="text-secondary">BAR: 33.4%</span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 flex items-center justify-end gap-space-md font-label-sm text-label-sm">
+<div class="bg-surface-container px-space-sm py-1 rounded">
+<span class="text-outline">Expected Total Goals:</span>
+<span class="text-on-surface font-label-md text-label-md ml-1">3.48 xG</span>
+</div>
+<button class="h-7 px-3 rounded bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center gap-1 hover:bg-primary-fixed transition-colors" type="button">
+<span class="">Inspect Full Matrix</span>
+<span class="material-symbols-outlined text-[15px]">analytics</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= GROUP 3: BUNDESLIGA ================= -->
+<section class="flex flex-col bg-surface-container-low rounded overflow-hidden shadow-sm">
+<!-- Header -->
+<header class="flex items-center justify-between px-space-md py-2 bg-surface-container-lowest cursor-pointer hover:bg-surface-container transition-colors select-none" onclick="toggleGroup('grp-bndes', this)">
+<div class="flex items-center gap-space-sm">
+<span aria-hidden="true" class="text-[17px] leading-none">🇩🇪</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Germany · Bundesliga</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">1 Fixture</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Match Finished</span>
+</div>
+<div class="flex items-center gap-space-sm text-outline">
+<span class="font-label-sm text-label-sm">Archive Locked</span>
+<span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-grp-bndes">expand_less</span>
+</div>
+</header>
+<!-- Column Headers -->
+<div class="grid grid-cols-12 items-center px-space-md py-1 bg-surface-container font-label-sm text-label-sm uppercase tracking-wider text-outline">
+<div class="col-span-2 flex items-center gap-1">Status</div>
+<div class="col-span-5">Fixture (Home vs Away)</div>
+<div class="col-span-1 text-center">Final Score</div>
+<div class="col-span-2">Contextual Tags</div>
+<div class="col-span-2 text-right pr-2">Analytical Engine</div>
+</div>
+<div class="flex flex-col" id="grp-bndes">
+<!-- Row 6: FT Bayern München vs Bayer Leverkusen -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 hover:bg-surface-container-high/80 bg-surface-container-low transition-colors group cursor-pointer" onclick="toggleDetails('match-6')">
+<div class="col-span-2 flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">FT</span>
+<span class="font-label-sm text-label-sm text-outline">15:30 slot</span>
+</div>
+<div class="col-span-5 flex items-center gap-space-sm min-w-0 pr-space-md">
+<div class="flex items-center justify-end gap-1.5 flex-1 min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Bayern München</span>
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  FCB
+                </div>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-1.5">vs</span>
+<div class="flex items-center justify-start gap-1.5 flex-1 min-w-0">
+<div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0 text-outline text-[11px] font-label-sm">
+                  B04
+                </div>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate group-hover:text-primary transition-colors">Bayer Leverkusen</span>
+</div>
+</div>
+<!-- Final Result Score -->
+<div class="col-span-1 flex items-center justify-center font-label-md text-label-md text-on-surface font-bold bg-surface-container py-0.5 rounded">
+              2 – 2
+            </div>
+<div class="col-span-2 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                TITLE CLASH
+              </span>
+</div>
+<div class="col-span-2 flex items-center justify-end gap-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                Pre-match archive
+              </span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-on-surface transition-transform duration-150" id="chev-match-6">expand_more</span>
+</div>
+</div>
+<div class="hidden px-space-md py-space-sm bg-surface-container-lowest/80" id="match-6">
+<div class="grid grid-cols-12 gap-space-md py-2">
+<div class="col-span-12 lg:col-span-6 flex flex-col justify-center gap-1.5">
+<div class="flex justify-between font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="">Actual: 2-2 • Pre-Match Draw Forecast was 24.8%</span>
+<span class="text-outline font-medium">Post-Match Validation</span>
+</div>
+<div class="h-2 w-full flex rounded overflow-hidden bg-surface-container-high">
+<div class="h-full bg-primary" style="width: 48%" title="FCB Predicted: 48%"></div>
+<div class="h-full bg-outline" style="width: 25%" title="Draw Predicted: 25%"></div>
+<div class="h-full bg-secondary" style="width: 27%" title="B04 Predicted: 27%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-primary">xG: 2.18</span>
+<span class="text-on-surface font-semibold">Final Result: Draw</span>
+<span class="text-secondary">xG: 1.84</span>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-6 flex items-center justify-end gap-space-md font-label-sm text-label-sm">
+<div class="bg-surface-container px-space-sm py-1 rounded">
+<span class="text-outline">Brier Loss Error:</span>
+<span class="text-on-surface font-label-md text-label-md ml-1">0.141 (Calibrated)</span>
+</div>
+<button class="h-7 px-3 rounded bg-surface-container-high text-on-surface font-headline-sm text-headline-sm flex items-center gap-1 hover:bg-surface-bright transition-colors" type="button">
+<span class="">Post-Mortem Stats</span>
+<span class="material-symbols-outlined text-[15px]">fact_check</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Workbench Telemetry Strip -->
+<div class="mt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm py-2 px-space-md bg-surface-container-lowest rounded font-label-sm text-label-sm text-outline">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-primary">verified_user</span>
+          Strict Scientific Protocol — Zero Sportsbook Feed Ingestion
+        </span>
+<span class="hidden md:inline text-surface-container-highest">|</span>
+<span class="hidden md:inline">Next cluster sync in 02:44</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="">UTC Clock: 15:42:08</span>
+<span class="text-primary">Socket: CONNECTED</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function toggleGroup(groupId, headerEl) {
+    const content = document.getElementById(groupId);
+    const icon = document.getElementById('icon-' + groupId);
+    if (!content) return;
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    } else {
+      content.classList.add('hidden');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+  }
+
+  function toggleDetails(matchId) {
+    const detailRow = document.getElementById(matchId);
+    const chev = document.getElementById('chev-' + matchId);
+    if (!detailRow) return;
+    if (detailRow.classList.contains('hidden')) {
+      detailRow.classList.remove('hidden');
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    } else {
+      detailRow.classList.add('hidden');
+      if (chev) chev.style.transform = 'rotate(0deg)';
+    }
+  }
+</script></main><footer class="w-full bg-surface-container-lowest py-space-md px-space-lg"><div class="flex flex-col md:flex-row items-center justify-between gap-space-sm"><p class="font-label-sm text-label-sm text-outline">MatchForge probabilistic model forecasts are independent statistical simulations for research purposes. Not a sportsbook or gambling operator.</p><div class="flex items-center gap-space-md font-label-sm text-label-sm text-outline"><span class="">Engine: Monte Carlo xG v4.1</span><span class="">Latency: 18ms</span></div></div></footer></div>
+
+</body></html>

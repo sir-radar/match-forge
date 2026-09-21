@@ -1,0 +1,608 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-fixed-variant":"#004c69","surface":"#0f131c","tertiary":"#c0c1ff","surface-container":"#1c1f29","primary-container":"#10b981","tertiary-fixed-dim":"#c0c1ff","primary":"#4edea3","surface-container-lowest":"#0a0e17","on-primary-fixed":"#002113","secondary-fixed":"#c4e7ff","error":"#ffb4ab","on-secondary-fixed":"#001e2c","on-tertiary":"#1000a9","surface-container-high":"#262a34","on-tertiary-fixed-variant":"#2f2ebe","secondary":"#7bd0ff","on-background":"#dfe2ef","on-primary":"#003824","surface-dim":"#0f131c","outline":"#86948a","secondary-fixed-dim":"#7bd0ff","on-tertiary-container":"#1d17b2","secondary-container":"#00a6e0","inverse-primary":"#006c49","inverse-surface":"#dfe2ef","surface-bright":"#353943","on-tertiary-fixed":"#07006c","background":"#0f131c","surface-variant":"#31353f","inverse-on-surface":"#2c303a","primary-fixed":"#6ffbbe","tertiary-fixed":"#e1e0ff","on-error":"#690005","surface-container-low":"#181b25","tertiary-container":"#9699ff","primary-fixed-dim":"#4edea3","on-secondary-container":"#00374d","on-surface":"#dfe2ef","on-primary-container":"#00422b","on-error-container":"#ffdad6","outline-variant":"#3c4a42","on-secondary":"#00354a","surface-tint":"#4edea3","on-primary-fixed-variant":"#005236","surface-container-highest":"#31353f","error-container":"#93000a","on-surface-variant":"#bbcabf"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},spacing:{"space-xl":"2rem","space-lg":"1.25rem","space-md":"0.75rem",margin:"1rem",gutter:"0.75rem","space-sm":"0.375rem","gutter-desktop":"1rem","space-xs":"0.25rem","margin-desktop":"1.5rem"},fontFamily:{"headline-xl":["Space Grotesk"],"body-md":["Geist"],"body-sm":["Geist"],"headline-lg":["Space Grotesk"],"label-md":["JetBrains Mono"],"headline-md":["Space Grotesk"],"headline-sm":["Space Grotesk"],"label-sm":["JetBrains Mono"],"body-lg":["Geist"],"headline-xl-mobile":["Space Grotesk"],"label-lg":["JetBrains Mono"]},fontSize:{"headline-xl":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md":["13px",{lineHeight:"18px",fontWeight:"400"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"headline-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.015em",fontWeight:"600"}],"label-md":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"500"}],"headline-md":["18px",{lineHeight:"26px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-sm":["15px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"600"}],"label-sm":["10px",{lineHeight:"12px",letterSpacing:"0.06em",fontWeight:"600"}],"body-lg":["15px",{lineHeight:"22px",fontWeight:"400"}],"headline-xl-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"700"}],"label-lg":["13px",{lineHeight:"18px",letterSpacing:"0.02em",fontWeight:"500"}]}}}};</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary selection:text-on-primary"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col justify-between pt-14 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 overflow-y-auto px-space-md py-space-md"><div class="flex items-center justify-between px-space-sm mb-space-sm"><span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Competitions</span><span class="font-label-sm text-label-sm text-primary bg-surface-container px-space-xs py-0.5 rounded">2024/25</span></div><div class="flex flex-col gap-0.5"><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider mt-space-xs">Top Leagues</div><a class="flex items-center justify-between px-space-sm py-1.5 rounded bg-surface-container-high text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">England - Premier League</span><span class="font-label-sm text-label-sm bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Spain - La Liga</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Germany - Bundesliga</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">9</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">Italy - Serie A</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">10</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">France - Ligue 1</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">9</span></a><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider mt-space-sm">Continental</div><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">UEFA Champions League</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-secondary">16</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" href="#"><span class="truncate">UEFA Europa League</span><span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-outline">16</span></a></div></div><div class="p-space-md bg-surface-container-lowest flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface-variant">Poisson Core v3.8</span></div><span class="font-label-sm text-label-sm text-outline">60 FPS</span></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-0 right-0 h-14 bg-surface-container-lowest/90 backdrop-blur-md z-40 px-gutter-desktop flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="MatchForge Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1W2BGvyvlDMyb4XgKekb_gXKyNxHbm4-xEHrKFlE_f5_SPWu_8UY1X-DqmCb9LS5fiXffSghy-WUOVAglG-Ouj5ec7d7J9CBPUctC2awCCScqN-O8lWUk2REXyrwJlgI953yAgXjNa-Wad1qgDY1eJUg1HD7ykDv1QBmOCt_tzK-cWLBheHma2-e7jyYEfRjAbbSbKOZ2X2XiUJgzuUDcFM0B8dIqazq6nm3h4tBAZmur7fn4eTNPmIuQ"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">MATCHFORGE</span></div><nav class="flex items-center gap-1" data-active-classes="bg-surface-container-high text-on-surface font-headline-sm"><a aria-current="page" class="px-space-sm py-1 rounded transition-colors bg-surface-container-high text-on-surface font-headline-sm" data-path="matches" href="#">Matches</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="competitions" href="#">Competitions</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="results" href="#">Results</a><a class="px-space-sm py-1 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="documentation" href="#">Documentation</a></nav></div><div class="flex items-center gap-space-md"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2.5 text-outline text-[16px]">search</span><input class="w-72 h-7 pl-8 pr-12 rounded bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-colors" placeholder="Search teams, leagues or matches..." type="text"><span class="absolute right-2 font-label-sm text-label-sm text-outline bg-surface-container-highest px-1 py-0.5 rounded pointer-events-none">Ctrl+K</span></div><div class="flex items-center gap-space-xs font-label-sm text-label-sm bg-surface-container px-space-xs py-1 rounded"><span class="text-on-surface-variant">UTC+0 (London)</span><span class="text-outline">/</span><span class="text-outline">Local</span></div><div class="flex items-center gap-1 bg-surface-container-high px-space-xs py-1 rounded font-label-sm text-label-sm text-primary"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="">Feed: Live</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-14 flex-1 w-full px-space-lg py-space-md bg-surface"><div class="flex flex-col w-full">
+<!-- Workbench Analytical Sub-Bar -->
+<div class="flex items-center justify-between py-space-sm mb-space-md bg-surface-container-low px-space-md rounded-lg">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Dataset:</span>
+<span class="font-label-md text-label-md text-primary">EPL_2024_GW06_V3</span>
+</div>
+<span class="text-surface-container-highest">|</span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Confidence Window:</span>
+<span class="font-label-md text-label-md text-on-surface">P90 Analytical Split</span>
+</div>
+<span class="text-surface-container-highest">|</span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Convergence:</span>
+<span class="font-label-md text-label-md text-secondary">10,000 Iterations</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-space-xs py-0.5 rounded">View: Quantitative Matrix</span>
+<button class="flex items-center gap-1 font-label-sm text-label-sm bg-surface-container-high hover:bg-surface-container text-on-surface px-2 py-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span class="">Parameters</span>
+</button>
+</div>
+</div>
+<!-- Main Continuous Fixtures Table Surface -->
+<div class="flex flex-col w-full bg-surface-container-lowest rounded-lg overflow-hidden shadow-xl">
+<!-- Table Column Headers -->
+<div class="grid grid-cols-12 items-center px-space-md py-2 bg-surface-container-low text-outline font-label-sm text-label-sm uppercase tracking-wider select-none">
+<div class="col-span-1">Status / Time</div>
+<div class="col-span-4">Fixture Identity</div>
+<div class="col-span-3 text-center">Probabilistic 3-Way (1 · X · 2)</div>
+<div class="col-span-2 text-center">Poisson Model xG</div>
+<div class="col-span-1 text-center">Market Vol</div>
+<div class="col-span-1 text-right">Inspect</div>
+</div>
+<!-- Row 1: Preceding Match (Aston Villa vs Newcastle) -->
+<div class="grid grid-cols-12 items-center px-space-md py-2.5 bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="col-span-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">12:30</span>
+<span class="font-label-sm text-label-sm text-outline">UTC</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Aston Villa</span>
+<span class="font-label-sm text-label-sm text-outline">vs</span>
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Newcastle United</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span class="text-primary font-medium">38.4%</span>
+<span class="text-outline">28.1%</span>
+<span class="text-secondary font-medium">33.5%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 38.4%"></div>
+<div class="h-full bg-outline-variant" style="width: 28.1%"></div>
+<div class="h-full bg-secondary" style="width: 33.5%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface">1.38</span> <span class="text-outline">·</span> <span class="text-on-surface">1.24</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 py-0.5 rounded">Norm</span>
+</div>
+<div class="col-span-1 flex justify-end">
+<button class="p-1 rounded hover:bg-surface-container text-outline group-hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- ROW 2: ACTIVE SELECTED MATCH (Arsenal vs Chelsea) WITH INLINE EXPANSION -->
+<!-- ========================================================================= -->
+<div class="relative grid grid-cols-12 items-center px-space-md py-3 bg-surface-container-high transition-colors cursor-pointer shadow-inner" id="selected-fixture-row">
+<!-- Active Highlight Accent Bar on the Left -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="col-span-1 flex items-center gap-1.5 pl-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-md text-label-md text-primary font-bold">15:00</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate">Arsenal</span>
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold">vs</span>
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate">Chelsea</span>
+<span class="font-label-sm text-label-sm text-error bg-surface-container px-1.5 py-0.5 rounded ml-1">DERBY</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface mb-1 font-semibold">
+<span class="text-primary font-bold">43.9%</span>
+<span class="text-on-surface-variant">26.4%</span>
+<span class="text-secondary font-bold">29.7%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-lowest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 43.9%"></div>
+<div class="h-full bg-outline-variant" style="width: 26.4%"></div>
+<div class="h-full bg-secondary" style="width: 29.7%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-primary font-semibold">
+<span class="text-primary">1.42</span> <span class="text-outline">·</span> <span class="text-secondary">1.12</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-primary bg-surface-container px-1.5 py-0.5 rounded font-bold">Active</span>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold">Collapse</span>
+<span class="material-symbols-outlined text-primary text-[18px]">keyboard_arrow_up</span>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- INLINE EXPANDED FORECAST PANEL (Hero Analytical State)                   -->
+<!-- Directly embedded underneath Arsenal vs Chelsea                           -->
+<!-- ========================================================================= -->
+<div class="w-full bg-surface-container-low px-space-lg py-space-lg flex flex-col gap-space-lg relative">
+<!-- Panel Header: Match Identity & Audit Provenance -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-space-md bg-surface-container-lowest/70 p-space-md rounded-lg">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="text-base">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Premier League · Matchday 6</span>
+<span class="text-surface-container-highest">·</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Scheduled Today 15:00 UTC+0</span>
+<span class="text-surface-container-highest">·</span>
+<span class="font-label-sm text-label-sm text-outline">Emirates Stadium, London</span>
+</div>
+<div class="flex items-center gap-space-md mt-1">
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Arsenal vs Chelsea</h2>
+<span class="font-label-sm text-label-sm uppercase bg-surface-container text-tertiary px-2 py-0.5 rounded font-semibold tracking-wider">
+              PRE-MATCH FORECAST
+            </span>
+
+</div>
+</div>
+<!-- Analytical Badge Cluster -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="">Forecast Status: Verified / Ready</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Horizon: 24h Pre-kickoff · Issued Today 09:30 UTC</span>
+</div>
+<div class="flex items-center gap-1.5 ml-space-sm bg-surface-container-high px-space-sm py-1.5 rounded">
+<span class="material-symbols-outlined text-secondary text-[16px]">query_stats</span>
+<span class="font-label-sm text-label-sm text-on-surface">Poisson Engine 4.2</span>
+</div>
+</div>
+</div>
+<!-- Core Probability Distribution & Expected Goals Engine Section -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left: 3-Way Probability Matrix Cards (Col 8) -->
+<div class="lg:col-span-8 flex flex-col gap-space-sm bg-surface-container p-space-md rounded-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">balance</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface font-semibold">Normalized Outcome Probability Model</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Poisson Monte Carlo Output (10k simulated matches)</span>
+</div>
+<!-- Discrete Win / Draw / Away Metric Cards -->
+<div class="grid grid-cols-3 gap-space-sm mt-space-xs">
+<!-- Arsenal Probability Card -->
+<div class="flex flex-col bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Arsenal (Home Win)</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">1</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-primary font-mono tracking-tight leading-none my-1">
+                43.9%
+              </div>
+<span class="font-label-sm text-label-sm text-outline mt-1">Relative Implied Density</span>
+</div>
+<!-- Draw Probability Card -->
+<div class="flex flex-col bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Neutral / Draw</span>
+<span class="font-label-sm text-label-sm text-outline font-bold">X</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-mono tracking-tight leading-none my-1">
+                26.4%
+              </div>
+<span class="font-label-sm text-label-sm text-outline mt-1">Relative Implied Density</span>
+</div>
+<!-- Chelsea Probability Card -->
+<div class="flex flex-col bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Chelsea (Away Win)</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">2</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-secondary font-mono tracking-tight leading-none my-1">
+                29.7%
+              </div>
+<span class="font-label-sm text-label-sm text-outline mt-1">Relative Implied Density</span>
+</div>
+</div>
+<!-- Continuous Proportional Tri-Segment Distribution Bar -->
+<div class="flex flex-col gap-1.5 mt-space-xs">
+<div class="h-3 w-full bg-surface-container-lowest rounded flex overflow-hidden p-0.5">
+<div class="h-full bg-primary rounded-l transition-all" style="width: 43.9%" title="Arsenal Win: 43.9%"></div>
+<div class="h-full bg-outline-variant transition-all mx-0.5" style="width: 26.4%" title="Draw: 26.4%"></div>
+<div class="h-full bg-secondary rounded-r transition-all" style="width: 29.7%" title="Chelsea Win: 29.7%"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-sm bg-primary"></span>
+<span class="">Arsenal: 43.9%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-sm bg-outline-variant"></span>
+<span class="">Draw: 26.4%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-sm bg-secondary"></span>
+<span class="">Chelsea: 29.7%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Expected Goals (xG) Split & Context Indicators (Col 4) -->
+<div class="lg:col-span-4 flex flex-col justify-between bg-surface-container p-space-md rounded-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface font-semibold">Simulated xG Split</span>
+<span class="font-label-sm text-label-sm text-primary font-mono">λ Mean Rates</span>
+</div>
+<!-- xG Comparison Row -->
+<div class="grid grid-cols-2 gap-space-sm mt-space-xs">
+<div class="flex flex-col bg-surface-container-lowest p-space-sm rounded">
+<span class="font-label-sm text-label-sm text-outline">Arsenal xG</span>
+<span class="font-headline-lg text-headline-lg text-primary font-mono mt-1">1.42</span>
+<span class="font-label-sm text-label-sm text-outline">Home Expected Goals</span>
+</div>
+<div class="flex flex-col bg-surface-container-lowest p-space-sm rounded">
+<span class="font-label-sm text-label-sm text-outline">Chelsea xG</span>
+<span class="font-headline-lg text-headline-lg text-secondary font-mono mt-1">1.12</span>
+<span class="font-label-sm text-label-sm text-outline">Away Expected Goals</span>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-outline mt-space-xs leading-relaxed">
+              Model expected goals based on Poisson simulation; not an actual match score.
+            </p>
+</div>
+<!-- Diagnostic / Context Badges Block -->
+<div class="flex flex-col gap-1.5 pt-space-xs mt-space-xs bg-surface-container-lowest p-space-sm rounded">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-label-sm text-label-sm text-error bg-surface-container px-2 py-0.5 rounded font-semibold">
+                DERBY (London Derby)
+              </span>
+<span class="font-label-sm text-label-sm text-tertiary bg-surface-container px-2 py-0.5 rounded font-semibold">
+                ELEVATED RISK (Sample variance: +14%)
+              </span>
+</div>
+<div class="flex items-center gap-1 text-outline font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+<span class="">Information tags provide structural context; they do not alter model probabilities.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Local Navigation Tab Bar (In-Panel) -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-sm py-1.5 rounded-lg overflow-x-auto">
+<div class="flex items-center gap-1">
+<button class="px-space-md py-1.5 rounded font-headline-sm text-headline-sm bg-surface-container-high text-primary flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">dashboard</span>
+<span class="">Overview</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">analytics</span>
+<span class="">Markets (14)</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">grid_4x4</span>
+<span class="">Scores Matrix</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+<span class="">H2H Context</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">bar_chart</span>
+<span class="">Team Statistics</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">troubleshoot</span>
+<span class="">Diagnostics</span>
+</button>
+<button class="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="">Forecast History</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline pr-space-xs">
+<span class="">Viewing: 24h Snapshot</span>
+</div>
+</div>
+<!-- ACTIVE OVERVIEW TAB CONTENT GRID (3 Synthetic Summary Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Summary Card 1: Key Markets Snapshot -->
+<div class="flex flex-col justify-between bg-surface-container p-space-md rounded-lg">
+<div>
+<div class="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-high/40 -mx-space-md -mt-space-md px-space-md pt-space-md rounded-t-lg">
+<span class="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider">Derived Poisson Markets</span>
+<span class="font-label-sm text-label-sm text-outline">Binary Probabilities</span>
+</div>
+<!-- Market 1: BTTS -->
+<div class="flex flex-col gap-1 mb-space-md">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-body-sm text-body-sm text-on-surface">Both Teams To Score (BTTS)</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">51.1% Yes</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-lowest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 51.1%"></div>
+<div class="h-full bg-outline-variant" style="width: 48.9%"></div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-outline">
+<span class="">Yes: 51.1%</span>
+<span class="">No: 48.9%</span>
+</div>
+</div>
+<!-- Market 2: Over/Under 2.5 -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-body-sm">
+<span class="font-body-sm text-body-sm text-on-surface">Total Goals (Over / Under 2.5)</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">53.4% Under</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-lowest rounded flex overflow-hidden">
+<div class="h-full bg-secondary" style="width: 46.6%"></div>
+<div class="h-full bg-outline-variant" style="width: 53.4%"></div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-outline">
+<span class="">Over 2.5: 46.6%</span>
+<span class="">Under 2.5: 53.4%</span>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md bg-surface-container-high/30 -mx-space-md -mb-space-md px-space-md pb-space-sm rounded-b-lg">
+<a class="font-label-sm text-label-sm text-primary hover:underline flex items-center justify-between" href="#">
+<span class="">See all 14 markets derived from λ matrix</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Summary Card 2: Top Individual Scorelines -->
+<div class="flex flex-col justify-between bg-surface-container p-space-md rounded-lg">
+<div>
+<div class="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-high/40 -mx-space-md -mt-space-md px-space-md pt-space-md rounded-t-lg">
+<span class="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider">Top Scoreline Densities</span>
+<span class="font-label-sm text-label-sm text-outline">Exact Probabilities</span>
+</div>
+<div class="flex flex-col gap-2">
+<!-- Score 1: 1-1 -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-sm py-2 rounded">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm font-mono text-on-surface">1 – 1</span>
+<span class="font-label-sm text-label-sm text-outline">Equilibrium Draw</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-mono text-primary font-bold">12.5%</span>
+<div class="w-12 h-1 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%"></div>
+</div>
+</div>
+</div>
+<!-- Score 2: 1-0 -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-sm py-2 rounded">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm font-mono text-on-surface">1 – 0</span>
+<span class="font-label-sm text-label-sm text-outline">Arsenal Clean Win</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-mono text-primary">11.2%</span>
+<div class="w-12 h-1 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-primary" style="width: 89.6%"></div>
+</div>
+</div>
+</div>
+<!-- Score 3: 2-1 -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-sm py-2 rounded">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm font-mono text-on-surface">2 – 1</span>
+<span class="font-label-sm text-label-sm text-outline">Arsenal Home Margin</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-mono text-secondary">8.9%</span>
+<div class="w-12 h-1 bg-surface-container-highest rounded overflow-hidden">
+<div class="h-full bg-secondary" style="width: 71.2%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md bg-surface-container-high/30 -mx-space-md -mb-space-md px-space-md pb-space-sm rounded-b-lg">
+<a class="font-label-sm text-label-sm text-primary hover:underline flex items-center justify-between" href="#">
+<span class="">View full 7x7 exact-score matrix →</span>
+<span class="material-symbols-outlined text-[14px]">table_chart</span>
+</a>
+</div>
+</div>
+<!-- Summary Card 3: Data Coverage & Provenance -->
+<div class="flex flex-col justify-between bg-surface-container p-space-md rounded-lg">
+<div>
+<div class="flex items-center justify-between pb-space-sm mb-space-sm bg-surface-container-high/40 -mx-space-md -mt-space-md px-space-md pt-space-md rounded-t-lg">
+<span class="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider">Provenance &amp; Ingestion</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Audit Passed</span>
+</div>
+<div class="flex flex-col gap-2 font-body-sm text-body-sm">
+<div class="flex items-center justify-between py-1 bg-surface-container-lowest px-2 rounded">
+<span class="text-outline">Sample Size:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">38 recent matches evaluated</span>
+</div>
+<div class="flex items-center justify-between py-1 bg-surface-container-lowest px-2 rounded">
+<span class="text-outline">H2H Influence:</span>
+<span class="font-label-sm text-label-sm text-tertiary">Display-only (0 direct weight)</span>
+</div>
+<div class="flex items-center justify-between py-1 bg-surface-container-lowest px-2 rounded">
+<span class="text-outline">Algorithm:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-mono">v4.2.1-poisson.prod</span>
+</div>
+<div class="flex items-center justify-between py-1 bg-surface-container-lowest px-2 rounded">
+<span class="text-outline">Knowledge Cutoff:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-mono">28 Sep 2026 08:00 UTC</span>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md bg-surface-container-high/30 -mx-space-md -mb-space-md px-space-md pb-space-sm rounded-b-lg">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-outline">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+<span class="">Fully reproducible Monte Carlo seed: #883910</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- END EXPANDED PANEL                                                        -->
+<!-- ========================================================================= -->
+<!-- Row 3: Succeeding Match (Liverpool vs Everton) -->
+<div class="grid grid-cols-12 items-center px-space-md py-2.5 bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="col-span-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">17:30</span>
+<span class="font-label-sm text-label-sm text-outline">UTC</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Liverpool</span>
+<span class="font-label-sm text-label-sm text-outline">vs</span>
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Everton</span>
+<span class="font-label-sm text-label-sm text-error bg-surface-container px-1 py-0.2 rounded ml-1">DERBY</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span class="text-primary font-medium">62.8%</span>
+<span class="text-outline">21.5%</span>
+<span class="text-secondary font-medium">15.7%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 62.8%"></div>
+<div class="h-full bg-outline-variant" style="width: 21.5%"></div>
+<div class="h-full bg-secondary" style="width: 15.7%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface">2.14</span> <span class="text-outline">·</span> <span class="text-on-surface">0.82</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 py-0.5 rounded">High Conf</span>
+</div>
+<div class="col-span-1 flex justify-end">
+<button class="p-1 rounded hover:bg-surface-container text-outline group-hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Row 4: Succeeding Match (Brighton vs Fulham) -->
+<div class="grid grid-cols-12 items-center px-space-md py-2.5 bg-surface-container-low hover:bg-surface-container transition-colors group cursor-pointer">
+<div class="col-span-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">20:00</span>
+<span class="font-label-sm text-label-sm text-outline">UTC</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Brighton &amp; Hove Albion</span>
+<span class="font-label-sm text-label-sm text-outline">vs</span>
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Fulham</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span class="text-primary font-medium">47.2%</span>
+<span class="text-outline">26.3%</span>
+<span class="text-secondary font-medium">26.5%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 47.2%"></div>
+<div class="h-full bg-outline-variant" style="width: 26.3%"></div>
+<div class="h-full bg-secondary" style="width: 26.5%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface">1.65</span> <span class="text-outline">·</span> <span class="text-on-surface">1.19</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 py-0.5 rounded">Norm</span>
+</div>
+<div class="col-span-1 flex justify-end">
+<button class="p-1 rounded hover:bg-surface-container text-outline group-hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- League Section Divider: La Liga -->
+<div class="flex items-center justify-between px-space-md py-2 bg-surface-container text-on-surface font-label-sm text-label-sm uppercase tracking-wider">
+<div class="flex items-center gap-2">
+<span class="">🇪🇸 Spain — La Liga</span>
+<span class="text-outline font-normal">Matchday 7</span>
+</div>
+<span class="text-outline font-normal">4 fixtures today</span>
+</div>
+<!-- Row 5: La Liga Match 1 (Real Madrid vs Atletico Madrid) -->
+<div class="grid grid-cols-12 items-center px-space-md py-2.5 bg-surface-container-lowest hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="col-span-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">19:00</span>
+<span class="font-label-sm text-label-sm text-outline">UTC</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Real Madrid</span>
+<span class="font-label-sm text-label-sm text-outline">vs</span>
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Atlético Madrid</span>
+<span class="font-label-sm text-label-sm text-error bg-surface-container px-1 py-0.2 rounded ml-1">DERBY</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span class="text-primary font-medium">51.4%</span>
+<span class="text-outline">25.8%</span>
+<span class="text-secondary font-medium">22.8%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 51.4%"></div>
+<div class="h-full bg-outline-variant" style="width: 25.8%"></div>
+<div class="h-full bg-secondary" style="width: 22.8%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface">1.78</span> <span class="text-outline">·</span> <span class="text-on-surface">1.04</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 py-0.5 rounded">High Conf</span>
+</div>
+<div class="col-span-1 flex justify-end">
+<button class="p-1 rounded hover:bg-surface-container text-outline group-hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Row 6: La Liga Match 2 (Real Sociedad vs Athletic Club) -->
+<div class="grid grid-cols-12 items-center px-space-md py-2.5 bg-surface-container-low hover:bg-surface-container transition-colors group cursor-pointer">
+<div class="col-span-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">21:00</span>
+<span class="font-label-sm text-label-sm text-outline">UTC</span>
+</div>
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Real Sociedad</span>
+<span class="font-label-sm text-label-sm text-outline">vs</span>
+<span class="font-body-md text-body-md font-medium text-on-surface truncate">Athletic Club</span>
+</div>
+<div class="col-span-3 px-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span class="text-primary font-medium">36.1%</span>
+<span class="text-outline">32.2%</span>
+<span class="text-secondary font-medium">31.7%</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 36.1%"></div>
+<div class="h-full bg-outline-variant" style="width: 32.2%"></div>
+<div class="h-full bg-secondary" style="width: 31.7%"></div>
+</div>
+</div>
+<div class="col-span-2 text-center font-label-md text-label-md text-on-surface-variant">
+<span class="text-on-surface">1.15</span> <span class="text-outline">·</span> <span class="text-on-surface">1.08</span>
+</div>
+<div class="col-span-1 text-center">
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-1 py-0.5 rounded">Draw Bias</span>
+</div>
+<div class="col-span-1 flex justify-end">
+<button class="p-1 rounded hover:bg-surface-container text-outline group-hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bench Diagnostic Terminal Status Line -->
+<div class="flex flex-col sm:flex-row items-center justify-between py-space-sm px-space-md mt-space-md bg-surface-container-low text-outline font-label-sm text-label-sm rounded-lg">
+<div class="flex items-center gap-space-md">
+<span class="">Active Fixtures: 18 Computed</span>
+<span class="">·</span>
+<span class="">Cache Validity: 14m remaining</span>
+<span class="">·</span>
+<span class="text-primary">Worker Thread: Online [0.42ms calc]</span>
+</div>
+<div class="flex items-center gap-space-xs mt-1 sm:mt-0">
+<span class="">Simulation Model: Bivariate Poisson Distribution with Dixon-Coles Low Score Adjustment</span>
+</div>
+</div>
+</div></main><footer class="w-full bg-surface-container-lowest py-space-md px-space-lg"><div class="flex flex-col md:flex-row items-center justify-between gap-space-sm"><p class="font-label-sm text-label-sm text-outline">MatchForge probabilistic model forecasts are independent statistical simulations for research purposes. Not a sportsbook or gambling operator.</p><div class="flex items-center gap-space-md font-label-sm text-label-sm text-outline"><span class="">Engine: Monte Carlo xG v4.1</span><span class="">Latency: 18ms</span></div></div></footer></div>
+
+</body></html>
