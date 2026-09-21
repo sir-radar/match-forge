@@ -310,6 +310,6 @@ Use the owning document for implementation-level detail:
 - [Ingestion reports](ingestion-reports.md)
 - [Backtesting](backtesting.md)
 - [Model governance](model-governance.md)
-- [Engineering testing](engineering/testing.md)
+- [Engineering testing](testing.md)
 
 Current project state belongs in the tracked project-status authority and applicable Wayfinder/evidence records rather than this document.

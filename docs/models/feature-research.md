@@ -2,7 +2,7 @@
 
 > **Document status:** proposed supporting specification extracted from the supplied 21 September PLAN; not proof of implemented code, passed gates, or additional authorization. The current repository evidence and owner events take precedence.
 
-**Gated portfolio, not blanket authorization:** only the narrowly scoped minimal Phase 3A xG hypothesis is source-reported as authorized. Every additional experiment requires a registered proposal and appropriate owner decision. Diagnostic/tag methods are descriptive only.
+**Gated portfolio, not blanket authorization:** only the narrowly scoped minimal Phase 3A xG hypothesis is recorded as authorized. Every additional experiment requires a registered proposal and appropriate owner decision. Diagnostic/tag methods are descriptive only.
 
 ---
 

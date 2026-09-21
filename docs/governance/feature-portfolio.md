@@ -2,9 +2,9 @@
 
 **Proposed research order; NOT a delivery commitment or blanket authorization.** Use [actual experiment register](experiment-register.md) and owner decision events, not the wording of this document, to determine permission.
 
-| Family | Prior dependency | Scientific question and mandatory ablation | Permission in supplied plan | Production state |
+| Family | Prior dependency | Scientific question and mandatory ablation | Recorded permission | Production state |
 | --- | --- | --- | --- | --- |
-| Existing goals-only/dynamic references | Audited current code, PIT fixtures | Reproduce without altering frozen Sprint 2 results | Existing work, verify repository | Not established by this package |
+| Existing goals-only/dynamic references | Audited current code, PIT fixtures | Reproduce without altering frozen Sprint 2 results | Existing work; verify before use | Not recorded as production-enabled |
 | One minimal Phase 3A xG goal-model hypothesis | Approved Tier-A + exact owner event | Narrow hypothesis exactly as authorized; no automatic xGA suite | Research only, already recorded | Not promoted |
 | Broader xG/xGA/shot/opponent/game-state | Qualified events, same features, new owner scope | A–F suite + raw/state ablations, proper-score and calibration comparisons | New decisions required | Not established |
 | Travel, rest, dynamic/context | Reliable venue/time/manager data | Objective components, one-family ablation | New decisions required | Not established |

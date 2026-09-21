@@ -26,12 +26,13 @@ Every later phase adds its own tests, telemetry, runbook changes, migration impa
 
 ### Phase 0: reconcile status and authorize the new route
 
+**Current status:** status/evidence reconciliation and the separate Rust authorization proposal are complete. The proposal remains unapproved. Architecture, SLO-category, and cost-accounting approvals below remain open.
+
 Deliverables:
 
-- update tracked project status to reflect the closed shared-match-pace route;
-- preserve the Sprint 2 failure and frozen 280-target firewall;
-- reconcile, rather than recreate, the **existing** 20 September owner decision authorizing only bounded Phase 3A minimal xG research and Evaluation V2 policy/corpus design;
-- propose a **new and separate** owner decision specifically for minimal Rust simulator implementation and its validation scope; do not infer authorization from this roadmap or from the previous research decision;
+- preserve the reconciled project status, Sprint 2 failure, closed shared-match-pace route, and frozen 280-target firewall;
+- preserve, rather than recreate, the **existing** 20 September owner decision authorizing only bounded Phase 3A minimal xG research and Evaluation V2 policy/corpus design;
+- review the existing, unapproved proposal for a **new and separate** owner decision covering minimal Rust simulator implementation and validation; do not infer authorization from this roadmap, the proposal, or the previous research decision;
 - define which phases are research-only and which can affect production;
 - approve the initial architecture, ownership table, engineering SLO categories, and cost-accounting method.
 

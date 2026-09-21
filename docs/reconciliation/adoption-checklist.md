@@ -1,12 +1,14 @@
-# Adoption checklist — preserve existing MatchForge progress
+# Repository reconciliation checklist
 
-**This download is a documentation overlay; it does not edit the repository.** Apply it on a new branch/worktree, never over a protected status/evidence artifact without comparing actual data. Initial supplied PLAN is preserved in [archive](../references/supplied-plan-2026-09-21.md).
+The initial supplied plan is preserved in [archive](../references/supplied-plan-2026-09-21.md). The root `PLAN.md` is the tracked proposed roadmap. Repository status, owner decisions, approved contracts, and retained evidence remain higher authority.
 
-- [ ] Record current commit, dirty worktree, deployed versions and original `PLAN.md` checksum. Read actual `docs/project-status.json`, signed owner events, corpus/target firewall, experiment ledger, model registry, current code and CI. Treat this package's reported statuses as provisional until verified.
-- [ ] Verify existing 20 Sep 2026 narrow Phase 3A authorization; **do not duplicate**. Verify Evaluation V2 *design-only* scope and absence/presence of newer decisions before requesting any new one.
-- [ ] Confirm immutable Sprint 2 `FAIL`, 280-target isolation and shared-pace `TERMINAL_ROUTE_FAIL`; assert no newly introduced task/script references protected target paths. Stop on any mismatch.
-- [ ] Diff proposed docs against existing names. Preserve approved contracts/API and existing `rust/simulation-core` plus Python/Go boundaries. Use aliases/compat adapters where legacy `FixtureDisplayTagsV1` and `ForecastRiskAssessmentV1` already exist; do not rename databases or break clients merely to match new docs.
-- [ ] Apply root `PLAN.md` as roadmap, then introduce only non-conflicting supporting docs; existing `docs/project-status.json` and decision events are **not included** and must remain unchanged unless separately approved.
+- [x] Reconcile `docs/project-status.json` with the 20 September 2026 owner decision. The narrow Phase 3A authorization is recorded; **do not duplicate or broaden it**.
+- [x] Confirm the retained Sprint 2 `FAIL` and shared-pace `TERMINAL_ROUTE_FAIL` references. The 280-target isolation rule remains unchanged.
+- [x] Record Evaluation V2 as design/pre-registration only. No authoritative run is authorized.
+- [x] Keep the minimal Rust authorization proposal separate and unapproved.
+- [ ] Before each implementation task, record the current commit and worktree state; inspect applicable contracts, code, CI, protected-target controls, experiment records, model registry, and newer decisions.
+- [ ] Assert that each new task or script cannot access protected Sprint 2 targets. Stop on any mismatch.
+- [ ] Compare proposed contracts with existing names and interfaces. Preserve approved APIs, `rust/simulation-core`, and Python/Go boundaries. Use approved compatibility changes rather than renaming databases or breaking clients to match proposed docs.
 - [ ] Freeze hash projection/precision and test Rust/Python/Go golden serialization against existing output representation **before** writing V1 hashes. No retrospective rehash of published artifacts.
 - [ ] Define independent simulator authorization, freeze numerical reference/tolerances and engineering budgets, then implement minimum sampler/test suite only if approved. Approval for implementation does not enable production.
 - [ ] Independently freeze Evaluation V2 corpus/firewall/policy/thresholds and obtain an authoritative-run owner decision; retain old targets untouched.
@@ -14,4 +16,4 @@
 - [ ] Obtain distinct owner decisions for candidate promotion and production capability enablement; rehearse rollback, recovery, security, licence and cost checks. A Rust `PASS` alone cannot promote predictive performance.
 - [ ] Review final diff for deletion of existing documentation, unapproved changes to statuses/artifacts, invented approvals, unsupported threshold values or promises about already-deployed endpoints. Archive evidence before merge.
 
-**Suggested non-destructive integration:** create branch → copy docs alongside tracked files → use `git diff -- PLAN.md docs/` → reconcile existing paths → run repository's documented tests (do not invent commands) → submit scoped review. This package makes **no claim** that code tests have run.
+**Change workflow:** create a task branch → inspect tracked status and decisions → make the smallest scoped change → use `git diff -- PLAN.md docs/` where applicable → run documented relevant checks → submit a scoped review. Never treat a documentation proposal as implementation or approval evidence.

@@ -1,6 +1,6 @@
 # Astra feedback integration and conflict resolution
 
-All changes in this package are **proposed documentation changes**, not application commits or owner approvals. See the [exact Astra feedback](../references/astra-feedback-2026-09-21.md) and [exact source PLAN](../references/supplied-plan-2026-09-21.md).
+The Astra integration introduced **proposed documentation**, not application behavior or owner approvals. See the [exact Astra feedback](../references/astra-feedback-2026-09-21.md) and [exact source PLAN](../references/supplied-plan-2026-09-21.md).
 
 | Feedback / conflict | Resolution | Governing output |
 | --- | --- | --- |
@@ -13,9 +13,9 @@ All changes in this package are **proposed documentation changes**, not applicat
 | Public and private contracts mixed | Dedicated **proposed** public OpenAPI and privacy/compatibility rules; original mixed payload retained as non-normative reference. | API docs |
 | Ownership, rollback and authorization implicit | Single owner matrix, non-destructive adoption checklist, separate Rust proposal and incident/rollback policy. | Architecture/governance/operations |
 | Feature list implied blanket implementation | Portfolio with dependencies, individual ablations and decisions; wider programme not falsely authorized. | Feature portfolio, research, Evaluation V2 |
-| Astra proposal says all Phase 3 research needs new authorization | Corrected to preserve source-reported **existing narrow 20 Sep Phase 3A authorization**; broader Phase 3 remains blocked. | Current state and root PLAN |
+| Astra proposal says all Phase 3 research needs new authorization | Corrected to preserve the recorded **existing narrow 20 Sep Phase 3A authorization**; broader Phase 3 remains blocked. | Current state and root PLAN |
 | Astra proposal makes simulator just a later optional comparison | Reconciled with newer source's mandatory Rust gate **for new production forecasts after separate approval/engine acceptance/activation**; no effect on past artifacts or narrow analytic Phase 3A. | Simulation contract, policy, publication states |
 | Old calibration minimum included risk band with core outputs | Moved bands/components to optional enrichment; core distribution remains immutable. | Calibration policy and enrichment contract |
 | Multiple source risk/tag contracts overlap | Proposed unified `ForecastEnrichmentV1` *ownership*, with two logical views; existing contract migrations need approval, not blind rename. | Enrichment and compatibility policy |
 
-**Not claimed:** actual repo inspected; new app tests passed; authoritative policy frozen; Rust authorized or deployed; model promoted; real outcomes re-evaluated; public API implemented. Source research links were retained without fresh web verification.
+**Not claimed:** authoritative policy frozen; Rust authorized or deployed; model promoted; real outcomes re-evaluated; public API implemented; application tests passed solely because this documentation was reconciled. Source research links were retained without fresh web verification.

@@ -13,7 +13,7 @@
 
 - [Immutable forecast](contracts/forecast-artifact-v1.md), [canonical hashes](contracts/canonical-hashing-v1.md), [Rust evidence](contracts/simulation-validation-v1.md)
 - [Optional enrichment](contracts/forecast-enrichment-v1.md), [parity checks](contracts/forecast-enrichment-parity-v1.md)
-- [Source-derived feature contracts](contracts/) — rivalry, expected performance, H2H, cutoff availability, matchup, travel/load, lineup, revision, squad transition, goalkeeper and pre-shot threat; inspect individual files in the package.
+- [Source-derived feature contracts](contracts/) — rivalry, expected performance, H2H, cutoff availability, matchup, travel/load, lineup, revision, squad transition, goalkeeper and pre-shot threat; inspect individual files in the directory.
 
 ## Evaluation and experimentation
 

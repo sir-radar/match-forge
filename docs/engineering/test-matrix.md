@@ -2,7 +2,7 @@
 
 > **Document status:** proposed supporting specification extracted from the supplied 21 September PLAN; not proof of implemented code, passed gates, or additional authorization. The current repository evidence and owner events take precedence.
 
-Actual repository test execution has **not** occurred in this package. This is a proposed checklist; add CI enforcement only after reconciliation. Parity tests must compare the sealed forecast with and without enrichment.
+This is a proposed checklist, not test-execution evidence. Add CI enforcement only through an approved implementation change. Parity tests must compare the sealed forecast with and without enrichment.
 
 ---
 
