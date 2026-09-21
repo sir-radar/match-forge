@@ -11,9 +11,11 @@ import subprocess
 import sys
 from collections import Counter
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import pyarrow
 import pyarrow.parquet as pq
 
 _EVENT_COLUMNS = (
@@ -28,6 +30,33 @@ _EVENT_COLUMNS = (
 )
 
 
+@dataclass(frozen=True)
+class QualificationScope:
+    dataset_version_id: str
+    dataset_manifest_sha256: str
+    source_git_sha: str
+    canonical_competition_id: str
+    canonical_season_id: str
+    source_snapshot_id: str
+
+
+_APPROVED_SCOPE = QualificationScope(
+    dataset_version_id="670662d6-6ed7-5fa1-ba3c-1cfd561e524f",
+    dataset_manifest_sha256="cd32d1c44620116cedefc09860efeccb91da19db4e6006ace8b8b6df1dd8e4e0",
+    source_git_sha="4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    canonical_competition_id="01a051db-552e-782d-b2ac-b3f0ec58441b",
+    canonical_season_id="01a051db-553a-754a-9560-d79eceeb72b6",
+    source_snapshot_id="01a08471-f763-7787-80ca-4293316b7e44",
+)
+
+_QUALIFICATION_WARNINGS = (
+    "PHASE3A_FEATURE_CONTRACT_UNSET",
+    "RETAINED_VALIDATOR_WARNINGS_NOT_CLEARED",
+    "RETROSPECTIVE_SNAPSHOT_NO_PUBLICATION_TIMESTAMPS",
+    "SINGLE_COMPETITION_SEASON_INSUFFICIENT_FOR_EVALUATION_V2",
+)
+
+
 class TierAXGQualificationError(RuntimeError):
     """The requested dataset cannot be qualified safely."""
 
@@ -37,7 +66,6 @@ def main() -> int:
     report = qualify(
         data_root=arguments.data_root.resolve(),
         manifest_path=arguments.manifest.resolve(),
-        expected_dataset_version_id=arguments.expected_dataset_version_id,
     )
     payload = _canonical_json_bytes(report) + b"\n"
     output_path = arguments.output.resolve()
@@ -54,17 +82,16 @@ def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--expected-dataset-version-id", required=True)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 
 
-def qualify(
-    *, data_root: Path, manifest_path: Path, expected_dataset_version_id: str
-) -> dict[str, Any]:
+def qualify(*, data_root: Path, manifest_path: Path) -> dict[str, Any]:
+    scope = _APPROVED_SCOPE
+    _validate_manifest_path(data_root, manifest_path, scope)
     manifest_bytes = manifest_path.read_bytes()
     manifest = _mapping(json.loads(manifest_bytes), "dataset manifest")
-    _validate_manifest_identity(manifest, expected_dataset_version_id)
+    _validate_manifest_identity(manifest, manifest_bytes, scope)
     raw_files = manifest.get("files")
     if not isinstance(raw_files, list) or not raw_files:
         raise TierAXGQualificationError("dataset manifest has no files")
@@ -108,24 +135,39 @@ def qualify(
             "xg_sum": math.fsum(xg_values),
         },
     }
+    coverage_status = "PASS" if not failures else "FAIL"
+    qualification_status = "PASS_WITH_WARNINGS" if not failures else "FAIL"
     return {
         "contract": "Phase1CStatsBombXGCoverageV1",
-        "status": "PASS" if not failures else "FAIL",
+        "coverage_status": coverage_status,
+        "status": qualification_status,
         "dataset": {
             "canonical_competition_id": measurements["canonical_competition_id"],
             "canonical_season_id": measurements["canonical_season_id"],
             "dataset_manifest_sha256": _sha256(manifest_bytes),
             "dataset_name": _string(manifest, "dataset_name"),
-            "dataset_version_id": expected_dataset_version_id,
+            "dataset_version_id": scope.dataset_version_id,
             "file_count": len(raw_files),
             "normalizer_version": _string(manifest, "normalizer_version"),
             "schema_sha256": _string(manifest, "schema_sha256"),
             "schema_version": _string(manifest, "schema_version"),
             "source_git_sha": _string(manifest, "source_git_sha"),
         },
+        "lineage_prerequisite": {
+            "basis": "retained external evidence; not re-queried by this coverage scan",
+            "evidence_path": "docs/evidence/statsbomb-laliga-diagnostic-dataset-requalification-2026-09-09.md",
+            "source_snapshot_id": scope.source_snapshot_id,
+        },
+        "qualification": {
+            "evaluation_v2_corpus_eligibility": "NOT_DETERMINED",
+            "phase3a_model_run_ready": False,
+            "warnings": list(_QUALIFICATION_WARNINGS),
+        },
         "result": result,
         "reproducibility": {
             "code_git_sha": _git_sha(),
+            "dependency_lock_sha256": _dependency_lock_sha256(),
+            "pyarrow_version": pyarrow.__version__,
             "python_version": sys.version.split()[0],
             "script_sha256": _sha256(Path(__file__).read_bytes()),
         },
@@ -191,6 +233,7 @@ def _measure_dataset_file(
 ) -> None:
     file_entry = _mapping(raw_file, "dataset file")
     relative_path = _string(file_entry, "relative_path")
+    _validate_file_scope(relative_path, _APPROVED_SCOPE)
     event_path = _safe_dataset_path(data_root, relative_path)
     if _sha256(event_path.read_bytes()) != _string(file_entry, "physical_sha256"):
         raise TierAXGQualificationError(f"dataset file checksum mismatch: {relative_path}")
@@ -220,16 +263,34 @@ def _measure_dataset_file(
             )
 
 
-def _validate_manifest_identity(
-    manifest: Mapping[str, object], expected_dataset_version_id: str
+def _validate_manifest_path(
+    data_root: Path, manifest_path: Path, scope: QualificationScope
 ) -> None:
+    expected = (
+        data_root
+        / "manifests"
+        / "datasets"
+        / f"dataset={scope.dataset_version_id}"
+        / "dataset-manifest-v1.json"
+    ).resolve()
+    if manifest_path.resolve() != expected:
+        raise TierAXGQualificationError("manifest path is outside the approved dataset scope")
+
+
+def _validate_manifest_identity(
+    manifest: Mapping[str, object], manifest_bytes: bytes, scope: QualificationScope
+) -> None:
+    if _sha256(manifest_bytes) != scope.dataset_manifest_sha256:
+        raise TierAXGQualificationError("manifest checksum does not match the approved dataset")
     if manifest.get("contract") != "DatasetManifestV1":
         raise TierAXGQualificationError("unsupported dataset manifest contract")
     if manifest.get("dataset_name") != "events":
         raise TierAXGQualificationError("qualification requires an events dataset")
     actual_dataset_version_id = _string(manifest, "dataset_version_id")
-    if actual_dataset_version_id != expected_dataset_version_id:
+    if actual_dataset_version_id != scope.dataset_version_id:
         raise TierAXGQualificationError("dataset identity does not match the allowed dataset")
+    if _string(manifest, "source_git_sha") != scope.source_git_sha:
+        raise TierAXGQualificationError("source revision does not match the approved dataset")
 
 
 def _measure_shot(
@@ -316,6 +377,20 @@ def _path_scope(relative_path: str) -> tuple[str, str, str]:
         raise TierAXGQualificationError("dataset file path has incomplete scope") from error
 
 
+def _validate_file_scope(relative_path: str, scope: QualificationScope) -> None:
+    parts = Path(relative_path).parts
+    required = (
+        "normalized",
+        "events",
+        "schema=v1",
+        f"dataset={scope.dataset_version_id}",
+        f"competition_id={scope.canonical_competition_id}",
+        f"season_id={scope.canonical_season_id}",
+    )
+    if parts[: len(required)] != required:
+        raise TierAXGQualificationError("dataset file is outside the approved canonical scope")
+
+
 def _nested_name(value: Mapping[str, object], field: str) -> str:
     nested = _mapping(value.get(field), field)
     return _string(nested, "name")
@@ -357,6 +432,11 @@ def _git_sha() -> str:
         text=True,
     )
     return result.stdout.strip()
+
+
+def _dependency_lock_sha256() -> str:
+    lock_path = Path(__file__).resolve().parent.parent / "uv.lock"
+    return _sha256(lock_path.read_bytes())
 
 
 if __name__ == "__main__":

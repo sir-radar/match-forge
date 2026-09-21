@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
+import scripts.qualify_statsbomb_tier_a_xg as qualifier
 from scripts.qualify_statsbomb_tier_a_xg import (
     TierAXGQualificationError,
     qualify,
@@ -18,16 +20,16 @@ _COMPETITION_ID = "01a051db-552e-782d-b2ac-b3f0ec58441b"
 _SEASON_ID = "01a051db-553a-754a-9560-d79eceeb72b6"
 
 
-def test_qualifies_complete_statsbomb_xg_coverage(tmp_path: Path) -> None:
+def test_qualifies_complete_statsbomb_xg_coverage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     manifest_path = _dataset(tmp_path, xg_values=(0.2, 0.4))
+    _approve_test_manifest(monkeypatch, manifest_path)
 
-    report = qualify(
-        data_root=tmp_path,
-        manifest_path=manifest_path,
-        expected_dataset_version_id=_DATASET_ID,
-    )
+    report = qualify(data_root=tmp_path, manifest_path=manifest_path)
 
-    assert report["status"] == "PASS"
+    assert report["coverage_status"] == "PASS"
+    assert report["status"] == "PASS_WITH_WARNINGS"
     assert report["dataset"]["canonical_competition_id"] == _COMPETITION_ID
     assert report["dataset"]["canonical_season_id"] == _SEASON_ID
     assert report["result"]["coverage"] == {
@@ -48,48 +50,66 @@ def test_qualifies_complete_statsbomb_xg_coverage(tmp_path: Path) -> None:
     }
     assert report["result"]["semantics"]["xg_sum"] == pytest.approx(0.6)
     assert report["result"]["failures"] == []
+    assert report["qualification"]["phase3a_model_run_ready"] is False
+    assert report["qualification"]["warnings"]
+    assert report["reproducibility"]["dependency_lock_sha256"]
+    assert report["reproducibility"]["pyarrow_version"] == pa.__version__
 
 
-def test_reports_invalid_provider_xg_as_failure(tmp_path: Path) -> None:
+def test_reports_invalid_provider_xg_as_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     manifest_path = _dataset(tmp_path, xg_values=(1.1, 0.4))
+    _approve_test_manifest(monkeypatch, manifest_path)
 
-    report = qualify(
-        data_root=tmp_path,
-        manifest_path=manifest_path,
-        expected_dataset_version_id=_DATASET_ID,
-    )
+    report = qualify(data_root=tmp_path, manifest_path=manifest_path)
 
     assert report["status"] == "FAIL"
+    assert report["coverage_status"] == "FAIL"
     assert report["result"]["coverage"]["shots_with_valid_unit_interval_xg"] == 1
     assert report["result"]["failures"] == ["SHOT_PROVIDER_XG_INVALID"]
 
 
-def test_rejects_unapproved_dataset_before_reading_files(tmp_path: Path) -> None:
-    manifest_path = _dataset(tmp_path, xg_values=(0.2,))
+def test_rejects_protected_dataset_before_reading_manifest(tmp_path: Path) -> None:
+    protected_id = "d62b97d6-f39b-5f14-9773-61f57f7b677b"
+    manifest_path = (
+        tmp_path
+        / "manifests"
+        / "datasets"
+        / f"dataset={protected_id}"
+        / "dataset-manifest-v1.json"
+    )
 
     with pytest.raises(
         TierAXGQualificationError,
-        match="dataset identity does not match the allowed dataset",
+        match="manifest path is outside the approved dataset scope",
     ):
-        qualify(
-            data_root=tmp_path,
-            manifest_path=manifest_path,
-            expected_dataset_version_id="d62b97d6-f39b-5f14-9773-61f57f7b677b",
-        )
+        qualify(data_root=tmp_path, manifest_path=manifest_path)
+
+    assert not manifest_path.exists()
 
 
-def test_rejects_manifest_file_checksum_mismatch(tmp_path: Path) -> None:
+def test_rejects_manifest_file_checksum_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     manifest_path = _dataset(tmp_path, xg_values=(0.2,))
     manifest = json.loads(manifest_path.read_text())
     manifest["files"][0]["physical_sha256"] = "0" * 64
     manifest_path.write_text(json.dumps(manifest))
+    _approve_test_manifest(monkeypatch, manifest_path)
 
     with pytest.raises(TierAXGQualificationError, match="dataset file checksum mismatch"):
-        qualify(
-            data_root=tmp_path,
-            manifest_path=manifest_path,
-            expected_dataset_version_id=_DATASET_ID,
-        )
+        qualify(data_root=tmp_path, manifest_path=manifest_path)
+
+
+def test_rejects_wrong_manifest_checksum_before_reading_files(tmp_path: Path) -> None:
+    manifest_path = _dataset(tmp_path, xg_values=(0.2,))
+
+    with pytest.raises(
+        TierAXGQualificationError,
+        match="manifest checksum does not match the approved dataset",
+    ):
+        qualify(data_root=tmp_path, manifest_path=manifest_path)
 
 
 def _dataset(tmp_path: Path, *, xg_values: tuple[float, ...]) -> Path:
@@ -147,6 +167,24 @@ def _dataset(tmp_path: Path, *, xg_values: tuple[float, ...]) -> Path:
         "schema_version": "v1",
         "source_git_sha": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
     }
-    manifest_path = tmp_path / "dataset-manifest-v1.json"
+    manifest_path = (
+        tmp_path
+        / "manifests"
+        / "datasets"
+        / f"dataset={_DATASET_ID}"
+        / "dataset-manifest-v1.json"
+    )
+    manifest_path.parent.mkdir(parents=True)
     manifest_path.write_text(json.dumps(manifest))
     return manifest_path
+
+
+def _approve_test_manifest(
+    monkeypatch: pytest.MonkeyPatch, manifest_path: Path
+) -> None:
+    manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    monkeypatch.setattr(
+        qualifier,
+        "_APPROVED_SCOPE",
+        replace(qualifier._APPROVED_SCOPE, dataset_manifest_sha256=manifest_sha),
+    )
