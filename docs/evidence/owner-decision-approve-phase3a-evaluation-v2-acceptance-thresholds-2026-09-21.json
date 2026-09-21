@@ -1,0 +1,31 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_PHASE3A_EVALUATION_V2_ACCEPTANCE_THRESHOLDS_V1",
+  "recorded_at": "2026-09-21T10:27:12Z",
+  "title": "Approve Phase 3A Evaluation V2 acceptance thresholds",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: freeze acceptance thresholds",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "proposal_sha256": "3d7d636f14295a919973c1075077dbd1c13c22605f818cd3827ee2c079307379",
+  "record_md": "docs/evidence/owner-decision-approve-phase3a-evaluation-v2-acceptance-thresholds-2026-09-21.md",
+  "authorizes": [
+    "acceptance threshold and result-disposition freeze only"
+  ],
+  "explicitly_not_authorized": [
+    "phase 3A implementation",
+    "authoritative Evaluation V2 target or outcome access",
+    "authoritative Evaluation V2 execution",
+    "candidate promotion",
+    "rust implementation",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
