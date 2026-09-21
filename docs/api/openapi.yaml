@@ -1,0 +1,693 @@
+openapi: 3.1.0
+
+info:
+  title: MatchForge proposed public forecast and fixtures API
+  version: 0.2.0-proposed
+  description: >-
+    CONTRACT PROPOSAL ONLY: none of these routes or fields is asserted to exist,
+    be approved, or be production enabled. Audit implemented routes and DTOs,
+    preserve existing consumers, and record approval before activation. Paths
+    below use a proposed /v1 prefix; reconcile any existing /api prefix rather
+    than creating duplicate routes. This public contract excludes private risk
+    components, raw provenance, model parameters, confidential data, seeds,
+    full simulation logs, and unapproved diagnostic thresholds. Every forecast
+    probability must originate from one immutable published forecast artifact.
+    Simulation is mandatory for new production publication only AFTER separately
+    authorized engine acceptance and product activation, except a separately
+    approved and explicitly labelled analytic-only exception. Pre-activation
+    archives must not be retroactively represented as simulation validated.
+
+servers: []
+
+tags:
+  - name: Fixtures
+    description: Fixture discovery; actual match information is not a forecast.
+  - name: Forecasts
+    description: Immutable published forecasts and their availability/history.
+  - name: Capabilities
+    description: Public view of approved product and data-tier availability.
+
+paths:
+  /v1/fixtures:
+    get:
+      tags: [Fixtures]
+      operationId: listFixtures
+      summary: List fixtures by date with published forecast references
+      description: >-
+        PROPOSED, not verified. Return only actual fixture state and references
+        to eligible PUBLISHED forecasts, never unsealed candidate probabilities.
+        A pending newer revision must not remove an earlier published forecast.
+        Actual live scores are distinct from archived pre-match probabilities.
+        Search/autocomplete and realtime delivery are separate unapproved APIs.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Fixture date in the requested timezone; backend resolves a documented interval.
+          schema: { type: string, format: date }
+        - name: timezone
+          in: query
+          required: false
+          description: IANA timezone; default UTC. Verify server support before enabling.
+          schema: { type: string, default: UTC, minLength: 1 }
+        - name: competition_id
+          in: query
+          required: false
+          schema: { type: string, minLength: 1 }
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/FixtureStatus'
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque server-issued pagination cursor; never synthesize it in the client.
+          schema: { type: string, minLength: 1 }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        '200':
+          description: Fixture page; individual forecast availability may differ per fixture.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FixturePage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /v1/fixtures/{fixture_id}/forecasts/{forecast_id}:
+    get:
+      tags: [Forecasts]
+      operationId: getPublishedForecast
+      summary: Read an immutable published forecast with optional approved enrichment
+      description: >-
+        Retained proposed path from version 0.1. Returns a previously published
+        forecast, a properly approved analytic-only exception, or a genuinely
+        documented pre-activation archive. Never returns an unpublished candidate.
+        Enrichment failures cannot change probabilities or the canonical hash.
+      parameters:
+        - $ref: '#/components/parameters/FixtureId'
+        - $ref: '#/components/parameters/ForecastId'
+      responses:
+        '200':
+          description: Visible immutable published forecast, with its actual publication mode.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicForecast' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/SimulationUnavailable' }
+
+  /v1/fixtures/{fixture_id}/forecast-availability:
+    get:
+      tags: [Forecasts]
+      operationId: getFixtureForecastAvailability
+      summary: Retrieve public availability and latest eligible published forecast
+      description: >-
+        PROPOSED. Exposes only public availability, not internal candidate IDs,
+        hashes, or unpublished probabilities. If a newer revision is pending or
+        fails, retain the reference to the earlier published forecast. A status
+        never grants permission to publish a candidate without the required PASS.
+      parameters:
+        - $ref: '#/components/parameters/FixtureId'
+      responses:
+        '200':
+          description: Forecast availability for this fixture.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ForecastAvailability' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /v1/fixtures/{fixture_id}/forecast-history:
+    get:
+      tags: [Forecasts]
+      operationId: listFixtureForecastHistory
+      summary: List retrievable immutable published forecasts for a fixture
+      description: >-
+        PROPOSED. Excludes unpublished candidate and simulation-failure artifacts.
+        Older published forecasts remain retrievable across later failures and
+        revision attempts; never synthesize forecast history or horizons.
+      parameters:
+        - $ref: '#/components/parameters/FixtureId'
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string, minLength: 1 }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+      responses:
+        '200':
+          description: Chronological immutable published forecast references.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ForecastHistoryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /v1/forecasts/{forecast_id}/simulation-evidence:
+    get:
+      tags: [Forecasts]
+      operationId: getPublicSimulationEvidence
+      summary: Read approved public summary of published forecast validation
+      description: >-
+        PROPOSED and independently disclosure-gated. Only a summary for a
+        published forecast is available; never return raw seeds, private
+        thresholds, detailed parity/convergence logs, or candidate artifacts.
+        An approved analytic-only publication has no fabricated PASS artifact.
+        If the historical forecast predates activation, return a documented
+        legacy mode, not inferred Rust validation.
+      parameters:
+        - $ref: '#/components/parameters/ForecastId'
+      responses:
+        '200':
+          description: Publication-mode evidence for a visible published forecast.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicSimulationEvidence' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /v1/capabilities:
+    get:
+      tags: [Capabilities]
+      operationId: listPublicCapabilities
+      summary: Read the public projection of approved capability availability
+      description: >-
+        PROPOSED. Server derives the public projection from the authoritative
+        capability registry, signed decisions, supported competitions/horizons,
+        and qualified data/licensing tiers. The public-facing status below is
+        not a replacement for the internal promotion-state enum. Never expose
+        research-only candidate probabilities or imply authorization from this
+        proposed schema.
+      parameters:
+        - name: competition_id
+          in: query
+          required: false
+          schema: { type: string, minLength: 1 }
+        - name: data_tier
+          in: query
+          required: false
+          description: Optional qualified tier ID, if publicly disclosable.
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Public capability presentation data as of a documented timestamp.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CapabilityPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+components:
+  parameters:
+    FixtureId:
+      name: fixture_id
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    ForecastId:
+      name: forecast_id
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+
+  responses:
+    BadRequest:
+      description: Invalid query or unsupported input.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PublicError' }
+    NotFound:
+      description: Resource does not exist or is not publicly visible.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PublicError' }
+    SimulationUnavailable:
+      description: New simulation-required forecast is unavailable; no unpublished probabilities returned.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PublicError' }
+    ServiceUnavailable:
+      description: Requested public information temporarily unavailable.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/PublicError' }
+
+  schemas:
+    DecimalProbability:
+      type: string
+      pattern: '^(0\.[0-9]{12}|1\.000000000000)$'
+      description: Proposed sealed decimal representation; exact version requires approval.
+
+    OutcomeProbabilities:
+      type: object
+      additionalProperties: false
+      required: [home, draw, away]
+      properties:
+        home: { $ref: '#/components/schemas/DecimalProbability' }
+        draw: { $ref: '#/components/schemas/DecimalProbability' }
+        away: { $ref: '#/components/schemas/DecimalProbability' }
+
+    ScoreCell:
+      type: object
+      additionalProperties: false
+      required: [home_goals, away_goals, probability]
+      properties:
+        home_goals: { type: integer, minimum: 0 }
+        away_goals: { type: integer, minimum: 0 }
+        probability: { $ref: '#/components/schemas/DecimalProbability' }
+
+    ProbabilityProducts:
+      type: object
+      additionalProperties: false
+      description: >-
+        Preserves the original proposed probability structure. Market keys must
+        be approved and registered; an unavailable market must not be assigned
+        a synthetic zero. Distributions, exact-score cells and score_tail
+        require the same approved representation and normalization policy.
+      required:
+        [
+          result_1x2,
+          exact_scores,
+          score_tail,
+          home_goal_distribution,
+          away_goal_distribution,
+          total_goal_distribution,
+          btts,
+          clean_sheets,
+          approved_markets,
+        ]
+      properties:
+        result_1x2: { $ref: '#/components/schemas/OutcomeProbabilities' }
+        exact_scores:
+          type: array
+          items: { $ref: '#/components/schemas/ScoreCell' }
+        score_tail: { $ref: '#/components/schemas/DecimalProbability' }
+        home_goal_distribution:
+          type: array
+          items: { $ref: '#/components/schemas/DecimalProbability' }
+        away_goal_distribution:
+          type: array
+          items: { $ref: '#/components/schemas/DecimalProbability' }
+        total_goal_distribution:
+          type: array
+          items: { $ref: '#/components/schemas/DecimalProbability' }
+        btts:
+          type: object
+          additionalProperties:
+            { $ref: '#/components/schemas/DecimalProbability' }
+        clean_sheets:
+          type: object
+          additionalProperties:
+            { $ref: '#/components/schemas/DecimalProbability' }
+        approved_markets:
+          type: object
+          additionalProperties:
+            { $ref: '#/components/schemas/DecimalProbability' }
+
+    FixtureStatus:
+      type: string
+      description: Actual fixture state, not forecast publication state.
+      enum: [SCHEDULED, LIVE, FINISHED, POSTPONED, CANCELLED, ABANDONED]
+
+    FixtureTeam:
+      type: object
+      additionalProperties: false
+      required: [team_id, name]
+      properties:
+        team_id: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        crest_url:
+          {
+            type: [string, 'null'],
+            format: uri,
+            description: Optional licensed public crest URL.,
+          }
+
+    ActualScore:
+      type: object
+      additionalProperties: false
+      required: [home, away]
+      description: Actual score only; never a predicted scoreline.
+      properties:
+        home: { type: integer, minimum: 0 }
+        away: { type: integer, minimum: 0 }
+        minute:
+          {
+            type: integer,
+            minimum: 0,
+            description: Actual elapsed match minute if supported.,
+          }
+
+    PublishedForecastReference:
+      type: object
+      additionalProperties: false
+      required: [forecast_id, issued_at, forecast_horizon, publication_mode]
+      description: Reference only to a publicly retrievable PUBLISHED forecast.
+      properties:
+        forecast_id: { type: string, minLength: 1 }
+        issued_at: { type: string, format: date-time }
+        forecast_horizon: { type: string }
+        publication_mode:
+          {
+            type: string,
+            enum: [RUST_VALIDATED, ANALYTIC_ONLY, LEGACY_PRE_ACTIVATION],
+          }
+
+    Fixture:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          fixture_id,
+          competition_id,
+          competition_name,
+          kickoff_at,
+          status,
+          home_team,
+          away_team,
+          latest_published_forecast,
+        ]
+      properties:
+        fixture_id: { type: string, minLength: 1 }
+        competition_id: { type: string, minLength: 1 }
+        competition_name: { type: string, minLength: 1 }
+        kickoff_at: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/FixtureStatus' }
+        home_team: { $ref: '#/components/schemas/FixtureTeam' }
+        away_team: { $ref: '#/components/schemas/FixtureTeam' }
+        actual_score:
+          oneOf:
+            - $ref: '#/components/schemas/ActualScore'
+            - type: 'null'
+          description: Null or absent until actual score is qualified/available.
+        latest_published_forecast:
+          oneOf:
+            - $ref: '#/components/schemas/PublishedForecastReference'
+            - type: 'null'
+          description: Null when no eligible published forecast exists; not an unpublished candidate.
+        forecast_availability:
+          { $ref: '#/components/schemas/PublicAvailabilityState' }
+        data_updated_at: { type: [string, 'null'], format: date-time }
+
+    FixturePage:
+      type: object
+      additionalProperties: false
+      required:
+        [schema_version, date, timezone, fixtures, next_cursor, generated_at]
+      properties:
+        schema_version: { type: string, const: v1 }
+        date: { type: string, format: date }
+        timezone: { type: string, minLength: 1 }
+        fixtures:
+          type: array
+          items: { $ref: '#/components/schemas/Fixture' }
+        next_cursor: { type: [string, 'null'] }
+        generated_at: { type: string, format: date-time }
+
+    PublicAvailabilityState:
+      type: string
+      description: >-
+        Public-facing lifecycle projection. Does not reveal internal candidate
+        data or replace the authoritative internal publication state machine.
+      enum:
+        [
+          PUBLISHED,
+          ANALYTIC_ONLY_APPROVED,
+          LEGACY_PUBLISHED,
+          PENDING_VALIDATION,
+          SIMULATION_UNAVAILABLE,
+          NO_PUBLISHED_FORECAST,
+          UNSUPPORTED_TIER,
+          INSUFFICIENT_DATA,
+          SUSPENDED,
+        ]
+
+    ForecastAvailability:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          schema_version,
+          fixture_id,
+          state,
+          latest_published_forecast,
+          checked_at,
+        ]
+      properties:
+        schema_version: { type: string, const: v1 }
+        fixture_id: { type: string, minLength: 1 }
+        state: { $ref: '#/components/schemas/PublicAvailabilityState' }
+        latest_published_forecast:
+          oneOf:
+            - $ref: '#/components/schemas/PublishedForecastReference'
+            - type: 'null'
+          description: >-
+            May remain non-null when a newer candidate is pending or failed.
+            Client should show this existing published forecast with a separate
+            notice instead of hiding its probabilities.
+        reason_code:
+          {
+            type: string,
+            description: Approved public reason only,
+            no internal candidate details.,
+          }
+        checked_at: { type: string, format: date-time }
+
+    ForecastHistoryItem:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          forecast_id,
+          fixture_id,
+          issued_at,
+          knowledge_cutoff,
+          forecast_horizon,
+          publication_mode,
+        ]
+      properties:
+        forecast_id: { type: string, minLength: 1 }
+        fixture_id: { type: string, minLength: 1 }
+        issued_at: { type: string, format: date-time }
+        knowledge_cutoff: { type: string, format: date-time }
+        forecast_horizon: { type: string }
+        publication_mode:
+          {
+            type: string,
+            enum: [RUST_VALIDATED, ANALYTIC_ONLY, LEGACY_PRE_ACTIVATION],
+          }
+        supersedes_forecast_id: { type: [string, 'null'] }
+        revision_reason_codes: { type: array, items: { type: string } }
+        canonical_probability_hash: { type: string, pattern: '^[a-f0-9]{64}$' }
+
+    ForecastHistoryPage:
+      type: object
+      additionalProperties: false
+      required: [schema_version, fixture_id, forecasts, next_cursor]
+      properties:
+        schema_version: { type: string, const: v1 }
+        fixture_id: { type: string, minLength: 1 }
+        forecasts:
+          type: array
+          items: { $ref: '#/components/schemas/ForecastHistoryItem' }
+        next_cursor: { type: [string, 'null'] }
+
+    PublicSimulation:
+      description: >-
+        Publication evidence is linked to an actual published forecast. A PASS
+        must match the immutable forecast hash; public summary never exposes
+        raw validation logs. LEGACY_PRE_ACTIVATION is allowed only when real
+        pre-activation publication is independently verified, never inferred.
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required:
+            [
+              mode,
+              validation_status,
+              validation_artifact_id,
+              engine_build_id,
+              eligible_samples,
+            ]
+          properties:
+            mode: { type: string, const: RUST_VALIDATED }
+            validation_status: { type: string, const: PASS }
+            validation_artifact_id: { type: string, minLength: 1 }
+            engine_build_id: { type: string, minLength: 1 }
+            eligible_samples: { type: integer, minimum: 1 }
+        - type: object
+          additionalProperties: false
+          required: [mode, exception_policy_id]
+          properties:
+            mode: { type: string, const: ANALYTIC_ONLY }
+            exception_policy_id: { type: string, minLength: 1 }
+        - type: object
+          additionalProperties: false
+          required: [mode]
+          properties:
+            mode: { type: string, const: LEGACY_PRE_ACTIVATION }
+            archive_policy_id:
+              type: string
+              description: Optional verified evidence of the original publication policy.
+
+    PublicSimulationEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        [schema_version, forecast_id, canonical_probability_hash, simulation]
+      properties:
+        schema_version: { type: string, const: v1 }
+        forecast_id: { type: string, minLength: 1 }
+        canonical_probability_hash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        simulation: { $ref: '#/components/schemas/PublicSimulation' }
+      description: >-
+        Intentionally limited to already-approved summary fields. Per-event
+        parity deltas, thresholds, tail metrics, seed schedules, full reports,
+        and convergence traces require separately approved versioned public
+        schemas; do not infer their availability from the internal artifact.
+
+    PublicTag:
+      type: object
+      additionalProperties: false
+      required: [code, reason_codes]
+      properties:
+        code:
+          {
+            type: string,
+            enum:
+              [
+                DERBY,
+                UNPREDICTABLE,
+                HISTORICALLY_VOLATILE,
+                HIGH_FORECAST_UNCERTAINTY,
+                HIGH_MODEL_DISAGREEMENT,
+                OUT_OF_DISTRIBUTION,
+                DATA_INCOMPLETE,
+                INSUFFICIENT_EVIDENCE,
+              ],
+          }
+        reason_codes: { type: array, items: { type: string } }
+
+    PublicEnrichment:
+      type: object
+      additionalProperties: false
+      required: [status, forecast_effect]
+      properties:
+        status: { type: string, enum: [COMPLETE, PARTIAL, UNAVAILABLE] }
+        forecast_effect: { type: boolean, const: false }
+        tags: { type: array, items: { $ref: '#/components/schemas/PublicTag' } }
+
+    PublicForecast:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          schema_version,
+          fixture_id,
+          forecast_id,
+          issued_at,
+          knowledge_cutoff,
+          forecast_horizon,
+          canonical_probability_hash,
+          probabilities,
+          expected_goals,
+          simulation,
+        ]
+      properties:
+        schema_version: { type: string, const: v1 }
+        fixture_id: { type: string, minLength: 1 }
+        forecast_id: { type: string, minLength: 1 }
+        issued_at: { type: string, format: date-time }
+        knowledge_cutoff: { type: string, format: date-time }
+        forecast_horizon: { type: string }
+        supersedes_forecast_id: { type: [string, 'null'] }
+        revision_reason_codes:
+          type: array
+          items: { type: string }
+          description: Approved public codes only; never synthesize revision events.
+        model_id:
+          type: string
+          minLength: 1
+          description: >-
+            PROPOSED optional public identifier for the actual approved model
+            recorded on this forecast; omit until field authorization and
+            compatibility checks. Not a model parameter or promotion assertion.
+        model_version:
+          type: string
+          minLength: 1
+          description: Optional approved public model version, when verified.
+        canonical_probability_hash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        probabilities: { $ref: '#/components/schemas/ProbabilityProducts' }
+        expected_goals:
+          type: object
+          additionalProperties: false
+          required: [home, away]
+          properties:
+            home: { type: number, minimum: 0 }
+            away: { type: number, minimum: 0 }
+        uncertainty:
+          type: object
+          additionalProperties: true
+          description: Only approved public interval fields; freeze before activation.
+        simulation: { $ref: '#/components/schemas/PublicSimulation' }
+        enrichment: { $ref: '#/components/schemas/PublicEnrichment' }
+
+    PublicCapabilityState:
+      type: string
+      description: >-
+        Presentation projection only. Do not substitute this enum for the
+        internal registry states or infer promotion from research authorization.
+      enum:
+        [
+          SUPPORTED,
+          RESEARCH_ONLY,
+          PENDING,
+          UNAVAILABLE,
+          INSUFFICIENT_DATA,
+          SUSPENDED,
+        ]
+
+    PublicCapability:
+      type: object
+      additionalProperties: false
+      required: [capability_id, state, updated_at]
+      properties:
+        capability_id: { type: string, minLength: 1 }
+        competition_id: { type: string, minLength: 1 }
+        market_code: { type: string, minLength: 1 }
+        data_tier: { type: string, minLength: 1 }
+        state: { $ref: '#/components/schemas/PublicCapabilityState' }
+        public_reason_code: { type: string }
+        updated_at: { type: string, format: date-time }
+
+    CapabilityPage:
+      type: object
+      additionalProperties: false
+      required: [schema_version, capabilities, generated_at]
+      properties:
+        schema_version: { type: string, const: v1 }
+        capabilities:
+          type: array
+          items: { $ref: '#/components/schemas/PublicCapability' }
+        generated_at: { type: string, format: date-time }
+
+    PublicError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            [
+              SIMULATION_UNAVAILABLE,
+              NOT_FOUND,
+              INVALID_REQUEST,
+              SERVICE_UNAVAILABLE,
+            ]
+        message: { type: string }

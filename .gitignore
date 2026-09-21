@@ -18,6 +18,7 @@ target/
 dist/
 AGENTS.md
 PLAN.md
+PLAN.OLD.md
 
 .agents/
 .hermes/
