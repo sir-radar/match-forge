@@ -54,3 +54,15 @@ Prioritize context that is stable, obtainable, and time-stamped:
 - rivalry registry membership.
 
 Defer weather, referee style, injuries, suspensions, and tactical formations until historical availability time and coverage can be proved.
+
+### 7.4 Current Phase 1C qualification inventory
+
+| Provider scope | Retained state | Phase 3A / Evaluation V2 treatment |
+| --- | --- | --- |
+| StatsBomb EPL 2015/16 (`2/27`) | Sprint 2 source with frozen admission and 280-target populations | Protected. Do not access, reuse, or extend for the new route. |
+| StatsBomb La Liga 2015/16 (`11/27`) | [Tier-A xG source `PASS_WITH_WARNINGS`](../evidence/phase1c-statsbomb-laliga-tier-a-xg-qualification-2026-09-21.md); PIT prerequisites pass for 380 matches | Available for feature-contract design. Evaluation corpus eligibility remains unset. |
+| StatsBomb Liga F (`182/281`) | Exact source and 240-match publication retained; selected-replication qualification failed at 138 versus frozen 140 targets | Not qualified for Phase 3A or Evaluation V2. Any new route needs independently frozen eligibility rules. |
+| Other declared StatsBomb scopes | Provider capability declarations only | Not Tier-A qualified by a capability declaration. Require exact source, event/shot, xG, lineage, PIT, and non-overlap evidence. |
+
+Phase 1C remains `IN PROGRESS`. One independent competition-season is not the
+multi-season, multi-competition corpus required by the Evaluation V2 design.

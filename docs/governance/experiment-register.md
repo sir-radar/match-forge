@@ -21,11 +21,20 @@ Allowed lifecycle: `DRAFT → AUTHORIZED → FROZEN → RUNNING → EVALUATED �
 
 | Research item | Recorded permission | Action |
 | --- | --- | --- |
-| Single bounded Phase 3A minimal xG hypothesis | Verified **research-only** event dated 20 Sep 2026 | Define and register the experiment ID, exact hypothesis, tier, and outputs; avoid duplicate authorization. |
+| Single bounded Phase 3A minimal xG hypothesis | Verified **research-only** event dated 20 Sep 2026 | Draft ID recorded; resolve blocking feature, model, corpus, policy, threshold, budget, and owner fields before freeze. |
 | Evaluation V2 design and pre-registration | Design only | Draft separate frozen policy/corpus and request authoritative-run decision afterwards. |
 | Wider xG/xGA, H2H, tags, lineups, context, ensembles | Not collectively authorized by that event | Register individually and request scope-specific decisions. |
 | Minimal Rust engine/simulation evidence | Not authorized by that event | Use [separate proposal](simulation-authorization-proposal.md). |
 | Protected Sprint 2 failures and 280 targets | Closed/blocked | Leave untouched; do not import targets. |
+
+## Active draft
+
+`PHASE3A_MINIMAL_XG_FOR_V1_DRAFT` is recorded in the
+[draft pre-registration](phase3a-minimal-xg-preregistration.md). It narrows the
+family to one xG-for-only signal against a compatible goals-only reference.
+Its mathematical integration, feature aggregation, corpus, thresholds,
+resource budget, and accountable owner remain `UNSET — BLOCKING`. It is not
+frozen and is not authorized to run or score Evaluation V2.
 
 ## Decision and audit
 
