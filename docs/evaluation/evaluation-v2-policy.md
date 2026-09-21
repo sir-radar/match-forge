@@ -8,6 +8,37 @@
 
 **Decision statuses:** `PROMOTE_CANDIDATE`, `RETAIN_CHAMPION`, `REJECT`, `DEFER_INSUFFICIENT_DATA`, `TERMINAL_ROUTE_FAIL`. These are evidence dispositions, not production flags. A `PROMOTE_CANDIDATE` also requires separate operations and owner enablement.
 
+## Freeze state — 21 September 2026
+
+The repository has one independent Tier-A xG source qualified for coverage and
+feature-contract design: StatsBomb La Liga 2015/16. It does not yet have the
+required multi-season, multi-competition corpus or a frozen Phase 3A
+experiment. Evaluation V2 therefore remains a design draft.
+
+| Required item | State |
+| --- | --- |
+| Design/pre-registration authorization | `RECORDED` — `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1` |
+| Policy ID and hash | `UNSET — BLOCKING` |
+| Independent corpus and exclusion manifest | `UNSET — BLOCKING` |
+| Protected-target firewall ID and audit | `UNSET — BLOCKING` |
+| Knowledge-cutoff/mode and same-kickoff rules | `UNSET — BLOCKING` |
+| Minimum history, warm-up, and coverage requirements | `UNSET — BLOCKING` |
+| Competition-season groups and horizon eligibility | `UNSET — BLOCKING` |
+| Reference model IDs and reproduction evidence | `UNSET — BLOCKING` |
+| Candidate register | `DRAFT` — `PHASE3A_MINIMAL_XG_FOR_V1_DRAFT` |
+| Fit/tune/calibration/evaluation intervals | `UNSET — BLOCKING` |
+| Metrics, aggregation, and score-tail rules | `UNSET — BLOCKING` |
+| Segments and minimum reportable sample sizes | `UNSET — BLOCKING` |
+| Paired/bootstrap and multiplicity rules | `UNSET — BLOCKING` |
+| Practical margins and regression thresholds | `UNSET — BLOCKING` |
+| Failure/stopping rules | `UNSET — BLOCKING` |
+| Compute budget and accountable owner | `UNSET — BLOCKING` |
+| Authoritative-run owner decision | `NOT AUTHORIZED` |
+
+No policy or corpus hash may be assigned until every blocking input is fixed.
+No authoritative run may start until the frozen inputs receive their separate
+owner decision.
+
 ---
 
 ## 12. Evaluation V2

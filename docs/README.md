@@ -20,6 +20,7 @@
 - [Evaluation V2 freeze/metrics and authorization](evaluation/evaluation-v2-policy.md)
 - [Promotion gates](evaluation/promotion-gates.md)
 - [Research programme and model ladder](models/feature-research.md), [calibration](models/calibration-policy.md)
+- [Phase 3A minimal xG draft pre-registration](governance/phase3a-minimal-xg-preregistration.md)
 - [Portfolio dependency table](governance/feature-portfolio.md), [feasibility notes](governance/feasibility-matrix.md), [experiment ledger template](governance/experiment-register.md)
 - [Decision record template](governance/decision-record-template.md), [decision events directory](governance/decision-events/README.md), [minimal Rust authorization proposal](governance/simulation-authorization-proposal.md)
 
