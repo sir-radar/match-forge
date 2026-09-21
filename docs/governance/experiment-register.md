@@ -1,6 +1,6 @@
 # Registered experiment ledger — proposed control
 
-**A register entry is not an authorization, result, promotion or release.** The tracked owner decision grants narrow Phase 3A research permission, but the repository does not yet record an experiment ID or a complete frozen hypothesis and run contract for that work.
+**A register entry is not an authorization, result, promotion or release.** The tracked owner decision grants narrow Phase 3A research permission. The repository records a draft experiment ID, but not a complete frozen hypothesis or run contract for that work.
 
 ## Required per-experiment fields
 
