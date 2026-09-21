@@ -56,6 +56,10 @@ _QUALIFICATION_WARNINGS = (
     "SINGLE_COMPETITION_SEASON_INSUFFICIENT_FOR_EVALUATION_V2",
 )
 
+_LINEAGE_EVIDENCE_PATH = str(
+    Path("docs/evidence") / "statsbomb-laliga-diagnostic-dataset-requalification-2026-09-09.md"
+)
+
 
 class TierAXGQualificationError(RuntimeError):
     """The requested dataset cannot be qualified safely."""
@@ -155,7 +159,7 @@ def qualify(*, data_root: Path, manifest_path: Path) -> dict[str, Any]:
         },
         "lineage_prerequisite": {
             "basis": "retained external evidence; not re-queried by this coverage scan",
-            "evidence_path": "docs/evidence/statsbomb-laliga-diagnostic-dataset-requalification-2026-09-09.md",
+            "evidence_path": _LINEAGE_EVIDENCE_PATH,
             "source_snapshot_id": scope.source_snapshot_id,
         },
         "qualification": {

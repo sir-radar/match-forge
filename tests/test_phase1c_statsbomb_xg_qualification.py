@@ -73,11 +73,7 @@ def test_reports_invalid_provider_xg_as_failure(
 def test_rejects_protected_dataset_before_reading_manifest(tmp_path: Path) -> None:
     protected_id = "d62b97d6-f39b-5f14-9773-61f57f7b677b"
     manifest_path = (
-        tmp_path
-        / "manifests"
-        / "datasets"
-        / f"dataset={protected_id}"
-        / "dataset-manifest-v1.json"
+        tmp_path / "manifests" / "datasets" / f"dataset={protected_id}" / "dataset-manifest-v1.json"
     )
 
     with pytest.raises(
@@ -168,20 +164,14 @@ def _dataset(tmp_path: Path, *, xg_values: tuple[float, ...]) -> Path:
         "source_git_sha": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
     }
     manifest_path = (
-        tmp_path
-        / "manifests"
-        / "datasets"
-        / f"dataset={_DATASET_ID}"
-        / "dataset-manifest-v1.json"
+        tmp_path / "manifests" / "datasets" / f"dataset={_DATASET_ID}" / "dataset-manifest-v1.json"
     )
     manifest_path.parent.mkdir(parents=True)
     manifest_path.write_text(json.dumps(manifest))
     return manifest_path
 
 
-def _approve_test_manifest(
-    monkeypatch: pytest.MonkeyPatch, manifest_path: Path
-) -> None:
+def _approve_test_manifest(monkeypatch: pytest.MonkeyPatch, manifest_path: Path) -> None:
     manifest_sha = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     monkeypatch.setattr(
         qualifier,
