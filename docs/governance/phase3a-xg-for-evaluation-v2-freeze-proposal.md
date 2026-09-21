@@ -7,7 +7,8 @@ Proposal ID:                 PHASE3A_XG_FOR_EVALUATION_V2_FREEZE_PROPOSAL_V1
 Proposal status:             AWAITING_OWNER_DECISION
 Decision 1:                 APPROVED WITHOUT AMENDMENTS
 Decision 2:                 APPROVED WITHOUT AMENDMENTS
-Decisions 3-5:              AWAITING_OWNER_DECISION
+Decision 3:                 APPROVED WITHOUT AMENDMENTS
+Decisions 4-5:              AWAITING_OWNER_DECISION
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
@@ -221,6 +222,16 @@ Owner must approve:
 This decision alone cannot freeze the Evaluation V2 corpus.
 
 ## Decision 3 — acceptance thresholds
+
+```text
+Decision status: APPROVED WITHOUT AMENDMENTS
+Decision ID:     APPROVE_PHASE3A_EVALUATION_V2_ACCEPTANCE_THRESHOLDS_V1
+Recorded at:     2026-09-21T10:27:12Z
+```
+
+The repository owner approved this decision exactly as proposed. The approval
+freezes the pre-outcome acceptance policy but does not authorize implementation,
+Evaluation V2 execution, promotion, Rust work, or production changes.
 
 ### Proposed freeze
 
