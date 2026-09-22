@@ -200,9 +200,13 @@ blocked until the exact groups and hashes satisfy the rule above.
 
 The pinned StatsBomb catalog contains possible independent scopes, including
 Liga F 2023/24 (`182/281`), Frauen Bundesliga 2023/24 (`135/281`), and NWSL
-2023 (`49/107`). They are not proposed as frozen members. They require full
-qualification, product-scope review, and enough combined eligible targets.
-Prior Liga F evidence does not qualify that source for this route.
+2023 (`49/107`). These were acquisition candidates, not proposed frozen
+members. On 22 September 2026, the owner restricted this experiment's
+Evaluation V2 product scope to men's domestic leagues. All three named
+women's league candidates therefore fail product scope and are excluded
+without full data qualification. This does not change Decision 2's other
+eligibility rules or qualify any men's league. Prior Liga F evidence does not
+qualify that source for this route.
 
 ### Trade-offs
 
