@@ -16,7 +16,6 @@ coverage.xml
 htmlcov/
 target/
 dist/
-AGENTS.md
 PLAN.OLD.md
 
 .agents/

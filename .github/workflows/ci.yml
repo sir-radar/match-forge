@@ -14,7 +14,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Classify changes
+    runs-on: ubuntu-24.04
+    outputs:
+      code_changed: ${{ steps.classify.outputs.code_changed }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check diff and classify files
+        id: classify
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          code_changed=true
+          if git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git diff --check "$BASE_SHA" HEAD
+            git diff --name-only -z "$BASE_SHA" HEAD > "$RUNNER_TEMP/changed-files"
+            if [[ -s "$RUNNER_TEMP/changed-files" ]]; then
+              code_changed=false
+              while IFS= read -r -d '' path; do
+                case "$path" in
+                  *.md|*.mdx|*.rst) ;;
+                  *) code_changed=true; break ;;
+                esac
+              done < "$RUNNER_TEMP/changed-files"
+            fi
+          fi
+          printf 'code_changed=%s\n' "$code_changed" >> "$GITHUB_OUTPUT"
+
   check:
+    needs: changes
+    if: needs.changes.outputs.code_changed == 'true'
     name: Deterministic checks
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -57,9 +92,6 @@ jobs:
 
       - name: Run integration checks
         run: make integration
-
-      - name: Check diff whitespace
-        run: git diff --check
 
       - name: Tear down integration services
         if: ${{ always() }}
