@@ -8,7 +8,9 @@ Proposal status:             AWAITING_OWNER_DECISION
 Decision 1:                 APPROVED WITHOUT AMENDMENTS
 Decision 2:                 APPROVED WITHOUT AMENDMENTS
 Decision 3:                 APPROVED WITHOUT AMENDMENTS
-Decisions 4-5:              AWAITING_OWNER_DECISION
+Decision 4:                 APPROVED WITHOUT AMENDMENTS
+Decision 5:                 AWAITING_OWNER_DECISION
+Result taxonomy:            OWNER RECONCILIATION REQUIRED
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
@@ -314,6 +316,20 @@ Owner must approve all metric directions, numeric margins, bootstrap settings,
 segment rules, and result mapping before any authoritative target is opened.
 
 ## Decision 4 — experiment budget
+
+```text
+Decision status: APPROVED WITHOUT AMENDMENTS
+Decision ID:     APPROVE_PHASE3A_EVALUATION_V2_EXPERIMENT_BUDGET_V1
+Recorded at:     2026-09-22T02:44:54Z
+```
+
+The repository owner approved the budget and retry policy exactly as proposed.
+This does not authorize implementation or Evaluation V2 execution. Decision 4
+names `INCONCLUSIVE` on resource exhaustion, while approved Decision 3 lists
+only five result dispositions and limits `DEFER_INSUFFICIENT_DATA` to corpus or
+target shortage before outcomes are inspected. A separate owner decision must
+reconcile this conflict before the pre-registration can be frozen; neither
+approved decision has been silently amended.
 
 ### Proposed freeze
 

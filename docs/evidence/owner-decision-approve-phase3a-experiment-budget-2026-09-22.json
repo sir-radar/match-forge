@@ -1,0 +1,34 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_PHASE3A_EVALUATION_V2_EXPERIMENT_BUDGET_V1",
+  "recorded_at": "2026-09-22T02:44:54Z",
+  "title": "Approve Phase 3A experiment budget",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: freeze experiment budget",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "proposal_sha256": "0e622e17d3e5f1b5b242e22c6d093cb52983490ad8a3cfe17d8d69bc0914e80a",
+  "record_md": "docs/evidence/owner-decision-approve-phase3a-experiment-budget-2026-09-22.md",
+  "authorizes": [
+    "experiment search, resource, retry, and budget-exhaustion policy freeze only"
+  ],
+  "unresolved": [
+    "Decision 3 and Decision 4 result-taxonomy conflict: INCONCLUSIVE versus five approved result dispositions"
+  ],
+  "explicitly_not_authorized": [
+    "phase 3A implementation",
+    "authoritative Evaluation V2 target or outcome access",
+    "authoritative Evaluation V2 execution",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
