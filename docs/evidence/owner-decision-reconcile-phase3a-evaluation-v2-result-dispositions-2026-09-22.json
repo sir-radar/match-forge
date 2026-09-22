@@ -1,0 +1,42 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "RECONCILE_PHASE3A_EVALUATION_V2_RESULT_DISPOSITIONS_V1",
+  "recorded_at": "2026-09-22T03:15:50Z",
+  "title": "Reconcile Phase 3A Evaluation V2 result dispositions",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: reconcile result dispositions",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "proposal_sha256": "08b34a887d1851755fbcbfc343d426d7d487c0e1ab6287d4dd3ea023fcda0cc9",
+  "record_md": "docs/evidence/owner-decision-reconcile-phase3a-evaluation-v2-result-dispositions-2026-09-22.md",
+  "authorizes": [
+    "INCONCLUSIVE as a separate run status for resource exhaustion with no Decision 3 result disposition"
+  ],
+  "unresolved": [
+    "exact qualified Evaluation V2 corpus membership, IDs, manifests, and hashes",
+    "final pre-registration IDs, hashes, owner approval, and freeze",
+    "separate owner authorization for the authoritative Evaluation V2 run"
+  ],
+  "explicitly_not_authorized": [
+    "a sixth Decision 3 result disposition",
+    "promotion or retention from partial metrics",
+    "automatic additional compute, omitted checks, relaxed thresholds, or rerun",
+    "phase 3A implementation",
+    "protected Sprint 2 EPL target or outcome access",
+    "authoritative Evaluation V2 target or outcome access or execution",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "decision_3_result_dispositions_unchanged": true,
+    "decision_3_thresholds_unchanged": true,
+    "decision_4_retry_and_budget_rules_unchanged": true,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
