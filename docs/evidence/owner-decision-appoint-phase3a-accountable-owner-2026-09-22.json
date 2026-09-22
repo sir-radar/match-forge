@@ -1,0 +1,39 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPOINT_PHASE3A_EVALUATION_V2_ACCOUNTABLE_OWNER_V1",
+  "recorded_at": "2026-09-22T02:54:51Z",
+  "title": "Appoint Phase 3A and Evaluation V2 accountable owner",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: appoint accountable owner",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "proposal_sha256": "0f0ebde169fd31535adf967dc5b2f8c59f4a38630b4c327f0de354a81d767cfe",
+  "record_md": "docs/evidence/owner-decision-appoint-phase3a-accountable-owner-2026-09-22.md",
+  "authorizes": [
+    "repository owner under GitHub identity sir-radar as accountable research owner for Phase 3A and Evaluation V2 governance",
+    "delegation of execution operator only when recorded per run"
+  ],
+  "unresolved": [
+    "Decision 3 and Decision 4 result-taxonomy conflict: INCONCLUSIVE versus five approved result dispositions",
+    "exact Evaluation V2 corpus membership and independent source qualification",
+    "final pre-registration IDs, hashes, owner approval, and freeze",
+    "separate owner authorization for the authoritative Evaluation V2 run"
+  ],
+  "explicitly_not_authorized": [
+    "phase 3A implementation",
+    "protected Sprint 2 EPL target or outcome access",
+    "authoritative Evaluation V2 target or outcome access",
+    "authoritative Evaluation V2 execution",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}

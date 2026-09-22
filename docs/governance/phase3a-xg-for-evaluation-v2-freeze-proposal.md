@@ -4,23 +4,24 @@
 
 ```text
 Proposal ID:                 PHASE3A_XG_FOR_EVALUATION_V2_FREEZE_PROPOSAL_V1
-Proposal status:             AWAITING_OWNER_DECISION
+Proposal status:             FIVE DECISIONS APPROVED; FREEZE BLOCKED
 Decision 1:                 APPROVED WITHOUT AMENDMENTS
 Decision 2:                 APPROVED WITHOUT AMENDMENTS
 Decision 3:                 APPROVED WITHOUT AMENDMENTS
 Decision 4:                 APPROVED WITHOUT AMENDMENTS
-Decision 5:                 AWAITING_OWNER_DECISION
+Decision 5:                 APPROVED WITHOUT AMENDMENTS
 Result taxonomy:            OWNER RECONCILIATION REQUIRED
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
 ```
 
-This document proposes exact values for the five Issue 6 freeze decisions. It
-does not approve them. The repository owner must approve, reject, or amend each
-decision. After approval, the approved values must be copied into the Phase 3A
+This document records the five Issue 6 freeze decisions as approved by the
+repository owner. The approved values must be copied into the Phase 3A
 pre-registration, assigned final IDs and hashes, reviewed, and frozen before
-implementation tickets are released.
+implementation tickets are released. Result-taxonomy reconciliation and exact
+Evaluation V2 corpus membership remain open; neither is implied by approval of
+these five decisions.
 
 The proposal preserves the recorded 20 September 2026 authorization: one
 minimal xG-for-only hypothesis and Evaluation V2 design. It does not authorize
@@ -379,6 +380,16 @@ budget behavior.
 
 ## Decision 5 — accountable owner
 
+```text
+Decision status: APPROVED WITHOUT AMENDMENTS
+Decision ID:     APPOINT_PHASE3A_EVALUATION_V2_ACCOUNTABLE_OWNER_V1
+Recorded at:     2026-09-22T02:54:51Z
+```
+
+The repository owner explicitly accepted the research recommendation and
+Decision 5 without amendments. This appoints the accountable research owner;
+it is not the separate pre-registration freeze or Evaluation V2 run approval.
+
 ### Proposed freeze
 
 ```text
@@ -390,9 +401,9 @@ Result disposition:         accountable owner after evidence review
 Production authorization:   separate owner event; never implied
 ```
 
-The accountable owner must confirm the identity above or provide the exact
-human name and stable repository identity to record. An agent, model, CI job,
-or execution operator cannot fill this role or approve its own work.
+The approved accountable identity is the repository owner under GitHub identity
+`sir-radar`. An agent, model, CI job, or execution operator cannot fill this
+role or approve its own work.
 
 Required owner duties:
 
@@ -402,10 +413,11 @@ Required owner duties:
 - decide result disposition without threshold changes;
 - record any conflict, retry, exception, or stop decision.
 
-### Approval required
+### Approval recorded
 
-Owner must explicitly accept accountability and the recorded identity. Silence,
-merge, implementation activity, or prior research authorization is not approval.
+The owner explicitly accepted accountability and the recorded identity. Silence,
+merge, implementation activity, or prior research authorization would not have
+constituted this approval.
 
 ## Phase 1C `PASS_WITH_WARNINGS` disposition
 
