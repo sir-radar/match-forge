@@ -1,0 +1,40 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "RESTRICT_PHASE3A_EVALUATION_V2_TO_MENS_LEAGUES_V1",
+  "recorded_at": "2026-09-22T03:05:08Z",
+  "title": "Restrict Phase 3A Evaluation V2 product scope to men's leagues",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Qualify independent Evaluation V2 source candidates",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "proposal_sha256": "5e26a36f33890f295ad15fbb9dbd0c96f77425bb361fe7f4d4a1c1944b71b681",
+  "record_md": "docs/evidence/owner-decision-restrict-phase3a-evaluation-v2-to-mens-leagues-2026-09-22.md",
+  "authorizes": [
+    "consider men's domestic-league seasons only for independent Evaluation V2 source qualification under the frozen Decision 2 policy"
+  ],
+  "unresolved": [
+    "at least three qualified independent men's competition-season groups from at least two competitions and two seasons with at least 500 eligible scored targets",
+    "exact Evaluation V2 corpus membership, IDs, manifests, and hashes",
+    "Decision 3 and Decision 4 result-disposition conflict",
+    "final pre-registration approval and freeze",
+    "separate owner authorization for authoritative Evaluation V2 execution"
+  ],
+  "explicitly_not_authorized": [
+    "admitting Liga F 2023/24, Frauen Bundesliga 2023/24, or NWSL 2023 to this experiment",
+    "authoritative Evaluation V2 corpus membership or execution",
+    "protected Sprint 2 EPL target or outcome access",
+    "phase 3A implementation",
+    "rust implementation",
+    "candidate promotion",
+    "production changes"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "development_dataset_evaluation_v2_eligible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
