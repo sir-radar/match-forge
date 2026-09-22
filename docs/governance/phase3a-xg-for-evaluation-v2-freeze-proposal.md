@@ -10,7 +10,7 @@ Decision 2:                 APPROVED WITHOUT AMENDMENTS
 Decision 3:                 APPROVED WITHOUT AMENDMENTS
 Decision 4:                 APPROVED WITHOUT AMENDMENTS
 Decision 5:                 APPROVED WITHOUT AMENDMENTS
-Result taxonomy:            OWNER RECONCILIATION REQUIRED
+Result taxonomy:            RECONCILED; FIVE DISPOSITIONS UNCHANGED
 Phase 3A implementation:    NOT AUTHORIZED
 Evaluation V2 execution:    NOT AUTHORIZED
 Pre-registration frozen:    false
@@ -19,9 +19,9 @@ Pre-registration frozen:    false
 This document records the five Issue 6 freeze decisions as approved by the
 repository owner. The approved values must be copied into the Phase 3A
 pre-registration, assigned final IDs and hashes, reviewed, and frozen before
-implementation tickets are released. Result-taxonomy reconciliation and exact
-Evaluation V2 corpus membership remain open; neither is implied by approval of
-these five decisions.
+implementation tickets are released. Result dispositions have since been
+reconciled by a separate owner decision. Exact Evaluation V2 corpus membership
+remains open; it is not implied by approval of the five freeze decisions.
 
 The proposal preserves the recorded 20 September 2026 authorization: one
 minimal xG-for-only hypothesis and Evaluation V2 design. It does not authorize
@@ -331,10 +331,10 @@ Recorded at:     2026-09-22T02:44:54Z
 The repository owner approved the budget and retry policy exactly as proposed.
 This does not authorize implementation or Evaluation V2 execution. Decision 4
 names `INCONCLUSIVE` on resource exhaustion, while approved Decision 3 lists
-only five result dispositions and limits `DEFER_INSUFFICIENT_DATA` to corpus or
-target shortage before outcomes are inspected. A separate owner decision must
-reconcile this conflict before the pre-registration can be frozen; neither
-approved decision has been silently amended.
+five result dispositions and limits `DEFER_INSUFFICIENT_DATA` to corpus or
+target shortage before outcomes are inspected. The owner subsequently resolved
+this conflict as recorded below; neither approved decision was silently
+amended.
 
 ### Proposed freeze
 
@@ -366,8 +366,10 @@ was exposed, inputs and hashes are unchanged, and the accountable owner records
 the retry reason. It consumes the same one logical run. Any retry after metrics
 are exposed requires a new owner decision and a new experiment ID.
 
-Budget exhaustion returns `INCONCLUSIVE` or `DEFER_INSUFFICIENT_DATA`; it does
-not authorize fewer checks, extra compute, another model, or relaxed thresholds.
+Budget exhaustion records `INCONCLUSIVE` as a run status, with no Decision 3
+result disposition. `DEFER_INSUFFICIENT_DATA` applies only to corpus or target
+insufficiency found before outcomes are inspected. Neither condition authorizes
+fewer checks, extra compute, another model, or relaxed thresholds.
 
 ### Trade-offs
 
@@ -381,6 +383,32 @@ decision before the authoritative run, never after inspecting results.
 
 Owner must approve each search and resource limit, retry rule, and fail-closed
 budget behavior.
+
+## Result-disposition reconciliation — Decisions 3 and 4
+
+```text
+Decision status: APPROVED
+Decision ID:     RECONCILE_PHASE3A_EVALUATION_V2_RESULT_DISPOSITIONS_V1
+Recorded at:     2026-09-22T03:15:50Z
+```
+
+The owner explicitly chose `INCONCLUSIVE` as a **run status**, not a sixth
+Decision 3 result disposition. If an authorized run exhausts its frozen
+resource budget before completing every required check, record the exhaustion
+reason, consumed resources, available integrity evidence, and outcome/metric
+exposure state. Assign no Decision 3 disposition and never use partial metrics
+to claim promotion or retention. A known integrity failure still requires
+`TERMINAL_ROUTE_FAIL`; exhaustion cannot conceal it. Corpus or target shortage
+identified before outcome access still uses `DEFER_INSUFFICIENT_DATA`, never
+`INCONCLUSIVE` merely because the shortage would take more compute to fix.
+
+Decision 4's exact technical retry conditions and cumulative budget remain
+unchanged. A retry after metrics are exposed requires a new owner decision and
+experiment ID. No new compute, omitted check, relaxed threshold, candidate,
+or rerun is implied. Decision 3's five dispositions, metric thresholds,
+bootstrap settings, and integrity rules remain unchanged. This reconciliation
+does not freeze the complete pre-registration or authorize implementation or
+Evaluation V2.
 
 ## Decision 5 — accountable owner
 
@@ -463,12 +491,17 @@ qualification. These findings do not grant a blanket warning waiver.
 
 ## Required approval sequence
 
-1. Owner approves, rejects, or amends Decisions 1–5 individually.
-2. If approved, create final policy, feature, corpus-rule, budget, and owner IDs.
-3. Update the Phase 3A pre-registration with approved values; review and hash it.
-4. Freeze the pre-registration by explicit owner event.
-5. Release implementation and non-authoritative verification tickets.
-6. Qualify the independent Evaluation V2 corpus and freeze exact IDs/hashes.
-7. Request a separate owner decision to execute Evaluation V2.
+1. Decisions 1–5 and the separate result-disposition reconciliation are
+   approved. The owner also restricted Evaluation V2 product scope to men's
+   leagues.
+2. Qualify independent men's source groups under Decision 2; freeze exact
+   Evaluation V2 corpus IDs, manifests, and hashes by separate owner decision.
+3. Copy all approved values into the Phase 3A pre-registration, assign final
+   IDs and hashes, and obtain explicit owner approval and freeze.
+4. Release implementation and non-authoritative verification tickets only
+   after their freeze dependencies pass.
+5. Request a separate owner decision to execute Evaluation V2 only after the
+   frozen corpus, implementation, and verification gates pass.
 
-Current stop point is step 1. No later step is authorized.
+Current stop point is step 2. No implementation or authoritative run is
+authorized.

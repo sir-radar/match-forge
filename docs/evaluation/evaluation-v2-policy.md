@@ -8,6 +8,13 @@
 
 **Decision statuses:** `PROMOTE_CANDIDATE`, `RETAIN_CHAMPION`, `REJECT`, `DEFER_INSUFFICIENT_DATA`, `TERMINAL_ROUTE_FAIL`. These are evidence dispositions, not production flags. A `PROMOTE_CANDIDATE` also requires separate operations and owner enablement.
 
+For `PHASE3A_MINIMAL_XG_FOR_V1`, owner decision
+`RECONCILE_PHASE3A_EVALUATION_V2_RESULT_DISPOSITIONS_V1` keeps these five
+dispositions unchanged. `INCONCLUSIVE` is a separate run status for resource
+exhaustion with no result disposition or passing claim. Known integrity
+failures still require `TERMINAL_ROUTE_FAIL`; pre-outcome corpus or target
+shortage remains `DEFER_INSUFFICIENT_DATA`. This does not authorize a run.
+
 ## Freeze state — 21 September 2026
 
 The repository has one independent Tier-A xG source qualified for coverage and
