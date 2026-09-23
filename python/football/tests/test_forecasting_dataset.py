@@ -163,6 +163,25 @@ def test_provider_selects_the_exact_spain_claim_version_and_timezone() -> None:
     )
 
 
+def test_provider_selects_the_exact_italy_claim_version_and_timezone() -> None:
+    connection = _Connection(
+        [
+            _Cursor(one=("published",)),
+            _policy_cursor(country_name="Italy"),
+            _Cursor(many=[]),
+        ]
+    )
+    provider = PointInTimeMatchDatasetProvider(cast(Connection[Any], connection))
+
+    with pytest.raises(ForecastingDatasetError, match="no forecast targets"):
+        provider.forecast_batch(_scope(), COMPETITION, SEASON)
+
+    assert connection.used[2].parameters[:2] == (
+        "statsbomb-italy-local-kickoff-v1",
+        "Europe/Rome",
+    )
+
+
 @pytest.mark.parametrize(
     "facts",
     (

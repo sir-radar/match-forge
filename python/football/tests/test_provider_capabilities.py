@@ -27,9 +27,15 @@ def test_statsbomb_declares_versioned_capability_contract_without_credentials() 
     assert {(scope.competition_id, scope.season_id) for scope in capability.supported_scopes} == {
         ("2", "27"),
         ("11", "27"),
+        ("12", "27"),
         ("182", "281"),
         ("43", "106"),
     }
+    assert next(
+        scope
+        for scope in capability.supported_scopes
+        if (scope.competition_id, scope.season_id) == ("12", "27")
+    ).resources == ("fixtures_results", "lineups", "events")
 
 
 def test_capability_registry_is_deterministic_and_filters_enabled_providers() -> None:

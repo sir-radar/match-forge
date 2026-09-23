@@ -15,10 +15,12 @@ StatsBomb Open Data supplies `match_date` and timezone-naive `kick_off` for the 
 
 Nonexistent and ambiguous daylight-saving local times fail closed. Another country, international
 competition, timezone, or timezone-data version requires a separately reviewed claim rule. The
-approved rules are `statsbomb-england-local-kickoff-v1` for the Sprint 2 EPL corpus and
-`statsbomb-spain-local-kickoff-v1` for the diagnostic La Liga 2015/16 corpus. The latter accepts
-only domestic Spain competition facts and uses `Europe/Madrid` with the same pinned `tzdata 2026.3`
-runtime and recorded TZif checksum.
+approved rules are `statsbomb-england-local-kickoff-v1` for the Sprint 2 EPL corpus,
+`statsbomb-spain-local-kickoff-v1` for the diagnostic La Liga 2015/16 corpus, and
+`statsbomb-italy-local-kickoff-v1` for isolated Serie A 2015/16 research qualification.
+The Spain and Italy rules require domestic country facts and use `Europe/Madrid` and
+`Europe/Rome`, respectively, with the same pinned `tzdata 2026.3` runtime and recorded
+TZif checksum. The Italy authorization does not admit a corpus or authorize Evaluation V2.
 
 ## Lineage and reproducibility
 
@@ -67,5 +69,6 @@ For point-in-time selection, the provider resolves the domestic country from the
 dataset/source pair's lifecycle-bound competition fact at the requested knowledge cutoff. It then
 requires exactly one approved policy and binds both its claim version and timezone in every
 kickoff lookup. England resolves to `statsbomb-england-local-kickoff-v1` / `Europe/London`; Spain
-resolves to `statsbomb-spain-local-kickoff-v1` / `Europe/Madrid`. Unknown, international, or
+resolves to `statsbomb-spain-local-kickoff-v1` / `Europe/Madrid`; Italy resolves to
+`statsbomb-italy-local-kickoff-v1` / `Europe/Rome`. Unknown, international, or
 ambiguous scope facts fail closed; the provider never falls back to the England policy.

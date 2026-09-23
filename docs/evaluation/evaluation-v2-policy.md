@@ -15,18 +15,24 @@ exhaustion with no result disposition or passing claim. Known integrity
 failures still require `TERMINAL_ROUTE_FAIL`; pre-outcome corpus or target
 shortage remains `DEFER_INSUFFICIENT_DATA`. This does not authorize a run.
 
-## Freeze state — 21 September 2026
+## Freeze state — updated 23 September 2026
 
-The repository has one independent Tier-A xG source qualified for coverage and
-feature-contract design: StatsBomb La Liga 2015/16. It does not yet have the
-required multi-season, multi-competition corpus or a frozen Phase 3A
-experiment. Evaluation V2 therefore remains a design draft.
+The repository has one qualified independent men's source group: StatsBomb
+Serie A 2015/16, with 280 eligible targets. It still needs two independent
+men's groups, another competition and season, and at least 220 eligible
+targets. StatsBomb La Liga 2015/16 remains the development source and is
+excluded from evaluation. PitchAPI is technically complete for the audited
+Bundesliga 2023/24 and Ligue 1 2022/23 live snapshots, but is not qualified:
+provider/model version, immutable retention, correction/revision lineage,
+stable provider identity, historical point-in-time evidence, exact target
+plans and firewall hashes remain blocking. Evaluation V2 therefore remains
+blocked and the pre-registration cannot be frozen.
 
 | Required item | State |
 | --- | --- |
 | Design/pre-registration authorization | `RECORDED` — `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1` |
 | Policy ID and hash | `UNSET — BLOCKING` |
-| Independent corpus and exclusion manifest | `UNSET — BLOCKING` |
+| Independent corpus and exclusion manifest | `UNSET — BLOCKING` — one of three groups qualified; 280 of at least 500 eligible targets evidenced |
 | Protected-target firewall ID and audit | `UNSET — BLOCKING` |
 | Knowledge-cutoff/mode and same-kickoff rules | `UNSET — BLOCKING` |
 | Minimum history, warm-up, and coverage requirements | `UNSET — BLOCKING` |

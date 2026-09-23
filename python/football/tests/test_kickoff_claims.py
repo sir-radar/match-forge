@@ -6,6 +6,7 @@ import pytest
 from football.forecasting.kickoff import (
     KickoffClaimError,
     Sprint2KickoffClaimPublisher,
+    approved_domestic_kickoff_policy,
     resolve_local_kickoff,
 )
 
@@ -22,6 +23,29 @@ def test_resolves_madrid_local_kickoff_with_pinned_summer_rules() -> None:
     kickoff = resolve_local_kickoff(date(2015, 8, 21), time(20, 30), timezone_name="Europe/Madrid")
 
     assert kickoff == datetime(2015, 8, 21, 18, 30, tzinfo=UTC)
+
+
+def test_italy_policy_resolves_rome_summer_and_winter_kickoffs() -> None:
+    policy = approved_domestic_kickoff_policy("Italy")
+
+    assert policy.claim_version == "statsbomb-italy-local-kickoff-v1"
+    assert policy.timezone_name == "Europe/Rome"
+    assert resolve_local_kickoff(date(2015, 8, 22), time(18, 0), timezone_name="Europe/Rome") == (
+        datetime(2015, 8, 22, 16, 0, tzinfo=UTC)
+    )
+    assert resolve_local_kickoff(date(2016, 1, 10), time(15, 0), timezone_name="Europe/Rome") == (
+        datetime(2016, 1, 10, 14, 0, tzinfo=UTC)
+    )
+
+
+def test_italy_policy_rejects_mismatched_timezone() -> None:
+    with pytest.raises(KickoffClaimError, match="not approved"):
+        Sprint2KickoffClaimPublisher(
+            None,  # type: ignore[arg-type]
+            claim_version="statsbomb-italy-local-kickoff-v1",
+            country_name="Italy",
+            timezone_name="Europe/London",
+        )
 
 
 def test_rejects_an_unapproved_kickoff_policy() -> None:

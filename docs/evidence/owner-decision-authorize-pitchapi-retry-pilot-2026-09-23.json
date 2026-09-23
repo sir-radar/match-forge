@@ -1,0 +1,25 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "AUTHORIZE_PITCHAPI_RETRY_PILOT_AFTER_TRANSPORT_STOP_V1",
+  "recorded_at": "2026-09-23T13:31:22Z",
+  "status": "APPROVED",
+  "scope": {
+    "absolute_remaining_attempt_ceiling": 700,
+    "base_paths_unresolved": 688,
+    "effective_retry_capacity": 12,
+    "pilot_base_paths": 22,
+    "pilot_local_attempt_ceiling": 34,
+    "reset_first_manifest_path_attempt_counter_once": true,
+    "stop_before_complete_audit": true
+  },
+  "restrictions": {
+    "corpus_admission_authorized": false,
+    "evaluation_v2_authorized": false,
+    "frozen_decision_changes_authorized": false,
+    "ingestion_authorized": false,
+    "model_implementation_authorized": false,
+    "persistent_raw_retention_authorized": false,
+    "provider_activation_authorized": false,
+    "rust_requirement_changed": false
+  }
+}

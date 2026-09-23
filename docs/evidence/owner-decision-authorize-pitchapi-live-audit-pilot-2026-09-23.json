@@ -1,0 +1,50 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_PITCHAPI_LIVE_AUDIT_PILOT_FIRST_V1",
+  "recorded_at": "2026-09-23T13:16:51Z",
+  "title": "Authorize controlled PitchAPI live-audit pilot before full audit",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: authorize the exact PitchAPI request budget",
+  "record_md": "docs/evidence/owner-decision-authorize-pitchapi-live-audit-pilot-2026-09-23.md",
+  "total_audit_attempt_ceiling": 702,
+  "base_requests": 688,
+  "retry_reserve": 14,
+  "pilot": {
+    "manifest_requests": 2,
+    "bundesliga_shot_requests": 10,
+    "ligue1_shot_requests": 10,
+    "base_attempts": 22,
+    "attempt_ceiling": 36,
+    "owner_review_required_before_full_audit": true
+  },
+  "runtime": {
+    "concurrency": 1,
+    "requests_per_second": 1,
+    "timeout_seconds": 30,
+    "max_attempts_per_path": 2,
+    "second_429_stops": true,
+    "wall_clock_minutes": 45
+  },
+  "data_handling": {
+    "raw_response_retention": false,
+    "sanitized_aggregate_reports_only": true
+  },
+  "explicitly_not_authorized": [
+    "full audit before pilot owner review",
+    "ingestion or provider activation",
+    "persistent raw retention",
+    "corpus admission",
+    "frozen decision changes",
+    "model implementation",
+    "Evaluation V2 execution"
+  ],
+  "preserves": {
+    "existing_decisions_and_evidence": true,
+    "protected_data_restrictions": true,
+    "published_forecasts_immutable": true,
+    "existing_baselines_available": true,
+    "mandatory_rust_simulation": true
+  }
+}

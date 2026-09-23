@@ -1,0 +1,26 @@
+{
+  "contract": "PitchApiLiveAuditPilotStopV1",
+  "rate_control": {
+    "concurrency": 1,
+    "minimum_start_interval_seconds": 5.027,
+    "rate_limit_responses": 0,
+    "target_requests_per_second": 1,
+    "timeout_seconds": 30,
+    "wall_clock_ceiling_minutes": 45
+  },
+  "request_budget": {
+    "attempts_used": 2,
+    "pilot_attempt_ceiling": 36,
+    "pilot_base_attempts": 22,
+    "remaining_retry_reserve": 13,
+    "remaining_total_attempts": 700,
+    "retries_used": 1,
+    "total_audit_attempt_ceiling": 702
+  },
+  "restrictions": {
+    "full_audit_authorized_after_pilot": false,
+    "raw_responses_retained": false
+  },
+  "status": "STOPPED",
+  "stop_code": "TRANSPORT_FAILURE"
+}

@@ -22,8 +22,11 @@ update semantics, cursor/webhook support, rate limits, credential references, an
 The registry stores only non-secret credential references; API keys and tokens never belong in the
 capability declaration.
 
-The current StatsBomb Open Data adapter declares the accepted World Cup 2022, Premier League
-2015/16, La Liga 2015/16, and Liga F 2023/24 scopes. Its commit-pinned snapshot contract is enabled
+The current StatsBomb Open Data adapter declares World Cup 2022, Premier League
+2015/16, La Liga 2015/16, Liga F 2023/24, and Serie A 2015/16 scopes. Serie A
+`12/27` is authorized only for research qualification of pinned fixtures,
+events, and lineups; its declaration does not admit it to Evaluation V2 or
+authorize model implementation. Its commit-pinned snapshot contract is enabled
 for research use without a credential reference. This registry describes capability, not global
 source authority; later reconciliation policy remains responsible for field-level source selection.
 
@@ -31,6 +34,43 @@ Provider roles use the versioned `tier_a` (event intelligence), `tier_b`
 (match/statistical enrichment), and `tier_c` (market benchmark) vocabulary. A
 provider may declare more than one role; roles describe supplied capability, not
 trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
+
+### Research and Evaluation V2 are separate qualification levels
+
+Ordinary private research may use a provider only where published terms and
+the current account entitlement explicitly permit the intended access and use.
+Public accessibility is not permission. If automation, retention, attribution,
+or another needed activity is unclear, exclude that activity rather than infer
+authority. Additional live API calls require a documented request budget and
+explicit owner approval.
+
+Research contract fixtures and sanitized, bounded technical checks do not
+qualify a provider for Evaluation V2. Evaluation qualification additionally
+requires complete frozen coverage, exact source and xG-series identity,
+permitted immutable retention, correction/revision lineage, stable traceable
+identifiers, source hashes, and every applicable corpus and firewall rule.
+Experimental outputs must be labelled `EXPERIMENTAL_ONLY` and cannot be used as
+Evaluation V2, promotion, or production evidence.
+
+`validate_pitchapi_audit` is the offline PitchAPI qualification boundary. It
+accepts externally supplied fixture manifests, match-scoped shot responses, a
+sanitized request log, a predeclared request budget, and explicit qualification
+evidence. It performs no network or persistence operation. It separately emits
+technical and Evaluation V2 dispositions, treats missing shot resources as
+missing rather than zero, accepts only explicit regulation periods, identifies
+penalties only by provider situation, rejects non-finite/out-of-range xG and
+mixed xG-series claims, and never includes raw payload values in its report.
+
+The owner-authorized full-season audit completed for Bundesliga 2023/24 and
+Ligue 1 2022/23: 686/686 match-shot resources, 17,873 finite in-range shots and
+244 explicit penalties, with no observed missing, malformed, duplicate,
+period, situation, xG or team-membership error. This establishes current
+technical completeness for those two audited snapshots only. It does not
+authorize raw retention or ingestion and does not establish the upstream xG
+supplier/model/version, cross-season series identity, correction and revision
+history, provider-ID stability through rebuilds, or historical point-in-time
+availability. PitchAPI therefore remains research-only and is not an
+Evaluation V2 provider. See the [readiness assessment](evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
 
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
 API (`/v1/`). It is not enabled until credentials, account timezone/language,

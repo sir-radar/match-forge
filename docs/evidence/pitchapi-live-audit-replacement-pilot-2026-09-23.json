@@ -1,0 +1,126 @@
+{
+  "contract": "PitchApiLiveAuditPilotReportV1",
+  "manifests": {
+    "bundesliga": {
+      "manifest_identity_sha256": "6e528b44917ec41c2d2565fb2d9ccb879a40ae1c7ed456c6a29c213f213241a1",
+      "observed_matches": 306,
+      "selected_matches": 10,
+      "selection_sha256": "e5b54af79f531df4222e69fd0d47d0354e008580cf457b0f0e03245fda21aef1"
+    },
+    "ligue1": {
+      "manifest_identity_sha256": "6d9d73c27a5cdc7947b255608ebdd8e9d1657df27d8cf86bb595322c78caa3f2",
+      "observed_matches": 380,
+      "selected_matches": 10,
+      "selection_sha256": "18f7f76b6f3d7f92b2645bc70d5191160b21e4865b9296ecedf8f2348994e48b"
+    }
+  },
+  "rate_control": {
+    "concurrency": 1,
+    "minimum_start_interval_seconds": 1.0,
+    "rate_limit_responses": 0,
+    "target_requests_per_second": 1,
+    "timeout_seconds": 30,
+    "wall_clock_ceiling_minutes": 45
+  },
+  "request_budget": {
+    "absolute_remaining_ceiling_before_run": 700,
+    "attempts_used_this_run": 22,
+    "cumulative_attempts_used": 24,
+    "original_audit_attempt_ceiling": 702,
+    "pilot_attempt_ceiling": 34,
+    "pilot_base_attempts": 22,
+    "prior_attempts_used": 2,
+    "remaining_retry_reserve": 12,
+    "remaining_total_attempts": 678,
+    "retries_used": 0
+  },
+  "restrictions": {
+    "evaluation_v2_authorized": false,
+    "full_audit_authorized_after_pilot": false,
+    "ingestion_authorized": false,
+    "mandatory_rust_requirement_changed": false,
+    "model_implementation_authorized": false,
+    "raw_responses_retained": false
+  },
+  "selection_rule": "earliest_kickoff_then_match_id_v1",
+  "status": "COMPLETED",
+  "validation": {
+    "contract": "PitchApiSyntheticValidationReportV1",
+    "cross_season_xg_series_status": "UNPROVED",
+    "evaluation_v2_status": "FAIL",
+    "findings": [
+      {
+        "code": "EVALUATION_PERMISSION_OR_LINEAGE_UNPROVED",
+        "domain": "evaluation_v2",
+        "scope": "audit",
+        "severity": "ERROR"
+      },
+      {
+        "code": "CROSS_SEASON_XG_SERIES_UNPROVED",
+        "domain": "technical",
+        "scope": "audit",
+        "severity": "WARNING"
+      }
+    ],
+    "metadata": {
+      "acquisition_ended_at": "2026-09-23T13:38:06.949383+00:00",
+      "acquisition_started_at": "2026-09-23T13:37:44.156382+00:00",
+      "code_git_sha": "b0e45c6b7e260724a1b3e00257c6da7cfc1ed78e",
+      "credential_reference": "env:PITCH_API_TOKEN",
+      "dependency_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e",
+      "endpoint_version": "v1",
+      "provider_version_observed": false
+    },
+    "request_ceiling": 34,
+    "request_count": 22,
+    "retry_reserve": 12,
+    "seasons": [
+      {
+        "duplicate_shot_ids": 0,
+        "empty_shot_resources": 0,
+        "expected_matches": 10,
+        "invalid_xg": 0,
+        "malformed_shot_resources": 0,
+        "missing_fields": 0,
+        "missing_shot_resources": 0,
+        "observed_matches": 10,
+        "penalties": 4,
+        "regulation_shots": 277,
+        "request_failures": 0,
+        "scope_key": "bundesliga",
+        "shots": 277,
+        "successful_shot_resources": 10,
+        "unknown_periods": 0,
+        "unknown_situations": 0
+      },
+      {
+        "duplicate_shot_ids": 0,
+        "empty_shot_resources": 0,
+        "expected_matches": 10,
+        "invalid_xg": 0,
+        "malformed_shot_resources": 0,
+        "missing_fields": 0,
+        "missing_shot_resources": 0,
+        "observed_matches": 10,
+        "penalties": 5,
+        "regulation_shots": 270,
+        "request_failures": 0,
+        "scope_key": "ligue1",
+        "shots": 270,
+        "successful_shot_resources": 10,
+        "unknown_periods": 0,
+        "unknown_situations": 0
+      }
+    ],
+    "stopped": false,
+    "technical_status": "PARTIAL",
+    "totals": {
+      "empty_shot_resources": 0,
+      "invalid_xg": 0,
+      "matches": 20,
+      "penalties": 9,
+      "regulation_shots": 547,
+      "shots": 547
+    }
+  }
+}
