@@ -1,6 +1,6 @@
 # MatchForge implementation plan
 
-> Revision: 21 September 2026 — repository reconciliation of the Astra documentation proposal.
+> Revision: 22 September 2026 — added proposed prediction-improvement research candidates to the 21 September repository reconciliation.
 > Status: **TRACKED PROPOSED ROADMAP**. This plan records sequencing and constraints. It does not authorize application code, change a frozen result, or create an owner decision.
 > Authority order: checked-in repository evidence and immutable evaluation records → approved owner decision events → versioned approved contracts → this proposed plan → research proposals. Where they conflict, stop and reconcile rather than overwriting evidence.
 
@@ -83,6 +83,40 @@ the roadmap and engineering documentation.
 Maintain simple goals-only/dynamic attack-defence references. Test one independently authorized challenger family at a time: minimal Phase 3A xG first (scope already recorded); subsequently, only under new permissions, xG/xGA and opponent/game-state adjustments, travel/rest, dynamic strength, residual H2H/matchups, lineups/squad context, goalkeeper post-shot, pre-shot threat, horizons/revisions and ensembles. Derby and diagnostic tag validity are separate descriptive-only workstreams. H2H counterfactuals and complex simulation scenarios require their own gates. No candidate is automatically promoted for complexity or a favourable single slice.
 
 Authoritative Evaluation V2 needs a **new, separately approved** frozen policy, independent corpus/target firewall, source and cutoff semantics, same-kickoff grouping, chronological folds, calibrator windows, primary proper scores, reliability metrics, segments, paired uncertainty, practical threshold, stopping rule and compute budget. Do not fill unset values with defaults. The 280 frozen targets are excluded. See [research portfolio](docs/governance/feature-portfolio.md), [feature research](docs/models/feature-research.md), [Evaluation V2](docs/evaluation/evaluation-v2-policy.md), [calibration](docs/models/calibration-policy.md), [experiment register](docs/governance/experiment-register.md) and [promotion gates](docs/evaluation/promotion-gates.md).
+
+### Prediction-improvement candidates
+
+This inventory makes existing research directions and further proposals visible in one place. It does **not** authorize implementation, data access, evaluation, promotion or production use. The priority order below is a proposal, not a frozen experiment order. Beyond the existing narrow xG research permission, each candidate needs qualified point-in-time data, a bounded pre-registered comparison against the same simple reference, chronological out-of-sample evidence, calibration and segment checks, and a separate owner decision. Do not combine untested candidates or reuse the frozen Sprint 2 targets.
+
+**Already in the research portfolio or supporting specifications:**
+
+1. Broaden qualified Tier-A data to multiple seasons and competitions before claiming generalizable xG gains; retain source lineage, publication times and missingness.
+2. Test the already authorized **single minimal prior-only xG-for** hypothesis first, within its exact approved scope. Its remaining blocking fields must be resolved before implementation or fitting.
+3. Under new scope approval, compare xG-for with xG-for plus xGA and opponent-adjusted xG/xGA; keep shot volume, chance quality and game-state adjustments as separately tested additions.
+4. Test game-state-adjusted xG/xGA using prior matches' score state, red cards and reliable 11v11 intervals; no target-match events may enter a pre-match forecast.
+5. Test dynamic attack/defence or state-space strength against the existing time-decayed goals-only reference.
+6. Test objective rest, congestion, travel and manager-transition inputs with coverage and missingness reported.
+7. Test predicted/confirmed lineups, player strength and squad turnover as distinct, point-in-time candidates; preserve uncertainty in unconfirmed lineups.
+8. Test shrunk goalkeeper post-shot performance only where xGOT, keeper identity and historical coverage qualify.
+9. Test pre-shot territory and possession progression—such as box entries, deep completions and field tilt—against the xG/xGA reference.
+10. Test ensembles only after constituent models show independent out-of-sample value; fit weights on a separate prior calibration window.
+11. Evaluate forecast horizons, information-driven revisions and horizon-specific calibration without overwriting earlier forecasts.
+12. Test residualized, decayed and shrunk H2H from prior out-of-sample forecasts; raw H2H is not a production shortcut.
+
+**Additional proposals requiring their own decisions:**
+
+1. General hierarchical partial pooling across teams, competitions and seasons, including promoted teams and sparse early-season histories. Compare with existing team/competition priors; quantify whether borrowing strength helps rather than assuming it does.
+2. Carry uncertainty in estimated attack, defence, xG and lineup inputs into the joint score distribution. Compare held-out calibration, proper scores and interval coverage with point-estimate forecasts.
+3. Calibrate the **whole score distribution** or its generating parameters, not independently adjusted 1X2 and binary outputs. Derive all markets from the final coherent distribution and test both calibration and sharpness.
+4. Qualify provider-specific xG semantics and, only if cross-provider training is needed, test a versioned harmonization with mapping uncertainty. Never merge raw xG values merely because providers use the same label.
+5. Record timestamped bookmaker consensus as an **external benchmark** for evaluation and missing-information diagnostics only. Raw odds remain excluded from baseline model features; predictive use would require a separate policy and owner decision.
+6. Test competition-format context separately for league, knockout and two-leg fixtures, including aggregate-score state where known before kickoff. Define 90-minute, extra-time and shootout targets separately; do not mix their outcomes.
+7. Test competition- and time-varying home advantage using qualified neutral venue, attendance, behind-closed-doors, shared-stadium, surface or altitude history. Derby and rivalry tags remain display-only.
+8. Test governed structural-break handling for manager, squad, tactical, promotion or relegation changes against fixed time decay; estimate change signals only from information available at the forecast cutoff.
+9. If score-distribution diagnostics justify it, register one alternative dependence-aware score model, such as bivariate Poisson, against Dixon–Coles/NB2. This must not reopen the terminal failed shared-match-pace route under another name.
+10. Run prospective shadow scoring and drift monitoring on untouched future forecasts. Drift triggers review and a newly authorized retraining or recalibration decision, never automatic promotion or live probability edits.
+
+Suggested dependency order: independent qualified corpus and Evaluation V2 freeze → minimal xG-for → separately authorized hierarchical/dynamic strength and xGA/opponent adjustments → coherent full-score calibration and parameter uncertainty → qualified lineup/player context → ensemble. The other candidates enter only through their own evidence-backed proposals. Rust sampling and display tags may validate or explain a forecast but do not improve its underlying predictive probabilities by themselves.
 
 ## 7. Mandatory Rust policy (conditional on authorization and acceptance)
 
