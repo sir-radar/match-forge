@@ -33,6 +33,7 @@ class StatsBombOpenDataAdapter:
         supported_scopes=(
             ProviderScopeV1("2", "27", ("fixtures_results", "lineups", "events")),
             ProviderScopeV1("11", "27", ("fixtures_results", "lineups", "events")),
+            ProviderScopeV1("12", "27", ("fixtures_results", "lineups", "events")),
             ProviderScopeV1("182", "281", ("fixtures_results", "lineups", "events")),
             ProviderScopeV1("43", "106", ("fixtures_results", "lineups", "events", "360")),
         ),

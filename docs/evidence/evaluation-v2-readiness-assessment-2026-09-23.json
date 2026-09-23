@@ -1,0 +1,66 @@
+{
+  "contract": "EvaluationV2ReadinessAssessmentV1",
+  "evaluated_at": "2026-09-23T14:20:25Z",
+  "evaluation_v2_status": "BLOCKED",
+  "owner_decision_preparation": {
+    "recommendation": "DO_NOT_QUALIFY_PITCHAPI",
+    "ticket": "Owner decision: approve qualified Evaluation V2 provider scopes"
+  },
+  "pitchapi": {
+    "candidate_scopes": [
+      "Bundesliga 2023/24",
+      "Ligue 1 2022/23"
+    ],
+    "recommended_status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+    "technical_evidence_ref": "docs/evidence/pitchapi-full-season-audit-2026-09-23.json",
+    "technical_totals": {
+      "attempts_consumed": 692,
+      "attempts_remaining_unavailable": 10,
+      "matches": 686,
+      "penalties": 244,
+      "shots": 17873
+    }
+  },
+  "requirements": [
+    {"id": "season_manifests", "category": "SATISFIED", "status": "SATISFIED_TECHNICALLY"},
+    {"id": "shot_resources", "category": "SATISFIED", "status": "SATISFIED_TECHNICALLY"},
+    {"id": "shot_xg_validity", "category": "SATISFIED", "status": "SATISFIED_TECHNICALLY"},
+    {"id": "penalty_and_period_fields", "category": "SATISFIED", "status": "SATISFIED_TECHNICALLY"},
+    {"id": "snapshot_identifier_consistency", "category": "SATISFIED", "status": "SATISFIED_TECHNICALLY"},
+    {"id": "current_field_meaning", "category": "EXISTING_EVIDENCE", "status": "DOCUMENTED"},
+    {"id": "upstream_xg_model", "category": "UNAVAILABLE_PROVIDER_INFORMATION", "status": "UNKNOWN_BLOCKING"},
+    {"id": "cross_season_model_version", "category": "UNAVAILABLE_PROVIDER_INFORMATION", "status": "UNKNOWN_BLOCKING"},
+    {"id": "correction_revision_history", "category": "UNAVAILABLE_PROVIDER_INFORMATION", "status": "UNKNOWN_BLOCKING"},
+    {"id": "provider_identifier_stability", "category": "EXISTING_EVIDENCE", "status": "FAIL_BLOCKING"},
+    {"id": "retention_and_research_terms", "category": "UNAVAILABLE_PROVIDER_INFORMATION", "status": "UNKNOWN_BLOCKING"},
+    {"id": "historical_point_in_time_availability", "category": "CANNOT_ESTABLISH_RETROSPECTIVELY", "status": "UNPROVABLE_FROM_CURRENT_API_BLOCKING"},
+    {"id": "matchforge_reproducibility_controls", "category": "INTERNAL_IMPLEMENTATION", "status": "IMPLEMENTED_NOT_APPLIED"},
+    {"id": "eligible_targets_and_firewall", "category": "REQUIRES_IMPLEMENTATION_AFTER_SOURCE_APPROVAL", "status": "NOT_RUN_BLOCKING"}
+  ],
+  "verification": {
+    "focused_tests_passed": 60,
+    "go_tests": "PASS",
+    "package_build": "PASS",
+    "project_status_validation": "PASS",
+    "python_tests_passed": 459,
+    "ruff": "PASS",
+    "rust_tests_passed": 1,
+    "strict_mypy_source_files": 194
+  },
+  "corpus_gap": {
+    "eligible_targets_required": 500,
+    "eligible_targets_remaining": 220,
+    "independent_groups_required": 3,
+    "qualified_groups": 1,
+    "remaining_groups": 2,
+    "single_compatible_xg_series_satisfied": false
+  },
+  "restrictions_preserved": {
+    "api_attempts_consumed": 0,
+    "external_communications_sent": 0,
+    "frozen_decisions_changed": false,
+    "mandatory_rust_requirement_changed": false,
+    "pitchapi_raw_responses_retained": false,
+    "protected_data_accessed": false
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_PROVIDER_CLARIFICATION_INQUIRIES_V1",
+  "recorded_at": "2026-09-23T12:00:14Z",
+  "title": "Authorize bounded non-binding provider clarification inquiries",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: authorize provider clarification inquiries",
+  "record_md": "docs/evidence/owner-decision-authorize-provider-clarification-inquiries-2026-09-23.md",
+  "priority": [
+    "PitchAPI",
+    "API-Football",
+    "football-data.org",
+    "Football-Data.co.uk where material",
+    "Understat where material"
+  ],
+  "pitchapi_questions": [
+    "upstream xG provider",
+    "xG model identity and version",
+    "cross-season model consistency",
+    "full-season shot coverage",
+    "retention rights",
+    "correction policy",
+    "identifier stability",
+    "numeric rate limits",
+    "complete shot-coverage manifest for men's Bundesliga 2023/24 and Ligue 1 2022/23"
+  ],
+  "other_provider_questions": [
+    "API-Football long-term data retention and permitted private research use",
+    "football-data.org long-term data retention and permitted private research use",
+    "Football-Data.co.uk permission only where materially unresolved",
+    "Understat permission only where materially unresolved"
+  ],
+  "explicitly_not_authorized": [
+    "further API audits",
+    "bulk acquisition or ingestion",
+    "purchases or marketing consent",
+    "data delivery",
+    "provider activation",
+    "frozen decision changes",
+    "model implementation",
+    "Evaluation V2 execution"
+  ],
+  "preserves": {
+    "existing_decisions_and_evidence": true,
+    "protected_data_restrictions": true,
+    "published_forecasts_immutable": true,
+    "existing_baselines_available": true,
+    "mandatory_rust_simulation": true,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}

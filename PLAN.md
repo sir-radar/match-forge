@@ -16,6 +16,70 @@ Repository status and retained evidence record: Phase 1B `PASS`; Phase 2B `PASS`
 
 Owner decision `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1`, recorded on **20 September 2026**, authorizes **only one bounded, minimal leakage-safe Phase 3A xG goal-model research hypothesis** using qualified approved Tier-A data and Evaluation V2 **policy/corpus design and pre-registration**. Overall Phase 3 remains blocked; broader xG/xGA feature families are **not** included. An authoritative Evaluation V2 run needs its **own** decision after all policy, corpus, references and thresholds are frozen. Rust implementation, simulation evaluation, production activation and expanded scenarios need distinct authorizations. Do not request the recorded narrow decision again or broaden its scope.
 
+Owner decision `REVISE_PROVIDER_QUALIFICATION_CANCEL_INQUIRIES_V1`, recorded
+on **23 September 2026**, cancels the five planned provider communications and
+splits provider work into two lanes. Ordinary private R&D may rely on published
+terms that explicitly permit the exact activity and on separately budgeted API
+verification; ambiguous activities are excluded. Qualified Evaluation V2 still
+requires the existing immutable retention, source/model identity, complete
+coverage, correction lineage, corpus, firewall and freeze evidence. PitchAPI is
+the first technical research priority. Understat and Football-Data.co.uk are
+inactive fallbacks. Additional API calls require a documented request budget
+and owner approval. Isolated simulations may use appropriately authorized data
+only when labelled `EXPERIMENTAL_ONLY`; they are not Evaluation V2 evidence and
+do not authorize xG-for implementation. See the [provider execution plan](docs/evidence/phase3a-provider-qualification-execution-plan-2026-09-23.md).
+
+Owner decision
+`ACCEPT_PITCHAPI_AUDIT_AUTHORIZE_EVALUATION_V2_READINESS_V1`, recorded on
+**23 September 2026**, accepts the bounded PitchAPI audit as technical evidence
+only. The audited Bundesliga 2023/24 and Ligue 1 2022/23 snapshots contain
+686/686 available match-shot resources, 17,873 valid shots and 244 penalties,
+with no observed resource, xG, period, situation, duplicate-ID or team-membership
+error. PitchAPI is **not qualified for Evaluation V2**: upstream xG
+model/version identity, one-series proof, retention rights, correction and
+revision history, provider-ID migration, and historical point-in-time evidence
+remain blocking. The ten unused attempts remain unavailable. See the
+[readiness assessment](docs/evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
+
+Owner decision `APPROVE_EVALUATION_V2_SOURCE_ROUTE_ASSESSMENT_V1`, recorded on
+**23 September 2026**, classifies the audited PitchAPI Bundesliga 2023/24 and
+Ligue 1 2022/23 scopes as `TECHNICALLY_COMPLETE_RESEARCH_ONLY`. It authorizes
+repository and public-documentation comparison of a licensed StatsBomb route
+with a separately amended PitchAPI route. No PitchAPI scope is qualified; raw
+retention, ingestion, corpus admission, provider contact, purchase, frozen
+decision changes, model work and Evaluation V2 remain unauthorized. The ten
+unused API attempts remain unavailable. See the [source-route assessment](docs/evidence/evaluation-v2-source-route-assessment-2026-09-23.md).
+
+Owner decision `SELECT_STATSBOMB_PRIMARY_EVALUATION_V2_SOURCE_ROUTE_V1`,
+recorded on **23 September 2026**, selects a licensed StatsBomb arrangement as
+the primary Evaluation V2 qualification route. Only research and preparation
+of a non-binding proposal/contract qualification request are authorized. The
+spending limit is `$0`; no Order, SOW, subscription, trial, click-through,
+payment, data delivery, acquisition, retention, ingestion, corpus admission,
+frozen-decision change, model work or Evaluation V2 is authorized. The
+provisional scope is qualified Serie A 2015/16 plus complete licensed
+Bundesliga 2023/24 and Ligue 1 2022/23, subject to one fixed xG series,
+contractual reproducibility rights and exact source qualification. PitchAPI
+remains the unchanged research-only contingency. See the
+[StatsBomb qualification package](docs/evidence/statsbomb-evaluation-v2-qualification-package-2026-09-23.md).
+
+Owner decision
+`AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1`, recorded
+on **23 September 2026**, authorizes one action-confirmed non-binding email to
+`sales@statsbomb.com` and synthetic/offline PitchAPI contingency preparation.
+Spend remains `$0`. No data delivery, agreement, trial, payment, API call, raw
+retention, ingestion, corpus admission, qualification or Evaluation V2 is
+authorized. PitchAPI remains `TECHNICALLY_COMPLETE_RESEARCH_ONLY`; all ten
+unused attempts remain unavailable. Offline gates now require attested
+same-series evidence, exact immutable snapshots, deterministic target/corpus
+hashes, strict development/evaluation and protected-data separation, and
+explicit point-in-time proof. See the [contingency preparation record](docs/evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
+
+The action-confirmed StatsBomb request was sent to `sales@statsbomb.com` at
+`2026-09-23T23:13:06Z`; no agreement, trial, purchase, payment or data delivery
+was accepted. The primary route is now awaiting the provider response. See the
+[send record](docs/evidence/statsbomb-qualification-request-send-record-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

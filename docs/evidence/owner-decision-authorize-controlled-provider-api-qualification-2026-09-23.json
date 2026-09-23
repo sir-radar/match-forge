@@ -1,0 +1,57 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_CONTROLLED_PROVIDER_API_QUALIFICATION_V1",
+  "recorded_at": "2026-09-23T11:38:44Z",
+  "title": "Authorize controlled read-only provider API qualification",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: authorize provider clarifications and account probes",
+  "record_md": "docs/evidence/owner-decision-authorize-controlled-provider-api-qualification-2026-09-23.md",
+  "credential_variables": [
+    "API_FOOTBALL_API_KEY",
+    "FOOTBALL_DATA_DOT_ORG_API_TOKEN",
+    "PITCH_API_TOKEN"
+  ],
+  "authorized_providers": [
+    "API-Football",
+    "football-data.org",
+    "PitchAPI"
+  ],
+  "authorized_actions": [
+    "at most 10 initial read-only API requests per provider, subject to stricter limits",
+    "in-memory response inspection",
+    "recording sanitized aggregate qualification facts"
+  ],
+  "qualification_scope": [
+    "available competitions and seasons",
+    "men's Bundesliga 2023/24",
+    "men's Ligue 1 2022/23",
+    "match counts and available statistics",
+    "shot-level xG and model consistency",
+    "rate limits and account entitlements",
+    "completeness, identifiers, and correction mechanisms"
+  ],
+  "credential_policy": [
+    "read values only from ignored .env",
+    "never print, log, document, commit, or report values"
+  ],
+  "explicitly_not_authorized": [
+    "bulk acquisition",
+    "raw-response retention",
+    "permanent ingestion",
+    "provider activation or canonical publication",
+    "frozen decision changes",
+    "model implementation",
+    "Evaluation V2 execution"
+  ],
+  "preserves": {
+    "existing_decisions_and_evidence": true,
+    "protected_data_restrictions": true,
+    "published_forecasts_immutable": true,
+    "existing_baselines_available": true,
+    "mandatory_rust_simulation": true,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}

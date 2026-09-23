@@ -26,6 +26,7 @@ _APPROVED_DOMESTIC_POLICIES = frozenset(
     (
         (KICKOFF_CLAIM_VERSION, "England", KICKOFF_TIMEZONE),
         ("statsbomb-spain-local-kickoff-v1", "Spain", "Europe/Madrid"),
+        ("statsbomb-italy-local-kickoff-v1", "Italy", "Europe/Rome"),
     )
 )
 

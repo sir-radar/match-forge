@@ -1,0 +1,48 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "APPROVE_EVALUATION_V2_SOURCE_ROUTE_ASSESSMENT_V1",
+  "recorded_at": "2026-09-23T17:24:45Z",
+  "title": "Evaluation V2 source-route assessment",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: approve qualified Evaluation V2 provider scopes",
+  "record_md": "docs/evidence/owner-decision-evaluation-v2-source-route-assessment-2026-09-23.md",
+  "pitchapi": {
+    "audited_scopes": [
+      "Bundesliga 2023/24",
+      "Ligue 1 2022/23"
+    ],
+    "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+    "evaluation_v2_qualified": false,
+    "raw_retention_authorized": false,
+    "ingestion_authorized": false,
+    "corpus_admission_authorized": false,
+    "remaining_api_attempts": 10,
+    "remaining_api_attempts_authorized": false
+  },
+  "assessment": {
+    "licensed_statsbomb_route_review_authorized": true,
+    "pitchapi_amendment_route_review_authorized": true,
+    "public_documentation_review_authorized": true,
+    "repository_evidence_review_authorized": true,
+    "execution_plan_preparation_authorized": true
+  },
+  "restrictions": {
+    "provider_contact_authorized": false,
+    "purchase_authorized": false,
+    "api_requests_authorized": false,
+    "data_acquisition_authorized": false,
+    "data_delivery_authorized": false,
+    "frozen_decision_changes_authorized": false,
+    "model_implementation_authorized": false,
+    "evaluation_v2_authorized": false
+  },
+  "preserves": {
+    "protected_data_restrictions": true,
+    "historical_evidence": true,
+    "published_forecasts_immutable": true,
+    "existing_baselines": true,
+    "mandatory_rust_simulation": true
+  }
+}

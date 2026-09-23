@@ -1,0 +1,34 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_PHASE3A_SERIE_A_2015_16_SOURCE_QUALIFICATION_V1",
+  "recorded_at": "2026-09-22T03:35:12Z",
+  "title": "Authorize research-only StatsBomb Serie A 2015/16 source qualification",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Qualify independent men's Evaluation V2 sources",
+  "experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
+  "record_md": "docs/evidence/owner-decision-authorize-phase3a-serie-a-source-qualification-2026-09-22.md",
+  "source_git_sha": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+  "provider_competition_id": 12,
+  "provider_season_id": 27,
+  "authorizes": [
+    "research-only StatsBomb Open Data capability expansion for Serie A 2015/16 (12/27)",
+    "acquisition of pinned Serie A 2015/16 events and lineups for qualification"
+  ],
+  "explicitly_not_authorized": [
+    "admission to the authoritative Evaluation V2 corpus",
+    "other provider, competition, or season scope expansion",
+    "protected EPL or development La Liga source or target access",
+    "xG-for model implementation",
+    "Evaluation V2 execution",
+    "production forecasting changes or model promotion"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "protected_sprint2_targets_accessible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}

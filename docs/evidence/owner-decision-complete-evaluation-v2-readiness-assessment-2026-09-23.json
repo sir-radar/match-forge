@@ -1,0 +1,23 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "ACCEPT_PITCHAPI_AUDIT_AUTHORIZE_EVALUATION_V2_READINESS_V1",
+  "recorded_at": "2026-09-23T14:20:25Z",
+  "status": "APPROVED",
+  "scope": {
+    "official_documentation_review_authorized": true,
+    "pitchapi_technical_audit_accepted": true,
+    "provider_neutral_reproducibility_review_authorized": true,
+    "readiness_documentation_authorized": true,
+    "synthetic_verification_authorized": true
+  },
+  "restrictions": {
+    "additional_api_attempts_authorized": false,
+    "corpus_admission_authorized": false,
+    "evaluation_v2_authorized": false,
+    "external_communications_authorized": false,
+    "frozen_decision_changes_authorized": false,
+    "model_implementation_authorized": false,
+    "persistent_pitchapi_raw_retention_authorized": false,
+    "rust_requirement_changed": false
+  }
+}

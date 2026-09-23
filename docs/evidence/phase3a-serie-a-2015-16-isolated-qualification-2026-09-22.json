@@ -1,0 +1,92 @@
+{
+  "artifact": "Phase3ASerieA201516IsolatedQualification",
+  "status": "PASS_WITH_WARNINGS",
+  "evaluation_v2_admitted": false,
+  "scope": {
+    "provider": "statsbomb_open_data",
+    "competition_id": 12,
+    "season_id": 27,
+    "men_only": true,
+    "regular_season_matches": 380,
+    "teams": 20
+  },
+  "source": {
+    "git_sha": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "match_list_sha256": "613cd3cc70699ba613cb1b3c27b4c8a01b0b5fa28415e09c928d020208905c7a",
+    "original_combined_manifest_sha256": "2d0bb941dbec283118185b3bf5261184a6d16a118381348539703b089efd3944",
+    "isolated_catalog_manifest_sha256": "fec76df71be0ff7c3b0350c9183916377fde1c5343eaf568a3e9cac8f760de2a",
+    "isolated_match_manifest_sha256": "856a4b13c6386d79146de85eb9a719eef1437e5e81ab32b0f32b5e9c955cad82",
+    "isolated_detail_manifest_sha256": "425a64df301fcf999d8e06eed4598a7ce45eb088ee8877257ebb7200de0e67dd",
+    "detail_source_snapshot_id": "01a0c80e-8d2a-7b1b-9516-4a1f82a5e849",
+    "registered_detail_resources": 760,
+    "repeat_staging": "verified_existing"
+  },
+  "dataset": {
+    "version_id": "8bfec1dd-5bf7-5162-b56a-7e63f77b0b88",
+    "manifest_sha256": "760592efe5c8d6ce698105003b336f2c2849c00c74b3d6948fbec7c75eb7106d",
+    "normalized_files": 380,
+    "events": 1353739,
+    "integrity": "PASS",
+    "validator_status": "warnings",
+    "warning_count": 632,
+    "quarantine_count": 0,
+    "fatal_count": 0,
+    "warning_rules": {
+      "SB_UNKNOWN_EVENT_TYPE": 510,
+      "SB_NONMONOTONIC_POSITION_STINT": 118,
+      "SB_CONFLICTING_PLAYER_FACT": 2,
+      "SB_EVENT_LOCATION_OUT_OF_BOUNDS": 1,
+      "SB_IMPOSSIBLE_EVENT_TIMESTAMP": 1
+    }
+  },
+  "xg": {
+    "shots": 9998,
+    "excluded_penalty_shots": 121,
+    "retained_regulation_nonpenalty_shots": 9877,
+    "invalid_retained_xg": 0,
+    "retained_shots_missing_shot_or_team_or_player_mapping": 0,
+    "retained_shots_with_invalid_location": 0,
+    "team_match_totals": 760,
+    "team_match_totals_nonpositive": 0,
+    "minimum_team_match_xg": 0.083188705
+  },
+  "claims": {
+    "lifecycle": 380,
+    "italy_kickoff": 380,
+    "kickoff_batches": 227,
+    "corner_prerequisite": 380,
+    "pinned_tzdata_version": "2026.3",
+    "source_local_time_and_utc_accuracy": "PASS",
+    "repeat_publication": "verified_existing"
+  },
+  "target_plan": {
+    "knowledge_mode": "retrospective-fixed-snapshot-v1",
+    "knowledge_cutoff": "2026-09-22T07:52:00Z",
+    "minimum_team_history": 10,
+    "competition_history_100_does_not_change_target_set": true,
+    "corpus_matches": 380,
+    "eligible_scored_targets": 280,
+    "excluded_warmup_matches": 100,
+    "eligible_batches": 171,
+    "target_set_sha256": "3ad13fea1f52bb31c671f8b5ed4ecd56af0ef233f01798e99e72795ffcc1a733",
+    "plan_sha256": "da416965bc7d5c9a6cd382466768e61bd60f74ab0fbb30d8a82ab8dde262ed6c",
+    "repeat_publication": "verified_existing",
+    "discarded_future_cutoff_plan_sha256": "9791079a3a0fbfb4fcbf36265a1850faeb2f2ebac73d927f7e3169bd93873eee"
+  },
+  "firewall": {
+    "identity_key": "statsbomb_open_data provider_match_id",
+    "protected_epl_comparison_matches": 380,
+    "development_laliga_comparison_matches": 380,
+    "candidate_all_match_protected_intersection": 0,
+    "candidate_all_match_development_intersection": 0,
+    "candidate_target_protected_intersection": 0,
+    "candidate_target_development_intersection": 0,
+    "protected_admission_or_outcomes_read": false
+  },
+  "remaining_corpus_requirement": {
+    "additional_independent_mens_groups": 2,
+    "additional_competitions": 1,
+    "additional_seasons": 1,
+    "additional_eligible_targets_minimum": 220
+  }
+}

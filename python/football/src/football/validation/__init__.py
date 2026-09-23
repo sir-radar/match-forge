@@ -5,6 +5,17 @@ from football.validation.datasets import (
     DatasetValidationResult,
     StatsBombDatasetValidator,
 )
+from football.validation.pitchapi import (
+    PitchApiAuditInput,
+    PitchApiAuditMetadata,
+    PitchApiAuditReport,
+    PitchApiQualificationEvidence,
+    PitchApiRequestBudget,
+    PitchApiRequestRecord,
+    PitchApiSeasonAuditInput,
+    PitchApiSeasonScope,
+    validate_pitchapi_audit,
+)
 from football.validation.statsbomb import (
     EventFileValidationInput,
     MatchValidationContext,
@@ -20,10 +31,19 @@ __all__ = [
     "DatasetValidationError",
     "DatasetValidationResult",
     "MatchValidationContext",
+    "PitchApiAuditInput",
+    "PitchApiAuditMetadata",
+    "PitchApiAuditReport",
+    "PitchApiQualificationEvidence",
+    "PitchApiRequestBudget",
+    "PitchApiRequestRecord",
+    "PitchApiSeasonAuditInput",
+    "PitchApiSeasonScope",
     "PositionStintValidationContext",
     "QualityPolicy",
     "StatsBombDatasetValidator",
     "ValidationFinding",
     "make_finding",
+    "validate_pitchapi_audit",
     "validate_statsbomb_dataset",
 ]

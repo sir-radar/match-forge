@@ -1,0 +1,16 @@
+{
+  "contract": "ProviderQualificationRequestSendRecordV1",
+  "status": "SENT_AWAITING_PROVIDER_RESPONSE",
+  "sent_at": "2026-09-23T23:13:06Z",
+  "channel": "gmail",
+  "recipient": "sales@statsbomb.com",
+  "subject": "Non-binding proposal request — fixed historical StatsBomb export for private model evaluation",
+  "ui_confirmation": "Message sent",
+  "non_binding": true,
+  "spend_limit_usd": 0,
+  "data_delivery_requested": false,
+  "trial_activated": false,
+  "agreement_accepted": false,
+  "purchase_authorized": false,
+  "payment_details_provided": false
+}
