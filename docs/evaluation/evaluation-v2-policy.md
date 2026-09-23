@@ -28,6 +28,14 @@ stable provider identity, historical point-in-time evidence, exact target
 plans and firewall hashes remain blocking. Evaluation V2 therefore remains
 blocked and the pre-registration cannot be frozen.
 
+The owner has selected a licensed StatsBomb arrangement as the primary source
+qualification route. The provisional evaluation scope is qualified Serie A
+2015/16 plus complete licensed Bundesliga 2023/24 and Ligue 1 2022/23. It would
+provide about 776 eligible targets before exclusions, but commercial coverage,
+one fixed xG series, permanent reproducibility rights, exact target plans and
+firewall hashes are not proved. The selection authorizes research and proposal/
+contract qualification only; it does not admit data or authorize acquisition.
+
 | Required item | State |
 | --- | --- |
 | Design/pre-registration authorization | `RECORDED` — `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1` |

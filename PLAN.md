@@ -50,6 +50,19 @@ retention, ingestion, corpus admission, provider contact, purchase, frozen
 decision changes, model work and Evaluation V2 remain unauthorized. The ten
 unused API attempts remain unavailable. See the [source-route assessment](docs/evidence/evaluation-v2-source-route-assessment-2026-09-23.md).
 
+Owner decision `SELECT_STATSBOMB_PRIMARY_EVALUATION_V2_SOURCE_ROUTE_V1`,
+recorded on **23 September 2026**, selects a licensed StatsBomb arrangement as
+the primary Evaluation V2 qualification route. Only research and preparation
+of a non-binding proposal/contract qualification request are authorized. The
+spending limit is `$0`; no Order, SOW, subscription, trial, click-through,
+payment, data delivery, acquisition, retention, ingestion, corpus admission,
+frozen-decision change, model work or Evaluation V2 is authorized. The
+provisional scope is qualified Serie A 2015/16 plus complete licensed
+Bundesliga 2023/24 and Ligue 1 2022/23, subject to one fixed xG series,
+contractual reproducibility rights and exact source qualification. PitchAPI
+remains the unchanged research-only contingency. See the
+[StatsBomb qualification package](docs/evidence/statsbomb-evaluation-v2-qualification-package-2026-09-23.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

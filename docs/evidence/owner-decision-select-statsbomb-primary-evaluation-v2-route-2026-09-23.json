@@ -1,0 +1,59 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "SELECT_STATSBOMB_PRIMARY_EVALUATION_V2_SOURCE_ROUTE_V1",
+  "recorded_at": "2026-09-23T22:16:24Z",
+  "title": "Select StatsBomb as the primary Evaluation V2 source route",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "phase3a-xg-for-evaluation-v2-freeze",
+  "ticket": "Owner decision: choose the Evaluation V2 source route",
+  "record_md": "docs/evidence/owner-decision-select-statsbomb-primary-evaluation-v2-route-2026-09-23.md",
+  "route": {
+    "primary_provider": "statsbomb",
+    "purpose": "evaluation_v2_source_qualification",
+    "minimum_eligible_targets": 500,
+    "one_compatible_reproducible_xg_series_required": true,
+    "research_authorized": true,
+    "proposal_and_contract_qualification_authorized": true
+  },
+  "financial_authorization": {
+    "currency": "USD",
+    "maximum_spend": 0,
+    "pricing_proposal_may_be_received": true,
+    "purchase_authorized": false,
+    "payment_details_authorized": false,
+    "financial_obligation_authorized": false
+  },
+  "restrictions": {
+    "order_form_acceptance_authorized": false,
+    "sow_acceptance_authorized": false,
+    "subscription_acceptance_authorized": false,
+    "trial_acceptance_authorized": false,
+    "click_through_acceptance_authorized": false,
+    "api_requests_authorized": false,
+    "data_delivery_authorized": false,
+    "data_acquisition_authorized": false,
+    "raw_retention_authorized": false,
+    "ingestion_authorized": false,
+    "corpus_admission_authorized": false,
+    "frozen_decision_changes_authorized": false,
+    "model_implementation_authorized": false,
+    "evaluation_v2_authorized": false
+  },
+  "pitchapi_contingency": {
+    "audited_scopes": [
+      "Bundesliga 2023/24",
+      "Ligue 1 2022/23"
+    ],
+    "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+    "remaining_api_attempts": 10,
+    "remaining_api_attempts_authorized": false
+  },
+  "preserves": {
+    "protected_data_restrictions": true,
+    "historical_evidence": true,
+    "published_forecasts_immutable": true,
+    "existing_baselines": true,
+    "mandatory_rust_simulation": true
+  }
+}
