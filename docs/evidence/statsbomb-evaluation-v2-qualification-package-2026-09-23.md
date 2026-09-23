@@ -1,11 +1,16 @@
 # StatsBomb Evaluation V2 qualification package — 2026-09-23
 
-Status: `CONDITIONALLY_FEASIBLE — WRITTEN PROVIDER AND CONTRACT EVIDENCE REQUIRED`
+Status: `REQUEST SENT — WRITTEN PROVIDER AND CONTRACT EVIDENCE REQUIRED`
 
 This package implements owner decision
 `SELECT_STATSBOMB_PRIMARY_EVALUATION_V2_SOURCE_ROUTE_V1`. It does not accept an
 agreement, spend money, request or retain data, admit a corpus, change a frozen
 decision, implement the challenger, or execute Evaluation V2.
+
+The approved non-binding request was sent to `sales@statsbomb.com` at
+`2026-09-23T23:13:06Z`. Gmail displayed `Message sent`. No agreement, trial,
+purchase, payment or data delivery was accepted or activated. See the
+[send record](statsbomb-qualification-request-send-record-2026-09-24.md).
 
 ## Owner decision matrix
 

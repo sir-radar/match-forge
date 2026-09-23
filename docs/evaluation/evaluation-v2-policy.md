@@ -36,6 +36,16 @@ one fixed xG series, permanent reproducibility rights, exact target plans and
 firewall hashes are not proved. The selection authorizes research and proposal/
 contract qualification only; it does not admit data or authorize acquisition.
 
+PitchAPI contingency engineering may proceed with synthetic fixtures and
+sanitized evidence only. The new gate does not qualify either audited group.
+It requires an attested source-series identity across all development and
+evaluation scopes, exact immutable snapshot and target hashes, competition and
+fixture separation, protected-data exclusion and point-in-time proof. Exact
+PitchAPI targets remain unknown. Team-history-only arithmetic gives about 496;
+the reusable target planner's unresolved 100-match competition warm-up gives
+an ideal 478. This mismatch must be resolved in the pre-registration before
+any PitchAPI corpus can qualify; neither rule may be selected silently.
+
 | Required item | State |
 | --- | --- |
 | Design/pre-registration authorization | `RECORDED` — `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1` |

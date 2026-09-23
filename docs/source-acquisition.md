@@ -85,6 +85,15 @@ history, provider-ID stability through rebuilds, or historical point-in-time
 availability. PitchAPI therefore remains research-only and is not an
 Evaluation V2 provider. See the [readiness assessment](evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
 
+Offline contingency preparation adds an evidence-backed PitchAPI xG-series
+gate and provider-neutral synthetic corpus firewall. These are validation-only:
+they do not fetch, retain, register or normalize provider data. A production
+adapter remains blocked until an approved fixed export supplies exact schema,
+revision, model, correction, ID-migration and retention evidence. The current
+Git-specific `SourceManifestV1` and `DatasetManifestV1` must not represent an
+API snapshot with a fabricated Git SHA. See the [contingency preparation
+record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
+
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
 API (`/v1/`). It is not enabled until credentials, account timezone/language,
 coverage scopes, and private research-use and access-terms approval are

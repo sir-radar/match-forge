@@ -1,0 +1,30 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1",
+  "status": "APPROVED",
+  "recorded_at": "2026-09-23T22:57:12Z",
+  "statsbomb_request": {
+    "recipient": "sales@statsbomb.com",
+    "non_binding": true,
+    "spend_limit_usd": 0,
+    "action_time_confirmation_required": true,
+    "data_delivery_authorized": false,
+    "trial_authorized": false,
+    "agreement_acceptance_authorized": false,
+    "payment_authorized": false
+  },
+  "pitchapi": {
+    "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+    "offline_synthetic_preparation_authorized": true,
+    "api_attempts_remaining": 10,
+    "api_attempts_authorized": 0,
+    "provider_contact_authorized": false,
+    "raw_retention_authorized": false,
+    "ingestion_authorized": false,
+    "corpus_admission_authorized": false,
+    "evaluation_v2_qualification_authorized": false
+  },
+  "frozen_evaluation_v2_changed": false,
+  "protected_data_restrictions_changed": false,
+  "mandatory_rust_requirement_changed": false
+}

@@ -15,6 +15,7 @@ from football.validation.pitchapi import (
     PitchApiSeasonScope,
     validate_pitchapi_audit,
 )
+from football.validation.pitchapi_contingency import PitchApiSeriesGateReportV1
 
 
 def _scope(
@@ -112,6 +113,11 @@ def _evidence(
         stable_identifier_policy_available=True,
         xg_series_by_scope=xg_series_by_scope
         or {"bundesliga": "provider:model:v1", "ligue1": "provider:model:v1"},
+        source_series_gate=PitchApiSeriesGateReportV1(
+            status="PASS",
+            series_identity_sha256="c" * 64,
+            findings=(),
+        ),
     )
 
 
@@ -415,11 +421,34 @@ def test_evaluation_status_fails_when_retention_or_correction_evidence_is_missin
         immutable_revision_identity_available=False,
         stable_identifier_policy_available=False,
         xg_series_by_scope={"bundesliga": "provider:model:v1", "ligue1": "provider:model:v1"},
+        source_series_gate=None,
     )
 
     report = validate_pitchapi_audit(_audit(evidence=evidence))
 
     assert report.technical_status == "PASS"
+    assert report.evaluation_v2_status == "FAIL"
+    assert "EVALUATION_PERMISSION_OR_LINEAGE_UNPROVED" in {
+        finding.code for finding in report.findings
+    }
+
+
+def test_equal_free_form_series_labels_do_not_qualify_without_attested_gate() -> None:
+    evidence = _evidence()
+    evidence = PitchApiQualificationEvidence(
+        automated_private_research_permitted=evidence.automated_private_research_permitted,
+        immutable_raw_retention_permitted=evidence.immutable_raw_retention_permitted,
+        attribution_requirements_recorded=evidence.attribution_requirements_recorded,
+        correction_history_available=evidence.correction_history_available,
+        immutable_revision_identity_available=evidence.immutable_revision_identity_available,
+        stable_identifier_policy_available=evidence.stable_identifier_policy_available,
+        xg_series_by_scope=evidence.xg_series_by_scope,
+        source_series_gate=None,
+    )
+
+    report = validate_pitchapi_audit(_audit(evidence=evidence))
+
+    assert report.cross_season_xg_series_status == "PASS"
     assert report.evaluation_v2_status == "FAIL"
     assert "EVALUATION_PERMISSION_OR_LINEAGE_UNPROVED" in {
         finding.code for finding in report.findings

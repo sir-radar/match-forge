@@ -63,6 +63,23 @@ contractual reproducibility rights and exact source qualification. PitchAPI
 remains the unchanged research-only contingency. See the
 [StatsBomb qualification package](docs/evidence/statsbomb-evaluation-v2-qualification-package-2026-09-23.md).
 
+Owner decision
+`AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1`, recorded
+on **23 September 2026**, authorizes one action-confirmed non-binding email to
+`sales@statsbomb.com` and synthetic/offline PitchAPI contingency preparation.
+Spend remains `$0`. No data delivery, agreement, trial, payment, API call, raw
+retention, ingestion, corpus admission, qualification or Evaluation V2 is
+authorized. PitchAPI remains `TECHNICALLY_COMPLETE_RESEARCH_ONLY`; all ten
+unused attempts remain unavailable. Offline gates now require attested
+same-series evidence, exact immutable snapshots, deterministic target/corpus
+hashes, strict development/evaluation and protected-data separation, and
+explicit point-in-time proof. See the [contingency preparation record](docs/evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
+
+The action-confirmed StatsBomb request was sent to `sales@statsbomb.com` at
+`2026-09-23T23:13:06Z`; no agreement, trial, purchase, payment or data delivery
+was accepted. The primary route is now awaiting the provider response. See the
+[send record](docs/evidence/statsbomb-qualification-request-send-record-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

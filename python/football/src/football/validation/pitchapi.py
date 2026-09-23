@@ -9,6 +9,8 @@ from datetime import datetime
 from typing import Any, Literal, cast
 from urllib.parse import quote
 
+from football.validation.pitchapi_contingency import PitchApiSeriesGateReportV1
+
 AuditStatus = Literal["PASS", "PARTIAL", "FAIL"]
 SeriesStatus = Literal["PASS", "UNPROVED", "FAIL"]
 FindingDomain = Literal["technical", "evaluation_v2"]
@@ -142,6 +144,7 @@ class PitchApiQualificationEvidence:
     immutable_revision_identity_available: bool
     stable_identifier_policy_available: bool
     xg_series_by_scope: Mapping[str, str | None]
+    source_series_gate: PitchApiSeriesGateReportV1 | None = None
 
     @property
     def evaluation_requirements_proved(self) -> bool:
@@ -153,6 +156,10 @@ class PitchApiQualificationEvidence:
                 self.correction_history_available,
                 self.immutable_revision_identity_available,
                 self.stable_identifier_policy_available,
+                self.source_series_gate is not None,
+                self.source_series_gate is not None and self.source_series_gate.status == "PASS",
+                self.source_series_gate is not None
+                and self.source_series_gate.series_identity_sha256 is not None,
             )
         )
 
