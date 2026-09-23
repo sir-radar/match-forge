@@ -41,6 +41,15 @@ revision history, provider-ID migration, and historical point-in-time evidence
 remain blocking. The ten unused attempts remain unavailable. See the
 [readiness assessment](docs/evidence/evaluation-v2-readiness-assessment-2026-09-23.md).
 
+Owner decision `APPROVE_EVALUATION_V2_SOURCE_ROUTE_ASSESSMENT_V1`, recorded on
+**23 September 2026**, classifies the audited PitchAPI Bundesliga 2023/24 and
+Ligue 1 2022/23 scopes as `TECHNICALLY_COMPLETE_RESEARCH_ONLY`. It authorizes
+repository and public-documentation comparison of a licensed StatsBomb route
+with a separately amended PitchAPI route. No PitchAPI scope is qualified; raw
+retention, ingestion, corpus admission, provider contact, purchase, frozen
+decision changes, model work and Evaluation V2 remain unauthorized. The ten
+unused API attempts remain unavailable. See the [source-route assessment](docs/evidence/evaluation-v2-source-route-assessment-2026-09-23.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.
