@@ -14,6 +14,19 @@ FootballDataProvider
 
 Canonical ingestion consumes this boundary only after re-verifying the immutable manifest and every declared resource. See [Canonical ingestion](canonical-ingestion.md). Normalized event publication then consumes the same verified acquisition and registered canonical catalogue. See [Event datasets](event-datasets.md). Published event datasets receive policy-driven [data validation](data-validation.md), and each ingestion publishes immutable [ingestion reports](ingestion-reports.md). 360 normalization remains a later phase.
 
+## Project use policy
+
+MatchForge is a private, non-commercial research project and is not intended
+for distribution or external publication. Provider qualification therefore
+does not require commercial-use or redistribution rights.
+
+Terms review must still confirm that private research access, automated or bulk
+acquisition, processing, and required retention are permitted. Attribution,
+rate limits, credential controls, and other applicable usage restrictions remain
+in force. Third-party source data must not be published unless its terms permit
+publication. A publicly viewable source is not eligible for automated or bulk
+acquisition when its terms prohibit that use or permission remains unresolved.
+
 ## Provider capability registry
 
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
@@ -74,9 +87,9 @@ Evaluation V2 provider. See the [readiness assessment](evidence/evaluation-v2-re
 
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
 API (`/v1/`). It is not enabled until credentials, account timezone/language,
-coverage scopes, and licensing/terms approval are recorded. Its aggregate
-statistics cannot substitute for Tier A event geometry, and provider-defined
-fields such as `dangerous_attacks` retain provider provenance.
+coverage scopes, and private research-use and access-terms approval are
+recorded. Its aggregate statistics cannot substitute for Tier A event geometry,
+and provider-defined fields such as `dangerous_attacks` retain provider provenance.
 
 Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
 resource and competition/season scope to configurable discovery cadence,
