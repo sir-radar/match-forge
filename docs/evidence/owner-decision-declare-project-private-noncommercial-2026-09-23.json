@@ -1,0 +1,33 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "DECLARE_PROJECT_PRIVATE_NONCOMMERCIAL_NO_DISTRIBUTION_V1",
+  "recorded_at": "2026-09-23T00:26:32Z",
+  "title": "Declare MatchForge private, non-commercial, and not distributed",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "project-governance",
+  "ticket": "Define project use and provider-rights requirements",
+  "record_md": "docs/evidence/owner-decision-declare-project-private-noncommercial-2026-09-23.md",
+  "authorizes": [
+    "treat MatchForge as a private, non-commercial research project that is not intended for distribution or external publication",
+    "qualify sources without requiring commercial-use or redistribution rights"
+  ],
+  "unresolved": [
+    "provider-specific permission for private research access, automated or bulk acquisition, processing, and required retention"
+  ],
+  "explicitly_not_authorized": [
+    "ignoring provider access or usage terms",
+    "ignoring attribution, retention, rate-limit, credential, or private-use restrictions",
+    "publishing or redistributing third-party source data without permission",
+    "treating public visibility as permission for automated or bulk acquisition",
+    "changing phase gates, source quality requirements, data integrity rules, or model authorization"
+  ],
+  "preserves": {
+    "sprint_2_status": "FAIL",
+    "phase_3_status": "BLOCKED",
+    "protected_sprint2_targets_accessible": false,
+    "evaluation_v2_corpus_frozen": false,
+    "evaluation_v2_authorized": false,
+    "phase3a_implementation_authorized": false
+  }
+}
