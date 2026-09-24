@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-24T11:39:09Z",
+  "updated_at": "2026-09-24T15:42:23Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -26,7 +26,8 @@
     "AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1",
     "ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1",
     "APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1",
-    "AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1"
+    "AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1",
+    "ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1"
   ],
   "closed_routes": [
     {
@@ -45,11 +46,11 @@
     {
       "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
       "provider": "PITCHAPI",
-      "status": "SNAPSHOT_VERIFIED_COMPATIBILITY_FAIL_OWNER_DECISION_REQUIRED",
+      "status": "TERMINAL_FAIL_NO_EXECUTION",
       "evidence_ref": "docs/evidence/pitchapi-snapshot-v1-readiness-2026-09-24.md",
       "remaining_api_attempts": 10,
-      "api_use_authorized": true,
-      "acquisition_authorized": true,
+      "api_use_authorized": false,
+      "acquisition_authorized": false,
       "retention_accepted_as_owner_assumption": true,
       "provider_attestation_required_as_engineering_gate": false,
       "minimum_team_history": 10,
@@ -70,7 +71,29 @@
       "exact_history_eligible_evaluation_targets": 712,
       "admitted_evaluation_targets": 0,
       "compatibility_status": "FAIL",
-      "firewall_status": "PASS"
+      "firewall_status": "PASS",
+      "owner_disposition": "FAIL_OBSERVATIONAL_COMPATIBILITY_GATE"
+    },
+    {
+      "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+      "provider": "PITCHAPI",
+      "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
+      "evidence_ref": "docs/evidence/pitchapi-domain-stratified-evaluation-v2-decision-package-2026-09-24.md",
+      "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v2-policy-proposal.json",
+      "policy_sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1",
+      "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+      "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+      "minimum_team_history": 10,
+      "minimum_competition_history": null,
+      "minimum_evaluation_target_count": 500,
+      "projected_exact_evaluation_targets": 712,
+      "xg_treatment": "RAW",
+      "cross_provider_overlap_status": "PASS_BY_GOVERNED_SCOPE_WITH_FINAL_ALIAS_RECONCILIATION_REQUIRED",
+      "preregistration_frozen": false,
+      "evaluation_execution_authorized": false,
+      "model_fitting_authorized": false,
+      "rust_simulation_authorized": false,
+      "api_use_authorized": false
     }
   ],
   "phase_1b": {

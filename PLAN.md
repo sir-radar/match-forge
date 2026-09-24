@@ -124,6 +124,21 @@ gate is `FAIL`: all four scopes fail calibration coefficient limits and several
 distribution comparisons fail. No target is admitted, and evaluation execution
 remains prohibited. See the [snapshot readiness evidence](docs/evidence/pitchapi-snapshot-v1-readiness-2026-09-24.md).
 
+Owner decision
+`ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1`, recorded on
+**24 September 2026**, permanently accepts the V1 compatibility failure and
+authorizes design/offline implementation only for the separate
+`PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2`. The proposal retains the 712-target
+three-domain evaluation, replaces cross-domain xG distribution equality with
+technical/semantic admission, and reports source differences as heterogeneity.
+A chronological development-only comparison selected raw PitchAPI xG because
+logistic recalibration improved log loss but worsened Brier score. V2 is
+`POST_SOURCE_DIAGNOSTIC_PRE_MODEL_RESULT_PREREGISTRATION` and now awaits an
+owner freeze decision. Final fitting, evaluation, Rust, API use, provider
+contact, spend, promotion and production remain unauthorized. V1 remains
+failed and immutable; StatsBomb `EVALUATION_V2` remains unchanged. See the
+[V2 decision package](docs/evidence/pitchapi-domain-stratified-evaluation-v2-decision-package-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

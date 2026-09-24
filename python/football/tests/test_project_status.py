@@ -39,6 +39,12 @@ def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
             "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
             "evidence_ref": "docs/evidence/shared-pace-admission.md",
         },
+        {
+            "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+            "provider": "PITCHAPI",
+            "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
+            "evidence_ref": "docs/evidence/shared-pace-admission.md",
+        },
     ]
 
     _write_json(status_path, status)
@@ -48,7 +54,7 @@ def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
     assert isinstance(tracks, list)
     second_track = tracks[1]
     assert isinstance(second_track, dict)
-    second_track["evaluation_protocol_id"] = "EVALUATION_V2"
+    second_track["evaluation_protocol_id"] = "UNRELATED_EVALUATION"
     _write_json(status_path, status)
     with pytest.raises(ProjectStatusError, match="isolated StatsBomb and PitchAPI tracks"):
         validate_project_status(status_path, repository_root)
@@ -300,6 +306,12 @@ def _valid_status() -> dict[str, object]:
                 "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
                 "provider": "PITCHAPI",
                 "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+                "evidence_ref": "docs/evidence/shared-pace-admission.md",
+            },
+            {
+                "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+                "provider": "PITCHAPI",
+                "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
                 "evidence_ref": "docs/evidence/shared-pace-admission.md",
             },
         ],
