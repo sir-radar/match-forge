@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-24T06:30:08Z",
+  "updated_at": "2026-09-24T10:52:52Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -44,8 +44,8 @@
     {
       "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
       "provider": "PITCHAPI",
-      "status": "POLICY_PARTIALLY_FROZEN_ACQUISITION_NOT_AUTHORIZED",
-      "evidence_ref": "docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md",
+      "status": "FINAL_POLICY_PROPOSAL_ACQUISITION_NOT_AUTHORIZED",
+      "evidence_ref": "docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md",
       "remaining_api_attempts": 10,
       "api_use_authorized": false,
       "acquisition_authorized": false,

@@ -5,10 +5,12 @@ Status: `PROPOSED — EXECUTION NOT AUTHORIZED`
 Update on 24 September 2026: owner decision
 `APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1` freezes the
 team-last-10 history rule and high-level group architecture. Its successor
-policy, stronger group assignment, exact compatibility proposal, and two
-recalculated acquisition options are in
-`docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md`. Where the two
-documents differ, the successor policy controls. Acquisition remains
+policy and final review are in
+`docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md` and
+`docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md`. The final
+review restores the owner's preferred Bundesliga 2021/22 development layout,
+retains the stronger Ligue 1 development layout as an explicit alternative,
+and controls where this earlier preparation differs. Acquisition remains
 unauthorized.
 
 This package implements the preparation authorized by

@@ -41,23 +41,23 @@
     "sensitivity_analysis_id": "PITCHAPI_XG_COMPATIBILITY_SENSITIVITY_V1"
   },
   "proposed_primary_groups": {
-    "development": ["ligue1:2021/2022"],
+    "development": ["bundesliga:2021/2022"],
     "evaluation": [
       "bundesliga:2022/2023",
       "bundesliga:2023/2024",
       "ligue1:2022/2023"
     ],
-    "backup": ["bundesliga:2021/2022"],
+    "backup": ["ligue1:2021/2022"],
     "projected_evaluation_targets": 712
   },
   "proposed_acquisition_options": {
-    "minimum_viable": {
+    "preferred_minimum_evidenced": {
       "base_requests": 1302,
       "retry_reserve": 27,
       "hard_attempt_ceiling": 1329,
       "hard_storage_ceiling_gib": 6
     },
-    "recommended_role_separation": {
+    "stronger_role_separation_alternative": {
       "base_requests": 1376,
       "retry_reserve": 28,
       "hard_attempt_ceiling": 1404,

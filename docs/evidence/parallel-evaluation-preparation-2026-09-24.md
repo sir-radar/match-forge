@@ -17,11 +17,18 @@ freezes the high-level group architecture. Exact roles, compatibility
 thresholds, and acquisition remain open. Current policy:
 `docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md`.
 
+Final pre-acquisition update: the owner's preferred exact layout, 712-target
+projection, observational compatibility proposal, snapshot design,
+1,302/27/1,329 request budget, 500-MiB expected and 6-GiB hard storage plan,
+runtime stop rules, and exact acquisition authorization text are reconciled in
+`docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md`. They remain
+unapproved until the owner records that authorization; no attempt was used.
+
 This record keeps two separate tracks:
 
 - `EVALUATION_V2 / STATSBOMB`: frozen protocol, awaiting provider response.
 - `PITCHAPI_RETROSPECTIVE_EVALUATION_V1`: separate retrospective protocol,
-  `POLICY_PARTIALLY_FROZEN_ACQUISITION_NOT_AUTHORIZED`.
+  `FINAL_POLICY_PROPOSAL_ACQUISITION_NOT_AUTHORIZED`.
 
 No StatsBomb follow-up, PitchAPI contact, API request, raw-response retention,
 acquisition, corpus admission, model fitting, or evaluation run occurred. All

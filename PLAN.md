@@ -109,10 +109,12 @@ no inherited 100-match competition threshold. It also freezes exactly one
 development group, at least three evaluation groups, two competitions, two
 seasons, 500 exact targets, isolation, immutable snapshots, and mandatory Rust
 simulation. Exact roles, compatibility thresholds, and acquisition remain
-unapproved. The recommended balanced route uses Ligue 1 2021/22 for development
-and Bundesliga 2022/23, Bundesliga 2023/24, and Ligue 1 2022/23 for evaluation;
-it projects 712 targets and requires 1,376 base requests plus 28 retries. See
-the [partially frozen PitchAPI policy](docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md).
+unapproved. The final pre-acquisition proposal uses Bundesliga 2021/22 for
+development and Bundesliga 2022/23, Bundesliga 2023/24, and Ligue 1 2022/23
+for evaluation; it projects 712 targets and requires 1,302 base requests plus
+27 reserved retries. The stronger Ligue 1 development alternative remains
+documented rather than silently selected. See the [pre-acquisition owner
+review](docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md).
 
 ## 3. Hard invariants
 

@@ -39,18 +39,20 @@ Cross-protocol reporting must use `cross_evaluation_robustness`.
 
 ## Proposed group assignment
 
-This is the strongest layout supported by current evidence. It shares Ligue 1
-across roles but only in disjoint seasons; Bundesliga appears only in
-evaluation. This limits development influence to one of two evaluation
-competitions while retaining both technically audited groups.
+This is the owner's preferred layout for final approval. It is the smallest
+layout supported by current evidence that meets the frozen group architecture,
+but request count is not its scientific justification. It provides a full
+chronologically earlier Bundesliga development season, two later Bundesliga
+evaluation seasons for temporal transfer, and an independent Ligue 1
+evaluation group for competition transfer.
 
 | Role | Scope | Nominal matches | Warm-up exclusions | Projected targets | Other expected exclusions | Minimum pre-acquisition contribution | Why |
 | --- | --- | ---: | ---: | ---: | --- | ---: | --- |
-| Development | Ligue 1 2021/22 | 380 | 100 | 280 | Unknown until full audit and exact firewall | 0 until qualified | Provides a full development season; shares a competition with only one evaluation group |
+| Development | Bundesliga 2021/22 | 306 | 90 | 216 | Unknown until full audit and exact firewall | 0 until qualified | Chronologically precedes both Bundesliga evaluation seasons and cannot count toward the 500-target gate |
 | Evaluation 1 | Bundesliga 2022/23 | 306 | 90 | 216 | Unknown until full audit and exact firewall | 0 until qualified | Adds an unaudited future-season test before the audited Bundesliga season |
 | Evaluation 2 | Bundesliga 2023/24 | 306 | 90 | 216 | Prior audit saw zero technical shot defects; exact mapping/firewall exclusions remain unknown | 0 until reacquired and qualified | Retains current audited Bundesliga evidence |
 | Evaluation 3 | Ligue 1 2022/23 | 380 | 100 | 280 | Prior audit saw zero technical shot defects; exact mapping/firewall exclusions remain unknown | 0 until reacquired and qualified | Supplies the second evaluation competition |
-| Backup | Bundesliga 2021/22 | 306 | 90 | 216 | Unknown until full audit and exact firewall | 0 until qualified | Replaces a failed Bundesliga evaluation scope or adds season headroom |
+| Backup | Ligue 1 2021/22 | 380 | 100 | 280 | Unknown until full audit and exact firewall | 0 until qualified | Replaces a failed scope or adds a second Ligue 1 season |
 
 Evaluation projection is `216 + 216 + 280 = 712`, giving 212 targets of
 headroom over 500. Up to 29.8% of projected targets could be excluded before
@@ -62,6 +64,10 @@ catalog and prior non-retaining audits cannot guarantee exact contribution.
 Development and evaluation match IDs, target IDs, manifests, fit/tune choices,
 and outcomes remain isolated. Evaluation outcomes cannot influence mappings,
 compatibility limits, implementation, hyperparameters, or calibration choices.
+Bundesliga 2021/22 is suitable for development because it is earlier and
+disjoint, supplies a complete last-10 feature warm-up, and is excluded from all
+evaluation metrics. Sharing a competition does not make it independent, so all
+Bundesliga-only conclusions must be checked against Ligue 1 2022/23.
 
 ## Proposed observational xG compatibility gate
 
@@ -145,7 +151,7 @@ cannot be reconstructed.
 All options reacquire the currently audited groups because the prior audit
 retained no raw responses. The existing ten-attempt remainder is excluded.
 
-### Option A — minimum viable
+### Option A — preferred and minimum evidenced route
 
 Groups: Bundesliga 2021/22 development; Bundesliga 2022/23, Bundesliga
 2023/24, and Ligue 1 2022/23 evaluation. This is the smallest evidenced plan,
@@ -165,10 +171,15 @@ but development shares Bundesliga with two evaluation seasons.
 | Hard storage ceiling | **6 GiB** |
 
 Qualification value: meets frozen architecture with 212 projected target
-headroom at lowest request cost. Weakness: development choices may be more
-specific to two Bundesliga evaluation seasons.
+headroom. No materially smaller plan is evidenced: three 306-match Bundesliga
+scopes and one 380-match Ligue 1 scope are the least costly evidenced complete
+seasons that still provide one development group, three evaluation groups, two
+evaluation competitions, two seasons, and 712 projected targets. A smaller
+route would require a newly evidenced complete scope and a new owner review.
+Weakness: development choices may be more specific to two Bundesliga
+evaluation seasons.
 
-### Option B — stronger role separation, recommended
+### Option B — stronger role separation alternative
 
 Groups: Ligue 1 2021/22 development; Bundesliga 2022/23, Bundesliga 2023/24,
 and Ligue 1 2022/23 evaluation.
@@ -189,10 +200,12 @@ and Ligue 1 2022/23 evaluation.
 Qualification value: same target headroom as Option A, but limits development
 overlap to one evaluation competition and leaves Bundesliga development-free.
 The 74 extra base requests buy a stronger development/evaluation firewall.
+It is scientifically stronger on role separation but is not silently selected
+over the owner's preferred route.
 
 ### Option C — higher confidence with backup
 
-Option B plus Bundesliga 2021/22 as a predeclared backup/additional evaluation
+Option A plus Ligue 1 2021/22 as a predeclared backup/additional evaluation
 group.
 
 | Item | Value |
@@ -203,17 +216,17 @@ group.
 | Retry reserve | **34** |
 | Hard attempt ceiling | **1,717** |
 | Primary projected evaluation targets | **712** |
-| Backup/additional target capacity | **216** |
-| Maximum projected evaluation capacity if admitted | **928** |
+| Backup/additional target capacity | **280** |
+| Maximum projected evaluation capacity if admitted | **992** |
 | Projected shots | about **43,719** |
 | Expected primary raw + normalized storage | under **325 MiB** |
 | Expected primary + verified backup | under **650 MiB** |
 | Hard storage ceiling | **8 GiB** |
 
 Qualification value: provides an already catalog-evidenced replacement if one
-Bundesliga scope fails and enables a fourth evaluation season. It does not add
-a third competition, so its gain is resilience and season headroom, not wider
-competition generalization.
+scope fails, adds a fourth evaluation season, and tests Ligue 1 across two
+seasons. It does not add a third competition, so its gain is resilience and
+within-competition temporal robustness, not wider competition generalization.
 
 For all options: concurrency 1; at most one request/second; 30-second timeout;
 at most two attempts/path; retry only transport failure, 408, 429, and 5xx;
@@ -236,10 +249,10 @@ logs, files, manifests, hashes, tests, or Git.
 | # | Exact question | Status | Recommended default | Alternatives and consequences | Blocks offline implementation | Blocks acquisition | Can affect validity |
 | ---: | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Freeze one development, at least three evaluation groups, two competitions, two seasons, 500 exact targets, isolation, and Rust? | **APPROVED** | Approved structure | Smaller design weakens generalization and needs amendment | No | No after other approvals | Yes |
-| 2 | May roles share a competition across disjoint seasons, and are the proposed exact roles accepted? | **OPEN** | Approve Ligue 1 2021/22 development; Bundesliga 2022/23, Bundesliga 2023/24, Ligue 1 2022/23 evaluation; Bundesliga 2021/22 backup | Require competition-independent development: needs a third evidenced competition and more discovery; choose Bundesliga development: cheaper but exposes two Bundesliga evaluation seasons to development choices | No | **Yes** | **Yes** |
+| 2 | May roles share a competition across disjoint seasons, and are the proposed exact roles accepted? | **OPEN** | Approve Bundesliga 2021/22 development; Bundesliga 2022/23, Bundesliga 2023/24, Ligue 1 2022/23 evaluation; Ligue 1 2021/22 backup | Ligue 1 2021/22 development gives stronger role separation for 74 more base requests; full competition-independent development needs a third evidenced competition | No | **Yes** | **Yes** |
 | 3 | Freeze team history at 10 and exclude the legacy 100-match target rule? | **APPROVED** | Approved team-last-10 rule | Reintroducing 100 removes 36 projected Bundesliga targets across primary evaluation groups and needs a new decision | No | No | Yes |
 | 4 | Freeze the exact observational compatibility methods, thresholds, warnings, multiplicity, and sensitivity rules above? | **OPEN** | Approve as proposed before acquisition | Amend now; after acquisition, threshold changes invalidate preregistration | Gate code is implemented offline; final policy hash remains blocked | **Yes** | **Yes** |
-| 5 | Which acquisition option and exact raw-retention/request/storage authority is approved? | **OPEN** | Option B: 1,376 base, 28 retries, 1,404 ceiling, 6 GiB | Option A: 1,302/27/1,329/6 GiB is cheapest but has weaker role separation; Option C: 1,683/34/1,717/8 GiB adds a backup; reject/modify leaves corpus unavailable | Live acquisition path and integration fixtures remain blocked | **Yes** | Yes |
+| 5 | Which acquisition option and exact raw-retention/request/storage authority is approved? | **OPEN** | Option A: 1,302 base, 27 retries, 1,329 ceiling, 500 MiB expected and 6 GiB hard storage | Option B: 1,376/28/1,404 adds role separation; Option C: 1,683/34/1,717 adds a Ligue 1 backup and requires an 8 GiB hard ceiling; reject/modify leaves corpus unavailable | Live acquisition path and integration fixtures remain blocked | **Yes** | Yes |
 
 After these five, exact acquired scope qualification, corpus/firewall freeze,
 complete preregistration, model implementation, Rust execution, and one
