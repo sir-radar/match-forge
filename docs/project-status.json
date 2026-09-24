@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-24T15:42:23Z",
+  "updated_at": "2026-09-24T16:03:09Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -27,7 +27,8 @@
     "ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1",
     "APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1",
     "AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1",
-    "ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1"
+    "ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1",
+    "FREEZE_AND_PREREGISTER_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2_V1"
   ],
   "closed_routes": [
     {
@@ -77,8 +78,8 @@
     {
       "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
       "provider": "PITCHAPI",
-      "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
-      "evidence_ref": "docs/evidence/pitchapi-domain-stratified-evaluation-v2-decision-package-2026-09-24.md",
+      "status": "POLICY_FROZEN_PREREGISTRATION_BLOCKED",
+      "evidence_ref": "docs/evidence/pitchapi-domain-stratified-v2-preregistration-readiness-2026-09-24.md",
       "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v2-policy-proposal.json",
       "policy_sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1",
       "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
@@ -88,7 +89,15 @@
       "minimum_evaluation_target_count": 500,
       "projected_exact_evaluation_targets": 712,
       "xg_treatment": "RAW",
-      "cross_provider_overlap_status": "PASS_BY_GOVERNED_SCOPE_WITH_FINAL_ALIAS_RECONCILIATION_REQUIRED",
+      "cross_provider_overlap_status": "PASS",
+      "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+      "metrics_sha256": "3381842ea8c548435bb18dd04ef4d29da2b564a393b50057ff2bc8f488c3f995",
+      "rust_policy_proposal_sha256": "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee",
+      "preregistration_preparation_sha256": "87a1017542467f99ccf39a884fe74eede6ecd9423fe85e8835e3e02bb453ef80",
+      "policy_frozen": true,
+      "metrics_frozen": true,
+      "rust_policy_frozen": false,
+      "model_frozen": false,
       "preregistration_frozen": false,
       "evaluation_execution_authorized": false,
       "model_fitting_authorized": false,
