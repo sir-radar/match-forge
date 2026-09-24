@@ -116,6 +116,14 @@ for evaluation; it projects 712 targets and requires 1,302 base requests plus
 documented rather than silently selected. See the [pre-acquisition owner
 review](docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md).
 
+Owner decision `AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1`
+authorized the frozen 1,302-request acquisition. It completed with zero retries
+and created an immutable verified snapshot plus backup. Exact history eligibility
+is 712 evaluation targets, but the preregistered observational compatibility
+gate is `FAIL`: all four scopes fail calibration coefficient limits and several
+distribution comparisons fail. No target is admitted, and evaluation execution
+remains prohibited. See the [snapshot readiness evidence](docs/evidence/pitchapi-snapshot-v1-readiness-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

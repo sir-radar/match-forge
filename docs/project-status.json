@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-24T11:03:36Z",
+  "updated_at": "2026-09-24T11:39:09Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -45,8 +45,8 @@
     {
       "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
       "provider": "PITCHAPI",
-      "status": "CONTROLLED_ACQUISITION_AUTHORIZED_NOT_STARTED",
-      "evidence_ref": "docs/evidence/owner-decision-authorize-pitchapi-snapshot-v1-acquisition-2026-09-24.md",
+      "status": "SNAPSHOT_VERIFIED_COMPATIBILITY_FAIL_OWNER_DECISION_REQUIRED",
+      "evidence_ref": "docs/evidence/pitchapi-snapshot-v1-readiness-2026-09-24.md",
       "remaining_api_attempts": 10,
       "api_use_authorized": true,
       "acquisition_authorized": true,
@@ -64,7 +64,13 @@
       "hard_attempt_ceiling": 1329,
       "expected_storage_mib": 500,
       "hard_storage_ceiling_gib": 6,
-      "evaluation_execution_authorized": false
+      "evaluation_execution_authorized": false,
+      "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+      "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+      "exact_history_eligible_evaluation_targets": 712,
+      "admitted_evaluation_targets": 0,
+      "compatibility_status": "FAIL",
+      "firewall_status": "PASS"
     }
   ],
   "phase_1b": {
