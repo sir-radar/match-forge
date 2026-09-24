@@ -47,6 +47,7 @@ def test_compatibility_gate_covers_structure_calibration_and_distributions() -> 
     )
 
     assert report.status == "PASS"
+    assert report.policy_sha256 == _policy().sha256
     assert report.findings == ()
     assert report.observational_compatibility_only is True
 
@@ -61,7 +62,24 @@ def test_compatibility_gate_fails_material_or_semantic_differences() -> None:
 
     assert report.status == "FAIL"
     assert "PERIOD_SEMANTICS_INCONSISTENT:ligue1" in report.findings
-    assert "MATERIAL_DISTRIBUTION_DISCONTINUITY:bundesliga:ligue1" in report.findings
+    assert "MATERIAL_DISTRIBUTION_DISCONTINUITY:bundesliga:ligue1:ALL_SHOTS" in report.findings
+
+
+def test_compatibility_gate_checks_shot_situation_distributions_separately() -> None:
+    report = evaluate_pitchapi_xg_compatibility(
+        _policy(),
+        (_scope("bundesliga"), _scope("ligue1")),
+        (
+            PitchApiXgDistributionComparisonV1("bundesliga", "ligue1", 0.04),
+            PitchApiXgDistributionComparisonV1(
+                "bundesliga", "ligue1", 0.2, shot_situation="OPEN_PLAY"
+            ),
+        ),
+        required_scope_keys=("bundesliga", "ligue1"),
+    )
+
+    assert report.status == "FAIL"
+    assert "MATERIAL_DISTRIBUTION_DISCONTINUITY:bundesliga:ligue1:OPEN_PLAY" in report.findings
 
 
 def test_compatibility_gate_is_unproved_without_calibration_or_all_pairs() -> None:

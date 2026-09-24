@@ -90,6 +90,19 @@ snapshots, and result metadata and must not be merged except as explicitly
 labelled cross-evaluation robustness analysis. See the [parallel preparation
 record](docs/evidence/parallel-evaluation-preparation-2026-09-24.md).
 
+Owner decision
+`ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1`,
+recorded on **24 September 2026**, accepts PitchAPI retention and intended
+private research/evaluation use as owner assumptions for the separate protocol.
+Provider-issued legal-use or retention attestations are no longer engineering
+admission gates for that protocol; this is not a provider guarantee. The
+complete proposed protocol, observational compatibility thresholds,
+append-only snapshot and alias design, group/history recommendation, and
+1,329-attempt acquisition ceiling are prepared but not frozen or authorized
+for execution. No API call, acquisition, fitting, simulation, evaluation, or
+spend is authorized. Evaluation V2 remains unchanged. See the [PitchAPI owner
+decision package](docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

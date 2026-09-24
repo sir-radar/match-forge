@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import math
 from dataclasses import dataclass
 
+from football.contracts.source import canonical_json_bytes
 from football.validation.pitchapi_contingency import (
     PITCHAPI_RETROSPECTIVE_EVALUATION_V1,
     GateStatus,
@@ -47,6 +49,23 @@ class PitchApiXgCompatibilityPolicyV1:
             raise PitchApiCompatibilityError("unsupported calibration method")
         if self.distribution_method != "two-sample-kolmogorov-smirnov":
             raise PitchApiCompatibilityError("unsupported distribution method")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "evaluation_protocol_id": self.evaluation_protocol_id,
+            "maximum_missing_rate": self.maximum_missing_rate,
+            "maximum_absolute_calibration_intercept": (self.maximum_absolute_calibration_intercept),
+            "minimum_calibration_slope": self.minimum_calibration_slope,
+            "maximum_calibration_slope": self.maximum_calibration_slope,
+            "maximum_distribution_discontinuity": (self.maximum_distribution_discontinuity),
+            "calibration_method": self.calibration_method,
+            "distribution_method": self.distribution_method,
+        }
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,12 +118,14 @@ class PitchApiXgDistributionComparisonV1:
     left_scope_key: str
     right_scope_key: str
     statistic: float
+    shot_situation: str = "ALL_SHOTS"
 
     def __post_init__(self) -> None:
         if (
             not self.left_scope_key
             or not self.right_scope_key
             or self.left_scope_key == self.right_scope_key
+            or not self.shot_situation.strip()
             or not math.isfinite(self.statistic)
             or not 0 <= self.statistic <= 1
         ):
@@ -114,6 +135,7 @@ class PitchApiXgDistributionComparisonV1:
 @dataclass(frozen=True, slots=True)
 class PitchApiXgCompatibilityReportV1:
     status: GateStatus
+    policy_sha256: str
     findings: tuple[str, ...]
     observational_compatibility_only: bool = True
     contract: str = "PitchApiXgCompatibilityReportV1"
@@ -135,17 +157,25 @@ def evaluate_pitchapi_xg_compatibility(
         findings.add("SCOPE_DIAGNOSTICS_UNPROVED")
     for diagnostic in diagnostics:
         findings.update(_scope_findings(policy, diagnostic))
-    compared_pairs: set[frozenset[str]] = set()
+    compared_pairs: set[tuple[frozenset[str], str]] = set()
     for comparison in comparisons:
         pair = frozenset((comparison.left_scope_key, comparison.right_scope_key))
-        findings.update(_comparison_findings(policy, comparison, pair, required, compared_pairs))
-        compared_pairs.add(pair)
+        comparison_key = (pair, comparison.shot_situation)
+        findings.update(
+            _comparison_findings(policy, comparison, pair, comparison_key, required, compared_pairs)
+        )
+        compared_pairs.add(comparison_key)
     expected_pairs = len(required) * (len(required) - 1) // 2
-    if len(compared_pairs) != expected_pairs:
+    all_shot_pairs = {pair for pair, situation in compared_pairs if situation == "ALL_SHOTS"}
+    if len(all_shot_pairs) != expected_pairs:
         findings.add("DISTRIBUTION_COMPARISONS_UNPROVED")
     unproved = {finding for finding in findings if "UNPROVED" in finding}
     status: GateStatus = "FAIL" if findings - unproved else ("UNPROVED" if unproved else "PASS")
-    return PitchApiXgCompatibilityReportV1(status=status, findings=tuple(sorted(findings)))
+    return PitchApiXgCompatibilityReportV1(
+        status=status,
+        policy_sha256=policy.sha256,
+        findings=tuple(sorted(findings)),
+    )
 
 
 def _scope_findings(
@@ -189,17 +219,18 @@ def _comparison_findings(
     policy: PitchApiXgCompatibilityPolicyV1,
     comparison: PitchApiXgDistributionComparisonV1,
     pair: frozenset[str],
+    comparison_key: tuple[frozenset[str], str],
     required: set[str],
-    compared_pairs: set[frozenset[str]],
+    compared_pairs: set[tuple[frozenset[str], str]],
 ) -> set[str]:
     findings: set[str] = set()
     if not pair <= required:
         findings.add("DISTRIBUTION_COMPARISON_SCOPE_MISMATCH")
-    if pair in compared_pairs:
+    if comparison_key in compared_pairs:
         findings.add("DUPLICATE_DISTRIBUTION_COMPARISON")
     if comparison.statistic > policy.maximum_distribution_discontinuity:
         findings.add(
             f"MATERIAL_DISTRIBUTION_DISCONTINUITY:{comparison.left_scope_key}:"
-            f"{comparison.right_scope_key}"
+            f"{comparison.right_scope_key}:{comparison.shot_situation}"
         )
     return findings

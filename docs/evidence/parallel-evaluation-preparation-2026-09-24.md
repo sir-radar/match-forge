@@ -2,6 +2,15 @@
 
 Status: `PREPARED — OWNER DECISIONS REQUIRED`
 
+Update on 24 September 2026: owner decision
+`ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1`
+supersedes this record only where it treated PitchAPI provider-issued
+retention/legal-use attestation as an engineering blocker. Owner-accepted
+private retention/use assumptions now apply to the separate PitchAPI protocol.
+The acquisition and evaluation prohibitions remain. The current complete
+proposal is in
+`docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md`.
+
 This record keeps two separate tracks:
 
 - `EVALUATION_V2 / STATSBOMB`: frozen protocol, awaiting provider response.
@@ -132,14 +141,16 @@ Future season, corpus, and firewall manifests must bind those identities. This
 can reproduce MatchForge state from acquisition onward. It cannot recover or
 identify PitchAPI changes made before the first retained acquisition.
 
-The xG compatibility methodology is prepared but its scientific thresholds
-remain unset. It checks exact schema, finite `[0,1]` xG, penalty semantics,
+The xG compatibility methodology was prepared here without scientific
+thresholds. The later decision package proposes exact thresholds for owner
+freeze. It checks exact schema, finite `[0,1]` xG, penalty semantics,
 shot-situation semantics, period semantics, per-competition/season missingness,
 mean/standard deviation/quantiles, logistic calibration intercept and slope,
 and pairwise two-sample Kolmogorov-Smirnov discontinuities. Threshold values
 must be frozen before real performance results are examined. Even a `PASS`
 means observational compatibility only; it does not prove identical upstream
-xG models. Provider attestation remains separately necessary.
+xG models. Provider attestation is not an engineering gate for the separate
+PitchAPI protocol under the later owner decision.
 
 ## StatsBomb response-assessment checklist
 
@@ -205,10 +216,11 @@ freeze, implementation, and authoritative run.
 ### `PITCHAPI_RETROSPECTIVE_EVALUATION_V1`
 
 Blockers: no frozen group policy; history/warm-up rule unresolved; no frozen xG
-compatibility thresholds; no development group or third evaluation group;
-upstream model/series, rights, immutable revision, corrections, stable-ID, and
-pre-acquisition history remain unproved; acquisition and raw retention remain
-unauthorized.
+compatibility thresholds; no admitted development group or third evaluation
+group; immutable snapshot, exact mappings and corpus/firewall hashes do not
+exist; acquisition and evaluation remain unauthorized. Upstream model identity
+and pre-acquisition history remain irreducible disclosed limitations, not
+provider-attestation gates.
 
 Owner decisions now required:
 

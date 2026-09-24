@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-24T05:50:23Z",
+  "updated_at": "2026-09-24T06:08:21Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -23,7 +23,8 @@
     "ACCEPT_PITCHAPI_AUDIT_AUTHORIZE_EVALUATION_V2_READINESS_V1",
     "APPROVE_EVALUATION_V2_SOURCE_ROUTE_ASSESSMENT_V1",
     "SELECT_STATSBOMB_PRIMARY_EVALUATION_V2_SOURCE_ROUTE_V1",
-    "AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1"
+    "AUTHORIZE_STATSBOMB_REQUEST_AND_PITCHAPI_CONTINGENCY_PREPARATION_V1",
+    "ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1"
   ],
   "closed_routes": [
     {
@@ -42,11 +43,13 @@
     {
       "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
       "provider": "PITCHAPI",
-      "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
-      "evidence_ref": "docs/evidence/pitchapi-full-season-audit-2026-09-23.md",
+      "status": "DECISION_PACKAGE_PREPARED_EXECUTION_NOT_AUTHORIZED",
+      "evidence_ref": "docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md",
       "remaining_api_attempts": 10,
       "api_use_authorized": false,
-      "acquisition_authorized": false
+      "acquisition_authorized": false,
+      "retention_accepted_as_owner_assumption": true,
+      "provider_attestation_required_as_engineering_gate": false
     }
   ],
   "phase_1b": {

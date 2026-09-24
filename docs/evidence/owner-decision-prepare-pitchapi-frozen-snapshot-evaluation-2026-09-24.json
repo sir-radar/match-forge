@@ -1,0 +1,28 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1",
+  "status": "APPROVED",
+  "recorded_at": "2026-09-24T06:08:21Z",
+  "pitchapi": {
+    "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+    "snapshot_series_id": "PITCHAPI_SNAPSHOT_V1",
+    "retention_accepted_as_owner_assumption": true,
+    "private_research_evaluation_use_accepted_as_owner_assumption": true,
+    "provider_attestation_required_as_engineering_gate": false,
+    "provider_legal_or_contractual_guarantee_claimed": false,
+    "offline_preparation_authorized": true,
+    "provider_contact_authorized": false,
+    "api_attempts_remaining": 10,
+    "api_attempts_authorized": 0,
+    "acquisition_authorized": false,
+    "corpus_admission_authorized": false,
+    "evaluation_execution_authorized": false
+  },
+  "statsbomb": {
+    "evaluation_protocol_id": "EVALUATION_V2",
+    "response_status": "AWAITING_PROVIDER_RESPONSE",
+    "follow_up_authorized": false
+  },
+  "frozen_evaluation_v2_changed": false,
+  "spend_authorized_usd": 0
+}
