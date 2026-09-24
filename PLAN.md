@@ -80,6 +80,16 @@ The action-confirmed StatsBomb request was sent to `sales@statsbomb.com` at
 was accepted. The primary route is now awaiting the provider response. See the
 [send record](docs/evidence/statsbomb-qualification-request-send-record-2026-09-24.md).
 
+Parallel preparation now tracks `EVALUATION_V2 / STATSBOMB` and the separate
+`PITCHAPI_RETROSPECTIVE_EVALUATION_V1` protocol. The former remains frozen and
+awaits the provider response. The latter remains
+`TECHNICALLY_COMPLETE_RESEARCH_ONLY`; its group policy, history rule, xG
+compatibility thresholds, acquisition, and request budget require owner
+decisions. The two protocols have separate identities, corpus/firewall hashes,
+snapshots, and result metadata and must not be merged except as explicitly
+labelled cross-evaluation robustness analysis. See the [parallel preparation
+record](docs/evidence/parallel-evaluation-preparation-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

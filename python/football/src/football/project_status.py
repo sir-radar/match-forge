@@ -44,6 +44,7 @@ def validate_project_status(status_path: Path, repository_root: Path | None = No
     _validate_sprint_2(sprint_2, root)
     _validate_phase_3(phase_3, sprint_2, owner_decisions, root)
     _validate_closed_routes(status, root)
+    _validate_evaluation_tracks(status, root)
 
 
 def main(argv: Sequence[str] | None = None, *, stderr: TextIO | None = None) -> int:
@@ -202,6 +203,35 @@ def _validate_closed_routes(status: Mapping[str, object], root: Path) -> None:
             raise ProjectStatusError(
                 f"{evidence_path.relative_to(root)} does not mention route {route}"
             )
+
+
+def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> None:
+    tracks = status.get("evaluation_tracks")
+    if not isinstance(tracks, list):
+        raise ProjectStatusError("evaluation_tracks must be a list")
+    expected = {
+        ("EVALUATION_V2", "STATSBOMB"),
+        ("PITCHAPI_RETROSPECTIVE_EVALUATION_V1", "PITCHAPI"),
+    }
+    observed: set[tuple[str, str]] = set()
+    for track in tracks:
+        if not isinstance(track, Mapping):
+            raise ProjectStatusError("evaluation_tracks entries must be objects")
+        protocol_id = track.get("evaluation_protocol_id")
+        provider = track.get("provider")
+        route_status = track.get("status")
+        identity_fields = (protocol_id, provider, route_status)
+        if not all(isinstance(value, str) and value for value in identity_fields):
+            raise ProjectStatusError("evaluation track identity and status fields are required")
+        identity = (cast(str, protocol_id), cast(str, provider))
+        if identity in observed:
+            raise ProjectStatusError(f"duplicate evaluation track: {identity[0]} / {identity[1]}")
+        observed.add(identity)
+        _evidence_path(track, f"evaluation_tracks[{identity[0]}]", root)
+    if observed != expected:
+        raise ProjectStatusError(
+            "evaluation_tracks must contain the isolated StatsBomb and PitchAPI tracks"
+        )
 
 
 def _validate_phase_3(

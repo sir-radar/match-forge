@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-23T23:13:06Z",
+  "updated_at": "2026-09-24T05:50:23Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -30,6 +30,23 @@
       "route": "DCV3_SHARED_MATCH_PACE_MIXTURE_V1",
       "outcome": "TERMINAL_ROUTE_FAIL",
       "evidence_ref": "docs/evidence/dcv3-shared-match-pace-corrected-admission-2026-09-08.md"
+    }
+  ],
+  "evaluation_tracks": [
+    {
+      "evaluation_protocol_id": "EVALUATION_V2",
+      "provider": "STATSBOMB",
+      "status": "AWAITING_PROVIDER_RESPONSE",
+      "evidence_ref": "docs/evidence/statsbomb-qualification-request-send-record-2026-09-24.md"
+    },
+    {
+      "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+      "provider": "PITCHAPI",
+      "status": "TECHNICALLY_COMPLETE_RESEARCH_ONLY",
+      "evidence_ref": "docs/evidence/pitchapi-full-season-audit-2026-09-23.md",
+      "remaining_api_attempts": 10,
+      "api_use_authorized": false,
+      "acquisition_authorized": false
     }
   ],
   "phase_1b": {

@@ -5,18 +5,23 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import UUID, uuid5
 
+import pytest
 from football.forecasting.dataset import (
     ForecastMatchContextV1,
     WalkForwardDatasetSpecV1,
     build_walk_forward_target_plan,
 )
 from football.validation.pitchapi_contingency import (
+    PITCHAPI_RETROSPECTIVE_EVALUATION_V1,
     CorpusRole,
-    EvaluationV2CorpusGroupV1,
     GateStatus,
+    PitchApiRetrospectiveCorpusGroupV1,
+    PitchApiRetrospectivePolicyV1,
+    PitchApiSnapshotIdentityV1,
+    PitchApiSnapshotResourceIdentityV1,
     PitchApiSourceSeriesEvidenceV1,
     qualify_pitchapi_source_series,
-    validate_evaluation_v2_corpus_firewall,
+    validate_pitchapi_retrospective_corpus_firewall,
 )
 
 NAMESPACE = UUID("bbfaedc2-cbf4-4f0a-8733-f8b7d0e0b693")
@@ -117,30 +122,70 @@ def _group(
     *,
     series: str = "c" * 64,
     point_in_time_status: str = "PASS",
-) -> EvaluationV2CorpusGroupV1:
+) -> PitchApiRetrospectiveCorpusGroupV1:
     match_ids = _ids(scope, matches)
-    return EvaluationV2CorpusGroupV1(
+    snapshot = _snapshot(scope)
+    return PitchApiRetrospectiveCorpusGroupV1(
         scope_key=scope,
         role=cast(CorpusRole, role),
         competition_ref=competition,
         season_ref=season,
-        source_snapshot_id=uuid5(NAMESPACE, f"snapshot:{scope}"),
-        source_snapshot_sha256="d" * 64,
+        source_snapshot_id=snapshot.snapshot_id,
+        source_snapshot_sha256=snapshot.sha256,
         source_series_sha256=series,
         target_plan_sha256="e" * 64,
         cutoff_evidence_sha256="f" * 64,
+        firewall_access_audit_sha256="9" * 64,
+        nominal_match_count=matches,
         match_ids=match_ids,
         target_ids=match_ids[-targets:],
+        exclusion_counts=(("HISTORY_WARMUP", matches - targets),),
         point_in_time_status=cast(GateStatus, point_in_time_status),
     )
 
 
-def _passing_groups() -> tuple[EvaluationV2CorpusGroupV1, ...]:
+def _snapshot(scope: str) -> PitchApiSnapshotIdentityV1:
+    return PitchApiSnapshotIdentityV1(
+        snapshot_id=uuid5(NAMESPACE, f"snapshot:{scope}"),
+        acquired_at=datetime(2026, 9, 24, tzinfo=UTC),
+        resources=(
+            PitchApiSnapshotResourceIdentityV1(
+                resource_ref=f"season/{scope}",
+                raw_sha256="1" * 64,
+                normalized_sha256="2" * 64,
+            ),
+        ),
+        canonical_mapping_sha256="3" * 64,
+        adapter_version="pitchapi-adapter-v1",
+        configuration_sha256="4" * 64,
+        code_git_sha="5" * 40,
+    )
+
+
+def _snapshots(
+    groups: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+) -> tuple[PitchApiSnapshotIdentityV1, ...]:
+    return tuple(_snapshot(group.scope_key) for group in groups)
+
+
+def _passing_groups() -> tuple[PitchApiRetrospectiveCorpusGroupV1, ...]:
     return (
         _group("development", "development", "development-league", "2021/2022", 306, 198),
         _group("bundesliga", "evaluation", "bundesliga", "2023/2024", 306, 198),
         _group("ligue1-a", "evaluation", "ligue1", "2022/2023", 380, 280),
         _group("ligue1-b", "evaluation", "ligue1", "2021/2022", 380, 280),
+    )
+
+
+def _proposed_policy() -> PitchApiRetrospectivePolicyV1:
+    return PitchApiRetrospectivePolicyV1(
+        development_group_count=1,
+        minimum_evaluation_groups=3,
+        minimum_evaluation_competitions=2,
+        minimum_evaluation_seasons=2,
+        minimum_nominal_matches_per_evaluation_group=120,
+        minimum_evaluation_targets=500,
+        require_development_competition_independence=True,
     )
 
 
@@ -189,13 +234,18 @@ def test_source_series_hash_is_scope_and_snapshot_order_independent() -> None:
 
 
 def test_corpus_firewall_passes_only_complete_independent_same_series_scope() -> None:
-    report = validate_evaluation_v2_corpus_firewall(
-        _passing_groups(),
+    groups = _passing_groups()
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        groups,
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(groups),
         protected_match_ids=frozenset(_ids("protected-epl", 380)),
         protected_scope_refs=frozenset({("premier-league", "2015/2016")}),
     )
 
     assert report.status == "PASS"
+    assert report.evaluation_protocol_id == PITCHAPI_RETROSPECTIVE_EVALUATION_V1
+    assert report.policy_sha256 == _proposed_policy().sha256
     assert report.evaluation_group_count == 3
     assert report.evaluation_competition_count == 2
     assert report.evaluation_season_count == 3
@@ -215,8 +265,10 @@ def test_corpus_firewall_rejects_role_series_fixture_and_protected_intersections
         target_ids=(shared, *groups[2].target_ids[1:]),
     )
 
-    report = validate_evaluation_v2_corpus_firewall(
+    report = validate_pitchapi_retrospective_corpus_firewall(
         tuple(groups),
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(tuple(groups)),
         protected_match_ids=frozenset({shared}),
         protected_scope_refs=frozenset({("ligue1", "2021/2022")}),
     )
@@ -233,7 +285,7 @@ def test_corpus_firewall_rejects_role_series_fixture_and_protected_intersections
 def test_corpus_firewall_blocks_unproved_point_in_time_evidence() -> None:
     groups = list(_passing_groups())
     source = groups[1]
-    groups[1] = EvaluationV2CorpusGroupV1(
+    groups[1] = PitchApiRetrospectiveCorpusGroupV1(
         scope_key=source.scope_key,
         role=source.role,
         competition_ref=source.competition_ref,
@@ -243,13 +295,20 @@ def test_corpus_firewall_blocks_unproved_point_in_time_evidence() -> None:
         source_series_sha256=source.source_series_sha256,
         target_plan_sha256=source.target_plan_sha256,
         cutoff_evidence_sha256=source.cutoff_evidence_sha256,
+        firewall_access_audit_sha256=source.firewall_access_audit_sha256,
+        nominal_match_count=source.nominal_match_count,
         match_ids=source.match_ids,
         target_ids=source.target_ids,
+        exclusion_counts=source.exclusion_counts,
         point_in_time_status="UNPROVED",
     )
 
-    report = validate_evaluation_v2_corpus_firewall(
-        tuple(groups), protected_match_ids=frozenset(), protected_scope_refs=frozenset()
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        tuple(groups),
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(tuple(groups)),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
     )
 
     assert report.status == "UNPROVED"
@@ -259,10 +318,18 @@ def test_corpus_firewall_blocks_unproved_point_in_time_evidence() -> None:
 def test_corpus_firewall_rejects_development_competition_reuse_and_low_targets() -> None:
     groups = list(_passing_groups())
     groups[0] = replace(groups[0], competition_ref="bundesliga")
-    groups[3] = replace(groups[3], target_ids=groups[3].target_ids[:1])
+    groups[3] = replace(
+        groups[3],
+        target_ids=groups[3].target_ids[:1],
+        exclusion_counts=(("HISTORY_WARMUP", groups[3].nominal_match_count - 1),),
+    )
 
-    report = validate_evaluation_v2_corpus_firewall(
-        tuple(groups), protected_match_ids=frozenset(), protected_scope_refs=frozenset()
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        tuple(groups),
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(tuple(groups)),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
     )
 
     assert report.status == "FAIL"
@@ -270,20 +337,50 @@ def test_corpus_firewall_rejects_development_competition_reuse_and_low_targets()
     assert "EVALUATION_TARGET_COUNT_BELOW_MINIMUM" in report.findings
 
 
+def test_corpus_firewall_rejects_reused_competition_season_scope() -> None:
+    groups = list(_passing_groups())
+    groups[3] = replace(
+        groups[3],
+        competition_ref=groups[2].competition_ref,
+        season_ref=groups[2].season_ref,
+    )
+
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        tuple(groups),
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(tuple(groups)),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
+    )
+
+    assert report.status == "FAIL"
+    assert "CROSS_GROUP_SCOPE_INTERSECTION" in report.findings
+
+
 def test_corpus_hash_is_order_independent_and_binds_roles_and_membership() -> None:
     groups = _passing_groups()
-    first = validate_evaluation_v2_corpus_firewall(
-        groups, protected_match_ids=frozenset(), protected_scope_refs=frozenset()
+    first = validate_pitchapi_retrospective_corpus_firewall(
+        groups,
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(groups),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
     )
-    reordered = validate_evaluation_v2_corpus_firewall(
-        tuple(reversed(groups)), protected_match_ids=frozenset(), protected_scope_refs=frozenset()
+    reordered = validate_pitchapi_retrospective_corpus_firewall(
+        tuple(reversed(groups)),
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(groups),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
     )
 
     assert first.corpus_sha256 == reordered.corpus_sha256
     assert first.firewall_sha256 == reordered.firewall_sha256
 
-    different_protected_manifest = validate_evaluation_v2_corpus_firewall(
+    different_protected_manifest = validate_pitchapi_retrospective_corpus_firewall(
         groups,
+        policy=_proposed_policy(),
+        snapshot_identities=_snapshots(groups),
         protected_match_ids=frozenset({uuid5(NAMESPACE, "another-protected-match")}),
         protected_scope_refs=frozenset(),
     )
@@ -293,14 +390,72 @@ def test_corpus_hash_is_order_independent_and_binds_roles_and_membership() -> No
 
 def test_one_immutable_export_snapshot_may_cover_multiple_groups() -> None:
     groups = _passing_groups()
-    shared_snapshot = groups[0].source_snapshot_id
-    shared = tuple(replace(group, source_snapshot_id=shared_snapshot) for group in groups)
+    shared_snapshot = _snapshot(groups[0].scope_key)
+    shared = tuple(
+        replace(
+            group,
+            source_snapshot_id=shared_snapshot.snapshot_id,
+            source_snapshot_sha256=shared_snapshot.sha256,
+        )
+        for group in groups
+    )
 
-    report = validate_evaluation_v2_corpus_firewall(
-        shared, protected_match_ids=frozenset(), protected_scope_refs=frozenset()
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        shared,
+        policy=_proposed_policy(),
+        snapshot_identities=(shared_snapshot,),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
     )
 
     assert report.status == "PASS"
+
+
+def test_corpus_firewall_rejects_snapshot_identity_mismatch() -> None:
+    groups = _passing_groups()
+    snapshots = list(_snapshots(groups))
+    snapshots[1] = replace(snapshots[1], configuration_sha256="8" * 64)
+
+    report = validate_pitchapi_retrospective_corpus_firewall(
+        groups,
+        policy=_proposed_policy(),
+        snapshot_identities=tuple(snapshots),
+        protected_match_ids=frozenset(),
+        protected_scope_refs=frozenset(),
+    )
+
+    assert report.status == "FAIL"
+    assert "SNAPSHOT_IDENTITY_MISMATCH:bundesliga" in report.findings
+
+
+def test_snapshot_identity_binds_raw_normalized_mapping_and_build_inputs() -> None:
+    snapshot = PitchApiSnapshotIdentityV1(
+        snapshot_id=uuid5(NAMESPACE, "snapshot"),
+        acquired_at=datetime(2026, 9, 24, tzinfo=UTC),
+        resources=(
+            PitchApiSnapshotResourceIdentityV1("season", "1" * 64, "3" * 64),
+            PitchApiSnapshotResourceIdentityV1("shots/match", "2" * 64, "4" * 64),
+        ),
+        canonical_mapping_sha256="5" * 64,
+        adapter_version="pitchapi-adapter-v1",
+        configuration_sha256="6" * 64,
+        code_git_sha="7" * 40,
+    )
+
+    reordered = replace(
+        snapshot,
+        resources=tuple(reversed(snapshot.resources)),
+    )
+
+    assert snapshot.sha256 == reordered.sha256
+    assert replace(snapshot, canonical_mapping_sha256="8" * 64).sha256 != snapshot.sha256
+
+
+def test_corpus_group_requires_exact_exclusion_reconciliation() -> None:
+    source = _passing_groups()[1]
+
+    with pytest.raises(ValueError, match="do not reconcile"):
+        replace(source, exclusion_counts=(("HISTORY_WARMUP", 1),))
 
 
 def test_pitchapi_provisional_target_counts_expose_competition_history_ambiguity() -> None:

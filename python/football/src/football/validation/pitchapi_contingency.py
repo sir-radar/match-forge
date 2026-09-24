@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
@@ -10,6 +11,9 @@ from football.contracts.source import SHA256_PATTERN, canonical_json_bytes
 
 GateStatus = Literal["PASS", "FAIL", "UNPROVED"]
 CorpusRole = Literal["development", "evaluation"]
+PITCHAPI_RETROSPECTIVE_EVALUATION_V1 = "PITCHAPI_RETROSPECTIVE_EVALUATION_V1"
+PITCHAPI_SNAPSHOT_V1 = "PITCHAPI_SNAPSHOT_V1"
+_GIT_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
 class PitchApiContingencyError(ValueError):
@@ -147,7 +151,140 @@ def qualify_pitchapi_source_series(
 
 
 @dataclass(frozen=True, slots=True)
-class EvaluationV2CorpusGroupV1:
+class PitchApiRetrospectivePolicyV1:
+    development_group_count: int
+    minimum_evaluation_groups: int
+    minimum_evaluation_competitions: int
+    minimum_evaluation_seasons: int
+    minimum_nominal_matches_per_evaluation_group: int
+    minimum_evaluation_targets: int
+    require_development_competition_independence: bool
+    evaluation_protocol_id: str = PITCHAPI_RETROSPECTIVE_EVALUATION_V1
+    contract: str = "PitchApiRetrospectivePolicyV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiRetrospectivePolicyV1":
+            raise PitchApiContingencyError("unsupported PitchAPI retrospective policy contract")
+        if self.evaluation_protocol_id != PITCHAPI_RETROSPECTIVE_EVALUATION_V1:
+            raise PitchApiContingencyError("unsupported PitchAPI retrospective protocol")
+        for field_name in (
+            "development_group_count",
+            "minimum_evaluation_groups",
+            "minimum_evaluation_competitions",
+            "minimum_evaluation_seasons",
+            "minimum_nominal_matches_per_evaluation_group",
+            "minimum_evaluation_targets",
+        ):
+            value = getattr(self, field_name)
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise PitchApiContingencyError(f"{field_name} must be a positive integer")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "evaluation_protocol_id": self.evaluation_protocol_id,
+            "development_group_count": self.development_group_count,
+            "minimum_evaluation_groups": self.minimum_evaluation_groups,
+            "minimum_evaluation_competitions": self.minimum_evaluation_competitions,
+            "minimum_evaluation_seasons": self.minimum_evaluation_seasons,
+            "minimum_nominal_matches_per_evaluation_group": (
+                self.minimum_nominal_matches_per_evaluation_group
+            ),
+            "minimum_evaluation_targets": self.minimum_evaluation_targets,
+            "require_development_competition_independence": (
+                self.require_development_competition_independence
+            ),
+        }
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiSnapshotResourceIdentityV1:
+    resource_ref: str
+    raw_sha256: str
+    normalized_sha256: str
+    contract: str = "PitchApiSnapshotResourceIdentityV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiSnapshotResourceIdentityV1" or not self.resource_ref:
+            raise PitchApiContingencyError("unsupported or unnamed snapshot resource identity")
+        if not SHA256_PATTERN.fullmatch(self.raw_sha256) or not SHA256_PATTERN.fullmatch(
+            self.normalized_sha256
+        ):
+            raise PitchApiContingencyError("snapshot resource identity contains an invalid SHA-256")
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "contract": self.contract,
+            "resource_ref": self.resource_ref,
+            "raw_sha256": self.raw_sha256,
+            "normalized_sha256": self.normalized_sha256,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiSnapshotIdentityV1:
+    snapshot_id: UUID
+    acquired_at: datetime
+    resources: tuple[PitchApiSnapshotResourceIdentityV1, ...]
+    canonical_mapping_sha256: str
+    adapter_version: str
+    configuration_sha256: str
+    code_git_sha: str
+    predecessor_snapshot_sha256: str | None = None
+    snapshot_protocol_id: str = PITCHAPI_SNAPSHOT_V1
+    contract: str = "PitchApiSnapshotIdentityV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiSnapshotIdentityV1":
+            raise PitchApiContingencyError("unsupported PitchAPI snapshot contract")
+        if self.snapshot_protocol_id != PITCHAPI_SNAPSHOT_V1:
+            raise PitchApiContingencyError("unsupported PitchAPI snapshot protocol")
+        if self.acquired_at.tzinfo is None or self.acquired_at.utcoffset() is None:
+            raise PitchApiContingencyError("snapshot acquired_at must include a timezone")
+        resource_refs = [resource.resource_ref for resource in self.resources]
+        if not resource_refs or len(resource_refs) != len(set(resource_refs)):
+            raise PitchApiContingencyError(
+                "snapshot resource references must be present and unique"
+            )
+        hash_values: tuple[str, ...] = (
+            self.canonical_mapping_sha256,
+            self.configuration_sha256,
+        )
+        if self.predecessor_snapshot_sha256 is not None:
+            hash_values = (*hash_values, self.predecessor_snapshot_sha256)
+        if any(not SHA256_PATTERN.fullmatch(value) for value in hash_values):
+            raise PitchApiContingencyError("snapshot identity contains an invalid SHA-256")
+        if not self.adapter_version or not _GIT_SHA_PATTERN.fullmatch(self.code_git_sha):
+            raise PitchApiContingencyError("snapshot adapter version and code Git SHA are required")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "contract": self.contract,
+            "snapshot_protocol_id": self.snapshot_protocol_id,
+            "snapshot_id": str(self.snapshot_id),
+            "acquired_at": self.acquired_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+            "resources": [
+                resource.to_dict()
+                for resource in sorted(self.resources, key=lambda item: item.resource_ref)
+            ],
+            "canonical_mapping_sha256": self.canonical_mapping_sha256,
+            "adapter_version": self.adapter_version,
+            "configuration_sha256": self.configuration_sha256,
+            "code_git_sha": self.code_git_sha,
+            "predecessor_snapshot_sha256": self.predecessor_snapshot_sha256,
+        }
+
+    @property
+    def sha256(self) -> str:
+        return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiRetrospectiveCorpusGroupV1:
     scope_key: str
     role: CorpusRole
     competition_ref: str
@@ -157,38 +294,34 @@ class EvaluationV2CorpusGroupV1:
     source_series_sha256: str
     target_plan_sha256: str
     cutoff_evidence_sha256: str
+    firewall_access_audit_sha256: str
+    nominal_match_count: int
     match_ids: tuple[UUID, ...]
     target_ids: tuple[UUID, ...]
+    exclusion_counts: tuple[tuple[str, int], ...]
     point_in_time_status: GateStatus
-    contract: str = "EvaluationV2CorpusGroupV1"
+    evaluation_protocol_id: str = PITCHAPI_RETROSPECTIVE_EVALUATION_V1
+    contract: str = "PitchApiRetrospectiveCorpusGroupV1"
 
     def __post_init__(self) -> None:
-        if self.contract != "EvaluationV2CorpusGroupV1":
-            raise PitchApiContingencyError("unsupported Evaluation V2 corpus group contract")
+        if self.contract != "PitchApiRetrospectiveCorpusGroupV1":
+            raise PitchApiContingencyError("unsupported PitchAPI retrospective group contract")
+        if self.evaluation_protocol_id != PITCHAPI_RETROSPECTIVE_EVALUATION_V1:
+            raise PitchApiContingencyError("PitchAPI group has the wrong evaluation protocol")
         if self.role not in ("development", "evaluation"):
             raise PitchApiContingencyError("unsupported corpus role")
         if not self.scope_key or not self.competition_ref or not self.season_ref:
             raise PitchApiContingencyError("group identity fields are required")
-        for field_name in (
-            "source_snapshot_sha256",
-            "source_series_sha256",
-            "target_plan_sha256",
-            "cutoff_evidence_sha256",
-        ):
-            if not SHA256_PATTERN.fullmatch(getattr(self, field_name)):
-                raise PitchApiContingencyError(f"{field_name} must be a SHA-256")
-        if len(self.match_ids) != len(set(self.match_ids)):
-            raise PitchApiContingencyError("group match IDs must be unique")
-        if len(self.target_ids) != len(set(self.target_ids)):
-            raise PitchApiContingencyError("group target IDs must be unique")
-        if not set(self.target_ids) <= set(self.match_ids):
-            raise PitchApiContingencyError("group targets must be members of its match corpus")
+        _validate_group_hashes(self)
+        _validate_group_membership(self)
+        _validate_group_exclusions(self)
         if self.point_in_time_status not in ("PASS", "FAIL", "UNPROVED"):
             raise PitchApiContingencyError("unsupported point-in-time status")
 
     def to_dict(self) -> dict[str, object]:
         return {
             "contract": self.contract,
+            "evaluation_protocol_id": self.evaluation_protocol_id,
             "scope_key": self.scope_key,
             "role": self.role,
             "competition_ref": self.competition_ref,
@@ -198,15 +331,57 @@ class EvaluationV2CorpusGroupV1:
             "source_series_sha256": self.source_series_sha256,
             "target_plan_sha256": self.target_plan_sha256,
             "cutoff_evidence_sha256": self.cutoff_evidence_sha256,
+            "firewall_access_audit_sha256": self.firewall_access_audit_sha256,
+            "nominal_match_count": self.nominal_match_count,
             "match_ids": sorted(str(value) for value in self.match_ids),
             "target_ids": sorted(str(value) for value in self.target_ids),
+            "exclusion_counts": [
+                {"reason": reason, "count": count}
+                for reason, count in sorted(self.exclusion_counts)
+            ],
             "point_in_time_status": self.point_in_time_status,
         }
 
 
+def _validate_group_hashes(group: PitchApiRetrospectiveCorpusGroupV1) -> None:
+    for field_name in (
+        "source_snapshot_sha256",
+        "source_series_sha256",
+        "target_plan_sha256",
+        "cutoff_evidence_sha256",
+        "firewall_access_audit_sha256",
+    ):
+        if not SHA256_PATTERN.fullmatch(getattr(group, field_name)):
+            raise PitchApiContingencyError(f"{field_name} must be a SHA-256")
+
+
+def _validate_group_membership(group: PitchApiRetrospectiveCorpusGroupV1) -> None:
+    if len(group.match_ids) != len(set(group.match_ids)):
+        raise PitchApiContingencyError("group match IDs must be unique")
+    if len(group.target_ids) != len(set(group.target_ids)):
+        raise PitchApiContingencyError("group target IDs must be unique")
+    if not set(group.target_ids) <= set(group.match_ids):
+        raise PitchApiContingencyError("group targets must be members of its match corpus")
+
+
+def _validate_group_exclusions(group: PitchApiRetrospectiveCorpusGroupV1) -> None:
+    exclusion_names = [name for name, _count in group.exclusion_counts]
+    if len(exclusion_names) != len(set(exclusion_names)):
+        raise PitchApiContingencyError("group exclusion reasons must be unique")
+    if any(not name or count < 0 for name, count in group.exclusion_counts):
+        raise PitchApiContingencyError("group exclusion counts must be named and non-negative")
+    if group.nominal_match_count <= 0:
+        raise PitchApiContingencyError("group nominal match count must be positive")
+    excluded_count = sum(count for _name, count in group.exclusion_counts)
+    if len(group.target_ids) + excluded_count != group.nominal_match_count:
+        raise PitchApiContingencyError("group target and exclusion counts do not reconcile")
+
+
 @dataclass(frozen=True, slots=True)
-class EvaluationV2CorpusGateReportV1:
+class PitchApiRetrospectiveCorpusGateReportV1:
     status: GateStatus
+    evaluation_protocol_id: str
+    policy_sha256: str
     corpus_sha256: str
     firewall_sha256: str
     evaluation_group_count: int
@@ -214,11 +389,13 @@ class EvaluationV2CorpusGateReportV1:
     evaluation_season_count: int
     evaluation_target_count: int
     findings: tuple[str, ...]
-    contract: str = "EvaluationV2CorpusGateReportV1"
+    contract: str = "PitchApiRetrospectiveCorpusGateReportV1"
 
     def to_dict(self) -> dict[str, object]:
         return {
             "contract": self.contract,
+            "evaluation_protocol_id": self.evaluation_protocol_id,
+            "policy_sha256": self.policy_sha256,
             "status": self.status,
             "corpus_sha256": self.corpus_sha256,
             "firewall_sha256": self.firewall_sha256,
@@ -230,12 +407,14 @@ class EvaluationV2CorpusGateReportV1:
         }
 
 
-def validate_evaluation_v2_corpus_firewall(
-    groups: tuple[EvaluationV2CorpusGroupV1, ...],
+def validate_pitchapi_retrospective_corpus_firewall(
+    groups: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
     *,
+    policy: PitchApiRetrospectivePolicyV1,
+    snapshot_identities: tuple[PitchApiSnapshotIdentityV1, ...],
     protected_match_ids: frozenset[UUID],
     protected_scope_refs: frozenset[tuple[str, str]],
-) -> EvaluationV2CorpusGateReportV1:
+) -> PitchApiRetrospectiveCorpusGateReportV1:
     findings: set[str] = set()
     scope_keys = [group.scope_key for group in groups]
     if not groups or len(scope_keys) != len(set(scope_keys)):
@@ -249,21 +428,28 @@ def validate_evaluation_v2_corpus_firewall(
         _corpus_minimum_findings(
             development,
             evaluation,
+            policy,
             competition_count,
             season_count,
             target_count,
         )
     )
+    findings.update(_snapshot_identity_findings(groups, snapshot_identities))
     findings.update(
         _corpus_isolation_findings(
             groups,
             development,
             evaluation,
+            policy,
             protected_match_ids,
             protected_scope_refs,
         )
     )
-    corpus_payload = [group.to_dict() for group in sorted(groups, key=lambda item: item.scope_key)]
+    corpus_payload = {
+        "evaluation_protocol_id": policy.evaluation_protocol_id,
+        "policy_sha256": policy.sha256,
+        "groups": [group.to_dict() for group in sorted(groups, key=lambda item: item.scope_key)],
+    }
     corpus_sha256 = hashlib.sha256(canonical_json_bytes(corpus_payload)).hexdigest()
     firewall_payload = {
         "corpus_sha256": corpus_sha256,
@@ -280,8 +466,10 @@ def validate_evaluation_v2_corpus_firewall(
         status: GateStatus = "FAIL"
     else:
         status = "UNPROVED" if unproved_findings else "PASS"
-    return EvaluationV2CorpusGateReportV1(
+    return PitchApiRetrospectiveCorpusGateReportV1(
         status=status,
+        evaluation_protocol_id=policy.evaluation_protocol_id,
+        policy_sha256=policy.sha256,
         corpus_sha256=corpus_sha256,
         firewall_sha256=firewall_sha256,
         evaluation_group_count=len(evaluation),
@@ -292,42 +480,82 @@ def validate_evaluation_v2_corpus_firewall(
     )
 
 
+def _snapshot_identity_findings(
+    groups: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    snapshots: tuple[PitchApiSnapshotIdentityV1, ...],
+) -> set[str]:
+    by_id = {snapshot.snapshot_id: snapshot for snapshot in snapshots}
+    if len(by_id) != len(snapshots):
+        return {"SNAPSHOT_IDENTITIES_DUPLICATED"}
+    findings: set[str] = set()
+    for group in groups:
+        snapshot = by_id.get(group.source_snapshot_id)
+        if snapshot is None:
+            findings.add(f"SNAPSHOT_IDENTITY_MISSING:{group.scope_key}")
+        elif snapshot.sha256 != group.source_snapshot_sha256:
+            findings.add(f"SNAPSHOT_IDENTITY_MISMATCH:{group.scope_key}")
+    return findings
+
+
 def _corpus_minimum_findings(
-    development: tuple[EvaluationV2CorpusGroupV1, ...],
-    evaluation: tuple[EvaluationV2CorpusGroupV1, ...],
+    development: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    evaluation: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    policy: PitchApiRetrospectivePolicyV1,
     competition_count: int,
     season_count: int,
     target_count: int,
 ) -> set[str]:
     findings: set[str] = set()
     checks = (
-        (len(development) != 1, "DEVELOPMENT_GROUP_COUNT_INVALID"),
-        (len(evaluation) < 3, "EVALUATION_GROUP_COUNT_BELOW_MINIMUM"),
         (
-            any(len(group.match_ids) < 120 for group in evaluation),
+            len(development) != policy.development_group_count,
+            "DEVELOPMENT_GROUP_COUNT_INVALID",
+        ),
+        (
+            len(evaluation) < policy.minimum_evaluation_groups,
+            "EVALUATION_GROUP_COUNT_BELOW_MINIMUM",
+        ),
+        (
+            any(
+                group.nominal_match_count < policy.minimum_nominal_matches_per_evaluation_group
+                for group in evaluation
+            ),
             "EVALUATION_GROUP_MATCH_COUNT_BELOW_MINIMUM",
         ),
-        (competition_count < 2, "EVALUATION_COMPETITION_COUNT_BELOW_MINIMUM"),
-        (season_count < 2, "EVALUATION_SEASON_COUNT_BELOW_MINIMUM"),
-        (target_count < 500, "EVALUATION_TARGET_COUNT_BELOW_MINIMUM"),
+        (
+            competition_count < policy.minimum_evaluation_competitions,
+            "EVALUATION_COMPETITION_COUNT_BELOW_MINIMUM",
+        ),
+        (
+            season_count < policy.minimum_evaluation_seasons,
+            "EVALUATION_SEASON_COUNT_BELOW_MINIMUM",
+        ),
+        (
+            target_count < policy.minimum_evaluation_targets,
+            "EVALUATION_TARGET_COUNT_BELOW_MINIMUM",
+        ),
     )
     findings.update(code for failed, code in checks if failed)
     return findings
 
 
 def _corpus_isolation_findings(
-    groups: tuple[EvaluationV2CorpusGroupV1, ...],
-    development: tuple[EvaluationV2CorpusGroupV1, ...],
-    evaluation: tuple[EvaluationV2CorpusGroupV1, ...],
+    groups: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    development: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    evaluation: tuple[PitchApiRetrospectiveCorpusGroupV1, ...],
+    policy: PitchApiRetrospectivePolicyV1,
     protected_match_ids: frozenset[UUID],
     protected_scope_refs: frozenset[tuple[str, str]],
 ) -> set[str]:
     findings: set[str] = set()
-    if {group.competition_ref for group in development} & {
-        group.competition_ref for group in evaluation
-    }:
+    scope_refs = [(group.competition_ref, group.season_ref) for group in groups]
+    if len(scope_refs) != len(set(scope_refs)):
+        findings.add("CROSS_GROUP_SCOPE_INTERSECTION")
+    if policy.require_development_competition_independence and {
+        group.competition_ref for group in development
+    } & {group.competition_ref for group in evaluation}:
         findings.add("DEVELOPMENT_EVALUATION_COMPETITION_INTERSECTION")
-    if {(group.competition_ref, group.season_ref) for group in groups} & protected_scope_refs:
+    if set(scope_refs) & protected_scope_refs:
         findings.add("PROTECTED_SCOPE_INCLUDED")
     all_seen: set[UUID] = set()
     for group in groups:
