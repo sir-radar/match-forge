@@ -1,0 +1,29 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1",
+  "status": "APPROVED",
+  "recorded_at": "2026-09-24T06:30:08Z",
+  "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+  "snapshot_series_id": "PITCHAPI_SNAPSHOT_V1",
+  "history": {
+    "minimum_team_prior_appearances": 10,
+    "minimum_competition_prior_matches": null
+  },
+  "architecture": {
+    "development_groups": 1,
+    "minimum_evaluation_groups": 3,
+    "minimum_evaluation_competitions": 2,
+    "minimum_evaluation_seasons": 2,
+    "minimum_exact_evaluation_targets": 500,
+    "nominal_match_screen": 120,
+    "immutable_snapshot_required": true,
+    "rust_simulation_required": true
+  },
+  "exact_group_roles_approved": false,
+  "compatibility_thresholds_approved": false,
+  "api_attempts_remaining": 10,
+  "api_attempts_authorized": 0,
+  "acquisition_authorized": false,
+  "evaluation_execution_authorized": false,
+  "frozen_evaluation_v2_changed": false
+}

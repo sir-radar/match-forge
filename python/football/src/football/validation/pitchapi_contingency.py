@@ -228,7 +228,12 @@ class PitchApiRetrospectivePolicyV1:
     minimum_evaluation_seasons: int
     minimum_nominal_matches_per_evaluation_group: int
     minimum_evaluation_targets: int
+    minimum_team_history: int
+    minimum_competition_history: int | None
     require_development_competition_independence: bool
+    require_immutable_snapshot: bool
+    require_rust_simulation: bool
+    historical_time_mode: str = "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION"
     evaluation_protocol_id: str = PITCHAPI_RETROSPECTIVE_EVALUATION_V1
     contract: str = "PitchApiRetrospectivePolicyV1"
 
@@ -244,10 +249,32 @@ class PitchApiRetrospectivePolicyV1:
             "minimum_evaluation_seasons",
             "minimum_nominal_matches_per_evaluation_group",
             "minimum_evaluation_targets",
+            "minimum_team_history",
         ):
             value = getattr(self, field_name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise PitchApiContingencyError(f"{field_name} must be a positive integer")
+        frozen_values = {
+            "development_group_count": 1,
+            "minimum_evaluation_groups": 3,
+            "minimum_evaluation_competitions": 2,
+            "minimum_evaluation_seasons": 2,
+            "minimum_nominal_matches_per_evaluation_group": 120,
+            "minimum_evaluation_targets": 500,
+            "minimum_team_history": 10,
+        }
+        if any(getattr(self, name) != value for name, value in frozen_values.items()):
+            raise PitchApiContingencyError("PitchAPI V1 frozen policy values must not change")
+        if self.minimum_competition_history is not None:
+            raise PitchApiContingencyError(
+                "PitchAPI V1 must not inherit a competition-history target threshold"
+            )
+        if not self.require_immutable_snapshot or not self.require_rust_simulation:
+            raise PitchApiContingencyError(
+                "PitchAPI V1 requires an immutable snapshot and Rust simulation"
+            )
+        if self.historical_time_mode != "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION":
+            raise PitchApiContingencyError("unsupported PitchAPI historical-time mode")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -261,9 +288,14 @@ class PitchApiRetrospectivePolicyV1:
                 self.minimum_nominal_matches_per_evaluation_group
             ),
             "minimum_evaluation_targets": self.minimum_evaluation_targets,
+            "minimum_team_history": self.minimum_team_history,
+            "minimum_competition_history": self.minimum_competition_history,
             "require_development_competition_independence": (
                 self.require_development_competition_independence
             ),
+            "require_immutable_snapshot": self.require_immutable_snapshot,
+            "require_rust_simulation": self.require_rust_simulation,
+            "historical_time_mode": self.historical_time_mode,
         }
 
     @property

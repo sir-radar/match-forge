@@ -1,0 +1,77 @@
+{
+  "contract": "PitchApiRetrospectiveEvaluationPolicyProposalV1",
+  "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+  "snapshot_series_id": "PITCHAPI_SNAPSHOT_V1",
+  "status": "PARTIALLY_FROZEN_ACQUISITION_NOT_AUTHORIZED",
+  "frozen": {
+    "historical_time_mode": "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION",
+    "development_group_count": 1,
+    "minimum_evaluation_groups": 3,
+    "minimum_evaluation_competitions": 2,
+    "minimum_evaluation_seasons": 2,
+    "minimum_nominal_matches_screen": 120,
+    "minimum_exact_evaluation_targets": 500,
+    "minimum_team_history": 10,
+    "minimum_competition_history": null,
+    "immutable_snapshot_required": true,
+    "rust_simulation_required": true
+  },
+  "proposed_compatibility": {
+    "maximum_missing_rate": 0.0,
+    "minimum_penalty_shots": 20,
+    "minimum_penalty_xg": 0.65,
+    "maximum_penalty_xg": 0.9,
+    "maximum_penalty_iqr": 0.05,
+    "warning_penalty_iqr": 0.04,
+    "maximum_penalty_median_difference": 0.05,
+    "warning_penalty_median_difference": 0.04,
+    "minimum_calibration_shots": 1000,
+    "maximum_absolute_calibration_intercept": 0.25,
+    "warning_absolute_calibration_intercept": 0.2,
+    "minimum_calibration_slope": 0.8,
+    "warning_minimum_calibration_slope": 0.85,
+    "warning_maximum_calibration_slope": 1.15,
+    "maximum_calibration_slope": 1.2,
+    "minimum_situation_shots": 100,
+    "maximum_distribution_discontinuity": 0.1,
+    "warning_distribution_discontinuity": 0.08,
+    "calibration_method": "logistic-outcome-on-logit-xg",
+    "distribution_method": "two-sample-kolmogorov-smirnov",
+    "multiple_testing_method": "holm-bonferroni-descriptive-only",
+    "sensitivity_analysis_id": "PITCHAPI_XG_COMPATIBILITY_SENSITIVITY_V1"
+  },
+  "proposed_primary_groups": {
+    "development": ["ligue1:2021/2022"],
+    "evaluation": [
+      "bundesliga:2022/2023",
+      "bundesliga:2023/2024",
+      "ligue1:2022/2023"
+    ],
+    "backup": ["bundesliga:2021/2022"],
+    "projected_evaluation_targets": 712
+  },
+  "proposed_acquisition_options": {
+    "minimum_viable": {
+      "base_requests": 1302,
+      "retry_reserve": 27,
+      "hard_attempt_ceiling": 1329,
+      "hard_storage_ceiling_gib": 6
+    },
+    "recommended_role_separation": {
+      "base_requests": 1376,
+      "retry_reserve": 28,
+      "hard_attempt_ceiling": 1404,
+      "hard_storage_ceiling_gib": 6
+    },
+    "higher_confidence_with_backup": {
+      "base_requests": 1683,
+      "retry_reserve": 34,
+      "hard_attempt_ceiling": 1717,
+      "hard_storage_ceiling_gib": 8
+    }
+  },
+  "api_attempts_remaining": 10,
+  "api_attempts_authorized": 0,
+  "acquisition_authorized": false,
+  "evaluation_execution_authorized": false
+}

@@ -192,7 +192,11 @@ def _proposed_policy() -> PitchApiRetrospectivePolicyV1:
         minimum_evaluation_seasons=2,
         minimum_nominal_matches_per_evaluation_group=120,
         minimum_evaluation_targets=500,
+        minimum_team_history=10,
+        minimum_competition_history=None,
         require_development_competition_independence=True,
+        require_immutable_snapshot=True,
+        require_rust_simulation=True,
     )
 
 
@@ -518,6 +522,20 @@ def test_pitchapi_provisional_target_counts_expose_competition_history_ambiguity
     assert _target_count("ligue1", 20, 1) == 280
     assert _target_count("bundesliga", 18, 100) == 198
     assert _target_count("ligue1", 20, 100) == 280
+
+
+def test_pitchapi_policy_freezes_team_history_without_legacy_competition_warmup() -> None:
+    policy = _proposed_policy()
+
+    assert policy.minimum_team_history == 10
+    assert policy.minimum_competition_history is None
+    assert policy.require_rust_simulation is True
+    assert policy.historical_time_mode == "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION"
+
+    with pytest.raises(ValueError, match="must not inherit"):
+        replace(policy, minimum_competition_history=100)
+    with pytest.raises(ValueError, match="must not change"):
+        replace(policy, minimum_team_history=9)
 
 
 def test_snapshot_revision_chain_is_append_only_and_versioned() -> None:

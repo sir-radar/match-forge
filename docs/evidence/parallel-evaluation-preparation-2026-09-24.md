@@ -11,11 +11,17 @@ The acquisition and evaluation prohibitions remain. The current complete
 proposal is in
 `docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md`.
 
+Later update: `APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1`
+freezes team-last-10 eligibility without the legacy 100-match threshold and
+freezes the high-level group architecture. Exact roles, compatibility
+thresholds, and acquisition remain open. Current policy:
+`docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md`.
+
 This record keeps two separate tracks:
 
 - `EVALUATION_V2 / STATSBOMB`: frozen protocol, awaiting provider response.
 - `PITCHAPI_RETROSPECTIVE_EVALUATION_V1`: separate retrospective protocol,
-  still `TECHNICALLY_COMPLETE_RESEARCH_ONLY`.
+  `POLICY_PARTIALLY_FROZEN_ACQUISITION_NOT_AUTHORIZED`.
 
 No StatsBomb follow-up, PitchAPI contact, API request, raw-response retention,
 acquisition, corpus admission, model fitting, or evaluation run occurred. All
@@ -215,21 +221,24 @@ freeze, implementation, and authoritative run.
 
 ### `PITCHAPI_RETROSPECTIVE_EVALUATION_V1`
 
-Blockers: no frozen group policy; history/warm-up rule unresolved; no frozen xG
-compatibility thresholds; no admitted development group or third evaluation
-group; immutable snapshot, exact mappings and corpus/firewall hashes do not
-exist; acquisition and evaluation remain unauthorized. Upstream model identity
-and pre-acquisition history remain irreducible disclosed limitations, not
-provider-attestation gates.
+Frozen: one development group; at least three evaluation groups, two
+competitions, two seasons, and 500 exact targets; team-last-10 eligibility; no
+100-match competition target threshold; immutable snapshot and Rust
+requirements.
+
+Blockers: exact group roles and cross-role competition sharing are not frozen;
+compatibility thresholds are not frozen; immutable snapshot, exact mappings,
+and corpus/firewall hashes do not exist; acquisition and evaluation remain
+unauthorized. Upstream model identity and pre-acquisition history remain
+irreducible disclosed limitations, not provider-attestation gates.
 
 Owner decisions now required:
 
-1. Freeze or reject the proposed one-development/three-evaluation/two-
-   competition/two-season/500-target architecture and 120-match screening floor.
+1. `APPROVED`: one-development/three-evaluation/two-competition/two-season/
+   500-target architecture and 120-match screening-only floor.
 2. Decide whether development and evaluation may use different seasons of the
    same competition.
-3. For each protocol, decide team-history-only versus a separate global
-   training minimum; do not silently inherit Sprint 2's 100-match threshold.
+3. `APPROVED`: team-history 10 only; no Sprint 2 100-match target threshold.
 4. Freeze xG compatibility methodology and numeric thresholds before real
    results.
 5. Later, separately authorize provider/legal evidence, exact API request and

@@ -103,6 +103,17 @@ for execution. No API call, acquisition, fitting, simulation, evaluation, or
 spend is authorized. Evaluation V2 remains unchanged. See the [PitchAPI owner
 decision package](docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md).
 
+Owner decision `APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1`,
+recorded on **24 September 2026**, freezes team-last-10 target eligibility with
+no inherited 100-match competition threshold. It also freezes exactly one
+development group, at least three evaluation groups, two competitions, two
+seasons, 500 exact targets, isolation, immutable snapshots, and mandatory Rust
+simulation. Exact roles, compatibility thresholds, and acquisition remain
+unapproved. The recommended balanced route uses Ligue 1 2021/22 for development
+and Bundesliga 2022/23, Bundesliga 2023/24, and Ligue 1 2022/23 for evaluation;
+it projects 712 targets and requires 1,376 base requests plus 28 retries. See
+the [partially frozen PitchAPI policy](docs/evaluation/pitchapi-retrospective-evaluation-v1-policy.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.
