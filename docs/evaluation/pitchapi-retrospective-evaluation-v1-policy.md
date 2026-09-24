@@ -1,10 +1,13 @@
 # PitchAPI retrospective evaluation V1 policy
 
-Status: `PARTIALLY FROZEN — ACQUISITION NOT AUTHORIZED`
+Status: `FROZEN — CONTROLLED ACQUISITION AUTHORIZED; EVALUATION NOT AUTHORIZED`
 
 This policy is separate from StatsBomb `EVALUATION_V2`. Approved rules are
-marked `FROZEN`. Exact group roles, compatibility thresholds, acquisition, and
-execution remain proposals until separately approved.
+marked `FROZEN`. Owner decision
+`AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1` freezes the exact
+group roles, compatibility thresholds, immutable retention, and controlled
+acquisition limits. Corpus admission, preregistration, model work, Rust
+simulation, and evaluation execution remain separately unauthorized.
 
 ## Frozen protocol rules
 
@@ -37,7 +40,7 @@ evaluation/metric/simulation configuration hashes, evaluation date, and exact
 target count. Default reports cannot pool PitchAPI and Evaluation V2 metrics.
 Cross-protocol reporting must use `cross_evaluation_robustness`.
 
-## Proposed group assignment
+## Frozen group assignment
 
 This is the owner's preferred layout for final approval. It is the smallest
 layout supported by current evidence that meets the frozen group architecture,
@@ -69,7 +72,7 @@ disjoint, supplies a complete last-10 feature warm-up, and is excluded from all
 evaluation metrics. Sharing a competition does not make it independent, so all
 Bundesliga-only conclusions must be checked against Ligue 1 2022/23.
 
-## Proposed observational xG compatibility gate
+## Frozen observational xG compatibility gate
 
 Freeze the complete policy hash before acquiring candidate groups. Compute
 diagnostics from the frozen snapshot before inspecting MatchForge forecasting
@@ -146,7 +149,7 @@ hash, and correction classification. MatchForge revisions are append-only.
 Provider revisions before first MatchForge acquisition remain unknown and
 cannot be reconstructed.
 
-## Acquisition options
+## Acquisition authorization and alternatives
 
 All options reacquire the currently audited groups because the prior audit
 retained no raw responses. The existing ten-attempt remainder is excluded.
@@ -249,10 +252,10 @@ logs, files, manifests, hashes, tests, or Git.
 | # | Exact question | Status | Recommended default | Alternatives and consequences | Blocks offline implementation | Blocks acquisition | Can affect validity |
 | ---: | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Freeze one development, at least three evaluation groups, two competitions, two seasons, 500 exact targets, isolation, and Rust? | **APPROVED** | Approved structure | Smaller design weakens generalization and needs amendment | No | No after other approvals | Yes |
-| 2 | May roles share a competition across disjoint seasons, and are the proposed exact roles accepted? | **OPEN** | Approve Bundesliga 2021/22 development; Bundesliga 2022/23, Bundesliga 2023/24, Ligue 1 2022/23 evaluation; Ligue 1 2021/22 backup | Ligue 1 2021/22 development gives stronger role separation for 74 more base requests; full competition-independent development needs a third evidenced competition | No | **Yes** | **Yes** |
+| 2 | May roles share a competition across disjoint seasons, and are the proposed exact roles accepted? | **APPROVED** | Bundesliga 2021/22 development; Bundesliga 2022/23, Bundesliga 2023/24, Ligue 1 2022/23 evaluation | Ligue 1 development and broader routes were not selected | No | No | **Yes** |
 | 3 | Freeze team history at 10 and exclude the legacy 100-match target rule? | **APPROVED** | Approved team-last-10 rule | Reintroducing 100 removes 36 projected Bundesliga targets across primary evaluation groups and needs a new decision | No | No | Yes |
-| 4 | Freeze the exact observational compatibility methods, thresholds, warnings, multiplicity, and sensitivity rules above? | **OPEN** | Approve as proposed before acquisition | Amend now; after acquisition, threshold changes invalidate preregistration | Gate code is implemented offline; final policy hash remains blocked | **Yes** | **Yes** |
-| 5 | Which acquisition option and exact raw-retention/request/storage authority is approved? | **OPEN** | Option A: 1,302 base, 27 retries, 1,329 ceiling, 500 MiB expected and 6 GiB hard storage | Option B: 1,376/28/1,404 adds role separation; Option C: 1,683/34/1,717 adds a Ligue 1 backup and requires an 8 GiB hard ceiling; reject/modify leaves corpus unavailable | Live acquisition path and integration fixtures remain blocked | **Yes** | Yes |
+| 4 | Freeze the exact observational compatibility methods, thresholds, warnings, multiplicity, and sensitivity rules above? | **APPROVED** | Frozen as written before acquisition | Post-acquisition threshold changes require a new protocol and cannot rescue a scope | No | No | **Yes** |
+| 5 | Which acquisition option and exact raw-retention/request/storage authority is approved? | **APPROVED** | Option A: 1,302 base, 27 retries, 1,329 ceiling, 500 MiB expected and 6 GiB hard storage | Other options remain unauthorized | No | No | Yes |
 
 After these five, exact acquired scope qualification, corpus/firewall freeze,
 complete preregistration, model implementation, Rust execution, and one
@@ -273,7 +276,10 @@ acquisition approval.
 
 ## Next authorization boundary
 
-Before any PitchAPI call, owner must resolve Decisions 2, 4, and 5 above in one
-or more recorded events. No current attempt may be used. StatsBomb remains
-independent, unchanged, and `AWAITING_PROVIDER_RESPONSE`; do not follow up
-until a response arrives.
+Controlled acquisition may run only under
+`AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1`. The ten unused
+attempts from earlier authority remain separate. Corpus admission,
+preregistration completion, model fitting, Rust simulation, and evaluation
+execution still require later owner decisions. StatsBomb remains independent,
+unchanged, and `AWAITING_PROVIDER_RESPONSE`; do not follow up until a response
+arrives.
