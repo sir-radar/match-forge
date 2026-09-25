@@ -17,9 +17,15 @@ golangci-lint 2.11.4
 CI sets `RUSTUP_TOOLCHAIN=1.97.1` so the host-neutral channel resolves on Linux; the local
 `rust-toolchain.toml` target remains macOS arm64 for the supported development environment.
 
+The workflow caches the locked uv dependencies, uv-managed Python installation, compiled Rust
+dependencies, and the two pinned Go tool binaries. Cache keys include the applicable lock files,
+toolchain versions, platform, and architecture. Caches are disposable accelerators; locked
+dependencies and pinned tool versions remain the source of truth.
+
 `make check` covers formatting, Ruff, strict MyPy, Rust checks, Go vet/lint, migration validation,
 unit tests, and builds. `make integration` covers PostgreSQL/Redis, migrations, canonical storage,
-ingestion, CLI, and Go API integration tests. `git diff --check` is run separately.
+ingestion, CLI, and Go API integration tests. CI invokes both targets in one `make` process so their
+shared `build` prerequisite runs once. The change-classification job runs `git diff --check`.
 
 The authoritative `make sprint2-evaluate` run remains separate from every pull-request check.
 This CI gate does not change the retained Sprint 2 `FAIL` or authorize Phase 3.
