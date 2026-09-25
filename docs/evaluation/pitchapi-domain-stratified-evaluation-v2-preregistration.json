@@ -1,7 +1,7 @@
 {
   "contract": "PitchApiDomainStratifiedEvaluationV2PreregistrationV1",
   "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
-  "status": "PREPARED_BLOCKED_BEFORE_EXECUTION",
+  "status": "FINAL_FROZEN_AWAITING_EXECUTION_AUTHORIZATION",
   "policy": {
     "path": "docs/evaluation/pitchapi-domain-stratified-evaluation-v2-policy-proposal.json",
     "sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1",
@@ -82,38 +82,40 @@
     "uncertainty": "paired_moving_block_bootstrap_10_batches_2000_replicates_seed_20260924"
   },
   "rust_validation": {
-    "status": "PROPOSED_OWNER_APPROVAL_REQUIRED",
+    "status": "FROZEN_IMPLEMENTED_VERIFIED",
     "path": "docs/simulation/pitchapi-domain-stratified-v2-rust-policy-proposal.md",
     "sha256": "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee",
     "simulation_count_per_target": 112460,
-    "engine_implementation_sha256": null,
-    "engine_build_sha256": null,
-    "blocks_execution": true
+    "engine_source_tree_git_sha1": "6dc327ec8b6c652cad8ad582eaaf33a5949204e2",
+    "engine_build_sha256": "36a0a04f89faafbea07243a18efb0f79c13b8f3591cff5af22f756d45f32aa87",
+    "blocks_execution": false
   },
   "models": {
     "reference": {
-      "status": "NOT_FROZEN",
-      "required_boundary": "one compatible goals-only reference implementation, complete configuration, training rule, artifact schema, code commit, dependency lock and deterministic reproduction evidence",
-      "artifact_sha256": null
+      "status": "FROZEN",
+      "algorithm_version": "dixon-coles-goals-v1",
+      "artifact_sha256": "54d209dc5d409c589750822871944f1b1175ae95883c9c83b92be1c729f5ddba"
     },
     "challenger": {
-      "status": "MATHEMATICS_APPROVED_NOT_IMPLEMENTED_NOT_FITTED",
+      "status": "FROZEN",
       "intended_experiment_id": "PHASE3A_MINIMAL_XG_FOR_V1",
       "feature_contract": "MATCHFORGE_NPXG_FOR_LAST10_V1 adapted only by the frozen raw PitchAPI expected_goals field",
       "parameter_budget": "exactly one beta_xg_for in [0,1]",
-      "remaining_boundary": "separate owner authorization must permit implementation and development-only fitting; freeze implementation, fit configuration, training inputs, model artifact, logical/physical hashes, code commit and reload/reproduction evidence before execution",
-      "artifact_sha256": null
+      "algorithm_version": "phase3a-npxg-for-last10-v1",
+      "artifact_sha256": "5fab3347523ade3918b17f7cd38400a6a54f92b54adee3da61aa28fdb5d9d973"
     },
     "evaluation_groups_may_influence_model_decisions": false,
-    "model_fitting_authorized": false
+    "model_fitting_authorized": true,
+    "development_scope_used": "bundesliga_2021_22",
+    "evaluation_scope_loaded": false
   },
   "reproducibility": {
     "preparation_base_git_commit": "73996bb6fbaf0def76c10bb1f79c2f3fc303e111",
-    "execution_code_git_commit": null,
-    "execution_configuration_sha256": null,
-    "reference_artifact_sha256": null,
-    "challenger_artifact_sha256": null,
-    "rust_engine_build_sha256": null
+    "execution_code_git_commit": "6b0e32ee94d5e910a3fbe8096c2fc5192adfa49b",
+    "execution_configuration_sha256": "8cf592c471d543c874c83ab12e11942e4de74453f49f3a8d4949d636667b8285",
+    "reference_artifact_sha256": "54d209dc5d409c589750822871944f1b1175ae95883c9c83b92be1c729f5ddba",
+    "challenger_artifact_sha256": "5fab3347523ade3918b17f7cd38400a6a54f92b54adee3da61aa28fdb5d9d973",
+    "rust_engine_build_sha256": "36a0a04f89faafbea07243a18efb0f79c13b8f3591cff5af22f756d45f32aa87"
   },
   "stop_conditions": [
     "fewer_than_500_exact_eligible_evaluation_targets",
@@ -144,12 +146,8 @@
     "post_hoc_metrics_must_be_labelled_exploratory": true
   },
   "execution_authorized": false,
-  "preregistration_complete": false,
+  "preregistration_complete": true,
   "blocking_requirements": [
-    "OWNER_FREEZE_RUST_VALIDATION_POLICY",
-    "AUTHORIZE_AND_FREEZE_REFERENCE_AND_CHALLENGER_IMPLEMENTATION_AND_DEVELOPMENT_ONLY_FIT",
-    "FILL_FINAL_MODEL_ARTIFACT_CODE_CONFIGURATION_AND_RUST_BUILD_HASHES",
-    "HASH_FINAL_COMPLETE_PREREGISTRATION",
     "SEPARATELY_AUTHORIZE_EVALUATION_EXECUTION"
   ]
 }
