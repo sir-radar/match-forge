@@ -68,30 +68,48 @@ jobs:
           go-version: 1.27.0
           cache: false
 
+      - name: Restore pinned Go tools
+        id: go-tools-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            .tools/bin/goose
+            .tools/bin/golangci-lint
+          key: go-tools-${{ runner.os }}-${{ runner.arch }}-go-1.27.0-goose-3.27.1-golangci-lint-2.11.4
+
       - name: Install Rust 1.97.1
         run: |
           rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
           rustup default 1.97.1
 
+      - name: Restore Rust build cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+
       - name: Install uv 0.12.1
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
           version: 0.12.1
-          enable-cache: false
+          enable-cache: true
+          cache-python: true
+          cache-local-path: ${{ github.workspace }}/.local/uv-cache
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
-      - name: Install locked Python dependencies and Go tools
+      - name: Install pinned Go tools
+        if: steps.go-tools-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p .tools/bin
           GOBIN="$GITHUB_WORKSPACE/.tools/bin" go install github.com/pressly/goose/v3/cmd/goose@v3.27.1
           GOBIN="$GITHUB_WORKSPACE/.tools/bin" go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4
+
+      - name: Install locked Python dependencies
+        run: |
           uv python install 3.13.14
           uv sync --locked
 
-      - name: Run deterministic core checks
-        run: make check
-
-      - name: Run integration checks
-        run: make integration
+      - name: Run deterministic and integration checks
+        run: make check integration
 
       - name: Tear down integration services
         if: ${{ always() }}
