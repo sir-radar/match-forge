@@ -212,6 +212,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
     expected = {
         ("EVALUATION_V2", "STATSBOMB"),
         ("PITCHAPI_RETROSPECTIVE_EVALUATION_V1", "PITCHAPI"),
+        ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2", "PITCHAPI"),
     }
     observed: set[tuple[str, str]] = set()
     for track in tracks:

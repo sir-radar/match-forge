@@ -1,0 +1,128 @@
+{
+  "contract": "PitchApiDomainStratifiedV2AliasReconciliationV1",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "status": "PASS",
+  "performed_at": "2026-09-24T16:03:09Z",
+  "method": "exact governed competition-season comparison followed by exact MatchForge ID-set comparison",
+  "pitchapi_snapshot": {
+    "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+    "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "mapping_manifest_sha256": "ac4880e4a861168069f77988770ff5ce40f7b3ccfb97a234577f470d1f9fcbb4",
+    "match_mapping_count": 1298,
+    "match_mapping_subset_sha256": "8082f02441d2d44f887ed22308674d620a1411977897acac6ff3e4a907f9ffd2",
+    "team_mapping_count": 42,
+    "team_mapping_subset_sha256": "13e183a869a5ab9f92ad8b76c273c330e5d7cd2d806b7bfe60cccc0c2ff7b735",
+    "all_match_id_count": 1298,
+    "all_match_id_set_sha256": "da250de4def15f408d4dc1227c1983723fda0a3b1532488044d305f8e27c8a7a",
+    "evaluation_match_id_count": 992,
+    "evaluation_match_id_set_sha256": "a4dc88d74ad814225422cadc399a1e4af3d1df8ba1dc7da383c3fe5fe2f2a66c"
+  },
+  "pitchapi_scope_aliases": [
+    {
+      "scope": "bundesliga_2021_22",
+      "role": "development",
+      "provider_competition_alias": "l_1Isor4",
+      "competition": "bundesliga",
+      "season": "2021/2022",
+      "match_count": 306,
+      "match_id_set_sha256": "87b9f5aef812712fe8f81b9788099539c363ca3312d075e51658af478d1e3350",
+      "target_count": 216,
+      "target_id_set_sha256": "453989079153e56ceb0004c9dccb8fd30efbbcf4f221064160f44adf14b92822"
+    },
+    {
+      "scope": "bundesliga_2022_23",
+      "role": "evaluation",
+      "provider_competition_alias": "l_1Isor4",
+      "competition": "bundesliga",
+      "season": "2022/2023",
+      "match_count": 306,
+      "match_id_set_sha256": "e960494e4dd22023a28327e53442cd4e57f3c37b065c16f2b41a9fd40864d3b5",
+      "target_count": 216,
+      "target_id_set_sha256": "19c29af36e51b2f2e138cf2f82cae0b7374d7cf587c2cb5d26ec87ba9e02fe05"
+    },
+    {
+      "scope": "bundesliga_2023_24",
+      "role": "evaluation",
+      "provider_competition_alias": "l_1Isor4",
+      "competition": "bundesliga",
+      "season": "2023/2024",
+      "match_count": 306,
+      "match_id_set_sha256": "acd4db048e54b9a752833ef46be6b14a7c05f2afd356979ed033607d6f880fad",
+      "target_count": 216,
+      "target_id_set_sha256": "4b33afd4a29275cb91155967872866e8295756aef2c509114bd031bd4e63e126"
+    },
+    {
+      "scope": "ligue1_2022_23",
+      "role": "evaluation",
+      "provider_competition_alias": "l_3FJFUl",
+      "competition": "ligue1",
+      "season": "2022/2023",
+      "match_count": 380,
+      "match_id_set_sha256": "300cd5d6032cb07fad3e55fdaa5d91adf0243810d810256ceefe2a16ccf08ed0",
+      "target_count": 280,
+      "target_id_set_sha256": "c3544b6bcd7b064fc8d8de290669333b6a4411e5c9659f4e53f2cbbe171e7c8c"
+    }
+  ],
+  "statsbomb_scopes": [
+    {
+      "scope": "la_liga_2015_16",
+      "historical_role": "development",
+      "dataset_version_id": "670662d6-6ed7-5fa1-ba3c-1cfd561e524f",
+      "competition_id": "01a051db-552e-782d-b2ac-b3f0ec58441b",
+      "season_id": "01a051db-553a-754a-9560-d79eceeb72b6",
+      "match_count": 380,
+      "manifest_sha256": "cd32d1c44620116cedefc09860efeccb91da19db4e6006ace8b8b6df1dd8e4e0",
+      "match_id_set_sha256": "0edd19805f12fa16245b3522e69287744a110dee45f822c9d68c9ee85db6ae3d"
+    },
+    {
+      "scope": "premier_league_2015_16",
+      "historical_role": "protected_evaluation",
+      "dataset_version_id": "d62b97d6-f39b-5f14-9773-61f57f7b677b",
+      "competition_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+      "season_id": "01a051db-5566-7286-8ad7-40d945ab8253",
+      "match_count": 380,
+      "manifest_sha256": "125513d95e126839f3fa94a2a22f9b4be39166c6ed4dc5e2244355b45a691e2a",
+      "match_id_set_sha256": "4beb68d980d29760b55571b14059a43bd0e937079e87bacdd047cbaee95aae30"
+    },
+    {
+      "scope": "serie_a_2015_16",
+      "historical_role": "qualified_candidate",
+      "dataset_version_id": "8bfec1dd-5bf7-5162-b56a-7e63f77b0b88",
+      "competition_id": "01a0c80e-100b-7be2-bc51-9e75022479f4",
+      "season_id": "01a0c80e-100d-7306-8f3e-741f0d4e07f2",
+      "match_count": 380,
+      "manifest_sha256": "760592efe5c8d6ce698105003b336f2c2849c00c74b3d6948fbec7c75eb7106d",
+      "match_id_set_sha256": "b9b379a03d35135021c4d1754d6e727f5aa0733d2514c0f01fdc830f2de8284a"
+    },
+    {
+      "scope": "liga_f_2023_24",
+      "historical_role": "excluded_product_scope",
+      "dataset_version_id": "f5cb2724-6400-540d-aa12-44ba25f27369",
+      "competition_id": "01a089cc-8b9f-7292-b186-47555170b896",
+      "season_id": "01a089cc-8ba0-7123-9d40-56004fa8e0b4",
+      "match_count": 240,
+      "manifest_sha256": "f54fa768cb893cec099c8735135dcea2c495adb215f5bf3c398e7c531ee256f1",
+      "match_id_set_sha256": "3edfc8abe50bbbef449f1a070f78e1895d9b2a010027336362b2a17d583ec1b9"
+    }
+  ],
+  "findings": {
+    "pitchapi_provider_id_collisions": 0,
+    "pitchapi_matchforge_id_collisions": 0,
+    "pitchapi_team_alias_collisions": 0,
+    "pitchapi_internal_scope_match_overlaps": 0,
+    "pitchapi_statsbomb_exact_match_id_intersection": 0,
+    "pitchapi_statsbomb_governed_competition_season_overlaps": 0,
+    "protected_fixture_overlaps": 0,
+    "development_evaluation_fixture_overlaps": 0,
+    "unresolved_aliases": 0,
+    "ambiguous_aliases": 0,
+    "excluded_fixtures": []
+  },
+  "basis": "The complete frozen PitchAPI inventory contains only Bundesliga 2021/22, 2022/23, 2023/24 and Ligue 1 2022/23. The complete retained StatsBomb inventory contains La Liga 2015/16, Premier League 2015/16, Serie A 2015/16 and Liga F 2023/24. These governed competition-season sets are disjoint, so no fixture-level home/away/team alias join is possible or required to exclude overlap in the current inventory.",
+  "limitation": "PitchAPI MatchForge UUIDv5 values are provider-namespaced. Their zero intersection with StatsBomb IDs is recorded but is not the basis for cross-provider identity proof.",
+  "future_rule": "Any later StatsBomb Bundesliga 2023/24 or Ligue 1 2022/23 inventory is overlapping by scope and requires a new reconciliation before use; it cannot be treated as independent confirmation or alter this frozen report.",
+  "final_evaluation_target_count": 712,
+  "minimum_evaluation_target_count": 500,
+  "corpus_admission_effect": "PASS_NO_EXCLUSIONS"
+}

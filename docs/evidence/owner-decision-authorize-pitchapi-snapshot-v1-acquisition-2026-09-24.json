@@ -1,0 +1,36 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1",
+  "status": "APPROVED",
+  "recorded_at": "2026-09-24T11:03:36Z",
+  "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+  "snapshot_series_id": "PITCHAPI_SNAPSHOT_V1",
+  "development_groups": ["bundesliga:2021/2022"],
+  "evaluation_groups": [
+    "bundesliga:2022/2023",
+    "bundesliga:2023/2024",
+    "ligue1:2022/2023"
+  ],
+  "minimum_team_history": 10,
+  "minimum_competition_history": null,
+  "minimum_exact_evaluation_targets": 500,
+  "compatibility_policy_sha256": "4b90fdccf678480ab53e0d5c637b76d8535ae114ad5c8b835c9675d4ae984318",
+  "request_budget": {
+    "base_requests": 1302,
+    "retry_reserve": 27,
+    "hard_attempt_ceiling": 1329,
+    "prior_unused_attempts_included": false
+  },
+  "storage_budget": {
+    "expected_mib": 500,
+    "hard_ceiling_gib": 6
+  },
+  "acquisition_authorized": true,
+  "snapshot_verification_authorized": true,
+  "readiness_preparation_authorized": true,
+  "monetary_spend_authorized": false,
+  "model_fitting_authorized": false,
+  "rust_simulation_authorized": false,
+  "evaluation_execution_authorized": false,
+  "frozen_evaluation_v2_changed": false
+}

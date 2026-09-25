@@ -1,0 +1,98 @@
+{
+  "contract": "PitchApiSnapshotV1ReadinessEvidenceV1",
+  "status": "FAIL",
+  "evaluation_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "snapshot_document_sha256": "b390a335b8c2cb94a1cdbfe220d78b02cdd812eeee2144c97e02cf42b59487f5",
+  "backup_inventory_sha256": "8de3262591ddddf399ab048ca12751bc99fdc31a005e0620b6892735fa3a8924",
+  "configuration_sha256": "4b90fdccf678480ab53e0d5c637b76d8535ae114ad5c8b835c9675d4ae984318",
+  "processing_code_git_sha": "1c9ac4243c99a05a0141972dab3dd46c5706fc9d",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "compatibility_report_sha256": "19d5cbbcbcc9c1f4dc6410a20223f3dd682d47841c1b216130615a2f71c2c9b8",
+  "acquisition": {
+    "status": "COMPLETED",
+    "resources": 1302,
+    "attempts": 1302,
+    "retries": 0,
+    "rate_limit_responses": 0,
+    "logical_primary_and_backup_bytes": 80111128,
+    "filesystem_snapshot_kib": 97840
+  },
+  "groups": [
+    {
+      "scope": "bundesliga_2021_22",
+      "role": "development",
+      "matches": 306,
+      "shots": 7961,
+      "warmup_exclusions": 90,
+      "exact_history_eligible_targets": 216,
+      "season_manifest_sha256": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e"
+    },
+    {
+      "scope": "bundesliga_2022_23",
+      "role": "evaluation",
+      "matches": 306,
+      "shots": 7825,
+      "warmup_exclusions": 90,
+      "exact_history_eligible_targets": 216,
+      "season_manifest_sha256": "893b888a36474c7cf55a207cb266d32a60351c0c87e9659a38a2cdc962784f74"
+    },
+    {
+      "scope": "bundesliga_2023_24",
+      "role": "evaluation",
+      "matches": 306,
+      "shots": 8523,
+      "warmup_exclusions": 90,
+      "exact_history_eligible_targets": 216,
+      "season_manifest_sha256": "0700ee9d976366db3a12b0c3bc4c9e3d6a953d95b7fbe1dac153773553ae9b87"
+    },
+    {
+      "scope": "ligue1_2022_23",
+      "role": "evaluation",
+      "matches": 380,
+      "shots": 9350,
+      "warmup_exclusions": 100,
+      "exact_history_eligible_targets": 280,
+      "season_manifest_sha256": "ded84fa1ce6f2695469f1e258bffd8c2b3ac79ee5edec5afa24be0e4d0b0939d"
+    }
+  ],
+  "exact_evaluation_targets_before_compatibility": 712,
+  "admitted_evaluation_targets": 0,
+  "compatibility": {
+    "status": "FAIL",
+    "scope_calibration": [
+      {"scope": "bundesliga_2021_22", "shots": 7961, "penalties": 84, "intercept": -0.6006589714936329, "slope": 0.6442830324063423},
+      {"scope": "bundesliga_2022_23", "shots": 7825, "penalties": 109, "intercept": -0.5684586664432874, "slope": 0.6473583876393111},
+      {"scope": "bundesliga_2023_24", "shots": 8523, "penalties": 101, "intercept": -0.4383287216159555, "slope": 0.7360779343400985},
+      {"scope": "ligue1_2022_23", "shots": 9350, "penalties": 143, "intercept": -0.8333861053133034, "slope": 0.5863948901233356}
+    ],
+    "overall_ks": [
+      {"left": "bundesliga_2021_22", "right": "bundesliga_2022_23", "d": 0.066400492, "status": "PASS"},
+      {"left": "bundesliga_2021_22", "right": "bundesliga_2023_24", "d": 0.027911912, "status": "PASS"},
+      {"left": "bundesliga_2021_22", "right": "ligue1_2022_23", "d": 0.101599992, "status": "FAIL"},
+      {"left": "bundesliga_2022_23", "right": "bundesliga_2023_24", "d": 0.052017893, "status": "PASS"},
+      {"left": "bundesliga_2022_23", "right": "ligue1_2022_23", "d": 0.049022569, "status": "PASS"},
+      {"left": "bundesliga_2023_24", "right": "ligue1_2022_23", "d": 0.094868719, "status": "WARN"}
+    ],
+    "hard_finding_count": 25,
+    "warning_count": 11,
+    "sensitivity": {
+      "stricter_80_percent": "FAIL",
+      "looser_120_percent": "FAIL",
+      "leave_one_scope_out": "FAIL_FOR_EVERY_OMISSION"
+    },
+    "conclusion": "The frozen scopes are not observationally compatible under the preregistered criteria. This says nothing conclusive about hidden upstream model identity."
+  },
+  "firewall": {
+    "status": "PASS",
+    "development_evaluation_intersection": 0,
+    "protected_scope_intersection": 0,
+    "same_kickoff_batching": true,
+    "strict_prior_kickoff": true,
+    "limitation": "Cross-provider canonical overlap remains subject to final corpus-admission review."
+  },
+  "evaluation_execution_authorized": false,
+  "next_owner_decision": "Accept the failed compatibility disposition and stop PITCHAPI_RETROSPECTIVE_EVALUATION_V1, or authorize a new separately preregistered protocol. Evaluation execution cannot be authorized under V1."
+}

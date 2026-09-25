@@ -90,6 +90,55 @@ snapshots, and result metadata and must not be merged except as explicitly
 labelled cross-evaluation robustness analysis. See the [parallel preparation
 record](docs/evidence/parallel-evaluation-preparation-2026-09-24.md).
 
+Owner decision
+`ACCEPT_PITCHAPI_RETENTION_AND_PREPARE_RETROSPECTIVE_SNAPSHOT_EVALUATION_V1`,
+recorded on **24 September 2026**, accepts PitchAPI retention and intended
+private research/evaluation use as owner assumptions for the separate protocol.
+Provider-issued legal-use or retention attestations are no longer engineering
+admission gates for that protocol; this is not a provider guarantee. The
+complete proposed protocol, observational compatibility thresholds,
+append-only snapshot and alias design, group/history recommendation, and
+1,329-attempt acquisition ceiling are prepared but not frozen or authorized
+for execution. No API call, acquisition, fitting, simulation, evaluation, or
+spend is authorized. Evaluation V2 remains unchanged. See the [PitchAPI owner
+decision package](docs/evidence/pitchapi-retrospective-evaluation-v1-decision-package-2026-09-24.md).
+
+Owner decision `APPROVE_PITCHAPI_HISTORY_AND_EVALUATION_ARCHITECTURE_V1`,
+recorded on **24 September 2026**, freezes team-last-10 target eligibility with
+no inherited 100-match competition threshold. It also freezes exactly one
+development group, at least three evaluation groups, two competitions, two
+seasons, 500 exact targets, isolation, immutable snapshots, and mandatory Rust
+simulation. Exact roles, compatibility thresholds, and acquisition remain
+unapproved. The final pre-acquisition proposal uses Bundesliga 2021/22 for
+development and Bundesliga 2022/23, Bundesliga 2023/24, and Ligue 1 2022/23
+for evaluation; it projects 712 targets and requires 1,302 base requests plus
+27 reserved retries. The stronger Ligue 1 development alternative remains
+documented rather than silently selected. See the [pre-acquisition owner
+review](docs/evidence/pitchapi-pre-acquisition-owner-review-2026-09-24.md).
+
+Owner decision `AUTHORIZE_PITCHAPI_SNAPSHOT_V1_CONTROLLED_ACQUISITION_V1`
+authorized the frozen 1,302-request acquisition. It completed with zero retries
+and created an immutable verified snapshot plus backup. Exact history eligibility
+is 712 evaluation targets, but the preregistered observational compatibility
+gate is `FAIL`: all four scopes fail calibration coefficient limits and several
+distribution comparisons fail. No target is admitted, and evaluation execution
+remains prohibited. See the [snapshot readiness evidence](docs/evidence/pitchapi-snapshot-v1-readiness-2026-09-24.md).
+
+Owner decision
+`ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1`, recorded on
+**24 September 2026**, permanently accepts the V1 compatibility failure and
+authorizes design/offline implementation only for the separate
+`PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2`. The proposal retains the 712-target
+three-domain evaluation, replaces cross-domain xG distribution equality with
+technical/semantic admission, and reports source differences as heterogeneity.
+A chronological development-only comparison selected raw PitchAPI xG because
+logistic recalibration improved log loss but worsened Brier score. V2 is
+`POST_SOURCE_DIAGNOSTIC_PRE_MODEL_RESULT_PREREGISTRATION` and now awaits an
+owner freeze decision. Final fitting, evaluation, Rust, API use, provider
+contact, spend, promotion and production remain unauthorized. V1 remains
+failed and immutable; StatsBomb `EVALUATION_V2` remains unchanged. See the
+[V2 decision package](docs/evidence/pitchapi-domain-stratified-evaluation-v2-decision-package-2026-09-24.md).
+
 ## 3. Hard invariants
 
 1. Every training/replay/serving feature is versioned, sourced and demonstrably available at the historical knowledge cutoff. Preserve immutable observations, publication/correction times, missingness and quarantine. Batch equal-kickoff fixtures.

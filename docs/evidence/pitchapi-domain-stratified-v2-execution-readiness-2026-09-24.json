@@ -1,0 +1,58 @@
+{
+  "alias_reconciliation": {
+    "excluded_fixtures": 0,
+    "sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+    "status": "PASS"
+  },
+  "challenger_model": {
+    "artifact_sha256": "5fab3347523ade3918b17f7cd38400a6a54f92b54adee3da61aa28fdb5d9d973",
+    "beta_xg_for": 1.1471034440351443e-14,
+    "development_scope": "bundesliga_2021_22",
+    "evaluation_scope_loaded": false,
+    "fitted_targets": 216,
+    "status": "PASS"
+  },
+  "contract": "PitchApiDomainStratifiedV2ExecutionReadinessV1",
+  "corpus": {
+    "development_evaluation_fixture_overlap": 0,
+    "evaluation_targets": 712,
+    "protected_data_overlap": 0,
+    "sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "status": "PASS"
+  },
+  "evaluation_executed": false,
+  "execution_configuration_sha256": "8cf592c471d543c874c83ab12e11942e4de74453f49f3a8d4949d636667b8285",
+  "preregistration_sha256": "eec2b9362b72779a44da87e8ddf3055b22bd3573a3d52b6f62e97d72c31068f4",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "reference_model": {
+    "artifact_sha256": "54d209dc5d409c589750822871944f1b1175ae95883c9c83b92be1c729f5ddba",
+    "development_scope": "bundesliga_2021_22",
+    "fitted_targets": 216,
+    "status": "PASS"
+  },
+  "repository_verification": {
+    "command": "make check",
+    "python_tests": 513,
+    "status": "PASS"
+  },
+  "rust": {
+    "binary_sha256": "36a0a04f89faafbea07243a18efb0f79c13b8f3591cff5af22f756d45f32aa87",
+    "cli_golden_output_sha256": "b8893247723f573dcaac6310c6e0800df9d7de78f5f0bd97f21e45e1347086aa",
+    "parallel_checksum": 880786720,
+    "parallel_peak_rss_bytes": 2146304,
+    "parallel_seconds": 4.649521708,
+    "parallel_simulations_per_second": 17221453.0931705,
+    "parity_status": "PASS",
+    "policy_sha256": "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee",
+    "serial_checksum": 880786720,
+    "serial_seconds": 11.042615291,
+    "serial_simulations_per_second": 7251137.33385788,
+    "simulation_count_per_target": 112460,
+    "source_tree_git_sha1": "6dc327ec8b6c652cad8ad582eaaf33a5949204e2",
+    "stability_status": "PASS",
+    "synthetic_draws": 80071520
+  },
+  "status": "PASS_AWAITING_OWNER_EXECUTION_AUTHORIZATION",
+  "v1_status": "FAIL",
+  "v2_policy_sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1"
+}

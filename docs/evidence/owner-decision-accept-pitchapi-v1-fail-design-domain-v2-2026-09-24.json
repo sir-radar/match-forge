@@ -1,0 +1,29 @@
+{
+  "contract": "OwnerDecisionV1",
+  "decision_id": "ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1",
+  "status": "APPROVED",
+  "recorded_at": "2026-09-24T15:42:23Z",
+  "failed_protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+  "failed_protocol_disposition": "FAIL_OBSERVATIONAL_COMPATIBILITY_GATE",
+  "new_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "authorized_scope": [
+    "design",
+    "offline_implementation",
+    "development_only_xg_treatment_selection",
+    "cross_provider_overlap_design_and_review",
+    "owner_decision_package"
+  ],
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "minimum_team_history": 10,
+  "minimum_competition_history": null,
+  "minimum_exact_evaluation_targets": 500,
+  "projected_exact_evaluation_targets": 712,
+  "evaluation_execution_authorized": false,
+  "final_challenger_fit_authorized": false,
+  "rust_simulation_authorized": false,
+  "api_calls_authorized": false,
+  "provider_contact_authorized": false,
+  "spending_authorized": false,
+  "statsbomb_evaluation_v2_changed": false
+}

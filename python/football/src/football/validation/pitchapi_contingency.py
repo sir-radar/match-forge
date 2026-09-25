@@ -11,9 +11,15 @@ from football.contracts.source import SHA256_PATTERN, canonical_json_bytes
 
 GateStatus = Literal["PASS", "FAIL", "UNPROVED"]
 CorpusRole = Literal["development", "evaluation"]
+PitchApiEntityType = Literal["team", "match"]
+PitchApiMappingAction = Literal["initial", "stable", "migration", "remap"]
+PitchApiCorrectionClassification = Literal[
+    "INITIAL", "NO_CHANGE", "PROVIDER_CORRECTION", "IDENTIFIER_MIGRATION", "MIXED"
+]
 PITCHAPI_RETROSPECTIVE_EVALUATION_V1 = "PITCHAPI_RETROSPECTIVE_EVALUATION_V1"
 PITCHAPI_SNAPSHOT_V1 = "PITCHAPI_SNAPSHOT_V1"
 _GIT_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+_SNAPSHOT_PROTOCOL_PATTERN = re.compile(r"^PITCHAPI_SNAPSHOT_V([1-9][0-9]*)$")
 
 
 class PitchApiContingencyError(ValueError):
@@ -121,6 +127,70 @@ class PitchApiSeriesGateReportV1:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class PitchApiObservationalSeriesEvidenceV1:
+    scope_key: str
+    acquisition_cohort_id: UUID
+    snapshot_sha256: str
+    field_semantics_sha256: str
+    compatibility_policy_sha256: str
+    compatibility_report_sha256: str
+    compatibility_status: GateStatus
+    provider: str = "PITCHAPI"
+    xg_field: str = "shot.xg"
+    contract: str = "PitchApiObservationalSeriesEvidenceV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiObservationalSeriesEvidenceV1":
+            raise PitchApiContingencyError("unsupported observational source-series contract")
+        if not self.scope_key or self.provider != "PITCHAPI" or not self.xg_field:
+            raise PitchApiContingencyError("observational source-series identity is invalid")
+        for field_name in (
+            "snapshot_sha256",
+            "field_semantics_sha256",
+            "compatibility_policy_sha256",
+            "compatibility_report_sha256",
+        ):
+            if not SHA256_PATTERN.fullmatch(getattr(self, field_name)):
+                raise PitchApiContingencyError(f"{field_name} must be a SHA-256")
+
+
+def qualify_pitchapi_observational_series(
+    evidence: tuple[PitchApiObservationalSeriesEvidenceV1, ...],
+    required_scope_keys: tuple[str, ...],
+) -> PitchApiSeriesGateReportV1:
+    required = set(required_scope_keys)
+    observed = [item.scope_key for item in evidence]
+    findings: set[str] = set()
+    if not required or len(required) != len(required_scope_keys):
+        raise PitchApiContingencyError("required scope keys must be present and unique")
+    if len(observed) != len(set(observed)):
+        findings.add("DUPLICATE_SCOPE_EVIDENCE")
+    if set(observed) != required:
+        findings.add("SCOPE_EVIDENCE_MISMATCH")
+    for item in evidence:
+        if item.compatibility_status != "PASS":
+            findings.add(f"COMPATIBILITY_{item.compatibility_status}:{item.scope_key}")
+    if findings:
+        unproved = {finding for finding in findings if "UNPROVED" in finding}
+        status: GateStatus = "FAIL" if findings - unproved else "UNPROVED"
+        return PitchApiSeriesGateReportV1(status, None, tuple(sorted(findings)))
+    identities = {
+        (
+            str(item.acquisition_cohort_id),
+            item.provider,
+            item.xg_field,
+            item.field_semantics_sha256,
+            item.compatibility_policy_sha256,
+        )
+        for item in evidence
+    }
+    if len(identities) != 1:
+        return PitchApiSeriesGateReportV1("FAIL", None, ("MIXED_OBSERVATIONAL_SOURCE_SERIES",))
+    identity_sha256 = hashlib.sha256(canonical_json_bytes(next(iter(identities)))).hexdigest()
+    return PitchApiSeriesGateReportV1("PASS", identity_sha256, ())
+
+
 def qualify_pitchapi_source_series(
     evidence: tuple[PitchApiSourceSeriesEvidenceV1, ...],
     required_scope_keys: tuple[str, ...],
@@ -158,7 +228,12 @@ class PitchApiRetrospectivePolicyV1:
     minimum_evaluation_seasons: int
     minimum_nominal_matches_per_evaluation_group: int
     minimum_evaluation_targets: int
+    minimum_team_history: int
+    minimum_competition_history: int | None
     require_development_competition_independence: bool
+    require_immutable_snapshot: bool
+    require_rust_simulation: bool
+    historical_time_mode: str = "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION"
     evaluation_protocol_id: str = PITCHAPI_RETROSPECTIVE_EVALUATION_V1
     contract: str = "PitchApiRetrospectivePolicyV1"
 
@@ -174,10 +249,32 @@ class PitchApiRetrospectivePolicyV1:
             "minimum_evaluation_seasons",
             "minimum_nominal_matches_per_evaluation_group",
             "minimum_evaluation_targets",
+            "minimum_team_history",
         ):
             value = getattr(self, field_name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise PitchApiContingencyError(f"{field_name} must be a positive integer")
+        frozen_values = {
+            "development_group_count": 1,
+            "minimum_evaluation_groups": 3,
+            "minimum_evaluation_competitions": 2,
+            "minimum_evaluation_seasons": 2,
+            "minimum_nominal_matches_per_evaluation_group": 120,
+            "minimum_evaluation_targets": 500,
+            "minimum_team_history": 10,
+        }
+        if any(getattr(self, name) != value for name, value in frozen_values.items()):
+            raise PitchApiContingencyError("PitchAPI V1 frozen policy values must not change")
+        if self.minimum_competition_history is not None:
+            raise PitchApiContingencyError(
+                "PitchAPI V1 must not inherit a competition-history target threshold"
+            )
+        if not self.require_immutable_snapshot or not self.require_rust_simulation:
+            raise PitchApiContingencyError(
+                "PitchAPI V1 requires an immutable snapshot and Rust simulation"
+            )
+        if self.historical_time_mode != "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION":
+            raise PitchApiContingencyError("unsupported PitchAPI historical-time mode")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -191,9 +288,14 @@ class PitchApiRetrospectivePolicyV1:
                 self.minimum_nominal_matches_per_evaluation_group
             ),
             "minimum_evaluation_targets": self.minimum_evaluation_targets,
+            "minimum_team_history": self.minimum_team_history,
+            "minimum_competition_history": self.minimum_competition_history,
             "require_development_competition_independence": (
                 self.require_development_competition_independence
             ),
+            "require_immutable_snapshot": self.require_immutable_snapshot,
+            "require_rust_simulation": self.require_rust_simulation,
+            "historical_time_mode": self.historical_time_mode,
         }
 
     @property
@@ -241,7 +343,7 @@ class PitchApiSnapshotIdentityV1:
     def __post_init__(self) -> None:
         if self.contract != "PitchApiSnapshotIdentityV1":
             raise PitchApiContingencyError("unsupported PitchAPI snapshot contract")
-        if self.snapshot_protocol_id != PITCHAPI_SNAPSHOT_V1:
+        if _SNAPSHOT_PROTOCOL_PATTERN.fullmatch(self.snapshot_protocol_id) is None:
             raise PitchApiContingencyError("unsupported PitchAPI snapshot protocol")
         if self.acquired_at.tzinfo is None or self.acquired_at.utcoffset() is None:
             raise PitchApiContingencyError("snapshot acquired_at must include a timezone")
@@ -281,6 +383,144 @@ class PitchApiSnapshotIdentityV1:
     @property
     def sha256(self) -> str:
         return hashlib.sha256(canonical_json_bytes(self.to_dict())).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiSnapshotRevisionV1:
+    snapshot: PitchApiSnapshotIdentityV1
+    normalized_difference_sha256: str
+    detected_provider_id_changes: tuple[str, ...]
+    correction_classification: PitchApiCorrectionClassification
+    contract: str = "PitchApiSnapshotRevisionV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiSnapshotRevisionV1":
+            raise PitchApiContingencyError("unsupported PitchAPI snapshot revision contract")
+        if not SHA256_PATTERN.fullmatch(self.normalized_difference_sha256):
+            raise PitchApiContingencyError("normalized difference must be a SHA-256")
+        if len(self.detected_provider_id_changes) != len(set(self.detected_provider_id_changes)):
+            raise PitchApiContingencyError("provider ID changes must be unique")
+        if self.correction_classification not in (
+            "INITIAL",
+            "NO_CHANGE",
+            "PROVIDER_CORRECTION",
+            "IDENTIFIER_MIGRATION",
+            "MIXED",
+        ):
+            raise PitchApiContingencyError("unsupported correction classification")
+
+
+def validate_pitchapi_snapshot_revision_chain(
+    revisions: tuple[PitchApiSnapshotRevisionV1, ...],
+) -> None:
+    if not revisions:
+        raise PitchApiContingencyError("snapshot revision chain must not be empty")
+    snapshot_ids = [revision.snapshot.snapshot_id for revision in revisions]
+    snapshot_hashes = [revision.snapshot.sha256 for revision in revisions]
+    if len(snapshot_ids) != len(set(snapshot_ids)) or len(snapshot_hashes) != len(
+        set(snapshot_hashes)
+    ):
+        raise PitchApiContingencyError("snapshot revisions must be immutable and unique")
+    for index, revision in enumerate(revisions):
+        match = _SNAPSHOT_PROTOCOL_PATTERN.fullmatch(revision.snapshot.snapshot_protocol_id)
+        if match is None or int(match.group(1)) != index + 1:
+            raise PitchApiContingencyError("snapshot protocol versions must be consecutive")
+        expected_predecessor = None if index == 0 else snapshot_hashes[index - 1]
+        if revision.snapshot.predecessor_snapshot_sha256 != expected_predecessor:
+            raise PitchApiContingencyError("snapshot predecessor hash chain is invalid")
+        if index == 0 and revision.correction_classification != "INITIAL":
+            raise PitchApiContingencyError("first snapshot revision must be INITIAL")
+        if index > 0 and revision.correction_classification == "INITIAL":
+            raise PitchApiContingencyError("later snapshot revision cannot be INITIAL")
+        if index > 0 and revision.snapshot.acquired_at <= revisions[index - 1].snapshot.acquired_at:
+            raise PitchApiContingencyError("snapshot acquisition times must increase")
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiAliasMappingV1:
+    snapshot_id: UUID
+    entity_type: PitchApiEntityType
+    provider_entity_id: str
+    canonical_id: UUID
+    mapping_action: PitchApiMappingAction
+    mapping_evidence_sha256: str
+    predecessor_mapping_sha256: str | None = None
+    replaces_provider_entity_id: str | None = None
+    contract: str = "PitchApiAliasMappingV1"
+
+    def __post_init__(self) -> None:
+        if self.contract != "PitchApiAliasMappingV1":
+            raise PitchApiContingencyError("unsupported PitchAPI alias mapping contract")
+        if self.entity_type not in ("team", "match") or not self.provider_entity_id.strip():
+            raise PitchApiContingencyError("alias type and provider entity ID are required")
+        if self.mapping_action not in ("initial", "stable", "migration", "remap"):
+            raise PitchApiContingencyError("unsupported alias mapping action")
+        for value in (self.mapping_evidence_sha256, self.predecessor_mapping_sha256):
+            if value is not None and not SHA256_PATTERN.fullmatch(value):
+                raise PitchApiContingencyError("alias mapping contains an invalid SHA-256")
+        if (
+            self.mapping_action in ("migration", "remap")
+            and self.predecessor_mapping_sha256 is None
+        ):
+            raise PitchApiContingencyError("migration and remap require predecessor evidence")
+        if self.mapping_action == "migration" and not self.replaces_provider_entity_id:
+            raise PitchApiContingencyError("migration requires the replaced provider ID")
+
+    @property
+    def sha256(self) -> str:
+        payload = {
+            "contract": self.contract,
+            "snapshot_id": str(self.snapshot_id),
+            "entity_type": self.entity_type,
+            "provider_entity_id": self.provider_entity_id,
+            "canonical_id": str(self.canonical_id),
+            "mapping_action": self.mapping_action,
+            "mapping_evidence_sha256": self.mapping_evidence_sha256,
+            "predecessor_mapping_sha256": self.predecessor_mapping_sha256,
+            "replaces_provider_entity_id": self.replaces_provider_entity_id,
+        }
+        return hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
+
+
+def validate_pitchapi_alias_history(
+    mappings: tuple[PitchApiAliasMappingV1, ...],
+    *,
+    snapshot_order: tuple[UUID, ...],
+) -> None:
+    if not mappings or not snapshot_order or len(snapshot_order) != len(set(snapshot_order)):
+        raise PitchApiContingencyError("alias history and unique snapshot order are required")
+    positions = {snapshot_id: index for index, snapshot_id in enumerate(snapshot_order)}
+    seen_in_snapshot: set[tuple[UUID, PitchApiEntityType, str]] = set()
+    latest_by_alias: dict[tuple[PitchApiEntityType, str], PitchApiAliasMappingV1] = {}
+    latest_by_canonical: dict[tuple[PitchApiEntityType, UUID], PitchApiAliasMappingV1] = {}
+    ordered = sorted(mappings, key=lambda item: positions.get(item.snapshot_id, -1))
+    for mapping in ordered:
+        if mapping.snapshot_id not in positions:
+            raise PitchApiContingencyError("alias mapping references an unknown snapshot")
+        snapshot_key = (mapping.snapshot_id, mapping.entity_type, mapping.provider_entity_id)
+        if snapshot_key in seen_in_snapshot:
+            raise PitchApiContingencyError("duplicate provider alias in snapshot")
+        seen_in_snapshot.add(snapshot_key)
+        alias_key = (mapping.entity_type, mapping.provider_entity_id)
+        prior_alias = latest_by_alias.get(alias_key)
+        prior_canonical = latest_by_canonical.get((mapping.entity_type, mapping.canonical_id))
+        if (
+            prior_alias is not None
+            and prior_alias.canonical_id != mapping.canonical_id
+            and (
+                mapping.mapping_action != "remap"
+                or mapping.predecessor_mapping_sha256 != prior_alias.sha256
+            )
+        ):
+            raise PitchApiContingencyError("provider alias collision requires remapping evidence")
+        if mapping.mapping_action == "migration" and (
+            prior_canonical is None
+            or mapping.replaces_provider_entity_id != prior_canonical.provider_entity_id
+            or mapping.predecessor_mapping_sha256 != prior_canonical.sha256
+        ):
+            raise PitchApiContingencyError("provider ID migration evidence is invalid")
+        latest_by_alias[alias_key] = mapping
+        latest_by_canonical[(mapping.entity_type, mapping.canonical_id)] = mapping
 
 
 @dataclass(frozen=True, slots=True)

@@ -15,13 +15,20 @@ from football.validation.pitchapi_contingency import (
     PITCHAPI_RETROSPECTIVE_EVALUATION_V1,
     CorpusRole,
     GateStatus,
+    PitchApiAliasMappingV1,
+    PitchApiMappingAction,
+    PitchApiObservationalSeriesEvidenceV1,
     PitchApiRetrospectiveCorpusGroupV1,
     PitchApiRetrospectivePolicyV1,
     PitchApiSnapshotIdentityV1,
     PitchApiSnapshotResourceIdentityV1,
+    PitchApiSnapshotRevisionV1,
     PitchApiSourceSeriesEvidenceV1,
+    qualify_pitchapi_observational_series,
     qualify_pitchapi_source_series,
+    validate_pitchapi_alias_history,
     validate_pitchapi_retrospective_corpus_firewall,
+    validate_pitchapi_snapshot_revision_chain,
 )
 
 NAMESPACE = UUID("bbfaedc2-cbf4-4f0a-8733-f8b7d0e0b693")
@@ -185,7 +192,11 @@ def _proposed_policy() -> PitchApiRetrospectivePolicyV1:
         minimum_evaluation_seasons=2,
         minimum_nominal_matches_per_evaluation_group=120,
         minimum_evaluation_targets=500,
+        minimum_team_history=10,
+        minimum_competition_history=None,
         require_development_competition_independence=True,
+        require_immutable_snapshot=True,
+        require_rust_simulation=True,
     )
 
 
@@ -203,6 +214,54 @@ def test_source_series_requires_attested_fields_not_equal_free_form_labels() -> 
         ("bundesliga", "ligue1"),
     )
     assert "MISSING_MODEL_NAME:bundesliga" in blank.findings
+
+
+def test_observational_series_uses_cohort_semantics_and_compatibility_not_attestation() -> None:
+    cohort = uuid5(NAMESPACE, "cohort")
+    evidence = tuple(
+        PitchApiObservationalSeriesEvidenceV1(
+            scope_key=scope,
+            acquisition_cohort_id=cohort,
+            snapshot_sha256="1" * 64,
+            field_semantics_sha256="2" * 64,
+            compatibility_policy_sha256="3" * 64,
+            compatibility_report_sha256="4" * 64,
+            compatibility_status="PASS",
+        )
+        for scope in ("bundesliga", "ligue1")
+    )
+
+    report = qualify_pitchapi_observational_series(evidence, ("bundesliga", "ligue1"))
+
+    assert report.status == "PASS"
+    assert report.series_identity_sha256 is not None
+
+
+def test_observational_series_rejects_mixed_cohorts_or_failed_compatibility() -> None:
+    cohort = uuid5(NAMESPACE, "cohort")
+    first = PitchApiObservationalSeriesEvidenceV1(
+        scope_key="bundesliga",
+        acquisition_cohort_id=cohort,
+        snapshot_sha256="1" * 64,
+        field_semantics_sha256="2" * 64,
+        compatibility_policy_sha256="3" * 64,
+        compatibility_report_sha256="4" * 64,
+        compatibility_status="PASS",
+    )
+    mixed = replace(
+        first,
+        scope_key="ligue1",
+        acquisition_cohort_id=uuid5(NAMESPACE, "another-cohort"),
+    )
+    assert (
+        qualify_pitchapi_observational_series((first, mixed), ("bundesliga", "ligue1")).status
+        == "FAIL"
+    )
+
+    failed = replace(mixed, acquisition_cohort_id=cohort, compatibility_status="FAIL")
+    report = qualify_pitchapi_observational_series((first, failed), ("bundesliga", "ligue1"))
+    assert report.status == "FAIL"
+    assert "COMPATIBILITY_FAIL:ligue1" in report.findings
 
 
 def test_source_series_rejects_model_or_rebuild_mismatch() -> None:
@@ -463,3 +522,126 @@ def test_pitchapi_provisional_target_counts_expose_competition_history_ambiguity
     assert _target_count("ligue1", 20, 1) == 280
     assert _target_count("bundesliga", 18, 100) == 198
     assert _target_count("ligue1", 20, 100) == 280
+
+
+def test_pitchapi_policy_freezes_team_history_without_legacy_competition_warmup() -> None:
+    policy = _proposed_policy()
+
+    assert policy.minimum_team_history == 10
+    assert policy.minimum_competition_history is None
+    assert policy.require_rust_simulation is True
+    assert policy.historical_time_mode == "RETROSPECTIVE_FROZEN_SNAPSHOT_EVALUATION"
+
+    with pytest.raises(ValueError, match="must not inherit"):
+        replace(policy, minimum_competition_history=100)
+    with pytest.raises(ValueError, match="must not change"):
+        replace(policy, minimum_team_history=9)
+
+
+def test_snapshot_revision_chain_is_append_only_and_versioned() -> None:
+    first = _snapshot("revision-one")
+    second = replace(
+        _snapshot("revision-two"),
+        acquired_at=first.acquired_at + timedelta(days=1),
+        predecessor_snapshot_sha256=first.sha256,
+        snapshot_protocol_id="PITCHAPI_SNAPSHOT_V2",
+    )
+    revisions = (
+        PitchApiSnapshotRevisionV1(first, "6" * 64, (), "INITIAL"),
+        PitchApiSnapshotRevisionV1(
+            second,
+            "7" * 64,
+            ("team:old-id->new-id",),
+            "IDENTIFIER_MIGRATION",
+        ),
+    )
+
+    validate_pitchapi_snapshot_revision_chain(revisions)
+
+    with pytest.raises(ValueError, match="predecessor hash chain"):
+        validate_pitchapi_snapshot_revision_chain(
+            (
+                revisions[0],
+                replace(
+                    revisions[1],
+                    snapshot=replace(second, predecessor_snapshot_sha256="8" * 64),
+                ),
+            )
+        )
+    with pytest.raises(ValueError, match="immutable and unique"):
+        validate_pitchapi_snapshot_revision_chain((revisions[0], revisions[0]))
+
+
+def _alias(
+    snapshot_id: UUID,
+    provider_id: str,
+    canonical_id: UUID,
+    *,
+    action: str = "initial",
+    predecessor: str | None = None,
+    replaces: str | None = None,
+) -> PitchApiAliasMappingV1:
+    return PitchApiAliasMappingV1(
+        snapshot_id=snapshot_id,
+        entity_type="team",
+        provider_entity_id=provider_id,
+        canonical_id=canonical_id,
+        mapping_action=cast(PitchApiMappingAction, action),
+        mapping_evidence_sha256="9" * 64,
+        predecessor_mapping_sha256=predecessor,
+        replaces_provider_entity_id=replaces,
+    )
+
+
+def test_alias_history_supports_changed_provider_ids_with_migration_evidence() -> None:
+    first_snapshot = uuid5(NAMESPACE, "alias-snapshot-1")
+    second_snapshot = uuid5(NAMESPACE, "alias-snapshot-2")
+    canonical = uuid5(NAMESPACE, "canonical-team")
+    first = _alias(first_snapshot, "pitchapi-team-old", canonical)
+    migrated = _alias(
+        second_snapshot,
+        "pitchapi-team-new",
+        canonical,
+        action="migration",
+        predecessor=first.sha256,
+        replaces=first.provider_entity_id,
+    )
+
+    validate_pitchapi_alias_history(
+        (first, migrated), snapshot_order=(first_snapshot, second_snapshot)
+    )
+
+
+def test_alias_history_rejects_duplicates_collisions_and_unsupported_remapping() -> None:
+    first_snapshot = uuid5(NAMESPACE, "alias-snapshot-1")
+    second_snapshot = uuid5(NAMESPACE, "alias-snapshot-2")
+    first = _alias(
+        first_snapshot,
+        "pitchapi-team",
+        uuid5(NAMESPACE, "canonical-team-1"),
+    )
+    duplicate = replace(first, canonical_id=uuid5(NAMESPACE, "canonical-team-2"))
+    with pytest.raises(ValueError, match="duplicate provider alias"):
+        validate_pitchapi_alias_history(
+            (first, duplicate), snapshot_order=(first_snapshot, second_snapshot)
+        )
+
+    collision = _alias(
+        second_snapshot,
+        first.provider_entity_id,
+        uuid5(NAMESPACE, "canonical-team-2"),
+        action="stable",
+    )
+    with pytest.raises(ValueError, match="collision requires remapping evidence"):
+        validate_pitchapi_alias_history(
+            (first, collision), snapshot_order=(first_snapshot, second_snapshot)
+        )
+
+    remapped = replace(
+        collision,
+        mapping_action="remap",
+        predecessor_mapping_sha256=first.sha256,
+    )
+    validate_pitchapi_alias_history(
+        (first, remapped), snapshot_order=(first_snapshot, second_snapshot)
+    )

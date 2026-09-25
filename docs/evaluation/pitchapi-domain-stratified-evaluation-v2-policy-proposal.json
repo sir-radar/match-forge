@@ -1,0 +1,231 @@
+{
+  "contract": "PitchApiDomainStratifiedEvaluationV2PolicyProposalV1",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "status": "OWNER_APPROVAL_REQUIRED",
+  "predecessor_protocol": {
+    "protocol_id": "PITCHAPI_RETROSPECTIVE_EVALUATION_V1",
+    "disposition": "FAIL_OBSERVATIONAL_COMPATIBILITY_GATE",
+    "amended": false
+  },
+  "scientific_question": "Does the frozen MatchForge model generalize across independent PitchAPI competition-season domains while maintaining acceptable forecasting performance and calibration?",
+  "evidence_classification": "POST_SOURCE_DIAGNOSTIC_PRE_MODEL_RESULT_PREREGISTRATION",
+  "snapshot": {
+    "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+    "snapshot_document_sha256": "b390a335b8c2cb94a1cdbfe220d78b02cdd812eeee2144c97e02cf42b59487f5",
+    "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+    "mutable": false
+  },
+  "groups": {
+    "development": [
+      {
+        "scope": "bundesliga_2021_22",
+        "matches": 306,
+        "shots": 7961,
+        "history_eligible_matches": 216,
+        "evaluation_targets": 0
+      }
+    ],
+    "evaluation": [
+      {
+        "scope": "bundesliga_2022_23",
+        "matches": 306,
+        "shots": 7825,
+        "exact_eligible_targets": 216
+      },
+      {
+        "scope": "bundesliga_2023_24",
+        "matches": 306,
+        "shots": 8523,
+        "exact_eligible_targets": 216
+      },
+      {
+        "scope": "ligue1_2022_23",
+        "matches": 380,
+        "shots": 9350,
+        "exact_eligible_targets": 280
+      }
+    ],
+    "minimum_team_prior_appearances": 10,
+    "minimum_competition_prior_matches": null,
+    "minimum_exact_evaluation_targets": 500,
+    "projected_exact_evaluation_targets": 712,
+    "development_evaluation_fixture_intersection": 0
+  },
+  "source_admission": {
+    "required": [
+      "same_pitchapi_source_family",
+      "same_documented_shot_xg_field_semantics",
+      "valid_schema",
+      "finite_xg",
+      "xg_in_closed_unit_interval",
+      "consistent_penalty_representation",
+      "explicit_first_half_second_half_period_semantics",
+      "recognized_shot_situations",
+      "complete_required_shot_resources",
+      "unique_provider_and_matchforge_identities",
+      "valid_explicit_matchforge_mappings",
+      "immutable_snapshot_membership",
+      "snapshot_and_resource_hash_match",
+      "firewall_pass",
+      "protected_data_pass",
+      "strict_prior_chronological_history_pass"
+    ],
+    "not_required": [
+      "equal_empirical_xg_distributions",
+      "equal_calibration_intercepts",
+      "equal_calibration_slopes",
+      "pairwise_ks_equivalence"
+    ]
+  },
+  "xg_treatment": {
+    "selected": "RAW",
+    "included_shots": "first_and_second_half_non_penalty",
+    "normalization": "NONE",
+    "selection_source": "bundesliga_2021_22_only",
+    "candidate_transform": "logit(p_transformed)=intercept+slope*logit(p_raw)",
+    "comparison": {
+      "method": "four_expanding_chronological_folds_with_match_block_bootstrap",
+      "initial_training_fraction": 0.2,
+      "validation_fraction_per_fold": 0.2,
+      "folds": 4,
+      "held_out_matches": 245,
+      "held_out_non_penalty_shots": 6306,
+      "bootstrap_replicates": 2000,
+      "bootstrap_seed": 20260924,
+      "selection_rule": "select_transform_only_if_log_loss_point_and_95pct_upper_are_below_zero_and_brier_point_and_95pct_upper_are_at_most_zero",
+      "transformed_minus_raw_log_loss": -0.006867227020635542,
+      "log_loss_interval_95": [-0.013787964207879371, -0.00042578251385741987],
+      "transformed_minus_raw_brier": 0.0017826169963287108,
+      "brier_interval_95": [0.0007646590570427715, 0.002856522932281389]
+    },
+    "unselected_full_development_fit_for_audit_only": {
+      "intercept": -0.6006589714936323,
+      "slope": 0.6442830324063427,
+      "applied_to_evaluation": false
+    }
+  },
+  "metrics": {
+    "confirmatory_primary": "joint_score_matrix_log_loss_delta",
+    "delta_definition": "challenger_loss_minus_compatible_reference_loss",
+    "domain_required": [
+      "joint_score_matrix_log_loss",
+      "one_x_two_log_loss",
+      "one_x_two_brier",
+      "one_x_two_ranked_probability_score",
+      "total_goal_crps",
+      "calibration_intercept",
+      "calibration_slope",
+      "reliability_diagram",
+      "prediction_interval_coverage_and_width"
+    ],
+    "descriptive_where_defined": [
+      "binary_market_auc",
+      "binary_market_brier",
+      "binary_market_log_loss",
+      "exact_score_top_k_accuracy",
+      "expected_total_goal_mae",
+      "sharpness_conditional_on_calibration"
+    ],
+    "aggregation": {
+      "primary": "equal_weight_macro_average_of_the_three_domain_deltas",
+      "secondary": "fixed_target_weighted_average",
+      "weights": {
+        "bundesliga_2022_23": 216,
+        "bundesliga_2023_24": 216,
+        "ligue1_2022_23": 280
+      },
+      "calibration_parameters": "domain_only_not_averaged",
+      "raw_source_distributions": "not_pooled"
+    }
+  },
+  "uncertainty": {
+    "method": "paired_moving_block_bootstrap",
+    "unit": "kickoff_batch",
+    "block_length_chronological_kickoff_batches": 10,
+    "replicates": 2000,
+    "interval": "percentile_95",
+    "seed": 20260924,
+    "domain_resampling": "independent_within_domain",
+    "aggregate_replicates": "same_index_macro_and_fixed_target_weighted_aggregation",
+    "multiplicity": "none_for_single_confirmatory_primary; all_domain_guardrails_are_conjunctive_safety_checks_not_separate_success_claims"
+  },
+  "acceptance": {
+    "macro_primary_point_delta_maximum": -0.01,
+    "macro_primary_interval_upper_strict_maximum": 0.0,
+    "every_domain_joint_log_loss_interval_upper_maximum": 0.05,
+    "macro_guardrail_interval_upper_maximums": {
+      "one_x_two_log_loss": 0.02,
+      "one_x_two_brier": 0.01,
+      "one_x_two_ranked_probability_score": 0.01,
+      "total_goal_crps": 0.02
+    },
+    "every_domain_calibration_worsening_maximums": {
+      "absolute_intercept_deviation_from_zero": 0.05,
+      "absolute_slope_deviation_from_one": 0.1
+    },
+    "threshold_rationale": "Reuses the independently approved pre-outcome Phase 3A practical margins. The macro primary tests average domain generalization; the existing n>=100 competition-season joint-log-loss segment limit becomes the no-catastrophic-domain-degradation guardrail. No PitchAPI challenger or reference result informed these numbers.",
+    "result_dispositions": [
+      "PROMOTE_CANDIDATE",
+      "RETAIN_CHAMPION",
+      "REJECT",
+      "DEFER_INSUFFICIENT_DATA",
+      "TERMINAL_ROUTE_FAIL"
+    ],
+    "promotion_not_authorized_by_pass": true
+  },
+  "fail_closed": [
+    "fewer_than_500_exact_eligible_evaluation_targets",
+    "development_evaluation_or_protected_fixture_overlap",
+    "evaluation_outcome_used_for_fit_tune_transform_or_threshold",
+    "missing_or_malformed_required_resource",
+    "invalid_or_nonfinite_xg",
+    "source_semantic_or_schema_incompatibility",
+    "snapshot_resource_policy_or_artifact_hash_mismatch",
+    "chronological_or_same_kickoff_firewall_failure",
+    "any_domain_joint_log_loss_95pct_upper_above_0.05",
+    "any_required_calibration_guardrail_failure",
+    "invalid_or_incoherent_probabilities",
+    "missing_failed_or_inconclusive_mandatory_rust_result",
+    "non_deterministic_replay_or_inability_to_reproduce",
+    "unauthorized_resource_access_or_post_outcome_policy_change"
+  ],
+  "heterogeneity_analysis": {
+    "disposition_effect": "DESCRIPTIVE_UNLESS_GENUINE_SCHEMA_OR_SEMANTIC_INCOMPATIBILITY",
+    "required": [
+      "xg_distribution_moments_and_quantiles_by_domain",
+      "calibration_intercept_and_slope_by_domain",
+      "shot_situation_counts_and_rates_by_domain",
+      "penalty_count_rate_and_xg_distribution_by_domain",
+      "overall_and_situation_conditioned_pairwise_ks_statistics",
+      "domain_metric_deltas_and_intervals",
+      "macro_and_target_weighted_difference",
+      "maximum_minus_minimum_domain_metric_range"
+    ]
+  },
+  "cross_provider_overlap": {
+    "current_inventory_status": "PASS_BY_GOVERNED_SCOPE_WITH_FINAL_ALIAS_RECONCILIATION_REQUIRED",
+    "pitchapi_internal_exact_id_intersection": 0,
+    "protected_scope": "sprint2_epl_2015_16",
+    "protected_scope_intersection": 0,
+    "existing_statsbomb_scopes_are_disjoint": true,
+    "limitation": "PitchAPI UUIDv5 allocations are provider-namespaced and cannot alone prove cross-provider fixture equality. Before corpus admission, stable competition/team aliases plus kickoff, home and away identities must resolve every candidate against all then-frozen protected, development and evaluation manifests. Ambiguous or missing aliases fail closed.",
+    "future_statsbomb_overlap_rule": "Any later StatsBomb Bundesliga 2023/24 or Ligue 1 2022/23 group must be declared overlapping; it cannot serve as independent confirmation or share fit/tuning evidence across protocols."
+  },
+  "confirmation_plan": {
+    "protocol_id": "PITCHAPI_CONFIRMATION_EVALUATION_V1",
+    "status": "OPTIONAL_NOT_AUTHORIZED",
+    "preferred_candidate": "ligue1_2021_22",
+    "reason": "Existing retained catalog evidence identifies the season and it remains outside PITCHAPI_SNAPSHOT_V1 and the V2 design diagnostics.",
+    "alternatives": ["ligue1_2023_24", "bundesliga_2024_25"],
+    "admission_requires_new_snapshot_and_owner_authorization": true,
+    "blocks_v2": false
+  },
+  "execution_authorized": false,
+  "model_fitting_authorized": false,
+  "rust_simulation_authorized": false,
+  "api_calls_authorized": false,
+  "provider_contact_authorized": false,
+  "spending_authorized": false
+}
