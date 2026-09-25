@@ -1,0 +1,48 @@
+{
+  "aggregation": {
+    "primary": "equal_weight_macro_average_of_three_domains",
+    "secondary": "fixed_target_weighted_216_216_280"
+  },
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_model_sha256": "5fab3347523ade3918b17f7cd38400a6a54f92b54adee3da61aa28fdb5d9d973",
+  "code_commit": "6b0e32ee94d5e910a3fbe8096c2fc5192adfa49b",
+  "contract": "PitchApiDomainStratifiedV2ExecutionConfigurationV1",
+  "corpus_manifest_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "dependency_identities": {
+    "cargo_lock_sha256": "f61ae2f9ed570dee780008169be969793a635d538cc2e15aead4554295d9a60d",
+    "cargo_version": "1.97.1",
+    "python_version": "3.13.14",
+    "rustc_commit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+    "rustc_version": "1.97.1",
+    "uv_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e",
+    "uv_version": "0.12.1"
+  },
+  "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "metrics": {
+    "bootstrap": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924",
+    "configuration_sha256": "3381842ea8c548435bb18dd04ef4d29da2b564a393b50057ff2bc8f488c3f995",
+    "primary": "joint_score_matrix_log_loss_delta"
+  },
+  "raw_xg_decision": {
+    "selection_evidence_sha256": "dd19de6ae0a54a849d2dfb3c496b6c2934b63b27b2b57842674c6b749aa9e798",
+    "treatment": "RAW"
+  },
+  "reference_model_sha256": "54d209dc5d409c589750822871944f1b1175ae95883c9c83b92be1c729f5ddba",
+  "rust": {
+    "algorithm_version": "pitchapi-score-categorical-v1",
+    "binary_sha256": "36a0a04f89faafbea07243a18efb0f79c13b8f3591cff5af22f756d45f32aa87",
+    "build_profile": "release",
+    "cpu_features": "target-cpu-default",
+    "policy_sha256": "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee",
+    "source_tree_git_sha1": "6dc327ec8b6c652cad8ad582eaaf33a5949204e2",
+    "target_triple": "aarch64-apple-darwin"
+  },
+  "seed_policy": "pitchapi-v2-splitmix64-sha256-v1",
+  "simulation_count_per_target": 112460,
+  "snapshot": {
+    "id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "v2_policy_sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1"
+}

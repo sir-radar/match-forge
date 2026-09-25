@@ -1,0 +1,15 @@
+{
+  "decision_id": "COMPLETE_PITCHAPI_V2_EXECUTION_READINESS_V1",
+  "recorded_at": "2026-09-24T17:00:00Z",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+  "policy_sha256": "e4dfbf6a5133fba4806de80e6a79ccc878670531bb695e5509776dca082c1da1",
+  "rust_policy_approved": true,
+  "rust_policy_sha256": "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee",
+  "development_only_model_work_authorized": true,
+  "development_scope": "bundesliga_2021_22",
+  "evaluation_execution_authorized": false,
+  "pitchapi_api_calls_authorized": false,
+  "provider_contact_authorized": false,
+  "snapshot_mutation_authorized": false,
+  "statsbomb_evaluation_v2_mutation_authorized": false
+}
