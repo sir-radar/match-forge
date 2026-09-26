@@ -51,6 +51,16 @@ fn v3_input() -> SimulationInputV1 {
     }
 }
 
+fn v4_input() -> SimulationInputV1 {
+    SimulationInputV1 {
+        algorithm_version: V4_ALGORITHM_VERSION.into(),
+        policy_sha256: V4_POLICY_SHA256.into(),
+        protocol_id: V4_PROTOCOL_ID.into(),
+        seed_schedule_id: V4_SEED_SCHEDULE_ID.into(),
+        ..input()
+    }
+}
+
 #[test]
 fn splitmix64_matches_published_vector() {
     let mut rng = SplitMix64::new(0);
@@ -101,6 +111,120 @@ fn v3_replay_is_stable_and_rejects_v2_identity() {
         parse_canonical_input(&bytes, &hash).unwrap_err().code,
         "UNSUPPORTED_IDENTITY"
     );
+}
+
+#[test]
+fn v4_distribution_gate_replays_across_worker_counts() {
+    let value = v4_input();
+    let bytes = canonical_bytes(&value).unwrap();
+    let hash = sha256(&bytes);
+    let one = run_v4(&value, &hash, 1).unwrap();
+    let four = run_v4(&value, &hash, 4).unwrap();
+    assert_eq!(one, four);
+    assert_eq!(one.status, "PASS");
+    assert!(one.total_variation <= one.total_variation_limit);
+    assert_eq!(parse_canonical_input_v4(&bytes, &hash).unwrap(), value);
+}
+
+#[test]
+fn v4_recomputes_analytic_indicators_from_atoms() {
+    let mut value = v4_input();
+    value.analytic_probabilities[0].probability = 0.4;
+    let bytes = canonical_bytes(&value).unwrap();
+    let hash = sha256(&bytes);
+    assert_eq!(
+        parse_canonical_input_v4(&bytes, &hash).unwrap_err().code,
+        "ANALYTIC_REDUCTION_MISMATCH"
+    );
+    assert_eq!(
+        run_v4(&value, &hash, 1).unwrap_err().code,
+        "ANALYTIC_REDUCTION_MISMATCH"
+    );
+}
+
+#[test]
+fn v4_distribution_gate_has_pass_warning_and_fail_paths() {
+    let event = |index: usize, error: f64| V4EventValidationV1 {
+        absolute_error: error,
+        analytic_probability: 0.0,
+        batch_counts: vec![0; 4],
+        count: 0,
+        event_id: format!("event-{index}"),
+        simulated_probability: 0.0,
+    };
+    let pass: Vec<_> = (0..62).map(|index| event(index, 0.0)).collect();
+    assert_eq!(validate_v4_distribution(&pass).unwrap(), (0.0, vec![]));
+
+    let warning: Vec<_> = (0..62)
+        .map(|index| event(index, if index == 61 { 0.009 } else { 0.0 }))
+        .collect();
+    let (_, warnings) = validate_v4_distribution(&warning).unwrap();
+    assert_eq!(warnings, vec!["event-61 exceeds event warning limit"]);
+
+    let fail: Vec<_> = (0..62)
+        .map(|index| event(index, if index < 36 { 0.001 } else { 0.0 }))
+        .collect();
+    assert_eq!(
+        validate_v4_distribution(&fail).unwrap_err().code,
+        "DISTRIBUTION_PARITY_FAILURE"
+    );
+}
+
+#[test]
+fn diagnostic_replay_is_stable_across_worker_counts() {
+    let value = v3_input();
+    let bytes = canonical_bytes(&value).unwrap();
+    let hash = sha256(&bytes);
+    let one = diagnose_v3(&value, &hash, 1, 6_250).unwrap();
+    let four = diagnose_v3(&value, &hash, 4, 6_250).unwrap();
+    assert_eq!(one.events, four.events);
+    assert_eq!(one.batch_seed_ids, four.batch_seed_ids);
+    assert_eq!(one.simulation_count, 25_000);
+    assert_eq!(four.simulation_count, 25_000);
+}
+
+#[test]
+fn asymmetric_score_cells_are_not_reversed() {
+    for (home, away) in [(1, 4), (4, 1), (0, 5), (5, 0), (2, 3), (3, 2)] {
+        let atoms = vec![
+            ScoreAtomV1 {
+                away_goals: Some(away),
+                home_goals: Some(home),
+                kind: AtomKindV1::ExactScore,
+                probability: 1.0,
+            },
+            ScoreAtomV1 {
+                away_goals: None,
+                home_goals: None,
+                kind: AtomKindV1::UnresolvedTail,
+                probability: 0.0,
+            },
+        ];
+        let mut value = v3_input();
+        value.atoms = atoms;
+        value.forecast_probability_sha256 = sha256(&canonical_bytes(&value.atoms).unwrap());
+        value.analytic_probabilities = analytic_probabilities(&value.atoms);
+        let bytes = canonical_bytes(&value).unwrap();
+        let output = diagnose_v3(&value, &sha256(&bytes), 4, 10).unwrap();
+        let label = |goals: u16| {
+            if goals < 5 {
+                goals.to_string()
+            } else {
+                "5+".into()
+            }
+        };
+        let expected = format!("score:{}-{}", label(home), label(away));
+        let reversed = format!("score:{}-{}", label(away), label(home));
+        let counts: BTreeMap<_, _> = output
+            .events
+            .iter()
+            .map(|event| (event.event_id.as_str(), event.count))
+            .collect();
+        assert_eq!(counts[expected.as_str()], 40);
+        if expected != reversed {
+            assert_eq!(counts[reversed.as_str()], 0);
+        }
+    }
 }
 
 #[test]
