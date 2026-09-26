@@ -42,6 +42,15 @@ fn input() -> SimulationInputV1 {
     }
 }
 
+fn v3_input() -> SimulationInputV1 {
+    SimulationInputV1 {
+        policy_sha256: V3_POLICY_SHA256.into(),
+        protocol_id: V3_PROTOCOL_ID.into(),
+        seed_schedule_id: V3_SEED_SCHEDULE_ID.into(),
+        ..input()
+    }
+}
+
 #[test]
 fn splitmix64_matches_published_vector() {
     let mut rng = SplitMix64::new(0);
@@ -79,6 +88,22 @@ fn replay_is_stable_across_worker_counts_and_hashes() {
 }
 
 #[test]
+fn v3_replay_is_stable_and_rejects_v2_identity() {
+    let value = v3_input();
+    let bytes = canonical_bytes(&value).unwrap();
+    let hash = sha256(&bytes);
+    assert_eq!(parse_canonical_input_v3(&bytes, &hash).unwrap(), value);
+    assert_eq!(
+        run_v3(&value, &hash, 1).unwrap(),
+        run_v3(&value, &hash, 4).unwrap()
+    );
+    assert_eq!(
+        parse_canonical_input(&bytes, &hash).unwrap_err().code,
+        "UNSUPPORTED_IDENTITY"
+    );
+}
+
+#[test]
 fn canonical_round_trip_rejects_hash_and_format_changes() {
     let value = input();
     let bytes = canonical_bytes(&value).unwrap();
@@ -104,23 +129,49 @@ fn canonical_round_trip_rejects_hash_and_format_changes() {
 }
 
 #[test]
+fn canonicalization_is_idempotent_for_small_probabilities() {
+    let payload = br#"[{"away_goals":14,"home_goals":1,"kind":"EXACT_SCORE","probability":1.4033441127662814e-13}]"#;
+    let once = canonicalize_json(payload).unwrap();
+    assert_eq!(canonicalize_json(&once).unwrap(), once);
+    let typed = canonicalize_atoms_json(payload).unwrap();
+    assert_eq!(canonicalize_atoms_json(&typed).unwrap(), typed);
+
+    let mut value = v3_input();
+    value.atoms[0].probability = 1.403_344_112_766_281_4e-13;
+    value.atoms[1].probability = 1.0 - value.atoms[0].probability;
+    value.forecast_probability_sha256 = sha256(&canonical_bytes(&value.atoms).unwrap());
+    value.analytic_probabilities = analytic_probabilities(&value.atoms);
+    let bytes = canonical_bytes(&value).unwrap();
+    assert_eq!(
+        parse_canonical_input_v3(&bytes, &sha256(&bytes)).unwrap(),
+        value
+    );
+}
+
+#[test]
 fn invalid_probabilities_counts_atoms_and_worker_fail_closed() {
     let mut value = input();
     value.atoms[0].probability = f64::NAN;
     assert_eq!(
-        validate_input(&value).unwrap_err().code,
+        validate_input_for(&value, PROTOCOL_ID, POLICY_SHA256, SEED_SCHEDULE_ID)
+            .unwrap_err()
+            .code,
         "INVALID_PROBABILITY"
     );
     value = input();
     value.atoms[0].probability = 1.1;
     assert_eq!(
-        validate_input(&value).unwrap_err().code,
+        validate_input_for(&value, PROTOCOL_ID, POLICY_SHA256, SEED_SCHEDULE_ID)
+            .unwrap_err()
+            .code,
         "INVALID_PROBABILITY"
     );
     value = input();
     value.simulation_count -= 1;
     assert_eq!(
-        validate_input(&value).unwrap_err().code,
+        validate_input_for(&value, PROTOCOL_ID, POLICY_SHA256, SEED_SCHEDULE_ID)
+            .unwrap_err()
+            .code,
         "INVALID_SIMULATION_COUNT"
     );
     assert_eq!(

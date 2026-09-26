@@ -1,4 +1,4 @@
-//! Deterministic categorical simulation for the frozen PitchAPI V2 policy.
+//! Deterministic categorical simulation for the frozen PitchAPI V2 and V3 policies.
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};
@@ -13,6 +13,10 @@ pub const PROTOCOL_ID: &str = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2";
 pub const POLICY_SHA256: &str = "8154e8b78b307dd25e7167ad00f2a310f012b1474580a82795e72acd5ce3a9ee";
 pub const ALGORITHM_VERSION: &str = "pitchapi-score-categorical-v1";
 pub const SEED_SCHEDULE_ID: &str = "pitchapi-v2-splitmix64-sha256-v1";
+pub const V3_PROTOCOL_ID: &str = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3";
+pub const V3_POLICY_SHA256: &str =
+    "682ebf08298dbe7aa5078d2e5b0922b5c43e8dee05be8ea89781bce97eed7ebf";
+pub const V3_SEED_SCHEDULE_ID: &str = "pitchapi-v3-splitmix64-sha256-v1";
 pub const SIMULATION_COUNT: u64 = 112_460;
 pub const BATCH_COUNT: u32 = 4;
 pub const DRAWS_PER_BATCH: u64 = 28_115;
@@ -154,6 +158,35 @@ pub fn parse_canonical_input(
     payload: &[u8],
     expected_sha256: &str,
 ) -> Result<SimulationInputV1, SimulationError> {
+    parse_canonical_input_for(
+        payload,
+        expected_sha256,
+        PROTOCOL_ID,
+        POLICY_SHA256,
+        SEED_SCHEDULE_ID,
+    )
+}
+
+pub fn parse_canonical_input_v3(
+    payload: &[u8],
+    expected_sha256: &str,
+) -> Result<SimulationInputV1, SimulationError> {
+    parse_canonical_input_for(
+        payload,
+        expected_sha256,
+        V3_PROTOCOL_ID,
+        V3_POLICY_SHA256,
+        V3_SEED_SCHEDULE_ID,
+    )
+}
+
+fn parse_canonical_input_for(
+    payload: &[u8],
+    expected_sha256: &str,
+    protocol_id: &str,
+    policy_sha256: &str,
+    seed_schedule_id: &str,
+) -> Result<SimulationInputV1, SimulationError> {
     if sha256_hex(payload) != expected_sha256 {
         return Err(err(
             "INPUT_HASH_MISMATCH",
@@ -167,11 +200,16 @@ pub fn parse_canonical_input(
     if canonical != payload {
         return Err(err(
             "NON_CANONICAL_INPUT",
-            "input must use sorted keys without insignificant whitespace",
+            format!(
+                "input must use sorted keys without insignificant whitespace: actual={} canonical={}",
+                sha256_hex(payload),
+                sha256_hex(&canonical)
+            ),
         ));
     }
-    let input = serde_json::from_value(value).map_err(|e| err("MALFORMED_INPUT", e.to_string()))?;
-    validate_input(&input)?;
+    let input =
+        serde_json::from_slice(payload).map_err(|e| err("MALFORMED_INPUT", e.to_string()))?;
+    validate_input_for(&input, protocol_id, policy_sha256, seed_schedule_id)?;
     Ok(input)
 }
 
@@ -180,7 +218,40 @@ pub fn run(
     input_sha256: &str,
     workers: usize,
 ) -> Result<SimulationOutputV1, SimulationError> {
-    validate_input(input)?;
+    run_for(
+        input,
+        input_sha256,
+        workers,
+        PROTOCOL_ID,
+        POLICY_SHA256,
+        SEED_SCHEDULE_ID,
+    )
+}
+
+pub fn run_v3(
+    input: &SimulationInputV1,
+    input_sha256: &str,
+    workers: usize,
+) -> Result<SimulationOutputV1, SimulationError> {
+    run_for(
+        input,
+        input_sha256,
+        workers,
+        V3_PROTOCOL_ID,
+        V3_POLICY_SHA256,
+        V3_SEED_SCHEDULE_ID,
+    )
+}
+
+fn run_for(
+    input: &SimulationInputV1,
+    input_sha256: &str,
+    workers: usize,
+    protocol_id: &str,
+    policy_sha256: &str,
+    seed_schedule_id: &str,
+) -> Result<SimulationOutputV1, SimulationError> {
+    validate_input_for(input, protocol_id, policy_sha256, seed_schedule_id)?;
     if !(1..=4).contains(&workers) {
         return Err(err(
             "INVALID_WORKER_COUNT",
@@ -193,7 +264,11 @@ pub fn run(
         .iter()
         .map(|p| (p.event_id.as_str(), p.probability))
         .collect();
-    let base = base_seed_commitment(&input.forecast_probability_sha256);
+    let base = base_seed_commitment_for(
+        protocol_id,
+        policy_sha256,
+        &input.forecast_probability_sha256,
+    );
     let seeds: Vec<[u8; 32]> = (0..BATCH_COUNT)
         .map(|i| batch_seed(&base, &input.canonical_match_id, i))
         .collect();
@@ -266,10 +341,10 @@ pub fn run(
         forecast_id: input.forecast_id.clone(),
         forecast_probability_sha256: input.forecast_probability_sha256.clone(),
         input_sha256: input_sha256.into(),
-        policy_sha256: POLICY_SHA256.into(),
-        protocol_id: PROTOCOL_ID.into(),
+        policy_sha256: policy_sha256.into(),
+        protocol_id: protocol_id.into(),
         schema_version: "SimulationValidationArtifactV1".into(),
-        seed_schedule_id: SEED_SCHEDULE_ID.into(),
+        seed_schedule_id: seed_schedule_id.into(),
         simulation_count: SIMULATION_COUNT,
         stability_limit: STABILITY_LIMIT,
         status: "PASS".into(),
@@ -303,6 +378,18 @@ pub fn canonical_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, SimulationErr
 }
 pub fn sha256(payload: &[u8]) -> String {
     sha256_hex(payload)
+}
+
+pub fn canonicalize_json(payload: &[u8]) -> Result<Vec<u8>, SimulationError> {
+    let value: Value =
+        serde_json::from_slice(payload).map_err(|e| err("MALFORMED_INPUT", e.to_string()))?;
+    serde_json::to_vec(&sort_json(value)).map_err(|e| err("SERIALIZATION_FAILURE", e.to_string()))
+}
+
+pub fn canonicalize_atoms_json(payload: &[u8]) -> Result<Vec<u8>, SimulationError> {
+    let atoms: Vec<ScoreAtomV1> =
+        serde_json::from_slice(payload).map_err(|e| err("MALFORMED_INPUT", e.to_string()))?;
+    canonical_serialize(&atoms)
 }
 
 pub fn benchmark_synthetic_targets(
@@ -367,12 +454,17 @@ pub fn benchmark_synthetic_targets(
     Ok((target_count as u64 * SIMULATION_COUNT, checksum))
 }
 
-fn validate_input(input: &SimulationInputV1) -> Result<(), SimulationError> {
+fn validate_input_for(
+    input: &SimulationInputV1,
+    protocol_id: &str,
+    policy_sha256: &str,
+    seed_schedule_id: &str,
+) -> Result<(), SimulationError> {
     if input.schema_version != "PitchApiSimulationInputV1"
-        || input.protocol_id != PROTOCOL_ID
-        || input.policy_sha256 != POLICY_SHA256
+        || input.protocol_id != protocol_id
+        || input.policy_sha256 != policy_sha256
         || input.algorithm_version != ALGORITHM_VERSION
-        || input.seed_schedule_id != SEED_SCHEDULE_ID
+        || input.seed_schedule_id != seed_schedule_id
     {
         return Err(err(
             "UNSUPPORTED_IDENTITY",
@@ -438,8 +530,15 @@ fn validate_input(input: &SimulationInputV1) -> Result<(), SimulationError> {
             format!("probabilities sum to {sum}"),
         ));
     }
-    if sha256_hex(&canonical_serialize(&input.atoms)?) != input.forecast_probability_sha256 {
-        return Err(err("PROBABILITY_HASH_MISMATCH", "atom hash mismatch"));
+    let atom_hash = sha256_hex(&canonical_serialize(&input.atoms)?);
+    if atom_hash != input.forecast_probability_sha256 {
+        return Err(err(
+            "PROBABILITY_HASH_MISMATCH",
+            format!(
+                "atom hash mismatch: actual={atom_hash} expected={}",
+                input.forecast_probability_sha256
+            ),
+        ));
     }
     let ids = event_ids();
     if input.analytic_probabilities.len() != EVENT_COUNT {
@@ -589,9 +688,17 @@ fn clopper_pearson(k: u64, n: u64, alpha: f64) -> Result<IntervalV1, SimulationE
     Ok(IntervalV1 { lower, upper })
 }
 fn base_seed_commitment(probability_hash: &str) -> [u8; 32] {
+    base_seed_commitment_for(PROTOCOL_ID, POLICY_SHA256, probability_hash)
+}
+
+fn base_seed_commitment_for(
+    protocol_id: &str,
+    policy_sha256: &str,
+    probability_hash: &str,
+) -> [u8; 32] {
     let mut h = Sha256::new();
-    h.update(PROTOCOL_ID.as_bytes());
-    h.update(POLICY_SHA256.as_bytes());
+    h.update(protocol_id.as_bytes());
+    h.update(policy_sha256.as_bytes());
     h.update(probability_hash.as_bytes());
     h.finalize().into()
 }
