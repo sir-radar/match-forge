@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-26T23:30:00Z",
+  "updated_at": "2026-09-26T23:31:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -30,7 +30,8 @@
     "ACCEPT_PITCHAPI_V1_FAIL_AND_DESIGN_DOMAIN_STRATIFIED_V2_V1",
     "FREEZE_AND_PREREGISTER_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2_V1",
     "COMPLETE_PITCHAPI_V2_EXECUTION_READINESS_V1",
-    "PRESERVE_PITCHAPI_V2_AND_DESIGN_TRANSFERABLE_V3_V1"
+    "PRESERVE_PITCHAPI_V2_AND_DESIGN_TRANSFERABLE_V3_V1",
+    "AUTHORIZE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3_EXECUTION_V1"
   ],
   "closed_routes": [
     {
@@ -118,8 +119,8 @@
     {
       "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
       "provider": "PITCHAPI",
-      "status": "READY_AWAITING_OWNER_EXECUTION_AUTHORIZATION",
-      "evidence_ref": "docs/evidence/pitchapi-domain-stratified-v3-execution-readiness-2026-09-26.json",
+      "status": "AUTHORIZED_READY_TO_EXECUTE",
+      "evidence_ref": "docs/evidence/owner-decision-authorize-pitchapi-domain-stratified-v3-execution-2026-09-26.json",
       "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v3-policy.json",
       "policy_sha256": "791c5db96db55cc569424f3f28f290d0b8fdbd49dc9c3f6166bac711dc2f6220",
       "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
@@ -137,13 +138,15 @@
       "rust_policy_sha256": "682ebf08298dbe7aa5078d2e5b0922b5c43e8dee05be8ea89781bce97eed7ebf",
       "rust_build_sha256": "4f4709b38c8d6c72e93c433074fed3d7788eb4018cfddfe67f73ae5f438e209c",
       "execution_configuration_sha256": "bdce335b01c1132a66b5eca6897850573211eb4cb53601f3e46015990d7dcca4",
+      "execution_authorization_decision_id": "AUTHORIZE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3_EXECUTION_V1",
+      "execution_authorization_sha256": "5a894552a6d95f0cfada64acb6e2dd835273c68cbf2827258e85283d2febe7a3",
       "preregistration_sha256": "af30d63e6a1f6293b5f8d5bf6df2524f4ed1f87cf65d41a6ab4bb0f4473fa9d1",
       "executor_source_commit": "5cc54bad9ceff5ca9e7ac4b449268a93d92c5a36",
       "model_frozen": true,
       "policy_frozen": true,
       "preregistration_frozen": true,
       "execution_configuration_frozen": true,
-      "evaluation_execution_authorized": false,
+      "evaluation_execution_authorized": true,
       "evaluation_executed": false,
       "evaluation_outcomes_loaded": false,
       "api_use_authorized": false
