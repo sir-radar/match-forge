@@ -1,0 +1,94 @@
+{
+  "aggregation": {
+    "primary": "equal_weight_macro_average_of_three_domains",
+    "secondary": "fixed_target_weighted_216_216_280"
+  },
+  "contract": "PitchApiDomainStratifiedEvaluationV3PolicyV1",
+  "development": {
+    "evaluation_outcomes_may_influence_design": false,
+    "scope": "bundesliga_2021_22",
+    "target_count": 216
+  },
+  "evaluation": {
+    "domains": {
+      "bundesliga_2022_23": 216,
+      "bundesliga_2023_24": 216,
+      "ligue1_2022_23": 280
+    },
+    "exact_target_count": 712,
+    "minimum_target_count": 500,
+    "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "failure_semantics": "fail_closed_owner_review_required",
+  "metrics": {
+    "calibration": "per-domain intercept slope standard errors and reliability bins",
+    "descriptive": [
+      "binary market log loss brier and auc",
+      "total-goal 50 and 90 percent prediction intervals",
+      "exact-score top-1 top-3 top-5",
+      "expected-total-goal mae",
+      "provider heterogeneity"
+    ],
+    "primary": "joint_score_matrix_log_loss_delta",
+    "secondary": [
+      "one_x_two_log_loss_delta",
+      "one_x_two_brier_delta",
+      "one_x_two_rps_delta",
+      "total_goal_crps_delta"
+    ],
+    "uncertainty": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924"
+  },
+  "models": {
+    "challenger": "transferable-rolling-goals-npxg-poisson-v1",
+    "feature_id": "MATCHFORGE_TRANSFERABLE_ROLLING_LAST10_V1",
+    "reference": "transferable-rolling-goals-poisson-v1",
+    "team_id_parameters": false
+  },
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+  "reporting": {
+    "domains_reported_separately": true,
+    "heterogeneity_required": true,
+    "raw_source_distributions_pooled": false
+  },
+  "simulation": {
+    "mandatory": true,
+    "simulation_count_per_forecast": 112460
+  },
+  "status": "FROZEN_AWAITING_EXECUTION_AUTHORIZATION",
+  "stop_conditions": [
+    "owner authorization does not bind exact frozen identities",
+    "evaluation outcome used for fit tune transform threshold or policy",
+    "snapshot corpus firewall alias artifact policy preregistration or build hash mismatch",
+    "fewer or more than 712 structural targets",
+    "target lacks ten strictly prior appearances for either team",
+    "same-kickoff or future observation enters a forecast",
+    "invalid malformed nonfinite or incoherent probability",
+    "mandatory Rust simulation missing failed inconclusive or nondeterministic",
+    "interrupted failed or duplicate run identity",
+    "unauthorized API provider or snapshot mutation"
+  ],
+  "transferability": {
+    "chronological_update": "for each team use exactly its last 10 appearances with kickoff strictly before the target; seal every same-kickoff batch before revealing outcomes",
+    "cold_start": "a target is eligible only after both teams have 10 strictly prior appearances",
+    "initialization": "population goal and non-penalty xG means fitted on Bundesliga 2021/22 only",
+    "roster_independent": true,
+    "unseen_team_rule": "apply the identical rolling feature construction and frozen global coefficients to every canonical team ID"
+  },
+  "v2_rules_reused": [
+    "retrospective frozen snapshot framing",
+    "domain stratification and fixed target counts",
+    "raw PitchAPI xG",
+    "snapshot corpus firewall and alias identities",
+    "protected-data rules",
+    "metrics aggregation uncertainty and reporting",
+    "mandatory Rust simulation and failure semantics"
+  ],
+  "v3_differences": [
+    "new roster-independent reference and challenger artifacts",
+    "team state is deterministic rolling last-10 history rather than fitted team-ID coefficients",
+    "new V3 Rust protocol policy seed and build identities",
+    "new executor configuration and preregistration identities"
+  ],
+  "xg_treatment": "RAW_NON_PENALTY_FOR_CHALLENGER_ONLY"
+}

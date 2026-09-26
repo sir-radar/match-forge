@@ -1,0 +1,13 @@
+{
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "PRESERVE_PITCHAPI_V2_AND_DESIGN_TRANSFERABLE_V3_V1",
+  "evaluation_outcomes_loaded": false,
+  "new_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+  "pitchapi_api_calls_authorized": false,
+  "previous_execution_authorization_used": false,
+  "recorded_at": "2026-09-26T23:30:00Z",
+  "statsbomb_evaluation_v2_unchanged": true,
+  "v2_disposition": "BLOCKED_PRE_EXECUTION_MODEL_NON_TRANSFERABILITY",
+  "v2_evaluation_executed": false,
+  "v2_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2"
+}

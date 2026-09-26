@@ -45,6 +45,12 @@ def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
             "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
             "evidence_ref": "docs/evidence/shared-pace-admission.md",
         },
+        {
+            "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+            "provider": "PITCHAPI",
+            "status": "READY_AWAITING_OWNER_EXECUTION_AUTHORIZATION",
+            "evidence_ref": "docs/evidence/shared-pace-admission.md",
+        },
     ]
 
     _write_json(status_path, status)
@@ -312,6 +318,12 @@ def _valid_status() -> dict[str, object]:
                 "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
                 "provider": "PITCHAPI",
                 "status": "DESIGN_COMPLETE_OWNER_FREEZE_REQUIRED",
+                "evidence_ref": "docs/evidence/shared-pace-admission.md",
+            },
+            {
+                "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+                "provider": "PITCHAPI",
+                "status": "READY_AWAITING_OWNER_EXECUTION_AUTHORIZATION",
                 "evidence_ref": "docs/evidence/shared-pace-admission.md",
             },
         ],

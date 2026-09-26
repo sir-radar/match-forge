@@ -1,0 +1,36 @@
+{
+  "aggregation": {
+    "primary": "equal_weight_macro_average_of_three_domains",
+    "secondary": "fixed_target_weighted_216_216_280"
+  },
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "PitchApiDomainStratifiedV3ExecutionConfigurationV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "dependency_identities": {
+    "cargo_lock_sha256": "f61ae2f9ed570dee780008169be969793a635d538cc2e15aead4554295d9a60d",
+    "cargo_version": "1.97.1",
+    "python_version": "3.13.14",
+    "rustc_commit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+    "rustc_version": "1.97.1",
+    "uv_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e"
+  },
+  "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+  "execution_authorized": false,
+  "executor_source_commit": "5cc54bad9ceff5ca9e7ac4b449268a93d92c5a36",
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "metrics": {
+    "bootstrap": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924",
+    "primary": "joint_score_matrix_log_loss_delta"
+  },
+  "policy_sha256": "791c5db96db55cc569424f3f28f290d0b8fdbd49dc9c3f6166bac711dc2f6220",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_build_sha256": "4f4709b38c8d6c72e93c433074fed3d7788eb4018cfddfe67f73ae5f438e209c",
+  "rust_policy_sha256": "682ebf08298dbe7aa5078d2e5b0922b5c43e8dee05be8ea89781bce97eed7ebf",
+  "seed_policy": "pitchapi-v3-splitmix64-sha256-v1",
+  "simulation_count_per_forecast": 112460,
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "target_count": 712,
+  "transferability_development_evidence_sha256": "8a18fac9121add433fe238118e41c4e9b820725b159980a22291a6790aef9c7c"
+}
