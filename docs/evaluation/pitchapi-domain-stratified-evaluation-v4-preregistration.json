@@ -1,0 +1,79 @@
+{
+  "blocking_requirements": [
+    "OWNER_FREEZE_EXACT_V4_IDENTITIES",
+    "OWNER_AUTHORIZE_EXACTLY_ONE_V4_EXECUTION"
+  ],
+  "contract": "PitchApiDomainStratifiedEvaluationV4PreregistrationV1",
+  "evaluation_execution_authorized": false,
+  "evaluation_outcomes_loaded_for_v4_design": false,
+  "execution_configuration_sha256": "b5392dc83b87a715b48a5cd415718fcaf8852feab8b467ab40f0d135ef3ee7ec",
+  "groups": {
+    "development_scope": "bundesliga_2021_22",
+    "evaluation": {
+      "bundesliga_2022_23": 216,
+      "bundesliga_2023_24": 216,
+      "ligue1_2022_23": 280
+    },
+    "exact_evaluation_targets": 712,
+    "minimum_team_prior_appearances": 10
+  },
+  "implementation_source_commit": "719a04300bf2c6438f2a4cafb4fe52ad0f03f9ea",
+  "metrics": {
+    "aggregation": "equal_weight_three_domain_macro",
+    "primary": "joint_score_matrix_log_loss_delta",
+    "secondary": [
+      "one_x_two_log_loss_delta",
+      "one_x_two_brier_delta",
+      "one_x_two_rps_delta",
+      "total_goal_crps_delta"
+    ],
+    "secondary_aggregation": "fixed_target_weighted_216_216_280",
+    "uncertainty": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924"
+  },
+  "models": {
+    "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+    "feature_id": "MATCHFORGE_TRANSFERABLE_ROLLING_LAST10_V1",
+    "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "team_id_parameters": false
+  },
+  "policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+  "qualification_evidence_sha256": "519fe944fc0f3fd7f2e51693dcb6c1e68429bebc8cc134e67d7fb5539b0247f0",
+  "reporting": {
+    "domains_separate": true,
+    "heterogeneity_required": true,
+    "machine_target_results_required": true,
+    "required_aggregates": [
+      "macro_domain",
+      "fixed_target_weighted"
+    ]
+  },
+  "rust_validation": {
+    "algorithm": "pitchapi-score-categorical-v2",
+    "build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+    "event_warning_limit": 0.008613326107968184,
+    "global_familywise_alpha": 0.01,
+    "policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+    "seed_schedule_id": "pitchapi-v4-splitmix64-sha256-v1",
+    "simulation_count_per_forecast": 112460,
+    "total_variation_limit": 0.012794580429261083
+  },
+  "source": {
+    "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+    "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+    "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+  "v3_disposition": "PROTOCOL_EVALUATION_FAILURE_RUST_PARITY_PERMANENTLY_CLOSED",
+  "v3_rerun_authorized": false,
+  "v3_to_v4_differences": [
+    "new V4 protocol, Rust algorithm, seed-schedule, policy, build, configuration, and preregistration identities",
+    "one evaluation-wide score-matrix total-variation parity gate replaces 62 per-forecast cellwise hard gates",
+    "global multiplicity covers all 1424 forecast validations",
+    "62 event errors become descriptive warnings rather than independent hard gates",
+    "Rust recomputes analytic indicators from score atoms"
+  ],
+  "v4_execution_authorized": false
+}

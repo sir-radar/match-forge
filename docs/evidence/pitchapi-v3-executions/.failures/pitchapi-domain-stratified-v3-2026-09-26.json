@@ -1,0 +1,1 @@
+{"contract":"PitchApiV3ExecutionFailureV1","error":"Rust simulation failed: PARITY_FAILURE: score:1-4 analytic probability is outside parity interval\n","protocol_id":"PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3","run_id":"pitchapi-domain-stratified-v3-2026-09-26","status":"FAIL_CLOSED_OWNER_REVIEW_REQUIRED"}

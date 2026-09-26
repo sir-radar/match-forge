@@ -214,6 +214,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
         ("PITCHAPI_RETROSPECTIVE_EVALUATION_V1", "PITCHAPI"),
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2", "PITCHAPI"),
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3", "PITCHAPI"),
+        ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4", "PITCHAPI"),
     }
     observed: set[tuple[str, str]] = set()
     for track in tracks:

@@ -1,0 +1,103 @@
+{
+  "analytic_oracle_defect": false,
+  "analytic_verification": {
+    "decimal_50_digit": 0.011154452047872274,
+    "manual_poisson_pmf_product": 0.011154452047872276,
+    "maximum_difference": 1.9081958235744878e-17,
+    "production": 0.01115445204787229,
+    "scipy": 0.01115445204787227,
+    "status": "PASS"
+  },
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "classification": [
+    "D_STATISTICAL_PARITY_POLICY_DEFECT",
+    "E_EXPECTED_MONTE_CARLO_VARIATION"
+  ],
+  "contract": "PitchApiRustParityInvestigationV1FinalEvidence",
+  "distribution_level": {
+    "exact_input_total_variation": 0.005943222692824432,
+    "exact_input_maximum_absolute_event_error": 0.0013771842739591991,
+    "synthetic_total_variation_maximum": 0.00609079663639125,
+    "synthetic_total_variation_minimum": 0.0006714937737811507,
+    "tail_draws": 0
+  },
+  "exact_reproduction": {
+    "analytic_probability_score_1_4": 0.01115445204787229,
+    "batch_counts": [
+      272,
+      283,
+      257,
+      303
+    ],
+    "expected_count": 1254.4296773037177,
+    "failure": "PARITY_FAILURE: score:1-4 analytic probability is outside parity interval",
+    "forecast_artifact_sha256": "65994c4978de57fca312ff97cae5f940f42e1aa7c5873778e5ba157212ec2532",
+    "forecast_probability_sha256": "be187e94a147d80446bd90248d79eadb66ab6812d67d266d12d92b22158af241",
+    "input_sha256": "bae0f12b8f179eb29618d69ef768f54951e3a1b95fdbb19b79970dcc48ba2d53",
+    "interval_confidence_level_individual": 0.9998387096774194,
+    "interval_formula": "two-sided Clopper-Pearson with alpha=0.01/62",
+    "lambda_away": 1.3362479765334259,
+    "lambda_home": 1.6291133580872224,
+    "model_role": "REFERENCE",
+    "parity_interval_lower": 0.00883812620640509,
+    "parity_interval_upper": 0.011077245439911123,
+    "raw_count_score_1_4": 1115,
+    "rust_observed_probability_score_1_4": 0.00991463631513427,
+    "simulation_count": 112460,
+    "target_id": "96093e19-361b-53b0-a189-eca42666c280",
+    "worker_count": 1
+  },
+  "implementation_source_commit": "719a04300bf2c6438f2a4cafb4fe52ad0f03f9ea",
+  "investigation_id": "PITCHAPI_RUST_PARITY_INVESTIGATION_V1",
+  "model_artifacts": {
+    "challenger": "VALID_UNCHANGED",
+    "reference": "VALID_UNCHANGED",
+    "refit_performed": false
+  },
+  "multiple_comparisons": {
+    "evaluation_forecasts": 1424,
+    "expected_false_rejections_at_nominal_cell_size": 14.24,
+    "independent_approximation_at_least_one_false_rejection": 0.9999993466471561,
+    "tests": 88288,
+    "v3_evaluation_wide_control": false
+  },
+  "no_additional_evaluation_outcomes_inspected": true,
+  "no_provider_or_api_activity": true,
+  "no_snapshot_mutation": true,
+  "parity_policy_defect": true,
+  "raw_investigation_evidence_sha256": "c0785a4548c9bcd27767487e00a8ce77e69db4210b160d1960adfda70a4ef3b4",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_implementation_defect": false,
+  "v3_disposition": "PROTOCOL_EVALUATION_FAILURE_RUST_PARITY_PERMANENTLY_CLOSED",
+  "v3_evidence_hashes_unchanged": {
+    "failure_receipt": "8a9ac7834b9e4aedbdc30855e863fe74be14caeb18ae87a52c2b52457d664ebf",
+    "human": "b28d0a785e5722cbb310597f870d37f9b802062fb7d9ff34de1824d125e299b1",
+    "machine": "ef954113b229ae4d52cd2d67a2d3e56b3405f4fb712199ce6a649f4347b4060f",
+    "rust_build": "4f4709b38c8d6c72e93c433074fed3d7788eb4018cfddfe67f73ae5f438e209c"
+  },
+  "v3_rerun_performed": false,
+  "v4": {
+    "evaluation_policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
+    "execution_authorized": false,
+    "execution_configuration_sha256": "b5392dc83b87a715b48a5cd415718fcaf8852feab8b467ab40f0d135ef3ee7ec",
+    "preregistration_sha256": "87c00aecf99c348319014831746a7ba0a0abadc304a92ee18f5dab93d9fac318",
+    "qualification_evidence_sha256": "519fe944fc0f3fd7f2e51693dcb6c1e68429bebc8cc134e67d7fb5539b0247f0",
+    "readiness": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+    "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+    "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf"
+  },
+  "v4_execution_required_owner_authorization": {
+    "authorization": "exactly one logical PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4 execution",
+    "must_bind": [
+      "evaluation policy SHA-256",
+      "preregistration SHA-256",
+      "execution configuration SHA-256",
+      "reference and challenger artifact SHA-256 values",
+      "snapshot corpus firewall and alias SHA-256 values",
+      "V4 Rust policy and release-build SHA-256 values",
+      "implementation source commit",
+      "exact target count 712 and forecast validation count 1424"
+    ],
+    "must_set": "evaluation_execution_authorized=true"
+  }
+}

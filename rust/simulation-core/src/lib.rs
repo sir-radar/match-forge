@@ -17,12 +17,19 @@ pub const V3_PROTOCOL_ID: &str = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3";
 pub const V3_POLICY_SHA256: &str =
     "682ebf08298dbe7aa5078d2e5b0922b5c43e8dee05be8ea89781bce97eed7ebf";
 pub const V3_SEED_SCHEDULE_ID: &str = "pitchapi-v3-splitmix64-sha256-v1";
+pub const V4_PROTOCOL_ID: &str = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4";
+pub const V4_POLICY_SHA256: &str =
+    "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf";
+pub const V4_ALGORITHM_VERSION: &str = "pitchapi-score-categorical-v2";
+pub const V4_SEED_SCHEDULE_ID: &str = "pitchapi-v4-splitmix64-sha256-v1";
 pub const SIMULATION_COUNT: u64 = 112_460;
 pub const BATCH_COUNT: u32 = 4;
 pub const DRAWS_PER_BATCH: u64 = 28_115;
 const EVENT_COUNT: usize = 62;
 const NORMALIZATION_TOLERANCE: f64 = 1e-12;
 const STABILITY_LIMIT: f64 = 0.019_974_384_468_264_498;
+const V4_TV_LIMIT: f64 = 0.012_794_580_429_261_083;
+const V4_EVENT_WARNING_LIMIT: f64 = 0.008_613_326_107_968_184;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SimulationError {
@@ -131,6 +138,74 @@ impl SimulationOutputV1 {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct DiagnosticEventV1 {
+    pub batch_counts: Vec<u64>,
+    pub count: u64,
+    pub event_id: String,
+    pub simulated_probability: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct DiagnosticOutputV1 {
+    pub base_seed_commitment: String,
+    pub batch_seed_ids: Vec<String>,
+    pub draws_per_batch: u64,
+    pub events: Vec<DiagnosticEventV1>,
+    pub input_sha256: String,
+    pub protocol_id: String,
+    pub schema_version: String,
+    pub simulation_count: u64,
+    pub tail_draws: u64,
+    pub worker_count: usize,
+}
+impl DiagnosticOutputV1 {
+    pub fn canonical_bytes(&self) -> Result<Vec<u8>, SimulationError> {
+        canonical_serialize(self)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct V4EventValidationV1 {
+    pub absolute_error: f64,
+    pub analytic_probability: f64,
+    pub batch_counts: Vec<u64>,
+    pub count: u64,
+    pub event_id: String,
+    pub simulated_probability: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct V4SimulationOutputV1 {
+    pub algorithm_version: String,
+    pub base_seed_commitment: String,
+    pub batch_seed_ids: Vec<String>,
+    pub event_warning_limit: f64,
+    pub events: Vec<V4EventValidationV1>,
+    pub forecast_artifact_sha256: String,
+    pub forecast_id: String,
+    pub forecast_probability_sha256: String,
+    pub input_sha256: String,
+    pub policy_sha256: String,
+    pub protocol_id: String,
+    pub schema_version: String,
+    pub seed_schedule_id: String,
+    pub simulation_count: u64,
+    pub status: String,
+    pub tail_draws: u64,
+    pub total_variation: f64,
+    pub total_variation_limit: f64,
+    pub warnings: Vec<String>,
+}
+impl V4SimulationOutputV1 {
+    pub fn canonical_bytes(&self) -> Result<Vec<u8>, SimulationError> {
+        canonical_serialize(self)
+    }
+    pub fn sha256(&self) -> Result<String, SimulationError> {
+        Ok(sha256_hex(&self.canonical_bytes()?))
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SplitMix64 {
     state: u64,
@@ -178,6 +253,27 @@ pub fn parse_canonical_input_v3(
         V3_POLICY_SHA256,
         V3_SEED_SCHEDULE_ID,
     )
+}
+
+pub fn parse_canonical_input_v4(
+    payload: &[u8],
+    expected_sha256: &str,
+) -> Result<SimulationInputV1, SimulationError> {
+    let input = parse_canonical_input_for(
+        payload,
+        expected_sha256,
+        V4_PROTOCOL_ID,
+        V4_POLICY_SHA256,
+        V4_SEED_SCHEDULE_ID,
+    )?;
+    if input.algorithm_version != V4_ALGORITHM_VERSION {
+        return Err(err(
+            "UNSUPPORTED_IDENTITY",
+            "input algorithm does not match frozen V4",
+        ));
+    }
+    validate_v4_analytic_reduction(&input)?;
+    Ok(input)
 }
 
 fn parse_canonical_input_for(
@@ -241,6 +337,169 @@ pub fn run_v3(
         V3_POLICY_SHA256,
         V3_SEED_SCHEDULE_ID,
     )
+}
+
+pub fn run_v4(
+    input: &SimulationInputV1,
+    input_sha256: &str,
+    workers: usize,
+) -> Result<V4SimulationOutputV1, SimulationError> {
+    validate_input_for(input, V4_PROTOCOL_ID, V4_POLICY_SHA256, V4_SEED_SCHEDULE_ID)?;
+    if input.algorithm_version != V4_ALGORITHM_VERSION {
+        return Err(err(
+            "UNSUPPORTED_IDENTITY",
+            "input algorithm does not match frozen V4",
+        ));
+    }
+    validate_v4_analytic_reduction(input)?;
+    if !(1..=4).contains(&workers) {
+        return Err(err(
+            "INVALID_WORKER_COUNT",
+            "worker count must be between one and four",
+        ));
+    }
+    let base = base_seed_commitment_for(
+        V4_PROTOCOL_ID,
+        V4_POLICY_SHA256,
+        &input.forecast_probability_sha256,
+    );
+    let seeds: Vec<[u8; 32]> = (0..BATCH_COUNT)
+        .map(|index| batch_seed(&base, &input.canonical_match_id, index))
+        .collect();
+    let (batches, tails) = sample_batches(&input.atoms, &seeds, workers, DRAWS_PER_BATCH)?;
+    let tail_draws = tails.iter().sum();
+    if tail_draws != 0 {
+        return Err(err(
+            "UNRESOLVED_TAIL_SAMPLED",
+            format!("sampled unresolved tail {tail_draws} times"),
+        ));
+    }
+    let events: Vec<V4EventValidationV1> = event_ids()
+        .into_iter()
+        .enumerate()
+        .map(|(index, event_id)| {
+            let batch_counts: Vec<u64> = batches.iter().map(|batch| batch[index]).collect();
+            let count = batch_counts.iter().sum();
+            let analytic_probability = input.analytic_probabilities[index].probability;
+            let simulated_probability = count as f64 / SIMULATION_COUNT as f64;
+            V4EventValidationV1 {
+                absolute_error: (analytic_probability - simulated_probability).abs(),
+                analytic_probability,
+                batch_counts,
+                count,
+                event_id,
+                simulated_probability,
+            }
+        })
+        .collect();
+    let (total_variation, warnings) = validate_v4_distribution(&events)?;
+    Ok(V4SimulationOutputV1 {
+        algorithm_version: V4_ALGORITHM_VERSION.into(),
+        base_seed_commitment: hex_bytes(&base),
+        batch_seed_ids: seeds.iter().map(|seed| hex_bytes(seed)).collect(),
+        event_warning_limit: V4_EVENT_WARNING_LIMIT,
+        events,
+        forecast_artifact_sha256: input.forecast_artifact_sha256.clone(),
+        forecast_id: input.forecast_id.clone(),
+        forecast_probability_sha256: input.forecast_probability_sha256.clone(),
+        input_sha256: input_sha256.into(),
+        policy_sha256: V4_POLICY_SHA256.into(),
+        protocol_id: V4_PROTOCOL_ID.into(),
+        schema_version: "PitchApiV4SimulationValidationArtifactV1".into(),
+        seed_schedule_id: V4_SEED_SCHEDULE_ID.into(),
+        simulation_count: SIMULATION_COUNT,
+        status: if warnings.is_empty() {
+            "PASS".into()
+        } else {
+            "PASS_WITH_WARNINGS".into()
+        },
+        tail_draws,
+        total_variation,
+        total_variation_limit: V4_TV_LIMIT,
+        warnings,
+    })
+}
+
+pub fn diagnose_v3(
+    input: &SimulationInputV1,
+    input_sha256: &str,
+    workers: usize,
+    draws_per_batch: u64,
+) -> Result<DiagnosticOutputV1, SimulationError> {
+    validate_input_for(input, V3_PROTOCOL_ID, V3_POLICY_SHA256, V3_SEED_SCHEDULE_ID)?;
+    if !(1..=4).contains(&workers) {
+        return Err(err(
+            "INVALID_WORKER_COUNT",
+            "worker count must be between one and four",
+        ));
+    }
+    if draws_per_batch == 0 {
+        return Err(err(
+            "INVALID_SIMULATION_COUNT",
+            "draws per batch must be positive",
+        ));
+    }
+    let base = base_seed_commitment_for(
+        V3_PROTOCOL_ID,
+        V3_POLICY_SHA256,
+        &input.forecast_probability_sha256,
+    );
+    let seeds: Vec<[u8; 32]> = (0..BATCH_COUNT)
+        .map(|index| batch_seed(&base, &input.canonical_match_id, index))
+        .collect();
+    let mut batches = vec![vec![0_u64; EVENT_COUNT]; BATCH_COUNT as usize];
+    let mut tails = vec![0_u64; BATCH_COUNT as usize];
+    if workers == 1 {
+        for index in 0..BATCH_COUNT as usize {
+            (batches[index], tails[index]) =
+                run_batch_with_draws(&input.atoms, seeds[index], draws_per_batch)?;
+        }
+    } else {
+        thread::scope(|scope| -> Result<(), SimulationError> {
+            let handles: Vec<_> = seeds
+                .iter()
+                .copied()
+                .map(|seed| {
+                    scope.spawn(move || run_batch_with_draws(&input.atoms, seed, draws_per_batch))
+                })
+                .collect();
+            for (index, handle) in handles.into_iter().enumerate() {
+                (batches[index], tails[index]) = handle
+                    .join()
+                    .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
+            }
+            Ok(())
+        })?;
+    }
+    let simulation_count = draws_per_batch
+        .checked_mul(u64::from(BATCH_COUNT))
+        .ok_or_else(|| err("ARITHMETIC_OVERFLOW", "simulation count overflow"))?;
+    let events = event_ids()
+        .into_iter()
+        .enumerate()
+        .map(|(index, event_id)| {
+            let batch_counts: Vec<u64> = batches.iter().map(|batch| batch[index]).collect();
+            let count = batch_counts.iter().sum();
+            DiagnosticEventV1 {
+                batch_counts,
+                count,
+                event_id,
+                simulated_probability: count as f64 / simulation_count as f64,
+            }
+        })
+        .collect();
+    Ok(DiagnosticOutputV1 {
+        base_seed_commitment: hex_bytes(&base),
+        batch_seed_ids: seeds.iter().map(|seed| hex_bytes(seed)).collect(),
+        draws_per_batch,
+        events,
+        input_sha256: input_sha256.into(),
+        protocol_id: V3_PROTOCOL_ID.into(),
+        schema_version: "PitchApiRustParityDiagnosticV1".into(),
+        simulation_count,
+        tail_draws: tails.iter().sum(),
+        worker_count: workers,
+    })
 }
 
 fn run_for(
@@ -463,7 +722,7 @@ fn validate_input_for(
     if input.schema_version != "PitchApiSimulationInputV1"
         || input.protocol_id != protocol_id
         || input.policy_sha256 != policy_sha256
-        || input.algorithm_version != ALGORITHM_VERSION
+        || (protocol_id != V4_PROTOCOL_ID && input.algorithm_version != ALGORITHM_VERSION)
         || input.seed_schedule_id != seed_schedule_id
     {
         return Err(err(
@@ -556,7 +815,93 @@ fn validate_input_for(
     Ok(())
 }
 
+fn validate_v4_analytic_reduction(input: &SimulationInputV1) -> Result<(), SimulationError> {
+    let reduced = analytic_probabilities(&input.atoms);
+    if reduced.len() != input.analytic_probabilities.len()
+        || reduced
+            .iter()
+            .zip(&input.analytic_probabilities)
+            .any(|(expected, actual)| {
+                expected.event_id != actual.event_id
+                    || (expected.probability - actual.probability).abs() > NORMALIZATION_TOLERANCE
+            })
+    {
+        return Err(err(
+            "ANALYTIC_REDUCTION_MISMATCH",
+            "supplied analytic indicators do not match score atoms",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_v4_distribution(
+    events: &[V4EventValidationV1],
+) -> Result<(f64, Vec<String>), SimulationError> {
+    if events.len() != EVENT_COUNT {
+        return Err(err(
+            "INCOMPLETE_DIAGNOSTICS",
+            "V4 distribution validation requires 62 events",
+        ));
+    }
+    let total_variation = 0.5
+        * events[..36]
+            .iter()
+            .map(|event| event.absolute_error)
+            .sum::<f64>();
+    if total_variation > V4_TV_LIMIT {
+        return Err(err(
+            "DISTRIBUTION_PARITY_FAILURE",
+            format!("score-matrix total variation {total_variation} exceeds {V4_TV_LIMIT}"),
+        ));
+    }
+    let warnings = events
+        .iter()
+        .filter(|event| event.absolute_error > V4_EVENT_WARNING_LIMIT)
+        .map(|event| format!("{} exceeds event warning limit", event.event_id))
+        .collect();
+    Ok((total_variation, warnings))
+}
+
+fn sample_batches(
+    atoms: &[ScoreAtomV1],
+    seeds: &[[u8; 32]],
+    workers: usize,
+    draws_per_batch: u64,
+) -> Result<(Vec<Vec<u64>>, Vec<u64>), SimulationError> {
+    let mut batches = vec![vec![0_u64; EVENT_COUNT]; BATCH_COUNT as usize];
+    let mut tails = vec![0_u64; BATCH_COUNT as usize];
+    if workers == 1 {
+        for index in 0..BATCH_COUNT as usize {
+            (batches[index], tails[index]) =
+                run_batch_with_draws(atoms, seeds[index], draws_per_batch)?;
+        }
+    } else {
+        thread::scope(|scope| -> Result<(), SimulationError> {
+            let handles: Vec<_> = seeds
+                .iter()
+                .copied()
+                .map(|seed| scope.spawn(move || run_batch_with_draws(atoms, seed, draws_per_batch)))
+                .collect();
+            for (index, handle) in handles.into_iter().enumerate() {
+                (batches[index], tails[index]) = handle
+                    .join()
+                    .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
+            }
+            Ok(())
+        })?;
+    }
+    Ok((batches, tails))
+}
+
 fn run_batch(atoms: &[ScoreAtomV1], seed: [u8; 32]) -> Result<(Vec<u64>, u64), SimulationError> {
+    run_batch_with_draws(atoms, seed, DRAWS_PER_BATCH)
+}
+
+fn run_batch_with_draws(
+    atoms: &[ScoreAtomV1],
+    seed: [u8; 32],
+    draws: u64,
+) -> Result<(Vec<u64>, u64), SimulationError> {
     let mut rng = SplitMix64::new(u64::from_be_bytes(
         seed[..8]
             .try_into()
@@ -564,7 +909,7 @@ fn run_batch(atoms: &[ScoreAtomV1], seed: [u8; 32]) -> Result<(Vec<u64>, u64), S
     ));
     let mut counts = vec![0_u64; EVENT_COUNT];
     let mut tails = 0_u64;
-    for _ in 0..DRAWS_PER_BATCH {
+    for _ in 0..draws {
         let u = rng.next_unit_f64();
         let mut cdf = 0.0;
         let mut selected = None;
