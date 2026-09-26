@@ -1,0 +1,70 @@
+{
+  "aggregation": {
+    "primary": "equal_weight_macro_average_of_three_domains",
+    "secondary": "fixed_target_weighted_216_216_280"
+  },
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "PitchApiDomainStratifiedEvaluationV4PolicyV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "evaluation": {
+    "domains": {
+      "bundesliga_2022_23": 216,
+      "bundesliga_2023_24": 216,
+      "ligue1_2022_23": 280
+    },
+    "exact_target_count": 712,
+    "forecast_validation_count": 1424
+  },
+  "evaluation_execution_authorized": false,
+  "evaluation_outcomes_loaded_for_design": false,
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "metrics": {
+    "calibration": "per-domain intercept slope standard errors and reliability bins",
+    "primary": "joint_score_matrix_log_loss_delta",
+    "secondary": [
+      "one_x_two_log_loss_delta",
+      "one_x_two_brier_delta",
+      "one_x_two_rps_delta",
+      "total_goal_crps_delta"
+    ],
+    "uncertainty": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924"
+  },
+  "models": {
+    "challenger": "transferable-rolling-goals-npxg-poisson-v1",
+    "feature_id": "MATCHFORGE_TRANSFERABLE_ROLLING_LAST10_V1",
+    "reference": "transferable-rolling-goals-poisson-v1",
+    "team_id_parameters": false
+  },
+  "pitchapi_api_calls_authorized": false,
+  "predecessor": {
+    "disposition": "PROTOCOL_EVALUATION_FAILURE_RUST_PARITY_PERMANENTLY_CLOSED",
+    "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3"
+  },
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_validation": {
+    "algorithm": "pitchapi-score-categorical-v2",
+    "build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+    "event_warning_limit": 0.008613326107968184,
+    "global_familywise_alpha": 0.01,
+    "policy_path": "docs/simulation/pitchapi-domain-stratified-v4-rust-policy.md",
+    "policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+    "seed_schedule_id": "pitchapi-v4-splitmix64-sha256-v1",
+    "simulation_count_per_forecast": 112460,
+    "total_variation_limit": 0.012794580429261083
+  },
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_mutation_authorized": false,
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "statsbomb_evaluation_v2_unchanged": true,
+  "status": "PROPOSED_FROZEN_AWAITING_OWNER_REVIEW",
+  "v3_to_v4_differences": [
+    "protocol and seed-schedule identities advance from V3 to V4",
+    "Rust algorithm identity advances from pitchapi-score-categorical-v1 to pitchapi-score-categorical-v2",
+    "62 per-forecast Clopper-Pearson hard gates are replaced by one compact score-matrix total-variation hard gate",
+    "multiplicity control covers all 1424 forecast validations at global familywise alpha 0.01",
+    "all 62 indicator errors remain descriptive and use one evaluation-wide warning threshold",
+    "Rust independently recomputes analytic indicators from score atoms"
+  ]
+}

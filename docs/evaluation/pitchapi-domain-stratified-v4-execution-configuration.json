@@ -1,0 +1,25 @@
+{
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "PitchApiDomainStratifiedV4ExecutionConfigurationV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+  "execution_authorized": false,
+  "forecast_validation_count": 1424,
+  "implementation_source_commit": "719a04300bf2c6438f2a4cafb4fe52ad0f03f9ea",
+  "metrics": {
+    "aggregation": "equal_weight_macro_and_fixed_target_weighted_216_216_280",
+    "bootstrap": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924",
+    "primary": "joint_score_matrix_log_loss_delta"
+  },
+  "policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
+  "qualification_evidence_sha256": "519fe944fc0f3fd7f2e51693dcb6c1e68429bebc8cc134e67d7fb5539b0247f0",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+  "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+  "seed_policy": "pitchapi-v4-splitmix64-sha256-v1",
+  "simulation_count_per_forecast": 112460,
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "target_count": 712
+}
