@@ -23,7 +23,7 @@
     "bootstrap": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924",
     "primary": "joint_score_matrix_log_loss_delta"
   },
-  "policy_sha256": "de97ce1078a83a8636bd23868f3139349edac06997803c335d2636145bdfa9ed",
+  "policy_sha256": "18f0600e001493a1cd8bcf15e5be5382aa6e89ecf3ae664b7d074041a57693d1",
   "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
   "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
   "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",

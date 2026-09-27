@@ -42,7 +42,8 @@
     "status": "PASS"
   },
   "minimum_access_boundary": {
-    "more_than_one_boundary_value_exists": true,
+    "distinct_boundary_values": [0],
+    "more_than_one_boundary_record_exists": true,
     "performance_results_inspected": false,
     "records_inspected": "frozen V4 source resources needed to classify the failing heterogeneity input",
     "value_already_observed_during_v4": true

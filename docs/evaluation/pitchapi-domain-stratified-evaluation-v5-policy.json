@@ -32,7 +32,7 @@
   },
   "executor_source_commit": "71c4a3c3990bec9c601747d8bd62abf820e8a3f3",
   "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
-  "investigation_evidence_sha256": "c7f6fd9e7f4c397c4b8f2301affd7f1e09330f72f39b04fc7711c3bb369a1ad7",
+  "investigation_evidence_sha256": "c1e09407c354c4123cc329e0bf22ab1f1cfde32d00812b3e78e3a5a20e17a3a2",
   "metric_domain_audit_sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
   "metric_implementation": {
     "executor_sha256": "58ee238f4d7c29939028639a77ce19848c2d4d0f783663225d7b4c3534d14161",

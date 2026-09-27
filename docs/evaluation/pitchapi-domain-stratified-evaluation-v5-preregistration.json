@@ -12,7 +12,7 @@
     "v5_completely_outcome_blind": false
   },
   "evaluation_execution_authorized": false,
-  "execution_configuration_sha256": "52e2d8e2a89eb430592cc2281f488066d438b6a249f61b966c1fb9d11552512a",
+  "execution_configuration_sha256": "13ac6b38a85693cdcbf08daec222c58435ab724a3cd0991b740655e19bfe2b4b",
   "groups": {
     "development_scope": "synthetic and previously approved development-only data",
     "evaluation": {
@@ -45,7 +45,7 @@
     "refit_performed": false,
     "team_id_parameters": false
   },
-  "policy_sha256": "de97ce1078a83a8636bd23868f3139349edac06997803c335d2636145bdfa9ed",
+  "policy_sha256": "18f0600e001493a1cd8bcf15e5be5382aa6e89ecf3ae664b7d074041a57693d1",
   "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
   "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
   "readiness_gate": {
