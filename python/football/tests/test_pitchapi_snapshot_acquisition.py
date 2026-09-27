@@ -100,7 +100,15 @@ def test_client_streams_paces_and_does_not_persist_secret(tmp_path: Path) -> Non
     assert second[0] == first[0]
     assert client.starts == [0.0, 1.0]
     assert seen_headers[0]["X-api-key"] == "secret-value"
-    assert "secret-value" not in (store.staging / "attempt-ledger.jsonl").read_text()
+    ledger = [
+        json.loads(line)
+        for line in (store.staging / "attempt-ledger.jsonl").read_text().splitlines()
+    ]
+    assert "secret-value" not in json.dumps(ledger)
+    assert ledger[0]["path_attempt"] == 1
+    assert ledger[0]["retry_identity"] == "/v1/test/one:attempt:1"
+    assert ledger[0]["pagination_identity"] is None
+    assert ledger[0]["request_timestamp"].endswith("Z")
 
 
 def test_client_rejects_wrong_content_type_without_retry(tmp_path: Path) -> None:
@@ -148,6 +156,25 @@ def test_client_retries_one_503_and_counts_attempt(tmp_path: Path) -> None:
     assert client.state.attempts == 2
     assert client.state.retries == 1
     assert len(client.records) == 2
+
+
+def test_client_honors_configurable_request_ceiling(tmp_path: Path) -> None:
+    clock = _Clock()
+    store = Store(tmp_path / "snapshot")
+    client = Client(
+        "secret-value",
+        store,
+        sleep=clock.sleep,
+        monotonic=clock.monotonic,
+        opener=lambda *_args, **_kwargs: _Response({"data": {}}),
+        attempt_ceiling=1,
+        retry_reserve=0,
+    )
+
+    client.get("/v1/test/one", cap=1024)
+
+    with pytest.raises(SnapshotStop, match="HARD_ATTEMPT_CEILING_REACHED"):
+        client.get("/v1/test/two", cap=1024)
 
 
 def test_target_plan_freezes_same_kickoff_batch_before_history_update() -> None:

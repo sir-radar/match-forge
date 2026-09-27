@@ -118,10 +118,13 @@ class RuntimeState:
 
 
 class Store:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, *, hard_storage_bytes: int = _HARD_STORAGE_BYTES) -> None:
         if root.exists():
             raise SnapshotStop("SNAPSHOT_OUTPUT_ALREADY_EXISTS")
+        if hard_storage_bytes <= 0:
+            raise ValueError("hard storage ceiling must be positive")
         self.root = root.resolve()
+        self.hard_storage_bytes = hard_storage_bytes
         self.primary = self.root / "primary"
         self.backup = self.root / "backup"
         self.staging = self.root / "staging"
@@ -165,7 +168,7 @@ class Store:
     def _check_projected(self, added_primary: int, *, temporary_bytes: int = 0) -> None:
         del temporary_bytes
         projected = 2 * (self.primary_bytes + added_primary) + _tree_size(self.staging)
-        if projected >= _HARD_STORAGE_BYTES:
+        if projected >= self.hard_storage_bytes:
             raise SnapshotStop("HARD_STORAGE_CEILING_WOULD_BE_EXCEEDED")
 
     def seal_backup(self) -> tuple[str, int]:
@@ -178,7 +181,7 @@ class Store:
         if primary_inventory != backup_inventory:
             raise SnapshotStop("BACKUP_HASH_MISMATCH")
         total = _tree_size(self.primary) + _tree_size(self.backup)
-        if total >= _HARD_STORAGE_BYTES:
+        if total >= self.hard_storage_bytes:
             raise SnapshotStop("HARD_STORAGE_CEILING_EXCEEDED")
         digest = hashlib.sha256(canonical_json_bytes(primary_inventory)).hexdigest()
         return digest, total
@@ -193,24 +196,46 @@ class Client:
         sleep: Callable[[float], None] = time.sleep,
         monotonic: Callable[[], float] = time.monotonic,
         opener: Callable[..., Any] = urllib.request.urlopen,
+        attempt_ceiling: int = _ATTEMPT_CEILING,
+        retry_reserve: int = _RETRY_RESERVE,
+        wall_seconds: int = _WALL_SECONDS,
     ) -> None:
         if not secret:
             raise SnapshotStop("MISSING_CREDENTIAL")
+        if attempt_ceiling <= 0 or not 0 <= retry_reserve < attempt_ceiling:
+            raise ValueError("invalid request budget")
+        if wall_seconds <= 0:
+            raise ValueError("wall clock ceiling must be positive")
         self._secret = secret
         self._store = store
         self._sleep = sleep
         self._monotonic = monotonic
         self._opener = opener
+        self._attempt_ceiling = attempt_ceiling
+        self._retry_reserve = retry_reserve
+        self._wall_seconds = wall_seconds
         self.state = RuntimeState(monotonic())
         self.records: list[PitchApiRequestRecord] = []
         self.starts: list[float] = []
+        self._last_request_timestamp: str | None = None
         self._ledger = store.staging / "attempt-ledger.jsonl"
 
     def get(self, path: str, *, cap: int) -> tuple[Mapping[str, Any], str, int, str]:
         for path_attempt in (1, 2):
             self._before_request()
+            records_before = len(self.records)
             try:
                 return self._request(path, cap)
+            except SnapshotStop as error:
+                if len(self.records) == records_before:
+                    self._record(
+                        PitchApiRequestRecord(
+                            path=path,
+                            status_code=200,
+                            provider_code=error.code,
+                        )
+                    )
+                raise
             except urllib.error.HTTPError as error:
                 if self._handle_http(path, path_attempt, error):
                     continue
@@ -224,9 +249,9 @@ class Client:
 
     def _before_request(self) -> None:
         now = self._monotonic()
-        if now - self.state.started >= _WALL_SECONDS:
+        if now - self.state.started >= self._wall_seconds:
             raise SnapshotStop("WALL_CLOCK_CEILING_REACHED")
-        if self.state.attempts >= _ATTEMPT_CEILING:
+        if self.state.attempts >= self._attempt_ceiling:
             raise SnapshotStop("HARD_ATTEMPT_CEILING_REACHED")
         if self.state.last_started is not None:
             wait = _MIN_INTERVAL_SECONDS - (now - self.state.last_started)
@@ -235,6 +260,7 @@ class Client:
         started = self._monotonic()
         self.state.last_started = started
         self.starts.append(started)
+        self._last_request_timestamp = _utc_now()
         self.state.attempts += 1
 
     def _request(self, path: str, cap: int) -> tuple[Mapping[str, Any], str, int, str]:
@@ -294,6 +320,8 @@ class Client:
     def _handle_http(self, path: str, path_attempt: int, error: urllib.error.HTTPError) -> bool:
         status = int(error.code)
         retry_after = _retry_after(error.headers.get("Retry-After") if error.headers else None)
+        if status == 429:
+            self.state.rate_limits += 1
         self._record(
             PitchApiRequestRecord(
                 path=path,
@@ -310,7 +338,6 @@ class Client:
         if status == 404:
             raise SnapshotStop("REQUIRED_RESOURCE_NOT_FOUND")
         if status == 429:
-            self.state.rate_limits += 1
             if retry_after is None:
                 raise SnapshotStop("RATE_LIMIT_WITHOUT_VALID_RETRY_AFTER")
             if self.state.rate_limits >= 2:
@@ -327,9 +354,9 @@ class Client:
     def _retry(self, path_attempt: int, delay: int) -> bool:
         if path_attempt >= 2:
             return False
-        if self.state.retries >= _RETRY_RESERVE:
+        if self.state.retries >= self._retry_reserve:
             raise SnapshotStop("RETRY_RESERVE_EXHAUSTED")
-        if self._monotonic() - self.state.started + delay >= _WALL_SECONDS:
+        if self._monotonic() - self.state.started + delay >= self._wall_seconds:
             raise SnapshotStop("RETRY_AFTER_EXCEEDS_WALL_CLOCK")
         self.state.retries += 1
         self._sleep(delay)
@@ -337,14 +364,20 @@ class Client:
 
     def _record(self, record: PitchApiRequestRecord) -> None:
         self.records.append(record)
+        path_attempt = sum(item.path == record.path for item in self.records)
         line = canonical_json_bytes(
             {
                 "attempt": len(self.records),
                 "path": record.path,
+                "path_attempt": path_attempt,
+                "request_timestamp": self._last_request_timestamp,
+                "retry_identity": f"{record.path}:attempt:{path_attempt}",
+                "pagination_identity": None,
                 "status_code": record.status_code,
                 "provider_code": record.provider_code,
                 "request_id_present": record.request_id_present,
                 "retry_after_seconds": record.retry_after_seconds,
+                "rate_limit_responses_seen": self.state.rate_limits,
                 "failure_kind": record.failure_kind,
             }
         )
