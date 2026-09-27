@@ -1,0 +1,138 @@
+{
+  "admission_policy": {
+    "calibration": {
+      "each_class_absolute_intercept_error_difference_maximum": 0.05,
+      "each_class_absolute_slope_distance_from_one_difference_maximum": 0.1,
+      "comparison": "calibrated_challenger_minus_reference"
+    },
+    "primary": {
+      "comparison": "raw_challenger_minus_reference",
+      "joint_score_log_loss_delta_maximum": -0.01,
+      "paired_interval_upper_bound_strictly_below": 0.0
+    },
+    "result_values": [
+      "DEVELOPMENT_ADMITTED_FOR_FUTURE_CONFIRMATION",
+      "DEVELOPMENT_REJECTED",
+      "INCONCLUSIVE"
+    ],
+    "secondary_calibrated_challenger_minus_reference_interval_upper_bounds": {
+      "one_x_two_brier": 0.01,
+      "one_x_two_log_loss": 0.02,
+      "one_x_two_rps": 0.01,
+      "total_goal_crps": 0.02
+    },
+    "single_development_domain_joint_score_interval_upper_bound": 0.05
+  },
+  "artifact": {
+    "artifact_contract": "PitchApiCalibrationArtifactV1",
+    "artifact_schema_sha256": "c76a10042bd4702a02ebac157d9fcaae8399fe2377d9bf5375a4fe118e8471f0",
+    "canonical_serialization": "UTF-8 JSON sorted keys compact separators plus LF",
+    "evidence_contract": "PitchApiCalibrationSuccessorDevelopmentEvidenceV1",
+    "evidence_schema_sha256": "b962e0d2d52c3daead4961be0ff7cac2c67c94ad8326b2c28cc0089e37afced4",
+    "immutable_identity": "SHA-256 of exact serialized artifact bytes"
+  },
+  "candidate_budget": {
+    "admission_candidate": "SHRINKAGE_GLOBAL_VECTOR_SCALING strength 10",
+    "alternative_calibration_families_authorized": false,
+    "raw_comparator": "RAW_TRANSFERABLE_NPXG_CHALLENGER",
+    "sensitivity_diagnostics_not_admission_candidates": [5.0, 20.0],
+    "unshrunk_fit_is_diagnostic_only": true
+  },
+  "contract": "PitchApiCalibrationSuccessorPreregistrationV1",
+  "development_corpus": {
+    "development_manifest_sha256": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e",
+    "development_scope": "bundesliga_2021_22",
+    "exact_target_count": 216,
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "implementation": {
+    "dependency_lock_sha256": "d14def6539f213b2af3011975062ed3e1e0bba2d86e8064803bd3d86d0a39e4e",
+    "implementation_sha256": "352c85d950ee908e15f3616fc3a83e90fc1978e69c83e2c98693a3e960d53066",
+    "runner_sha256": "5b8f6f4e857acb5007004b26e9d70625a71c505fa84eb2ca3d5b85f2b815a4bd",
+    "source_commit": "b31222c7fd17116f0be6bb4b01943d1624c2ab35"
+  },
+  "mathematics": {
+    "algorithm_version": "shrinkage-global-vector-scaling-v1",
+    "boundary_handling": "reject any non-finite probability, any probability outside open interval (0,1), or normalization error above 1e-12; no clipping",
+    "class_order": ["home", "draw", "away"],
+    "convergence": {
+      "finite_parameters_required": true,
+      "function_tolerance": 1e-12,
+      "gradient_tolerance": 1e-8,
+      "maximum_iterations": 2000,
+      "optimizer_success_required": true
+    },
+    "identified_parameters": [
+      "intercept_home",
+      "intercept_draw",
+      "scale_home",
+      "scale_draw",
+      "scale_away"
+    ],
+    "identification": "intercept_away fixed to 0",
+    "initialization": [0.0, 0.0, 1.0, 1.0, 1.0],
+    "input": "unchanged challenger 1X2 probability vector p with strictly positive normalized home/draw/away components",
+    "objective": "sum_i -log(q_i[y_i]) + (lambda/2) * (intercept_home^2 + intercept_draw^2 + (scale_home-1)^2 + (scale_draw-1)^2 + (scale_away-1)^2)",
+    "optimizer": "L-BFGS-B analytic gradient",
+    "output": "q = softmax([intercept_home + scale_home*log(p_home), intercept_draw + scale_draw*log(p_draw), scale_away*log(p_away)])",
+    "parameter_bounds": {
+      "intercepts": [-3.0, 3.0],
+      "scales": [0.25, 4.0]
+    },
+    "probability_normalization": "stable max-subtracted softmax; output must be finite, strictly inside (0,1), and sum to one within 1e-12",
+    "shrinkage_strength": 10.0,
+    "shrinkage_target": [0.0, 0.0, 1.0, 1.0, 1.0],
+    "uncertainty": "square roots of diagonal of inverse observed penalized Hessian"
+  },
+  "metrics": {
+    "calibration": [
+      "class-specific intercept",
+      "class-specific slope",
+      "class-specific standard errors",
+      "ten-bin reliability",
+      "pooled classwise expected calibration error"
+    ],
+    "proper_scores": [
+      "joint_score_log_loss",
+      "one_x_two_log_loss",
+      "one_x_two_brier",
+      "one_x_two_rps",
+      "total_goal_crps"
+    ],
+    "score_distribution_rule": "1X2-only calibration leaves joint-score log loss and total-goal CRPS unchanged from the raw challenger and reports exact zero calibrated-minus-raw deltas",
+    "uncertainty": "paired moving-block bootstrap over kickoff batches, block length 10, 2000 replicates, seed 20260924"
+  },
+  "models": {
+    "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+    "challenger_forecast_mathematics_changed": false,
+    "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4"
+  },
+  "research_id": "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
+  "scope": "DEVELOPMENT_ONLY_RESEARCH",
+  "status": "FROZEN_BEFORE_DEVELOPMENT_FIT",
+  "temporal_validation": {
+    "block_boundaries_split_same_kickoff_batch": false,
+    "calibration_folds": [
+      {"calibration_fit_oos_targets": 36, "fold": 2, "held_out_validation_targets": 36},
+      {"calibration_fit_oos_targets": 72, "fold": 3, "held_out_validation_targets": 36},
+      {"calibration_fit_oos_targets": 108, "fold": 4, "held_out_validation_targets": 36}
+    ],
+    "calibration_fit_only_oos_targets": 36,
+    "forecasting_state_warmup_targets": 72,
+    "held_out_calibration_validation_targets": 108,
+    "minimum_prior_team_appearances": 10,
+    "oos_forecast_targets": 144,
+    "ordering": "kickoff_at then canonical match id",
+    "procedure": "four expanding-window forecast fits; each 36-target block is forecast from parameters fitted only to earlier target rows and observations strictly before the block kickoff; fold 1 seeds calibration and folds 2-4 are held out",
+    "same_kickoff_rule": "fit and forecast complete batch before reveal; no block boundary may split a batch",
+    "total_development_targets": 216
+  },
+  "v5_firewall": {
+    "allowed_use": "descriptive historical motivation only",
+    "evaluation_manifest_loading_authorized": false,
+    "evaluation_outcome_loading_authorized": false,
+    "fitting_or_model_selection_authorized": false,
+    "target_count": 712,
+    "target_disposition": "SPENT_FOR_MODEL_SELECTION"
+  }
+}

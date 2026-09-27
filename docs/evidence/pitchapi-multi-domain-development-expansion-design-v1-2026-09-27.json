@@ -1,0 +1,70 @@
+{
+  "acquisition_required": true,
+  "acquisition_status": "NOT_AUTHORIZED_NOT_ATTEMPTED",
+  "calibration_successor": {
+    "alternate_calibrator_tried": false,
+    "artifact_sha256": "cd88bed5e1231dc740886573d7195cc32228b99b9135d2d6f2edab9408768452",
+    "research_id": "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
+    "result": "DEVELOPMENT_REJECTED"
+  },
+  "confirmation_requirements": {
+    "development_overlap": 0,
+    "minimum_competitions": 2,
+    "minimum_competition_season_groups": 3,
+    "minimum_exact_eligible_targets": 600,
+    "role": "UNTOUCHED_CONFIRMATION_ONLY",
+    "same_provider_semantics_required": true
+  },
+  "contract": "PitchApiMultiDomainDevelopmentExpansionDesignV1",
+  "development_requirements": {
+    "calibration_only_minimum_target_count": "NOT_DEFENSIBLE_FROM_COUNT_ALONE",
+    "class_minimums": {
+      "away": 250,
+      "draw": 250,
+      "home": 250
+    },
+    "minimum_competitions": 4,
+    "minimum_competition_season_groups": 5,
+    "minimum_exact_eligible_targets": 1200,
+    "minimum_seasons": 2,
+    "planned_exact_eligible_targets": 1272,
+    "provider_semantics": "ONE_QUALIFIED_TIER_A_PROVIDER_AND_ONE_FROZEN_XG_MODEL_VERSION",
+    "target_count_is_necessary_not_sufficient": true
+  },
+  "existing_eligible_development_target_count": 0,
+  "execution_status": "COMPLETE_DESIGN_ONLY",
+  "future_v6_justified": false,
+  "inventory": {
+    "football_data_uk": {
+      "e0_2015_16": "PROTECTED_AND_INCOMPATIBLE_SEMANTICS",
+      "e0_2025_26": "INCOMPATIBLE_SEMANTICS"
+    },
+    "pitchapi": {
+      "bundesliga_2021_22": "ALREADY_SPENT_DEVELOPMENT",
+      "bundesliga_2022_23": "SPENT_FOR_MODEL_SELECTION",
+      "bundesliga_2023_24": "SPENT_FOR_MODEL_SELECTION",
+      "ligue1_2022_23": "SPENT_FOR_MODEL_SELECTION"
+    },
+    "statsbomb": {
+      "catalog_partial_or_metadata_only_groups": 29,
+      "frauen_bundesliga_2023_24": "INCOMPATIBLE_PRODUCT_SCOPE",
+      "laliga_2015_16": "ALREADY_SPENT_DEVELOPMENT",
+      "liga_f_2023_24": "INCOMPATIBLE_PRODUCT_SCOPE_AND_PRIOR_RESEARCH_USE",
+      "ligue1_2015_16": "INSUFFICIENT_COVERAGE_AND_NO_RETAINED_EVENT_DATASET",
+      "premier_league_2015_16": "PROTECTED",
+      "serie_a_2015_16": "PROTECTED_CONFIRMATION_ONLY_EVALUATION_V2",
+      "serie_a_women_2023_24": "INCOMPATIBLE_PRODUCT_SCOPE",
+      "wsl_2020_21": "INCOMPATIBLE_PRODUCT_SCOPE",
+      "wsl_2023_24": "INCOMPATIBLE_PRODUCT_SCOPE"
+    }
+  },
+  "model_fitting_status": "NOT_AUTHORIZED_NOT_ATTEMPTED",
+  "next_model_hypothesis": {
+    "id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
+    "summary": "Use strictly prior rolling non-penalty xG for and against, competition-centered partially pooled scoring baselines and home advantage, and one globally shrunk low-score dependence parameter to produce one coherent joint score distribution; do not add post-hoc calibration in the first comparison."
+  },
+  "recommended_direction": "UNDERLYING_TRANSFERABLE_MODEL_IMPROVEMENT_BEFORE_MORE_CALIBRATION_OR_XT_VAEP",
+  "research_id": "PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_EXPANSION_DESIGN_V1",
+  "statsbomb_evaluation_v2_unchanged": true,
+  "v5_target_count_reused": 0
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matchforge.local/schemas/contracts/pitchapi-calibration-successor-development-evidence-v1.schema.json",
+  "title": "PitchApiCalibrationSuccessorDevelopmentEvidenceV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "research_id",
+    "development_manifest_sha256",
+    "development_target_count",
+    "oos_prediction_count",
+    "validation_target_count",
+    "v5_firewall",
+    "metrics",
+    "calibration",
+    "result_classification"
+  ],
+  "properties": {
+    "contract": {"const": "PitchApiCalibrationSuccessorDevelopmentEvidenceV1"},
+    "research_id": {"const": "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1"},
+    "development_manifest_sha256": {"const": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e"},
+    "development_target_count": {"const": 216},
+    "oos_prediction_count": {"const": 144},
+    "validation_target_count": {"const": 108},
+    "v5_firewall": {
+      "type": "object",
+      "required": ["status", "v5_target_rows_loaded", "evaluation_outcome_rows_loaded", "fitting_or_model_selection_use"],
+      "properties": {
+        "status": {"const": "PASS"},
+        "v5_target_rows_loaded": {"const": 0},
+        "evaluation_outcome_rows_loaded": {"const": 0},
+        "fitting_or_model_selection_use": {"const": false}
+      }
+    },
+    "metrics": {"type": "object"},
+    "calibration": {"type": "object"},
+    "result_classification": {
+      "enum": ["DEVELOPMENT_ADMITTED_FOR_FUTURE_CONFIRMATION", "DEVELOPMENT_REJECTED", "INCONCLUSIVE"]
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matchforge.local/schemas/contracts/pitchapi-calibration-artifact-v1.schema.json",
+  "title": "PitchApiCalibrationArtifactV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "research_id",
+    "algorithm_version",
+    "development_manifest_sha256",
+    "development_target_count",
+    "challenger_artifact_sha256",
+    "reference_artifact_sha256",
+    "oos_prediction_manifest_sha256",
+    "calibration_fit",
+    "source_commit",
+    "dependency_lock_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "PitchApiCalibrationArtifactV1"},
+    "research_id": {"const": "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1"},
+    "algorithm_version": {"const": "shrinkage-global-vector-scaling-v1"},
+    "development_manifest_sha256": {"const": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e"},
+    "development_target_count": {"const": 216},
+    "challenger_artifact_sha256": {"const": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a"},
+    "reference_artifact_sha256": {"const": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4"},
+    "oos_prediction_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "dependency_lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "calibration_fit": {
+      "type": "object",
+      "required": ["algorithm_version", "converged", "parameters", "shrinkage_strength", "training_row_count"],
+      "properties": {
+        "algorithm_version": {"const": "shrinkage-global-vector-scaling-v1"},
+        "converged": {"const": true},
+        "shrinkage_strength": {"const": 10.0},
+        "training_row_count": {"const": 144},
+        "parameters": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

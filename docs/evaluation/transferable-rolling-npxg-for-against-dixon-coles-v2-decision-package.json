@@ -1,0 +1,218 @@
+{
+  "admission_criteria": {
+    "calibration": {
+      "absolute_intercept_maximum_each_class": 0.25,
+      "challenger_error_no_greater_than_either_comparator_each_class": true,
+      "slope_maximum_each_class": 1.2,
+      "slope_minimum_each_class": 0.8
+    },
+    "domain_safety": {
+      "maximum_leave_domain_out_joint_score_log_loss_interval_upper": 0.05,
+      "required_domains_passing_primary_direction": 4,
+      "total_domains": 5
+    },
+    "precision_screen": {
+      "calibration_intercept_95_percent_full_width_maximum": 0.3,
+      "calibration_slope_95_percent_full_width_maximum": 0.4,
+      "performed_before_calibration_fit": true
+    },
+    "primary": [
+      "joint_score_log_loss_delta_95_percent_upper_below_zero_against_goals_only_reference",
+      "joint_score_log_loss_delta_95_percent_upper_below_zero_against_raw_v5_npxg_benchmark",
+      "one_x_two_log_loss_delta_95_percent_upper_at_most_zero_against_both_comparators"
+    ],
+    "secondary_noninferiority_interval_upper_limits": {
+      "one_x_two_brier": 0.01,
+      "one_x_two_rps": 0.01,
+      "total_goal_crps": 0.02
+    },
+    "single_frozen_decision": "ALL_CRITERIA_PASS_OR_REJECT"
+  },
+  "artifact_contract": {
+    "canonical_format": "JSON",
+    "contract": "TransferableRollingNpxgForAgainstDixonColesV2ArtifactV1",
+    "forbidden_serializers": [
+      "pickle",
+      "joblib",
+      "cloudpickle"
+    ],
+    "required_identity": [
+      "algorithm_version",
+      "artifact_schema_version",
+      "serializer_version",
+      "configuration_sha256",
+      "training_dataset_sha256",
+      "feature_contract_sha256",
+      "football_cutoff",
+      "knowledge_cutoff",
+      "knowledge_mode",
+      "code_git_sha",
+      "dependency_lock_sha256",
+      "file_sha256",
+      "logical_state_sha256",
+      "compatibility_declaration"
+    ],
+    "required_state": [
+      "global_intercept",
+      "global_home_advantage",
+      "competition_baseline_deviations",
+      "competition_home_advantage_deviations",
+      "goals_for_weight",
+      "goals_against_weight",
+      "npxg_for_weight",
+      "npxg_against_weight",
+      "low_score_dependence",
+      "low_score_shrinkage_strength",
+      "pooling_strengths",
+      "feature_centering_values"
+    ]
+  },
+  "authorization_decision_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1",
+  "challenger": {
+    "algorithm": "transferable-rolling-npxg-for-against-dixon-coles-v2",
+    "feature_window_appearances": 10,
+    "joint_score_distribution": "DIXON_COLES_CORRECTED_INDEPENDENT_POISSON",
+    "post_hoc_calibration": false,
+    "team_id_parameters": false
+  },
+  "comparison_models": {
+    "primary_reference": {
+      "algorithm": "transferable-rolling-goals-poisson-v1",
+      "changes_from_v5": "NONE_EXCEPT_REFIT_INSIDE_AUTHORIZED_DEVELOPMENT_FOLDS",
+      "role": "GOALS_ONLY_REFERENCE"
+    },
+    "required_secondary_benchmark": {
+      "algorithm": "transferable-rolling-goals-npxg-poisson-v1",
+      "changes_from_v5": "NONE_EXCEPT_REFIT_INSIDE_AUTHORIZED_DEVELOPMENT_FOLDS",
+      "role": "UNCHANGED_RAW_V5_NPXG_BENCHMARK"
+    }
+  },
+  "complexity_and_resource_budget": {
+    "bootstrap": {
+      "block_length_kickoff_batches": 10,
+      "replicates": 2000,
+      "seed": 20260927
+    },
+    "fitted_team_parameters": 0,
+    "maximum_effective_scalar_parameters": 13,
+    "maximum_model_families": 3,
+    "maximum_optimizer_iterations_per_fit": 1000,
+    "maximum_peak_memory_gib": 4,
+    "maximum_wall_clock_hours": 2,
+    "new_provider_calls": 0,
+    "rust_simulation": false
+  },
+  "confirmation": {
+    "acquisition_authorized": false,
+    "execution_authorized": false,
+    "minimum_competitions": 2,
+    "minimum_competition_season_groups": 3,
+    "minimum_exact_eligible_targets": 600,
+    "role": "UNTOUCHED_CONFIRMATION_ONLY",
+    "selected_groups": []
+  },
+  "contract": "TransferableRollingNpxgForAgainstDixonColesV2DecisionPackageV1",
+  "development_corpus": {
+    "corpus_manifest_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+    "exact_target_count": 1270,
+    "firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+    "role": "DEVELOPMENT_ONLY",
+    "snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5"
+  },
+  "feature_contract": {
+    "centering": "STRICTLY_PRIOR_COMPETITION_MEANS_WITH_GLOBAL_FALLBACK",
+    "goals_against": "mean official goals conceded over the last 10 valid appearances",
+    "goals_for": "mean official goals scored over the last 10 valid appearances",
+    "npxg_against": "sum raw opponent expected_goals excluding provider-labelled penalties and own goals, divided by 10 valid appearances",
+    "npxg_for": "sum raw team expected_goals excluding provider-labelled penalties and own goals, divided by 10 valid appearances",
+    "transform": "log ratio to the strictly prior competition mean with one frozen positive numerical offset",
+    "upstream_xg_values": "RAW_UNCLIPPED_UNCALIBRATED"
+  },
+  "fitting_procedure": {
+    "constraints": [
+      "positive goal rates",
+      "non-negative feature weights",
+      "sum-to-zero competition deviations",
+      "strictly positive Dixon-Coles tau for every supported score cell"
+    ],
+    "hyperparameter_selection": "NESTED_CHRONOLOGICAL_DEVELOPMENT_FOLDS_ONLY",
+    "objective": "penalized negative Dixon-Coles joint-score log likelihood",
+    "optimizer": "SLSQP_ANALYTIC_GRADIENT_WITH_STATIONARITY_CHECK",
+    "pooling": "L2 shrinkage of competition baseline and home-advantage deviations toward global values, plus shrinkage of rho toward zero",
+    "same_kickoff_rule": "forecast complete kickoff batch, freeze predictions, then reveal outcomes and update history",
+    "temporal_rule": "every fitted row and feature observation must have kickoff strictly before the scored target"
+  },
+  "global_and_team_state": {
+    "competition_state": [
+      "partially pooled scoring-baseline deviation",
+      "partially pooled home-advantage deviation"
+    ],
+    "global_parameters": [
+      "global scoring intercept",
+      "global home advantage",
+      "goals-for weight",
+      "goals-against weight",
+      "npxG-for weight",
+      "npxG-against weight",
+      "one Dixon-Coles low-score dependence parameter"
+    ],
+    "team_state": "deterministic last-10 prior-appearance features only; no fitted team ID coefficient"
+  },
+  "hypothesis": "Strictly prior rolling non-penalty xG for and against, competition-centered partially pooled scoring baselines and home advantage, and one globally shrunk Dixon-Coles low-score dependence parameter improve joint-score and 1X2 proper scores and reduce home/draw/away calibration error versus both frozen comparator algorithms.",
+  "mathematics": {
+    "away_log_rate": "b_c + beta_gf*GF_away + beta_ga*GA_home + beta_xf*NPXGF_away + beta_xa*NPXGA_home",
+    "dixon_coles_tau": {
+      "0_0": "1 - lambda_home*lambda_away*rho",
+      "0_1": "1 + lambda_home*rho",
+      "1_0": "1 + lambda_away*rho",
+      "1_1": "1 - rho",
+      "otherwise": "1"
+    },
+    "home_log_rate": "b_c + h_c + beta_gf*GF_home + beta_ga*GA_away + beta_xf*NPXGF_home + beta_xa*NPXGA_away",
+    "joint_probability": "tau(x,y)*Poisson(x;lambda_home)*Poisson(y;lambda_away)",
+    "partial_pooling": "b_c=b_global+delta_c and h_c=h_global+eta_c, with centered deviations and separate frozen L2 penalties"
+  },
+  "model_fitting_authorized": true,
+  "model_promotion_authorized": false,
+  "result": {
+    "candidate_artifact_sha256": "92b2a462ef5fecd074622ea1a1dc9d4faabd01e9eba8d14f060b5eb517fc7332",
+    "development_evidence_sha256": "d9a43ffef56ea14b0f8c25016d19e2a2bf75949da09d1e135bf6cf6fcaa3e3f7",
+    "disposition": "DEVELOPMENT_REJECTED",
+    "reproduction": "PASS_BYTE_IDENTICAL_TWO_RUNS"
+  },
+  "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
+  "status": "COMPLETE_DEVELOPMENT_REJECTED_AWAITING_OWNER_DECISION",
+  "unseen_team_behavior": {
+    "fewer_than_10_prior_appearances": "NOT_FORECASTABLE",
+    "leave_team_out": "use the team's legitimate prior rolling state with global and competition parameters fitted without that team's outcomes",
+    "newly_promoted_after_10_appearances": "use its own rolling state and the applicable competition baseline; no inherited or guessed team coefficient",
+    "unseen_competition": "global baseline and global home advantage only; not part of this five-domain development comparison"
+  },
+  "validation": {
+    "calibration_reporting": [
+      "home_draw_away_intercept",
+      "home_draw_away_slope",
+      "standard_errors",
+      "fixed_reliability_bins"
+    ],
+    "chronological": "expanding-window, same-kickoff-batched out-of-sample predictions",
+    "leave_domain_out": "five folds; exclude the scored competition-season and use only other-domain fit rows strictly earlier than each target kickoff",
+    "leave_team_out": "exclude each scored team's outcomes from parameter fitting while retaining only its causally available rolling input state",
+    "proper_scores": [
+      "joint_score_log_loss",
+      "one_x_two_log_loss",
+      "one_x_two_brier",
+      "one_x_two_rps",
+      "total_goal_crps"
+    ],
+    "reporting": [
+      "per competition-season",
+      "equal-domain macro",
+      "fixed-target weighted",
+      "leave-domain-out",
+      "leave-team-out"
+    ],
+    "uncertainty": "paired moving-block bootstrap by kickoff batch"
+  },
+  "v6_authorized": false
+}

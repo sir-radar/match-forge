@@ -1,0 +1,65 @@
+{
+  "adapter_version": "pitchapi-multi-domain-development-adapter-v1",
+  "authorization": "PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_ACQUISITION_V1",
+  "base_url": "https://api.pitchapi.dev",
+  "catalog_requests": 1,
+  "concurrency": 1,
+  "contract": "PitchApiMultiDomainDevelopmentAcquisitionConfigurationV1",
+  "credential_reference": "env:PITCH_API_TOKEN",
+  "development_groups": [
+    {
+      "competition": "Bundesliga",
+      "country_code": "GER",
+      "expected_matches": 306,
+      "projected_targets": 216,
+      "scope_key": "bundesliga_2024_25",
+      "season": "2024/2025"
+    },
+    {
+      "competition": "Bundesliga",
+      "country_code": "GER",
+      "expected_matches": 306,
+      "projected_targets": 216,
+      "scope_key": "bundesliga_2025_26",
+      "season": "2025/2026"
+    },
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 280,
+      "scope_key": "premier_league_2024_25",
+      "season": "2024/2025"
+    },
+    {
+      "competition": "La Liga",
+      "country_code": "ESP",
+      "expected_matches": 380,
+      "projected_targets": 280,
+      "scope_key": "la_liga_2024_25",
+      "season": "2024/2025"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 280,
+      "scope_key": "serie_a_2024_25",
+      "season": "2024/2025"
+    }
+  ],
+  "expected_primary_and_backup_bytes": 125829120,
+  "expected_requests": 1758,
+  "hard_request_ceiling": 1793,
+  "hard_storage_ceiling_bytes": 1073741824,
+  "minimum_request_start_interval_seconds": 1.0,
+  "minimum_target_floor": 1200,
+  "output_root": ".local/pitchapi-multi-domain-development-v1-r2",
+  "prior_attempts_used": 1,
+  "retry_allowance": 35,
+  "season_manifest_requests": 5,
+  "shot_requests": 1752,
+  "task_hard_request_ceiling": 1794,
+  "timeout_seconds": 30,
+  "wall_clock_ceiling_minutes": 75
+}
