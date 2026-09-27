@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T03:36:25Z",
+  "updated_at": "2026-09-27T03:44:20Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -175,8 +175,8 @@
     {
       "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
       "provider": "PITCHAPI",
-      "status": "AUTHORIZED_READY_TO_EXECUTE",
-      "evidence_ref": "docs/evidence/owner-decision-freeze-execute-pitchapi-domain-stratified-v4-2026-09-27.json",
+      "status": "TERMINAL_PROTOCOL_EVALUATION_FAILURE",
+      "evidence_ref": "docs/evidence/pitchapi-domain-stratified-v4-terminal-failure-2026-09-27.json",
       "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v4-policy.json",
       "policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
       "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
@@ -199,7 +199,19 @@
       "execution_adapter_source_commit": "3ed7d6bb155ac9421ccafafe05b33e572e330cd6",
       "evaluation_execution_authorized": true,
       "evaluation_executed": false,
-      "evaluation_outcomes_loaded": false,
+      "evaluation_execution_attempted": true,
+      "exact_logical_execution_attempts": 1,
+      "evaluation_outcomes_loaded": true,
+      "result_classification": "PROTOCOL_EVALUATION_FAILURE",
+      "owner_disposition": "FAIL_CLOSED_OWNER_REVIEW_REQUIRED",
+      "rust_parity_status": "PASS",
+      "maximum_observed_total_variation": 0.008963756743400754,
+      "terminal_failure_evidence_sha256": "82783302168d7ec0f03272c6d042e0ec564cfc9ce779153348b8d9455c299b9d",
+      "terminal_failure_report_sha256": "e46cbf20f5699c1815919cece41fa8b04ed0f23eaf25ad11060b0f83b8f88f32",
+      "failure_receipt_sha256": "7af79288a499aad40d50dd7cb8c08539c1b98b10f3ef26ae1df5008f65d688ca",
+      "simulation_manifest_sha256": "b1509d4920dcf884dbdb88c586ebb080b3b6702da4a5d5cc1b9420d9873699b9",
+      "valid_model_performance_result_exists": false,
+      "rerun_authorized": false,
       "api_use_authorized": false
     }
   ],
