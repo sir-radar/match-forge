@@ -1,0 +1,199 @@
+{
+  "actual_request_count": 1760,
+  "backup_inventory_sha256": "ba9f941a7e209929c9c3aa77deed8de410a644f7fc90b9a91186beecf5a8f594",
+  "backup_verification": "PASS_INDEPENDENT_INVENTORY_AND_FILE_HASH_COMPARISON",
+  "canonical_mapping": {
+    "ambiguous_aliases": 0,
+    "fixture_aliases": 1751,
+    "manifest_sha256": "b7a586fb822446f438cbec01bd87f5dec399166b82127dddb235fc15b101d53f",
+    "status": "PASS",
+    "team_aliases": 80,
+    "unresolved_admitted_fixture_ids": 0
+  },
+  "competitions_represented": [
+    "Bundesliga",
+    "La Liga",
+    "Premier League",
+    "Serie A"
+  ],
+  "confirmation_executed": false,
+  "confirmation_reserve_status": "REQUIREMENTS_DEFINED_BUT_NO_GROUPS_FROZEN",
+  "contract": "PitchApiMultiDomainDevelopmentAcquisitionEvidenceV1",
+  "corpus_manifest_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+  "development_group_count": 5,
+  "disposition": "DEVELOPMENT_CORPUS_QUALIFIED",
+  "exact_total_eligible_targets": 1270,
+  "firewall": {
+    "firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+    "prior_spent_identity_count_compared": 928,
+    "prior_spent_intersection_count": 0,
+    "statsbomb_protected_identity_count_compared": 760,
+    "statsbomb_protected_intersection_count": 0,
+    "status": "PASS",
+    "v5_identity_count_compared": 712,
+    "v5_intersection_count": 0
+  },
+  "groups": [
+    {
+      "competition": "Bundesliga",
+      "exact_eligible_targets": 215,
+      "fixture_status_exclusions": {
+        "awarded": 1
+      },
+      "mapping_exclusions": 0,
+      "missing_resource_failures": 0,
+      "nominal_matches": 306,
+      "outcomes": {
+        "away": 80,
+        "draw": 53,
+        "home": 82
+      },
+      "own_goals": 25,
+      "penalties": 83,
+      "schema_failures": 0,
+      "scope_key": "bundesliga_2024_25",
+      "season": "2024/2025",
+      "semantic_failures": 0,
+      "total_shots": 7954,
+      "valid_matches": 305,
+      "valid_npxg_shots": 7846
+    },
+    {
+      "competition": "Bundesliga",
+      "exact_eligible_targets": 216,
+      "fixture_status_exclusions": {},
+      "mapping_exclusions": 0,
+      "missing_resource_failures": 0,
+      "nominal_matches": 306,
+      "outcomes": {
+        "away": 66,
+        "draw": 57,
+        "home": 93
+      },
+      "own_goals": 20,
+      "penalties": 109,
+      "schema_failures": 0,
+      "scope_key": "bundesliga_2025_26",
+      "season": "2025/2026",
+      "semantic_failures": 0,
+      "total_shots": 8130,
+      "valid_matches": 306,
+      "valid_npxg_shots": 8001
+    },
+    {
+      "competition": "Premier League",
+      "exact_eligible_targets": 280,
+      "fixture_status_exclusions": {},
+      "mapping_exclusions": 0,
+      "missing_resource_failures": 0,
+      "nominal_matches": 380,
+      "outcomes": {
+        "away": 104,
+        "draw": 65,
+        "home": 111
+      },
+      "own_goals": 33,
+      "penalties": 83,
+      "schema_failures": 0,
+      "scope_key": "premier_league_2024_25",
+      "season": "2024/2025",
+      "semantic_failures": 0,
+      "total_shots": 9883,
+      "valid_matches": 380,
+      "valid_npxg_shots": 9767
+    },
+    {
+      "competition": "La Liga",
+      "exact_eligible_targets": 280,
+      "fixture_status_exclusions": {},
+      "mapping_exclusions": 0,
+      "missing_resource_failures": 0,
+      "nominal_matches": 380,
+      "outcomes": {
+        "away": 87,
+        "draw": 69,
+        "home": 124
+      },
+      "own_goals": 26,
+      "penalties": 130,
+      "schema_failures": 0,
+      "scope_key": "la_liga_2024_25",
+      "season": "2024/2025",
+      "semantic_failures": 0,
+      "total_shots": 9065,
+      "valid_matches": 380,
+      "valid_npxg_shots": 8909
+    },
+    {
+      "competition": "Serie A",
+      "exact_eligible_targets": 279,
+      "fixture_status_exclusions": {},
+      "mapping_exclusions": 0,
+      "missing_resource_failures": 0,
+      "nominal_matches": 380,
+      "outcomes": {
+        "away": 93,
+        "draw": 78,
+        "home": 108
+      },
+      "own_goals": 37,
+      "penalties": 104,
+      "schema_failures": 0,
+      "scope_key": "serie_a_2024_25",
+      "season": "2024/2025",
+      "semantic_failures": 0,
+      "total_shots": 9250,
+      "valid_matches": 380,
+      "valid_npxg_shots": 9109
+    }
+  ],
+  "hard_request_ceiling": 1794,
+  "minimum_target_floor": 1200,
+  "minimum_target_floor_passed": true,
+  "model_fitting_performed": false,
+  "normalized_manifest_sha256": "3d325501d63e3e070b76172e3fd94bea89bfce66181b554106afbc81de20e50f",
+  "outcomes": {
+    "away": 430,
+    "draw": 322,
+    "home": 518
+  },
+  "provider_data_limitations": [
+    "UPSTREAM_XG_MODEL_VERSION_NOT_EXPOSED",
+    "PROVIDER_CORRECTION_HISTORY_NOT_AVAILABLE",
+    "ONE_BUNDESLIGA_2024_25_AWARDED_FIXTURE_QUARANTINED",
+    "CONFIRMATION_RESERVE_REQUIREMENTS_DEFINED_BUT_NO_GROUPS_FROZEN"
+  ],
+  "raw_resource_manifest_sha256": "72bd138e6a79a8d0d76f42167c0e71804035c9b0c62b1ae45dee396620217e58",
+  "request_ledger_sha256": "f69b2aaced27897722a3e4163968a6f669f3d89262c2f4abdb570f48f54458d5",
+  "request_revisions": [
+    {
+      "attempts": 1,
+      "revision": 1,
+      "stop_evidence_sha256": "2780557045eeaaf1aa848db39ea1ea509a3c3a9812ce881ba9d738376ac3e00d"
+    },
+    {
+      "attempts": 2,
+      "revision": 2,
+      "stop_evidence_sha256": "546a81a262d744d60696c430178b82f680d1eb30b833a3ae2738120fbef8c008"
+    },
+    {
+      "attempts": 1757,
+      "revision": 3,
+      "status": "COMPLETED"
+    }
+  ],
+  "result_receipt_sha256": "75e4e1ff6f44d7e1329b7116e625aa0da878b51e531cf2ffa84a3633cc07f51f",
+  "seasons_represented": [
+    "2024/2025",
+    "2025/2026"
+  ],
+  "snapshot_document_sha256": "4c46ff4db9f8276bac21c1c0aa0b191431b99cecde4452d6418cdab77c6be791",
+  "snapshot_id": "9acd90ce-b847-5ab4-8e2b-b98d5602da70",
+  "snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5",
+  "snapshot_storage_root": ".local/pitchapi-multi-domain-development-v1-r3",
+  "source_commit": "e78137fcc9e4953673c8c9b23c48d71b97f8ea69",
+  "status": "COMPLETE",
+  "total_primary_and_backup_bytes": 122630054,
+  "transferable_rolling_npxg_for_against_dixon_coles_v2_supportable": true,
+  "v6_created": false
+}
