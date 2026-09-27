@@ -1,0 +1,22 @@
+{
+  "actual_request_count": 1,
+  "catalog_normalized_sha256": "cbe1738ee37db54608dde6653c41c05c051f265ffe8b355cf20717e6fd3cd19e",
+  "catalog_raw_sha256": "0d484d91290a7429da1c93ab5f00c52c69cb0e867fe15ef3aab8ad6ddda28744",
+  "contract": "PitchApiMultiDomainDevelopmentAcquisitionStopEvidenceV1",
+  "disposition": "PROVIDER_OR_RIGHTS_BLOCKED",
+  "partial_acquisition_qualified": false,
+  "revision": 1,
+  "stop_code": "AUTHORIZED_SCOPE_UNAVAILABLE:bundesliga_2024_25",
+  "stop_receipt_sha256": "cea853c5eb5b2ff416958ee6042c94855de075dc7f16dd50a91522bf020434d7",
+  "technical_cause": "FROZEN_COUNTRY_CODE_DEU_DID_NOT_MATCH_PROVIDER_COUNTRY_CODE_GER",
+  "provider_scope_observed": {
+    "country_code": "GER",
+    "id": "l_1Isor4",
+    "name": "Bundesliga",
+    "seasons": [
+      "2024/2025",
+      "2025/2026"
+    ]
+  },
+  "scope_substituted": false
+}

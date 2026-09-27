@@ -55,7 +55,9 @@ def test_frozen_configuration_has_exact_authorized_scope_and_budget() -> None:
     ]
     assert sum(group.expected_matches for group in groups) == 1752
     assert config["expected_requests"] == 1758
-    assert config["hard_request_ceiling"] == 1794
+    assert config["hard_request_ceiling"] == 1793
+    assert config["prior_attempts_used"] == 1
+    assert config["task_hard_request_ceiling"] == 1794
     assert config["hard_storage_ceiling_bytes"] == 1024**3
 
 

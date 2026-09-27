@@ -47,9 +47,9 @@ from scripts.run_pitchapi_validation_pilot import (
 )
 
 CONFIG_PATH = Path(
-    "docs/evaluation/pitchapi-multi-domain-development-acquisition-v1-configuration.json"
+    "docs/evaluation/pitchapi-multi-domain-development-acquisition-v1-r2-configuration.json"
 )
-OUTPUT_ROOT = Path(".local/pitchapi-multi-domain-development-v1")
+OUTPUT_ROOT = Path(".local/pitchapi-multi-domain-development-v1-r2")
 TOKEN_NAME = "PITCH_API_TOKEN"
 NAMESPACE = UUID("f5f4c644-05a4-4b79-b968-e765ed659da0")
 ADAPTER_VERSION = "pitchapi-multi-domain-development-adapter-v1"
@@ -404,10 +404,15 @@ def _acquire_groups(
             "ambiguous_aliases": 0,
         },
         "attempts_used": client.state.attempts,
+        "task_attempts_used": _integer(
+            config, "prior_attempts_used", "CONFIGURATION_INTEGER_MISMATCH"
+        )
+        + client.state.attempts,
         "retries_used": client.state.retries,
         "rate_limit_responses": client.state.rate_limits,
         "expected_requests": config["expected_requests"],
         "hard_request_ceiling": config["hard_request_ceiling"],
+        "task_hard_request_ceiling": config["task_hard_request_ceiling"],
         "qualification_failures": package_failures,
         "model_fitting_performed": False,
         "v6_created": False,
@@ -452,6 +457,10 @@ def _load_config(path: Path) -> Mapping[str, object]:
         payload, "retry_allowance", "CONFIGURATION_INTEGER_MISMATCH"
     ) != payload.get("hard_request_ceiling"):
         raise SnapshotStop("CONFIGURATION_REQUEST_CEILING_MISMATCH")
+    if _integer(payload, "prior_attempts_used", "CONFIGURATION_INTEGER_MISMATCH") + _integer(
+        payload, "hard_request_ceiling", "CONFIGURATION_INTEGER_MISMATCH"
+    ) != payload.get("task_hard_request_ceiling"):
+        raise SnapshotStop("CONFIGURATION_TASK_CEILING_MISMATCH")
     if (
         payload.get("base_url") != "https://api.pitchapi.dev"
         or payload.get("concurrency") != 1
@@ -914,10 +923,15 @@ def _stop_report(
         "started_at": started_at.isoformat(),
         "stopped_at": datetime.now(UTC).isoformat(),
         "attempts_used": client.state.attempts,
+        "task_attempts_used": _integer(
+            config, "prior_attempts_used", "CONFIGURATION_INTEGER_MISMATCH"
+        )
+        + client.state.attempts,
         "retries_used": client.state.retries,
         "rate_limit_responses": client.state.rate_limits,
         "expected_requests": config["expected_requests"],
         "hard_request_ceiling": config["hard_request_ceiling"],
+        "task_hard_request_ceiling": config["task_hard_request_ceiling"],
         "primary_bytes": store.primary_bytes,
         "partial_acquisition_is_qualified": False,
         "owner_review_required": True,
