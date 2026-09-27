@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T04:12:28Z",
+  "updated_at": "2026-09-27T04:35:14Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -34,7 +34,8 @@
     "AUTHORIZE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3_EXECUTION_V1",
     "CLOSE_PITCHAPI_V3_AUTHORIZE_RUST_PARITY_INVESTIGATION_V1",
     "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1",
-    "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1"
+    "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+    "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5_V1"
   ],
   "closed_routes": [
     {
@@ -224,15 +225,15 @@
         "evidence_sha256": "c1e09407c354c4123cc329e0bf22ab1f1cfde32d00812b3e78e3a5a20e17a3a2",
         "investigation_id": "PITCHAPI_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
         "status": "COMPLETE_ROOT_CAUSE_D",
-        "v5_execution_authorized": false
+        "v5_execution_authorized": true
       },
       "api_use_authorized": false
     },
     {
       "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
       "provider": "PITCHAPI",
-      "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
-      "evidence_ref": "docs/evidence/pitchapi-calibration-boundary-investigation-v1-2026-09-27.json",
+      "status": "AUTHORIZED_READY_TO_EXECUTE",
+      "evidence_ref": "docs/evidence/owner-decision-freeze-execute-pitchapi-domain-stratified-v5-2026-09-27.json",
       "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v5-policy.json",
       "policy_sha256": "18f0600e001493a1cd8bcf15e5be5382aa6e89ecf3ae664b7d074041a57693d1",
       "calibration_boundary_policy_sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719",
@@ -255,11 +256,13 @@
       "forecast_validation_count": 1424,
       "boundary_rule": "EXCLUDE_OWN_GOAL_XG_ZERO_AND_REPORT",
       "model_refit_performed": false,
-      "evaluation_execution_authorized": false,
+      "execution_authorization_decision_id": "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5_V1",
+      "execution_authorization_sha256": "38e8c0d68d0396899f6826c166e180ea6024f6c3757b1ff2b6952cfc6c2856e5",
+      "evaluation_execution_authorized": true,
       "evaluation_executed": false,
       "api_use_authorized": false,
       "snapshot_mutation_authorized": false,
-      "owner_disposition": "AWAITING_EXACT_ONE_RUN_OWNER_AUTHORIZATION"
+      "owner_disposition": "AUTHORIZED_EXACTLY_ONE_LOGICAL_EXECUTION"
     }
   ],
   "phase_1b": {
