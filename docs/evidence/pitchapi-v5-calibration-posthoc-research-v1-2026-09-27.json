@@ -1,0 +1,63 @@
+{
+  "calibration_failure_counts": {
+    "intercept": 6,
+    "slope": 8,
+    "total": 14
+  },
+  "calibration_failures": {
+    "bundesliga_2022_23": [
+      "away_slope",
+      "home_intercept",
+      "home_slope"
+    ],
+    "bundesliga_2023_24": [
+      "away_intercept",
+      "away_slope",
+      "draw_intercept",
+      "draw_slope",
+      "home_slope"
+    ],
+    "ligue1_2022_23": [
+      "away_intercept",
+      "away_slope",
+      "draw_intercept",
+      "draw_slope",
+      "home_intercept",
+      "home_slope"
+    ]
+  },
+  "contract": "PitchApiV5CalibrationPosthocResearchV1",
+  "development_data_readiness": "PARTIAL_GLOBAL_CALIBRATION_FEASIBILITY_ONLY",
+  "development_manifest_sha256": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e",
+  "development_scope": "bundesliga_2021_22",
+  "development_target_count": 216,
+  "development_model_selected": false,
+  "evaluation_evidence_sha256": "182f3e7cbb1c7cabf9af99802247c100818f7908b62c8401e5cce7e5ee08a952",
+  "findings": {
+    "calibration_error_type": "BOTH_INTERCEPT_AND_SLOPE_WITH_MORE_SLOPE_FAILURES",
+    "competition_effect": "MATERIAL_DIFFERENCES_OBSERVED_ACROSS_DOMAINS",
+    "confidence_pattern": "EIGHT_OF_NINE_CHALLENGER_SLOPES_EXCEED_ONE; THE DOMINANT DESCRIPTIVE PATTERN IS PROBABILITIES THAT ARE TOO COMPRESSED, WITH ONE NOISY BUNDESLIGA_2022_23 DRAW EXCEPTION",
+    "domain_npxg_association": "PLAUSIBLE_BUT_CAUSAL_LINK_NOT_ESTABLISHED",
+    "failed_intercept_pattern": "ALL_SIX_FAILED_INTERCEPTS_ARE_POSITIVE",
+    "outcome_scope": "FAILURES_SPAN_HOME_DRAW_AND_AWAY",
+    "proper_score_vs_calibration": "ALL_FROZEN_AGGREGATE_PROPER_SCORE_DELTAS_FAVORED_THE_CHALLENGER_WHILE_CALIBRATION_ACCEPTANCE_FAILED",
+    "shot_situation_association": "FASTBREAK_FREEKICK_FROMCORNER_REGULARPLAY_AND_SETPIECE_HETEROGENEITY_PRESENT; CAUSAL_CONTRIBUTION_NOT_ESTABLISHED"
+  },
+  "fitted_parameters_created": false,
+  "investigation_id": "PITCHAPI_V5_CALIBRATION_POSTHOC_RESEARCH_V1",
+  "investigation_scope": "POST_HOC_DIAGNOSIS",
+  "npxg_pairwise_domain_difference": "SIGNIFICANT_FOR_ALL_THREE_DOMAIN_PAIRS",
+  "recorded_at": "2026-09-27T09:23:42Z",
+  "result": "SUCCESSOR_RESEARCH_HYPOTHESIS_JUSTIFIED_NOT_ADMITTED",
+  "significant_situation_families": [
+    "FastBreak",
+    "FreeKick",
+    "FromCorner",
+    "RegularPlay",
+    "SetPiece"
+  ],
+  "successor_hypothesis": "The transferable npxG challenger contains useful ranking signal, but outcome- and domain-dependent logit scale and level mismatch compresses its raw 1X2 probabilities. Calibration with shrinkage, trained only on prior out-of-sample development predictions, may improve held-out calibration without losing proper-score gains.",
+  "successor_limit": "THE_EXISTING_SINGLE_DOMAIN_DEVELOPMENT_CORPUS_CANNOT_ADMIT_A_HIERARCHICAL_OR_CROSS_DOMAIN_CALIBRATOR",
+  "v5_corpus_used_for_fitting": false,
+  "v5_corpus_used_for_model_selection": false
+}
