@@ -1,0 +1,80 @@
+{
+  "boundary_cases_qualified": [
+    0,
+    1,
+    1e-15,
+    0.999999999999999,
+    "NaN",
+    "Infinity",
+    "empty",
+    "constant_predictions",
+    "constant_outcomes",
+    "small_domain"
+  ],
+  "contract": "PitchApiV5MetricDomainAuditV1",
+  "metrics": {
+    "auc": {
+      "accepted": "non-empty finite probabilities in [0,1] with binary outcomes",
+      "boundaries": "accepted without transformation",
+      "constant_outcomes": "returns null",
+      "constant_predictions": "returns 0.5 when both outcome classes exist",
+      "empty_missing_non_finite": "fail closed"
+    },
+    "bootstrap": {
+      "accepted": "exact domain sizes 216/216/280; finite paired metric values; chronological kickoff batches; at least 10 batches",
+      "constant_values": "accepted and deterministic",
+      "empty_missing_non_finite_small_domain": "fail closed"
+    },
+    "brier": {
+      "accepted": "finite probabilities in [0,1] with binary outcomes",
+      "boundaries_and_constant_predictions": "accepted unchanged",
+      "empty_missing_non_finite": "fail closed at enclosing evidence contract"
+    },
+    "calibration_intercept_slope": {
+      "accepted": "finite probabilities in (0,1), aligned binary outcomes containing both classes",
+      "boundaries": "only provider-labelled own-goal xG=0/outcome=1 is separated and counted; every other boundary fails closed",
+      "constant_outcomes_empty_missing_non_finite": "fail closed",
+      "constant_predictions": "accepted only if optimization and finite covariance converge"
+    },
+    "crps": {
+      "accepted": "finite non-negative normalized score distribution with unresolved tail <=1e-12",
+      "boundaries": "zero atom probabilities accepted; total mass must remain one",
+      "empty_missing_non_finite": "fail closed"
+    },
+    "descriptive_npxg": {
+      "accepted": "finite raw xG in [0,1]; exact zeros retained",
+      "boundaries": "retained for counts, mean, quantiles, KS and situation summaries",
+      "empty_groups": "fail closed for required domain summary; absent optional situation pairs are omitted",
+      "missing_non_finite": "fail closed"
+    },
+    "heterogeneity": {
+      "accepted": "non-empty required domains with finite raw xG and aligned semantic category flags",
+      "boundaries": "own-goal xG=0 separated only for logit calibration; unchanged for all other diagnostics",
+      "empty_missing_non_finite_misaligned": "fail closed"
+    },
+    "intervals": {
+      "accepted": "finite normalized non-negative discrete total-goal distribution and levels 0.5/0.9",
+      "boundaries": "zero/one cumulative values accepted when requested quantiles resolve",
+      "empty_incomplete_non_finite": "fail closed"
+    },
+    "log_loss": {
+      "accepted": "finite normalized distributions with strictly positive probability on the observed event",
+      "probability_zero_on_observed_event": "fail closed instead of publishing infinity",
+      "probability_one_on_observed_event": "valid zero loss when distribution normalization is valid",
+      "empty_missing_non_finite": "fail closed"
+    },
+    "reliability_bins": {
+      "accepted": "aligned finite probabilities in [0,1] with binary outcomes; empty input yields ten empty bins",
+      "boundaries": "0 maps to first bin; 1 maps to final bin; no clipping",
+      "constant_predictions_or_outcomes": "accepted",
+      "missing_non_finite": "fail closed"
+    },
+    "rps": {
+      "accepted": "finite normalized multiclass probabilities in [0,1]",
+      "boundaries_and_constant_predictions": "accepted unchanged",
+      "empty_missing_non_finite": "fail closed through distribution validation"
+    }
+  },
+  "result": "PASS_NO_UNDOCUMENTED_EXECUTION_CRITICAL_DOMAIN_ASSUMPTIONS",
+  "status": "COMPLETE"
+}

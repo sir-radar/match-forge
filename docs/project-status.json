@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T03:44:20Z",
+  "updated_at": "2026-09-27T04:12:28Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -33,7 +33,8 @@
     "PRESERVE_PITCHAPI_V2_AND_DESIGN_TRANSFERABLE_V3_V1",
     "AUTHORIZE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3_EXECUTION_V1",
     "CLOSE_PITCHAPI_V3_AUTHORIZE_RUST_PARITY_INVESTIGATION_V1",
-    "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1"
+    "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1",
+    "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1"
   ],
   "closed_routes": [
     {
@@ -203,16 +204,62 @@
       "exact_logical_execution_attempts": 1,
       "evaluation_outcomes_loaded": true,
       "result_classification": "PROTOCOL_EVALUATION_FAILURE",
-      "owner_disposition": "FAIL_CLOSED_OWNER_REVIEW_REQUIRED",
+      "owner_disposition": "PROTOCOL_EVALUATION_FAILURE_HETEROGENEITY_CALIBRATION_BOUNDARY_PERMANENTLY_CLOSED",
+      "terminal_stage": "HETEROGENEITY_EVIDENCE_GENERATION",
+      "exact_failure": "calibration probabilities must be inside (0,1)",
       "rust_parity_status": "PASS",
       "maximum_observed_total_variation": 0.008963756743400754,
+      "total_variation_limit": 0.012794580429261083,
+      "rust_warning_count": 0,
       "terminal_failure_evidence_sha256": "82783302168d7ec0f03272c6d042e0ec564cfc9ce779153348b8d9455c299b9d",
       "terminal_failure_report_sha256": "e46cbf20f5699c1815919cece41fa8b04ed0f23eaf25ad11060b0f83b8f88f32",
       "failure_receipt_sha256": "7af79288a499aad40d50dd7cb8c08539c1b98b10f3ef26ae1df5008f65d688ca",
       "simulation_manifest_sha256": "b1509d4920dcf884dbdb88c586ebb080b3b6702da4a5d5cc1b9420d9873699b9",
       "valid_model_performance_result_exists": false,
       "rerun_authorized": false,
+      "calibration_boundary_investigation": {
+        "decision_id": "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+        "decision_sha256": "82890a00e70862fe608fd28cc41fcbc462213de3e8334225f9aa858b457f2ced",
+        "evidence_ref": "docs/evidence/pitchapi-calibration-boundary-investigation-v1-2026-09-27.json",
+        "evidence_sha256": "c7f6fd9e7f4c397c4b8f2301affd7f1e09330f72f39b04fc7711c3bb369a1ad7",
+        "investigation_id": "PITCHAPI_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+        "status": "COMPLETE_ROOT_CAUSE_D",
+        "v5_execution_authorized": false
+      },
       "api_use_authorized": false
+    },
+    {
+      "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+      "provider": "PITCHAPI",
+      "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+      "evidence_ref": "docs/evidence/pitchapi-calibration-boundary-investigation-v1-2026-09-27.json",
+      "policy_ref": "docs/evaluation/pitchapi-domain-stratified-evaluation-v5-policy.json",
+      "policy_sha256": "de97ce1078a83a8636bd23868f3139349edac06997803c335d2636145bdfa9ed",
+      "calibration_boundary_policy_sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719",
+      "metric_domain_audit_sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
+      "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
+      "freeze_manifest_sha256": "f8e13e8e0a07775b92dda27c5717e54efb37edf990ab7276f69fc176aa5a690f",
+      "preregistration_sha256": "d40f6806700a58643f65d62764caa739d810c831d78cf9dd80c0549555435496",
+      "execution_configuration_sha256": "52e2d8e2a89eb430592cc2281f488066d438b6a249f61b966c1fb9d11552512a",
+      "executor_source_commit": "71c4a3c3990bec9c601747d8bd62abf820e8a3f3",
+      "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+      "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+      "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+      "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+      "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+      "reference_model_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "challenger_model_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+      "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+      "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+      "exact_evaluation_targets": 712,
+      "forecast_validation_count": 1424,
+      "boundary_rule": "EXCLUDE_OWN_GOAL_XG_ZERO_AND_REPORT",
+      "model_refit_performed": false,
+      "evaluation_execution_authorized": false,
+      "evaluation_executed": false,
+      "api_use_authorized": false,
+      "snapshot_mutation_authorized": false,
+      "owner_disposition": "AWAITING_EXACT_ONE_RUN_OWNER_AUTHORIZATION"
     }
   ],
   "phase_1b": {

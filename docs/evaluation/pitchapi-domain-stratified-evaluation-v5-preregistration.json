@@ -1,0 +1,97 @@
+{
+  "blocking_requirements": [
+    "OWNER_FREEZE_EXACT_V5_IDENTITIES",
+    "OWNER_AUTHORIZE_EXACTLY_ONE_V5_EXECUTION"
+  ],
+  "calibration_boundary_policy_sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719",
+  "contract": "PitchApiDomainStratifiedEvaluationV5PreregistrationV1",
+  "disclosure": {
+    "designed_after_v4_loaded_evaluation_outcomes": true,
+    "model_comparison_used": false,
+    "valid_v4_model_performance_metrics_published": false,
+    "v5_completely_outcome_blind": false
+  },
+  "evaluation_execution_authorized": false,
+  "execution_configuration_sha256": "52e2d8e2a89eb430592cc2281f488066d438b6a249f61b966c1fb9d11552512a",
+  "groups": {
+    "development_scope": "synthetic and previously approved development-only data",
+    "evaluation": {
+      "bundesliga_2022_23": 216,
+      "bundesliga_2023_24": 216,
+      "ligue1_2022_23": 280
+    },
+    "exact_evaluation_targets": 712,
+    "minimum_team_prior_appearances": 10
+  },
+  "implementation_source_commit": "71c4a3c3990bec9c601747d8bd62abf820e8a3f3",
+  "metric_domain_audit_sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
+  "metrics": {
+    "aggregation": "equal_weight_three_domain_macro",
+    "calibration_boundary_rule": "exclude and separately report provider-labelled own-goal xG=0 only",
+    "primary": "joint_score_matrix_log_loss_delta",
+    "secondary": [
+      "one_x_two_log_loss_delta",
+      "one_x_two_brier_delta",
+      "one_x_two_rps_delta",
+      "total_goal_crps_delta"
+    ],
+    "secondary_aggregation": "fixed_target_weighted_216_216_280",
+    "uncertainty": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924"
+  },
+  "models": {
+    "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+    "feature_id": "MATCHFORGE_TRANSFERABLE_ROLLING_LAST10_V1",
+    "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "refit_performed": false,
+    "team_id_parameters": false
+  },
+  "policy_sha256": "de97ce1078a83a8636bd23868f3139349edac06997803c335d2636145bdfa9ed",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+  "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
+  "readiness_gate": {
+    "adversarial_boundary_tests": "PASS",
+    "boundary_cause_classified": "PASS_D_CALIBRATION_CONTRACT_DEFECT",
+    "bootstrap_evidence_generation": "PASS",
+    "calibration_evidence_generation": "PASS",
+    "complete_synthetic_development_pipeline": "PASS",
+    "deterministic_replay": "PASS",
+    "frozen_artifact_identities_reproduced": "PASS",
+    "heterogeneity_evidence_generation": "PASS",
+    "human_publication": "PASS",
+    "machine_publication": "PASS",
+    "metric_domain_audit": "PASS",
+    "raw_probabilities_unchanged": "PASS",
+    "repository_verification": "PASS",
+    "rust_parity": "PASS",
+    "structurally_forecastable_targets": 712,
+    "unresolved_execution_critical_todos": 0
+  },
+  "reporting": {
+    "domains_separate": true,
+    "heterogeneity_required": true,
+    "machine_target_results_required": true,
+    "required_aggregates": [
+      "macro_domain",
+      "fixed_target_weighted"
+    ]
+  },
+  "rust_validation": {
+    "algorithm": "pitchapi-score-categorical-v2",
+    "build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+    "policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+    "seed_schedule_id": "pitchapi-v4-splitmix64-sha256-v1",
+    "simulation_count_per_forecast": 112460,
+    "total_variation_limit": 0.012794580429261083
+  },
+  "source": {
+    "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+    "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+    "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+  "v4_disposition": "PROTOCOL_EVALUATION_FAILURE_HETEROGENEITY_CALIBRATION_BOUNDARY_PERMANENTLY_CLOSED",
+  "v4_rerun_authorized": false,
+  "v5_execution_authorized": false
+}

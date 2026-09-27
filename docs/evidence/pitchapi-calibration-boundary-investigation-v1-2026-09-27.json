@@ -1,0 +1,67 @@
+{
+  "boundary_observations": {
+    "all_boundary_values": 0,
+    "count": 86,
+    "event_type": "Goal",
+    "is_own_goal": true,
+    "normalized_representation": "JSON number 0, preserved unchanged",
+    "per_domain": {
+      "bundesliga_2022_23": 23,
+      "bundesliga_2023_24": 25,
+      "ligue1_2022_23": 38
+    },
+    "source_field": "data.periods[].shots[].expected_goals",
+    "unique_shot_count": 86
+  },
+  "calibration_fit": {
+    "implementation_sha256": "02fcfee50f7fa4997c8fc1254f7e4b9ef828b54c8c637babeda32c57ec29bbef",
+    "mathematical_operation": "logit(p)=log(p/(1-p))",
+    "open_interval_required_for_this_estimator": true,
+    "ordinary_and_near_boundary_probabilities": "PASS",
+    "zero_and_one": "REJECT_AS_NON_FINITE_LOGIT"
+  },
+  "classification": "D_CALIBRATION_CONTRACT_DEFECT",
+  "classification_detail": "The provider value is semantically valid for an own goal, but V4 incorrectly included own goals in ordinary shot goal-on-logit-xG calibration. The estimator's open-interval restriction itself is mathematically correct.",
+  "contract": "PitchApiCalibrationBoundaryInvestigationV1",
+  "example": {
+    "canonical_match_id": "268e621b-c7a8-5459-9d69-2a432f91e388",
+    "event_type": "Goal",
+    "expected_goals": 0,
+    "is_own_goal": true,
+    "kickoff_at": "2022-08-13T13:30:00Z",
+    "manifest_sha256": "35f9f5e4a69bcfb0c2d06c9d64d882705b3b5ae77fad22c20adbccacb228d513",
+    "normalized_resource_sha256": "d3aec7edc64d1843293a946ba80f719b87dd2464e55e43f04622356ce4654b06",
+    "raw_resource_sha256": "45a0cba8a9807b7c0bbe93016f8c0e69257bd2967f879d97b91900ec1d539704",
+    "shot_id": "s_1mKtD3",
+    "situation": "FromCorner"
+  },
+  "investigation_id": "PITCHAPI_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+  "metric_domain_audit": {
+    "path": "docs/evaluation/pitchapi-v5-metric-domain-audit.json",
+    "sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
+    "status": "PASS"
+  },
+  "minimum_access_boundary": {
+    "more_than_one_boundary_value_exists": true,
+    "performance_results_inspected": false,
+    "records_inspected": "frozen V4 source resources needed to classify the failing heterogeneity input",
+    "value_already_observed_during_v4": true
+  },
+  "normalization_defect": false,
+  "qualification": {
+    "adversarial_boundary_tests": "PASS",
+    "complete_synthetic_development_pipeline": "PASS",
+    "evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
+    "rust_parity": "PASS"
+  },
+  "raw_npxg_valid": true,
+  "recommended_policy": {
+    "option": "D_EXPLICIT_BOUNDARY_CATEGORY_HANDLING",
+    "path": "docs/evaluation/pitchapi-v5-calibration-boundary-policy.json",
+    "raw_probabilities_modified": false,
+    "sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719"
+  },
+  "status": "COMPLETE_ROOT_CAUSE_D",
+  "v4_rerun_performed": false,
+  "v5_evaluation_executed": false
+}

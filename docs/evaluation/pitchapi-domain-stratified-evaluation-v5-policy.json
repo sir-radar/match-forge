@@ -1,0 +1,92 @@
+{
+  "aggregation": {
+    "primary": "equal_weight_macro_average_of_three_domains",
+    "secondary": "fixed_target_weighted_216_216_280"
+  },
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "calibration_boundary_policy_sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "PitchApiDomainStratifiedEvaluationV5PolicyV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "disclosure": {
+    "designed_after_v4_execution_began": true,
+    "model_artifacts_unchanged": true,
+    "model_comparison_used_for_design": false,
+    "performance_metrics_published_by_v4": false,
+    "trigger": "evaluation-pipeline input-domain error after outcomes loaded",
+    "v5_described_as_completely_outcome_blind": false
+  },
+  "evaluation": {
+    "domains": {
+      "bundesliga_2022_23": 216,
+      "bundesliga_2023_24": 216,
+      "ligue1_2022_23": 280
+    },
+    "exact_target_count": 712,
+    "forecast_validation_count": 1424
+  },
+  "evaluation_execution_authorized": false,
+  "evidence_schemas": {
+    "evaluation_evidence_sha256": "9e54ecf19de87948ba84ce67d71f444d5a69aaea1123a3621aaf6ed6fae70580",
+    "execution_receipt_sha256": "3a91c83d6b70c91429f694a4d0a58d4b8cc90bd6bda88ce50253a44ce972a459"
+  },
+  "executor_source_commit": "71c4a3c3990bec9c601747d8bd62abf820e8a3f3",
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "investigation_evidence_sha256": "c7f6fd9e7f4c397c4b8f2301affd7f1e09330f72f39b04fc7711c3bb369a1ad7",
+  "metric_domain_audit_sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
+  "metric_implementation": {
+    "executor_sha256": "58ee238f4d7c29939028639a77ce19848c2d4d0f783663225d7b4c3534d14161",
+    "frozen_metrics_sha256": "02fcfee50f7fa4997c8fc1254f7e4b9ef828b54c8c637babeda32c57ec29bbef",
+    "runner_sha256": "06b9182ffad1d13cb67e14b8c87fe269abe2b0f51c8a19be791cbcaa20df1afd",
+    "v5_boundary_metrics_sha256": "412e45159ef4809768edab7408811d431df7f101148f051cd4dda586b918f03e",
+    "v5_runtime_sha256": "17f3699a0a959be2a2d76bc002cfe7dd93f573c5497ae30750fa51b168c950c3"
+  },
+  "metrics": {
+    "calibration": "per-domain intercept slope standard errors and reliability bins; own-goal xG zero separated only from goal-on-logit-xG heterogeneity fit",
+    "primary": "joint_score_matrix_log_loss_delta",
+    "secondary": [
+      "one_x_two_log_loss_delta",
+      "one_x_two_brier_delta",
+      "one_x_two_rps_delta",
+      "total_goal_crps_delta"
+    ],
+    "uncertainty": "paired_moving_block_10_kickoff_batches_2000_replicates_seed_20260924"
+  },
+  "models": {
+    "challenger": "transferable-rolling-goals-npxg-poisson-v1",
+    "feature_id": "MATCHFORGE_TRANSFERABLE_ROLLING_LAST10_V1",
+    "reference": "transferable-rolling-goals-poisson-v1",
+    "team_id_parameters": false
+  },
+  "pitchapi_api_calls_authorized": false,
+  "predecessor": {
+    "disposition": "PROTOCOL_EVALUATION_FAILURE_HETEROGENEITY_CALIBRATION_BOUNDARY_PERMANENTLY_CLOSED",
+    "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+  },
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+  "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_validation": {
+    "algorithm": "pitchapi-score-categorical-v2",
+    "build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+    "event_warning_limit": 0.008613326107968184,
+    "global_familywise_alpha": 0.01,
+    "policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+    "seed_schedule_id": "pitchapi-v4-splitmix64-sha256-v1",
+    "simulation_count_per_forecast": 112460,
+    "total_variation_limit": 0.012794580429261083
+  },
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_mutation_authorized": false,
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "statsbomb_evaluation_v2_unchanged": true,
+  "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+  "v4_rerun_authorized": false,
+  "v4_to_v5_differences": [
+    "protocol and versioned evidence identities advance from V4 to V5",
+    "provider-labelled own goals with raw xG=0 are excluded from goal-on-logit-xG heterogeneity calibration and counted separately",
+    "all other exact calibration boundaries and non-finite values fail closed",
+    "reliability and AUC inputs receive explicit finite-domain validation"
+  ],
+  "v5_execution_authorized": false
+}

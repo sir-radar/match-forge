@@ -4,6 +4,14 @@ import math
 from typing import cast
 
 import pytest
+from football.forecasting.pitchapi_v3_evaluation import (
+    DomainMetricSeriesV1,
+    ExactScoreDistributionV1,
+    PitchApiV3EvaluationError,
+    aggregate_domain_series,
+    descriptive_target_metrics,
+    score_target,
+)
 from football.forecasting.pitchapi_v5_evaluation import (
     PitchApiV5EvaluationError,
     audited_binary_auc,
@@ -89,6 +97,10 @@ def test_auc_returns_none_for_constant_outcomes() -> None:
     assert audited_binary_auc((0.0, 0.5, 1.0), (1, 1, 1)) is None
 
 
+def test_auc_accepts_sparse_positive_outcomes() -> None:
+    assert audited_binary_auc((0.1, 0.2, 0.3, 0.9), (0, 0, 0, 1)) == 1.0
+
+
 @pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf, -0.1, 1.1])
 def test_binary_diagnostics_reject_malformed_probabilities(value: float) -> None:
     with pytest.raises(PitchApiV5EvaluationError, match="probability is invalid"):
@@ -99,3 +111,30 @@ def test_binary_diagnostics_reject_empty_auc_but_allow_empty_reliability() -> No
     with pytest.raises(PitchApiV5EvaluationError, match="empty or misaligned"):
         audited_binary_auc((), ())
     assert len(audited_reliability_diagram((), ())) == 10
+
+
+def test_log_loss_accepts_observed_probability_one_and_rejects_zero() -> None:
+    deterministic = ExactScoreDistributionV1(((0, 0, 1.0),), 0.0)
+    impossible_observation = ExactScoreDistributionV1(((0, 0, 0.0), (1, 0, 1.0)), 0.0)
+
+    assert score_target(deterministic, home_goals=0, away_goals=0).joint_score_log_loss == 0.0
+    with pytest.raises(PitchApiV3EvaluationError, match="zero probability"):
+        score_target(impossible_observation, home_goals=0, away_goals=0)
+    with pytest.raises(PitchApiV3EvaluationError, match="binary market probability"):
+        descriptive_target_metrics(deterministic, home_goals=0, away_goals=0)
+
+
+def test_small_domains_fail_before_bootstrap_or_aggregation() -> None:
+    domains = {
+        "bundesliga_2022_23": DomainMetricSeriesV1.synthetic(9, 0.0),
+        "bundesliga_2023_24": DomainMetricSeriesV1.synthetic(9, 0.0),
+        "ligue1_2022_23": DomainMetricSeriesV1.synthetic(9, 0.0),
+    }
+
+    with pytest.raises(PitchApiV3EvaluationError, match="unexpected target count"):
+        aggregate_domain_series(domains)
+
+
+def test_binary_diagnostics_reject_malformed_outcomes() -> None:
+    with pytest.raises(PitchApiV5EvaluationError, match="outcome is invalid"):
+        audited_reliability_diagram((0.5,), (2,))
