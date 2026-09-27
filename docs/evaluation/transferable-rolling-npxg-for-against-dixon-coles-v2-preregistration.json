@@ -1,0 +1,151 @@
+{
+  "admission": {
+    "calibration": {
+      "absolute_intercept_maximum_each_outcome": 0.25,
+      "candidate_absolute_error_no_greater_than_either_comparator_each_outcome": true,
+      "slope_interval_full_width_maximum_each_outcome": 0.4,
+      "slope_maximum_each_outcome": 1.2,
+      "slope_minimum_each_outcome": 0.8,
+      "intercept_interval_full_width_maximum_each_outcome": 0.3
+    },
+    "domain_safety": {
+      "leave_domain_out_joint_score_log_loss_delta_interval_upper_maximum": 0.05,
+      "minimum_domains_with_negative_joint_score_log_loss_point_delta": 4
+    },
+    "primary": {
+      "joint_score_log_loss_delta_interval_upper_below_zero_against_both_comparators": true,
+      "one_x_two_log_loss_delta_interval_upper_at_most_zero_against_both_comparators": true
+    },
+    "secondary_delta_interval_upper_limits": {
+      "one_x_two_brier": 0.01,
+      "one_x_two_rps": 0.01,
+      "total_goal_crps": 0.02
+    },
+    "rule": "ALL_CRITERIA_PASS_OR_DEVELOPMENT_REJECTED"
+  },
+  "artifact": {
+    "format": "CANONICAL_JSON_UTF8_LF",
+    "schema": "TransferableRollingNpxgForAgainstDixonColesV2ArtifactV1",
+    "serializer": "canonical-json-sort-keys-compact-v1"
+  },
+  "candidate": {
+    "algorithm_version": "transferable-rolling-npxg-for-against-dixon-coles-v2",
+    "competition_baseline": "b_c=b_global+delta_c",
+    "competition_home_advantage": "h_c=h_global+eta_c",
+    "competition_identification": "unweighted sum of fitted competition deviations equals zero separately for delta and eta",
+    "effective_parameter_count": 13,
+    "home_log_rate": "b_c+h_c+beta_gf*GF_home+beta_ga*GA_away+beta_xf*NPXGF_home+beta_xa*NPXGA_away",
+    "away_log_rate": "b_c+beta_gf*GF_away+beta_ga*GA_home+beta_xf*NPXGF_away+beta_xa*NPXGA_home",
+    "parameter_bounds": {
+      "competition_baseline_deviation": [-0.75, 0.75],
+      "competition_home_advantage_deviation": [-0.75, 0.75],
+      "feature_weight": [0.0, 2.0],
+      "global_home_advantage": [-0.75, 0.75],
+      "global_intercept": [-1.5, 1.5],
+      "goal_rate": [0.05, 6.0],
+      "rho": [-0.15, 0.15],
+      "tau_minimum": 1e-09
+    },
+    "team_id_parameters": false
+  },
+  "comparison_models": {
+    "goals_only_reference": {
+      "algorithm_version": "transferable-rolling-goals-poisson-v1",
+      "frozen_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "use": "algorithm held fixed; refit only inside authorized development folds"
+    },
+    "raw_v5_npxg_benchmark": {
+      "algorithm_version": "transferable-rolling-goals-npxg-poisson-v1",
+      "frozen_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+      "use": "algorithm held fixed; refit only inside authorized development folds"
+    }
+  },
+  "contract": "TransferableRollingNpxgForAgainstDixonColesV2PreregistrationV1",
+  "development_corpus": {
+    "corpus_manifest_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+    "exact_target_count": 1270,
+    "firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+    "groups": {
+      "bundesliga_2024_25": 215,
+      "bundesliga_2025_26": 216,
+      "la_liga_2024_25": 280,
+      "premier_league_2024_25": 280,
+      "serie_a_2024_25": 279
+    },
+    "snapshot_id": "9acd90ce-b847-5ab4-8e2b-b98d5602da70",
+    "snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5"
+  },
+  "dixon_coles": {
+    "corrected_cells": ["0-0", "0-1", "1-0", "1-1"],
+    "joint_probability": "tau(x,y)*Poisson(x;lambda_home)*Poisson(y;lambda_away)",
+    "normalization": "analytic Dixon-Coles mass is one; reject if absolute computed mass error exceeds 1e-12",
+    "tau": {
+      "0-0": "1-lambda_home*lambda_away*rho",
+      "0-1": "1+lambda_home*rho",
+      "1-0": "1+lambda_away*rho",
+      "1-1": "1-rho",
+      "otherwise": "1"
+    }
+  },
+  "features": {
+    "competition_center": "arithmetic mean from valid matches in the same competition-season with kickoff strictly before the target batch; global strictly-prior mean only for an unseen competition",
+    "history_window_appearances": 10,
+    "minimum_prior_appearances": 10,
+    "missing_behavior": "target not forecastable; never impute team state",
+    "npxg": "raw expected_goals summed after excluding provider-labelled Penalty situations and is_own_goal=true",
+    "opponent_interaction": "own rolling for state is paired with opponent rolling against state in each log rate",
+    "transform": "log((rolling_mean+0.05)/(strictly_prior_competition_mean+0.05))",
+    "weighting": "equal weight for each of the last 10 valid appearances"
+  },
+  "fitting": {
+    "convergence": {
+      "gradient_infinity_norm_maximum": 0.0001,
+      "maximum_iterations": 1000,
+      "objective_tolerance": 1e-10,
+      "optimizer_success_required": true
+    },
+    "initialization": {
+      "competition_deviations": 0.0,
+      "feature_weights": 0.25,
+      "global_home_advantage": "log(training_home_goal_mean/training_away_goal_mean)",
+      "global_intercept": "log(training_away_goal_mean)",
+      "rho": 0.0
+    },
+    "objective": "mean negative Dixon-Coles joint-score log likelihood plus frozen L2 penalties",
+    "optimizer": "SLSQP_WITH_ANALYTIC_GRADIENT_AND_ANALYTIC_CONSTRAINT_JACOBIAN",
+    "regularization_candidates": [
+      {"competition_baseline": 10.0, "competition_home_advantage": 10.0, "rho": 25.0},
+      {"competition_baseline": 25.0, "competition_home_advantage": 25.0, "rho": 100.0},
+      {"competition_baseline": 100.0, "competition_home_advantage": 100.0, "rho": 400.0}
+    ],
+    "selection": "lowest mean inner three-block chronological joint-score log loss; ties within 1e-12 choose the earlier listed candidate"
+  },
+  "probability_outputs": {
+    "exact_score": "untruncated analytic probability",
+    "score_matrix": "0 through 9 plus 10+ on each axis; tail rows and columns use exact Poisson marginal tail masses; low-score corrections applied before aggregation",
+    "score_matrix_sum_tolerance": 1e-12,
+    "total_goal_crps": "CDF sum for totals 0 through 19; remaining tail is represented by the final complement",
+    "one_x_two": "independent Skellam probabilities plus exact Dixon-Coles mass deltas in corrected cells"
+  },
+  "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1",
+  "reproduction": {
+    "required_runs": 2,
+    "required_result": "BYTE_IDENTICAL_LOGICAL_OUTPUTS",
+    "seed": 20260927
+  },
+  "status": "FROZEN_BEFORE_FITTING",
+  "uncertainty": {
+    "block_length_kickoff_batches": 10,
+    "interval": 0.95,
+    "moving_block_bootstrap_replicates": 2000,
+    "seed": 20260927
+  },
+  "validation": {
+    "chronological": "four contiguous kickoff-batch blocks per domain; each scored block uses only fit rows with kickoff strictly before the block start",
+    "leave_domain_out": "five outer folds; exclude every row from the scored competition-season; train and select only on other-domain rows strictly before each scored block start",
+    "leave_team_out": "exclude both scored teams' match outcomes from fitting while retaining their strictly-prior rolling state; score every eligible row once by the lexicographically smaller participating team ID to avoid duplicate weighting",
+    "same_kickoff": "build and freeze every forecast in a kickoff batch before revealing any outcome in that batch"
+  },
+  "v5_reuse_for_fitting_or_selection": false,
+  "v6_authorized": false
+}

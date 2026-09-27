@@ -67,7 +67,7 @@
       "feature_centering_values"
     ]
   },
-  "authorization_required": "OWNER_AUTHORIZE_DEVELOPMENT_ONLY_MODEL_IMPLEMENTATION_PREREGISTRATION_AND_COMPARISON_V1",
+  "authorization_decision_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1",
   "challenger": {
     "algorithm": "transferable-rolling-npxg-for-against-dixon-coles-v2",
     "feature_window_appearances": 10,
@@ -172,10 +172,10 @@
     "joint_probability": "tau(x,y)*Poisson(x;lambda_home)*Poisson(y;lambda_away)",
     "partial_pooling": "b_c=b_global+delta_c and h_c=h_global+eta_c, with centered deviations and separate frozen L2 penalties"
   },
-  "model_fitting_authorized": false,
+  "model_fitting_authorized": true,
   "model_promotion_authorized": false,
   "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
-  "status": "PREPARED_NOT_EXECUTED_AWAITING_OWNER_DECISION",
+  "status": "AUTHORIZED_PREREGISTERED_NOT_EXECUTED",
   "unseen_team_behavior": {
     "fewer_than_10_prior_appearances": "NOT_FORECASTABLE",
     "leave_team_out": "use the team's legitimate prior rolling state with global and competition parameters fitted without that team's outcomes",

@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T14:49:49Z",
+  "updated_at": "2026-09-27T20:46:32Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -39,7 +39,8 @@
     "ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1",
     "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
     "ACCEPT_PITCHAPI_CALIBRATION_SUCCESSOR_REJECTION_AND_DESIGN_MULTI_DOMAIN_DEVELOPMENT_V1",
-    "AUTHORIZE_BOUNDED_PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_ACQUISITION_V1"
+    "AUTHORIZE_BOUNDED_PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_ACQUISITION_V1",
+    "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1"
   ],
   "closed_routes": [
     {
@@ -387,10 +388,14 @@
         "v6_authorized": false,
         "next_model_research_decision_package": {
           "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
-          "status": "PREPARED_NOT_EXECUTED_AWAITING_OWNER_DECISION",
+          "status": "AUTHORIZED_PREREGISTERED_NOT_EXECUTED",
           "package_ref": "docs/evaluation/transferable-rolling-npxg-for-against-dixon-coles-v2-decision-package.json",
-          "package_sha256": "aad846e03190e022502ad2a4d79447314daeeda92d85f5a870f52716cfda35e3",
-          "model_fitting_authorized": false,
+          "package_sha256": "41c2678f4b5bd8eb72da23e0aacf6dc65fc9fb8fc1c54c8b3b9b7d6742d39481",
+          "owner_decision_ref": "docs/evidence/owner-decision-authorize-transferable-rolling-npxg-for-against-dixon-coles-v2-research-2026-09-27.json",
+          "owner_decision_sha256": "61450f9ca8b2b198a238ed1c24cc16e673191c8533176139bfea8932ba64dc82",
+          "preregistration_ref": "docs/evaluation/transferable-rolling-npxg-for-against-dixon-coles-v2-preregistration.json",
+          "preregistration_sha256": "5ff4ef212931d5aeeb94b5dd3b3c905d276088a7775f85d54e1ce73e7605f517",
+          "model_fitting_authorized": true,
           "v6_authorized": false,
           "confirmation_execution_authorized": false
         }
