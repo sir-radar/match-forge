@@ -70,6 +70,13 @@ class SimulationReceiptV1:
     status: str
 
 
+@dataclass(frozen=True, slots=True)
+class V4SimulationReceiptV1(SimulationReceiptV1):
+    total_variation: float | None = None
+    total_variation_limit: float | None = None
+    warnings: tuple[str, ...] = ()
+
+
 class EvaluationCorpusPort(Protocol):
     def preflight(self) -> Mapping[str, object]: ...
 
@@ -117,11 +124,28 @@ class PitchApiV3ExecutionConfigV1:
 
 
 @dataclass(frozen=True, slots=True)
+class PitchApiV4ExecutionConfigV1(PitchApiV3ExecutionConfigV1):
+    forecast_validation_count: int = 1_424
+
+    def __post_init__(self) -> None:
+        if (
+            self.protocol_id != "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+            or self.target_count != 712
+            or self.forecast_validation_count != 1_424
+        ):
+            raise PitchApiV3ExecutionError("V4 execution configuration identity is invalid")
+        for name, value in asdict(self).items():
+            if name.endswith("sha256") and (not isinstance(value, str) or not _is_hash(value)):
+                raise PitchApiV3ExecutionError(f"{name} is not a SHA-256 identity")
+
+
+@dataclass(frozen=True, slots=True)
 class PublishedEvaluationV1:
     directory: Path
     machine_sha256: str
     human_sha256: str
     simulation_manifest_sha256: str
+    execution_receipt_sha256: str | None = None
 
 
 class PitchApiV3Executor:
@@ -133,12 +157,14 @@ class PitchApiV3Executor:
         challenger_model: TransferableGoalModelV1,
         simulator: SimulationPort,
         corpus: EvaluationCorpusPort,
+        accepted_simulation_statuses: frozenset[str] = frozenset({"PASS"}),
     ) -> None:
         self._config = config
         self._reference = reference_model
         self._challenger = challenger_model
         self._simulator = simulator
         self._corpus = corpus
+        self._accepted_simulation_statuses = accepted_simulation_statuses
 
     def execute(
         self, *, run_id: str, execution_timestamp: datetime, output_root: Path
@@ -165,9 +191,13 @@ class PitchApiV3Executor:
             _write_json(
                 failure,
                 {
-                    "contract": "PitchApiV3ExecutionFailureV1",
+                    "contract": (
+                        "PitchApiV4ExecutionFailureV1"
+                        if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+                        else "PitchApiV3ExecutionFailureV1"
+                    ),
                     "error": str(error),
-                    "protocol_id": PROTOCOL_ID,
+                    "protocol_id": self._config.protocol_id,
                     "run_id": run_id,
                     "status": "FAIL_CLOSED_OWNER_REVIEW_REQUIRED",
                 },
@@ -214,7 +244,7 @@ class PitchApiV3Executor:
                         model_artifact_sha256=artifact,
                         distribution=distribution,
                     )
-                    if receipt.status != "PASS":
+                    if receipt.status not in self._accepted_simulation_statuses:
                         raise PitchApiV3ExecutionError("mandatory Rust simulation did not pass")
                     simulation_receipts.append(receipt)
                 seen.add(target_id)
@@ -263,11 +293,18 @@ class PitchApiV3Executor:
         if len(simulation_receipts) != expected_receipts:
             raise PitchApiV3ExecutionError("simulation receipt count is incomplete")
         report = _evaluation_report(target_records)
+        v4 = self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+        simulation_parity = _simulation_parity(simulation_receipts, v4=v4)
         simulation_manifest = {
-            "contract": "PitchApiV3SimulationManifestV1",
+            "contract": (
+                "PitchApiV4SimulationManifestV1"
+                if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+                else "PitchApiV3SimulationManifestV1"
+            ),
             "receipts": [asdict(item) for item in simulation_receipts],
             "rust_build_sha256": self._config.rust_build_sha256,
             "simulation_count_per_forecast": 112_460,
+            "summary": simulation_parity,
         }
         simulation_manifest_sha256 = _write_json(
             staging / "simulation-manifest.json", simulation_manifest
@@ -276,7 +313,14 @@ class PitchApiV3Executor:
             "aggregate_metrics": report["aggregate_metrics"],
             "alias_reconciliation_sha256": self._config.alias_reconciliation_sha256,
             "challenger_artifact_sha256": self._config.challenger_artifact_sha256,
-            "contract": "PitchApiDomainStratifiedEvaluationV3EvidenceV1",
+            "challenger_satisfied_frozen_success_criteria": (
+                report["result_classification"] == "PROMOTE_CANDIDATE" if v4 else None
+            ),
+            "contract": (
+                "PitchApiDomainStratifiedEvaluationV4EvidenceV1"
+                if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+                else "PitchApiDomainStratifiedEvaluationV3EvidenceV1"
+            ),
             "corpus_sha256": self._config.corpus_sha256,
             "domain_metrics": report["domain_metrics"],
             "execution_configuration_sha256": self._config.execution_configuration_sha256,
@@ -285,24 +329,41 @@ class PitchApiV3Executor:
             "firewall_sha256": self._config.firewall_sha256,
             "heterogeneity": dict(self._corpus.heterogeneity()),
             "preregistration_sha256": self._config.preregistration_sha256,
-            "protocol_id": PROTOCOL_ID,
+            "protocol_id": self._config.protocol_id,
             "reference_artifact_sha256": self._config.reference_artifact_sha256,
-            "result_classification": report["result_classification"],
+            "frozen_criteria_classification": report["result_classification"],
+            "result_classification": (
+                _v4_classification(str(report["result_classification"]))
+                if v4
+                else report["result_classification"]
+            ),
             "run_id": run_id,
             "rust_build_sha256": self._config.rust_build_sha256,
             "rust_policy_sha256": self._config.rust_policy_sha256,
             "simulation_manifest_sha256": simulation_manifest_sha256,
+            "simulation_parity": simulation_parity,
             "snapshot_sha256": self._config.snapshot_sha256,
             "target_count": len(seen),
             "target_results": target_records,
             "warnings_failures": report["warnings_failures"],
         }
         machine_sha256 = _write_json(staging / "evaluation-evidence.json", machine)
-        human = _human_report(machine, machine_sha256)
+        human = _human_report(machine, machine_sha256, self._config.protocol_id)
         human_path = staging / "evaluation-evidence.md"
         human_path.write_text(human, encoding="utf-8")
         human_sha256 = hashlib.sha256(human_path.read_bytes()).hexdigest()
+        execution_receipt_sha256 = _write_execution_receipt(
+            staging=staging,
+            config=self._config,
+            run_id=run_id,
+            target_count=len(seen),
+            forecast_validation_count=len(simulation_receipts),
+            machine_sha256=machine_sha256,
+            human_sha256=human_sha256,
+            simulation_manifest_sha256=simulation_manifest_sha256,
+        )
         completion = {
+            "execution_receipt_sha256": execution_receipt_sha256,
             "human_sha256": human_sha256,
             "machine_sha256": machine_sha256,
             "simulation_manifest_sha256": simulation_manifest_sha256,
@@ -317,6 +378,7 @@ class PitchApiV3Executor:
             machine_sha256=machine_sha256,
             human_sha256=human_sha256,
             simulation_manifest_sha256=simulation_manifest_sha256,
+            execution_receipt_sha256=execution_receipt_sha256,
         )
 
     def _validate_preflight(self, actual: Mapping[str, object]) -> None:
@@ -519,6 +581,8 @@ def _verify_staging(staging: Path, completion: Mapping[str, object]) -> None:
         "evaluation-evidence.md": completion["human_sha256"],
         "simulation-manifest.json": completion["simulation_manifest_sha256"],
     }
+    if completion.get("execution_receipt_sha256") is not None:
+        expected["execution-receipt.json"] = completion["execution_receipt_sha256"]
     for name, digest in expected.items():
         if hashlib.sha256((staging / name).read_bytes()).hexdigest() != digest:
             raise PitchApiV3ExecutionError(f"staging artifact hash mismatch: {name}")
@@ -527,10 +591,11 @@ def _verify_staging(staging: Path, completion: Mapping[str, object]) -> None:
         raise PitchApiV3ExecutionError("staging evidence is incomplete")
 
 
-def _human_report(machine: Mapping[str, object], machine_sha256: str) -> str:
+def _human_report(machine: Mapping[str, object], machine_sha256: str, protocol_id: str) -> str:
+    version = "V4" if protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4" else "V3"
     return (
-        "# PitchAPI domain-stratified evaluation V3\n\n"
-        f"Protocol: `{PROTOCOL_ID}`\n\n"
+        f"# PitchAPI domain-stratified evaluation {version}\n\n"
+        f"Protocol: `{protocol_id}`\n\n"
         f"Result: `{machine['result_classification']}`\n\n"
         f"Targets: `{machine['target_count']}`\n\n"
         f"Machine evidence SHA-256: `{machine_sha256}`\n\n"
@@ -538,5 +603,82 @@ def _human_report(machine: Mapping[str, object], machine_sha256: str) -> str:
     )
 
 
+class PitchApiV4Executor(PitchApiV3Executor):
+    def __init__(
+        self,
+        *,
+        config: PitchApiV4ExecutionConfigV1,
+        reference_model: TransferableGoalModelV1,
+        challenger_model: TransferableGoalModelV1,
+        simulator: SimulationPort,
+        corpus: EvaluationCorpusPort,
+    ) -> None:
+        super().__init__(
+            config=config,
+            reference_model=reference_model,
+            challenger_model=challenger_model,
+            simulator=simulator,
+            corpus=corpus,
+            accepted_simulation_statuses=frozenset({"PASS", "PASS_WITH_WARNINGS"}),
+        )
+
+
 def _is_hash(value: str) -> bool:
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
+def _v4_classification(classification: str) -> str:
+    return {
+        "PROMOTE_CANDIDATE": "CHALLENGER_SUPPORTED",
+        "RETAIN_CHAMPION": "REFERENCE_RETAINED",
+        "REJECT": "REFERENCE_RETAINED",
+    }[classification]
+
+
+def _simulation_parity(receipts: list[SimulationReceiptV1], *, v4: bool) -> dict[str, object]:
+    status_counts = {
+        status: sum(receipt.status == status for receipt in receipts)
+        for status in sorted({receipt.status for receipt in receipts})
+    }
+    v4_receipts = [receipt for receipt in receipts if isinstance(receipt, V4SimulationReceiptV1)]
+    tv_values = [
+        receipt.total_variation for receipt in v4_receipts if receipt.total_variation is not None
+    ]
+    return {
+        "forecast_validation_count": len(receipts),
+        "maximum_observed_total_variation": max(tv_values) if tv_values else None,
+        "status": "PASS_WITH_WARNINGS" if status_counts.get("PASS_WITH_WARNINGS", 0) else "PASS",
+        "status_counts": status_counts,
+        "total_variation_limit": 0.012794580429261083 if v4 else None,
+        "warning_count": sum(len(receipt.warnings) for receipt in v4_receipts),
+    }
+
+
+def _write_execution_receipt(
+    *,
+    staging: Path,
+    config: PitchApiV3ExecutionConfigV1,
+    run_id: str,
+    target_count: int,
+    forecast_validation_count: int,
+    machine_sha256: str,
+    human_sha256: str,
+    simulation_manifest_sha256: str,
+) -> str | None:
+    if config.protocol_id != "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4":
+        return None
+    return _write_json(
+        staging / "execution-receipt.json",
+        {
+            "contract": "PitchApiDomainStratifiedEvaluationV4ExecutionReceiptV1",
+            "execution_configuration_sha256": config.execution_configuration_sha256,
+            "forecast_validation_count": forecast_validation_count,
+            "human_sha256": human_sha256,
+            "machine_sha256": machine_sha256,
+            "protocol_id": config.protocol_id,
+            "run_id": run_id,
+            "simulation_manifest_sha256": simulation_manifest_sha256,
+            "status": "COMPLETE",
+            "target_count": target_count,
+        },
+    )
