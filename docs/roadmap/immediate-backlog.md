@@ -4,7 +4,13 @@
 
 Order this backlog through the verified decision/capability state; do not run blocked research, overwrite status, or assume proposed APIs exist. See [adoption checklist](../reconciliation/adoption-checklist.md).
 
-**Reconciled starting point:** `docs/project-status.json` and the 20 September owner decision agree. Sprint 2 remains `FAIL`, the shared-pace route is closed, Phase 3 remains blocked, and one minimal Phase 3A xG hypothesis is authorized for research only. The separate minimal Rust authorization proposal has been drafted but is not approved.
+**Reconciled starting point:** PitchAPI V5 is complete and valid. The reference is retained; the transferable npxG challenger is `EVALUATED_REJECTED_CALIBRATION` despite better predictive scores. Its 712 targets are `SPENT_FOR_MODEL_SELECTION`. V5 rerun, promotion, V6, confirmation-data acquisition, and historical cleanup are not authorized. StatsBomb Evaluation V2 remains independent.
+
+## Current PitchAPI research boundary
+
+Post-hoc diagnosis found six intercept and eight slope failures across home, draw, and away probabilities. A development-only shrinkage-calibration comparison is proposed in [the successor decision package](../governance/pitchapi-v5-calibration-successor-decision-package.md), but no successor model is admitted.
+
+Next decision: authorize or reject that bounded development-only comparison. Any later authoritative confirmation requires untouched competition-seasons, a frozen protocol, and separate acquisition and execution decisions.
 
 ---
 

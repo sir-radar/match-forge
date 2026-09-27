@@ -1,6 +1,6 @@
 # Current state
 
-**Verified against:** `docs/project-status.json`, its referenced evidence, and owner decision `RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1` on 21 September 2026. The machine-readable project status and append-only evidence remain authoritative if this summary becomes stale.
+**Verified against:** `docs/project-status.json`, immutable V5 evidence, and owner decision `ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1` on 27 September 2026. Machine-readable status and append-only evidence remain authoritative if this summary becomes stale.
 
 | Subject | Verified value | Required treatment |
 | --- | --- | --- |
@@ -10,16 +10,22 @@
 | Sprint 2 evaluation targets | Frozen 280 | New routes must not access them. |
 | `DCV3_SHARED_MATCH_PACE_MIXTURE_V1` | `TERMINAL_ROUTE_FAIL` at `60/10`, lower `kappa = 0` boundary | Closed. No continuation or promotion. |
 | Phase 3 | Overall `BLOCKED`; one narrow Phase 3A research exception | Research permission is not a phase pass or production permission. |
-| Phase 3A | One bounded, minimal, leakage-safe xG goal-model hypothesis is authorized for research only | Define and register the exact hypothesis. Do not expand it to xGA, xT, VAEP, player, lineup, ensemble, or simulation work. |
-| Evaluation V2 | Policy/corpus design and pre-registration authorized | Freeze an independent corpus, firewall, policy, references, thresholds, and evidence contract. A separate owner decision is required before an authoritative run. |
-| Rust simulation | Authorization proposal exists but is not approved | Do not implement, evaluate, activate, or treat the proposal as a decision. |
+| PitchAPI V1 | `FAILED` | Preserve historical failure. |
+| PitchAPI V2 | `BLOCKED_PRE_EXECUTION_MODEL_NON_TRANSFERABILITY` | Preserve without execution. |
+| PitchAPI V3 | `PROTOCOL_EVALUATION_FAILURE_RUST_PARITY` | Permanently closed. |
+| PitchAPI V4 | `PROTOCOL_EVALUATION_FAILURE_CALIBRATION_BOUNDARY` | Permanently closed; never rerun. |
+| PitchAPI V5 | `COMPLETE` / `REFERENCE_RETAINED` | Valid evaluation. Challenger had better predictive scores but failed 14 frozen calibration gates. |
+| V5 challenger | `EVALUATED_REJECTED_CALIBRATION` | No promotion, recalibration on V5, refit, or retry. |
+| V5 targets | `SPENT_FOR_MODEL_SELECTION` | Reproduction and post-hoc description only; never fresh confirmation evidence. |
+| Calibration research | `PITCHAPI_V5_CALIBRATION_POSTHOC_RESEARCH_V1` descriptive diagnosis complete | Successor research hypothesis exists but no model is admitted. Development-only implementation needs owner approval. |
+| StatsBomb Evaluation V2 | Independent and unchanged | Do not merge its result into PitchAPI V5. |
 | Production capability | No enablement is recorded in `docs/project-status.json` | Do not infer production enablement from a roadmap, proposal, or research decision. |
 
 ## Next authorized work
 
-1. Continue Phase 1C core-coverage qualification and provider/resource coverage mapping.
-2. Freeze the Evaluation V2 design, independent corpus rules, target firewall, references, metrics, thresholds, and evidence contract.
-3. Register the exact single Phase 3A minimal xG hypothesis within the recorded research scope.
-4. Request a separate owner decision only after the Evaluation V2 inputs are frozen and before any authoritative run.
+1. Obtain owner authorization before implementing the proposed development-only calibration comparison.
+2. If development admission later succeeds, freeze a separate untouched `PITCHAPI_CONFIRMATION_EVALUATION_V1` protocol before inspecting confirmation outcomes.
+3. Do not acquire confirmation data, execute confirmation, build V6, promote the challenger, or clean up historical V1–V4 code under the current decision.
+4. Continue independent StatsBomb and other already authorized work without treating it as part of V5.
 
-The status and owner decision records agree. This reconciliation does not replace required storage ACL, protected-target access, artifact, or runtime-capability checks before work that depends on them.
+The status and owner decision records agree. V5 is the first valid completed PitchAPI model comparison; its favorable predictive deltas do not override its frozen calibration rejection.
