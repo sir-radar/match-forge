@@ -1,0 +1,41 @@
+{
+  "authorization": "RESEARCH_AND_PREREGISTRATION_DESIGN_ONLY",
+  "authorized_research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_DESIGN_V1",
+  "candidate_artifact_sha256": "92b2a462ef5fecd074622ea1a1dc9d4faabd01e9eba8d14f060b5eb517fc7332",
+  "closed_research_route": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
+  "closed_route_outcome": "DEVELOPMENT_REJECTED",
+  "confirmation_acquisition_authorized": false,
+  "confirmation_execution_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "ACCEPT_DIXON_COLES_V2_DEVELOPMENT_REJECTION_AND_AUTHORIZE_H2H_DESIGN_V1",
+  "development_target_count": 1270,
+  "h2h_model_fitting_authorized": false,
+  "h2h_model_evaluation_authorized": false,
+  "model_promotion_authorized": false,
+  "preregistration_sha256": "5ff4ef212931d5aeeb94b5dd3b3c905d276088a7775f85d54e1ce73e7605f517",
+  "prohibited_actions": [
+    "PROMOTE_DIXON_COLES_V2_CANDIDATE",
+    "RERUN_DIXON_COLES_V2_ADMISSION",
+    "WEAKEN_DIXON_COLES_V2_THRESHOLDS",
+    "RETUNE_DIXON_COLES_V2_REGULARIZATION",
+    "ALTER_DIXON_COLES_V2_RHO_BOUNDS",
+    "ADD_DIXON_COLES_V2_POST_HOC_CALIBRATION",
+    "ACQUIRE_CONFIRMATION_DATA",
+    "CREATE_V6"
+  ],
+  "recorded_at": "2026-09-27T21:23:26Z",
+  "scientific_interpretation": {
+    "candidate_minus_v5_weighted_joint_score_delta": -0.008201,
+    "candidate_minus_v5_weighted_joint_score_delta_95_interval": [
+      -0.017675,
+      0.000049
+    ],
+    "dixon_coles_rho": 0.0001840405,
+    "finding": "npxG-for/against was useful, but the additional Dixon-Coles layer did not earn admission",
+    "goals_only_reference_result": "MATERIALLY_OUTPERFORMED",
+    "multiple_frozen_calibration_or_precision_gates_failed": true,
+    "rho_interpretation": "near zero; little evidence that low-score dependence is the main missing signal",
+    "v5_result": "IMPROVEMENT_NOT_SUFFICIENTLY_CERTAIN_INTERVAL_CROSSES_ZERO"
+  },
+  "v6_authorized": false
+}

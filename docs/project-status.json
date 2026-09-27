@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T21:12:00Z",
+  "updated_at": "2026-09-27T21:23:26Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -40,7 +40,8 @@
     "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
     "ACCEPT_PITCHAPI_CALIBRATION_SUCCESSOR_REJECTION_AND_DESIGN_MULTI_DOMAIN_DEVELOPMENT_V1",
     "AUTHORIZE_BOUNDED_PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_ACQUISITION_V1",
-    "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1"
+    "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1",
+    "ACCEPT_DIXON_COLES_V2_DEVELOPMENT_REJECTION_AND_AUTHORIZE_H2H_DESIGN_V1"
   ],
   "closed_routes": [
     {
@@ -52,6 +53,12 @@
       "route": "PITCHAPI_TRANSFERABLE_NPXG_CHALLENGER_V1",
       "outcome": "CLOSED",
       "evidence_ref": "docs/evidence/owner-decision-accept-pitchapi-v5-close-challenger-2026-09-27.json"
+    },
+    {
+      "route": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
+      "outcome": "CLOSED",
+      "disposition": "DEVELOPMENT_REJECTED_PERMANENTLY_CLOSED",
+      "evidence_ref": "docs/evidence/owner-decision-accept-dixon-coles-v2-rejection-authorize-h2h-design-2026-09-27.json"
     }
   ],
   "evaluation_tracks": [
@@ -388,7 +395,7 @@
         "v6_authorized": false,
         "next_model_research_decision_package": {
           "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
-          "status": "COMPLETE_DEVELOPMENT_REJECTED_AWAITING_OWNER_DECISION",
+          "status": "CLOSED_DEVELOPMENT_REJECTED",
           "package_ref": "docs/evaluation/transferable-rolling-npxg-for-against-dixon-coles-v2-decision-package.json",
           "package_sha256": "90ac5b8b72829bee784e97f351a104e7fdec6d8dba50e39091cd19ad0291ced5",
           "owner_decision_ref": "docs/evidence/owner-decision-authorize-transferable-rolling-npxg-for-against-dixon-coles-v2-research-2026-09-27.json",
@@ -407,10 +414,41 @@
           "result_classification": "DEVELOPMENT_REJECTED",
           "deterministic_reproduction": "PASS_BYTE_IDENTICAL_TWO_RUNS",
           "candidate_admitted_for_confirmation": false,
-          "model_fitting_authorized": true,
+          "route_permanently_closed": true,
+          "immutable_negative_evidence": true,
+          "closure_decision_ref": "docs/evidence/owner-decision-accept-dixon-coles-v2-rejection-authorize-h2h-design-2026-09-27.json",
+          "closure_decision_sha256": "80567829f521a6a4e1f3c67c7bd8c50c8be71cf71c3c9b9436cb2e84ba03f035",
+          "historical_model_fitting_authorized": true,
+          "model_fitting_authorized": false,
           "model_promotion_authorized": false,
           "v6_authorized": false,
-          "confirmation_execution_authorized": false
+          "confirmation_execution_authorized": false,
+          "rerun_authorized": false
+        },
+        "h2h_incremental_signal_design": {
+          "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_DESIGN_V1",
+          "authorization": "RESEARCH_AND_PREREGISTRATION_DESIGN_ONLY",
+          "status": "COMPLETE_H2H_RESEARCH_NOT_CURRENTLY_SUPPORTABLE",
+          "decision_ref": "docs/evidence/owner-decision-accept-dixon-coles-v2-rejection-authorize-h2h-design-2026-09-27.json",
+          "decision_sha256": "80567829f521a6a4e1f3c67c7bd8c50c8be71cf71c3c9b9436cb2e84ba03f035",
+          "evidence_ref": "docs/evidence/matchforge-h2h-incremental-signal-design-v1-2026-09-27.json",
+          "evidence_sha256": "d3029e8429e14b3837f02fa3879e1ddba9e4bc86a3577cbbe7ad3e3da240cd5b",
+          "report_ref": "docs/evidence/matchforge-h2h-incremental-signal-design-v1-2026-09-27.md",
+          "report_sha256": "c38adb9bf0044a0c4f402c754a912ae21ae9d230030728785f4f381035eb76b7",
+          "development_target_count": 1270,
+          "targets_with_one_prior_h2h": 924,
+          "targets_with_two_prior_h2h": 169,
+          "targets_with_three_prior_h2h": 120,
+          "targets_with_five_prior_h2h": 0,
+          "expected_current_usable_target_count": 169,
+          "model_fitting_authorized": false,
+          "model_fitting_performed": false,
+          "model_evaluation_authorized": false,
+          "model_evaluation_performed": false,
+          "acquisition_authorized": false,
+          "confirmation_execution_authorized": false,
+          "model_promotion_authorized": false,
+          "v6_authorized": false
         }
       },
       "rerun_authorized": false,
