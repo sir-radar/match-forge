@@ -7,7 +7,10 @@ from football.forecasting.transferable_npxg_dixon_coles_v2 import (
     RollingFeaturesV2,
 )
 
-from scripts.analyze_h2h_incremental_signal_design import analyze_h2h_coverage
+from scripts.analyze_h2h_incremental_signal_design import (
+    analyze_frozen_h2h_coverage,
+    analyze_h2h_coverage,
+)
 
 HOME = UUID("00000000-0000-0000-0000-000000000001")
 AWAY = UUID("00000000-0000-0000-0000-000000000002")
@@ -59,3 +62,33 @@ def test_h2h_coverage_excludes_same_kickoff_and_future_matches() -> None:
     assert evidence["usable_npxg_coverage"]["at_least_2"]["count"] == 1
     assert evidence["latest_prior_meeting_age_days"]["quantiles"]["median"] == 30.0
     assert evidence["latest_prior_orientation"] == {"same": 1}
+
+
+def test_frozen_h2h_coverage_applies_lookback_meeting_cap_and_era_weight() -> None:
+    prior = tuple(
+        ResearchObservationV2(
+            match_id=UUID(f"00000000-0000-0000-0000-{index:012d}"),
+            scope_key="prior_scope",
+            competition="competition",
+            kickoff_at=KICKOFF - timedelta(days=days),
+            home_team_id=HOME if index % 2 else AWAY,
+            away_team_id=AWAY if index % 2 else HOME,
+            home_goals=1,
+            away_goals=0,
+            home_npxg=1.0,
+            away_npxg=0.5,
+        )
+        for index, days in enumerate((30, 120, 210, 300, 390, 480, 800), start=10)
+    )
+
+    evidence = analyze_frozen_h2h_coverage(
+        (*prior, _observation(98, KICKOFF)),
+        (_target(),),
+        {"scope": "prior_scope"},
+    )
+
+    assert evidence["coverage"]["at_least_5"] == {"count": 1, "fraction": 1.0}
+    assert evidence["prior_meeting_count_distribution"] == {"5": 1}
+    assert evidence["orientation"] == {"same": 2, "reversed": 3}
+    assert evidence["latest_prior_meeting_age_days"]["quantiles"]["median"] == 30.0
+    assert 0.0 < evidence["effective_weight"]["quantiles"]["median"] <= 1.5

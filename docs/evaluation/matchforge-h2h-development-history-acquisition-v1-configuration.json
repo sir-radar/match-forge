@@ -1,0 +1,50 @@
+{
+  "adapter_version": "matchforge-h2h-development-history-adapter-v1",
+  "authorization": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V1",
+  "base_url": "https://api.pitchapi.dev",
+  "catalog_requests": 1,
+  "concurrency": 1,
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionConfigurationV1",
+  "credential_reference": "env:PITCH_API_TOKEN",
+  "expected_primary_and_backup_bytes": 83886080,
+  "expected_requests": 1144,
+  "hard_request_ceiling": 1167,
+  "hard_storage_ceiling_bytes": 536870912,
+  "history_groups": [
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "premier_league_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "La Liga",
+      "country_code": "ESP",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "la_liga_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "serie_a_2023_24",
+      "season": "2023/2024"
+    }
+  ],
+  "minimum_request_start_interval_seconds": 1.0,
+  "output_root": ".local/pitchapi-h2h-development-history-v1",
+  "retry_allowance": 23,
+  "season_manifest_requests": 3,
+  "shot_requests": 1140,
+  "task_hard_request_ceiling": 1167,
+  "timeout_seconds": 30,
+  "wall_clock_ceiling_minutes": 30
+}
