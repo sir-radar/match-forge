@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T20:46:32Z",
+  "updated_at": "2026-09-27T21:12:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -388,14 +388,27 @@
         "v6_authorized": false,
         "next_model_research_decision_package": {
           "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
-          "status": "AUTHORIZED_PREREGISTERED_NOT_EXECUTED",
+          "status": "COMPLETE_DEVELOPMENT_REJECTED_AWAITING_OWNER_DECISION",
           "package_ref": "docs/evaluation/transferable-rolling-npxg-for-against-dixon-coles-v2-decision-package.json",
-          "package_sha256": "41c2678f4b5bd8eb72da23e0aacf6dc65fc9fb8fc1c54c8b3b9b7d6742d39481",
+          "package_sha256": "90ac5b8b72829bee784e97f351a104e7fdec6d8dba50e39091cd19ad0291ced5",
           "owner_decision_ref": "docs/evidence/owner-decision-authorize-transferable-rolling-npxg-for-against-dixon-coles-v2-research-2026-09-27.json",
           "owner_decision_sha256": "61450f9ca8b2b198a238ed1c24cc16e673191c8533176139bfea8932ba64dc82",
           "preregistration_ref": "docs/evaluation/transferable-rolling-npxg-for-against-dixon-coles-v2-preregistration.json",
           "preregistration_sha256": "5ff4ef212931d5aeeb94b5dd3b3c905d276088a7775f85d54e1ce73e7605f517",
+          "candidate_artifact_ref": "docs/evidence/transferable-npxg-dixon-coles-v2-research-2026-09-27/candidate-artifact.json",
+          "candidate_artifact_sha256": "92b2a462ef5fecd074622ea1a1dc9d4faabd01e9eba8d14f060b5eb517fc7332",
+          "development_evidence_ref": "docs/evidence/transferable-npxg-dixon-coles-v2-research-2026-09-27/development-evidence.json",
+          "development_evidence_sha256": "d9a43ffef56ea14b0f8c25016d19e2a2bf75949da09d1e135bf6cf6fcaa3e3f7",
+          "fold_manifest_sha256": "a5d0cfe70cfe6e1f3890b4b1944cedc17e1677deb483d542c64f81f4b43c80c9",
+          "oos_predictions_sha256": "644b7e2fb9f3802fbfdad3adc12de763147119c3f259a0fc06ad249168270f6c",
+          "reproduction_sha256": "8afd05bb0ac7084e0c2135c0639f412b689bce9102b492f8abda4665a07e1c90",
+          "report_ref": "docs/evidence/transferable-npxg-dixon-coles-v2-research-2026-09-27.md",
+          "report_sha256": "4de157222129c0b1a7b2488be79f9ecff364cd3fe1abddf3c41ea9760c8d9c80",
+          "result_classification": "DEVELOPMENT_REJECTED",
+          "deterministic_reproduction": "PASS_BYTE_IDENTICAL_TWO_RUNS",
+          "candidate_admitted_for_confirmation": false,
           "model_fitting_authorized": true,
+          "model_promotion_authorized": false,
           "v6_authorized": false,
           "confirmation_execution_authorized": false
         }

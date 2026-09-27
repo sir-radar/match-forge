@@ -1,0 +1,21 @@
+{
+  "artifact_sha256": "92b2a462ef5fecd074622ea1a1dc9d4faabd01e9eba8d14f060b5eb517fc7332",
+  "completion_sha256": "3a42e404b4176bd92b5187a4c8bc9c923255d8aa499bebb50488fd50b4153e2d",
+  "contract": "TransferableRollingNpxgForAgainstDixonColesV2ReproductionV1",
+  "development_evidence_sha256": "d9a43ffef56ea14b0f8c25016d19e2a2bf75949da09d1e135bf6cf6fcaa3e3f7",
+  "fold_manifest_sha256": "a5d0cfe70cfe6e1f3890b4b1944cedc17e1677deb483d542c64f81f4b43c80c9",
+  "logical_outputs": [
+    "fold_assignments",
+    "fitted_artifact",
+    "predictions",
+    "metrics",
+    "admission_classification"
+  ],
+  "oos_predictions_sha256": "644b7e2fb9f3802fbfdad3adc12de763147119c3f259a0fc06ad249168270f6c",
+  "required_runs": 2,
+  "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1",
+  "result": "PASS_BYTE_IDENTICAL_TWO_RUNS",
+  "run_1_exit_code": 0,
+  "run_2_exit_code": 0,
+  "source_commit": "951c17f0d3ef570609b11a76d7a565898e32017f"
+}

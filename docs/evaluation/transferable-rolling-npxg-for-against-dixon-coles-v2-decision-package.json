@@ -174,8 +174,14 @@
   },
   "model_fitting_authorized": true,
   "model_promotion_authorized": false,
+  "result": {
+    "candidate_artifact_sha256": "92b2a462ef5fecd074622ea1a1dc9d4faabd01e9eba8d14f060b5eb517fc7332",
+    "development_evidence_sha256": "d9a43ffef56ea14b0f8c25016d19e2a2bf75949da09d1e135bf6cf6fcaa3e3f7",
+    "disposition": "DEVELOPMENT_REJECTED",
+    "reproduction": "PASS_BYTE_IDENTICAL_TWO_RUNS"
+  },
   "research_id": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
-  "status": "AUTHORIZED_PREREGISTERED_NOT_EXECUTED",
+  "status": "COMPLETE_DEVELOPMENT_REJECTED_AWAITING_OWNER_DECISION",
   "unseen_team_behavior": {
     "fewer_than_10_prior_appearances": "NOT_FORECASTABLE",
     "leave_team_out": "use the team's legitimate prior rolling state with global and competition parameters fitted without that team's outcomes",
