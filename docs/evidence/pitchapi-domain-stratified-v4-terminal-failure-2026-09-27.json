@@ -1,0 +1,106 @@
+{
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "challenger_satisfied_frozen_success_criteria": false,
+  "contract": "PitchApiDomainStratifiedEvaluationV4TerminalFailureEvidenceV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "evaluation_execution_attempted": true,
+  "evaluation_execution_authorized": true,
+  "evaluation_outcomes_loaded": true,
+  "exact_logical_execution_attempts": 1,
+  "execution_adapter_source_commit": "3ed7d6bb155ac9421ccafafe05b33e572e330cd6",
+  "execution_authorization_sha256": "dc27138abbb2698c992cdd2e9bdca681d02d9ee4041520223f8eea61ed70b9bc",
+  "execution_configuration_sha256": "b5392dc83b87a715b48a5cd415718fcaf8852feab8b467ab40f0d135ef3ee7ec",
+  "execution_timestamp": "2026-09-27T03:42:59+00:00",
+  "failure": {
+    "error": "calibration probabilities must be inside (0,1)",
+    "failure_receipt_path": ".local/reports/pitchapi-domain-stratified-v4/.failures/pitchapi-domain-stratified-v4-authorized-20260927T034259Z.json",
+    "failure_receipt_sha256": "7af79288a499aad40d50dd7cb8c08539c1b98b10f3ef26ae1df5008f65d688ca",
+    "stage": "HETEROGENEITY_EVIDENCE_GENERATION",
+    "status": "FAIL_CLOSED_OWNER_REVIEW_REQUIRED"
+  },
+  "findings": [
+    {
+      "condition": "FROZEN_IDENTITY_CHECKS",
+      "status": "PASS"
+    },
+    {
+      "condition": "SNAPSHOT_CORPUS_FIREWALL_ALIAS_PREFLIGHT",
+      "status": "PASS"
+    },
+    {
+      "condition": "EXACT_712_TARGETS",
+      "status": "PASS"
+    },
+    {
+      "condition": "EXACT_1424_FORECAST_VALIDATIONS",
+      "status": "PASS"
+    },
+    {
+      "condition": "RUST_SERIAL_PARALLEL_DETERMINISTIC_REPLAY",
+      "status": "PASS"
+    },
+    {
+      "condition": "V4_EVALUATION_WIDE_TOTAL_VARIATION_GATE",
+      "status": "PASS"
+    },
+    {
+      "condition": "V4_EVENT_DIAGNOSTIC_WARNINGS",
+      "status": "PASS",
+      "warning_count": 0
+    },
+    {
+      "condition": "HETEROGENEITY_EVIDENCE_GENERATION",
+      "detail": "Raw npxG includes a boundary value outside the strict probability domain required by calibration_fit.",
+      "status": "FAIL"
+    },
+    {
+      "condition": "COMPLETE_PREREGISTERED_METRIC_PUBLICATION",
+      "status": "FAIL"
+    }
+  ],
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "forecast_validation_count": 1424,
+  "implementation_source_commit": "719a04300bf2c6438f2a4cafb4fe52ad0f03f9ea",
+  "metrics": {
+    "aggregate_metrics_published": false,
+    "bootstrap_intervals_published": false,
+    "calibration_results_published": false,
+    "domain_metrics_published": false,
+    "heterogeneity_published": false,
+    "valid_model_performance_result_exists": false
+  },
+  "next_owner_decision_required": "Decide whether to authorize a new protocol that fixes the preregistered heterogeneity evidence contract; V4 cannot be repaired or rerun.",
+  "policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
+  "preregistration_sha256": "87c00aecf99c348319014831746a7ba0a0abadc304a92ee18f5dab93d9fac318",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "result_classification": "PROTOCOL_EVALUATION_FAILURE",
+  "run_id": "pitchapi-domain-stratified-v4-authorized-20260927T034259Z",
+  "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+  "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+  "scientific_limitations": [
+    "No valid V4 reference-versus-challenger performance result was published.",
+    "Primary, secondary, bootstrap, calibration, domain, macro, weighted, and heterogeneity results are unavailable and must not be inferred.",
+    "Rust parity success validates simulation agreement only; it does not establish predictive performance.",
+    "The failure occurred after outcomes were loaded, so any correction requires a new frozen protocol and new owner authorization."
+  ],
+  "simulation_parity": {
+    "forecast_validation_count": 1424,
+    "maximum_observed_total_variation": 0.008963756743400754,
+    "simulation_count_per_forecast": 112460,
+    "simulation_manifest_path": ".local/reports/pitchapi-domain-stratified-v4/.staging/pitchapi-domain-stratified-v4-authorized-20260927T034259Z/simulation-manifest.json",
+    "simulation_manifest_sha256": "b1509d4920dcf884dbdb88c586ebb080b3b6702da4a5d5cc1b9420d9873699b9",
+    "status": "PASS",
+    "status_counts": {
+      "PASS": 1424
+    },
+    "total_variation_limit": 0.012794580429261083,
+    "warning_count": 0
+  },
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "target_count": 712,
+  "v3_disposition_unchanged": "PROTOCOL_EVALUATION_FAILURE_RUST_PARITY_PERMANENTLY_CLOSED",
+  "v4_rerun_authorized": false
+}

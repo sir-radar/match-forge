@@ -1,0 +1,33 @@
+{
+  "calibration_boundary_policy_sha256": "d2b21012cffe7d31e60caaf45a715056573c5993d120d273c7e464bbf98a3719",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "PitchApiDomainStratifiedEvaluationV5FreezeManifestV1",
+  "evaluation_evidence_schema_sha256": "9e54ecf19de87948ba84ce67d71f444d5a69aaea1123a3621aaf6ed6fae70580",
+  "execution_authorized": false,
+  "execution_configuration_sha256": "13ac6b38a85693cdcbf08daec222c58435ab724a3cd0991b740655e19bfe2b4b",
+  "execution_receipt_schema_sha256": "3a91c83d6b70c91429f694a4d0a58d4b8cc90bd6bda88ce50253a44ce972a459",
+  "executor_source_commit": "71c4a3c3990bec9c601747d8bd62abf820e8a3f3",
+  "metric_domain_audit_sha256": "ad559c38613ad28596877159e833fdbdb10b8e85b17d7e36e2e4e05345798a65",
+  "metric_implementation_sha256": {
+    "executor": "58ee238f4d7c29939028639a77ce19848c2d4d0f783663225d7b4c3534d14161",
+    "frozen_metrics": "02fcfee50f7fa4997c8fc1254f7e4b9ef828b54c8c637babeda32c57ec29bbef",
+    "runner": "06b9182ffad1d13cb67e14b8c87fe269abe2b0f51c8a19be791cbcaa20df1afd",
+    "v5_boundary_metrics": "412e45159ef4809768edab7408811d431df7f101148f051cd4dda586b918f03e",
+    "v5_runtime": "17f3699a0a959be2a2d76bc002cfe7dd93f573c5497ae30750fa51b168c950c3"
+  },
+  "policy_sha256": "18f0600e001493a1cd8bcf15e5be5382aa6e89ecf3ae664b7d074041a57693d1",
+  "preregistration_sha256": "3892b0ad0f091cf74c578e9a97e272fb099a972ce32175e24d00424f0be849cb",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+  "qualification_evidence_sha256": "0bd52f697230e6013ed17854fa9fd750f3861cd19b480dc8a8fbe9a92db09aa4",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "required_owner_authorization": {
+    "exact_logical_execution_count": 1,
+    "must_bind_all_manifest_identities": true,
+    "must_set_evaluation_execution_authorized": true,
+    "v4_rerun_authorized": false
+  },
+  "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+  "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "status": "AWAITING_OWNER_FREEZE_AND_EXACT_ONE_RUN_AUTHORIZATION"
+}

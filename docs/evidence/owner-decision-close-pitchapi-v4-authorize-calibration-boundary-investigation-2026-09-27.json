@@ -1,0 +1,28 @@
+{
+  "authorized_investigation_id": "PITCHAPI_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+  "contract": "OwnerDecisionV1",
+  "decision_id": "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
+  "evaluation_execution_authorized": false,
+  "investigation_scope": "RESEARCH_ONLY",
+  "model_refit_authorized": false,
+  "pitchapi_api_calls_authorized": false,
+  "recorded_at": "2026-09-27T03:56:31Z",
+  "snapshot_mutation_authorized": false,
+  "statsbomb_evaluation_v2_unchanged": true,
+  "v4": {
+    "exact_failure": "calibration probabilities must be inside (0,1)",
+    "forecast_validation_count": 1424,
+    "maximum_observed_total_variation": 0.008963756743400754,
+    "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+    "rerun_authorized": false,
+    "result": "PROTOCOL_EVALUATION_FAILURE",
+    "rust_parity": "PASS",
+    "rust_warning_count": 0,
+    "target_count": 712,
+    "terminal_stage": "HETEROGENEITY_EVIDENCE_GENERATION",
+    "total_variation_limit": 0.012794580429261083
+  },
+  "v4_artifacts_immutable": true,
+  "v4_performance_conclusion_available": false,
+  "v5_execution_authorized": false
+}

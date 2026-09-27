@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matchforge.local/schemas/contracts/pitchapi-v5-execution-receipt-v1.schema.json",
+  "title": "PitchApiDomainStratifiedEvaluationV5ExecutionReceiptV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "protocol_id",
+    "run_id",
+    "target_count",
+    "forecast_validation_count",
+    "machine_sha256",
+    "human_sha256",
+    "simulation_manifest_sha256",
+    "status"
+  ],
+  "properties": {
+    "contract": {"const": "PitchApiDomainStratifiedEvaluationV5ExecutionReceiptV1"},
+    "protocol_id": {"const": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5"},
+    "target_count": {"const": 712},
+    "forecast_validation_count": {"const": 1424},
+    "status": {"const": "COMPLETE"},
+    "machine_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "human_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "simulation_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": true
+}

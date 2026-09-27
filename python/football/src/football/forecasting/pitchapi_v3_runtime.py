@@ -30,6 +30,7 @@ from football.forecasting.pitchapi_v3_executor import (
     PreparedTargetV1,
     RevealedOutcomeV1,
     SimulationReceiptV1,
+    V4SimulationReceiptV1,
 )
 
 SNAPSHOT_ID = "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d"
@@ -40,6 +41,10 @@ ALIAS_SHA256 = "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716
 SIMULATION_COUNT = 112_460
 ALGORITHM_VERSION = "pitchapi-score-categorical-v1"
 SEED_SCHEDULE_ID = "pitchapi-v3-splitmix64-sha256-v1"
+V4_PROTOCOL_ID = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+V4_ALGORITHM_VERSION = "pitchapi-score-categorical-v2"
+V4_SEED_SCHEDULE_ID = "pitchapi-v4-splitmix64-sha256-v1"
+V3_CANONICALIZER_SHA256 = "4f4709b38c8d6c72e93c433074fed3d7788eb4018cfddfe67f73ae5f438e209c"
 _DOMAINS = {
     "bundesliga_2022_23": (
         "893b888a36474c7cf55a207cb266d32a60351c0c87e9659a38a2cdc962784f74",
@@ -388,6 +393,136 @@ class RustSimulationV3:
         if result.returncode != 0:
             raise PitchApiV3RuntimeError(
                 f"Rust canonicalization failed: {result.stderr.decode(errors='replace')}"
+            )
+        return result.stdout
+
+
+class PitchApiSnapshotCorpusV4(PitchApiSnapshotCorpusV3):
+    def preflight(self) -> Mapping[str, object]:
+        result = dict(super().preflight())
+        result["protocol_id"] = V4_PROTOCOL_ID
+        return result
+
+
+class RustSimulationV4:
+    def __init__(
+        self,
+        *,
+        binary: Path,
+        canonicalizer_binary: Path,
+        policy_sha256: str,
+        build_sha256: str,
+    ) -> None:
+        if hashlib.sha256(binary.read_bytes()).hexdigest() != build_sha256:
+            raise PitchApiV3RuntimeError("V4 Rust executable identity mismatch")
+        if hashlib.sha256(canonicalizer_binary.read_bytes()).hexdigest() != V3_CANONICALIZER_SHA256:
+            raise PitchApiV3RuntimeError("frozen V3 canonicalizer identity mismatch")
+        self._binary = binary
+        self._canonicalizer_binary = canonicalizer_binary
+        self._policy_sha256 = policy_sha256
+        self._build_sha256 = build_sha256
+
+    def validate(
+        self,
+        *,
+        target: PreparedTargetV1,
+        model_role: str,
+        model_artifact_sha256: str,
+        distribution: ExactScoreDistributionV1,
+    ) -> SimulationReceiptV1:
+        atoms = [
+            {
+                "away_goals": away,
+                "home_goals": home,
+                "kind": "EXACT_SCORE",
+                "probability": probability,
+            }
+            for home, away, probability in distribution.atoms
+        ] + [
+            {
+                "away_goals": None,
+                "home_goals": None,
+                "kind": "UNRESOLVED_TAIL",
+                "probability": distribution.unresolved_tail,
+            }
+        ]
+        probability_sha256 = hashlib.sha256(self._canonicalize_atoms(atoms)).hexdigest()
+        forecast_payload = {
+            "model_artifact_sha256": model_artifact_sha256,
+            "model_role": model_role,
+            "probability_sha256": probability_sha256,
+            "target_id": str(target.context.match_id),
+        }
+        payload = {
+            "algorithm_version": V4_ALGORITHM_VERSION,
+            "analytic_probabilities": _analytic_probabilities(distribution),
+            "atoms": atoms,
+            "canonical_match_id": str(target.context.match_id),
+            "forecast_artifact_sha256": hashlib.sha256(
+                canonical_json_bytes(forecast_payload)
+            ).hexdigest(),
+            "forecast_id": f"{target.context.match_id}:{model_role.lower()}",
+            "forecast_probability_sha256": probability_sha256,
+            "model_artifact_sha256": model_artifact_sha256,
+            "policy_sha256": self._policy_sha256,
+            "protocol_id": V4_PROTOCOL_ID,
+            "schema_version": "PitchApiSimulationInputV1",
+            "seed_schedule_id": V4_SEED_SCHEDULE_ID,
+            "simulation_count": SIMULATION_COUNT,
+        }
+        input_bytes = canonical_json_bytes(payload)
+        input_sha256 = hashlib.sha256(input_bytes).hexdigest()
+        with tempfile.NamedTemporaryFile() as handle:
+            handle.write(input_bytes)
+            handle.flush()
+            serial = self._run(handle.name, input_sha256, 1)
+            parallel = self._run(handle.name, input_sha256, 4)
+        if serial != parallel:
+            raise PitchApiV3RuntimeError("V4 Rust serial/parallel replay mismatch")
+        output = cast(dict[str, Any], json.loads(serial))
+        status = str(output.get("status"))
+        if status not in {"PASS", "PASS_WITH_WARNINGS"}:
+            raise PitchApiV3RuntimeError("V4 Rust simulation result did not pass")
+        if output.get("simulation_count") != SIMULATION_COUNT:
+            raise PitchApiV3RuntimeError("V4 Rust simulation count mismatch")
+        return V4SimulationReceiptV1(
+            target_id=str(target.context.match_id),
+            model_role=model_role,
+            seed_identity=str(output["base_seed_commitment"]),
+            simulation_count=SIMULATION_COUNT,
+            input_sha256=input_sha256,
+            output_sha256=hashlib.sha256(serial).hexdigest(),
+            rust_build_sha256=self._build_sha256,
+            status=status,
+            total_variation=float(output["total_variation"]),
+            total_variation_limit=float(output["total_variation_limit"]),
+            warnings=tuple(str(item) for item in cast(list[object], output["warnings"])),
+        )
+
+    def _run(self, path: str, digest: str, workers: int) -> bytes:
+        result = subprocess.run(
+            [str(self._binary), path, digest, str(workers)],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise PitchApiV3RuntimeError(
+                f"V4 Rust simulation failed: {result.stderr.decode(errors='replace')}"
+            )
+        return result.stdout
+
+    def _canonicalize_atoms(self, atoms: list[dict[str, object]]) -> bytes:
+        with tempfile.NamedTemporaryFile() as handle:
+            handle.write(canonical_json_bytes(atoms))
+            handle.flush()
+            result = subprocess.run(
+                [str(self._canonicalizer_binary), "--canonicalize-atoms", handle.name],
+                capture_output=True,
+                check=False,
+            )
+        if result.returncode != 0:
+            raise PitchApiV3RuntimeError(
+                f"V3 atom canonicalization failed: {result.stderr.decode(errors='replace')}"
             )
         return result.stdout
 

@@ -1,0 +1,50 @@
+{
+  "calibration_estimator_domain": "finite probabilities strictly inside (0,1)",
+  "contract": "PitchApiV5CalibrationBoundaryPolicyV1",
+  "decision_rule": {
+    "accepted_boundary_category": {
+      "outcome": 1,
+      "probability": 0,
+      "required_source_semantics": "provider-labelled own goal",
+      "treatment": "exclude from goal-on-logit-xG fit and report count separately"
+    },
+    "all_other_exact_zero_or_one_values": "FAIL_CLOSED_DURING_QUALIFICATION_OR_EXECUTION",
+    "interior_values": "pass unchanged to calibration_fit",
+    "missing_or_non_finite_values": "FAIL_CLOSED",
+    "raw_probability_mutation": false
+  },
+  "mathematical_basis": "The frozen estimator regresses outcomes on logit(p)=log(p/(1-p)); finite logits require 0<p<1. PitchAPI own goals with xG=0 are not modelled shooting chances, so they are a distinct event category rather than observations to clip into the shot-xG calibration model.",
+  "options": {
+    "A_deterministic_epsilon_clipping": {
+      "bias": "assigns invented finite log-odds to structural own-goal zeros and changes intercept/slope as a function of epsilon",
+      "interpretability": "low for own goals",
+      "numerical_stability": "stable only after an arbitrary epsilon is frozen",
+      "raw_prediction_unchanged": true,
+      "recommendation": "REJECT"
+    },
+    "B_sample_size_clipping": {
+      "bias": "assigns sample-size-dependent invented log-odds and makes the diagnostic depend on group size",
+      "exact_rule_considered": "p_cal=min(max(p,1/(2*n)),1-1/(2*n)), where n is the calibration-group size",
+      "interpretability": "low for structural own-goal zeros",
+      "numerical_stability": "stable for n>0 but changes across domains and samples",
+      "raw_prediction_unchanged": true,
+      "recommendation": "REJECT"
+    },
+    "C_boundary_supporting_estimator": {
+      "bias": "estimator-dependent and would change an otherwise valid frozen diagnostic",
+      "interpretability": "potentially valid for genuine predictive boundary probabilities, but not needed for non-shot own goals",
+      "numerical_stability": "requires a separately specified and qualified estimator",
+      "raw_prediction_unchanged": true,
+      "recommendation": "REJECT_FOR_V5"
+    },
+    "D_explicit_boundary_category": {
+      "bias": "does not invent shot probabilities; fit estimates apply only to ordinary shot observations",
+      "interpretability": "high because own goals are reported as a separate provider-defined category",
+      "numerical_stability": "finite logits only; unsupported boundaries fail closed",
+      "raw_prediction_unchanged": true,
+      "recommendation": "ADOPT"
+    }
+  },
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+  "status": "PROPOSED_FROZEN_AWAITING_OWNER_AUTHORIZATION"
+}
