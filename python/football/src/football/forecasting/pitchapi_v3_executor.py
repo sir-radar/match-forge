@@ -32,6 +32,9 @@ from football.forecasting.pitchapi_v3_evaluation import (
     score_target,
 )
 
+V4_PROTOCOL_ID = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+V5_PROTOCOL_ID = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5"
+
 
 class PitchApiV3ExecutionError(RuntimeError):
     """V3 execution stopped without publishing successful evidence."""
@@ -129,11 +132,27 @@ class PitchApiV4ExecutionConfigV1(PitchApiV3ExecutionConfigV1):
 
     def __post_init__(self) -> None:
         if (
-            self.protocol_id != "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+            self.protocol_id != V4_PROTOCOL_ID
             or self.target_count != 712
             or self.forecast_validation_count != 1_424
         ):
             raise PitchApiV3ExecutionError("V4 execution configuration identity is invalid")
+        for name, value in asdict(self).items():
+            if name.endswith("sha256") and (not isinstance(value, str) or not _is_hash(value)):
+                raise PitchApiV3ExecutionError(f"{name} is not a SHA-256 identity")
+
+
+@dataclass(frozen=True, slots=True)
+class PitchApiV5ExecutionConfigV1(PitchApiV3ExecutionConfigV1):
+    forecast_validation_count: int = 1_424
+
+    def __post_init__(self) -> None:
+        if (
+            self.protocol_id != V5_PROTOCOL_ID
+            or self.target_count != 712
+            or self.forecast_validation_count != 1_424
+        ):
+            raise PitchApiV3ExecutionError("V5 execution configuration identity is invalid")
         for name, value in asdict(self).items():
             if name.endswith("sha256") and (not isinstance(value, str) or not _is_hash(value)):
                 raise PitchApiV3ExecutionError(f"{name} is not a SHA-256 identity")
@@ -192,9 +211,7 @@ class PitchApiV3Executor:
                 failure,
                 {
                     "contract": (
-                        "PitchApiV4ExecutionFailureV1"
-                        if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
-                        else "PitchApiV3ExecutionFailureV1"
+                        f"PitchApi{_protocol_version(self._config.protocol_id)}ExecutionFailureV1"
                     ),
                     "error": str(error),
                     "protocol_id": self._config.protocol_id,
@@ -293,14 +310,11 @@ class PitchApiV3Executor:
         if len(simulation_receipts) != expected_receipts:
             raise PitchApiV3ExecutionError("simulation receipt count is incomplete")
         report = _evaluation_report(target_records)
-        v4 = self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
-        simulation_parity = _simulation_parity(simulation_receipts, v4=v4)
+        v4_or_later = self._config.protocol_id in (V4_PROTOCOL_ID, V5_PROTOCOL_ID)
+        version = _protocol_version(self._config.protocol_id)
+        simulation_parity = _simulation_parity(simulation_receipts, v4=v4_or_later)
         simulation_manifest = {
-            "contract": (
-                "PitchApiV4SimulationManifestV1"
-                if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
-                else "PitchApiV3SimulationManifestV1"
-            ),
+            "contract": f"PitchApi{version}SimulationManifestV1",
             "receipts": [asdict(item) for item in simulation_receipts],
             "rust_build_sha256": self._config.rust_build_sha256,
             "simulation_count_per_forecast": 112_460,
@@ -314,13 +328,9 @@ class PitchApiV3Executor:
             "alias_reconciliation_sha256": self._config.alias_reconciliation_sha256,
             "challenger_artifact_sha256": self._config.challenger_artifact_sha256,
             "challenger_satisfied_frozen_success_criteria": (
-                report["result_classification"] == "PROMOTE_CANDIDATE" if v4 else None
+                report["result_classification"] == "PROMOTE_CANDIDATE" if v4_or_later else None
             ),
-            "contract": (
-                "PitchApiDomainStratifiedEvaluationV4EvidenceV1"
-                if self._config.protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
-                else "PitchApiDomainStratifiedEvaluationV3EvidenceV1"
-            ),
+            "contract": f"PitchApiDomainStratifiedEvaluation{version}EvidenceV1",
             "corpus_sha256": self._config.corpus_sha256,
             "domain_metrics": report["domain_metrics"],
             "execution_configuration_sha256": self._config.execution_configuration_sha256,
@@ -334,7 +344,7 @@ class PitchApiV3Executor:
             "frozen_criteria_classification": report["result_classification"],
             "result_classification": (
                 _v4_classification(str(report["result_classification"]))
-                if v4
+                if v4_or_later
                 else report["result_classification"]
             ),
             "run_id": run_id,
@@ -592,7 +602,7 @@ def _verify_staging(staging: Path, completion: Mapping[str, object]) -> None:
 
 
 def _human_report(machine: Mapping[str, object], machine_sha256: str, protocol_id: str) -> str:
-    version = "V4" if protocol_id == "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4" else "V3"
+    version = _protocol_version(protocol_id)
     return (
         f"# PitchAPI domain-stratified evaluation {version}\n\n"
         f"Protocol: `{protocol_id}`\n\n"
@@ -623,8 +633,38 @@ class PitchApiV4Executor(PitchApiV3Executor):
         )
 
 
+class PitchApiV5Executor(PitchApiV3Executor):
+    def __init__(
+        self,
+        *,
+        config: PitchApiV5ExecutionConfigV1,
+        reference_model: TransferableGoalModelV1,
+        challenger_model: TransferableGoalModelV1,
+        simulator: SimulationPort,
+        corpus: EvaluationCorpusPort,
+    ) -> None:
+        super().__init__(
+            config=config,
+            reference_model=reference_model,
+            challenger_model=challenger_model,
+            simulator=simulator,
+            corpus=corpus,
+            accepted_simulation_statuses=frozenset({"PASS", "PASS_WITH_WARNINGS"}),
+        )
+
+
 def _is_hash(value: str) -> bool:
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
+def _protocol_version(protocol_id: str) -> str:
+    if protocol_id == V5_PROTOCOL_ID:
+        return "V5"
+    if protocol_id == V4_PROTOCOL_ID:
+        return "V4"
+    if protocol_id == PROTOCOL_ID:
+        return "V3"
+    raise PitchApiV3ExecutionError("unknown evaluation protocol identity")
 
 
 def _v4_classification(classification: str) -> str:
@@ -665,12 +705,13 @@ def _write_execution_receipt(
     human_sha256: str,
     simulation_manifest_sha256: str,
 ) -> str | None:
-    if config.protocol_id != "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4":
+    if config.protocol_id not in (V4_PROTOCOL_ID, V5_PROTOCOL_ID):
         return None
+    version = _protocol_version(config.protocol_id)
     return _write_json(
         staging / "execution-receipt.json",
         {
-            "contract": "PitchApiDomainStratifiedEvaluationV4ExecutionReceiptV1",
+            "contract": f"PitchApiDomainStratifiedEvaluation{version}ExecutionReceiptV1",
             "execution_configuration_sha256": config.execution_configuration_sha256,
             "forecast_validation_count": forecast_validation_count,
             "human_sha256": human_sha256,

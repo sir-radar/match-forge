@@ -19,6 +19,8 @@ from football.forecasting.pitchapi_v3_executor import (
     PitchApiV3Executor,
     PitchApiV4ExecutionConfigV1,
     PitchApiV4Executor,
+    PitchApiV5ExecutionConfigV1,
+    PitchApiV5Executor,
     PreparedTargetV1,
     RevealedOutcomeV1,
     SimulationReceiptV1,
@@ -208,3 +210,45 @@ def test_v4_executor_accepts_diagnostic_warnings_and_records_tv(tmp_path: Path) 
     assert '"contract":"PitchApiV4SimulationManifestV1"' in manifest
     assert '"total_variation":0.006' in manifest
     assert '"contract":"PitchApiDomainStratifiedEvaluationV4EvidenceV1"' in evidence
+
+
+def test_v5_executor_completes_full_synthetic_publication_pipeline(tmp_path: Path) -> None:
+    corpus = _SyntheticCorpus(protocol_id="PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5")
+    parameters = TransferableParametersV1(0.2, 0.0, 0.4, 0.3, 0.0, 1.3, 1.2)
+    config = PitchApiV5ExecutionConfigV1(
+        protocol_id="PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
+        policy_sha256=_HASH,
+        preregistration_sha256=_HASH,
+        snapshot_sha256=_HASH,
+        corpus_sha256=_HASH,
+        firewall_sha256=_HASH,
+        alias_reconciliation_sha256=_HASH,
+        reference_artifact_sha256=_HASH,
+        challenger_artifact_sha256=_HASH,
+        rust_policy_sha256=_HASH,
+        rust_build_sha256=_HASH,
+        executor_source_commit="b" * 40,
+        execution_configuration_sha256=_HASH,
+    )
+    executor = PitchApiV5Executor(
+        config=config,
+        reference_model=TransferableGoalModelV1(parameters),
+        challenger_model=TransferableGoalModelV1(parameters),
+        simulator=_V4Simulator(),
+        corpus=corpus,
+    )
+
+    result = executor.execute(
+        run_id="synthetic-v5",
+        execution_timestamp=datetime(2026, 1, 1, tzinfo=UTC),
+        output_root=tmp_path,
+    )
+
+    manifest = (result.directory / "simulation-manifest.json").read_text(encoding="utf-8")
+    evidence = (result.directory / "evaluation-evidence.json").read_text(encoding="utf-8")
+    receipt = (result.directory / "execution-receipt.json").read_text(encoding="utf-8")
+    assert corpus.revealed
+    assert '"contract":"PitchApiV5SimulationManifestV1"' in manifest
+    assert '"forecast_validation_count":1424' in manifest
+    assert '"contract":"PitchApiDomainStratifiedEvaluationV5EvidenceV1"' in evidence
+    assert '"contract":"PitchApiDomainStratifiedEvaluationV5ExecutionReceiptV1"' in receipt
