@@ -19,11 +19,29 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       code_changed: ${{ steps.classify.outputs.code_changed }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+
+      - name: Fetch comparison commit
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+
+          zero_sha="0000000000000000000000000000000000000000"
+
+          if [[ -z "${BASE_SHA:-}" || "$BASE_SHA" == "$zero_sha" ]]; then
+            exit 0
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          fi
 
       - name: Check diff and classify files
         id: classify
@@ -31,20 +49,29 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
+          set -euo pipefail
+
+          zero_sha="0000000000000000000000000000000000000000"
           code_changed=true
-          if git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+
+          if [[ -n "${BASE_SHA:-}" &&
+                "$BASE_SHA" != "$zero_sha" ]] &&
+             git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
             git diff --check "$BASE_SHA" HEAD
-            git diff --name-only -z "$BASE_SHA" HEAD > "$RUNNER_TEMP/changed-files"
-            if [[ -s "$RUNNER_TEMP/changed-files" ]]; then
-              code_changed=false
-              while IFS= read -r -d '' path; do
-                case "$path" in
-                  *.md|*.mdx|*.rst) ;;
-                  *) code_changed=true; break ;;
-                esac
-              done < "$RUNNER_TEMP/changed-files"
-            fi
+
+            code_changed=false
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                *.md|*.mdx|*.rst)
+                  ;;
+                *)
+                  code_changed=true
+                  break
+                  ;;
+              esac
+            done < <(git diff --name-only -z "$BASE_SHA" HEAD)
           fi
+
           printf 'code_changed=%s\n' "$code_changed" >> "$GITHUB_OUTPUT"
 
   check:
@@ -53,20 +80,39 @@ jobs:
     name: Deterministic checks
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+
     env:
-      # The repository rust-toolchain.toml pins the macOS arm64 target. Override
-      # its channel selector on Linux; rustup resolves 1.97.1 for this host.
+      # rust-toolchain.toml pins the macOS arm64 target.
+      # Override only the channel selector on Linux CI.
       RUSTUP_TOOLCHAIN: 1.97.1
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Install Go 1.27.0
         uses: actions/setup-go@v5
         with:
-          go-version: 1.27.0
-          cache: false
+          go-version: '1.27.0'
+          cache: true
+          cache-dependency-path: |
+            go/api/go.mod
+            go/api/go.sum
+
+      # scripts/toolchain.sh redirects project Go caches into .local,
+      # so cache those paths explicitly as well.
+      - name: Restore project Go caches
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            .local/go-cache
+            .local/go-mod-cache
+            .local/golangci-lint-cache
+          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}
+          restore-keys: |
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-
 
       - name: Restore pinned Go tools
         id: go-tools-cache
@@ -77,13 +123,60 @@ jobs:
             .tools/bin/golangci-lint
           key: go-tools-${{ runner.os }}-${{ runner.arch }}-go-1.27.0-goose-3.27.1-golangci-lint-2.11.4
 
-      - name: Install Rust 1.97.1
+      - name: Install pinned Go tools
+        if: steps.go-tools-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GOBIN: ${{ github.workspace }}/.tools/bin
         run: |
-          rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
-          rustup default 1.97.1
+          set -euo pipefail
+
+          mkdir -p "$GOBIN"
+
+          go install github.com/pressly/goose/v3/cmd/goose@v3.27.1 &
+          goose_pid=$!
+
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4 &
+          lint_pid=$!
+
+          goose_status=0
+          lint_status=0
+
+          wait "$goose_pid" || goose_status=$?
+          wait "$lint_pid" || lint_status=$?
+
+          if (( goose_status != 0 || lint_status != 0 )); then
+            exit 1
+          fi
+
+      - name: Install Rust 1.97.1 when needed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! rustup toolchain list | grep -Eq '^1\.97\.1(-|$)'; then
+            rustup toolchain install 1.97.1 \
+              --profile minimal \
+              --component rustfmt \
+              --component clippy \
+              --no-self-update
+          else
+            installed_components="$(rustup component list --toolchain 1.97.1 --installed)"
+
+            if ! grep -q '^rustfmt-' <<<"$installed_components"; then
+              rustup component add rustfmt --toolchain 1.97.1
+            fi
+
+            if ! grep -q '^clippy-' <<<"$installed_components"; then
+              rustup component add clippy --toolchain 1.97.1
+            fi
+          fi
 
       - name: Restore Rust build cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: rust-1.97.1
+          cache-on-failure: true
 
       - name: Install uv 0.12.1
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
@@ -91,26 +184,24 @@ jobs:
           version: 0.12.1
           enable-cache: true
           cache-python: true
+          # Keep this aligned with scripts/toolchain.sh / Makefile.
           cache-local-path: ${{ github.workspace }}/.local/uv-cache
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
 
-      - name: Install pinned Go tools
-        if: steps.go-tools-cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p .tools/bin
-          GOBIN="$GITHUB_WORKSPACE/.tools/bin" go install github.com/pressly/goose/v3/cmd/goose@v3.27.1
-          GOBIN="$GITHUB_WORKSPACE/.tools/bin" go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4
-
       - name: Install locked Python dependencies
+        shell: bash
         run: |
+          set -euo pipefail
           uv python install 3.13.14
           uv sync --locked
 
+      # Keep these in one Make invocation. Both targets share the phony
+      # `build` prerequisite and mutable build outputs.
       - name: Run deterministic and integration checks
         run: make check integration
 
       - name: Tear down integration services
-        if: ${{ always() }}
+        if: always()
         run: docker compose down --volumes
