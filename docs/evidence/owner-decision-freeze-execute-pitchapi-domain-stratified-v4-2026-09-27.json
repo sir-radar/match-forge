@@ -1,0 +1,43 @@
+{
+  "accepted_investigation": "PITCHAPI_RUST_PARITY_INVESTIGATION_V1",
+  "alias_reconciliation_sha256": "0ffe5660872a081ae262c6045825b0e1db4e775093cd213a02cd9947ffa47716",
+  "challenger_artifact_sha256": "314e1e0891ffaae6d7fe3885f5bf7e9087bed4b02bdc323e685ee49c11f0675a",
+  "contract": "OwnerDecisionEvidenceV1",
+  "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+  "decision_id": "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1",
+  "evaluation_execution_authorized": true,
+  "evaluation_outcomes_loaded_at_authorization": false,
+  "exact_logical_execution_count": 1,
+  "execution_adapter_source_commit": "3ed7d6bb155ac9421ccafafe05b33e572e330cd6",
+  "execution_configuration_sha256": "b5392dc83b87a715b48a5cd415718fcaf8852feab8b467ab40f0d135ef3ee7ec",
+  "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+  "forecast_validation_count": 1424,
+  "implementation_source_commit": "719a04300bf2c6438f2a4cafb4fe52ad0f03f9ea",
+  "investigation_classification": [
+    "D_STATISTICAL_PARITY_POLICY_DEFECT",
+    "E_EXPECTED_MONTE_CARLO_VARIATION"
+  ],
+  "pitchapi_api_calls_authorized": false,
+  "policy_sha256": "0c266e924f2439d1674d081f7a544cf0b91f156d925c162d77ab40092b88aef9",
+  "preregistration_sha256": "87c00aecf99c348319014831746a7ba0a0abadc304a92ee18f5dab93d9fac318",
+  "protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4",
+  "provider_contact_authorized": false,
+  "recorded_at": "2026-09-27T03:36:25Z",
+  "reference_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "rust_build_sha256": "8790a84673099475a2bd5b46c8c6785d5698c5b19d666bd90e06349d444e4d88",
+  "rust_policy_sha256": "b4127ae64bd0755ea0d7472da8e984e8c31c4226c93c8a516f10b93ff6df90bf",
+  "simulation_count_per_forecast": 112460,
+  "snapshot_id": "9eb89b53-1a29-5dcd-bc9b-24f0320b3c8d",
+  "snapshot_mutation_authorized": false,
+  "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+  "statsbomb_evaluation_v2_mutation_authorized": false,
+  "target_count": 712,
+  "target_domains": {
+    "bundesliga_2022_23": 216,
+    "bundesliga_2023_24": 216,
+    "ligue1_2022_23": 280
+  },
+  "total_variation_limit": 0.012794580429261083,
+  "v3_disposition": "PROTOCOL_EVALUATION_FAILURE_RUST_PARITY_PERMANENTLY_CLOSED",
+  "v3_rerun_authorized": false
+}
