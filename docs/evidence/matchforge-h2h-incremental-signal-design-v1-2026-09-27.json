@@ -1,0 +1,120 @@
+{
+  "authorization": "RESEARCH_AND_PREREGISTRATION_DESIGN_ONLY",
+  "contract": "MatchForgeH2HIncrementalSignalDesignEvidenceV1",
+  "coverage": {
+    "at_least_1": {"count": 924, "fraction": 0.7275590551181103},
+    "at_least_2": {"count": 169, "fraction": 0.13307086614173227},
+    "at_least_3": {"count": 120, "fraction": 0.09448818897637795},
+    "at_least_5": {"count": 0, "fraction": 0.0}
+  },
+  "coverage_by_scope": {
+    "bundesliga_2024_25": {"at_least_1": 152, "at_least_2": 0, "at_least_3": 0, "at_least_5": 0, "target_count": 215},
+    "bundesliga_2025_26": {"at_least_1": 202, "at_least_2": 169, "at_least_3": 120, "at_least_5": 0, "target_count": 216},
+    "la_liga_2024_25": {"at_least_1": 190, "at_least_2": 0, "at_least_3": 0, "at_least_5": 0, "target_count": 280},
+    "premier_league_2024_25": {"at_least_1": 190, "at_least_2": 0, "at_least_3": 0, "at_least_5": 0, "target_count": 280},
+    "serie_a_2024_25": {"at_least_1": 190, "at_least_2": 0, "at_least_3": 0, "at_least_5": 0, "target_count": 279}
+  },
+  "data": {
+    "corpus_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+    "firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+    "snapshot_id": "9acd90ce-b847-5ab4-8e2b-b98d5602da70",
+    "snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5",
+    "source_finished_match_count": 1751,
+    "target_count": 1270,
+    "strictly_prior_meeting_instances": 1213,
+    "targets_with_cross_scope_history": 169,
+    "latest_prior_orientation": {"reversed": 896, "same": 28},
+    "cross_competition_history_count": 0
+  },
+  "decision": {
+    "classification": "H2H_RESEARCH_NOT_CURRENTLY_SUPPORTABLE",
+    "reason": "Only 169 targets have at least two prior meetings, all in bundesliga_2025_26; no other domain has a target with two prior meetings, and no target has five"
+  },
+  "feature_design": {
+    "baseline": "same transferable rolling goals-for/goals-against/npxG-for/npxG-against, competition and home-effect Poisson model with rho fixed to zero and no H2H input",
+    "candidate_change": "add one scalar secondary_matchup_prior coefficient anti-symmetrically to the two log rates; make no other mathematical change",
+    "lookback": {"maximum_days": 730, "maximum_meetings": 5, "minimum_usable_meetings": 2},
+    "per_meeting_residual": "From a strictly-prior cross-fitted baseline forecast at meeting j, orient both teams to the future target: r_j = 0.5 * ((npxG_target_home_j - lambda_target_home_j) - (npxG_target_away_j - lambda_target_away_j)); clip r_j to [-1.5, 1.5]",
+    "per_meeting_weight": "w_j = 2^(-age_days_j/180) * continuity_j * era_j * competition_j * orientation_j",
+    "weight_terms": {
+      "competition_j": "1 only for the target competition; otherwise the meeting is excluded",
+      "continuity_j": "1 for the newest meeting; for older meetings exp(-max(0, gap_to_next_newer_days - 270)/365)",
+      "era_j": "1 for the target season, 0.65 for the immediately prior season, and 0 otherwise",
+      "orientation_j": "1 when meeting home/away matches the target orientation and 0.9 when reversed"
+    },
+    "relevance": "q = min(1, sum_j(w_j)/1.5)",
+    "predictive_feature": "secondary_matchup_prior = clip(q * sum_j(w_j*r_j)/sum_j(w_j), -1.5, 1.5); use zero when fewer than two usable meetings",
+    "rate_application": "log(lambda_home) += beta_h2h * secondary_matchup_prior; log(lambda_away) -= beta_h2h * secondary_matchup_prior",
+    "role": "SECONDARY_MATCHUP_PRIOR",
+    "schema": {
+      "secondary_matchup_prior": {"type": "float64", "minimum": -1.5, "maximum": 1.5, "predictive": true},
+      "h2h_usable_meeting_count": {"type": "uint8", "minimum": 0, "maximum": 5, "predictive": false},
+      "h2h_effective_weight": {"type": "float64", "minimum": 0.0, "predictive": false},
+      "h2h_relevance": {"type": "float64", "minimum": 0.0, "maximum": 1.0, "predictive": false},
+      "h2h_latest_age_days": {"type": "nullable_float64", "minimum": 0.0, "predictive": false},
+      "h2h_same_orientation_count": {"type": "uint8", "minimum": 0, "maximum": 5, "predictive": false},
+      "h2h_reversed_orientation_count": {"type": "uint8", "minimum": 0, "maximum": 5, "predictive": false}
+    }
+  },
+  "future_admission_design": {
+    "calibration": {
+      "absolute_intercept_maximum_each_outcome": 0.25,
+      "candidate_absolute_error_no_greater_than_baseline_each_outcome": true,
+      "intercept_interval_full_width_maximum_each_outcome": 0.3,
+      "slope_interval_full_width_maximum_each_outcome": 0.4,
+      "slope_maximum_each_outcome": 1.2,
+      "slope_minimum_each_outcome": 0.8
+    },
+    "domain_safety": {
+      "leave_domain_out_joint_score_delta_interval_upper_maximum": 0.05,
+      "minimum_domains_with_negative_joint_score_point_delta": 3,
+      "no_domain_joint_score_point_delta_above": 0.02
+    },
+    "primary": {
+      "weighted_joint_score_log_loss_delta_maximum": -0.003,
+      "weighted_joint_score_log_loss_delta_95_interval_upper_below_zero": true,
+      "weighted_one_x_two_log_loss_delta_95_interval_upper_at_most_zero": true
+    },
+    "secondary_delta_interval_upper_limits": {
+      "one_x_two_brier": 0.01,
+      "one_x_two_rps": 0.01,
+      "total_goal_crps": 0.02
+    },
+    "validation": ["chronological", "leave-domain-out", "leave-team-out", "per-domain", "macro", "weighted", "block-bootstrap-uncertainty"],
+    "rule": "ALL_CRITERIA_PASS_OR_DEVELOPMENT_REJECTED"
+  },
+  "future_hypothesis": "With all non-H2H mathematics frozen, one bounded residualized H2H prior improves weighted joint-score log loss by at least 0.003 and has a block-bootstrap 95% delta interval wholly below zero without material calibration or secondary-metric degradation",
+  "leakage_controls": [
+    "resolve MatchForge team IDs before forming unordered pairs",
+    "require every H2H kickoff to be strictly earlier than the target kickoff",
+    "seal same-kickoff batches",
+    "derive each historical residual from a baseline forecast made without that meeting outcome",
+    "exclude the target outcome and all future matches",
+    "use only the authorized development snapshot"
+  ],
+  "next_owner_authorization_required": "Authorize additional development-history acquisition only; after the coverage floor is met, separately authorize implementation, frozen preregistration, fitting and development-only comparison",
+  "prior_meeting_count_distribution": {"0": 346, "1": 755, "2": 49, "3": 120},
+  "recency_days": {
+    "all_prior_meetings": {"count": 1213, "maximum": 624.166667, "median": 146.125, "minimum": 4.0, "p10": 104.041667, "p25": 131.895833, "p75": 287.041667, "p90": 445.233333},
+    "latest_prior_meeting": {"count": 924, "maximum": 358.083333, "median": 134.125, "minimum": 4.0, "p10": 94.821875, "p25": 122.789062, "p75": 161.065104, "p90": 217.0875},
+    "latest_prior_meeting_buckets": {"0_to_90": 70, "over_90_to_180": 661, "over_180_to_365": 193, "over_365_to_730": 0, "over_730": 0}
+  },
+  "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_DESIGN_V1",
+  "required_additional_data": {
+    "coverage_floor": "at least 600 targets with two or more usable prior H2H meetings and at least 300 with three or more",
+    "domain_floor": "qualifying targets must span at least three competitions, with at least 150 two-meeting targets in each",
+    "minimum_increment_from_current": "431 additional targets with two or more meetings and 180 additional targets with three or more, including qualifying coverage in at least two competitions beyond Bundesliga",
+    "suggested_source_scope": "at least the immediately preceding full season for Premier League, La Liga and Serie A, followed by a new coverage-only check",
+    "acquisition_authorized": false
+  },
+  "usable_npxg_coverage": {
+    "at_least_1": {"count": 924, "fraction": 0.7275590551181103},
+    "at_least_2": {"count": 169, "fraction": 0.13307086614173227},
+    "at_least_3": {"count": 120, "fraction": 0.09448818897637795},
+    "at_least_5": {"count": 0, "fraction": 0.0}
+  },
+  "expected_current_usable_target_count": 169,
+  "model_fitting_performed": false,
+  "model_evaluation_performed": false,
+  "v6_authorized": false
+}
