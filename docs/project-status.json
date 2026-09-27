@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-27T09:56:46Z",
+  "updated_at": "2026-09-27T10:12:34Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -37,7 +37,8 @@
     "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
     "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5_V1",
     "ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1",
-    "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1"
+    "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
+    "ACCEPT_PITCHAPI_CALIBRATION_SUCCESSOR_REJECTION_AND_DESIGN_MULTI_DOMAIN_DEVELOPMENT_V1"
   ],
   "closed_routes": [
     {
@@ -325,6 +326,32 @@
         "candidate_admitted_for_future_confirmation": false,
         "confirmation_execution_authorized": false,
         "model_promotion_authorized": false
+      },
+      "multi_domain_development_expansion_design": {
+        "research_id": "PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_EXPANSION_DESIGN_V1",
+        "authorization": "RESEARCH_AND_DESIGN_ONLY",
+        "status": "COMPLETE_DESIGN_ONLY",
+        "decision_ref": "docs/evidence/owner-decision-accept-calibration-rejection-design-multi-domain-development-2026-09-27.json",
+        "decision_sha256": "4057be9a9575ffa1e3110b1cbd5e6a2026e809a413769106cb947b171f359527",
+        "evidence_ref": "docs/evidence/pitchapi-multi-domain-development-expansion-design-v1-2026-09-27.json",
+        "evidence_sha256": "d43584303a278833cd3b959a7289b4cd52f6ad2fb4e1f934b7b853340d646e81",
+        "report_ref": "docs/evidence/pitchapi-multi-domain-development-expansion-design-v1-2026-09-27.md",
+        "report_sha256": "d80aae33d256f02bb22d69bda4578aee35720e429a65d7e992108e5644ebf478",
+        "existing_eligible_development_target_count": 0,
+        "minimum_additional_development_target_count": 1200,
+        "planned_development_target_count": 1272,
+        "planned_development_group_count": 5,
+        "planned_development_competition_count": 4,
+        "next_model_hypothesis": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2",
+        "acquisition_required": true,
+        "acquisition_authorized": false,
+        "provider_calls_made": false,
+        "model_fit_performed": false,
+        "evaluation_executed": false,
+        "v5_target_count_reused": 0,
+        "statsbomb_evaluation_v2_unchanged": true,
+        "v6_justified": false,
+        "v6_authorized": false
       },
       "rerun_authorized": false,
       "model_promoted": false,
