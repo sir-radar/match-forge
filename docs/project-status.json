@@ -36,7 +36,8 @@
     "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1",
     "CLOSE_PITCHAPI_V4_AUTHORIZE_CALIBRATION_BOUNDARY_INVESTIGATION_V1",
     "FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5_V1",
-    "ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1"
+    "ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1",
+    "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1"
   ],
   "closed_routes": [
     {
@@ -299,6 +300,18 @@
         "successor_hypothesis_status": "RESEARCH_JUSTIFIED_NOT_ADMITTED",
         "v5_corpus_used_for_fitting": false,
         "v5_corpus_used_for_model_selection": false
+      },
+      "calibration_successor_research": {
+        "research_id": "PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1",
+        "authorization": "DEVELOPMENT_ONLY_RESEARCH",
+        "status": "IN_PROGRESS",
+        "decision_ref": "docs/evidence/owner-decision-authorize-pitchapi-v5-calibration-successor-research-2026-09-27.json",
+        "development_manifest_sha256": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e",
+        "development_target_count": 216,
+        "v5_corpus_used_for_fitting": false,
+        "v5_corpus_used_for_model_selection": false,
+        "confirmation_execution_authorized": false,
+        "model_promotion_authorized": false
       },
       "rerun_authorized": false,
       "model_promoted": false,
