@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matchforge.local/schemas/transferable-rolling-npxg-dixon-coles-v2-artifact-v1.schema.json",
+  "additionalProperties": false,
+  "properties": {
+    "algorithm_version": {"const": "transferable-rolling-npxg-for-against-dixon-coles-v2"},
+    "artifact_schema_version": {"const": "TransferableRollingNpxgForAgainstDixonColesV2ArtifactV1"},
+    "compatibility_declaration": {"type": "string"},
+    "configuration_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "dependency_lock_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "feature_contract_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "football_cutoff": {"format": "date-time", "type": "string"},
+    "knowledge_cutoff": {"format": "date-time", "type": "string"},
+    "knowledge_mode": {"const": "RETROSPECTIVE_SNAPSHOT_POINT_IN_TIME_REPLAY"},
+    "logical_state_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "parameters": {
+      "additionalProperties": false,
+      "properties": {
+        "competition_baseline_deviations": {"additionalProperties": {"type": "number"}, "type": "object"},
+        "competition_home_advantage_deviations": {"additionalProperties": {"type": "number"}, "type": "object"},
+        "global_home_advantage": {"type": "number"},
+        "global_intercept": {"type": "number"},
+        "goals_against_weight": {"minimum": 0, "type": "number"},
+        "goals_for_weight": {"minimum": 0, "type": "number"},
+        "npxg_against_weight": {"minimum": 0, "type": "number"},
+        "npxg_for_weight": {"minimum": 0, "type": "number"},
+        "regularization": {"items": {"minimum": 0, "type": "number"}, "maxItems": 3, "minItems": 3, "type": "array"},
+        "rho": {"maximum": 0.15, "minimum": -0.15, "type": "number"}
+      },
+      "required": [
+        "competition_baseline_deviations",
+        "competition_home_advantage_deviations",
+        "global_home_advantage",
+        "global_intercept",
+        "goals_against_weight",
+        "goals_for_weight",
+        "npxg_against_weight",
+        "npxg_for_weight",
+        "regularization",
+        "rho"
+      ],
+      "type": "object"
+    },
+    "research_id": {"const": "TRANSFERABLE_ROLLING_NPXG_FOR_AGAINST_DIXON_COLES_V2_RESEARCH_V1"},
+    "serializer_version": {"const": "canonical-json-sort-keys-compact-v1"},
+    "source_commit": {"pattern": "^[0-9a-f]{40}$", "type": "string"},
+    "team_id_parameters": {"const": false},
+    "training_dataset_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+    "training_target_count": {"const": 1270}
+  },
+  "required": [
+    "algorithm_version",
+    "artifact_schema_version",
+    "compatibility_declaration",
+    "configuration_sha256",
+    "dependency_lock_sha256",
+    "feature_contract_sha256",
+    "football_cutoff",
+    "knowledge_cutoff",
+    "knowledge_mode",
+    "logical_state_sha256",
+    "parameters",
+    "research_id",
+    "serializer_version",
+    "source_commit",
+    "team_id_parameters",
+    "training_dataset_sha256",
+    "training_target_count"
+  ],
+  "title": "Transferable rolling npxG Dixon-Coles V2 artifact",
+  "type": "object"
+}
