@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 import pytest
+from football.validation.pitchapi import PitchApiSeasonScope
 
 import scripts.run_pitchapi_multi_domain_development_acquisition as acquisition
 from scripts.run_pitchapi_multi_domain_development_acquisition import (
@@ -18,6 +19,7 @@ from scripts.run_pitchapi_multi_domain_development_acquisition import (
     _package_failures,
     _register_mappings,
     _resolve_scopes,
+    _select_valid_manifest,
     _targets,
 )
 from scripts.run_pitchapi_snapshot_v1_acquisition import SnapshotStop
@@ -55,8 +57,8 @@ def test_frozen_configuration_has_exact_authorized_scope_and_budget() -> None:
     ]
     assert sum(group.expected_matches for group in groups) == 1752
     assert config["expected_requests"] == 1758
-    assert config["hard_request_ceiling"] == 1793
-    assert config["prior_attempts_used"] == 1
+    assert config["hard_request_ceiling"] == 1791
+    assert config["prior_attempts_used"] == 3
     assert config["task_hard_request_ceiling"] == 1794
     assert config["hard_storage_ceiling_bytes"] == 1024**3
 
@@ -83,6 +85,29 @@ def test_resolve_scopes_requires_exact_catalog_match() -> None:
     payload["data"]["leagues"][0]["country_code"] = "OTHER"
     with pytest.raises(SnapshotStop, match="AUTHORIZED_SCOPE_UNAVAILABLE:scope"):
         _resolve_scopes(payload, (group,))
+
+
+def test_manifest_quarantines_awarded_fixture_before_existing_validation() -> None:
+    matches = _matches()
+    for index, match in enumerate(matches):
+        match["id"] = f"m_{index}"
+        match["date"] = str(match["time_utc"])[:10]
+        match["status"] = "finished"
+    matches[5]["status"] = "awarded"
+    payload = {
+        "data": {
+            "league": {"id": "l_test", "name": "Test", "season": "2024/2025"},
+            "matches": matches,
+        }
+    }
+    scope = PitchApiSeasonScope("scope", "l_test", "2024/2025", 22)
+
+    selection, exclusions, validation_scope = _select_valid_manifest(payload, scope, 22)
+
+    assert len(selection.ordered_matches) == 21
+    assert exclusions == {"awarded": 1}
+    assert validation_scope.expected_match_count == 21
+    assert all(match["status"] == "finished" for match in selection.ordered_matches)
 
 
 def test_targets_freeze_same_kickoff_before_history_update() -> None:

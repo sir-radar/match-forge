@@ -1,0 +1,19 @@
+{
+  "actual_request_count": 2,
+  "contract": "PitchApiMultiDomainDevelopmentAcquisitionStopEvidenceV1",
+  "disposition": "ACQUISITION_FAILED",
+  "manifest_raw_sha256": "1ff5ed609f9d8513a43699f5b77d28eb5244b8fc0183d7d08844f7642e6af751",
+  "partial_acquisition_qualified": false,
+  "revision": 2,
+  "stop_code": "INVALID_MANIFEST_FIXTURE",
+  "stop_receipt_sha256": "e850a009a7b7a50601b1eac120fea824ce0102f79bf6c05c258802d86f981c2d",
+  "technical_cause": "ONE_PROVIDER_AWARDED_FIXTURE_REQUIRES_EXPLICIT_QUARANTINE",
+  "quarantined_fixture": {
+    "away_team_id": "t_3bSOvQ",
+    "home_team_id": "t_1VWvPZ",
+    "provider_fixture_id": "m_3ICf7e",
+    "provider_status": "awarded",
+    "scope_key": "bundesliga_2024_25"
+  },
+  "scope_substituted": false
+}

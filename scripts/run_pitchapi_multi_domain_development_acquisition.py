@@ -39,6 +39,7 @@ from scripts.run_pitchapi_snapshot_v1_acquisition import (
     _shot_count,
 )
 from scripts.run_pitchapi_validation_pilot import (
+    PilotManifestSelection,
     PilotStop,
     _dependency_lock_sha256,
     _git_sha,
@@ -47,9 +48,9 @@ from scripts.run_pitchapi_validation_pilot import (
 )
 
 CONFIG_PATH = Path(
-    "docs/evaluation/pitchapi-multi-domain-development-acquisition-v1-r2-configuration.json"
+    "docs/evaluation/pitchapi-multi-domain-development-acquisition-v1-r3-configuration.json"
 )
-OUTPUT_ROOT = Path(".local/pitchapi-multi-domain-development-v1-r2")
+OUTPUT_ROOT = Path(".local/pitchapi-multi-domain-development-v1-r3")
 TOKEN_NAME = "PITCH_API_TOKEN"
 NAMESPACE = UUID("f5f4c644-05a4-4b79-b968-e765ed659da0")
 ADAPTER_VERSION = "pitchapi-multi-domain-development-adapter-v1"
@@ -177,8 +178,8 @@ def _acquire_groups(
             cap=SEASON_CAP_BYTES,
         )
         resources.append(manifest_resource)
-        selection = select_pilot_manifest(
-            manifest, scope, full_expected_match_count=group.expected_matches
+        selection, status_exclusions, validation_scope = _select_valid_manifest(
+            manifest, scope, group.expected_matches
         )
         _register_mappings(mappings, selection.ordered_matches)
         shot_payloads: dict[str, Mapping[str, Any]] = {}
@@ -204,7 +205,9 @@ def _acquire_groups(
             }
             if index % 50 == 0 or index == group.expected_matches:
                 _progress(group.scope_key, index, group.expected_matches, client)
-        season_inputs.append(PitchApiSeasonAuditInput(scope, selection.payload, shot_payloads))
+        season_inputs.append(
+            PitchApiSeasonAuditInput(validation_scope, selection.payload, shot_payloads)
+        )
         group_inputs.append(
             {
                 "spec": group,
@@ -212,12 +215,16 @@ def _acquire_groups(
                 "shots": shot_payloads,
                 "lineage": match_lineage,
                 "manifest_resource": manifest_resource,
+                "status_exclusions": status_exclusions,
+                "valid_match_count": len(selection.ordered_matches),
             }
         )
 
+    expected_base_requests = (
+        1 + len(groups) + sum(cast(int, item["valid_match_count"]) for item in group_inputs)
+    )
     if (
-        client.state.attempts - client.state.retries
-        != _integer(config, "expected_requests", "CONFIGURATION_INTEGER_MISMATCH")
+        client.state.attempts - client.state.retries != expected_base_requests
         or len(client.records) != client.state.attempts
         or client.state.attempts
         > _integer(config, "hard_request_ceiling", "CONFIGURATION_INTEGER_MISMATCH")
@@ -228,7 +235,7 @@ def _acquire_groups(
         seasons=tuple(season_inputs),
         request_log=tuple(record for record in client.records if record.path != CATALOG_PATH),
         budget=PitchApiRequestBudget(
-            _integer(config, "expected_requests", "CONFIGURATION_INTEGER_MISMATCH")
+            expected_base_requests
             - 1
             + _integer(config, "retry_allowance", "CONFIGURATION_INTEGER_MISMATCH"),
             _integer(config, "retry_allowance", "CONFIGURATION_INTEGER_MISMATCH"),
@@ -262,10 +269,12 @@ def _acquire_groups(
         matches = cast(tuple[Mapping[str, object], ...], item["matches"])
         shots = cast(Mapping[str, Mapping[str, Any]], item["shots"])
         lineage = cast(Mapping[str, Mapping[str, str]], item["lineage"])
+        group_status_exclusions = cast(Mapping[str, int], item["status_exclusions"])
+        valid_match_count = cast(int, item["valid_match_count"])
         rows, target_counts, team_ids = _targets(group, matches, lineage, mappings, snapshot_id)
         report = reports[group.scope_key]
         semantic = _shot_semantics(shots)
-        group_failures = _group_failures(group, report.to_dict(), rows, target_counts)
+        group_failures = _group_failures(report.to_dict(), valid_match_count, rows, target_counts)
         summaries.append(
             {
                 "scope_key": group.scope_key,
@@ -275,6 +284,7 @@ def _acquire_groups(
                 "league_id": scopes[group.scope_key].league_id,
                 "nominal_matches": group.expected_matches,
                 "valid_matches": report.observed_matches,
+                "fixture_status_exclusions": dict(sorted(group_status_exclusions.items())),
                 "teams": len(team_ids),
                 "new_to_earlier_group_team_count": len(team_ids - seen_teams),
                 "total_shots": report.shots,
@@ -287,7 +297,7 @@ def _acquire_groups(
                 "penalties": report.penalties,
                 "own_goals": semantic["own_goals"],
                 "shot_situations": semantic["situations"],
-                "history_warmup_exclusions": group.expected_matches - len(rows),
+                "history_warmup_exclusions": valid_match_count - len(rows),
                 "exact_eligible_targets": len(rows),
                 "outcomes": dict(sorted(target_counts.items())),
                 "mapping_exclusions": 0,
@@ -518,6 +528,48 @@ def _resolve_scopes(
     return resolved
 
 
+def _select_valid_manifest(
+    payload: Mapping[str, Any],
+    scope: PitchApiSeasonScope,
+    nominal_match_count: int,
+) -> tuple[PilotManifestSelection, dict[str, int], PitchApiSeasonScope]:
+    data = payload.get("data")
+    if not isinstance(data, Mapping):
+        raise PilotStop("MALFORMED_MANIFEST")
+    matches = data.get("matches")
+    if not isinstance(matches, list):
+        raise PilotStop("MALFORMED_MANIFEST")
+    if len(matches) != nominal_match_count:
+        raise PilotStop("FULL_SEASON_MATCH_COUNT_MISMATCH")
+    if any(not isinstance(match, Mapping) for match in matches):
+        raise PilotStop("MALFORMED_MANIFEST_FIXTURE")
+    status_exclusions = Counter(
+        str(match.get("status", "MISSING"))
+        for match in matches
+        if isinstance(match, Mapping) and match.get("status") != "finished"
+    )
+    finished = [
+        match
+        for match in matches
+        if isinstance(match, Mapping) and match.get("status") == "finished"
+    ]
+    if not finished:
+        raise PilotStop("NO_VALID_FINISHED_FIXTURES")
+    filtered_payload = {
+        "data": {
+            "league": data.get("league"),
+            "matches": finished,
+        }
+    }
+    validation_scope = PitchApiSeasonScope(scope.key, scope.league_id, scope.season, len(finished))
+    selection = select_pilot_manifest(
+        filtered_payload,
+        validation_scope,
+        full_expected_match_count=len(finished),
+    )
+    return selection, dict(status_exclusions), validation_scope
+
+
 def _name_key(value: object) -> str:
     return "".join(character for character in str(value).casefold() if character.isalnum())
 
@@ -624,13 +676,13 @@ def _shot_semantics(payloads: Mapping[str, Mapping[str, Any]]) -> dict[str, obje
 
 
 def _group_failures(
-    group: GroupSpec,
     report: Mapping[str, object],
+    valid_match_count: int,
     rows: list[dict[str, object]],
     outcomes: Counter[str],
 ) -> list[str]:
     failures: list[str] = []
-    if report["observed_matches"] != group.expected_matches:
+    if report["observed_matches"] != valid_match_count:
         failures.append("MATCH_COUNT")
     if len(rows) < 200:
         failures.append("TARGET_COUNT_LT_200")
