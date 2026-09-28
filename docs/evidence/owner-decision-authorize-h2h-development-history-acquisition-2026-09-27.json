@@ -1,0 +1,25 @@
+{
+  "authorization": "HISTORY_ONLY_ACQUISITION_AND_COVERAGE_REQUALIFICATION",
+  "authorized_acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V1",
+  "confirmation_data_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V1",
+  "development_target_count": 1270,
+  "history_groups": [
+    {"competition": "Premier League", "role": "DEVELOPMENT_HISTORY_ONLY", "season": "2023/2024"},
+    {"competition": "La Liga", "role": "DEVELOPMENT_HISTORY_ONLY", "season": "2023/2024"},
+    {"competition": "Serie A", "role": "DEVELOPMENT_HISTORY_ONLY", "season": "2023/2024"}
+  ],
+  "h2h_admission_testing_authorized": false,
+  "h2h_model_evaluation_authorized": false,
+  "h2h_model_fitting_authorized": false,
+  "model_promotion_authorized": false,
+  "new_target_groups_authorized": false,
+  "recorded_at": "2026-09-27T22:05:00Z",
+  "required_coverage": {
+    "minimum_competitions_with_150_two_meeting_targets": 3,
+    "minimum_targets_with_three_prior_meetings": 300,
+    "minimum_targets_with_two_prior_meetings": 600
+  },
+  "v6_authorized": false
+}

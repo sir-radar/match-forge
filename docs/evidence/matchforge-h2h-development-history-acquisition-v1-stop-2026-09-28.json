@@ -1,0 +1,110 @@
+{
+  "acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V1",
+  "actual_requests": 383,
+  "attempted_snapshot_id": "cee3a221-f81b-550d-a9b4-e7804c99dd04",
+  "backup": {
+    "inventory_sha256": null,
+    "result": "NOT_CREATED_PARTIAL_ACQUISITION_UNQUALIFIED"
+  },
+  "classification": "ACQUISITION_FAILED",
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionStopEvidenceV1",
+  "coverage_requalification": {
+    "performed": false,
+    "reason": "authorized history package was incomplete",
+    "retained_current_coverage": {
+      "at_least_1": 924,
+      "at_least_2": 169,
+      "at_least_3": 120,
+      "at_least_5": 0,
+      "exactly_0": 346
+    },
+    "retained_per_competition": {
+      "Bundesliga": {"at_least_2": 169, "at_least_3": 120},
+      "La Liga": {"at_least_2": 0, "at_least_3": 0},
+      "Premier League": {"at_least_2": 0, "at_least_3": 0},
+      "Serie A": {"at_least_2": 0, "at_least_3": 0}
+    }
+  },
+  "expected_requests": 1144,
+  "firewall": {
+    "result": "PARTIAL_DIAGNOSTIC_PASS_NOT_QUALIFICATION",
+    "intersections": {
+      "fixed_development_targets": 0,
+      "prior_spent_pitchapi_fixtures": 0,
+      "prior_spent_pitchapi_scopes": 0,
+      "statsbomb_protected_fixtures": 0,
+      "statsbomb_protected_scopes": 0,
+      "v5_protected_scopes": 0,
+      "v5_spent_targets": 0
+    },
+    "partial_resources_admitted": false,
+    "new_target_count": 0,
+    "confirmation_data_acquired": false
+  },
+  "hard_request_ceiling": 1167,
+  "history_groups": [
+    {
+      "canonical_mapping_failures": 0,
+      "competition": "Premier League",
+      "finished_fixtures": 380,
+      "mapped_fixtures": 380,
+      "malformed_or_missing_resources": 0,
+      "nominal_fixtures": 380,
+      "own_goal_exclusions": 49,
+      "penalty_exclusions": 107,
+      "provider_manifest_raw_sha256": "dfe77978a38eae8c4d287d89535f16e07a85d74930b537caf848b05d0994259a",
+      "provider_manifest_normalized_sha256": "2c0a0b2574b6d709e534d0c772d135c8063b6f808d088d8a27a997d7f845d4bc",
+      "qualification": "PARTIAL_SNAPSHOT_NOT_ADMITTED",
+      "season": "2023/2024",
+      "shot_resources": 380,
+      "shots": 10538,
+      "valid_npxg_shots": 10382
+    },
+    {
+      "canonical_mapping_failures": null,
+      "competition": "La Liga",
+      "finished_fixtures": 379,
+      "mapped_fixtures": 0,
+      "missing_fixture": "Mallorca home versus Girona",
+      "nominal_fixtures": 380,
+      "provider_manifest_raw_sha256": "5ab215f10971e8479c06b8869d5118ec4fa98a7ed49cd7eb8333d8719c6dee34",
+      "provider_manifest_normalized_sha256": "de3f7dcd0d4cd868fb77138e576f2f98086d3bef7fce52fdb1054a492f552cc9",
+      "qualification": "FAILED_FULL_SEASON_MATCH_COUNT_MISMATCH",
+      "season": "2023/2024",
+      "shot_resources": 0,
+      "shots": 0,
+      "valid_npxg_shots": 0
+    },
+    {
+      "canonical_mapping_failures": null,
+      "competition": "Serie A",
+      "finished_fixtures": 0,
+      "mapped_fixtures": 0,
+      "nominal_fixtures": 380,
+      "qualification": "NOT_REQUESTED_AFTER_FAIL_CLOSED_STOP",
+      "season": "2023/2024",
+      "shot_resources": 0,
+      "shots": 0,
+      "valid_npxg_shots": 0
+    }
+  ],
+  "h2h_research_supportable": false,
+  "model_evaluation_performed": false,
+  "model_fitting_performed": false,
+  "next_owner_decision_required": "Decide whether to authorize a new acquisition revision after the missing La Liga fixture becomes available, or authorize a different exact development-history source; no retry is authorized",
+  "partial_primary": {
+    "bytes": 12244333,
+    "file_count": 766,
+    "inventory_sha256": "ca156d2f2852551a31d6ba30a04e8e17c5ae2f41a570d0536456e67d323392a3",
+    "read_only": true,
+    "qualified": false
+  },
+  "prepared_future_research_package": null,
+  "retries_used": 0,
+  "started_at": "2026-09-27T21:48:36.961703+00:00",
+  "stop_code": "FULL_SEASON_MATCH_COUNT_MISMATCH",
+  "stopped_at": "2026-09-27T21:55:33.960824+00:00",
+  "stopped_receipt_sha256": "7bed94d368df4e3e787b43f97ecbe0e4ce2246714d053f656ec91a7fb71814ba",
+  "request_ledger_sha256": "9f0ea2f382d7224efdd1e238d80a6a1ffca2c7c3763d03da3614503bb37cab15",
+  "v6_created": false
+}
