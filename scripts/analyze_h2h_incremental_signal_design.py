@@ -153,7 +153,7 @@ def analyze_h2h_coverage(
 def analyze_frozen_h2h_coverage(
     observations: Sequence[ResearchObservationV2],
     targets: Sequence[ResearchRowV2],
-    immediately_prior_scopes: Mapping[str, str],
+    immediately_prior_scopes: Mapping[str, str | Sequence[str]],
 ) -> dict[str, object]:
     """Apply the frozen H2H lookback and weight contract to fixed targets."""
     by_pair: dict[frozenset[UUID], list[ResearchObservationV2]] = defaultdict(list)
@@ -214,9 +214,14 @@ def analyze_frozen_h2h_coverage(
 def _frozen_target_coverage(
     target: ResearchRowV2,
     by_pair: Mapping[frozenset[UUID], Sequence[ResearchObservationV2]],
-    immediately_prior_scopes: Mapping[str, str],
+    immediately_prior_scopes: Mapping[str, str | Sequence[str]],
 ) -> FrozenH2HTargetCoverage:
-    prior_scope = immediately_prior_scopes.get(target.scope_key)
+    configured_prior = immediately_prior_scopes.get(target.scope_key, ())
+    prior_scopes = (
+        {configured_prior}
+        if isinstance(configured_prior, str)
+        else set(configured_prior)
+    )
     eligible = sorted(
         (
             observation
@@ -226,7 +231,7 @@ def _frozen_target_coverage(
             if observation.kickoff_at < target.kickoff_at
             and observation.competition == target.competition
             and _age_days(target.kickoff_at, observation.kickoff_at) <= LOOKBACK_DAYS
-            and observation.scope_key in {target.scope_key, prior_scope}
+            and observation.scope_key in {target.scope_key, *prior_scopes}
             and math.isfinite(observation.home_npxg)
             and observation.home_npxg >= 0.0
             and math.isfinite(observation.away_npxg)

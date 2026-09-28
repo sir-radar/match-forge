@@ -1,0 +1,26 @@
+{
+  "authorization": "REVISED_HISTORY_ACQUISITION_AND_COVERAGE_REQUALIFICATION",
+  "authorized_acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
+  "bounded_extensions": ["Premier League 2022/23", "Serie A 2022/23"],
+  "confirmation_data_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_REVISED_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
+  "excluded_history": {
+    "La Liga 2023/24": "EXCLUDED_FROM_H2H_DEVELOPMENT_HISTORY_V2_PROVIDER_INCOMPLETE"
+  },
+  "h2h_model_evaluation_authorized": false,
+  "h2h_model_fitting_authorized": false,
+  "initial_history_groups": [
+    {"competition": "Premier League", "role": "DEVELOPMENT_HISTORY_ONLY", "season": "2023/2024"},
+    {"competition": "Serie A", "role": "DEVELOPMENT_HISTORY_ONLY", "season": "2023/2024"}
+  ],
+  "model_promotion_authorized": false,
+  "recorded_at": "2026-09-28T05:10:00Z",
+  "required_coverage": {
+    "minimum_competitions_with_150_two_meeting_targets": 3,
+    "minimum_targets_with_three_prior_meetings": 300,
+    "minimum_targets_with_two_prior_meetings": 600
+  },
+  "v1_disposition": "PRESERVE_ACQUISITION_FAILED_FULL_SEASON_MATCH_COUNT_MISMATCH",
+  "v6_authorized": false
+}
