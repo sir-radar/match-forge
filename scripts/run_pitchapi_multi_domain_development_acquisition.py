@@ -807,6 +807,8 @@ def _provider_resource_id(resource: Resource, scopes: Mapping[str, PitchApiSeaso
         return scopes[resource.scope_key].league_id
     if resource.kind == "match_shots":
         return resource.resource_ref.rsplit(":", maxsplit=1)[-1]
+    if resource.kind == "match_detail":
+        return resource.resource_ref.rsplit(":", maxsplit=1)[-1]
     raise SnapshotStop(f"UNKNOWN_RESOURCE_TYPE:{resource.kind}")
 
 

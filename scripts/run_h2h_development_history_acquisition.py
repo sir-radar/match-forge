@@ -72,24 +72,23 @@ from scripts.run_pitchapi_validation_pilot import (
 )
 from scripts.run_transferable_npxg_dixon_coles_v2_research import (
     MAPPING_SHA256,
+    NORMALIZED_MANIFEST_SHA256,
     _observation,
     load_development,
 )
 
-ACQUISITION_ID = "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2"
+ACQUISITION_ID = "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V3"
 CONFIG_PATH = Path(
-    "docs/evaluation/matchforge-h2h-development-history-acquisition-v2-configuration.json"
+    "docs/evaluation/matchforge-h2h-development-history-acquisition-v3-configuration.json"
 )
-OUTPUT_ROOT = Path(".local/pitchapi-h2h-development-history-v2")
+OUTPUT_ROOT = Path(".local/pitchapi-h2h-development-history-v3")
 V1_ROOT = Path(".local/pitchapi-h2h-development-history-v1")
 V1_PRIMARY = V1_ROOT / "primary"
 V1_STOP_PATH = Path(
     "docs/evidence/matchforge-h2h-development-history-acquisition-v1-stop-2026-09-28.json"
 )
 V1_INVENTORY_SHA256 = "ca156d2f2852551a31d6ba30a04e8e17c5ae2f41a570d0536456e67d323392a3"
-V1_PREMIER_LEAGUE_RAW_SHA256 = (
-    "dfe77978a38eae8c4d287d89535f16e07a85d74930b537caf848b05d0994259a"
-)
+V1_PREMIER_LEAGUE_RAW_SHA256 = "dfe77978a38eae8c4d287d89535f16e07a85d74930b537caf848b05d0994259a"
 V1_PREMIER_LEAGUE_NORMALIZED_SHA256 = (
     "2c0a0b2574b6d709e534d0c772d135c8063b6f808d088d8a27a997d7f845d4bc"
 )
@@ -97,12 +96,30 @@ INITIAL_V2_ROOT = Path(".local/pitchapi-h2h-development-history-v2")
 PREMIER_EXTENSION_V2_ROOT = Path(
     ".local/pitchapi-h2h-development-history-v2-premier-league-extension"
 )
+FAILED_FULL_EXTENSION_V2_ROOT = Path(".local/pitchapi-h2h-development-history-v2-qualified")
+FAILED_FULL_EXTENSION_V2_INVENTORY_SHA256 = (
+    "6e5b8aee96edf7a273a57afb26b684b538975d7d5f9d0fbd4dc4815437203ba3"
+)
+SERIE_A_2022_23_MANIFEST_RAW_SHA256 = (
+    "211106c930682456085a09aaf897736d77d42a7c3d59a653d4339180445a4612"
+)
+SERIE_A_2022_23_MANIFEST_NORMALIZED_SHA256 = (
+    "2c78d120869346e7908f3b469c663f19dc130daea22bed3275145fcdda87b049"
+)
+V2_RESULT_PATH = Path(
+    "docs/evidence/matchforge-h2h-development-history-acquisition-v2-result-2026-09-28.json"
+)
+V2_REPORT_PATH = Path(
+    "docs/evidence/matchforge-h2h-development-history-acquisition-v2-result-2026-09-28.md"
+)
+V2_RESULT_SHA256 = "90e38f596f414ba85532e23ff68c6a1d49cd727b172932701772e0e5e629354d"
+V2_REPORT_SHA256 = "c2b0cec2efea6fb47fd77113a085bde89b3b05066f180bde84c2ef49234dff70"
 EXCLUDED_COMPETITIONS = {
     "La Liga 2023/24": "EXCLUDED_FROM_H2H_DEVELOPMENT_HISTORY_V2_PROVIDER_INCOMPLETE"
 }
 CURRENT_DEVELOPMENT_ROOT = Path(".local/pitchapi-multi-domain-development-v1-r3/primary")
 TOKEN_NAME = "PITCH_API_TOKEN"
-ADAPTER_VERSION = "matchforge-h2h-development-history-adapter-v2"
+ADAPTER_VERSION = "matchforge-h2h-development-history-adapter-v3"
 XG_SERIES = "PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_V1_RAW_XG"
 EXPECTED_TARGET_COUNT = 1_270
 PRIOR_SCOPES = {
@@ -124,6 +141,7 @@ CURRENT_MAPPING_PATH = (
 
 
 def acquire(config_path: Path = CONFIG_PATH, root: Path = OUTPUT_ROOT) -> dict[str, object]:
+    _verify_v2_preservation()
     config = _load_config(config_path)
     groups = _groups(config)
     store = Store(root, hard_storage_bytes=_integer(config, "hard_storage_ceiling_bytes"))
@@ -203,8 +221,9 @@ def _acquire_groups(
             lineage,
             loaded_resources,
             reuse_status,
+            postseason_exclusions,
         ) = _load_group_resources(
-            resource_modes[group.scope_key], store, client, group, scope
+            resource_modes[group.scope_key], store, client, group, scope, config
         )
         resources.extend(loaded_resources)
         _register_mappings(mappings, selection.ordered_matches)
@@ -217,13 +236,14 @@ def _acquire_groups(
                 "lineage": lineage,
                 "status_exclusions": status_exclusions,
                 "resource_status": reuse_status,
+                "postseason_exclusions": postseason_exclusions,
             }
         )
 
     base_requests = 1 + sum(
         1 + len(cast(Sequence[object], item["matches"]))
         for item in group_inputs
-        if item["resource_status"] == "NEWLY_ACQUIRED"
+        if str(item["resource_status"]).startswith("NEWLY_ACQUIRED")
     )
     if client.state.attempts - client.state.retries != base_requests:
         raise SnapshotStop("REQUEST_LEDGER_MISMATCH")
@@ -261,6 +281,8 @@ def _acquire_groups(
                 "league_id": scopes[group.scope_key].league_id,
                 "nominal_fixtures": group.expected_matches,
                 "finished_fixtures": len(matches),
+                "provider_finished_fixtures": len(matches)
+                + len(cast(Sequence[object], item["postseason_exclusions"])),
                 "mapped_fixtures": len(matches),
                 "fixture_status_exclusions": dict(
                     sorted(cast(Mapping[str, int], item["status_exclusions"]).items())
@@ -282,6 +304,8 @@ def _acquire_groups(
                 "qualification_failures": failures,
                 "admitted": not failures,
                 "resource_status": item["resource_status"],
+                "postseason_exclusions": item["postseason_exclusions"],
+                "regular_season_structure": _regular_season_structure(matches),
             }
         )
 
@@ -293,6 +317,21 @@ def _acquire_groups(
         (*fixed_observations, *history_observations), targets, PRIOR_SCOPES
     )
     firewall = _firewall(history_rows, targets, summaries)
+    competition_stage_audit = {
+        "rule": config["regular_season_eligibility_rule"],
+        "acquired_scopes": [
+            {
+                "scope_key": summary["scope_key"],
+                "competition": summary["competition"],
+                "season": summary["season"],
+                "structure": summary["regular_season_structure"],
+                "postseason_exclusions": summary["postseason_exclusions"],
+            }
+            for summary in summaries
+        ],
+        "existing_bundesliga_history": _existing_bundesliga_stage_audit(),
+        "status": "PASS",
+    }
     classification = _classification(summaries, coverage, firewall)
 
     mapping_manifest = _publish_mapping(store, mappings, continuity)
@@ -303,7 +342,7 @@ def _acquire_groups(
         "manifests",
         canonical_json_bytes(
             {
-                "contract": "MatchForgeH2HDevelopmentHistoryManifestV2",
+                "contract": "MatchForgeH2HDevelopmentHistoryManifestV3",
                 "snapshot_id": str(snapshot_id),
                 "role": "DEVELOPMENT_HISTORY_ONLY",
                 "matches": history_rows,
@@ -354,10 +393,16 @@ def _acquire_groups(
         "manifests", canonical_json_bytes(snapshot_document)
     )
     result: dict[str, object] = {
-        "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionReportV2",
+        "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionReportV3",
         "status": "COMPLETED",
         "classification": classification,
         "snapshot_id": str(snapshot_id),
+        "snapshot_name": (
+            "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_V3"
+            if classification == "H2H_DEVELOPMENT_HISTORY_QUALIFIED"
+            else None
+        ),
+        "qualified_snapshot_created": classification == "H2H_DEVELOPMENT_HISTORY_QUALIFIED",
         "snapshot_sha256": snapshot.sha256,
         "snapshot_document": snapshot_path,
         "snapshot_document_sha256": snapshot_document_sha,
@@ -371,12 +416,13 @@ def _acquire_groups(
         "groups": summaries,
         "coverage": coverage,
         "firewall": firewall,
+        "competition_stage_audit": competition_stage_audit,
         "canonical_mapping": continuity,
         "excluded_competitions": EXCLUDED_COMPETITIONS,
-        "v1_preservation": {
-            "status": "ACQUISITION_FAILED",
-            "stop_code": "FULL_SEASON_MATCH_COUNT_MISMATCH",
-            "inventory_sha256": V1_INVENTORY_SHA256,
+        "v2_preservation": {
+            "status": "PROVIDER_DATA_INCOMPLETE",
+            "result_sha256": V2_RESULT_SHA256,
+            "report_sha256": V2_REPORT_SHA256,
             "mutated": False,
         },
         "expected_requests": config["expected_requests"],
@@ -398,7 +444,7 @@ def _acquire_groups(
             if package_manifest is not None
             else None
         ),
-        "bounded_extension_assessment": _bounded_extension_assessment(),
+        "bundesliga_2023_24_extension": _bundesliga_extension_decision(coverage),
     }
     store.publish_bytes("reports", canonical_json_bytes(result))
     backup_sha, total_bytes = store.seal_backup()
@@ -415,17 +461,214 @@ def _load_group_resources(
     client: Client,
     group: GroupSpec,
     scope: Any,
-) -> tuple[Any, Any, Any, Any, Any, Any, list[Resource], str]:
+    config: Mapping[str, object],
+) -> tuple[Any, Any, Any, Any, Any, Any, list[Resource], str, list[dict[str, object]]]:
     if resource_mode == "REUSE_VERIFIED_V1":
         loaded = _reuse_verified_v1_premier_league(store, group, scope)
-        return (*loaded, "REUSED_VERIFIED_V1_RESOURCES")
+        return (*loaded, "REUSED_VERIFIED_V1_RESOURCES", [])
     if resource_mode == "REUSE_VERIFIED_V2_INITIAL":
         loaded = _reuse_verified_v2_group(store, group, scope, INITIAL_V2_ROOT)
-        return (*loaded, "REUSED_VERIFIED_V2_INITIAL_RESOURCES")
+        return (*loaded, "REUSED_VERIFIED_V2_INITIAL_RESOURCES", [])
     if resource_mode == "REUSE_VERIFIED_V2_PREMIER_EXTENSION":
         loaded = _reuse_verified_v2_group(store, group, scope, PREMIER_EXTENSION_V2_ROOT)
-        return (*loaded, "REUSED_VERIFIED_V2_PREMIER_EXTENSION_RESOURCES")
-    return (*_acquire_group(store, client, group, scope), "NEWLY_ACQUIRED")
+        return (*loaded, "REUSED_VERIFIED_V2_PREMIER_EXTENSION_RESOURCES", [])
+    if resource_mode == "REUSE_V2_FAILED_MANIFEST_ACQUIRE_FILTERED_SHOTS":
+        (
+            manifest,
+            selection,
+            exclusions,
+            validation_scope,
+            shots,
+            lineage,
+            resources,
+            postseason_exclusions,
+        ) = _acquire_filtered_group(store, client, group, scope, config)
+        return (
+            manifest,
+            selection,
+            exclusions,
+            validation_scope,
+            shots,
+            lineage,
+            resources,
+            "NEWLY_ACQUIRED_WITH_REUSED_MANIFEST",
+            postseason_exclusions,
+        )
+    return (*_acquire_group(store, client, group, scope), "NEWLY_ACQUIRED", [])
+
+
+def _acquire_filtered_group(
+    store: Store,
+    client: Client,
+    group: GroupSpec,
+    scope: Any,
+    config: Mapping[str, object],
+) -> tuple[Any, Any, Any, Any, Any, Any, list[Resource], list[dict[str, object]]]:
+    primary = FAILED_FULL_EXTENSION_V2_ROOT / "primary"
+    inventory_sha = hashlib.sha256(canonical_json_bytes(_inventory(primary))).hexdigest()
+    stop = json.loads((FAILED_FULL_EXTENSION_V2_ROOT / "STOPPED.json").read_text())
+    if (
+        inventory_sha != FAILED_FULL_EXTENSION_V2_INVENTORY_SHA256
+        or stop.get("classification") != "PROVIDER_DATA_INCOMPLETE"
+        or stop.get("stop_code") != "FULL_SEASON_MATCH_COUNT_MISMATCH"
+    ):
+        raise SnapshotStop("V2_FAILED_EXTENSION_EVIDENCE_MISMATCH")
+    raw_path = (
+        primary
+        / "raw"
+        / "sha256"
+        / SERIE_A_2022_23_MANIFEST_RAW_SHA256[:2]
+        / f"{SERIE_A_2022_23_MANIFEST_RAW_SHA256}.json"
+    )
+    normalized_path = (
+        primary
+        / "normalized"
+        / "sha256"
+        / SERIE_A_2022_23_MANIFEST_NORMALIZED_SHA256[:2]
+        / f"{SERIE_A_2022_23_MANIFEST_NORMALIZED_SHA256}.json"
+    )
+    if (
+        _sha256_file(raw_path) != SERIE_A_2022_23_MANIFEST_RAW_SHA256
+        or _sha256_file(normalized_path) != SERIE_A_2022_23_MANIFEST_NORMALIZED_SHA256
+    ):
+        raise SnapshotStop("V2_SERIE_A_MANIFEST_IDENTITY_MISMATCH")
+    manifest = cast(Mapping[str, Any], json.loads(normalized_path.read_text()))
+    manifest_resource = _reuse_resource(
+        store,
+        raw_path,
+        normalized_path,
+        resource_ref=f"season:{group.scope_key}",
+        scope_key=group.scope_key,
+        kind="season_manifest",
+        path=scope.manifest_path,
+        acquired_at=str(stop["started_at"]),
+    )
+    exclusions = cast(list[dict[str, object]], config["postseason_exclusions"])
+    matching = [item for item in exclusions if item.get("scope_key") == group.scope_key]
+    if len(matching) != 1:
+        raise SnapshotStop("PROVIDER_COMPETITION_STAGE_AMBIGUOUS")
+    exclusion = matching[0]
+    fixture_id = str(exclusion["fixture_id"])
+    detail_path = f"/v1/matches/{fixture_id}"
+    detail, detail_resource = _resource(
+        store,
+        client,
+        scope_key=group.scope_key,
+        kind="match_detail",
+        resource_ref=f"match_detail:{group.scope_key}:{fixture_id}",
+        path=detail_path,
+        cap=SEASON_CAP_BYTES,
+    )
+    selection, status_exclusions, validation_scope, exclusion_record = (
+        _select_regular_season_manifest(manifest, scope, group.expected_matches, detail, exclusion)
+    )
+    resources = [manifest_resource, detail_resource]
+    shots: dict[str, Mapping[str, Any]] = {}
+    lineage: dict[str, dict[str, str]] = {}
+    for index, match in enumerate(selection.ordered_matches, start=1):
+        match_id = str(match["id"])
+        shot_path = f"/v1/matches/{match_id}/shots"
+        payload, resource = _resource(
+            store,
+            client,
+            scope_key=group.scope_key,
+            kind="match_shots",
+            resource_ref=f"shots:{group.scope_key}:{match_id}",
+            path=shot_path,
+            cap=SHOT_CAP_BYTES,
+        )
+        _shot_count(payload, match_id)
+        resources.append(resource)
+        shots[match_id] = payload
+        lineage[match_id] = {
+            "resource_ref": resource.resource_ref,
+            "raw_sha256": resource.raw_sha256,
+            "normalized_sha256": resource.normalized_sha256,
+            "source_manifest_inventory_sha256": inventory_sha,
+        }
+        if index % 50 == 0 or index == len(selection.ordered_matches):
+            _progress(group.scope_key, index, len(selection.ordered_matches), client)
+    return (
+        manifest,
+        selection,
+        status_exclusions,
+        validation_scope,
+        shots,
+        lineage,
+        resources,
+        [exclusion_record],
+    )
+
+
+def _select_regular_season_manifest(
+    payload: Mapping[str, Any],
+    scope: Any,
+    expected_matches: int,
+    detail_payload: Mapping[str, Any],
+    exclusion: Mapping[str, object],
+) -> tuple[Any, Mapping[str, int], Any, dict[str, object]]:
+    data = payload.get("data")
+    if not isinstance(data, Mapping):
+        raise SnapshotStop("PROVIDER_COMPETITION_STAGE_AMBIGUOUS")
+    matches = data.get("matches")
+    detail = detail_payload.get("data")
+    sources = exclusion.get("verified_competition_sources")
+    if (
+        not isinstance(matches, list)
+        or len(matches) != expected_matches + 1
+        or not isinstance(detail, Mapping)
+        or exclusion.get("classification")
+        != "POSTSEASON_FIXTURE_EXCLUDED_BY_FROZEN_COMPETITION_STAGE_RULE"
+        or exclusion.get("verified_competition_designation") != "RELEGATION_PLAYOFF"
+        or not isinstance(sources, list)
+        or not sources
+        or any("legaseriea.it" not in str(source) for source in sources)
+    ):
+        raise SnapshotStop("PROVIDER_COMPETITION_STAGE_AMBIGUOUS")
+    fixture_id = str(exclusion.get("fixture_id"))
+    manifest_matches = [match for match in matches if isinstance(match, Mapping)]
+    fixture_matches = [match for match in manifest_matches if str(match.get("id")) == fixture_id]
+    expected_detail = {
+        "id": fixture_id,
+        "season": exclusion.get("season_id"),
+        "status": exclusion.get("provider_status"),
+        "time_utc": exclusion.get("kickoff_at"),
+        "round_name": exclusion.get("provider_round"),
+        "has_playoff": exclusion.get("provider_has_playoff"),
+    }
+    if (
+        len(manifest_matches) != len(matches)
+        or len(fixture_matches) != 1
+        or any(detail.get(key) != value for key, value in expected_detail.items())
+        or not isinstance(detail.get("league"), Mapping)
+        or cast(Mapping[str, object], detail["league"]).get("id") != exclusion.get("competition_id")
+        or not isinstance(detail.get("home_team"), Mapping)
+        or cast(Mapping[str, object], detail["home_team"]).get("id")
+        != exclusion.get("home_team_id")
+        or not isinstance(detail.get("away_team"), Mapping)
+        or cast(Mapping[str, object], detail["away_team"]).get("id")
+        != exclusion.get("away_team_id")
+    ):
+        raise SnapshotStop("PROVIDER_COMPETITION_STAGE_AMBIGUOUS")
+    filtered = [match for match in manifest_matches if str(match.get("id")) != fixture_id]
+    filtered_payload = {"data": {"league": data.get("league"), "matches": filtered}}
+    selection, status_exclusions, validation_scope = _select_valid_manifest(
+        filtered_payload, scope, expected_matches
+    )
+    structure = _regular_season_structure(selection.ordered_matches)
+    if structure["status"] != "PASS":
+        raise SnapshotStop("PROVIDER_COMPETITION_STAGE_AMBIGUOUS")
+    return (
+        selection,
+        status_exclusions,
+        validation_scope,
+        {
+            **dict(exclusion),
+            "provider_detail": dict(detail),
+            "source_manifest_raw_sha256": SERIE_A_2022_23_MANIFEST_RAW_SHA256,
+            "source_manifest_normalized_sha256": SERIE_A_2022_23_MANIFEST_NORMALIZED_SHA256,
+        },
+    )
 
 
 def _acquire_group(
@@ -481,9 +724,7 @@ def _reuse_verified_v1_premier_league(
     dict[str, dict[str, str]],
     list[Resource],
 ]:
-    stop, normalized_by_sha, shots_by_match, raw_by_normalized_sha = (
-        _verified_v1_resource_index()
-    )
+    stop, normalized_by_sha, shots_by_match, raw_by_normalized_sha = _verified_v1_resource_index()
     manifest_entry = normalized_by_sha.get(V1_PREMIER_LEAGUE_NORMALIZED_SHA256)
     raw_manifest = raw_by_normalized_sha.get(V1_PREMIER_LEAGUE_NORMALIZED_SHA256)
     if (
@@ -568,9 +809,7 @@ def _verified_v1_resource_index() -> tuple[
         raise SnapshotStop("V1_RESOURCE_COUNT_MISMATCH")
     normalized_by_sha, shots_by_match = _index_v1_normalized(normalized_files)
     raw_by_normalized_sha = _index_v1_raw(raw_files)
-    if any(
-        entry[0] not in raw_by_normalized_sha for entry in shots_by_match.values()
-    ):
+    if any(entry[0] not in raw_by_normalized_sha for entry in shots_by_match.values()):
         raise SnapshotStop("V1_PREMIER_LEAGUE_RAW_SHOT_MISSING")
     return stop, normalized_by_sha, shots_by_match, raw_by_normalized_sha
 
@@ -646,9 +885,7 @@ def _reuse_verified_v2_group(
     resources_by_ref = {resource.resource_ref: resource for resource in resources}
     lineage = {
         match_id: {
-            **_reused_lineage(
-                resources_by_ref[f"shots:{group.scope_key}:{match_id}"]
-            ),
+            **_reused_lineage(resources_by_ref[f"shots:{group.scope_key}:{match_id}"]),
             "reuse_classification": "REUSED_VERIFIED_V2_RESOURCES",
             "source_inventory_sha256": inventory_sha,
         }
@@ -794,8 +1031,7 @@ def _audit(
         request_log=reused_records
         + tuple(record for record in client.records if record.path != CATALOG_PATH),
         budget=PitchApiRequestBudget(
-            _integer(config, "validation_resource_requests")
-            + _integer(config, "retry_allowance"),
+            _integer(config, "validation_resource_requests") + _integer(config, "retry_allowance"),
             _integer(config, "retry_allowance"),
         ),
         metadata=PitchApiAuditMetadata(
@@ -895,7 +1131,7 @@ def _publish_mapping(
         "manifests",
         canonical_json_bytes(
             {
-                "contract": "MatchForgeH2HDevelopmentHistoryCanonicalMappingManifestV2",
+                "contract": "MatchForgeH2HDevelopmentHistoryCanonicalMappingManifestV3",
                 "algorithm": "matchforge-explicit-uuid5-initial-allocation-v1",
                 "role": "DEVELOPMENT_HISTORY_ONLY",
                 "continuity": continuity,
@@ -924,6 +1160,77 @@ def _qualification_failures(report: Mapping[str, object], finished: int) -> list
     if report["missing_shot_resources"]:
         failures.append("MISSING_RESOURCES")
     return failures
+
+
+def _regular_season_structure(
+    matches: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    directed_pairs: set[tuple[str, str]] = set()
+    teams: set[str] = set()
+    duplicate_pairs = 0
+    self_matches = 0
+    for match in matches:
+        home = match.get("home_team")
+        away = match.get("away_team")
+        if not isinstance(home, Mapping) or not isinstance(away, Mapping):
+            return {"status": "FAIL", "reason": "MALFORMED_TEAM_IDENTITY"}
+        home_id, away_id = str(home.get("id", "")), str(away.get("id", ""))
+        if not home_id or not away_id:
+            return {"status": "FAIL", "reason": "MISSING_TEAM_IDENTITY"}
+        teams.update((home_id, away_id))
+        if home_id == away_id:
+            self_matches += 1
+        pair = (home_id, away_id)
+        if pair in directed_pairs:
+            duplicate_pairs += 1
+        directed_pairs.add(pair)
+    expected_matches = len(teams) * (len(teams) - 1)
+    status = (
+        "PASS"
+        if not self_matches
+        and not duplicate_pairs
+        and len(matches) == expected_matches
+        and len(directed_pairs) == expected_matches
+        else "FAIL"
+    )
+    return {
+        "status": status,
+        "fixture_count": len(matches),
+        "team_count": len(teams),
+        "expected_double_round_robin_fixtures": expected_matches,
+        "unique_directed_pairs": len(directed_pairs),
+        "duplicate_directed_pairs": duplicate_pairs,
+        "self_matches": self_matches,
+    }
+
+
+def _existing_bundesliga_stage_audit() -> dict[str, object]:
+    records = _resource_manifest_records(CURRENT_DEVELOPMENT_ROOT, NORMALIZED_MANIFEST_SHA256)
+    matching = [
+        record
+        for record in records
+        if record.get("resource_ref") == "season:bundesliga_2024_25"
+        and record.get("resource_type") == "season_manifest"
+    ]
+    if len(matching) != 1:
+        raise SnapshotStop("BUNDESLIGA_HISTORY_MANIFEST_AMBIGUOUS")
+    path = CURRENT_DEVELOPMENT_ROOT / str(matching[0]["path"])
+    payload = json.loads(path.read_text())
+    data = payload.get("data")
+    matches = data.get("matches") if isinstance(data, Mapping) else None
+    if not isinstance(matches, list) or any(not isinstance(match, Mapping) for match in matches):
+        raise SnapshotStop("BUNDESLIGA_HISTORY_MANIFEST_INVALID")
+    structure = _regular_season_structure(cast(list[Mapping[str, object]], matches))
+    if structure["status"] != "PASS":
+        raise SnapshotStop("BUNDESLIGA_COMPETITION_STAGE_AMBIGUOUS")
+    return {
+        "scope_key": "bundesliga_2024_25",
+        "competition": "Bundesliga",
+        "season": "2024/2025",
+        "postseason_exclusions": [],
+        "structure": structure,
+        "status": "PASS",
+    }
 
 
 def _firewall(
@@ -957,12 +1264,13 @@ def _firewall(
         "statsbomb_protected_scopes": len(scopes & statsbomb_scopes),
     }
     return {
-        "contract": "MatchForgeH2HDevelopmentHistoryFirewallV2",
+        "contract": "MatchForgeH2HDevelopmentHistoryFirewallV3",
         "status": "PASS" if not any(intersections.values()) else "FAIL",
         "intersections": intersections,
         "history_role": "DEVELOPMENT_HISTORY_ONLY",
         "new_target_count": 0,
         "future_confirmation_reservation_status": "NO_GROUPS_FROZEN_NO_REUSE",
+        "confirmation_reserved_target_intersections": 0,
         "strict_prior_kickoff": True,
         "same_kickoff_sealed": True,
     }
@@ -981,8 +1289,7 @@ def _classification(
     competitions = cast(Mapping[str, Mapping[str, object]], coverage["coverage_by_competition"])
     required_competitions = ("Bundesliga", "Premier League", "Serie A")
     domain_floors_pass = all(
-        competition in competitions
-        and cast(int, competitions[competition]["at_least_2"]) >= 150
+        competition in competitions and cast(int, competitions[competition]["at_least_2"]) >= 150
         for competition in required_competitions
     )
     if (
@@ -1017,56 +1324,57 @@ def _future_package(
     }
 
 
-def _bounded_extension_assessment() -> dict[str, object]:
-    initial_result_path = INITIAL_V2_ROOT / "RESULT.json"
-    if not initial_result_path.exists():
-        return {"performed": False, "reason": "INITIAL_REQUALIFICATION_IS_CURRENT_RUN"}
-    result = json.loads(initial_result_path.read_text())
-    coverage = cast(Mapping[str, Any], result["coverage"])
-    global_coverage = cast(Mapping[str, Mapping[str, object]], coverage["coverage"])
-    competitions = cast(Mapping[str, Mapping[str, int]], coverage["coverage_by_competition"])
-    two = cast(int, global_coverage["at_least_2"]["count"])
-    three = cast(int, global_coverage["at_least_3"]["count"])
-    candidates: dict[str, object] = {}
-    for competition, scope in (
-        ("Premier League", "premier_league_2022_23"),
-        ("Serie A", "serie_a_2022_23"),
+def _verify_v2_preservation() -> None:
+    if (
+        _sha256_file(V2_RESULT_PATH) != V2_RESULT_SHA256
+        or _sha256_file(V2_REPORT_PATH) != V2_REPORT_SHA256
     ):
-        record = competitions[competition]
-        target_count = record["target_count"]
-        potential_two_gain = target_count - record["at_least_2"]
-        potential_three_gain = record["at_least_1"] - record["at_least_3"]
-        candidates[scope] = {
-            "currently_failing_targets_that_could_gain_2_plus": potential_two_gain,
-            "currently_failing_targets_that_could_gain_3_plus": potential_three_gain,
-            "maximum_global_2_plus": two + potential_two_gain,
-            "maximum_global_3_plus": three + potential_three_gain,
-            "could_mathematically_close_frozen_floors": (
-                two + potential_two_gain >= 600 and three + potential_three_gain >= 300
-            ),
-            "request_requirement": 381,
-            "request_requirement_with_catalog": 382,
-            "hard_storage_ceiling_bytes": 536_870_912,
-        }
+        raise SnapshotStop("V2_EVIDENCE_MUTATED")
+
+
+def _bundesliga_extension_decision(coverage: Mapping[str, object]) -> dict[str, object]:
+    cumulative = cast(Mapping[str, Mapping[str, object]], coverage["coverage"])
+    competitions = cast(Mapping[str, Mapping[str, int]], coverage["coverage_by_competition"])
+    two_plus = cast(int, cumulative["at_least_2"]["count"])
+    gap = max(0, 600 - two_plus)
+    bundesliga = competitions["Bundesliga"]
+    maximum_gain = bundesliga["target_count"] - bundesliga["at_least_2"]
+    protected_scope = ("bundesliga", "2023/2024")
+    v5_overlap = protected_scope in _v5_evaluation_scopes()
+    prior_spent_overlap = protected_scope in _prior_spent_pitchapi()[1]
+    can_close = two_plus + maximum_gain >= 600
+    acquisition_permitted = gap > 0 and can_close and not v5_overlap and not prior_spent_overlap
     return {
-        "performed": True,
-        "initial_global_2_plus": two,
-        "initial_global_3_plus": three,
-        "initial_2_plus_shortfall": max(0, 600 - two),
-        "initial_3_plus_shortfall": max(0, 300 - three),
-        "candidates": candidates,
-        "selected_scope": "premier_league_2022_23",
-        "selection_reason": "SMALLEST_SINGLE_AUTHORIZED_EXTENSION_WITH_HIGHEST_2_PLUS_CAPACITY",
+        "needed_to_reach_2_plus_floor": gap > 0,
+        "global_2_plus": two_plus,
+        "remaining_gap": gap,
+        "maximum_mathematical_gain": maximum_gain,
+        "maximum_global_2_plus": two_plus + maximum_gain,
+        "can_mathematically_close_gap": can_close,
+        "v5_protected_scope_intersection": v5_overlap,
+        "prior_spent_scope_intersection": prior_spent_overlap,
+        "acquisition_permitted": acquisition_permitted,
+        "decision": (
+            "DO_NOT_ACQUIRE_SERIE_A_COMPLETED_FLOOR"
+            if gap == 0
+            else (
+                "ACQUIRE_BOUNDED_EXTENSION"
+                if acquisition_permitted
+                else "DO_NOT_ACQUIRE_FROZEN_FIREWALL_WOULD_FAIL"
+            )
+        ),
+        "acquired": False,
     }
 
 
 def _load_config(path: Path) -> Mapping[str, object]:
     payload = json.loads(path.read_text())
-    if payload.get("contract") != "MatchForgeH2HDevelopmentHistoryAcquisitionConfigurationV2":
+    if payload.get("contract") != "MatchForgeH2HDevelopmentHistoryAcquisitionConfigurationV3":
         raise SnapshotStop("CONFIGURATION_CONTRACT_MISMATCH")
     expected = (
         _integer(payload, "catalog_requests")
         + _integer(payload, "season_manifest_requests")
+        + _integer(payload, "match_detail_requests")
         + _integer(payload, "shot_requests")
     )
     if expected != payload.get("expected_requests"):
@@ -1098,7 +1406,7 @@ def _load_config(path: Path) -> Mapping[str, object]:
 
 def _groups(config: Mapping[str, object]) -> tuple[GroupSpec, ...]:
     values = config.get("history_groups")
-    if not isinstance(values, list) or len(values) not in (2, 3, 4):
+    if not isinstance(values, list) or len(values) != 4:
         raise SnapshotStop("CONFIGURATION_GROUP_MISMATCH")
     groups: list[GroupSpec] = []
     for value in values:
@@ -1114,20 +1422,20 @@ def _groups(config: Mapping[str, object]) -> tuple[GroupSpec, ...]:
                 projected_targets=cast(int, value["projected_targets"]),
             )
         )
-    initial = {
+    full_extension = {
         ("Premier League", "2023/2024"),
         ("Serie A", "2023/2024"),
+        ("Premier League", "2022/2023"),
+        ("Serie A", "2022/2023"),
     }
-    extension = initial | {("Premier League", "2022/2023")}
-    full_extension = extension | {("Serie A", "2022/2023")}
     if (
-        {(group.competition, group.season) for group in groups}
-        not in (initial, extension, full_extension)
+        {(group.competition, group.season) for group in groups} != full_extension
         or any(group.projected_targets != 0 for group in groups)
         or sum(
             group.expected_matches
             for group, value in zip(groups, cast(list[Mapping[str, object]], values), strict=True)
-            if value.get("resource_mode") == "ACQUIRE"
+            if value.get("resource_mode")
+            in {"ACQUIRE", "REUSE_V2_FAILED_MANIFEST_ACQUIRE_FILTERED_SHOTS"}
         )
         != _integer(config, "shot_requests")
     ):
@@ -1142,6 +1450,7 @@ def _resource_modes(config: Mapping[str, object]) -> dict[str, str]:
         "REUSE_VERIFIED_V1",
         "REUSE_VERIFIED_V2_INITIAL",
         "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+        "REUSE_V2_FAILED_MANIFEST_ACQUIRE_FILTERED_SHOTS",
         "ACQUIRE",
     }
     if set(modes.values()) - allowed:
@@ -1167,14 +1476,16 @@ def _stop_report(
         "AUTHORIZATION_FAILED",
         "REQUIRED_RESOURCE_NOT_FOUND",
     }
-    if code == "FULL_SEASON_MATCH_COUNT_MISMATCH":
+    if code == "PROVIDER_COMPETITION_STAGE_AMBIGUOUS":
+        classification = "PROVIDER_COMPETITION_STAGE_AMBIGUOUS"
+    elif code == "FULL_SEASON_MATCH_COUNT_MISMATCH":
         classification = "PROVIDER_DATA_INCOMPLETE"
     elif code.startswith("AUTHORIZED_SCOPE_") or code in provider_codes:
         classification = "PROVIDER_OR_RIGHTS_BLOCKED"
     else:
         classification = "ACQUISITION_FAILED"
     return {
-        "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionStopV2",
+        "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionStopV3",
         "status": "STOPPED",
         "classification": classification,
         "stop_code": code,

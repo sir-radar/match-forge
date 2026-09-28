@@ -1,0 +1,107 @@
+{
+  "adapter_version": "matchforge-h2h-development-history-adapter-v3",
+  "authorization": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V3",
+  "base_url": "https://api.pitchapi.dev",
+  "catalog_requests": 1,
+  "concurrency": 1,
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionConfigurationV3",
+  "credential_reference": "env:PITCH_API_TOKEN",
+  "expected_primary_and_backup_bytes": 167772160,
+  "expected_requests": 382,
+  "hard_request_ceiling": 390,
+  "hard_storage_ceiling_bytes": 536870912,
+  "history_groups": [
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "premier_league_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "serie_a_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "premier_league_2022_23",
+      "season": "2022/2023"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_V2_FAILED_MANIFEST_ACQUIRE_FILTERED_SHOTS",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "serie_a_2022_23",
+      "season": "2022/2023"
+    }
+  ],
+  "match_detail_requests": 1,
+  "minimum_request_start_interval_seconds": 1.0,
+  "output_root": ".local/pitchapi-h2h-development-history-v3",
+  "postseason_exclusions": [
+    {
+      "away_team_id": "t_0YcbNh",
+      "away_team_name": "Hellas Verona",
+      "classification": "POSTSEASON_FIXTURE_EXCLUDED_BY_FROZEN_COMPETITION_STAGE_RULE",
+      "competition_id": "l_0ALvwF",
+      "fixture_id": "m_3ir3kE",
+      "home_team_id": "t_2QVYlo",
+      "home_team_name": "Spezia",
+      "kickoff_at": "2023-06-11T18:45:00Z",
+      "provider_has_playoff": false,
+      "provider_round": "final",
+      "provider_stage": null,
+      "provider_status": "finished",
+      "scope_key": "serie_a_2022_23",
+      "season_id": "2022/2023",
+      "verified_competition_designation": "RELEGATION_PLAYOFF",
+      "verified_competition_sources": [
+        "https://img.legaseriea.it/vimages/64806966/Insights%20Serie%20A%20Play-Out%20Spezia%20vs%20Hellas%20Verona.pdf",
+        "https://img.legaseriea.it/vimages/6481aeb8/2022-23_A_SPARE_UNI_1_SPEVER.pdf"
+      ]
+    }
+  ],
+  "regular_season_eligibility_rule": {
+    "admit": "FIXTURE_BELONGS_TO_ORDINARY_REGULAR_SEASON_SCHEDULE",
+    "exclude": [
+      "RELEGATION_PLAYOFF",
+      "PROMOTION_PLAYOFF",
+      "CHAMPIONSHIP_PLAYOFF",
+      "POSTSEASON_DECIDER",
+      "QUALIFICATION_PLAYOFF",
+      "OTHER_NON_REGULAR_SEASON_LEAGUE_STAGE"
+    ],
+    "forbidden_decision_inputs": [
+      "SCORE",
+      "PARTICIPATING_TEAMS",
+      "H2H_COVERAGE_GAIN",
+      "MODEL_RESULT",
+      "TARGET_COUNT_CONVENIENCE"
+    ],
+    "on_ambiguous_classification": "PROVIDER_COMPETITION_STAGE_AMBIGUOUS"
+  },
+  "retry_allowance": 8,
+  "season_manifest_requests": 0,
+  "shot_requests": 380,
+  "task_hard_request_ceiling": 390,
+  "timeout_seconds": 30,
+  "validation_resource_requests": 1524,
+  "wall_clock_ceiling_minutes": 30
+}
