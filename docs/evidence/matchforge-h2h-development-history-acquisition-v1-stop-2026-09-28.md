@@ -26,7 +26,7 @@ No qualified snapshot identity or snapshot SHA-256 was created. The read-only pa
 
 ## Coverage and firewall
 
-Coverage requalification and the final firewall were not run because the authorized three-season package was incomplete. Partial resources were not admitted. The existing coverage remains:
+Coverage requalification and the final package firewall were not run because the authorized three-season package was incomplete. A diagnostic firewall check on the partial Premier League history passed with zero intersections against fixed development targets, V5 spent targets/scopes, prior spent PitchAPI fixtures/scopes, and protected StatsBomb fixtures/scopes. This is not package qualification, and partial resources were not admitted. The existing coverage remains:
 
 | Coverage | Targets |
 |---|---:|

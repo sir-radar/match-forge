@@ -27,7 +27,16 @@
   },
   "expected_requests": 1144,
   "firewall": {
-    "result": "NOT_RUN_PACKAGE_INCOMPLETE",
+    "result": "PARTIAL_DIAGNOSTIC_PASS_NOT_QUALIFICATION",
+    "intersections": {
+      "fixed_development_targets": 0,
+      "prior_spent_pitchapi_fixtures": 0,
+      "prior_spent_pitchapi_scopes": 0,
+      "statsbomb_protected_fixtures": 0,
+      "statsbomb_protected_scopes": 0,
+      "v5_protected_scopes": 0,
+      "v5_spent_targets": 0
+    },
     "partial_resources_admitted": false,
     "new_target_count": 0,
     "confirmation_data_acquired": false
