@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -92,3 +93,18 @@ def test_frozen_h2h_coverage_applies_lookback_meeting_cap_and_era_weight() -> No
     assert evidence["orientation"] == {"same": 2, "reversed": 3}
     assert evidence["latest_prior_meeting_age_days"]["quantiles"]["median"] == 30.0
     assert 0.0 < evidence["effective_weight"]["quantiles"]["median"] <= 1.5
+
+
+def test_frozen_h2h_coverage_accepts_bounded_second_prior_season() -> None:
+    first = replace(_observation(20, KICKOFF - timedelta(days=300)), scope_key="prior_scope")
+    second = replace(
+        _observation(21, KICKOFF - timedelta(days=600)), scope_key="second_prior_scope"
+    )
+
+    evidence = analyze_frozen_h2h_coverage(
+        (first, second),
+        (_target(),),
+        {"scope": ("prior_scope", "second_prior_scope")},
+    )
+
+    assert evidence["coverage"]["at_least_2"] == {"count": 1, "fraction": 1.0}

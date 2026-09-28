@@ -1,0 +1,73 @@
+{
+  "acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
+  "actual_provider_requests": 766,
+  "backup": {
+    "final_partial_result": "NOT_CREATED_PROVIDER_DATA_INCOMPLETE",
+    "initial_inventory_sha256": "1a41f4c40602aba254d3b9bdebf1c64ef67d8ebbcf3cf07034084f4c75745490",
+    "initial_result": "PASS",
+    "premier_extension_inventory_sha256": "825173cc0d33af8464f53088b521f61ae20b803d09d0a8e80b994e6e3b1b843f",
+    "premier_extension_result": "PASS"
+  },
+  "classification": "PROVIDER_DATA_INCOMPLETE",
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionV2ResultEvidenceV1",
+  "coverage_requalification": {
+    "all_three_competitions_reached_150_two_plus": true,
+    "global": {"at_least_1": 1069, "at_least_2": 593, "at_least_3": 457, "at_least_5": 1, "exactly_0": 201},
+    "global_floor_pass": false,
+    "remaining_shortfall": {"at_least_2": 7, "at_least_3": 0},
+    "per_competition": {
+      "Bundesliga": {"at_least_2": 169, "at_least_3": 120},
+      "Premier League": {"at_least_2": 224, "at_least_3": 201},
+      "Serie A": {"at_least_2": 200, "at_least_3": 136}
+    }
+  },
+  "extension_assessment": {
+    "initial_coverage": {"at_least_2": 568, "at_least_3": 392},
+    "initial_shortfall": {"at_least_2": 32, "at_least_3": 0},
+    "premier_league_2022_23": {
+      "actual_gain": {"at_least_2": 25, "at_least_3": 65},
+      "manifest_fixtures": 380,
+      "requests": 382,
+      "shot_resources": 380,
+      "shots": 9654,
+      "valid_npxg_shots": 9510
+    },
+    "serie_a_2022_23": {
+      "finished_fixtures": 381,
+      "manifest_normalized_sha256": "2c78d120869346e7908f3b469c663f19dc130daea22bed3275145fcdda87b049",
+      "nominal_regular_season_fixtures": 380,
+      "requests": 2,
+      "shot_requests": 0,
+      "stop_code": "FULL_SEASON_MATCH_COUNT_MISMATCH"
+    },
+    "theoretical_bundesliga_2023_24_maximum_two_plus_gain": 262
+  },
+  "firewall": {
+    "final_result": "NOT_RUN_PROVIDER_DATA_INCOMPLETE",
+    "last_completed_package_result": "PASS",
+    "all_protected_intersections": 0,
+    "same_kickoff_sealed": true,
+    "strict_prior_kickoff": true
+  },
+  "h2h_research_supportable": false,
+  "history_groups": [
+    {"competition": "Premier League", "resource_status": "REUSED_VERIFIED_V1_RESOURCES", "season": "2023/2024"},
+    {"competition": "Serie A", "resource_status": "REUSED_VERIFIED_V2_INITIAL_RESOURCES", "season": "2023/2024"},
+    {"competition": "Premier League", "resource_status": "NEWLY_ACQUIRED", "season": "2022/2023"},
+    {"competition": "Serie A", "resource_status": "PROVIDER_DATA_INCOMPLETE_NO_SHOTS_REQUESTED", "season": "2022/2023"}
+  ],
+  "interim_unqualified_snapshots": [
+    {"snapshot_id": "db9aca21-c3f0-505c-990e-e48ae070b85c", "snapshot_sha256": "d5364a43c7e4a1f3376bdb001412111b51801a953c28b6dd7c213cc4e4559e9c"},
+    {"snapshot_id": "396a05b9-e577-53d0-9859-a2c6904b2e02", "snapshot_sha256": "207272f01abcbb2c3c98588ca2353e3e296ea9020dd619f2d8aa20e05b6ec1b1"}
+  ],
+  "la_liga_2023_24": "EXCLUDED_FROM_H2H_DEVELOPMENT_HISTORY_V2_PROVIDER_INCOMPLETE",
+  "model_evaluation_performed": false,
+  "model_fitting_performed": false,
+  "next_owner_decision_required": "Decide whether to authorize Bundesliga 2023/24 as a bounded same-league extension; no further acquisition is authorized",
+  "premier_league_v1_reuse_result": "REUSED_VERIFIED_V1_RESOURCES",
+  "qualified_snapshot_created": false,
+  "serie_a_2023_24": {"fixtures": 380, "shot_resources": 380, "shots": 9724, "valid_npxg_shots": 9569},
+  "v1_inventory_sha256_after_v2": "ca156d2f2852551a31d6ba30a04e8e17c5ae2f41a570d0536456e67d323392a3",
+  "v1_preserved": true,
+  "v6_created": false
+}

@@ -1,0 +1,64 @@
+{
+  "adapter_version": "matchforge-h2h-development-history-adapter-v2",
+  "authorization": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
+  "base_url": "https://api.pitchapi.dev",
+  "catalog_requests": 1,
+  "concurrency": 1,
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionConfigurationV2",
+  "credential_reference": "env:PITCH_API_TOKEN",
+  "expected_primary_and_backup_bytes": 167772160,
+  "expected_requests": 382,
+  "hard_request_ceiling": 1532,
+  "hard_storage_ceiling_bytes": 536870912,
+  "history_groups": [
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "premier_league_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "serie_a_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "Premier League",
+      "country_code": "ENG",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "REUSE_VERIFIED_V2_PREMIER_EXTENSION",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "premier_league_2022_23",
+      "season": "2022/2023"
+    },
+    {
+      "competition": "Serie A",
+      "country_code": "ITA",
+      "expected_matches": 380,
+      "projected_targets": 0,
+      "resource_mode": "ACQUIRE",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "serie_a_2022_23",
+      "season": "2022/2023"
+    }
+  ],
+  "minimum_request_start_interval_seconds": 1.0,
+  "output_root": ".local/pitchapi-h2h-development-history-v2-qualified",
+  "retry_allowance": 8,
+  "season_manifest_requests": 1,
+  "shot_requests": 380,
+  "task_hard_request_ceiling": 1532,
+  "timeout_seconds": 30,
+  "validation_resource_requests": 1524,
+  "wall_clock_ceiling_minutes": 30
+}

@@ -7,6 +7,7 @@ import pytest
 
 from scripts.run_h2h_development_history_acquisition import (
     CONFIG_PATH,
+    EXCLUDED_COMPETITIONS,
     _classification,
     _groups,
     _load_config,
@@ -16,13 +17,14 @@ from scripts.run_pitchapi_snapshot_v1_acquisition import SnapshotStop
 
 
 def _coverage(two: int, three: int, per_competition: tuple[int, ...]) -> dict[str, object]:
+    names = ("Bundesliga", "Premier League", "Serie A")
     return {
         "coverage": {
             "at_least_2": {"count": two},
             "at_least_3": {"count": three},
         },
         "coverage_by_competition": {
-            f"competition_{index}": {"at_least_2": count}
+            (names[index] if index < len(names) else f"competition_{index}"): {"at_least_2": count}
             for index, count in enumerate(per_competition)
         },
     }
@@ -34,13 +36,15 @@ def test_configuration_freezes_exact_history_scope_and_budget() -> None:
 
     assert {(group.competition, group.season) for group in groups} == {
         ("Premier League", "2023/2024"),
-        ("La Liga", "2023/2024"),
         ("Serie A", "2023/2024"),
     }
+    assert EXCLUDED_COMPETITIONS == {
+        "La Liga 2023/24": "EXCLUDED_FROM_H2H_DEVELOPMENT_HISTORY_V2_PROVIDER_INCOMPLETE"
+    }
     assert all(group.projected_targets == 0 for group in groups)
-    assert config["expected_requests"] == 1144
-    assert config["retry_allowance"] == 23
-    assert config["hard_request_ceiling"] == 1167
+    assert config["expected_requests"] == 382
+    assert config["retry_allowance"] == 8
+    assert config["hard_request_ceiling"] == 770
     assert config["hard_storage_ceiling_bytes"] == 512 * 1024**2
 
 
@@ -89,3 +93,17 @@ def test_classification_requires_global_and_three_domain_floors() -> None:
         )
         == "ACQUISITION_FAILED"
     )
+
+
+def test_classification_requires_each_named_competition_floor() -> None:
+    summaries: tuple[dict[str, object], ...] = ({"qualification_failures": []},)
+    firewall: dict[str, object] = {"status": "PASS"}
+    coverage = _coverage(600, 300, ())
+    coverage["coverage_by_competition"] = {
+        "Bundesliga": {"at_least_2": 150},
+        "Premier League": {"at_least_2": 150},
+        "Serie A": {"at_least_2": 149},
+        "Other": {"at_least_2": 500},
+    }
+
+    assert _classification(summaries, coverage, firewall) == "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT"
