@@ -1,0 +1,24 @@
+{
+  "authorized_extension_id": "MATCHFORGE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
+  "confirmation_data_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
+  "h2h_model_evaluation_authorized": false,
+  "h2h_model_fitting_authorized": false,
+  "minimum_scope": "MINIMUM_SAFE_HISTORY_EXTENSION_TO_CLOSE_SEVEN_TARGET_GAP",
+  "model_promotion_authorized": false,
+  "preserved_v3": {
+    "classification": "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT",
+    "snapshot_id": "d0da187c-88d0-5eb1-b08b-01bdaf097622",
+    "snapshot_sha256": "09280f173008cffd4a05f7b71859b0588814d552e7dea8b5846474bebbd5e308"
+  },
+  "prohibited_scope": "Bundesliga 2023/2024",
+  "recorded_at": "2026-09-28T10:59:53Z",
+  "required_coverage": {
+    "minimum_competitions_with_150_two_meeting_targets": 3,
+    "minimum_targets_with_three_prior_meetings": 300,
+    "minimum_targets_with_two_prior_meetings": 600
+  },
+  "target_pair_history_completeness": "A target may use a historical season only when every expected directed fixture for its unordered team pair is present; affected targets are H2H_HISTORY_INCOMPLETE",
+  "v6_authorized": false
+}

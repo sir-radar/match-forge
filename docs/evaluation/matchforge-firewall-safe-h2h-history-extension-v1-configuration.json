@@ -1,0 +1,61 @@
+{
+  "adapter_version": "matchforge-firewall-safe-h2h-history-extension-adapter-v1",
+  "authorization": "MATCHFORGE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
+  "base_url": "https://api.pitchapi.dev",
+  "candidate_scopes": [
+    {
+      "competition": "La Liga",
+      "disposition": "SELECT_IF_RETAINED_MANIFEST_CAPACITY_CLOSES_GAP",
+      "expected_matches": 380,
+      "resource_mode": "REUSE_RETAINED_V1_MANIFEST_ACQUIRE_PAIR_COMPLETE_SHOTS",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "la_liga_2023_24",
+      "season": "2023/2024"
+    },
+    {
+      "competition": "La Liga",
+      "disposition": "CAPACITY_MANIFEST_ONLY_UNLESS_EARLIER_PREFERENCE_CANNOT_CLOSE_GAP",
+      "expected_matches": 380,
+      "resource_mode": "ACQUIRE_CAPACITY_MANIFEST_ONLY",
+      "role": "DEVELOPMENT_HISTORY_ONLY",
+      "scope_key": "la_liga_2022_23",
+      "season": "2022/2023"
+    }
+  ],
+  "concurrency": 1,
+  "contract": "MatchForgeFirewallSafeH2HHistoryExtensionConfigurationV1",
+  "credential_reference": "env:PITCH_API_TOKEN",
+  "expected_primary_and_backup_bytes": 268435456,
+  "expected_requests": 379,
+  "hard_request_ceiling": 387,
+  "hard_storage_ceiling_bytes": 536870912,
+  "minimum_request_start_interval_seconds": 1.0,
+  "output_root": ".local/pitchapi-firewall-safe-h2h-history-extension-v1",
+  "required_coverage": {
+    "minimum_competitions_with_150_two_meeting_targets": 3,
+    "minimum_targets_with_three_prior_meetings": 300,
+    "minimum_targets_with_two_prior_meetings": 600
+  },
+  "retry_allowance": 8,
+  "season_manifest_requests": 1,
+  "shot_requests": 378,
+  "target_pair_history_completeness": {
+    "affected_target_disposition": "H2H_HISTORY_INCOMPLETE",
+    "expected_missing_directed_fixtures": [
+      {
+        "away_team_id": "t_1pKstK",
+        "away_team_name": "Girona",
+        "home_team_id": "t_06N2GA",
+        "home_team_name": "Mallorca",
+        "scope_key": "la_liga_2023_24"
+      }
+    ],
+    "rule": "A_TARGET_MAY_USE_A_HISTORICAL_SEASON_ONLY_WHEN_EVERY_EXPECTED_DIRECTED_FIXTURE_FOR_ITS_UNORDERED_TEAM_PAIR_IS_PRESENT",
+    "scope": "ALL_H2H_HISTORY_COMPETITIONS_AND_SCOPES",
+    "unaffected_pair_disposition": "ELIGIBLE_WHEN_ALL_OTHER_FROZEN_HISTORY_RULES_PASS"
+  },
+  "task_hard_request_ceiling": 387,
+  "timeout_seconds": 30,
+  "validation_resource_requests": 379,
+  "wall_clock_ceiling_minutes": 30
+}
