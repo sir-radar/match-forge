@@ -1,0 +1,24 @@
+{
+  "authorization": "REGULAR_SEASON_FILTERING_AND_HISTORY_PACKAGE_COMPLETION",
+  "authorized_acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V3",
+  "bounded_extension": {
+    "competition": "Bundesliga",
+    "season": "2023/2024",
+    "condition": "ONLY_IF_SERIE_A_2022_23_LEAVES_GLOBAL_2_PLUS_BELOW_600_AND_EXTENSION_CAN_CLOSE_EXACT_GAP"
+  },
+  "confirmation_data_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_REGULAR_SEASON_FILTERING_AND_COMPLETE_H2H_HISTORY_ACQUISITION_V3",
+  "h2h_model_evaluation_authorized": false,
+  "h2h_model_fitting_authorized": false,
+  "model_promotion_authorized": false,
+  "recorded_at": "2026-09-28T07:30:00Z",
+  "regular_season_rule": "ADMIT_ONLY_ORDINARY_REGULAR_SEASON_SCHEDULE_FIXTURES_EXCLUDE_STRUCTURALLY_VERIFIED_POSTSEASON_OR_PLAYOFF_STAGES",
+  "required_coverage": {
+    "minimum_competitions_with_150_two_meeting_targets": 3,
+    "minimum_targets_with_three_prior_meetings": 300,
+    "minimum_targets_with_two_prior_meetings": 600
+  },
+  "v2_disposition": "PRESERVE_PROVIDER_DATA_INCOMPLETE_AND_ALL_EVIDENCE_HASHES_UNCHANGED",
+  "v6_authorized": false
+}

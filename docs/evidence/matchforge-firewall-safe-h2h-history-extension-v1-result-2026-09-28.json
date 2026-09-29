@@ -1,0 +1,162 @@
+{
+  "acquisition": {
+    "actual_requests": 379,
+    "capacity_manifest_requests": 1,
+    "hard_request_ceiling": 387,
+    "retries_used": 0,
+    "selected_history_shot_requests": 378
+  },
+  "backup": {
+    "file_count_each": 3823,
+    "inventory_sha256": "d0d45548b4cc03f3bc0c98f3121a4c79811385969188b0d2c70e3820c351cae4",
+    "logical_inventory_match": true,
+    "status": "PASS",
+    "total_primary_and_backup_bytes": 120673884
+  },
+  "candidate_history_scopes": [
+    {
+      "affected_targets": [
+        {
+          "canonical_target_id": "57fd6d00-0eba-5b37-a655-2c8397e14053",
+          "classification": "H2H_HISTORY_INCOMPLETE",
+          "kickoff_at": "2024-12-14T15:15:00+00:00",
+          "provider_target_id": "m_2GCSZf"
+        },
+        {
+          "canonical_target_id": "e20535ce-426a-57ef-98ed-bc331c2e9626",
+          "classification": "H2H_HISTORY_INCOMPLETE",
+          "kickoff_at": "2025-05-05T19:00:00+00:00",
+          "provider_target_id": "m_0V8ZhI"
+        }
+      ],
+      "full_qualification_result": "PASS",
+      "la_liga_targets_with_2_plus": 198,
+      "la_liga_targets_with_3_plus": 135,
+      "provider_finished_fixtures": 379,
+      "safe_global_2_plus_gain": 198,
+      "safe_global_3_plus_gain": 135,
+      "scope_key": "la_liga_2023_24",
+      "selected_for_full_acquisition": true,
+      "target_pair_complete_usable_fixtures": 378
+    },
+    {
+      "affected_targets": [],
+      "full_qualification_result": "NOT_PERFORMED_NPXG_NOT_ACQUIRED_MINIMUM_ROUTE_ALREADY_SELECTED",
+      "la_liga_targets_with_2_plus": 104,
+      "la_liga_targets_with_3_plus": 2,
+      "manifest_completeness": "COMPLETE_380_OF_380",
+      "safe_global_2_plus_gain": 104,
+      "safe_global_3_plus_gain": 2,
+      "scope_key": "la_liga_2022_23",
+      "selected_for_full_acquisition": false
+    }
+  ],
+  "canonical_mapping": {
+    "ambiguous_admitted_identities": 0,
+    "existing_aliases_reused": 53,
+    "mapping_failures": 0,
+    "status": "PASS"
+  },
+  "chronology": {
+    "history_rows_without_any_later_matching_target": 0,
+    "same_kickoff_sealed": true,
+    "status": "PASS",
+    "strict_prior_kickoff": true
+  },
+  "classification": "H2H_DEVELOPMENT_HISTORY_QUALIFIED",
+  "contract": "MatchForgeFirewallSafeH2HHistoryExtensionEvidenceV1",
+  "coverage": {
+    "at_least_1": 1132,
+    "at_least_2": 791,
+    "at_least_3": 642,
+    "at_least_5": 3,
+    "margin_above_2_plus_floor": 191,
+    "required_at_least_2": 600
+  },
+  "coverage_by_competition": {
+    "Bundesliga": {
+      "at_least_2": 169,
+      "at_least_3": 120
+    },
+    "La Liga": {
+      "at_least_2": 198,
+      "at_least_3": 135
+    },
+    "Premier League": {
+      "at_least_2": 224,
+      "at_least_3": 201
+    },
+    "Serie A": {
+      "at_least_2": 200,
+      "at_least_3": 186
+    }
+  },
+  "firewall": {
+    "confirmation_reserved_target_intersections": 0,
+    "fixed_development_target_intersections": 0,
+    "prior_spent_pitchapi_fixture_intersections": 0,
+    "prior_spent_pitchapi_scope_intersections": 0,
+    "statsbomb_protected_fixture_intersections": 0,
+    "statsbomb_protected_scope_intersections": 0,
+    "status": "PASS",
+    "v5_protected_scope_intersections": 0,
+    "v5_spent_target_intersections": 0
+  },
+  "history_scope_result": {
+    "competition": "La Liga",
+    "malformed_or_missing_resources": 0,
+    "penalty_exclusions": 105,
+    "provider_finished_fixtures": 379,
+    "scope_key": "la_liga_2023_24",
+    "shots": 9266,
+    "target_pair_complete_fixtures": 378,
+    "valid_npxg_shots": 9133
+  },
+  "manifests": {
+    "canonical_mapping_sha256": "fa05ab357f3742871e2cedd904471c0e52f87951b27a795c601a42f352eccfa7",
+    "coverage_sha256": "d49e9d10f7f7f1881c6e0e5b0aa02268955ceb503c3d94f372d8173caa45bad9",
+    "firewall_sha256": "67ddb78e950de95058e8f278087afe44ceafa53455f5f600a6793d41448ef22c",
+    "history_sha256": "90f9e5343aa1e07ccc2df721d39e4deaee99295615046f806cdadda101c656c4",
+    "normalized_resources_sha256": "204369d45316fec073df3d16312f6ab2f89e545ae218a9760915335f9cbb47ca",
+    "raw_resources_sha256": "d565e07dc088ce5326b0676e0a5909e6b4a012b6004b7369ce189b422a6d58bd",
+    "request_ledger_sha256": "cad34e976c0689ade5cb8ecc75cfdfc2222ca2d4561fc1d05f8d9ca51df9302e",
+    "target_pair_completeness_sha256": "1b34e922b6076e346252509ca6dc60abc254644c34d191184755729211022d8c"
+  },
+  "next_owner_decision": "AUTHORIZE_OR_DECLINE_MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+  "prohibited_work": {
+    "confirmation_data_acquired": false,
+    "h2h_model_evaluated": false,
+    "h2h_model_fitted": false,
+    "new_forecasting_targets": 0,
+    "v6_created": false
+  },
+  "research_package": {
+    "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+    "sha256": "2ce3bac5104f410d480d33ee648f1f2f69bb1638fefd62ef27ea8f1ecde600e7",
+    "status": "PREPARED_AWAITING_OWNER_AUTHORIZATION"
+  },
+  "snapshot": {
+    "document_sha256": "ac3196d3b505e4c75fe0fe05c67c0fcffc5b5bcb8b2a81e9b3fa47e6c43afdb2",
+    "name": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_QUALIFIED_V1",
+    "snapshot_id": "fcb43dd0-5910-55c0-8922-4c1c1e77246a",
+    "snapshot_sha256": "be0b5fb6a0dcc097649d5bfd413cda59b3cafcaaa3188c80fa63f2c13c1e9352"
+  },
+  "status": "COMPLETE",
+  "target_pair_completeness": {
+    "eligible_fixtures": 378,
+    "missing_fixture": "Mallorca home vs Girona",
+    "provider_finished_fixtures": 379,
+    "quarantined_present_fixture_id": "m_326Zfh",
+    "scientifically_valid": true,
+    "status": "PASS_WITH_TARGET_PAIR_QUARANTINE"
+  },
+  "v3_preservation": {
+    "classification": "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT",
+    "configuration_sha256": "f81c68b8f44e3f692dc76129773876c176d56313eeb56d719a6c609a8237ef50",
+    "evidence_sha256": "dfdcc133a482a7c51b738eaf9bfc5f983ed655578999567e2f99632610395b55",
+    "mutated": false,
+    "report_sha256": "87ceaa4fa7fff3e1257380a545b921b0eb56d351168d6fcf088d9b9908984b61",
+    "snapshot_id": "d0da187c-88d0-5eb1-b08b-01bdaf097622",
+    "snapshot_sha256": "09280f173008cffd4a05f7b71859b0588814d552e7dea8b5846474bebbd5e308"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "acquisition_id": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V3",
+  "actual_provider_requests": 382,
+  "backup": {
+    "inventory_equality": "PASS",
+    "inventory_sha256": "430ad4efd52bbd06551dea11547bef1a553d05f42cb67b901f31621dc43a12af",
+    "primary_files": 3061,
+    "backup_files": 3061,
+    "read_only": true
+  },
+  "bundesliga_2023_24_extension": {
+    "acquired": false,
+    "can_mathematically_close_gap": true,
+    "maximum_global_2_plus": 855,
+    "maximum_mathematical_gain": 262,
+    "prior_spent_scope_intersection": true,
+    "reason": "DO_NOT_ACQUIRE_FROZEN_FIREWALL_WOULD_FAIL",
+    "v5_protected_scope_intersection": true
+  },
+  "competition_coverage": {
+    "Bundesliga": {"at_least_2": 169, "at_least_3": 120},
+    "Premier League": {"at_least_2": 224, "at_least_3": 201},
+    "Serie A": {"at_least_2": 200, "at_least_3": 186}
+  },
+  "competition_stage_audit": {
+    "Bundesliga 2024/25": "PASS_306_FIXTURES_18_TEAM_COMPLETE_DIRECTED_SCHEDULE",
+    "Premier League 2022/23": "PASS_380_FIXTURES_20_TEAM_COMPLETE_DIRECTED_SCHEDULE",
+    "Premier League 2023/24": "PASS_380_FIXTURES_20_TEAM_COMPLETE_DIRECTED_SCHEDULE",
+    "Serie A 2022/23": "PASS_380_REGULAR_SEASON_FIXTURES_AFTER_ONE_VERIFIED_POSTSEASON_EXCLUSION",
+    "Serie A 2023/24": "PASS_380_FIXTURES_20_TEAM_COMPLETE_DIRECTED_SCHEDULE",
+    "status": "PASS"
+  },
+  "contract": "MatchForgeH2HDevelopmentHistoryAcquisitionV3ResultV1",
+  "final_classification": "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT",
+  "final_firewall": {
+    "confirmation_reserved_target_intersections": 0,
+    "fixed_development_target_intersections": 0,
+    "prior_spent_pitchapi_fixture_intersections": 0,
+    "prior_spent_pitchapi_scope_intersections": 0,
+    "statsbomb_protected_fixture_intersections": 0,
+    "statsbomb_protected_scope_intersections": 0,
+    "status": "PASS",
+    "v5_protected_scope_intersections": 0,
+    "v5_spent_target_intersections": 0
+  },
+  "global_2_plus_reached_600": false,
+  "global_3_plus_remains_at_least_300": true,
+  "global_coverage": {
+    "at_least_1": 1069,
+    "at_least_2": 593,
+    "at_least_3": 507,
+    "at_least_5": 3,
+    "target_count": 1270
+  },
+  "h2h_research_supportable": false,
+  "intermediate_acquisition_snapshot": {
+    "qualified": false,
+    "snapshot_id": "d0da187c-88d0-5eb1-b08b-01bdaf097622",
+    "snapshot_sha256": "09280f173008cffd4a05f7b71859b0588814d552e7dea8b5846474bebbd5e308"
+  },
+  "model_evaluation_performed": false,
+  "model_fitting_performed": false,
+  "next_owner_decision": "AUTHORIZE_OR_DECLINE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
+  "postseason_exclusions": [
+    {
+      "away_team": {"id": "t_0YcbNh", "name": "Hellas Verona"},
+      "classification": "POSTSEASON_FIXTURE_EXCLUDED_BY_FROZEN_COMPETITION_STAGE_RULE",
+      "competition": {"id": "l_0ALvwF", "name": "Serie A"},
+      "fixture_id": "m_3ir3kE",
+      "home_team": {"id": "t_2QVYlo", "name": "Spezia"},
+      "kickoff_at": "2023-06-11T18:45:00Z",
+      "provider_has_playoff": false,
+      "provider_round": "final",
+      "provider_stage": null,
+      "provider_status": "finished",
+      "season_id": "2022/2023",
+      "verified_competition_designation": "RELEGATION_PLAYOFF",
+      "verified_competition_sources": [
+        "https://img.legaseriea.it/vimages/64806966/Insights%20Serie%20A%20Play-Out%20Spezia%20vs%20Hellas%20Verona.pdf",
+        "https://img.legaseriea.it/vimages/6481aeb8/2022-23_A_SPARE_UNI_1_SPEVER.pdf"
+      ]
+    }
+  ],
+  "qualified_final_snapshot_created": false,
+  "regular_season_rule": "ADMIT_ONLY_ORDINARY_REGULAR_SEASON_SCHEDULE_FIXTURES_EXCLUDE_STRUCTURALLY_VERIFIED_POSTSEASON_OR_PLAYOFF_STAGES_FAIL_CLOSED_IF_AMBIGUOUS",
+  "result_recorded_at": "2026-09-28T06:50:00Z",
+  "serie_a_2022_23": {
+    "finished_provider_fixtures": 381,
+    "own_goal_exclusions": 31,
+    "penalty_exclusions": 108,
+    "regular_season_fixtures": 380,
+    "shots": 9682,
+    "valid_npxg_shots": 9543
+  },
+  "three_domain_floor": {
+    "minimum_targets_with_2_plus_per_competition": 150,
+    "passed": true
+  },
+  "v2_preservation": {
+    "mutated": false,
+    "report_sha256": "c2b0cec2efea6fb47fd77113a085bde89b3b05066f180bde84c2ef49234dff70",
+    "result_sha256": "90e38f596f414ba85532e23ff68c6a1d49cd727b172932701772e0e5e629354d",
+    "status": "PROVIDER_DATA_INCOMPLETE"
+  },
+  "v6_created": false
+}

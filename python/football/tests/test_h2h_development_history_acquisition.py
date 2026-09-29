@@ -35,7 +35,9 @@ def test_configuration_freezes_exact_history_scope_and_budget() -> None:
     groups = _groups(config)
 
     assert {(group.competition, group.season) for group in groups} == {
+        ("Premier League", "2022/2023"),
         ("Premier League", "2023/2024"),
+        ("Serie A", "2022/2023"),
         ("Serie A", "2023/2024"),
     }
     assert EXCLUDED_COMPETITIONS == {
@@ -44,7 +46,9 @@ def test_configuration_freezes_exact_history_scope_and_budget() -> None:
     assert all(group.projected_targets == 0 for group in groups)
     assert config["expected_requests"] == 382
     assert config["retry_allowance"] == 8
-    assert config["hard_request_ceiling"] == 770
+    assert config["match_detail_requests"] == 1
+    assert config["shot_requests"] == 380
+    assert config["hard_request_ceiling"] == 390
     assert config["hard_storage_ceiling_bytes"] == 512 * 1024**2
 
 
