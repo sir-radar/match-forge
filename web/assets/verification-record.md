@@ -8,7 +8,7 @@ Run 30 September 2026:
 - `pnpm build`: pass; routes `/`, `/performance`, `/predictions` generated.
 - `pnpm test:e2e`: desktop Chromium and mobile WebKit fixture expansion pass; compact mobile navigation/rail behavior pass; one intentionally inapplicable desktop copy of the mobile-only test is skipped.
 - axe-core expanded fixture audit: zero violations in desktop and mobile projects.
-- `make check`: 617 Python tests, 15 Rust tests, Go tests, lint, static analysis, builds, and project-status validation pass.
+- `make check`: 618 Python tests, 15 Rust tests, Go tests, lint, static analysis, builds, and project-status validation pass.
 - `make integration`: fresh-database migration/storage invariants and PostgreSQL/Redis/Go service checks pass.
 - Fallow 3.30.0: zero code-health findings and zero dead-code/dependency findings; architecture boundaries and policy rule packs are not configured in this repository and therefore were not measured by Fallow.
 - `pnpm audit --audit-level=moderate`: no known vulnerabilities after upgrading Vitest to 4.1.11.

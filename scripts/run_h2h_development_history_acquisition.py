@@ -40,6 +40,7 @@ from scripts.run_pitchapi_multi_domain_development_acquisition import (
     GroupSpec,
     _name_key,
     _prior_spent_pitchapi,
+    _prior_spent_scopes,
     _progress,
     _publish_request_ledger,
     _publish_resource_manifest,
@@ -1341,7 +1342,7 @@ def _bundesliga_extension_decision(coverage: Mapping[str, object]) -> dict[str, 
     maximum_gain = bundesliga["target_count"] - bundesliga["at_least_2"]
     protected_scope = ("bundesliga", "2023/2024")
     v5_overlap = protected_scope in _v5_evaluation_scopes()
-    prior_spent_overlap = protected_scope in _prior_spent_pitchapi()[1]
+    prior_spent_overlap = protected_scope in _prior_spent_scopes()
     can_close = two_plus + maximum_gain >= 600
     acquisition_permitted = gap > 0 and can_close and not v5_overlap and not prior_spent_overlap
     return {
