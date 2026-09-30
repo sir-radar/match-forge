@@ -1,6 +1,6 @@
 # MVP completion audit
 
-Checked 30 September 2026 against the owner request “MatchForge MVP Completion Enforcement”. Status values are `PASS`, `PARTIAL`, `BLOCKED_EXTERNAL`, `NOT_APPLICABLE`, and `FAIL`.
+Checked 30 September 2026 against the owner request “MatchForge MVP Completion Enforcement”. Status values are `PASS`, `PARTIAL`, `NOT_APPLICABLE`, and `FAIL`.
 
 | ID | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
@@ -13,7 +13,7 @@ Checked 30 September 2026 against the owner request “MatchForge MVP Completion
 | 7 | Team statistics | PASS | Context API derives recent goals and averages only from stored completed matches; advanced unavailable fields remain absent. |
 | 8 | `/performance` | PASS | `GET /v1/performance`; continent, country, league, rating, and minimum-count filters; league table contains rating, forecasts, 1X2, top-three, top-five, Brier, log loss, and recent Brier. |
 | 9 | `/predictions` | PASS | Date, source, continent, country, competition, market, and agreement filters; required row fields and empty state. |
-| 10 | External collection | BLOCKED_EXTERNAL | Current candidate terms/access do not permit an automated adapter. `docs/MVP-EXTERNAL-PREDICTION-SOURCES.md`; `make external-predictions DATE=2026-09-30` returns `NO_APPROVED_SOURCES`. |
+| 10 | External collection | PASS | R2Bet, 1960Tips, SlyBet, and MatchOutlook returned HTTP 200 and parsed 29 supported public selections. Forebet returned HTTP 403 and remains `TECHNICALLY_UNAVAILABLE`; no bypass was attempted. `docs/MVP-EXTERNAL-PREDICTION-SOURCES.md`; `make external-predictions DATE=2026-09-30`. |
 | 11 | External storage/revisions | PASS | `football.external_predictions`; append-only revision hash; `football/product/external_predictions.py`; parser/import tests. |
 | 12 | Market normalization | PASS | `football/product/domain.py`; `test_product_domain.py`; manual-import parser tests. |
 | 13 | Agreement logic | PASS | Python and Go tests prove probability-derived agreement independent of source count. |
@@ -22,14 +22,14 @@ Checked 30 September 2026 against the owner request “MatchForge MVP Completion
 | 16 | Product model label | PASS | Main fixture and performance UI display “MatchForge Forecast”; `MVP_FORECAST` remains internal. |
 | 17 | Preserve UI design | PASS | Existing dense fixture layout, inline expansion, mobile layout, tabs, dark styling, and design assets remain. |
 | 18 | History/simulation/diagnostics | PASS | Stored forecast details display; no simulation or unauthorized research claim was added. |
-| 19 | Caching/rate limits | PARTIAL | Raw responses are content-addressed and completed history persists. Provider limits fail closed. No new Redis response cache was needed for the scheduled daily sync. |
+| 19 | Caching/rate limits | PASS | External adapters fetch one requested page per source per run and parse the cached response in memory. The daily schedule makes one pass; it does not recursively crawl. Source failures are isolated. |
 | 20 | Scheduled jobs | PASS | `scripts/mvp-refresh.sh` runs sync then external import/collection; systemd timer remains 06:00 Africa/Lagos. |
 | 21 | Focused tests | PASS | Provider transport, empty-response fallback selection, leakage boundary, market mapping, import parsing, rating, agreement, H2H/team summaries, UI, mobile, and accessibility coverage. |
 | 22 | Frontend in main gate | PASS | Root `make check` includes frontend lint, typecheck, unit tests, and production build; CI runs Playwright/axe. |
 | 23 | One-command startup | PASS | `make dev` remains PostgreSQL + migrations + Go API + Next.js; `.env.example` documents both provider tokens and optional import file. |
 | 24 | Evidence matrix | PASS | This file plus live command output and repository tests. |
-| 25 | Critical completion gate | PARTIAL | Live fixture → history → stored forecast → API/UI is proven. Live result settlement/performance for the 2026-10-10 forecasts cannot occur before those matches finish; deterministic settlement/performance tests cover the path meanwhile. Automated external scraping is `BLOCKED_EXTERNAL`. |
-| 26 | Required verification | PARTIAL | `make check integration` passed: 627 Python tests, 15 Rust tests, Go tests, lint/type checks, package builds, frontend unit/build checks, fresh migrations, and service integration. `make web-e2e` passed 3 tests with 1 intentional desktop/mobile-project skip. Live sync and external commands completed. GitHub CI remains pending until PR creation. |
+| 25 | Critical completion gate | PARTIAL | Live fixture → history → stored forecast → API/UI is proven. Live external collection stored 29 selections across four sources. Live result settlement/performance for the 2026-10-10 forecasts cannot occur before those matches finish; deterministic settlement/performance tests cover the path meanwhile. |
+| 26 | Required verification | PARTIAL | `make check` passed: 633 Python tests, 15 Rust tests, Go tests, lint/type/static checks, package builds, project-status validation, and frontend lint/type/unit/build checks. `make integration` passed fresh migrations, storage invariants, and PostgreSQL/Redis/Go service checks. Live external collection inserted 29 rows; the immediate rerun inserted 0. PR #134 is open; its CI must pass before merge. |
 | 27 | Final delivery report | PASS | PR description and final owner handoff include required counts, providers, tests, limitations, and research state. |
 | 28 | Stop conditions | PASS | No access-control bypass, fabricated data, weaker history rule, research restart, or forecasting-math change. |
 
@@ -47,7 +47,7 @@ Checked 30 September 2026 against the owner request “MatchForge MVP Completion
   "stored_history_matches": 380,
   "standings_rows": 20,
   "generated_forecasts": 5,
-  "external_automated_adapters": 0,
+  "external_automated_adapters": 4,
   "external_manual_import_adapters": 1
 }
 ```
@@ -56,7 +56,8 @@ Checked 30 September 2026 against the owner request “MatchForge MVP Completion
 
 ```text
 MVP_PRODUCT_IMPLEMENTATION_COMPLETE
-MVP_AUTOMATED_EXTERNAL_PREDICTION_COLLECTION_BLOCKED_EXTERNAL
+MVP_AUTOMATED_EXTERNAL_PREDICTION_COLLECTION_ENABLED_4_SOURCES
+FOREBET_AUTOMATED_COLLECTION_TECHNICALLY_UNAVAILABLE
 MVP_LIVE_SETTLEMENT_EVIDENCE_PENDING_MATCH_COMPLETION
 MODEL_RESEARCH_PAUSED_FOR_MVP
 ```

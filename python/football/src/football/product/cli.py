@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import os
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from typing import Any
+from zoneinfo import ZoneInfo
 
 import psycopg
 
 from football.product.api_football import ApiFootballClient, ApiFootballError
 from football.product.domain import MODEL_ARTIFACT_PATH
+from football.product.external_prediction_sources import SourceCollection, collect_sources
 from football.product.external_predictions import import_predictions, parse_import
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
 from football.product.sync import ProductSync
@@ -29,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     sync = commands.add_parser("sync")
-    sync.add_argument("--date", type=date.fromisoformat, default=date.today())
+    sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
     sync.add_argument(
         "--data-root",
         type=Path,
@@ -41,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=int(os.environ.get("MVP_MAX_HISTORY_LEAGUES", "20")),
     )
     external = commands.add_parser("external-predictions")
-    external.add_argument("--date", type=date.fromisoformat, default=date.today())
+    external.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
     external.add_argument("--source")
     external.add_argument(
         "--import-file",
@@ -58,43 +62,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "external-predictions":
-        if args.import_file is not None:
-            try:
-                with psycopg.connect(args.database_url) as connection:
-                    collected = import_predictions(
-                        connection,
-                        parse_import(args.import_file),
-                        source_code=args.source or "manual_import",
-                    )
-            except (json.JSONDecodeError, psycopg.Error, OSError, ValueError) as error:
-                print(f"error: {error}", file=sys.stderr)
-                return 1
-            print(
-                json.dumps(
-                    {
-                        "collected": collected,
-                        "enabled_sources": 1,
-                        "requested_date": args.date.isoformat(),
-                        "requested_source": args.source,
-                        "status": "IMPORTED",
-                    },
-                    sort_keys=True,
-                )
-            )
-            return 0
-        print(
-            json.dumps(
-                {
-                    "collected": 0,
-                    "enabled_sources": 0,
-                    "requested_date": args.date.isoformat(),
-                    "requested_source": args.source,
-                    "status": "NO_APPROVED_SOURCES",
-                },
-                sort_keys=True,
-            )
-        )
-        return 0
+        return _run_external_predictions(args)
     api_key = os.environ.get("API_FOOTBALL_API_KEY", "")
     try:
         client = ApiFootballClient(api_key)
@@ -112,6 +80,118 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _lagos_today() -> date:
+    return datetime.now(ZoneInfo("Africa/Lagos")).date()
+
+
+def _run_external_predictions(args: argparse.Namespace) -> int:
+    if args.import_file is not None:
+        return _run_external_import(args)
+    usage_mode = os.environ.get("EXTERNAL_PREDICTION_USAGE_MODE", "PRIVATE_LOCAL")
+    if usage_mode != "PRIVATE_LOCAL":
+        print(
+            json.dumps(
+                {
+                    "collected": 0,
+                    "enabled_sources": 0,
+                    "requested_date": args.date.isoformat(),
+                    "requested_source": args.source,
+                    "status": "USAGE_MODE_DISABLED",
+                    "usage_mode": usage_mode,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    try:
+        results = list(
+            collect_sources(
+                args.date,
+                requested_source=args.source,
+                today=_lagos_today(),
+            )
+        )
+        with psycopg.connect(args.database_url) as connection:
+            results, collected = _persist_collections(connection, results)
+    except (psycopg.Error, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    enabled = sum(result.source_code != "forebet" for result in results)
+    print(
+        json.dumps(
+            {
+                "collected": collected,
+                "enabled_sources": enabled,
+                "requested_date": args.date.isoformat(),
+                "requested_source": args.source,
+                "sources": [_collection_payload(result) for result in results],
+                "status": "COMPLETED",
+                "usage_mode": usage_mode,
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def _persist_collections(
+    connection: psycopg.Connection[Any], results: list[SourceCollection]
+) -> tuple[list[SourceCollection], int]:
+    collected = 0
+    updated: list[SourceCollection] = []
+    for result in results:
+        if not result.rows:
+            updated.append(result)
+            continue
+        try:
+            inserted = import_predictions(connection, result.rows, source_code=result.source_code)
+        except psycopg.Error as error:
+            connection.rollback()
+            updated.append(
+                dataclasses.replace(result, status="PERSISTENCE_FAILED", error=str(error))
+            )
+            continue
+        collected += inserted
+        updated.append(result)
+    return updated, collected
+
+
+def _collection_payload(result: SourceCollection) -> dict[str, object]:
+    return {
+        "source": result.source_code,
+        "source_page": result.source_page,
+        "status": result.status,
+        "parsed": len(result.rows),
+        "error": result.error,
+    }
+
+
+def _run_external_import(args: argparse.Namespace) -> int:
+    try:
+        with psycopg.connect(args.database_url) as connection:
+            collected = import_predictions(
+                connection,
+                parse_import(args.import_file),
+                source_code=args.source or "manual_import",
+            )
+    except (json.JSONDecodeError, psycopg.Error, OSError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(
+        json.dumps(
+            {
+                "collected": collected,
+                "enabled_sources": 1,
+                "requested_date": args.date.isoformat(),
+                "requested_source": args.source,
+                "status": "IMPORTED",
+            },
+            sort_keys=True,
+        )
+    )
     return 0
 
 

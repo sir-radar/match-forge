@@ -1,17 +1,39 @@
 # MVP external prediction sources
 
-Checked 30 September 2026. Collection is fail-closed: no automated adapter is enabled without clear public access and permission for the intended reuse. Login-only, paid/VIP, CAPTCHA-protected, rate-limit-circumvented and anti-bot-bypassed content is prohibited.
+Checked 30 September 2026 under `EXTERNAL_PREDICTION_USAGE_MODE=PRIVATE_LOCAL`.
+This qualification covers private local comparison only. It does not authorize public
+redistribution. Collection stores structured prediction facts, not copied pages or articles.
 
-| Source | URL | Public | Dated | Markets / coverage | Login / paid | Automated-access assessment | Adapter / enabled | Known issue |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| R2Bet | https://r2bet.com | Public pages exist | No reliable mandatory date found | Football selections; paid boundaries exist | No login for public pages; paid material exists | `REVIEW_REQUIRED` | `DISABLED` / no | No clear collection or reuse permission found. |
-| 1960Tips | https://www.1960tips.com | Public free tips exist | Yes | Common football tip markets and multiple leagues | Free and paid content | `UNSUPPORTED_TERMS` | `DISABLED` / no | April 2026 terms prohibit distribution, republication, public display, and other reuse without written permission. |
-| SlyBet | https://slybet.net | Public pages exist | No reliable mandatory date found | Football prediction pages | Public pages; paid status unclear | `REVIEW_REQUIRED` | `DISABLED` / no | Robots allows crawling; reuse terms remain unverified. |
-| MatchOutlook | https://www.matchoutlook.com/todays-football-predictions | Public | Yes | Daily football predictions | Public and paid presentation | `UNSUPPORTED_TERMS` | `DISABLED` / no | Current terms prohibit reproduction or lifting of site material. |
-| Forebet | https://www.forebet.com | Public presentation | Yes | Broad football predictions | Public and paid presentation | `UNSUPPORTED_ANTI_BOT` | `DISABLED` / no | Managed anti-bot challenge; MatchForge will not circumvent it. |
+Qualification used one ordinary `GET` per source. No login, payment, CAPTCHA, managed
+challenge, stealth technique, or anti-bot bypass was used.
 
-The persistence and API framework preserves source page, displayed prediction date, original date text, collection time, competition, teams, mapped market/selection, revision, fixture mapping and settlement. Repeated changed picks create new immutable revisions. Supported mappings include 1/X/2, 1X, X2, BTTS/GG, over 2.5 and under 2.5. An enabled `manual_import` adapter accepts owner-supplied JSON only; it does not scrape or grant permission to reuse a source.
+| Source | Public page reachable | Login required | Paid content required | Ordinary request works | Anti-bot block | Predictions parsed | Date parsed | Fixtures parsed | Markets parsed | Final status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| R2Bet | Yes | No | No for collected public picks; separate VIP content exists | Yes, HTTP 200 | No | Yes, 18 selections | Yes, `30th , Wed Sep 2026` | Yes, 18 | Yes, 18 supported selections | `ENABLED` |
+| 1960Tips | Yes | No | No for collected free tips; separate VIP content exists | Yes, HTTP 200 | No | Yes, 4 selections | Yes, `Wed, 30 Sep 2026` | Yes, 4 | Yes, 4 | `ENABLED` |
+| SlyBet | Yes | No | No | Yes, HTTP 200 | No | Yes, 4 selections | Yes, `30.09.26` | Yes, 4 | Yes, 4 | `ENABLED` |
+| MatchOutlook | Yes | No | No for collected public picks; separate paid presentation exists | Yes, HTTP 200 | No | Yes, 3 supported selections | Yes, relative daily page resolved to `2026-09-30` | Yes, 3 | Yes, 3 supported selections | `ENABLED` |
+| Forebet | Public presentation exists, but collector request is blocked | No login prompt reached | No public payment gate reached | No, HTTP 403 | Yes, managed anti-bot response | No | No | No | No | `TECHNICALLY_UNAVAILABLE` |
 
-`make external-predictions` and its `DATE=` / `SOURCE=` variants return `NO_APPROVED_SOURCES` when no approved import file is configured. Set `MVP_EXTERNAL_PREDICTIONS_IMPORT_FILE` to an owner-approved JSON file to run the append-only import during the same command and scheduled job. Set `SOURCE=` to the reviewed source code when the file contains that source's records; otherwise records retain the generic `manual_import` source. `scripts/mvp-refresh.sh` is the scheduler entry point. The systemd timer runs it at 06:00 `Africa/Lagos`.
+Terms notes:
 
-No consensus or source-performance claim is produced when zero approved selections exist. Once records exist, the daily sync settles supported selections from matched completed fixtures. `/predictions` groups consensus without changing MatchForge probabilities and filters source performance by source, league, market, and date range.
+- R2Bet and SlyBet: no explicit automation permission found. This does not block private local collection.
+- 1960Tips and MatchOutlook: restrictive reuse terms remain recorded. Collection is limited to the structured facts needed for private local comparison and is not redistributed.
+- Forebet: the adapter remains disabled because ordinary direct retrieval receives HTTP 403. MatchForge does not attempt circumvention.
+
+The enabled adapters preserve source URL, displayed or resolved prediction date, original date
+text, capture time, competition text, team text, normalized market and selection, immutable
+revision identity, and fixture-match result. Supported mappings include 1/X/2, 1X, X2,
+BTTS/GG, over 2.5, and under 2.5. Unsupported provider markets are skipped rather than
+silently reinterpreted.
+
+`make external-predictions` runs all enabled sources independently. `DATE=YYYY-MM-DD` limits
+parsing to that prediction date, and `SOURCE=<source>` runs one source. R2Bet supports a dated
+URL. The other enabled sites expose today/yesterday/tomorrow or recent dated tables; requests
+outside those published windows report `NO_DATE_PAGE` or no matching predictions. One source
+failure does not fail successful sources. Pages are fetched once per source per run and reused
+by that source parser.
+
+An optional `MVP_EXTERNAL_PREDICTIONS_IMPORT_FILE` still invokes the append-only manual import
+path. `scripts/mvp-refresh.sh` invokes automated collection after the product sync. The systemd
+timer runs the script daily at 06:00 `Africa/Lagos`.

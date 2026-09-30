@@ -646,7 +646,7 @@
     "v6_authorized": false,
     "completion_audit_ref": "docs/MVP-COMPLETION-AUDIT.md",
     "live_forecasting_status": "PASS_5_FORECASTS_2026_10_10",
-    "external_prediction_collection_status": "BLOCKED_EXTERNAL_NO_APPROVED_AUTOMATED_SOURCE",
+    "external_prediction_collection_status": "ENABLED_4_PUBLIC_SOURCES_FOREBET_TECHNICALLY_UNAVAILABLE",
     "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
     "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md"
   },
