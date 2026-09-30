@@ -1,6 +1,8 @@
 # Current state
 
-**Verified against:** `docs/project-status.json`, immutable V5 evidence, and owner decision `ACCEPT_PITCHAPI_V5_CLOSE_CHALLENGER_AUTHORIZE_CALIBRATION_POSTHOC_V1` on 27 September 2026. Machine-readable status and append-only evidence remain authoritative if this summary becomes stale.
+**Verified against:** `docs/project-status.json`, immutable research evidence, and owner decision `MVP_PRODUCT_DELIVERY_ACTIVE` on 29 September 2026. Machine-readable status and append-only evidence remain authoritative if this summary becomes stale.
+
+The active work is the working multi-league MVP. Model research is `MODEL_RESEARCH_PAUSED_FOR_MVP`. MatchForge uses the retained rolling-goals Poisson reference as `MVP_FORECAST`; this product authorization does not relabel a prior research result or authorize V6, H2H fitting, confirmation, calibration work, or a new experiment.
 
 | Subject | Verified value | Required treatment |
 | --- | --- | --- |
@@ -21,11 +23,11 @@
 | StatsBomb Evaluation V2 | Independent and unchanged | Do not merge its result into PitchAPI V5. |
 | Production capability | No enablement is recorded in `docs/project-status.json` | Do not infer production enablement from a roadmap, proposal, or research decision. |
 
-## Next authorized work
+## Current authorized work
 
-1. Obtain owner authorization before implementing the proposed development-only calibration comparison.
-2. If development admission later succeeds, freeze a separate untouched `PITCHAPI_CONFIRMATION_EVALUATION_V1` protocol before inspecting confirmation outcomes.
-3. Do not acquire confirmation data, execute confirmation, build V6, promote the challenger, or clean up historical V1–V4 code under the current decision.
-4. Continue independent StatsBomb and other already authorized work without treating it as part of V5.
+1. Deliver the MVP fixture, forecast, context, performance and external-comparison product on `ft/mvp-product-delivery`.
+2. Keep H2H display-only with zero model weight.
+3. Do not acquire research data, fit/evaluate an H2H candidate, execute confirmation, build V6, or start another forecasting experiment.
+4. Resume only after a new owner decision; see `docs/MVP-RESUME-RESEARCH.md` for the exact preserved handoff.
 
 The status and owner decision records agree. V5 is the first valid completed PitchAPI model comparison; its favorable predictive deltas do not override its frozen calibration rejection.

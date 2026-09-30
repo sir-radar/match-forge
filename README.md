@@ -11,7 +11,7 @@ attribution requirements, retention limits, rate limits, and restrictions on
 automated or bulk acquisition. Third-party source data must not be published
 unless its terms permit publication.
 
-Current phase: Sprint 2 forecasting baselines.
+Current priority: `MVP_PRODUCT_DELIVERY_ACTIVE`. Model research is paused; prior gate and research results remain unchanged.
 
 Gate A and Sprint 1 are complete. Sprint 2 implementation now includes versioned team Elo, Dixon–Coles goal products, Poisson/NB2 corner baselines, retained point-in-time walk-forward execution, paired bootstrap uncertainty, chronological calibration analysis, and immutable model governance. Sprint 2's phase gate intentionally remains `FAIL` pending review of the retained baseline evidence. See the [architecture](docs/architecture.md), [backtesting contract](docs/backtesting.md), [model governance](docs/model-governance.md), and [Sprint 2 phase gate](docs/sprint2-phase-gate.md). Simulation and 360 normalization remain deferred.
 
@@ -26,7 +26,25 @@ make sprint2-evaluate
 
 See [CLI usage](docs/cli.md) for data-pipeline commands and configuration.
 
-The Go scaffold exposes `GET /healthz`, `GET /readyz`, and `GET /version`. Run it after `make up` with:
+## MVP product
+
+Copy `.env.example` to `.env`, set `API_FOOTBALL_API_KEY`, then start the database, migrations, Go API and Next.js frontend with:
+
+```bash
+make bootstrap
+make dev
+```
+
+The web app is served at `http://127.0.0.1:3000` and the API at `http://127.0.0.1:8080`. Populate a requested fixture date with:
+
+```bash
+make mvp-sync DATE=YYYY-MM-DD
+make external-predictions DATE=YYYY-MM-DD
+```
+
+The second command safely reports `NO_APPROVED_SOURCES` until an external source passes access and reuse review. `infrastructure/systemd/matchforge-mvp-refresh.timer` provides the 06:00 `Africa/Lagos` deployment schedule and invokes `scripts/mvp-refresh.sh`; adjust its `/opt/matchforge` user/path settings during installation. No unnecessary realtime scheduler is bundled.
+
+The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. To run it separately after `make up`:
 
 ```bash
 . ./scripts/toolchain.sh

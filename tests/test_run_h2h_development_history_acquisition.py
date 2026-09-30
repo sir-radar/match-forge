@@ -8,6 +8,7 @@ from typing import Any, cast
 import pytest
 from football.validation.pitchapi import PitchApiSeasonScope
 
+import scripts.run_pitchapi_multi_domain_development_acquisition as multi_domain
 from scripts.run_h2h_development_history_acquisition import (
     CONFIG_PATH,
     _bundesliga_extension_decision,
@@ -167,6 +168,15 @@ def test_bundesliga_extension_is_blocked_by_frozen_firewall() -> None:
     assert assessment["prior_spent_scope_intersection"] is True
     assert assessment["acquisition_permitted"] is False
     assert assessment["decision"] == "DO_NOT_ACQUIRE_FROZEN_FIREWALL_WOULD_FAIL"
+
+
+def test_frozen_scope_firewall_uses_tracked_contract_without_local_snapshot(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(multi_domain, "V5_ROOT", tmp_path / "missing")
+
+    assert ("bundesliga", "2023/2024") in multi_domain._v5_evaluation_scopes()
+    assert ("bundesliga", "2021/2022") in multi_domain._prior_spent_scopes()
 
 
 def test_v2_result_and_report_remain_unchanged() -> None:

@@ -26,7 +26,39 @@ def _retained_manifest() -> dict[str, Any]:
         / LA_LIGA_2023_24_NORMALIZED_SHA256[:2]
         / f"{LA_LIGA_2023_24_NORMALIZED_SHA256}.json"
     )
-    return cast(dict[str, Any], json.loads(path.read_text()))
+    if path.exists():
+        return cast(dict[str, Any], json.loads(path.read_text()))
+    return _synthetic_retained_manifest()
+
+
+def _synthetic_retained_manifest() -> dict[str, Any]:
+    teams = [
+        ("t_06N2GA", "Mallorca"),
+        ("t_1pKstK", "Girona"),
+        *((f"t_{index:02d}", f"Team {index:02d}") for index in range(18)),
+    ]
+    matches = []
+    for home_id, home_name in teams:
+        for away_id, away_name in teams:
+            if home_id == away_id or (home_id, away_id) == ("t_06N2GA", "t_1pKstK"):
+                continue
+            match_id = (
+                "m_326Zfh"
+                if (home_id, away_id) == ("t_1pKstK", "t_06N2GA")
+                else f"m_{home_id}_{away_id}"
+            )
+            matches.append(
+                {
+                    "id": match_id,
+                    "status": "finished",
+                    "time_utc": "2023-01-01T00:00:00Z",
+                    "score_home": 0,
+                    "score_away": 0,
+                    "home_team": {"id": home_id, "name": home_name},
+                    "away_team": {"id": away_id, "name": away_name},
+                }
+            )
+    return {"data": {"matches": matches}}
 
 
 def test_extension_configuration_freezes_pair_rule_and_request_budget() -> None:

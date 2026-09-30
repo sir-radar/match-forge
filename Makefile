@@ -11,7 +11,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync external-predictions web-install web-lint web-test web-build \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -114,3 +114,24 @@ codex-terra:
 
 codex-sol:
 	codex -m gpt-5.6-sol
+
+web-install:
+	cd web && pnpm install --frozen-lockfile
+
+web-lint:
+	cd web && pnpm lint && pnpm typecheck
+
+web-test:
+	cd web && pnpm test
+
+web-build:
+	cd web && pnpm build
+
+mvp-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(MAX_HISTORY_LEAGUES),--max-history-leagues $(MAX_HISTORY_LEAGUES),)
+
+external-predictions:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli external-predictions $(if $(DATE),--date $(DATE),) $(if $(SOURCE),--source $(SOURCE),)
+
+dev: migrate
+	./scripts/dev.sh

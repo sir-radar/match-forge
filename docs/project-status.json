@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-28T10:59:53Z",
+  "updated_at": "2026-09-29T00:00:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -45,7 +45,8 @@
     "AUTHORIZE_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V1",
     "AUTHORIZE_REVISED_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
     "AUTHORIZE_REGULAR_SEASON_FILTERING_AND_COMPLETE_H2H_HISTORY_ACQUISITION_V3",
-    "AUTHORIZE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1"
+    "AUTHORIZE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
+    "MVP_PRODUCT_DELIVERY_ACTIVE"
   ],
   "closed_routes": [
     {
@@ -635,6 +636,16 @@
       "owner_disposition": "REFERENCE_RETAINED_CHALLENGER_REJECTED_CALIBRATION"
     }
   ],
+  "mvp_product": {
+    "status": "MVP_PRODUCT_DELIVERY_ACTIVE",
+    "research_status": "MODEL_RESEARCH_PAUSED_FOR_MVP",
+    "decision_ref": "docs/evidence/owner-decision-pause-research-ship-mvp-2026-09-29.json",
+    "forecast_label": "MVP_FORECAST",
+    "delivery_branch": "ft/mvp-product-delivery",
+    "h2h_model_weight": 0,
+    "v6_authorized": false,
+    "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md"
+  },
   "phase_1b": {
     "status": "PASS",
     "evidence_ref": "docs/evidence/phase1b2b-gate-2026-09-06-outcome-scope-checksum-correction.json"

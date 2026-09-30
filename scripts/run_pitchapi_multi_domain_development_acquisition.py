@@ -60,6 +60,10 @@ SEASON_CAP_BYTES = 10 * 1024**2
 SHOT_CAP_BYTES = 2 * 1024**2
 XG_SERIES = "PITCHAPI_MULTI_DOMAIN_DEVELOPMENT_V1_RAW_XG"
 V5_ROOT = Path(".local/pitchapi-snapshot-v1")
+V5_POLICY_PATH = Path("docs/evaluation/pitchapi-domain-stratified-evaluation-v5-policy.json")
+REFERENCE_ARTIFACT_PATH = Path(
+    "docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json"
+)
 STATSBOMB_PROTECTED_MANIFESTS = (
     Path(
         ".local/football-data/manifests/datasets/"
@@ -917,11 +921,30 @@ def _v5_target_ids() -> set[str]:
 
 
 def _v5_evaluation_scopes() -> set[tuple[str, str]]:
+    if not (V5_ROOT / "RESULT.json").exists():
+        policy = json.loads(V5_POLICY_PATH.read_text())
+        domains = cast(Mapping[str, object], policy["evaluation"])["domains"]
+        return {_scope_from_key(key) for key in cast(Mapping[str, object], domains)}
     return {
         (_name_key(group["competition"]), str(group["season"]))
         for group in _v5_corpus()["groups"]
         if group["role"] == "evaluation"
     }
+
+
+def _prior_spent_scopes() -> set[tuple[str, str]]:
+    if not (V5_ROOT / "RESULT.json").exists():
+        artifact = json.loads(REFERENCE_ARTIFACT_PATH.read_text())
+        development = artifact["development_scope"]
+        return {*_v5_evaluation_scopes(), _scope_from_key(str(development))}
+    return _prior_spent_pitchapi()[1]
+
+
+def _scope_from_key(scope_key: str) -> tuple[str, str]:
+    competition, first_year, second_year = scope_key.rsplit("_", 2)
+    start = first_year if len(first_year) == 4 else f"20{first_year}"
+    end = second_year if len(second_year) == 4 else f"{start[:2]}{second_year}"
+    return competition, f"{start}/{end}"
 
 
 def _prior_spent_pitchapi() -> tuple[set[str], set[tuple[str, str]]]:
