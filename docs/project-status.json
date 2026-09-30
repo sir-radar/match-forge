@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-29T00:00:00Z",
+  "updated_at": "2026-09-30T00:00:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -637,13 +637,17 @@
     }
   ],
   "mvp_product": {
-    "status": "MVP_PRODUCT_DELIVERY_ACTIVE",
+    "status": "MVP_PRODUCT_IMPLEMENTATION_COMPLETE",
     "research_status": "MODEL_RESEARCH_PAUSED_FOR_MVP",
     "decision_ref": "docs/evidence/owner-decision-pause-research-ship-mvp-2026-09-29.json",
     "forecast_label": "MVP_FORECAST",
-    "delivery_branch": "ft/mvp-product-delivery",
+    "delivery_branch": "ft/mvp-product-completion",
     "h2h_model_weight": 0,
     "v6_authorized": false,
+    "completion_audit_ref": "docs/MVP-COMPLETION-AUDIT.md",
+    "live_forecasting_status": "PASS_5_FORECASTS_2026_10_10",
+    "external_prediction_collection_status": "BLOCKED_EXTERNAL_NO_APPROVED_AUTOMATED_SOURCE",
+    "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
     "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md"
   },
   "phase_1b": {

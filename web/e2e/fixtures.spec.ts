@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
     const url = route.request().url();
     const payload = url.includes("/v1/competitions?") ? { competitions: [competition] }
       : url.includes("/v1/fixtures?") ? { groups: [{ competition, fixtures: [fixture] }] }
-      : url.includes("/context") ? { fixture_id: fixture.id, home_form: [], away_form: [], h2h: [], standings: [], data_availability: {} }
+      : url.includes("/context") ? { fixture_id: fixture.id, home_form: [], away_form: [], h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: {} }
       : url.includes("/forecasts/") ? { ...fixture.forecast, fixture_id: fixture.id, model_label: "MVP_FORECAST", model_algorithm_version: "transferable-rolling-goals-poisson-v1", created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix: [{ home_goals: 1, away_goals: 0, probability: .14 }] }
       : { predictions: [] };
     await route.fulfill({ json: payload });

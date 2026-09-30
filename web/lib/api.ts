@@ -4,6 +4,7 @@ import {
   parseFixtureGroups,
   parseForecast,
   parsePerformance,
+  parsePerformanceList,
   parsePredictions,
   parseSources,
 } from "@/lib/contracts";
@@ -31,6 +32,7 @@ export const api = {
   context: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/context`, parseContext, signal),
   forecast: (fixtureId: string, forecastId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/forecasts/${forecastId}`, parseForecast, signal),
   performance: (competitionId: string, signal?: AbortSignal) => request(`/v1/competitions/${competitionId}/performance`, parsePerformance, signal),
+  performanceList: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/performance?${query}`, parsePerformanceList, signal),
   predictions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/external-predictions?${query}`, parsePredictions, signal),
-  sources: (signal?: AbortSignal) => request("/v1/external-prediction-sources", parseSources, signal),
+  sources: (query = new URLSearchParams(), signal?: AbortSignal) => request(`/v1/external-prediction-sources?${query}`, parseSources, signal),
 };

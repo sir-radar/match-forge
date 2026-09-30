@@ -197,10 +197,31 @@ jobs:
           uv python install 3.13.14
           uv sync --locked
 
+      - name: Install pnpm 10.19.0
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+
+      - name: Install Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install locked frontend dependencies
+        run: cd web && pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: cd web && pnpm exec playwright install --with-deps chromium
+
       # Keep these in one Make invocation. Both targets share the phony
       # `build` prerequisite and mutable build outputs.
       - name: Run deterministic and integration checks
         run: make check integration
+
+      - name: Run frontend E2E and accessibility checks
+        run: make web-e2e
 
       - name: Tear down integration services
         if: always()

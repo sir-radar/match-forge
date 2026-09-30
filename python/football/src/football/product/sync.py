@@ -29,8 +29,31 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
+from football.product.football_data_org import (
+    FootballDataOrgClient,
+    FootballDataOrgError,
+    FootballDataResponse,
+)
 
 PROVIDER_CODE = "api_football"
+FALLBACK_PROVIDER_CODE = "football_data_org"
+
+# Explicit cross-provider competition mapping. No fuzzy competition matching is permitted.
+FOOTBALL_DATA_COMPETITIONS = {
+    1: "WC",
+    2: "CL",
+    4: "EC",
+    13: "CLI",
+    39: "PL",
+    40: "ELC",
+    61: "FL1",
+    71: "BSA",
+    78: "BL1",
+    88: "DED",
+    94: "PPL",
+    135: "SA",
+    140: "PD",
+}
 
 
 def _empty_standing() -> dict[str, int]:
@@ -52,11 +75,13 @@ class ProductSync:
         client: ApiFootballClient,
         data_root: Path,
         artifact_path: Path,
+        history_fallback: FootballDataOrgClient | None = None,
     ) -> None:
         self.connection = connection
         self.client = client
         self.data_root = data_root
         self.artifact_path = artifact_path
+        self.history_fallback = history_fallback
 
     def run(self, requested_date: date, *, max_history_leagues: int = 20) -> dict[str, int]:
         if max_history_leagues < 0:
@@ -66,32 +91,73 @@ class ProductSync:
         competition_count = self._store_competitions(
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
-        fixture_response = self.client.fixtures_for_date(requested_date)
-        fixture_snapshot = self._record_response(f"fixtures-{requested_date}", fixture_response)
-        fixtures = self._store_fixtures(
-            fixture_response.rows, fixture_snapshot, fixture_response.fetched_at
-        )
-        league_seasons = _league_seasons(fixtures)[:max_history_leagues]
+        fixture_count, league_seasons = self._store_requested_fixtures(requested_date)
+        league_seasons = league_seasons[:max_history_leagues]
         history_count = 0
         standings_count = 0
         for league_id, season in league_seasons:
+            history_observed_at: datetime
             try:
                 history_response = self.client.finished_fixtures(league_id, season)
             except RuntimeError:
-                continue
-            history_snapshot = self._record_response(
-                f"history-{league_id}-{season}", history_response
-            )
-            history_count += self._store_history(
-                history_response.rows, history_snapshot, history_response.fetched_at
-            )
+                history_response = None
+            if history_response is not None and history_response.rows:
+                history_snapshot = self._record_response(
+                    f"history-{league_id}-{season}", history_response
+                )
+                history_count += self._store_history(
+                    history_response.rows, history_snapshot, history_response.fetched_at
+                )
+                history_observed_at = history_response.fetched_at
+            else:
+                fallback = self._fallback_history(league_id, season)
+                if fallback is None:
+                    continue
+                history_snapshot = self._record_fallback_response(
+                    f"history-{league_id}-{season}", fallback
+                )
+                competition_id = self._competition_id(str(league_id), history_snapshot)
+                history_count += self._store_fallback_history(
+                    fallback.rows,
+                    competition_id,
+                    season,
+                    history_snapshot,
+                    fallback.fetched_at,
+                )
+                previous = self._fallback_history(league_id, season - 1)
+                if previous is not None:
+                    previous_snapshot = self._record_fallback_response(
+                        f"history-{league_id}-{season - 1}", previous
+                    )
+                    history_count += self._store_fallback_history(
+                        previous.rows,
+                        competition_id,
+                        season - 1,
+                        previous_snapshot,
+                        previous.fetched_at,
+                    )
+                history_observed_at = fallback.fetched_at
             try:
                 standings_response = self.client.standings(league_id, season)
             except RuntimeError:
+                standings_response = None
+            if standings_response is None or not standings_response.rows:
                 competition_id = self._competition_id(str(league_id), history_snapshot)
-                standings_count += self._calculate_standings(
-                    competition_id, history_response.fetched_at
-                )
+                fallback_standings = self._fallback_standings(league_id, season)
+                if fallback_standings is not None:
+                    snapshot = self._record_fallback_response(
+                        f"standings-{league_id}-{season}", fallback_standings
+                    )
+                    standings_count += self._store_fallback_standings(
+                        fallback_standings.rows,
+                        competition_id,
+                        snapshot,
+                        fallback_standings.fetched_at,
+                    )
+                else:
+                    standings_count += self._calculate_standings(
+                        competition_id, season, history_observed_at
+                    )
                 continue
             standings_snapshot = self._record_response(
                 f"standings-{league_id}-{season}", standings_response
@@ -105,12 +171,27 @@ class ProductSync:
         self.connection.commit()
         return {
             "competitions": competition_count,
-            "fixtures": len(fixtures),
+            "fixtures": fixture_count,
             "history_matches": history_count,
             "standings_rows": standings_count,
             "forecasts": forecast_count,
             "settled_external_predictions": settled_count,
         }
+
+    def _store_requested_fixtures(self, requested_date: date) -> tuple[int, list[tuple[int, int]]]:
+        try:
+            response = self.client.fixtures_for_date(requested_date)
+        except RuntimeError:
+            response = None
+        if response is not None and response.rows:
+            snapshot = self._record_response(f"fixtures-{requested_date}", response)
+            fixtures = self._store_fixtures(response.rows, snapshot, response.fetched_at)
+            return len(fixtures), _league_seasons(fixtures)
+        fallback = self._fallback_fixtures(requested_date)
+        if fallback is None:
+            raise ValueError("fixture providers unavailable")
+        snapshot = self._record_fallback_response(f"fixtures-{requested_date}", fallback)
+        return self._store_fallback_fixtures(fallback.rows, snapshot, fallback.fetched_at)
 
     def _settle_external_predictions(self, settled_at: datetime) -> int:
         with self.connection.cursor() as cursor:
@@ -206,6 +287,93 @@ class ProductSync:
             )
         return snapshot_id
 
+    def _record_fallback_response(self, resource_name: str, response: FootballDataResponse) -> UUID:
+        digest = hashlib.sha256(response.raw).hexdigest()
+        provider_id = stable_id("provider", FALLBACK_PROVIDER_CODE)
+        snapshot_id = stable_id("source-snapshot", FALLBACK_PROVIDER_CODE, resource_name, digest)
+        resource_id = stable_id("source-resource", snapshot_id, resource_name)
+        relative_path = (
+            Path("mvp")
+            / FALLBACK_PROVIDER_CODE
+            / response.fetched_at.strftime("%Y/%m/%d")
+            / f"{digest}.json"
+        )
+        destination = self.data_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.exists():
+            destination.write_bytes(response.raw)
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO football.providers (id, code, name, source_type)
+                VALUES (%s, %s, 'football-data.org', 'http_api')
+                ON CONFLICT (code) DO NOTHING
+                """,
+                (provider_id, FALLBACK_PROVIDER_CODE),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.source_snapshots (
+                    id, provider_id, source_identity, source_revision, acquired_at,
+                    manifest_path, manifest_sha256, status
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, 'validated')
+                ON CONFLICT (provider_id, source_identity, source_revision) DO NOTHING
+                """,
+                (
+                    snapshot_id,
+                    provider_id,
+                    resource_name,
+                    digest,
+                    response.fetched_at,
+                    str(relative_path),
+                    digest,
+                ),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.source_resources (
+                    id, source_snapshot_id, provider_path, sha256, size_bytes,
+                    media_type, parse_status, validation_status, acquired_at
+                ) VALUES (%s, %s, %s, %s, %s, 'application/json', 'parsed', 'valid', %s)
+                ON CONFLICT (source_snapshot_id, provider_path) DO NOTHING
+                """,
+                (
+                    resource_id,
+                    snapshot_id,
+                    response.path.lstrip("/"),
+                    digest,
+                    len(response.raw),
+                    response.fetched_at,
+                ),
+            )
+        return snapshot_id
+
+    def _fallback_history(self, league_id: int, season: int) -> FootballDataResponse | None:
+        competition_code = FOOTBALL_DATA_COMPETITIONS.get(league_id)
+        if self.history_fallback is None or competition_code is None:
+            return None
+        try:
+            return self.history_fallback.finished_matches(competition_code, season)
+        except FootballDataOrgError:
+            return None
+
+    def _fallback_fixtures(self, requested_date: date) -> FootballDataResponse | None:
+        if self.history_fallback is None:
+            return None
+        try:
+            return self.history_fallback.fixtures_for_date(requested_date)
+        except FootballDataOrgError:
+            return None
+
+    def _fallback_standings(self, league_id: int, season: int) -> FootballDataResponse | None:
+        competition_code = FOOTBALL_DATA_COMPETITIONS.get(league_id)
+        if self.history_fallback is None or competition_code is None:
+            return None
+        try:
+            return self.history_fallback.standings(competition_code, season)
+        except FootballDataOrgError:
+            return None
+
     def _store_competitions(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
@@ -245,7 +413,7 @@ class ProductSync:
                         availability_status, source_roles, updated_at
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, true, true, %s,
-                        true, false, false, true, 'NOT_ENOUGH_HISTORY', %s::jsonb, %s
+                        false, false, false, false, 'NOT_ENOUGH_HISTORY', %s::jsonb, %s
                     )
                     ON CONFLICT (competition_id) DO UPDATE SET
                         name = EXCLUDED.name, country = EXCLUDED.country,
@@ -268,8 +436,8 @@ class ProductSync:
                                 "fixtures": [PROVIDER_CODE],
                                 "results": [PROVIDER_CODE],
                                 "standings": [PROVIDER_CODE],
-                                "h2h": [PROVIDER_CODE],
-                                "team_stats": [PROVIDER_CODE],
+                                "h2h": [],
+                                "team_stats": [],
                             }
                         ),
                         observed_at,
@@ -278,16 +446,20 @@ class ProductSync:
             count += 1
         return count
 
-    def _calculate_standings(self, competition_id: UUID, observed_at: datetime) -> int:
+    def _calculate_standings(self, competition_id: UUID, season: int, observed_at: datetime) -> int:
         """Fall back to completed results when provider standings are unavailable."""
+        season_id = stable_id("season", competition_id, season)
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT home_team_id, away_team_id, home_goals, away_goals
-                FROM football.product_team_match_history
-                WHERE competition_id = %s ORDER BY kickoff_at, fixture_id
+                SELECT history.home_team_id, history.away_team_id,
+                       history.home_goals, history.away_goals
+                FROM football.product_team_match_history history
+                JOIN football.matches m ON m.id = history.fixture_id
+                WHERE history.competition_id = %s AND m.season_id = %s
+                ORDER BY history.kickoff_at, history.fixture_id
                 """,
-                (competition_id,),
+                (competition_id, season_id),
             )
             matches = cursor.fetchall()
         if not matches:
@@ -438,6 +610,104 @@ class ProductSync:
             stored.append(row)
         return stored
 
+    def _store_fallback_fixtures(
+        self,
+        rows: Sequence[Mapping[str, Any]],
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> tuple[int, list[tuple[int, int]]]:
+        reverse_codes = {code: league_id for league_id, code in FOOTBALL_DATA_COMPETITIONS.items()}
+        count = 0
+        league_seasons: set[tuple[int, int]] = set()
+        for row in rows:
+            competition = _mapping(row, "competition")
+            league_id = reverse_codes.get(str(competition.get("code")))
+            if league_id is None:
+                continue
+            competition_id = self._competition_id(str(league_id), snapshot_id)
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT season_label FROM football.product_competitions
+                    WHERE competition_id = %s
+                    """,
+                    (competition_id,),
+                )
+                season_row = cursor.fetchone()
+            if season_row is None:
+                continue
+            season = int(season_row[0])
+            season_id = stable_id("season", competition_id, season)
+            home = _mapping(row, "homeTeam")
+            away = _mapping(row, "awayTeam")
+            home_id = self._fallback_team_id(home, competition_id, snapshot_id, observed_at)
+            away_id = self._fallback_team_id(away, competition_id, snapshot_id, observed_at)
+            kickoff = datetime.fromisoformat(str(row["utcDate"]).replace("Z", "+00:00")).astimezone(
+                UTC
+            )
+            match_id = fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
+            status = _football_data_status(str(row.get("status")))
+            score = _mapping(_mapping(row, "score"), "fullTime")
+            home_score = score.get("home") if status == "FINISHED" else None
+            away_score = score.get("away") if status == "FINISHED" else None
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO football.matches (id, competition_id, season_id)
+                    VALUES (%s, %s, %s) ON CONFLICT DO NOTHING
+                    """,
+                    (match_id, competition_id, season_id),
+                )
+                self._ensure_provider_match_mapping(
+                    cursor,
+                    match_id,
+                    str(_integer(row, "id")),
+                    snapshot_id,
+                    observed_at,
+                    FALLBACK_PROVIDER_CODE,
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO football.product_fixtures (
+                        fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                        status, home_score, away_score, venue, round_name,
+                        forecast_availability, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        'NOT_ENOUGH_HISTORY', %s)
+                    ON CONFLICT (fixture_id) DO UPDATE SET
+                        status = EXCLUDED.status, home_score = EXCLUDED.home_score,
+                        away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
+                        round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at
+                    """,
+                    (
+                        match_id,
+                        competition_id,
+                        home_id,
+                        away_id,
+                        kickoff,
+                        status,
+                        home_score,
+                        away_score,
+                        row.get("venue"),
+                        str(row.get("matchday") or row.get("stage") or ""),
+                        observed_at,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    UPDATE football.product_competitions
+                    SET fixtures_available = true,
+                        source_roles = jsonb_set(source_roles, '{fixtures}',
+                            '["football_data_org"]'::jsonb),
+                        updated_at = %s
+                    WHERE competition_id = %s
+                    """,
+                    (observed_at, competition_id),
+                )
+            count += 1
+            league_seasons.add((league_id, season))
+        return count, sorted(league_seasons)
+
     def _store_history(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
@@ -472,7 +742,181 @@ class ProductSync:
                     (*stored[:7], PROVIDER_CODE, snapshot_id),
                 )
                 count += cursor.rowcount
+        if count:
+            self._mark_context_available(
+                {_mapping(row, "league").get("id") for row in fixtures}, observed_at
+            )
         return count
+
+    def _store_fallback_history(
+        self,
+        rows: Sequence[Mapping[str, Any]],
+        competition_id: UUID,
+        season: int,
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> int:
+        season_label = str(season)
+        season_id = stable_id("season", competition_id, season)
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO football.seasons (id, competition_id)
+                VALUES (%s, %s) ON CONFLICT DO NOTHING
+                """,
+                (season_id, competition_id),
+            )
+        count = 0
+        for row in rows:
+            if row.get("status") != "FINISHED":
+                continue
+            home = _mapping(row, "homeTeam")
+            away = _mapping(row, "awayTeam")
+            score = _mapping(_mapping(row, "score"), "fullTime")
+            home_goals = score.get("home")
+            away_goals = score.get("away")
+            if not isinstance(home_goals, int) or not isinstance(away_goals, int):
+                continue
+            home_id = self._fallback_team_id(home, competition_id, snapshot_id, observed_at)
+            away_id = self._fallback_team_id(away, competition_id, snapshot_id, observed_at)
+            kickoff = datetime.fromisoformat(str(row["utcDate"]).replace("Z", "+00:00")).astimezone(
+                UTC
+            )
+            match_id = fixture_identity(competition_id, season_label, kickoff, home_id, away_id)
+            provider_match_id = str(_integer(row, "id"))
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO football.matches (id, competition_id, season_id)
+                    VALUES (%s, %s, %s) ON CONFLICT DO NOTHING
+                    """,
+                    (match_id, competition_id, season_id),
+                )
+                self._ensure_provider_match_mapping(
+                    cursor,
+                    match_id,
+                    provider_match_id,
+                    snapshot_id,
+                    observed_at,
+                    FALLBACK_PROVIDER_CODE,
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO football.product_team_match_history (
+                        fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                        home_goals, away_goals, source_provider_code, source_snapshot_id
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (fixture_id) DO NOTHING
+                    """,
+                    (
+                        match_id,
+                        competition_id,
+                        home_id,
+                        away_id,
+                        kickoff,
+                        home_goals,
+                        away_goals,
+                        FALLBACK_PROVIDER_CODE,
+                        snapshot_id,
+                    ),
+                )
+                count += cursor.rowcount
+        if count:
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE football.product_competitions
+                    SET results_available = true, h2h_available = true,
+                        team_stats_available = true,
+                        source_roles = source_roles
+                            || '{"results":["football_data_org"],
+                                  "h2h":["football_data_org"],
+                                  "team_stats":["matchforge_results"]}'::jsonb,
+                        updated_at = %s
+                    WHERE competition_id = %s
+                    """,
+                    (observed_at, competition_id),
+                )
+        return count
+
+    def _store_fallback_standings(
+        self,
+        rows: Sequence[Mapping[str, Any]],
+        competition_id: UUID,
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> int:
+        count = 0
+        for row in rows:
+            team = _mapping(row, "team")
+            team_id = self._fallback_team_id(team, competition_id, snapshot_id, observed_at)
+            values = (
+                row.get("position"),
+                row.get("playedGames"),
+                row.get("won"),
+                row.get("draw"),
+                row.get("lost"),
+                row.get("goalsFor"),
+                row.get("goalsAgainst"),
+                row.get("goalDifference"),
+                row.get("points"),
+            )
+            if any(isinstance(value, bool) or not isinstance(value, int) for value in values):
+                continue
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO football.product_standings (
+                        competition_id, team_id, position, played, won, drawn, lost,
+                        goals_for, goals_against, goal_difference, points,
+                        source_provider_code, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (competition_id, team_id) DO UPDATE SET
+                        position = EXCLUDED.position, played = EXCLUDED.played,
+                        won = EXCLUDED.won, drawn = EXCLUDED.drawn, lost = EXCLUDED.lost,
+                        goals_for = EXCLUDED.goals_for, goals_against = EXCLUDED.goals_against,
+                        goal_difference = EXCLUDED.goal_difference, points = EXCLUDED.points,
+                        source_provider_code = EXCLUDED.source_provider_code,
+                        updated_at = EXCLUDED.updated_at
+                    """,
+                    (competition_id, team_id, *values, FALLBACK_PROVIDER_CODE, observed_at),
+                )
+                count += 1
+        if count:
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE football.product_competitions
+                    SET standings_available = true,
+                        source_roles = jsonb_set(source_roles, '{standings}',
+                            '["football_data_org"]'::jsonb),
+                        updated_at = %s
+                    WHERE competition_id = %s
+                    """,
+                    (observed_at, competition_id),
+                )
+        return count
+
+    def _mark_context_available(self, league_ids: set[object], observed_at: datetime) -> None:
+        for league_id in league_ids:
+            if not isinstance(league_id, int):
+                continue
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE football.product_competitions pc
+                    SET h2h_available = true, team_stats_available = true,
+                        source_roles = source_roles
+                            || '{"h2h":["api_football"],
+                                  "team_stats":["matchforge_results"]}'::jsonb,
+                        updated_at = %s
+                    FROM football.competition_provider_mappings cpm
+                    JOIN football.providers p ON p.id = cpm.provider_id
+                    WHERE pc.competition_id = cpm.competition_id
+                      AND p.code = %s AND cpm.provider_competition_id = %s
+                    """,
+                    (observed_at, PROVIDER_CODE, str(league_id)),
+                )
 
     def _store_standings(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
@@ -754,6 +1198,109 @@ class ProductSync:
             )
         return team_id
 
+    def _fallback_team_id(
+        self,
+        row: Mapping[str, Any],
+        competition_id: UUID,
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> UUID:
+        provider_team_id = str(_integer(row, "id"))
+        normalized_name = normalize_team_name(str(row["name"]))
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT team_id FROM football.product_team_aliases
+                WHERE provider_code = %s AND provider_team_id = %s
+                """,
+                (FALLBACK_PROVIDER_CODE, provider_team_id),
+            )
+            found = cursor.fetchone()
+            if found is None:
+                cursor.execute(
+                    """
+                    SELECT DISTINCT pta.team_id
+                    FROM football.product_team_aliases pta
+                    WHERE pta.provider_code = %s AND pta.normalized_name = %s
+                      AND pta.team_id IN (
+                          SELECT home_team_id FROM football.product_fixtures
+                          WHERE competition_id = %s
+                          UNION SELECT away_team_id FROM football.product_fixtures
+                          WHERE competition_id = %s
+                          UNION SELECT home_team_id FROM football.product_team_match_history
+                          WHERE competition_id = %s
+                          UNION SELECT away_team_id FROM football.product_team_match_history
+                          WHERE competition_id = %s
+                      )
+                    """,
+                    (
+                        PROVIDER_CODE,
+                        normalized_name,
+                        competition_id,
+                        competition_id,
+                        competition_id,
+                        competition_id,
+                    ),
+                )
+                candidates = cursor.fetchall()
+                found = candidates[0] if len(candidates) == 1 else None
+        team_id = (
+            cast(UUID, found[0])
+            if found is not None
+            else stable_id("team", FALLBACK_PROVIDER_CODE, provider_team_id)
+        )
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO football.teams (id, entity_kind)
+                VALUES (%s, 'club') ON CONFLICT DO NOTHING
+                """,
+                (team_id,),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_teams (team_id, name, crest_url, updated_at)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (team_id) DO UPDATE SET
+                    crest_url = COALESCE(EXCLUDED.crest_url, football.product_teams.crest_url),
+                    updated_at = EXCLUDED.updated_at
+                """,
+                (team_id, row["name"], row.get("crest"), observed_at),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_team_aliases (
+                    provider_code, provider_team_id, normalized_name, team_id
+                ) VALUES (%s, %s, %s, %s)
+                ON CONFLICT (provider_code, provider_team_id) DO NOTHING
+                """,
+                (FALLBACK_PROVIDER_CODE, provider_team_id, normalized_name, team_id),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.team_provider_mappings (
+                    team_id, provider_id, provider_team_id, first_seen_at, last_seen_at,
+                    mapping_method, mapping_confidence, source_snapshot_id
+                ) SELECT %s, id, %s, %s, %s, 'explicit_crosswalk',
+                    1.0, %s FROM football.providers p
+                WHERE p.code = %s AND NOT EXISTS (
+                    SELECT 1 FROM football.team_provider_mappings existing
+                    WHERE existing.provider_id = p.id
+                      AND existing.provider_team_id = %s
+                )
+                """,
+                (
+                    team_id,
+                    provider_team_id,
+                    observed_at,
+                    observed_at,
+                    snapshot_id,
+                    FALLBACK_PROVIDER_CODE,
+                    provider_team_id,
+                ),
+            )
+        return team_id
+
     def _ensure_match_mapping(
         self,
         cursor: Any,
@@ -782,6 +1329,39 @@ class ProductSync:
                 observed_at,
                 snapshot_id,
                 PROVIDER_CODE,
+                provider_match_id,
+            ),
+        )
+
+    def _ensure_provider_match_mapping(
+        self,
+        cursor: Any,
+        match_id: UUID,
+        provider_match_id: str,
+        snapshot_id: UUID,
+        observed_at: datetime,
+        provider_code: str,
+    ) -> None:
+        cursor.execute(
+            """
+            INSERT INTO football.match_provider_mappings (
+                match_id, provider_id, provider_match_id, first_seen_at, last_seen_at,
+                mapping_method, mapping_confidence, source_snapshot_id
+            ) SELECT %s, id, %s, %s, %s, 'deterministic', 1.0, %s
+              FROM football.providers p
+             WHERE p.code = %s
+               AND NOT EXISTS (
+                   SELECT 1 FROM football.match_provider_mappings existing
+                   WHERE existing.provider_id = p.id AND existing.provider_match_id = %s
+               )
+            """,
+            (
+                match_id,
+                provider_match_id,
+                observed_at,
+                observed_at,
+                snapshot_id,
+                provider_code,
                 provider_match_id,
             ),
         )
@@ -822,7 +1402,7 @@ class ProductSync:
                     h2h_available, forecast_available, xg_available, team_stats_available,
                     availability_status, source_roles, updated_at
                 ) VALUES (%s, %s, %s, %s, %s, 'LEAGUE', %s, true, true, %s,
-                    true, false, false, true, 'NOT_ENOUGH_HISTORY', %s::jsonb, %s)
+                    false, false, false, false, 'NOT_ENOUGH_HISTORY', %s::jsonb, %s)
                 ON CONFLICT (competition_id) DO NOTHING
                 """,
                 (
@@ -857,6 +1437,19 @@ def _league_seasons(fixtures: Iterable[Mapping[str, Any]]) -> list[tuple[int, in
     values = {
         (_integer(_mapping(row, "league"), "id"), int(_mapping(row, "league")["season"]))
         for row in fixtures
-        if _mapping(row, "league").get("standings") is True
     }
-    return sorted(values)
+    return sorted(values, key=lambda item: (item[0] not in FOOTBALL_DATA_COMPETITIONS, item))
+
+
+def _football_data_status(value: str) -> str:
+    if value in {"IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"}:
+        return "LIVE"
+    if value in {"FINISHED", "AWARDED"}:
+        return "FINISHED"
+    if value == "POSTPONED":
+        return "POSTPONED"
+    if value == "CANCELLED":
+        return "CANCELLED"
+    if value == "SUSPENDED":
+        return "ABANDONED"
+    return "SCHEDULED"

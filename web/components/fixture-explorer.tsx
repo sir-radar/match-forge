@@ -57,7 +57,7 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
           <button aria-label="Next day" onClick={() => moveDate(1)}>›</button>
         </div>
         <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} />
-        <div className="engine-strip"><span>Current model</span><b>MVP_FORECAST</b><i>10-match rolling goals · immutable pre-kickoff forecasts</i></div>
+        <div className="engine-strip"><span>Current model</span><b>MatchForge Forecast</b><i>10-match rolling goals · immutable pre-kickoff forecasts</i></div>
         <FixtureResults state={fixtures} expanded={expanded} setExpanded={setExpanded} />
       </section>
     </div>

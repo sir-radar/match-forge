@@ -7,9 +7,10 @@ import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 
 export function PredictionsPage() {
-  const [filters, setFilters] = useState({ date: "", source: "", market: "", agreement: "" });
-  const sourceLoad = useCallback((signal: AbortSignal) => api.sources(signal), []);
-  const sources = useResource("external-sources", sourceLoad);
+  const [filters, setFilters] = useState({ date: "", date_from: "", date_to: "", source: "", continent: "", country: "", competition: "", market: "", agreement: "" });
+  const sourceQuery = useMemo(() => predictionQuery(filters), [filters]);
+  const sourceLoad = useCallback((signal: AbortSignal) => api.sources(sourceQuery, signal), [sourceQuery]);
+  const sources = useResource(`external-sources-${sourceQuery}`, sourceLoad);
   const key = Object.values(filters).join("|");
   const predictionLoad = useCallback((signal: AbortSignal) => api.predictions(predictionQuery(filters), signal), [filters]);
   const predictions = useResource(`external-predictions-${key}`, predictionLoad);
@@ -28,7 +29,7 @@ export function PredictionsPage() {
   </div>;
 }
 
-type Filters = { date: string; source: string; market: string; agreement: string };
+type Filters = { date: string; date_from: string; date_to: string; source: string; continent: string; country: string; competition: string; market: string; agreement: string };
 
 function SourceStatus({ error, retry }: { error: string | null; retry: () => void }) {
   return error ? <ResourceError message={error} retry={retry} /> : null;
@@ -36,14 +37,14 @@ function SourceStatus({ error, retry }: { error: string | null; retry: () => voi
 
 function PredictionFilters({ filters, setFilters, sources }: { filters: Filters; setFilters: (value: Filters) => void; sources: ExternalSource[] }) {
   const update = (name: keyof Filters, value: string) => setFilters({ ...filters, [name]: value });
-  return <div className="filter-strip"><label>Date<input type="date" value={filters.date} onChange={(event) => update("date", event.target.value)} /></label><label>Source<select value={filters.source} onChange={(event) => update("source", event.target.value)}><option value="">All</option>{sources.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label><label>Market<select value={filters.market} onChange={(event) => update("market", event.target.value)}><option value="">All</option><option value="1X2">1X2</option><option value="DOUBLE_CHANCE">Double chance</option><option value="TOTALS">Totals</option><option value="BTTS">BTTS</option></select></label><label>Agreement<select value={filters.agreement} onChange={(event) => update("agreement", event.target.value)}><option value="">All</option><option>AGREES</option><option>WEAK_SUPPORT</option><option>DISAGREES</option><option>UNABLE_TO_EVALUATE</option></select></label></div>;
+  return <div className="filter-strip"><label>Date<input type="date" value={filters.date} onChange={(event) => update("date", event.target.value)} /></label><label>From<input type="date" value={filters.date_from} onChange={(event) => update("date_from", event.target.value)} /></label><label>To<input type="date" value={filters.date_to} onChange={(event) => update("date_to", event.target.value)} /></label><label>Source<select value={filters.source} onChange={(event) => update("source", event.target.value)}><option value="">All</option>{sources.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label><label>Continent<input value={filters.continent} onChange={(event) => update("continent", event.target.value)} placeholder="All" /></label><label>Country<input value={filters.country} onChange={(event) => update("country", event.target.value)} placeholder="All" /></label><label>Competition<input value={filters.competition} onChange={(event) => update("competition", event.target.value)} placeholder="All" /></label><label>Market<select value={filters.market} onChange={(event) => update("market", event.target.value)}><option value="">All</option><option value="RESULT_1X2">1X2</option><option value="DOUBLE_CHANCE">Double chance</option><option value="TOTAL_GOALS">Totals</option><option value="BTTS">BTTS</option></select></label><label>Agreement<select value={filters.agreement} onChange={(event) => update("agreement", event.target.value)}><option value="">All</option><option>AGREES</option><option>WEAK_SUPPORT</option><option>DISAGREES</option><option>UNABLE_TO_EVALUATE</option></select></label></div>;
 }
 
 function PredictionResults({ predictions, loading, error, retry, consensus }: { predictions: ExternalPrediction[]; loading: boolean; error: string | null; retry: () => void; consensus: ReturnType<typeof consensusRows> }) {
   if (loading) return <ResourceLoading label="Loading external selections" />;
   if (error) return <ResourceError message={error} retry={retry} />;
   if (predictions.length === 0) return <EmptyState title="No approved external selections" detail="The collection framework is ready, but all reviewed sources remain disabled until automated reuse is explicitly allowed. MatchForge does not bypass access controls or terms." />;
-  return <><Consensus rows={consensus} /><section className="panel"><div className="table-scroll"><table><thead><tr><th>Date</th><th>Source</th><th>Competition</th><th>Fixture</th><th>Market</th><th>Selection</th><th>Agreement</th><th>Status</th></tr></thead><tbody>{predictions.map((item) => <tr key={item.id}><td>{item.prediction_date}</td><td><a href={item.source_page} rel="noreferrer" target="_blank">{item.source}</a></td><td>{item.competition}</td><td>{item.home_team} vs {item.away_team}</td><td>{item.market}</td><td>{item.selection}</td><td><span className={`agreement ${item.agreement.toLowerCase()}`}>{item.agreement.replaceAll("_", " ")}</span></td><td>{item.match_status}</td></tr>)}</tbody></table></div></section></>;
+  return <><Consensus rows={consensus} /><section className="panel"><div className="table-scroll"><table><thead><tr><th>Prediction date</th><th>Source</th><th>League</th><th>Match</th><th>Kickoff</th><th>Market</th><th>External selection</th><th>MatchForge probability</th><th>Agreement</th></tr></thead><tbody>{predictions.map((item) => <tr key={item.id}><td>{item.prediction_date}</td><td><a href={item.source_page} rel="noreferrer" target="_blank">{item.source}</a></td><td>{item.competition}</td><td>{item.home_team} vs {item.away_team}</td><td>{item.kickoff_at ? new Date(item.kickoff_at).toLocaleString() : "—"}</td><td>{item.market}</td><td>{item.selection}</td><td>{item.matchforge_probability === null ? "—" : `${(item.matchforge_probability * 100).toFixed(1)}%`}</td><td><span className={`agreement ${item.agreement.toLowerCase()}`}>{item.agreement.replaceAll("_", " ")}</span></td></tr>)}</tbody></table></div></section></>;
 }
 
 function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
@@ -53,11 +54,10 @@ function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
 
 function SourceAudit({ sources }: { sources: ExternalSource[] }) {
   if (sources.length === 0) return null;
-  return <section className="panel source-audit"><header><h4>Source access and performance audit</h4><small>Checked access state is visible by design</small></header><div className="table-scroll"><table><thead><tr><th>Source</th><th>Public</th><th>Login</th><th>Paid</th><th>Automated access</th><th>Adapter</th><th>Tracked</th><th>Hit rate</th><th>Known issue</th></tr></thead><tbody>{sources.map((item) => <tr key={item.code}><td><a href={item.url} rel="noreferrer" target="_blank">{item.name}</a></td><td>{yesNo(item.public_predictions)}</td><td>{yesNo(item.login_required)}</td><td>{yesNo(item.paid_content)}</td><td>{item.automated_access_status}</td><td>{item.adapter_status}</td><td>{item.tracked_selections}</td><td>{item.settled_hit_rate === null ? "—" : `${(item.settled_hit_rate * 100).toFixed(1)}%`}</td><td>{item.known_issues}</td></tr>)}</tbody></table></div></section>;
+  return <section className="panel source-audit"><header><h4>Source access and performance audit</h4><small>Uses active source, league, market, and date-range filters</small></header><div className="table-scroll"><table><thead><tr><th>Source</th><th>Access</th><th>Adapter</th><th>Tracked</th><th>Settled</th><th>Correct</th><th>Hit rate</th><th>MatchForge agreement</th><th>Known issue</th></tr></thead><tbody>{sources.map((item) => <tr key={item.code}><td><a href={item.url} rel="noreferrer" target="_blank">{item.name}</a></td><td>{item.automated_access_status}</td><td>{item.adapter_status}</td><td>{item.tracked_selections}</td><td>{item.settled_selections}</td><td>{item.correct_selections}</td><td>{item.settled_hit_rate === null ? "—" : `${(item.settled_hit_rate * 100).toFixed(1)}%`}</td><td>{item.matchforge_agreement_rate === null ? "—" : `${(item.matchforge_agreement_rate * 100).toFixed(1)}%`}</td><td>{item.known_issues}</td></tr>)}</tbody></table></div></section>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) { return <div className="metric"><small>{label}</small><b>{value}</b></div>; }
-function yesNo(value: boolean) { return value ? "Yes" : "No"; }
 function sourceTotals(sources: ExternalSource[] | null) { return { approved: sources?.filter((item) => item.adapter_status === "ENABLED").length ?? 0, reviewed: sources?.length ?? 0 }; }
 function predictionQuery(filters: Filters) {
   const query = new URLSearchParams();
