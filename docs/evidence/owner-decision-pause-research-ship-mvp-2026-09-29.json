@@ -1,0 +1,20 @@
+{
+  "contract": "MatchForgeOwnerDecisionEventV1",
+  "recorded_at": "2026-09-29T00:00:00Z",
+  "decision_id": "MVP_PRODUCT_DELIVERY_ACTIVE",
+  "decided_at": "2026-09-29T00:00:00+01:00",
+  "status": "ACTIVE",
+  "research_status": "MODEL_RESEARCH_PAUSED_FOR_MVP",
+  "mvp_forecast_label": "MVP_FORECAST",
+  "delivery_branch": "ft/mvp-product-delivery",
+  "prohibited_work": [
+    "H2H_MODEL_RESEARCH",
+    "V6",
+    "DIXON_COLES",
+    "NEW_XG_MODELS",
+    "CALIBRATION_EXPERIMENTS",
+    "STATSBOMB_EVALUATION",
+    "NEW_FORECASTING_EXPERIMENTS"
+  ],
+  "source": "repository owner instruction supplied on 2026-09-29"
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh MatchForge fixtures, results, standings, forecasts, and approved external predictions
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=matchforge
+WorkingDirectory=/opt/matchforge
+EnvironmentFile=/opt/matchforge/.env
+ExecStart=/opt/matchforge/scripts/mvp-refresh.sh

@@ -19,6 +19,8 @@ const (
 // Config contains the operational API settings owned by this process.
 type Config struct {
 	Address           string
+	DatabaseURL       string
+	AllowedOrigin     string
 	PostgresAddress   string
 	RedisAddress      string
 	Version           string
@@ -43,6 +45,8 @@ func ConfigFromEnv(version string) (Config, error) {
 	}
 	config := Config{
 		Address:           valueFromEnv("API_ADDR", defaultAPIAddress),
+		DatabaseURL:       valueFromEnv("DATABASE_URL", "postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable"),
+		AllowedOrigin:     valueFromEnv("WEB_ORIGIN", "http://127.0.0.1:3000"),
 		PostgresAddress:   valueFromEnv("POSTGRES_ADDR", defaultPostgresAddress),
 		RedisAddress:      valueFromEnv("REDIS_ADDR", defaultRedisAddress),
 		Version:           version,

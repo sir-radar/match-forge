@@ -13,17 +13,31 @@ type App struct {
 	config    Config
 	logger    *slog.Logger
 	readiness ReadinessChecker
+	product   ProductStore
 	handler   http.Handler
 }
 
 // New constructs the operational API without starting network listeners.
-func New(config Config, logger *slog.Logger, readiness ReadinessChecker) *App {
-	application := &App{config: config, logger: logger, readiness: readiness}
+func New(config Config, logger *slog.Logger, readiness ReadinessChecker, stores ...ProductStore) *App {
+	var product ProductStore = unavailableProductStore{}
+	if len(stores) > 0 && stores[0] != nil {
+		product = stores[0]
+	}
+	application := &App{config: config, logger: logger, readiness: readiness, product: product}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", application.health)
 	mux.HandleFunc("GET /readyz", application.ready)
 	mux.HandleFunc("GET /version", application.version)
-	application.handler = mux
+	mux.HandleFunc("GET /v1/competitions", application.listCompetitions)
+	mux.HandleFunc("GET /v1/fixtures", application.listFixtures)
+	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/context", application.fixtureContext)
+	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts/{forecast_id}", application.forecast)
+	mux.HandleFunc("GET /v1/competitions/{competition_id}/standings", application.standings)
+	mux.HandleFunc("GET /v1/competitions/{competition_id}/performance", application.performance)
+	mux.HandleFunc("GET /v1/external-predictions", application.externalPredictions)
+	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/external-predictions", application.fixtureExternalPredictions)
+	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
+	application.handler = application.cors(mux)
 	return application
 }
 
@@ -75,10 +89,20 @@ func (application *App) version(response http.ResponseWriter, _ *http.Request) {
 	application.writeJSON(response, http.StatusOK, map[string]string{"version": application.config.Version})
 }
 
-func (application *App) writeJSON(response http.ResponseWriter, status int, value map[string]string) {
+func (application *App) writeJSON(response http.ResponseWriter, status int, value any) {
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(status)
 	if err := json.NewEncoder(response).Encode(value); err != nil {
 		application.logger.Error("write JSON response", "error", err)
 	}
+}
+
+func (application *App) cors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		if request.Header.Get("Origin") == application.config.AllowedOrigin {
+			response.Header().Set("Access-Control-Allow-Origin", application.config.AllowedOrigin)
+			response.Header().Set("Vary", "Origin")
+		}
+		next.ServeHTTP(response, request)
+	})
 }

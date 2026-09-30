@@ -1,0 +1,11 @@
+[Unit]
+Description=Run MatchForge MVP refresh at 06:00 Africa/Lagos
+
+[Timer]
+OnCalendar=*-*-* 06:00:00 Africa/Lagos
+Persistent=true
+RandomizedDelaySec=120
+Unit=matchforge-mvp-refresh.service
+
+[Install]
+WantedBy=timers.target
