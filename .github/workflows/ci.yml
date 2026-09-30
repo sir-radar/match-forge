@@ -212,8 +212,8 @@ jobs:
       - name: Install locked frontend dependencies
         run: cd web && pnpm install --frozen-lockfile
 
-      - name: Install Playwright Chromium
-        run: cd web && pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: cd web && pnpm exec playwright install --with-deps chromium webkit
 
       # Keep these in one Make invocation. Both targets share the phony
       # `build` prerequisite and mutable build outputs.
