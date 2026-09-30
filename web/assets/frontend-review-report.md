@@ -15,4 +15,4 @@ No blocking, high, or medium frontend findings remain.
 - No raw HTML insertion, client secrets, unsafe external navigation, optimistic mutation, hydration-only branch, third-party runtime asset, or task-introduced duplicate component was found.
 - Production build, deterministic desktop/mobile Playwright flows, and axe checks pass.
 
-Known operational limitations are outside the rendered frontend: the current provider credential has no 2026 history entitlement, and no external prediction source has passed automated-reuse review.
+Known operational limitations are outside the rendered frontend: the current provider credential has no 2026 history entitlement, and Forebet automated collection is unavailable because ordinary requests receive a managed anti-bot response. Four public external-prediction adapters are enabled for private local use.

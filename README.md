@@ -42,7 +42,12 @@ make mvp-sync DATE=YYYY-MM-DD
 make external-predictions DATE=YYYY-MM-DD
 ```
 
-The second command safely reports `NO_APPROVED_SOURCES` until an external source passes access and reuse review. `infrastructure/systemd/matchforge-mvp-refresh.timer` provides the 06:00 `Africa/Lagos` deployment schedule and invokes `scripts/mvp-refresh.sh`; adjust its `/opt/matchforge` user/path settings during installation. No unnecessary realtime scheduler is bundled.
+The second command collects public predictions from the four enabled sources when
+`EXTERNAL_PREDICTION_USAGE_MODE=PRIVATE_LOCAL`. Use `SOURCE=<source>` to run one source.
+Forebet remains disabled because an ordinary request receives a managed anti-bot response.
+`infrastructure/systemd/matchforge-mvp-refresh.timer` provides the 06:00 `Africa/Lagos`
+deployment schedule and invokes `scripts/mvp-refresh.sh`; adjust its `/opt/matchforge`
+user/path settings during installation. No unnecessary realtime scheduler is bundled.
 
 The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. To run it separately after `make up`:
 
