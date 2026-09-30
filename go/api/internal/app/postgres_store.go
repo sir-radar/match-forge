@@ -129,10 +129,12 @@ func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID
 	}
 	return MatchContext{
 		FixtureID: fixtureID, HomeForm: homeForm, AwayForm: awayForm, H2H: h2h,
-		Standings: standings,
+		H2HSummary: summarizeH2H(h2h), HomeStats: summarizeForm(homeForm),
+		AwayStats: summarizeForm(awayForm), Standings: standings,
 		DataStatus: map[string]bool{
 			"recent_form": len(homeForm) > 0 && len(awayForm) > 0,
-			"h2h":         len(h2h) > 0, "standings": len(standings) > 0, "team_stats": false,
+			"h2h":         len(h2h) > 0, "standings": len(standings) > 0,
+			"team_stats": len(homeForm) > 0 && len(awayForm) > 0,
 		},
 	}, nil
 }
@@ -213,7 +215,39 @@ func (store *PostgresProductStore) Performance(ctx context.Context, competitionI
 		}
 		records = append(records, performanceRecord{values, scores, homeScore, awayScore})
 	}
-	return calculatePerformance(competitionID, records), rows.Err()
+	item := calculatePerformance(competitionID, records)
+	if err := rows.Err(); err != nil {
+		return Performance{}, err
+	}
+	err = store.pool.QueryRow(ctx, `
+		SELECT name, country, continent FROM football.product_competitions
+		WHERE competition_id::text = $1`, competitionID,
+	).Scan(&item.League, &item.Country, &item.Continent)
+	return item, productQueryError(err)
+}
+
+func (store *PostgresProductStore) Performances(ctx context.Context, filters PerformanceFilters) ([]Performance, error) {
+	competitionFilters := CompetitionFilters{Continent: filters.Continent, Country: filters.Country}
+	competitions, err := store.Competitions(ctx, competitionFilters)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]Performance, 0, len(competitions))
+	for _, competition := range competitions {
+		if !competitionMatchesPerformanceFilter(competition, filters) {
+			continue
+		}
+		item, err := store.Performance(ctx, competition.ID)
+		if err != nil {
+			return nil, err
+		}
+		if !performanceMatchesFilter(item, filters) {
+			continue
+		}
+		items = append(items, item)
+	}
+	sort.Slice(items, func(i, j int) bool { return performanceLess(items[i], items[j]) })
+	return items, nil
 }
 
 func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPrediction, error) {
@@ -226,6 +260,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		FROM football.external_predictions ep
 		JOIN football.external_prediction_sources eps ON eps.source_code = ep.source_code
 		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
+		LEFT JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
 		LEFT JOIN LATERAL (
 			SELECT probabilities FROM football.product_forecasts
 			WHERE fixture_id = ep.fixture_id ORDER BY created_at DESC LIMIT 1
@@ -236,7 +271,10 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		args = append(args, filters.Date)
 		query += fmt.Sprintf(" AND ep.prediction_date = $%d", len(args))
 	}
+	query = addPredictionDateRange(query, &args, filters)
 	query = addFilter(query, &args, "ep.source_code", filters.Source)
+	query = addFilter(query, &args, "pc.continent", filters.Continent)
+	query = addFilter(query, &args, "pc.country", filters.Country)
 	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
 	query = addFilter(query, &args, "ep.market", filters.Market)
 	query = addFilter(query, &args, "ep.fixture_id::text", filters.FixtureID)
@@ -274,33 +312,72 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 	return items, rows.Err()
 }
 
-func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context) ([]ExternalPredictionSource, error) {
-	rows, err := store.pool.Query(ctx, `
+func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPredictionSource, error) {
+	query := `
 		SELECT source.source_code, source.name, source.base_url,
 		       source.public_predictions, source.prediction_date_available,
 		       source.login_required, source.paid_content,
 		       source.automated_access_status, source.adapter_status,
 		       source.known_issues, source.checked_at, COUNT(ep.prediction_id)::int,
+		       COUNT(result.prediction_id)::int,
+		       COUNT(result.prediction_id) FILTER (WHERE result.correct)::int,
 		       (AVG(CASE WHEN result.correct THEN 1.0 ELSE 0.0 END)
 		           FILTER (WHERE result.prediction_id IS NOT NULL))::double precision
 		FROM football.external_prediction_sources source
 		LEFT JOIN football.external_predictions ep ON ep.source_code = source.source_code
 		LEFT JOIN football.external_prediction_results result ON result.prediction_id = ep.prediction_id
-		GROUP BY source.source_code ORDER BY source.name`)
+		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
+		LEFT JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
+		WHERE true`
+	args := []any{}
+	query = addFilter(query, &args, "source.source_code", filters.Source)
+	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
+	query = addFilter(query, &args, "ep.market", filters.Market)
+	query = addFilter(query, &args, "pc.continent", filters.Continent)
+	query = addFilter(query, &args, "pc.country", filters.Country)
+	query = addPredictionDateRange(query, &args, filters)
+	query += " GROUP BY source.source_code ORDER BY source.name"
+	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (ExternalPredictionSource, error) {
+	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (ExternalPredictionSource, error) {
 		var item ExternalPredictionSource
 		err := row.Scan(
 			&item.Code, &item.Name, &item.URL, &item.PublicPredictions,
 			&item.PredictionDate, &item.LoginRequired, &item.PaidContent,
 			&item.AutomatedAccessStatus, &item.AdapterStatus, &item.KnownIssues,
-			&item.CheckedAt, &item.TrackedSelections, &item.SettledHitRate,
+			&item.CheckedAt, &item.TrackedSelections, &item.SettledSelections,
+			&item.CorrectSelections, &item.SettledHitRate,
 		)
 		return item, err
 	})
+	if err != nil {
+		return nil, err
+	}
+	for index := range items {
+		sourceFilters := filters
+		sourceFilters.Source = items[index].Code
+		predictions, err := store.ExternalPredictions(ctx, sourceFilters)
+		if err != nil {
+			return nil, err
+		}
+		eligible, agreements := 0, 0
+		for _, prediction := range predictions {
+			if prediction.Agreement == "UNABLE_TO_EVALUATE" {
+				continue
+			}
+			eligible++
+			if prediction.Agreement == "AGREES" {
+				agreements++
+			}
+		}
+		if eligible > 0 {
+			items[index].AgreementRate = floatPointer(float64(agreements) / float64(eligible))
+		}
+	}
+	return items, nil
 }
 
 func (store *PostgresProductStore) form(ctx context.Context, teamID string) ([]FormMatch, error) {
@@ -341,7 +418,7 @@ func (store *PostgresProductStore) form(ctx context.Context, teamID string) ([]F
 func (store *PostgresProductStore) h2h(ctx context.Context, homeID, awayID string) ([]H2HMatch, error) {
 	rows, err := store.pool.Query(ctx, `
 		SELECT history.kickoff_at, home.name, away.name,
-		       history.home_goals, history.away_goals
+		       history.home_goals, history.away_goals, history.home_xg, history.away_xg
 		FROM football.product_team_match_history history
 		JOIN football.product_teams home ON home.team_id = history.home_team_id
 		JOIN football.product_teams away ON away.team_id = history.away_team_id
@@ -354,9 +431,43 @@ func (store *PostgresProductStore) h2h(ctx context.Context, homeID, awayID strin
 	defer rows.Close()
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (H2HMatch, error) {
 		var item H2HMatch
-		err := row.Scan(&item.KickoffAt, &item.HomeTeam, &item.AwayTeam, &item.HomeGoals, &item.AwayGoals)
+		err := row.Scan(
+			&item.KickoffAt, &item.HomeTeam, &item.AwayTeam, &item.HomeGoals,
+			&item.AwayGoals, &item.HomeXG, &item.AwayXG,
+		)
 		return item, err
 	})
+}
+
+func summarizeForm(matches []FormMatch) *TeamStatistics {
+	if len(matches) == 0 {
+		return nil
+	}
+	item := &TeamStatistics{RecentMatches: len(matches)}
+	for _, match := range matches {
+		item.GoalsFor += match.GoalsFor
+		item.GoalsAgainst += match.GoalsAgainst
+	}
+	item.AverageGoalsFor = float64(item.GoalsFor) / float64(item.RecentMatches)
+	item.AverageGoalsAgainst = float64(item.GoalsAgainst) / float64(item.RecentMatches)
+	return item
+}
+
+func summarizeH2H(matches []H2HMatch) H2HSummary {
+	result := H2HSummary{Meetings: len(matches)}
+	for _, match := range matches {
+		result.HomeGoals += match.HomeGoals
+		result.AwayGoals += match.AwayGoals
+		switch {
+		case match.HomeGoals > match.AwayGoals:
+			result.HomeWins++
+		case match.HomeGoals < match.AwayGoals:
+			result.AwayWins++
+		default:
+			result.Draws++
+		}
+	}
+	return result
 }
 
 func scanCompetition(row pgx.CollectableRow) (Competition, error) {
@@ -548,6 +659,37 @@ func addFilter(query string, args *[]any, column, value string) string {
 	}
 	*args = append(*args, value)
 	return query + fmt.Sprintf(" AND %s = $%d", column, len(*args))
+}
+
+func addPredictionDateRange(query string, args *[]any, filters ExternalPredictionFilters) string {
+	if !filters.DateFrom.IsZero() {
+		*args = append(*args, filters.DateFrom)
+		query += fmt.Sprintf(" AND ep.prediction_date >= $%d", len(*args))
+	}
+	if !filters.DateTo.IsZero() {
+		*args = append(*args, filters.DateTo)
+		query += fmt.Sprintf(" AND ep.prediction_date <= $%d", len(*args))
+	}
+	return query
+}
+
+func competitionMatchesPerformanceFilter(item Competition, filters PerformanceFilters) bool {
+	return filters.CompetitionID == "" || filters.CompetitionID == item.ID
+}
+
+func performanceMatchesFilter(item Performance, filters PerformanceFilters) bool {
+	return item.Forecasts >= filters.MinimumForecasts &&
+		(filters.Rating == "" || item.Rating == filters.Rating)
+}
+
+func performanceLess(left, right Performance) bool {
+	if left.Continent != right.Continent {
+		return left.Continent < right.Continent
+	}
+	if left.Country != right.Country {
+		return left.Country < right.Country
+	}
+	return left.League < right.League
 }
 
 func productQueryError(err error) error {

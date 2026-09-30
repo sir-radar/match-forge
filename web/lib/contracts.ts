@@ -83,6 +83,16 @@ export type H2HMatch = {
   away_team: string;
   home_goals: number;
   away_goals: number;
+  home_xg: number | null;
+  away_xg: number | null;
+};
+
+export type TeamStatistics = {
+  recent_matches: number;
+  goals_for: number;
+  goals_against: number;
+  average_goals_for: number;
+  average_goals_against: number;
 };
 
 export type Standing = {
@@ -104,12 +114,18 @@ export type MatchContext = {
   home_form: FormMatch[];
   away_form: FormMatch[];
   h2h: H2HMatch[];
+  h2h_summary: { meetings: number; home_wins: number; draws: number; away_wins: number; home_goals: number; away_goals: number };
+  home_team_statistics: TeamStatistics | null;
+  away_team_statistics: TeamStatistics | null;
   standings: Standing[];
   data_availability: Record<string, boolean>;
 };
 
 export type Performance = {
   competition_id: string;
+  league: string;
+  country: string;
+  continent: string;
   rating: "UNRATED" | "WATCH" | "GOOD" | "STRONG";
   forecasts: number;
   outcome_hit_rate: number | null;
@@ -160,7 +176,10 @@ export type ExternalSource = {
   known_issues: string;
   checked_at: string;
   tracked_selections: number;
+  settled_selections: number;
+  correct_selections: number;
   settled_hit_rate: number | null;
+  matchforge_agreement_rate: number | null;
 };
 
 export function parseCompetitions(value: unknown): Competition[] {
@@ -230,8 +249,13 @@ export function parseContext(value: unknown): MatchContext {
         away_team: text(row.away_team, "away_team"),
         home_goals: numeric(row.home_goals, "home_goals"),
         away_goals: numeric(row.away_goals, "away_goals"),
+        home_xg: nullableNumber(row.home_xg, "home_xg"),
+        away_xg: nullableNumber(row.away_xg, "away_xg"),
       };
     }),
+    h2h_summary: parseH2HSummary(item.h2h_summary),
+    home_team_statistics: item.home_team_statistics === null ? null : parseTeamStatistics(item.home_team_statistics),
+    away_team_statistics: item.away_team_statistics === null ? null : parseTeamStatistics(item.away_team_statistics),
     standings: array(item.standings, "standings").map(parseStanding),
     data_availability: booleanRecord(item.data_availability, "data_availability"),
   };
@@ -242,6 +266,9 @@ export function parsePerformance(value: unknown): Performance {
   const rating = text(item.rating, "rating") as Performance["rating"];
   return {
     competition_id: text(item.competition_id, "competition_id"),
+    league: text(item.league, "league"),
+    country: text(item.country, "country"),
+    continent: text(item.continent, "continent"),
     rating,
     forecasts: numeric(item.forecasts, "forecasts"),
     outcome_hit_rate: nullableNumber(item.outcome_hit_rate, "outcome_hit_rate"),
@@ -259,6 +286,21 @@ export function parsePerformance(value: unknown): Performance {
     latest_fifty_baseline_brier: nullableNumber(item.latest_fifty_baseline_brier, "latest_fifty_baseline_brier"),
     latest_fifty_baseline_log_loss: nullableNumber(item.latest_fifty_baseline_log_loss, "latest_fifty_baseline_log_loss"),
   };
+}
+
+export function parsePerformanceList(value: unknown): Performance[] {
+  const envelope = object(value, "performance response");
+  return array(envelope.performance, "performance").map(parsePerformance);
+}
+
+function parseH2HSummary(value: unknown): MatchContext["h2h_summary"] {
+  const item = object(value, "h2h summary");
+  return { meetings: numeric(item.meetings, "meetings"), home_wins: numeric(item.home_wins, "home_wins"), draws: numeric(item.draws, "draws"), away_wins: numeric(item.away_wins, "away_wins"), home_goals: numeric(item.home_goals, "home_goals"), away_goals: numeric(item.away_goals, "away_goals") };
+}
+
+function parseTeamStatistics(value: unknown): TeamStatistics {
+  const item = object(value, "team statistics");
+  return { recent_matches: numeric(item.recent_matches, "recent_matches"), goals_for: numeric(item.goals_for, "goals_for"), goals_against: numeric(item.goals_against, "goals_against"), average_goals_for: numeric(item.average_goals_for, "average_goals_for"), average_goals_against: numeric(item.average_goals_against, "average_goals_against") };
 }
 
 export function parsePredictions(value: unknown): ExternalPrediction[] {
@@ -303,7 +345,10 @@ export function parseSources(value: unknown): ExternalSource[] {
       known_issues: text(item.known_issues, "known_issues"),
       checked_at: text(item.checked_at, "checked_at"),
       tracked_selections: numeric(item.tracked_selections, "tracked_selections"),
+      settled_selections: numeric(item.settled_selections, "settled_selections"),
+      correct_selections: numeric(item.correct_selections, "correct_selections"),
       settled_hit_rate: nullableNumber(item.settled_hit_rate, "settled_hit_rate"),
+      matchforge_agreement_rate: nullableNumber(item.matchforge_agreement_rate, "matchforge_agreement_rate"),
     };
   });
 }

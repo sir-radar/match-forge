@@ -11,7 +11,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync external-predictions web-install web-lint web-test web-build \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -75,7 +75,7 @@ integration: build
 postgres-restore-test: up
 	./scripts/storage-integration.sh
 
-check: format-check lint test build project-status-check
+check: format-check lint test build project-status-check web-lint web-test web-build
 
 project-status-check:
 	@$(TOOL_ENV); uv run python -m football.project_status docs/project-status.json
@@ -126,6 +126,9 @@ web-test:
 
 web-build:
 	cd web && pnpm build
+
+web-e2e: web-build
+	cd web && pnpm test:e2e
 
 mvp-sync: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(MAX_HISTORY_LEAGUES),--max-history-leagues $(MAX_HISTORY_LEAGUES),)

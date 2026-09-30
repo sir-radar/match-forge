@@ -9,6 +9,7 @@ from football.product.api_football import (
     fixture_status,
     inferred_division,
 )
+from football.product.sync import _league_seasons
 
 
 def test_client_preserves_raw_response_and_encodes_date() -> None:
@@ -52,3 +53,11 @@ def test_coverage_classification() -> None:
     assert inferred_division("Championship", "League") == 2
     assert inferred_division("Premier League", "League") == 1
     assert inferred_division("FA Cup", "Cup") is None
+
+
+def test_fixture_leagues_do_not_require_absent_standings_metadata() -> None:
+    rows = [
+        {"league": {"id": 39, "season": 2026}},
+        {"league": {"id": 999, "season": 2026}},
+    ]
+    assert _league_seasons(rows) == [(39, 2026), (999, 2026)]

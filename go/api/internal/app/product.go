@@ -28,11 +28,23 @@ type FixtureFilters struct {
 
 type ExternalPredictionFilters struct {
 	Date        time.Time
+	DateFrom    time.Time
+	DateTo      time.Time
 	Source      string
+	Continent   string
+	Country     string
 	Competition string
 	Market      string
 	Agreement   string
 	FixtureID   string
+}
+
+type PerformanceFilters struct {
+	Continent        string
+	Country          string
+	CompetitionID    string
+	Rating           string
+	MinimumForecasts int
 }
 
 type ProductStore interface {
@@ -42,8 +54,9 @@ type ProductStore interface {
 	Forecast(context.Context, string, string) (Forecast, error)
 	Standings(context.Context, string) ([]StandingRow, error)
 	Performance(context.Context, string) (Performance, error)
+	Performances(context.Context, PerformanceFilters) ([]Performance, error)
 	ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error)
-	ExternalPredictionSources(context.Context) ([]ExternalPredictionSource, error)
+	ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error)
 }
 
 type unavailableProductStore struct{}
@@ -66,10 +79,13 @@ func (unavailableProductStore) Standings(context.Context, string) ([]StandingRow
 func (unavailableProductStore) Performance(context.Context, string) (Performance, error) {
 	return Performance{}, errProductUnavailable
 }
+func (unavailableProductStore) Performances(context.Context, PerformanceFilters) ([]Performance, error) {
+	return nil, errProductUnavailable
+}
 func (unavailableProductStore) ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error) {
 	return nil, errProductUnavailable
 }
-func (unavailableProductStore) ExternalPredictionSources(context.Context) ([]ExternalPredictionSource, error) {
+func (unavailableProductStore) ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error) {
 	return nil, errProductUnavailable
 }
 
@@ -156,6 +172,25 @@ type H2HMatch struct {
 	AwayTeam  string    `json:"away_team"`
 	HomeGoals int       `json:"home_goals"`
 	AwayGoals int       `json:"away_goals"`
+	HomeXG    *float64  `json:"home_xg"`
+	AwayXG    *float64  `json:"away_xg"`
+}
+
+type H2HSummary struct {
+	Meetings  int `json:"meetings"`
+	HomeWins  int `json:"home_wins"`
+	Draws     int `json:"draws"`
+	AwayWins  int `json:"away_wins"`
+	HomeGoals int `json:"home_goals"`
+	AwayGoals int `json:"away_goals"`
+}
+
+type TeamStatistics struct {
+	RecentMatches       int     `json:"recent_matches"`
+	GoalsFor            int     `json:"goals_for"`
+	GoalsAgainst        int     `json:"goals_against"`
+	AverageGoalsFor     float64 `json:"average_goals_for"`
+	AverageGoalsAgainst float64 `json:"average_goals_against"`
 }
 
 type MatchContext struct {
@@ -163,6 +198,9 @@ type MatchContext struct {
 	HomeForm   []FormMatch     `json:"home_form"`
 	AwayForm   []FormMatch     `json:"away_form"`
 	H2H        []H2HMatch      `json:"h2h"`
+	H2HSummary H2HSummary      `json:"h2h_summary"`
+	HomeStats  *TeamStatistics `json:"home_team_statistics"`
+	AwayStats  *TeamStatistics `json:"away_team_statistics"`
 	Standings  []StandingRow   `json:"standings"`
 	DataStatus map[string]bool `json:"data_availability"`
 }
@@ -183,6 +221,9 @@ type StandingRow struct {
 
 type Performance struct {
 	CompetitionID    string   `json:"competition_id"`
+	League           string   `json:"league"`
+	Country          string   `json:"country"`
+	Continent        string   `json:"continent"`
 	Rating           string   `json:"rating"`
 	Forecasts        int      `json:"forecasts"`
 	OutcomeHitRate   *float64 `json:"outcome_hit_rate"`
@@ -233,7 +274,10 @@ type ExternalPredictionSource struct {
 	KnownIssues           string    `json:"known_issues"`
 	CheckedAt             time.Time `json:"checked_at"`
 	TrackedSelections     int       `json:"tracked_selections"`
+	SettledSelections     int       `json:"settled_selections"`
+	CorrectSelections     int       `json:"correct_selections"`
 	SettledHitRate        *float64  `json:"settled_hit_rate"`
+	AgreementRate         *float64  `json:"matchforge_agreement_rate"`
 }
 
 func (application *App) listCompetitions(response http.ResponseWriter, request *http.Request) {
@@ -299,6 +343,25 @@ func (application *App) performance(response http.ResponseWriter, request *http.
 	application.respondProduct(response, item, err)
 }
 
+func (application *App) listPerformance(response http.ResponseWriter, request *http.Request) {
+	minimum := 0
+	if value := request.URL.Query().Get("minimum_forecasts"); value != "" {
+		parsed, err := strconv.Atoi(value)
+		if err != nil || parsed < 0 {
+			application.publicError(response, http.StatusBadRequest, "invalid minimum_forecasts")
+			return
+		}
+		minimum = parsed
+	}
+	items, err := application.product.Performances(request.Context(), PerformanceFilters{
+		Continent:     request.URL.Query().Get("continent"),
+		Country:       request.URL.Query().Get("country"),
+		CompetitionID: request.URL.Query().Get("competition"),
+		Rating:        request.URL.Query().Get("rating"), MinimumForecasts: minimum,
+	})
+	application.respondProduct(response, map[string]any{"performance": items}, err)
+}
+
 func (application *App) externalPredictions(response http.ResponseWriter, request *http.Request) {
 	filters, err := externalFilters(request)
 	if err != nil {
@@ -317,15 +380,32 @@ func (application *App) fixtureExternalPredictions(response http.ResponseWriter,
 }
 
 func (application *App) externalPredictionSources(response http.ResponseWriter, request *http.Request) {
-	items, err := application.product.ExternalPredictionSources(request.Context())
+	filters, filterErr := externalFilters(request)
+	if filterErr != nil {
+		application.publicError(response, http.StatusBadRequest, filterErr.Error())
+		return
+	}
+	items, err := application.product.ExternalPredictionSources(request.Context(), filters)
 	application.respondProduct(response, map[string]any{"sources": items}, err)
 }
 
 func externalFilters(request *http.Request) (ExternalPredictionFilters, error) {
 	filters := ExternalPredictionFilters{
 		Source: request.URL.Query().Get("source"), Competition: request.URL.Query().Get("competition"),
+		Continent: request.URL.Query().Get("continent"), Country: request.URL.Query().Get("country"),
 		Market: request.URL.Query().Get("market"), Agreement: request.URL.Query().Get("agreement"),
 		FixtureID: request.URL.Query().Get("fixture_id"),
+	}
+	for name, target := range map[string]*time.Time{
+		"date_from": &filters.DateFrom, "date_to": &filters.DateTo,
+	} {
+		if value := request.URL.Query().Get(name); value != "" {
+			parsed, err := time.Parse("2006-01-02", value)
+			if err != nil {
+				return ExternalPredictionFilters{}, fmt.Errorf("%s must use YYYY-MM-DD", name)
+			}
+			*target = parsed
+		}
 	}
 	if value := request.URL.Query().Get("date"); value != "" {
 		parsed, err := time.Parse("2006-01-02", value)

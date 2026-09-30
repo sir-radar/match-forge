@@ -34,6 +34,7 @@ func New(config Config, logger *slog.Logger, readiness ReadinessChecker, stores 
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts/{forecast_id}", application.forecast)
 	mux.HandleFunc("GET /v1/competitions/{competition_id}/standings", application.standings)
 	mux.HandleFunc("GET /v1/competitions/{competition_id}/performance", application.performance)
+	mux.HandleFunc("GET /v1/performance", application.listPerformance)
 	mux.HandleFunc("GET /v1/external-predictions", application.externalPredictions)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/external-predictions", application.fixtureExternalPredictions)
 	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
