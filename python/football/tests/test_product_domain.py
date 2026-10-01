@@ -16,6 +16,13 @@ from football.product.domain import (
     normalize_team_name,
 )
 
+
+def test_provider_team_name_normalization_uses_only_deterministic_aliases() -> None:
+    assert normalize_team_name("Man United FC") == normalize_team_name("Man Utd")
+    assert normalize_team_name("Inter Milan") == normalize_team_name("Internazionale")
+    assert normalize_team_name("PSG") == normalize_team_name("Paris Saint-Germain")
+
+
 ARTIFACT = Path("docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json")
 HOME = UUID("00000000-0000-0000-0000-000000000001")
 AWAY = UUID("00000000-0000-0000-0000-000000000002")

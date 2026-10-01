@@ -182,6 +182,34 @@ export type ExternalSource = {
   matchforge_agreement_rate: number | null;
 };
 
+export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "EXTERNAL_PREDICTIONS" | "ALL_DATA";
+export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
+export type SyncRun = {
+  run_id: string;
+  sync_type: SyncType;
+  status: SyncStatus;
+  requested_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  requested_date: string | null;
+  parameters: Record<string, unknown>;
+  summary: Record<string, unknown>;
+  error_message: string | null;
+  log_path: string | null;
+};
+export type HistoricalCoverage = {
+  historical_matches: number;
+  competitions_with_history: number;
+  teams_with_10_matches: number;
+  teams_below_10_matches: number;
+  scheduled_fixtures: number;
+  forecast_available: number;
+  not_enough_history: number;
+  mapping_failures: number;
+  source_conflicts: number;
+};
+export type SyncRunsResponse = { runs: SyncRun[]; coverage: HistoricalCoverage };
+
 export function parseCompetitions(value: unknown): Competition[] {
   const envelope = object(value, "competitions response");
   return array(envelope.competitions, "competitions").map(parseCompetition);
@@ -351,6 +379,43 @@ export function parseSources(value: unknown): ExternalSource[] {
       matchforge_agreement_rate: nullableNumber(item.matchforge_agreement_rate, "matchforge_agreement_rate"),
     };
   });
+}
+
+export function parseSyncRun(value: unknown): SyncRun {
+  const item = object(value, "sync run");
+  const syncType = text(item.sync_type, "sync_type") as SyncType;
+  const status = text(item.status, "status") as SyncStatus;
+  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "EXTERNAL_PREDICTIONS", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
+  if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED"].includes(status)) throw new Error("invalid sync status");
+  return {
+    run_id: text(item.run_id, "run_id"), sync_type: syncType, status,
+    requested_at: text(item.requested_at, "requested_at"),
+    started_at: nullableText(item.started_at, "started_at"),
+    finished_at: nullableText(item.finished_at, "finished_at"),
+    requested_date: nullableText(item.requested_date, "requested_date"),
+    parameters: object(item.parameters, "parameters"), summary: object(item.summary, "summary"),
+    error_message: nullableText(item.error_message, "error_message"),
+    log_path: nullableText(item.log_path, "log_path"),
+  };
+}
+
+export function parseSyncRuns(value: unknown): SyncRunsResponse {
+  const envelope = object(value, "sync runs response");
+  const coverage = object(envelope.coverage, "coverage");
+  return {
+    runs: array(envelope.runs, "runs").map(parseSyncRun),
+    coverage: {
+      historical_matches: numeric(coverage.historical_matches, "historical_matches"),
+      competitions_with_history: numeric(coverage.competitions_with_history, "competitions_with_history"),
+      teams_with_10_matches: numeric(coverage.teams_with_10_matches, "teams_with_10_matches"),
+      teams_below_10_matches: numeric(coverage.teams_below_10_matches, "teams_below_10_matches"),
+      scheduled_fixtures: numeric(coverage.scheduled_fixtures, "scheduled_fixtures"),
+      forecast_available: numeric(coverage.forecast_available, "forecast_available"),
+      not_enough_history: numeric(coverage.not_enough_history, "not_enough_history"),
+      mapping_failures: numeric(coverage.mapping_failures, "mapping_failures"),
+      source_conflicts: numeric(coverage.source_conflicts, "source_conflicts"),
+    },
+  };
 }
 
 function parseCompetition(value: unknown): Competition {

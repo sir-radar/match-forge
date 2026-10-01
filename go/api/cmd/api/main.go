@@ -29,11 +29,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	application := app.New(
+	application := app.NewWithSyncRunner(
 		config,
 		logger,
 		app.NewTCPReadiness(config),
 		app.NewPostgresProductStore(pool),
+		app.NewCommandSyncRunner(ctx, pool, config.RepoRoot, logger),
 	)
 	if err := application.Run(ctx); err != nil {
 		logger.Error("api stopped", "error", err)

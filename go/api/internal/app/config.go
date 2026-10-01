@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -24,6 +25,7 @@ type Config struct {
 	PostgresAddress   string
 	RedisAddress      string
 	Version           string
+	RepoRoot          string
 	DependencyTimeout time.Duration
 	ReadHeaderTimeout time.Duration
 	ShutdownTimeout   time.Duration
@@ -43,6 +45,10 @@ func ConfigFromEnv(version string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	repoRoot, err := resolveRepoRoot(os.Getenv("MATCHFORGE_REPO_ROOT"))
+	if err != nil {
+		return Config{}, err
+	}
 	config := Config{
 		Address:           valueFromEnv("API_ADDR", defaultAPIAddress),
 		DatabaseURL:       valueFromEnv("DATABASE_URL", "postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable"),
@@ -50,6 +56,7 @@ func ConfigFromEnv(version string) (Config, error) {
 		PostgresAddress:   valueFromEnv("POSTGRES_ADDR", defaultPostgresAddress),
 		RedisAddress:      valueFromEnv("REDIS_ADDR", defaultRedisAddress),
 		Version:           version,
+		RepoRoot:          repoRoot,
 		DependencyTimeout: dependencyTimeout,
 		ReadHeaderTimeout: readHeaderTimeout,
 		ShutdownTimeout:   shutdownTimeout,
@@ -68,6 +75,42 @@ func ConfigFromEnv(version string) (Config, error) {
 		}
 	}
 	return config, nil
+}
+
+func resolveRepoRoot(configured string) (string, error) {
+	if configured != "" {
+		absolute, err := filepath.Abs(configured)
+		if err != nil {
+			return "", fmt.Errorf("MATCHFORGE_REPO_ROOT: %w", err)
+		}
+		if isRepoRoot(absolute) {
+			return absolute, nil
+		}
+		return "", fmt.Errorf("MATCHFORGE_REPO_ROOT does not identify the MatchForge repository")
+	}
+	current, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("resolve repository root: %w", err)
+	}
+	for {
+		if isRepoRoot(current) {
+			return current, nil
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return "", fmt.Errorf("cannot resolve MatchForge repository root; set MATCHFORGE_REPO_ROOT")
+		}
+		current = parent
+	}
+}
+
+func isRepoRoot(path string) bool {
+	for _, required := range []string{"Makefile", "python", "go", "web"} {
+		if _, err := os.Stat(filepath.Join(path, required)); err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 func valueFromEnv(name, fallback string) string {

@@ -10,11 +10,12 @@ import (
 
 // App owns the operational HTTP surface and lifecycle.
 type App struct {
-	config    Config
-	logger    *slog.Logger
-	readiness ReadinessChecker
-	product   ProductStore
-	handler   http.Handler
+	config     Config
+	logger     *slog.Logger
+	readiness  ReadinessChecker
+	product    ProductStore
+	syncRunner SyncRunner
+	handler    http.Handler
 }
 
 // New constructs the operational API without starting network listeners.
@@ -23,7 +24,21 @@ func New(config Config, logger *slog.Logger, readiness ReadinessChecker, stores 
 	if len(stores) > 0 && stores[0] != nil {
 		product = stores[0]
 	}
-	application := &App{config: config, logger: logger, readiness: readiness, product: product}
+	return NewWithSyncRunner(config, logger, readiness, product, unavailableSyncRunner{})
+}
+
+// NewWithSyncRunner constructs the API with an injected fixed-action synchronization runner.
+func NewWithSyncRunner(
+	config Config,
+	logger *slog.Logger,
+	readiness ReadinessChecker,
+	product ProductStore,
+	syncRunner SyncRunner,
+) *App {
+	application := &App{
+		config: config, logger: logger, readiness: readiness,
+		product: product, syncRunner: syncRunner,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", application.health)
 	mux.HandleFunc("GET /readyz", application.ready)
@@ -38,6 +53,15 @@ func New(config Config, logger *slog.Logger, readiness ReadinessChecker, stores 
 	mux.HandleFunc("GET /v1/external-predictions", application.externalPredictions)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/external-predictions", application.fixtureExternalPredictions)
 	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
+	mux.HandleFunc("GET /v1/admin/sync-runs", application.listSyncRuns)
+	mux.HandleFunc("GET /v1/admin/sync-runs/{run_id}", application.getSyncRun)
+	mux.HandleFunc("POST /v1/admin/sync/mvp", application.startSync(SyncMVP))
+	mux.HandleFunc("POST /v1/admin/sync/openfootball", application.startSync(SyncOpenFootball))
+	mux.HandleFunc("POST /v1/admin/sync/football-data-uk", application.startSync(SyncFootballDataUK))
+	mux.HandleFunc("POST /v1/admin/sync/history", application.startSync(SyncHistoryBackfill))
+	mux.HandleFunc("POST /v1/admin/sync/forecast-refresh", application.startSync(SyncForecastRefresh))
+	mux.HandleFunc("POST /v1/admin/sync/external-predictions", application.startSync(SyncExternalPredictions))
+	mux.HandleFunc("POST /v1/admin/sync/all", application.startSync(SyncAllData))
 	application.handler = application.cors(mux)
 	return application
 }
@@ -102,7 +126,13 @@ func (application *App) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if request.Header.Get("Origin") == application.config.AllowedOrigin {
 			response.Header().Set("Access-Control-Allow-Origin", application.config.AllowedOrigin)
+			response.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			response.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type")
 			response.Header().Set("Vary", "Origin")
+		}
+		if request.Method == http.MethodOptions {
+			response.WriteHeader(http.StatusNoContent)
+			return
 		}
 		next.ServeHTTP(response, request)
 	})

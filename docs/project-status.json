@@ -648,7 +648,22 @@
     "live_forecasting_status": "PASS_5_FORECASTS_2026_10_10",
     "external_prediction_collection_status": "ENABLED_4_PUBLIC_SOURCES_FOREBET_TECHNICALLY_UNAVAILABLE",
     "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
-    "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md"
+    "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md",
+    "historical_backfill": {
+      "status": "COMPLETE",
+      "completed_at": "2026-09-30",
+      "openfootball_source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "openfootball_provider_matches": 90036,
+      "football_data_uk_provider_matches": 241379,
+      "canonical_historical_matches_before": 430,
+      "canonical_historical_matches_after": 326069,
+      "cross_source_overlap": 5487,
+      "score_conflicts": 6,
+      "mapping_failures": 0,
+      "forecasts_created": 0,
+      "coverage_ref": "docs/MVP-DATA-COVERAGE.md",
+      "operations_ref": "docs/MVP-HISTORICAL-BACKFILL.md"
+    }
   },
   "phase_1b": {
     "status": "PASS",
