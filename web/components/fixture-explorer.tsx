@@ -7,6 +7,7 @@ import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { ProbabilityBar } from "@/components/probability-bar";
 import { ExpandedFixture } from "@/components/expanded-fixture";
+import { Icon } from "@/components/icon";
 
 type Filters = { continent: string; country: string; competition: string; forecast: string };
 type CoverageOptions = ReturnType<typeof coverageOptions>;
@@ -55,16 +56,16 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
       <section className="fixture-workbench" aria-label="Football fixtures">
         <div className="environment-strip"><span>Environment: <b>Production pre-match</b></span><i /> <span>Forecasts: immutable published records</span></div>
         <div className="fixture-toolbar">
-          <div className="fixture-title"><span className="material-symbol" aria-hidden="true">calendar_view_day</span><div><h2>Football Fixtures</h2><small>{fixtureCount(fixtures.data)} matches scoped · {longDate(date)}</small></div></div>
+          <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{fixtureCount(fixtures.data)} matches scoped · {longDate(date)}</small></div></div>
           <div className="date-bar">
-            <button aria-label="Previous day" onClick={() => moveDate(-1)}><span className="material-symbol" aria-hidden="true">chevron_left</span><span>Prev Day</span></button>
+            <button aria-label="Previous day" onClick={() => moveDate(-1)}><Icon name="chevron-left" /><span>Prev Day</span></button>
             <label><span>Selected date</span><input type="date" value={date} onChange={(event) => { setDate(event.target.value); setExpanded(null); }} /></label>
-            <button aria-label="Next day" onClick={() => moveDate(1)}><span>Next Day</span><span className="material-symbol" aria-hidden="true">chevron_right</span></button>
+            <button aria-label="Next day" onClick={() => moveDate(1)}><span>Next Day</span><Icon name="chevron-right" /></button>
           </div>
         </div>
         <StatusFilters groups={fixtures.data ?? []} value={statusFilter} onChange={setStatusFilter} />
         <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} teamQuery={teamQuery} setTeamQuery={setTeamQuery} />
-        <div className="engine-strip"><span className="material-symbol" aria-hidden="true">monitoring</span><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
+        <div className="engine-strip"><Icon name="monitoring" /><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
         <FixtureResults state={fixtures} expanded={expanded} setExpanded={setExpanded} teamQuery={teamQuery} statusFilter={statusFilter} />
       </section>
     </div>
@@ -121,7 +122,7 @@ function FixtureRow({ fixture, competition, expanded, toggle }: { fixture: Fixtu
       <span className="score">{fixture.status === "FINISHED" ? `${fixture.home_score}–${fixture.away_score}` : ""}</span>
       <span className="forecast-cell">{forecast ? <ProbabilityBar values={forecast.probabilities} /> : <span className="availability">{availabilityLabel(fixture.forecast_availability)}</span>}</span>
       <span className="xg">{forecast ? `λ ${forecast.expected_home_goals.toFixed(2)} · ${forecast.expected_away_goals.toFixed(2)}` : "—"}</span>
-      <span className="chevron material-symbol" aria-hidden="true">{expanded ? "expand_less" : "expand_more"}</span>
+      <Icon name={expanded ? "chevron-up" : "chevron-down"} className="chevron" />
     </button>
     {expanded && <div id={`fixture-panel-${fixture.id}`}><ExpandedFixture fixture={fixture} competition={competition} /></div>}
   </article>;

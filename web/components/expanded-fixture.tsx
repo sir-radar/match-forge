@@ -6,6 +6,7 @@ import type { Competition, Fixture, Forecast, MatchContext } from "@/lib/contrac
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
+import { Icon } from "@/components/icon";
 
 const tabs = ["Overview", "Markets", "Score matrix", "H2H context", "Team statistics", "Simulation evidence", "Diagnostics", "Forecast history"] as const;
 type Tab = (typeof tabs)[number];
@@ -35,7 +36,7 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
       <TabContent tab={tab} fixture={fixture} resources={resources} />
       <AnalysisStatus tab={tab} hasForecast={fixture.forecast !== null} context={context} forecast={forecast} />
     </div>
-    <div className="integrity-note"><span className="material-symbol" aria-hidden="true">verified_user</span><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
+    <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
   </div>;
 }
 

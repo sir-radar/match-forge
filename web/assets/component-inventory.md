@@ -10,6 +10,8 @@ predictions, and admin sync.
   and distinct mobile geometry.
 - Extended `ExpandedFixture` for all authored tabs and API-backed panels.
 - Reused `ProbabilityBar`; semantics and three-way geometry match.
+- Added one shared typed `Icon` primitive for shell and fixture glyphs. Inline
+  SVG removes the runtime Material Symbols font dependency.
 - Kept performance and predictions route-local using shared approved tokens.
 
 No public component API changed. Duplicate search found one owner per role.

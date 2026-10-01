@@ -18,9 +18,13 @@ test.beforeEach(async ({ page }) => {
 
 test("fixture expands inline", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("svg[data-icon]")).toHaveCount(11);
+  await expect(page.locator('svg[data-icon="chevron-left"]')).toHaveCSS("width", "16px");
+  await expect(page.locator('svg[data-icon="chevron-left"]')).toHaveCSS("height", "16px");
   const fixtureRow = page.getByRole("button", { name: /Arsenal.*Chelsea/ });
   await expect(fixtureRow).toBeVisible();
   await fixtureRow.click();
+  await expect(page.locator('svg[data-icon="verified"]')).toBeVisible();
   await expect(page.getByRole("tab", { name: "Markets" })).toBeVisible();
   await expect(page.getByText("Model boundary")).toBeVisible();
   const accessibility = await new AxeBuilder({ page }).analyze();
