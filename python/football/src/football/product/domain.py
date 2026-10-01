@@ -82,7 +82,13 @@ def stable_id(kind: str, *parts: object) -> UUID:
 def normalize_team_name(value: str) -> str:
     normalized = re.sub(r"\b(fc|cf|afc|sc|club)\b", " ", value.casefold())
     normalized = normalized.replace("utd", "united")
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", normalized).split())
+    normalized = " ".join(re.sub(r"[^a-z0-9]+", " ", normalized).split())
+    aliases = {
+        "inter": "internazionale",
+        "inter milan": "internazionale",
+        "paris saint germain": "psg",
+    }
+    return aliases.get(normalized, normalized)
 
 
 def fixture_identity(

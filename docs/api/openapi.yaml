@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.3.0
-  description: Read-only API for fixtures, immutable MVP forecasts, context, performance, and external prediction evidence.
+  version: 0.4.0
+  description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
 servers:
   - url: http://127.0.0.1:8080
 paths:
@@ -88,7 +88,41 @@ paths:
       responses:
         '200': { description: Access audit, adapter state, and settled tracking metrics, content: { application/json: { schema: { type: object } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/sync-runs:
+    get:
+      summary: Local operational/admin endpoint
+      operationId: listSyncRuns
+      responses:
+        '200': { description: Recent persisted sync runs and current coverage, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRunPage' } } } }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/sync-runs/{run_id}:
+    get:
+      summary: Local operational/admin endpoint
+      operationId: getSyncRun
+      parameters: [ { name: run_id, in: path, required: true, schema: { type: string, format: uuid } } ]
+      responses:
+        '200': { description: Persisted sync-run state, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRun' } } } }
+        '404': { description: Unknown run, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /v1/admin/sync/mvp: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/openfootball: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/football-data-uk: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/history: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/forecast-refresh: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/external-predictions: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/all: { $ref: '#/components/pathItems/StartSync' }
 components:
+  pathItems:
+    StartSync:
+      post:
+        summary: Local operational/admin endpoint
+        requestBody:
+          required: false
+          content: { application/json: { schema: { $ref: '#/components/schemas/SyncRequest' } } }
+        responses:
+          '202': { description: Sync queued, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRun' } } } }
+          '400': { $ref: '#/components/responses/BadRequest' }
+          '409': { description: Another write-heavy sync is active, content: { application/json: { schema: { $ref: '#/components/schemas/SyncConflict' } } } }
+          '503': { $ref: '#/components/responses/Unavailable' }
   parameters:
     FixtureId: { name: fixture_id, in: path, required: true, schema: { type: string, format: uuid } }
     CompetitionId: { name: competition_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -97,6 +131,57 @@ components:
     Unavailable: { description: Product data unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   schemas:
     Error: { type: object, required: [error], properties: { error: { type: string } } }
+    SyncType: { type: string, enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA] }
+    SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED] }
+    SyncRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        date: { type: string, format: date }
+        season: { type: string }
+        competition: { type: string }
+        country: { type: string }
+    SyncRun:
+      type: object
+      required: [run_id, sync_type, status, requested_at, started_at, finished_at, requested_date, parameters, summary, error_message, log_path]
+      properties:
+        run_id: { type: string, format: uuid }
+        sync_type: { $ref: '#/components/schemas/SyncType' }
+        status: { $ref: '#/components/schemas/SyncStatus' }
+        requested_at: { type: string, format: date-time }
+        started_at: { type: [string, 'null'], format: date-time }
+        finished_at: { type: [string, 'null'], format: date-time }
+        requested_date: { type: [string, 'null'], format: date }
+        parameters: { type: object, additionalProperties: true }
+        summary: { type: object, additionalProperties: true }
+        error_message: { type: [string, 'null'] }
+        log_path: { type: [string, 'null'] }
+    SyncConflict:
+      type: object
+      required: [error, active_run]
+      properties:
+        error: { type: string }
+        active_run: { $ref: '#/components/schemas/SyncRun' }
+    HistoricalCoverage:
+      type: object
+      required: [historical_matches, competitions_with_history, teams_with_10_matches, teams_below_10_matches, scheduled_fixtures, forecast_available, not_enough_history, mapping_failures, source_conflicts]
+      additionalProperties: false
+      properties:
+        historical_matches: { type: integer, minimum: 0 }
+        competitions_with_history: { type: integer, minimum: 0 }
+        teams_with_10_matches: { type: integer, minimum: 0 }
+        teams_below_10_matches: { type: integer, minimum: 0 }
+        scheduled_fixtures: { type: integer, minimum: 0 }
+        forecast_available: { type: integer, minimum: 0 }
+        not_enough_history: { type: integer, minimum: 0 }
+        mapping_failures: { type: integer, minimum: 0 }
+        source_conflicts: { type: integer, minimum: 0 }
+    SyncRunPage:
+      type: object
+      required: [runs, coverage]
+      properties:
+        runs: { type: array, items: { $ref: '#/components/schemas/SyncRun' } }
+        coverage: { $ref: '#/components/schemas/HistoricalCoverage' }
     ForecastAvailability: { type: string, enum: [FORECAST_AVAILABLE, NOT_ENOUGH_HISTORY, SOURCE_DATA_INCOMPLETE, TEMPORARILY_UNAVAILABLE] }
     Availability:
       type: object

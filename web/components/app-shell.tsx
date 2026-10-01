@@ -12,6 +12,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/">Fixtures</Link>
           <Link href="/performance">Performance</Link>
           <Link href="/predictions">External predictions</Link>
+          <Link href="/admin/data-sync">Admin</Link>
         </nav>
         <div className="feed-state"><span aria-hidden="true" /> Data synced</div>
       </header>
@@ -20,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link href="/">Fixtures</Link>
         <Link href="/performance">Performance</Link>
         <Link href="/predictions">Predictions</Link>
+        <Link href="/admin/data-sync">Admin</Link>
       </nav>
       <footer className="footer-note">
         MatchForge forecasts are independent probability estimates. No bookmaker odds, betting slips, or guarantees.

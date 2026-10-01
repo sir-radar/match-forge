@@ -11,7 +11,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -132,6 +132,21 @@ web-e2e: web-build
 
 mvp-sync: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(MAX_HISTORY_LEAGUES),--max-history-leagues $(MAX_HISTORY_LEAGUES),)
+
+openfootball-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-openfootball $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
+
+football-data-uk-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-football-data-uk $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
+
+history-backfill: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-history $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
+
+forecast-refresh: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli refresh-forecasts
+
+all-data-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync-all $(if $(DATE),--date $(DATE),)
 
 external-predictions:
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli external-predictions $(if $(DATE),--date $(DATE),) $(if $(SOURCE),--source $(SOURCE),)

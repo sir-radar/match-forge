@@ -167,7 +167,7 @@ class ProductSync:
             )
         completed_at = datetime.now(UTC)
         settled_count = self._settle_external_predictions(completed_at)
-        forecast_count = self._store_forecasts(completed_at)
+        forecast_count = self.refresh_forecasts(completed_at)
         self.connection.commit()
         return {
             "competitions": competition_count,
@@ -979,7 +979,9 @@ class ProductSync:
                 )
         return count
 
-    def _store_forecasts(self, now: datetime) -> int:
+    def refresh_forecasts(self, now: datetime | None = None) -> int:
+        """Publish only missing future forecasts from already stored canonical history."""
+        now = now or datetime.now(UTC)
         artifact_sha = hashlib.sha256(self.artifact_path.read_bytes()).hexdigest()
         count = 0
         with self.connection.cursor() as cursor:
@@ -988,6 +990,10 @@ class ProductSync:
                 SELECT fixture_id, home_team_id, away_team_id, kickoff_at
                 FROM football.product_fixtures
                 WHERE status = 'SCHEDULED' AND kickoff_at > %s
+                  AND NOT EXISTS (
+                      SELECT 1 FROM football.product_forecasts forecast
+                      WHERE forecast.fixture_id = football.product_fixtures.fixture_id
+                  )
                 ORDER BY kickoff_at, fixture_id
                 """,
                 (now,),
@@ -1084,9 +1090,15 @@ class ProductSync:
                 SELECT fixture_id, kickoff_at, home_team_id, away_team_id,
                        home_goals, away_goals, home_xg, away_xg
                 FROM football.product_team_match_history
-                WHERE kickoff_at < %s ORDER BY kickoff_at, fixture_id
+                WHERE (
+                    source_kickoff_precision = 'EXACT' AND kickoff_at < %s
+                ) OR (
+                    source_kickoff_precision = 'DATE_ONLY'
+                    AND kickoff_at::date < %s::date
+                )
+                ORDER BY kickoff_at, fixture_id
                 """,
-                (cutoff,),
+                (cutoff, cutoff),
             )
             return [FinishedMatch(*row) for row in cursor.fetchall()]
 
