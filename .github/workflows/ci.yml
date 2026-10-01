@@ -85,6 +85,10 @@ jobs:
       # rust-toolchain.toml pins the macOS arm64 target.
       # Override only the channel selector on Linux CI.
       RUSTUP_TOOLCHAIN: 1.97.1
+      # Match scripts/toolchain.sh for both tool installation and checks.
+      GOCACHE: ${{ github.workspace }}/.local/go-cache
+      GOMODCACHE: ${{ github.workspace }}/.local/go-mod-cache
+      GOLANGCI_LINT_CACHE: ${{ github.workspace }}/.local/golangci-lint-cache
 
     steps:
       - name: Check out repository
@@ -96,13 +100,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.27.0'
-          cache: true
-          cache-dependency-path: |
-            go/api/go.mod
-            go/api/go.sum
+          # The project cache below owns these paths, including tool builds.
+          cache: false
 
-      # scripts/toolchain.sh redirects project Go caches into .local,
-      # so cache those paths explicitly as well.
+      # Save refreshed build results per revision; restore dependencies first
+      # from the same lock files, then from the same toolchain.
       - name: Restore project Go caches
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -110,8 +112,9 @@ jobs:
             .local/go-cache
             .local/go-mod-cache
             .local/golangci-lint-cache
-          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}
+          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-${{ github.sha }}
           restore-keys: |
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-
             project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-
 
       - name: Restore pinned Go tools
@@ -215,13 +218,10 @@ jobs:
       - name: Install Playwright browsers
         run: cd web && pnpm exec playwright install --with-deps chromium webkit
 
-      # Keep these in one Make invocation. Both targets share the phony
-      # `build` prerequisite and mutable build outputs.
-      - name: Run deterministic and integration checks
-        run: make check integration
-
-      - name: Run frontend E2E and accessibility checks
-        run: make web-e2e
+      # One invocation runs shared phony prerequisites only once: check and
+      # integration share build; check and web-e2e share web-build.
+      - name: Run deterministic, integration, E2E and accessibility checks
+        run: make check integration web-e2e
 
       - name: Tear down integration services
         if: always()
