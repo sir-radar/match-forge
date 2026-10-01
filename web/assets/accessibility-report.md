@@ -1,9 +1,15 @@
 # Accessibility verification
 
-- Automated: axe-core 4.10.2 runs after inline fixture expansion in Chromium desktop and WebKit iPhone 13 projects; zero violations after remediation.
-- Semantics: one page-level `h1`, labelled primary/mobile navigation, main landmark, fixture sections, disclosure buttons with `aria-expanded`/`aria-controls`, tabs/tabpanel, data tables and labelled probability summaries.
-- Keyboard: native buttons, links, selects, date input and tabs remain in DOM order; skip link is available; no pointer-only handler is used.
-- Focus: browser focus indication is retained with a three-pixel offset; no blanket outline removal.
-- Responsive: desktop rail is hidden on mobile; data remains available through filters and grouped rows; wide tables/tabs/matrix scroll without page-level horizontal clipping.
-- Motion/preferences: reduced-motion and forced-colors rules are present. No essential information is encoded only by animation.
-- Screen reader boundary: H2H/context and external selections are explicitly described as display-only and cannot be mistaken for probability adjustments.
+- axe-core 4.10.2: zero violations across fixtures, performance, predictions,
+  and admin journeys in the configured desktop and mobile Chromium projects.
+- Native links, buttons, inputs, selects, disclosures, tabs, and tables.
+- Skip link, main/primary/mobile landmarks, complementary rail, grouped fixture
+  sections, tablist, and tabpanel.
+- DOM order matches task order; all actions are keyboard operable; visible focus
+  uses a 2px cyan outline.
+- Dedicated 390px mobile composition; wide tabs/matrix/tables scroll locally.
+  Overflowing data tables are keyboard-focusable.
+- Reduced-motion and forced-colors rules; labels accompany color/status values.
+
+Manual VoiceOver interaction and formal all-criteria WCAG 2.2 conformance were
+not run, so this report claims only the checks above.

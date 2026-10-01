@@ -1,16 +1,15 @@
 # Component inventory
 
-No production frontend or component library existed before this branch.
-`web/ui-designs` contains static reference HTML only.
+Pre-existing production components were audited: `AppShell`, `FixtureExplorer`,
+`FixtureRow`, `ExpandedFixture`, `ProbabilityBar`, resource states, performance,
+predictions, and admin sync.
 
-Local owners:
+- Extended `AppShell` for approved navigation, search, timezone, feed state,
+  exact logo, footer, and mobile navigation.
+- Extended fixture components for competition rail, dense workbench, filters,
+  and distinct mobile geometry.
+- Extended `ExpandedFixture` for all authored tabs and API-backed panels.
+- Reused `ProbabilityBar`; semantics and three-way geometry match.
+- Kept performance and predictions route-local using shared approved tokens.
 
-- `AppShell`: responsive header, desktop competition rail, mobile navigation.
-- `FixtureExplorer`: date and coverage filters, request state, fixture groups.
-- `FixtureRow`: compact desktop/mobile fixture disclosure.
-- `ExpandedFixture`: tab state and independent context/forecast resources.
-- `ProbabilityBar`: shared 1X2 distribution geometry.
-- `PerformancePage` and `PredictionsPage`: analytics-style tables.
-
-Shared visual tokens live in `app/globals.css`; domain behavior stays in the
-feature components. No public package API changes.
+No public component API changed. Duplicate search found one owner per role.

@@ -1,28 +1,18 @@
-# MatchForge MVP design evidence
+# MatchForge approved-design evidence
 
-## Source order
+Source order: owner correction dated 1 October 2026; `code.html`; `screen.png`;
+`web/BRIEF.md`; existing MVP.
 
-1. Owner decision in the 29 September 2026 MVP delivery request.
-2. `web/ui-designs/*/screen.png` and matching `code.html` files.
-3. `web/ui-designs/matchforge_analytics/DESIGN.md`.
-4. `web/BRIEF.md`.
-5. Existing backend contracts and publication rules.
+All 12 supplied HTML prototypes were inspected: desktop collapsed fixtures,
+expanded overview, markets, score matrix, H2H, team statistics, simulation
+evidence, diagnostics, forecast history, both mobile states, and logo. All 10
+valid PNG references were inspected at original dimensions. Analytics uses
+`matchforge_analytics/DESIGN.md`; that directory has no `code.html`.
 
-## Evidence reviewed
+The collapsed-desktop `screen.png` is not an image; its complete contents are
+`<FIFE Image failed to fetch>`. Its `code.html` remains authoritative.
 
-- Desktop: expanded overview, markets, score matrix, H2H, team statistics,
-  simulation evidence, diagnostics, and forecast history.
-- Mobile: collapsed fixtures and expanded overview.
-- Brand: MatchForge logo.
-- Analytics: color, typography, spacing, component, and responsive rules.
-
-The collapsed desktop screenshot is a 28-byte failed-fetch placeholder. Its
-matching `code.html`, the expanded desktop screenshot, and mobile collapsed
-screenshot define that state instead.
-
-## Evidence boundary
-
-Screens show example data, not product data. MVP renders only API values.
-Research diagnostics and simulation PASS content are omitted unless matching
-published evidence exists. No supplied standalone icon exports exist; controls
-therefore use text labels and simple repository-owned inline marks.
+Prototype football values are examples. Production renders only API values.
+No public API currently exposes simulation-validation evidence, forecast
+revision history, or research diagnostics, so those tabs render an explicit
+unavailable/restricted state instead of fabricated evidence.
