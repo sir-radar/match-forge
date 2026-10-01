@@ -49,7 +49,7 @@ function PredictionResults({ predictions, loading, error, retry, consensus }: { 
 
 function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
   if (rows.length === 0) return null;
-  return <section className="panel"><header><h2>External consensus</h2><small>Informational only · source count never changes MatchForge probabilities</small></header><div className="summary-grid metric-grid">{rows.map((row) => <div className="metric" key={row.fixture}><small>{row.fixture}</small><b>{row.count} of {row.total} · {row.selection}</b><span className={`agreement ${row.agreement.toLowerCase()}`}>{row.agreement.replaceAll("_", " ")}</span></div>)}</div></section>;
+  return <section className="panel"><header><h2>External consensus</h2><small>Informational only · source count never changes MatchForge probabilities</small></header><div className="summary-grid metric-grid">{rows.map((row) => <div className="metric" key={row.id}><small>{row.fixture}</small><b>{row.count} of {row.total} · {row.selection}</b><span className={`agreement ${row.agreement.toLowerCase()}`}>{row.agreement.replaceAll("_", " ")}</span></div>)}</div></section>;
 }
 
 function SourceAudit({ sources }: { sources: ExternalSource[] }) {
@@ -77,6 +77,6 @@ function consensusRows(items: Awaited<ReturnType<typeof api.predictions>>) {
     group.forEach((item) => counts.set(item.selection, (counts.get(item.selection) ?? 0) + 1));
     const [selection, count] = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
     const representative = group.find((item) => item.selection === selection) ?? group[0];
-    return { fixture: `${representative.home_team} vs ${representative.away_team}`, selection, count, total: group.length, agreement: representative.agreement };
+    return { id: representative.fixture_id ?? `${representative.prediction_date}|${representative.home_team}|${representative.away_team}`, fixture: `${representative.home_team} vs ${representative.away_team}`, selection, count, total: group.length, agreement: representative.agreement };
   });
 }
