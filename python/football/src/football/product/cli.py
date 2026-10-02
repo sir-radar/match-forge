@@ -30,10 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="matchforge-product")
     parser.add_argument(
         "--database-url",
-        default=os.environ.get(
-            "DATABASE_URL",
-            "postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable",
-        ),
+        default=os.environ.get("DATABASE_URL"),
     )
     commands = parser.add_subparsers(dest="command", required=True)
     sync = commands.add_parser("sync", aliases=["mvp-sync"])
@@ -85,6 +82,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if not args.database_url:
+        print("error: DATABASE_URL is required", file=sys.stderr)
+        return 2
     if args.command == "external-predictions":
         return _run_external_predictions(args)
     if args.command in {

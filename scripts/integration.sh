@@ -5,6 +5,14 @@ set -eu
 FOOTBALL_PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$FOOTBALL_PROJECT_ROOT"
 
+[ -f .env ] || { printf 'Missing .env\n' >&2; exit 8; }
+set -a
+. ./.env
+set +a
+: "${POSTGRES_USER:?Set POSTGRES_USER in .env}"
+: "${POSTGRES_DB:?Set POSTGRES_DB in .env}"
+: "${DATABASE_URL:?Set DATABASE_URL in .env}"
+
 API_ADDRESS=127.0.0.1:58080
 API_LOG="$FOOTBALL_PROJECT_ROOT/.local/integration-api.log"
 API_PID=
@@ -18,7 +26,7 @@ cleanup() {
 
 trap cleanup EXIT HUP INT TERM
 
-postgres_result=$(docker compose exec -T postgres psql -U "${POSTGRES_USER:-football}" -d "${POSTGRES_DB:-football}" -tAc 'SELECT 1')
+postgres_result=$(docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc 'SELECT 1')
 [ "$postgres_result" = 1 ] || { printf 'PostgreSQL integration check failed\n' >&2; exit 8; }
 
 redis_result=$(docker compose exec -T redis redis-cli ping)

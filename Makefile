@@ -5,7 +5,6 @@ TOOL_ENV := . ./scripts/toolchain.sh
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
-DATABASE_URL ?= postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
@@ -31,10 +30,10 @@ clean:
 	docker compose down --volumes
 
 migrate: up
-	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" up
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" up
 
 migration-status: up
-	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" status
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
 format:
 	@$(TOOL_ENV); uv run ruff check --fix python tests experiments
@@ -82,7 +81,7 @@ project-status-check:
 
 sprint2-evaluate: up
 	@test -z "$$(git status --porcelain)" || { echo "Sprint 2 evaluation requires a clean worktree" >&2; exit 2; }
-	@$(TOOL_ENV); uv run football --database-url "$(DATABASE_URL)" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" --authoritative-worktree-clean evaluate sprint2
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run football --database-url "$$DATABASE_URL" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" --authoritative-worktree-clean evaluate sprint2
 
 prototype-bootstrap:
 	@test -x $(UV) || { echo "missing $(UV); run make bootstrap" >&2; exit 3; }
@@ -90,10 +89,10 @@ prototype-bootstrap:
 	$(UV) sync --locked
 
 prototype-up:
-	docker compose -f $(PROTOTYPE_COMPOSE) up -d --wait
+	docker compose --env-file .env -f $(PROTOTYPE_COMPOSE) up -d --wait
 
 prototype-down:
-	docker compose -f $(PROTOTYPE_COMPOSE) down
+	docker compose --env-file .env -f $(PROTOTYPE_COMPOSE) down
 
 prototype-test:
 	$(UV) run pytest tests/test_gate_a_contracts.py tests/test_gate_a_core.py

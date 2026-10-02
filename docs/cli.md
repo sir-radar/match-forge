@@ -69,7 +69,9 @@ The Make target refuses a dirty worktree so the recorded commit identifies the e
 Use environment variables for routine execution:
 
 ```bash
-export FOOTBALL_DATABASE_URL='postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable'
+set -a
+. ./.env
+set +a
 export FOOTBALL_DATA_ROOT='.local/football-data'
 export FOOTBALL_STATSBOMB_GIT_SHA='<40-character-lowercase-git-sha>'
 export FOOTBALL_QUALITY_POLICY='schemas/quality/statsbomb-quality-policy-v1.json'
@@ -80,8 +82,9 @@ export FOOTBALL_DEPENDENCY_LOCK_SHA256='<64-character-lowercase-sha256>'
 
 `FOOTBALL_STATSBOMB_GIT_SHA` is required only for ingestion. The code and dependency checksums are
 required when an eligible evaluation reaches execution; the Make target derives them from `HEAD`
-and `uv.lock`. Other defaults target the repository's local Compose database,
-`.local/football-data`, `.local/reports/sprint2`, and checked-in quality policy. Equivalent global
+and `uv.lock`. `DATABASE_URL` or `FOOTBALL_DATABASE_URL` must be set in `.env`; no database
+credentials are embedded in application code. Other defaults target `.local/football-data`,
+`.local/reports/sprint2`, and checked-in quality policy. Equivalent global
 options include `--code-commit-sha` and `--dependency-lock-sha256`; place global options before the
 command.
 

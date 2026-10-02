@@ -28,7 +28,9 @@ See [CLI usage](docs/cli.md) for data-pipeline commands and configuration.
 
 ## MVP product
 
-Copy `.env.example` to `.env`, set `API_FOOTBALL_API_KEY`, then start the database, migrations, Go API and Next.js frontend with:
+Copy `.env.example` to `.env`, set the required PostgreSQL, Redis, and `DATABASE_URL`
+values, then set `API_FOOTBALL_API_KEY`. Start the database, migrations, Go API, and Next.js
+frontend with:
 
 ```bash
 make bootstrap

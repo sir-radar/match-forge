@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -20,7 +21,6 @@ from experiments.sprint1_roundtrip.core import (
     utc_now,
 )
 
-DEFAULT_DATABASE_URL = "postgresql://football:football@127.0.0.1:55432/football_prototype"
 MIGRATION_PATH = (
     PROJECT_ROOT
     / "experiments"
@@ -39,8 +39,10 @@ def parse_utc(value: str) -> datetime:
 
 
 class PrototypeDatabase:
-    def __init__(self, database_url: str = DEFAULT_DATABASE_URL) -> None:
-        self.database_url = database_url
+    def __init__(self, database_url: str | None = None) -> None:
+        self.database_url = database_url or os.environ.get("FOOTBALL_PROTOTYPE_DATABASE_URL", "")
+        if not self.database_url:
+            raise ValueError("FOOTBALL_PROTOTYPE_DATABASE_URL is required")
 
     @contextmanager
     def connection(self) -> Iterator[Connection[Any]]:

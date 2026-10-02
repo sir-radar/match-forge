@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 import platform
 import shutil
 import subprocess
@@ -305,11 +304,7 @@ def run_gate_a(database_url: str | None = None) -> tuple[dict[str, Any], Path, P
     started = utc_now()
     run_id = uuid.uuid4()
     fixture = load_fixture()
-    database = PrototypeDatabase(
-        database_url or os.environ.get("FOOTBALL_PROTOTYPE_DATABASE_URL", "")
-    )
-    if not database.database_url:
-        database = PrototypeDatabase()
+    database = PrototypeDatabase(database_url)
 
     acquisition_first = acquire_source()
     raw_before = {

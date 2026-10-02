@@ -20,8 +20,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     if args.command == "clean":
-        database = PrototypeDatabase()
         try:
+            database = PrototypeDatabase()
             with database.connection() as connection, connection.cursor() as cursor:
                 cursor.execute("DROP SCHEMA IF EXISTS gate_a CASCADE")
         except Exception as error:

@@ -202,6 +202,22 @@ def test_validate_does_not_require_source_revision() -> None:
     assert stderr.getvalue() == "error: database operation failed\n"
 
 
+def test_database_commands_require_database_url() -> None:
+    stdout = StringIO()
+    stderr = StringIO()
+
+    exit_code = run(
+        ["validate", "season", "106"],
+        environ={},
+        stdout=stdout,
+        stderr=stderr,
+    )
+
+    assert exit_code == 2
+    assert stdout.getvalue() == ""
+    assert stderr.getvalue() == "error: DATABASE_URL is required\n"
+
+
 def test_season_ingestion_requires_quality_policy_before_connecting(tmp_path: Path) -> None:
     stdout = StringIO()
     stderr = StringIO()
