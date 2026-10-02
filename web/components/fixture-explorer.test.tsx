@@ -14,7 +14,7 @@ const fixture = {
   forecast_availability: "FORECAST_AVAILABLE", forecast: { id: "forecast-1", expected_home_goals: 1.5, expected_away_goals: 1.1, probabilities: { home: .46, draw: .27, away: .27 } },
 };
 
-const forecast = { ...fixture.forecast, fixture_id: fixture.id, model_label: "MVP_FORECAST", model_algorithm_version: "transferable-rolling-goals-poisson-v1", created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix: [{ home_goals: 1, away_goals: 0, probability: .14 }] };
+const forecast = { ...fixture.forecast, probabilities: { ...fixture.forecast.probabilities, total_over_2_5: .51, total_under_2_5: .49, btts_yes: .55, home_clean_sheet: .33, away_clean_sheet: .22 }, fixture_id: fixture.id, model_label: "MVP_FORECAST", model_algorithm_version: "transferable-rolling-goals-poisson-v1", created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix: [{ home_goals: 1, away_goals: 0, probability: .14 }] };
 const context = { fixture_id: fixture.id, home_form: [], away_form: [], h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: { recent_form: false, h2h: false, standings: false, team_stats: false } };
 
 describe("FixtureExplorer", () => {
@@ -41,6 +41,11 @@ describe("FixtureExplorer", () => {
     expect(row).toHaveAttribute("aria-expanded", "true");
     expect(await screen.findByRole("tab", { name: "Score matrix" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText("Forecast record")).toBeInTheDocument());
+    expect(screen.getByRole("heading", { name: "MatchForge interpretation" })).toBeInTheDocument();
+    expect(screen.getByText(/Arsenal win is the single most likely result at 46.0%/)).toBeInTheDocument();
+    expect(screen.getByText(/Most likely exact score is/).closest("p")).toHaveTextContent("Most likely exact score is 1–0 at 14.0%");
+    fireEvent.click(screen.getByRole("tab", { name: "Score matrix" }));
+    expect(screen.getByText("0–3 goals · fixed intensity scale: 0–20%")).toBeInTheDocument();
   });
 
   it("keeps unavailable fixtures visible without invented probabilities", async () => {
