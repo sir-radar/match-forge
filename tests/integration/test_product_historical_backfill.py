@@ -3,13 +3,13 @@ from __future__ import annotations
 import os
 from collections.abc import Iterator
 from dataclasses import replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import psycopg
 import pytest
-from football.product.api_football import ApiFootballClient
+from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.domain import MODEL_ARTIFACT_PATH, stable_id
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.sync import ProductSync
@@ -176,6 +176,30 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 observed_at,
             )
             assert result == "inserted"
+    assert (
+        store.import_match(
+            HistoricalMatch(
+                provider_match_id="forecast-unlock-unrelated",
+                provider_competition_id="test.9",
+                competition_name="Forecast Test League 2026",
+                country="Testland",
+                division=1,
+                season="2026",
+                home_team_id="Unrelated Home FC",
+                home_team_name="Unrelated Home FC",
+                away_team_id="Unrelated Away FC",
+                away_team_name="Unrelated Away FC",
+                kickoff_at=datetime(2026, 8, 20, 12, tzinfo=UTC),
+                kickoff_precision="EXACT",
+                home_goals=1,
+                away_goals=0,
+                source_path="2026/test.9.json",
+            ),
+            snapshot,
+            observed_at,
+        )
+        == "inserted"
+    )
 
     with connection.cursor() as cursor:
         competition_id = _first(
@@ -227,12 +251,16 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
             ),
         )
 
-    created = ProductSync(
+    product = ProductSync(
         connection,
         ApiFootballClient("stored-data-only"),
         PROJECT_ROOT / ".local" / "football-data",
         PROJECT_ROOT / MODEL_ARTIFACT_PATH,
-    ).refresh_forecasts(observed_at)
+    )
+    relevant_history = product._history_before(
+        datetime(2026, 10, 10, 15, tzinfo=UTC), home_id, away_id
+    )
+    created = product.refresh_forecasts(observed_at)
 
     with connection.cursor() as cursor:
         availability = _first(
@@ -249,5 +277,121 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         )
 
     assert created >= 1
+    assert len(relevant_history) == 20
+    assert all(
+        home_id in (match.home_team_id, match.away_team_id)
+        or away_id in (match.home_team_id, match.away_team_id)
+        for match in relevant_history
+    )
     assert availability == "FORECAST_AVAILABLE"
     assert forecast_count == 1
+
+
+def test_fixture_sync_creates_new_season_for_existing_competition(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
+    sync = ProductSync(
+        connection,
+        ApiFootballClient("test"),
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+    snapshot_id = sync._record_response(
+        "fixtures-2026-10-03",
+        ApiResponse("/fixtures", observed_at, b"{}", (), None),
+    )
+    provider_competition_id = 987654
+    competition_id = sync._competition_id(str(provider_competition_id), snapshot_id)
+    old_season_id = stable_id("season", competition_id, 2025)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO football.seasons (id, competition_id) VALUES (%s, %s)",
+            (old_season_id, competition_id),
+        )
+        cursor.execute(
+            """
+            INSERT INTO football.product_competitions (
+                competition_id, name, country, continent, division, competition_type,
+                season_label, fixtures_available, results_available, standings_available,
+                h2h_available, forecast_available, xg_available, team_stats_available,
+                availability_status, source_roles, updated_at
+            ) VALUES (
+                %s, 'Premier League', 'England', 'Europe', 1, 'LEAGUE', '2025',
+                true, true, true, false, false, false, false,
+                'NOT_ENOUGH_HISTORY', '{}'::jsonb, %s
+            )
+            """,
+            (competition_id, observed_at),
+        )
+
+    fixture = {
+        "fixture": {
+            "id": 1001,
+            "date": "2026-10-03T15:00:00+00:00",
+            "status": {"short": "NS"},
+            "venue": {"name": "Test Ground"},
+        },
+        "league": {
+            "id": provider_competition_id,
+            "name": "Premier League",
+            "country": "England",
+            "season": 2026,
+            "round": "Regular Season - 1",
+        },
+        "teams": {
+            "home": {"id": 1, "name": "Home FC", "logo": None},
+            "away": {"id": 2, "name": "Away FC", "logo": None},
+        },
+        "goals": {"home": None, "away": None},
+    }
+    fixtures = sync._store_fixtures([fixture], snapshot_id, observed_at)
+    corrected_fixture = {
+        **fixture,
+        "fixture": {
+            **fixture["fixture"],
+            "date": "2026-10-03T16:00:00+00:00",
+            "status": {"short": "FT"},
+        },
+        "goals": {"home": 2, "away": 1},
+    }
+    sync._store_fixtures([corrected_fixture], snapshot_id, observed_at)
+
+    new_season_id = stable_id("season", competition_id, 2026)
+    with connection.cursor() as cursor:
+        stored_season = cursor.execute(
+            "SELECT competition_id FROM football.seasons WHERE id = %s",
+            (new_season_id,),
+        ).fetchone()
+        stored_fixtures = cursor.execute(
+            """
+            SELECT kickoff_at, status, home_score, away_score
+            FROM football.product_fixtures
+            WHERE competition_id = %s
+            """,
+            (competition_id,),
+        ).fetchall()
+
+    assert len(fixtures) == 1
+    assert stored_season == (competition_id,)
+    assert stored_fixtures == [(datetime(2026, 10, 3, 16, tzinfo=UTC), "FINISHED", 2, 1)]
+
+
+def test_fixture_sync_accepts_successful_empty_provider_response(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    client = ApiFootballClient(
+        "test",
+        transport=lambda _url, _headers: b'{"errors":{},"response":[]}',
+    )
+    sync = ProductSync(
+        connection,
+        client,
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+
+    fixture_count, league_seasons = sync._store_requested_fixtures(date(2026, 10, 3))
+
+    assert fixture_count == 0
+    assert league_seasons == []

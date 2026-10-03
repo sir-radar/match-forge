@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, BinaryIO
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import unquote, urlsplit, urlunsplit
 from uuid import UUID, uuid4
 
 import psycopg
@@ -672,7 +672,10 @@ def _assert_fixture_remains_not_model_eligible(
 
 def _backup(source_database: str, backup_path: Path) -> None:
     with backup_path.open("wb") as handle:
-        _postgres(("pg_dump", "-U", "football", "-Fc", source_database), stdout=handle)
+        _postgres(
+            ("pg_dump", "-U", _database_user(DATABASE_URL), "-Fc", source_database),
+            stdout=handle,
+        )
     if not backup_path.is_file() or backup_path.stat().st_size == 0:
         raise AssertionError("PostgreSQL backup is missing or empty")
 
@@ -683,20 +686,37 @@ def _assert_readable_backup(backup_path: Path) -> None:
 
 def _create_database(database: str) -> None:
     _require_temporary_database(database)
-    _postgres(("createdb", "-U", "football", database))
+    _postgres(("createdb", "-U", _database_user(DATABASE_URL), database))
 
 
 def _restore(database: str, backup_path: Path) -> None:
     _require_temporary_database(database)
     _postgres(
-        ("pg_restore", "-U", "football", "--no-owner", "--no-privileges", "-d", database),
+        (
+            "pg_restore",
+            "-U",
+            _database_user(DATABASE_URL),
+            "--no-owner",
+            "--no-privileges",
+            "-d",
+            database,
+        ),
         input_bytes=backup_path.read_bytes(),
     )
 
 
 def _drop_database(database: str) -> None:
     _require_temporary_database(database)
-    _postgres(("dropdb", "--if-exists", "--force", "-U", "football", database))
+    _postgres(
+        (
+            "dropdb",
+            "--if-exists",
+            "--force",
+            "-U",
+            _database_user(DATABASE_URL),
+            database,
+        )
+    )
 
 
 def _postgres(
@@ -719,6 +739,13 @@ def _database_name(url: str) -> str:
     if not name or "/" in name:
         raise AssertionError("recovery source database name is invalid")
     return name
+
+
+def _database_user(url: str) -> str:
+    user = urlsplit(url).username
+    if not user:
+        raise AssertionError("recovery database user is invalid")
+    return unquote(user)
 
 
 def _database_url(url: str, database: str) -> str:
