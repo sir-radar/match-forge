@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import shutil
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, time, timedelta
@@ -59,29 +58,6 @@ class BackfillSummary:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
-
-
-def normalized_competition_name(value: str) -> str:
-    value = value.casefold().replace("&", "and")
-    value = re.sub(r"\b(19|20)\d{2}(?:\s*[/_-]\s*\d{2,4})?\b", " ", value)
-    value = re.sub(r"\b(football|league|championship)\b", " ", value)
-    normalized = " ".join(re.sub(r"[^a-z0-9]+", " ", value).split())
-    country_words = {
-        "english",
-        "german",
-        "spanish",
-        "italian",
-        "french",
-        "dutch",
-        "portuguese",
-        "belgian",
-        "brazilian",
-        "scottish",
-        "turkish",
-        "russian",
-        "swiss",
-    }
-    return " ".join(part for part in normalized.split() if part not in country_words)
 
 
 _OPENFOOTBALL_CROSSWALK = {
@@ -283,7 +259,6 @@ class HistoricalBackfillStore:
             match.home_team_id,
             match.home_team_name,
             match.country,
-            competition_id,
             snapshot_id,
             observed_at,
         )
@@ -291,7 +266,6 @@ class HistoricalBackfillStore:
             match.away_team_id,
             match.away_team_name,
             match.country,
-            competition_id,
             snapshot_id,
             observed_at,
         )
@@ -430,23 +404,6 @@ class HistoricalBackfillStore:
                     candidates = []
             else:
                 candidates = []
-            cursor.execute(
-                """
-                SELECT competition_id, name, country, division
-                FROM football.product_competitions
-                WHERE lower(country) = lower(%s)
-                   OR country = 'World' OR %s = 'World'
-                """,
-                (match.country, match.country),
-            )
-            if not candidates:
-                candidates = [
-                    row
-                    for row in cursor.fetchall()
-                    if normalized_competition_name(str(row[1]))
-                    == normalized_competition_name(match.competition_name)
-                    and (match.division is None or row[3] is None or int(row[3]) == match.division)
-                ]
         if len(candidates) > 1:
             return None, False
         competition_id = (
@@ -459,6 +416,7 @@ class HistoricalBackfillStore:
                 match.country,
             )
         )
+        mapping_method = "explicit_crosswalk" if candidates else "deterministic"
         provider_id = self._provider_id()
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -500,7 +458,7 @@ class HistoricalBackfillStore:
                 INSERT INTO football.competition_provider_mappings (
                     competition_id, provider_id, provider_competition_id, first_seen_at,
                     last_seen_at, mapping_method, mapping_confidence, source_snapshot_id
-                ) SELECT %s, %s, %s, %s, %s, 'deterministic', 1.0, %s
+                ) SELECT %s, %s, %s, %s, %s, %s, 1.0, %s
                 WHERE NOT EXISTS (
                     SELECT 1 FROM football.competition_provider_mappings
                     WHERE provider_id = %s AND provider_competition_id = %s
@@ -512,6 +470,7 @@ class HistoricalBackfillStore:
                     match.provider_competition_id,
                     observed_at,
                     observed_at,
+                    mapping_method,
                     snapshot_id,
                     provider_id,
                     match.provider_competition_id,
@@ -525,7 +484,6 @@ class HistoricalBackfillStore:
         provider_team_id: str,
         name: str,
         country: str,
-        competition_id: UUID,
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> tuple[UUID | None, bool]:
@@ -541,39 +499,7 @@ class HistoricalBackfillStore:
             found = cursor.fetchone()
             if found is not None:
                 return cast(UUID, found[0]), False
-            cursor.execute(
-                """
-                SELECT DISTINCT alias.team_id
-                FROM football.product_team_aliases alias
-                WHERE alias.normalized_name = %s
-                  AND (alias.country IS NULL OR lower(alias.country) = lower(%s))
-                  AND alias.team_id IN (
-                      SELECT home_team_id FROM football.product_fixtures WHERE competition_id = %s
-                      UNION SELECT away_team_id FROM football.product_fixtures
-                            WHERE competition_id = %s
-                      UNION SELECT home_team_id FROM football.product_team_match_history
-                            WHERE competition_id = %s
-                      UNION SELECT away_team_id FROM football.product_team_match_history
-                            WHERE competition_id = %s
-                  )
-                """,
-                (
-                    normalized,
-                    country,
-                    competition_id,
-                    competition_id,
-                    competition_id,
-                    competition_id,
-                ),
-            )
-            candidates = cursor.fetchall()
-            if len(candidates) > 1:
-                return None, False
-        team_id = (
-            cast(UUID, candidates[0][0])
-            if candidates
-            else stable_id("team", self.provider_code, provider_team_id, country)
-        )
+        team_id = stable_id("team", self.provider_code, provider_team_id, country)
         provider_id = self._provider_id()
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -623,7 +549,7 @@ class HistoricalBackfillStore:
                 ),
             )
             self.team_mappings_created += cursor.rowcount
-        return team_id, not bool(candidates)
+        return team_id, True
 
     def _existing_match(
         self, match: HistoricalMatch, competition_id: UUID, home_id: UUID, away_id: UUID

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { api, ApiError } from "@/lib/api";
 import type { HistoricalCoverage, SyncRun, SyncType } from "@/lib/contracts";
 
@@ -21,6 +28,23 @@ const ACTIONS: Action[] = [
 ];
 
 export function DataSyncAdmin() {
+  const state = useSyncAdminState();
+  const { active, clock, coverage, error, filters, latest, loading, runs, setFilters, start, submitting, reload } = state;
+
+  return <div className="page sync-admin">
+    <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
+    <SyncControls filters={filters} setFilters={setFilters} />
+    <SyncStatus active={active} clock={clock} />
+    {error && <div className="sync-error" role="alert"><strong>Sync request failed</strong><span>{error}</span><button onClick={() => void reload()}>Retry status</button></div>}
+    <section className="sync-actions" aria-label="Data synchronization actions">
+      {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
+    </section>
+    <CoveragePanel coverage={coverage} loading={loading} />
+    <RunHistory runs={runs} loading={loading} clock={clock} />
+  </div>;
+}
+
+function useSyncAdminState() {
   const [filters, setFilters] = useState<Filters>(() => ({ date: localDate(), from_date: "", season: "", competition: "", country: "" }));
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [coverage, setCoverage] = useState<HistoricalCoverage | null>(null);
@@ -41,18 +65,7 @@ export function DataSyncAdmin() {
   }, []);
 
   useEffect(() => { const controller = new AbortController(); queueMicrotask(() => void reload(controller.signal)); return () => controller.abort(); }, [reload]);
-  useEffect(() => {
-    if (!active) return;
-    const timer = window.setInterval(() => setClock(Date.now()), 1000);
-    const poll = window.setInterval(async () => {
-      try {
-        const updated = await api.syncRun(active.run_id);
-        setRuns((current) => current.map((run) => run.run_id === updated.run_id ? updated : run));
-        if (updated.status === "SUCCEEDED" || updated.status === "FAILED") await reload();
-      } catch (cause) { setError(errorMessage(cause)); }
-    }, 2500);
-    return () => { window.clearInterval(timer); window.clearInterval(poll); };
-  }, [active, reload]);
+  useActiveRunPolling(active, reload, setRuns, setError, setClock);
 
   const latest = useMemo(() => new Map(ACTIONS.map((action) => [action.type, runs.find((run) => run.sync_type === action.type && run.status === "SUCCEEDED")])), [runs]);
   const start = async (action: Action) => {
@@ -69,27 +82,46 @@ export function DataSyncAdmin() {
     } finally { setSubmitting(null); }
   };
 
-  return <div className="page sync-admin">
-    <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
-    <section className="sync-controls" aria-labelledby="sync-controls-title">
-      <h2 id="sync-controls-title" className="sr-only">Sync controls</h2>
-      <label>Through date<input type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} /></label>
-      <label htmlFor="fixture-from-date">Backfill fixtures from</label><div><input id="fixture-from-date" type="date" max={filters.date} value={filters.from_date} onChange={(event) => setFilters({ ...filters, from_date: event.target.value })} /><small>Optional for MVP and Full Sync. Blank refreshes the through date and previous day.</small></div>
-      <details><summary>Advanced filters</summary><div>
-        <label>Season<input value={filters.season} onChange={(event) => setFilters({ ...filters, season: event.target.value })} placeholder="All seasons" /></label>
-        <label>Competition<input value={filters.competition} onChange={(event) => setFilters({ ...filters, competition: event.target.value })} placeholder="All competitions" /></label>
-        <label>Country<input value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value })} placeholder="All countries" /></label>
-      </div></details>
-    </section>
-    <div className="sync-status" role="status" aria-live="polite">
-      {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
-    </div>
-    {error && <div className="sync-error" role="alert"><strong>Sync request failed</strong><span>{error}</span><button onClick={() => void reload()}>Retry status</button></div>}
-    <section className="sync-actions" aria-label="Data synchronization actions">
-      {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
-    </section>
-    <CoveragePanel coverage={coverage} loading={loading} />
-    <RunHistory runs={runs} loading={loading} clock={clock} />
+  return { active, clock, coverage, error, filters, latest, loading, runs, setFilters, start, submitting, reload };
+}
+
+function useActiveRunPolling(
+  active: SyncRun | null,
+  reload: (signal?: AbortSignal) => Promise<void>,
+  setRuns: Dispatch<SetStateAction<SyncRun[]>>,
+  setError: Dispatch<SetStateAction<string | null>>,
+  setClock: Dispatch<SetStateAction<number>>,
+) {
+  useEffect(() => {
+    if (!active) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    const poll = window.setInterval(async () => {
+      try {
+        const updated = await api.syncRun(active.run_id);
+        setRuns((current) => current.map((run) => run.run_id === updated.run_id ? updated : run));
+        if (updated.status === "SUCCEEDED" || updated.status === "FAILED") await reload();
+      } catch (cause) { setError(errorMessage(cause)); }
+    }, 2500);
+    return () => { window.clearInterval(timer); window.clearInterval(poll); };
+  }, [active, reload, setClock, setError, setRuns]);
+}
+
+function SyncControls({ filters, setFilters }: { filters: Filters; setFilters: Dispatch<SetStateAction<Filters>> }) {
+  return <section className="sync-controls" aria-labelledby="sync-controls-title">
+    <h2 id="sync-controls-title" className="sr-only">Sync controls</h2>
+    <label>Through date<input type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} /></label>
+    <label htmlFor="fixture-from-date">Backfill fixtures from</label><div><input id="fixture-from-date" type="date" max={filters.date} value={filters.from_date} onChange={(event) => setFilters({ ...filters, from_date: event.target.value })} /><small>Optional for MVP and Full Sync. Blank refreshes the through date and previous day.</small></div>
+    <details><summary>Advanced filters</summary><div>
+      <label>Season<input value={filters.season} onChange={(event) => setFilters({ ...filters, season: event.target.value })} placeholder="All seasons" /></label>
+      <label>Competition<input value={filters.competition} onChange={(event) => setFilters({ ...filters, competition: event.target.value })} placeholder="All competitions" /></label>
+      <label>Country<input value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value })} placeholder="All countries" /></label>
+    </div></details>
+  </section>;
+}
+
+function SyncStatus({ active, clock }: { active: SyncRun | null; clock: number }) {
+  return <div className="sync-status" role="status" aria-live="polite">
+    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
   </div>;
 }
 

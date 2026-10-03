@@ -33,16 +33,15 @@ Competition resolution uses, in order:
 
 1. an existing provider mapping;
 2. a verified provider-code crosswalk to an existing API-Football mapping;
-3. an exact normalized competition name, country, and compatible division;
-4. a new provider-specific canonical competition when no candidate exists.
+3. a new provider-specific canonical competition when no crosswalk exists.
 
 Team resolution uses, in order:
 
 1. an existing provider mapping or product alias;
-2. an exact normalized alias among teams already present in the canonical competition;
-3. a new traceable provider-specific team.
+2. a new traceable provider-specific team.
 
-No fuzzy name merge is used. Multiple deterministic candidates are a mapping failure.
+Cross-provider merging requires an explicit crosswalk. Names never establish
+canonical identity.
 
 Matches reconcile on canonical competition, home team, away team, and kickoff. Exact timestamps allow a three-hour provider tolerance. Date-only sources use the calendar date and preserve `source_kickoff_precision = DATE_ONLY`. Forecast history admits a date-only result only when its calendar date is before the target date, preventing ambiguous same-day ordering.
 

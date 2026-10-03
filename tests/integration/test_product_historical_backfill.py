@@ -33,7 +33,7 @@ def connection() -> Iterator[Connection[Any]]:
         yield database_connection
 
 
-def test_bulk_sources_share_one_match_and_preserve_score_conflict(
+def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
@@ -83,7 +83,7 @@ def test_bulk_sources_share_one_match_and_preserve_score_conflict(
         away_team_id="Away",
         source_path="archive/2526/TEST.csv",
     )
-    assert football_data.import_match(second_source, data_snapshot, observed_at) == "existing"
+    assert football_data.import_match(second_source, data_snapshot, observed_at) == "inserted"
     assert (
         football_data.import_match(
             replace(second_source, provider_match_id="archive/2526/TEST.csv#3", home_goals=1),
@@ -103,18 +103,19 @@ def test_bulk_sources_share_one_match_and_preserve_score_conflict(
                 (open_snapshot,),
             ).fetchone()
         )
-        provider_mappings = _first(
+        provider_match_count = _first(
             cursor.execute(
                 """
-            SELECT count(DISTINCT provider.code)
+            SELECT count(*)
             FROM football.match_provider_mappings mapping
             JOIN football.providers provider ON provider.id = mapping.provider_id
-            JOIN football.product_team_match_history history
-              ON history.fixture_id = mapping.match_id
-            WHERE history.source_snapshot_id = %s
-              AND provider.code IN ('openfootball', 'football_data_uk')
+            WHERE provider.code IN ('openfootball', 'football_data_uk')
+              AND mapping.provider_match_id IN (
+                '2025-26/test.1.json#1',
+                'archive/2526/TEST.csv#2',
+                'archive/2526/TEST.csv#3'
+              )
             """,
-                (open_snapshot,),
             ).fetchone()
         )
         conflicts = _first(
@@ -135,7 +136,7 @@ def test_bulk_sources_share_one_match_and_preserve_score_conflict(
         ).fetchone()
 
     assert historical_matches == 1
-    assert provider_mappings == 2
+    assert provider_match_count == 3
     assert conflicts == 1
     assert canonical_score == (2, 1)
 
@@ -287,7 +288,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     assert forecast_count == 1
 
 
-def test_fixture_sync_repairs_zero_history_provider_team_aliases(
+def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
     connection: Connection[Any], tmp_path: Path
 ) -> None:
     observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
@@ -469,6 +470,9 @@ def test_fixture_sync_repairs_zero_history_provider_team_aliases(
     sync._store_fixtures([fixture], api_snapshot, observed_at)
     created = sync.refresh_forecasts(observed_at)
 
+    assert canonical_home_id != duplicate_home_id
+    assert canonical_away_id != duplicate_away_id
+
     with connection.cursor() as cursor:
         stored_fixture = cursor.execute(
             """
@@ -508,18 +512,15 @@ def test_fixture_sync_repairs_zero_history_provider_team_aliases(
             """
         ).fetchall()
 
-    assert created == 1
+    assert created == 0
     assert stored_fixture == (
-        canonical_home_id,
-        canonical_away_id,
-        "FORECAST_AVAILABLE",
+        duplicate_home_id,
+        duplicate_away_id,
+        "NOT_ENOUGH_HISTORY",
     )
-    assert aliases == [("1001", canonical_home_id), ("1002", canonical_away_id)]
-    assert active_mappings == [("1001", canonical_home_id), ("1002", canonical_away_id)]
-    assert closed_mappings == [
-        ("1001", duplicate_home_id, observed_at),
-        ("1002", duplicate_away_id, observed_at),
-    ]
+    assert aliases == [("1001", duplicate_home_id), ("1002", duplicate_away_id)]
+    assert active_mappings == [("1001", duplicate_home_id), ("1002", duplicate_away_id)]
+    assert closed_mappings == []
 
 
 def test_fixture_sync_preserves_alias_when_historical_identity_is_ambiguous(
@@ -620,7 +621,6 @@ def test_fixture_sync_preserves_alias_when_historical_identity_is_ambiguous(
     resolved = sync._team_id(
         {"id": 2001, "name": "Shared Club", "logo": None},
         "England",
-        competition_id,
         snapshot_id,
         observed_at,
     )
@@ -896,14 +896,12 @@ def test_standings_refresh_handles_teams_swapping_positions(
     first_team = sync._team_id(
         {"id": 1, "name": "First FC", "logo": None},
         "England",
-        competition_id,
         snapshot_id,
         observed_at,
     )
     second_team = sync._team_id(
         {"id": 2, "name": "Second FC", "logo": None},
         "England",
-        competition_id,
         snapshot_id,
         observed_at,
     )

@@ -660,8 +660,8 @@ class ProductSync:
             if not self._competition_exists(competition_id):
                 self._store_fixture_competition(row, competition_id, observed_at)
             country = str(league.get("country") or "World")
-            home_id = self._team_id(home, country, competition_id, snapshot_id, observed_at)
-            away_id = self._team_id(away, country, competition_id, snapshot_id, observed_at)
+            home_id = self._team_id(home, country, snapshot_id, observed_at)
+            away_id = self._team_id(away, country, snapshot_id, observed_at)
             kickoff = datetime.fromisoformat(str(fixture["date"])).astimezone(UTC)
             provider_fixture_id = str(_integer(fixture, "id"))
             match_id = self._mapped_match_id(
@@ -747,8 +747,8 @@ class ProductSync:
             self._ensure_season(competition_id, season_id)
             home = _mapping(row, "homeTeam")
             away = _mapping(row, "awayTeam")
-            home_id = self._fallback_team_id(home, competition_id, snapshot_id, observed_at)
-            away_id = self._fallback_team_id(away, competition_id, snapshot_id, observed_at)
+            home_id = self._fallback_team_id(home, snapshot_id, observed_at)
+            away_id = self._fallback_team_id(away, snapshot_id, observed_at)
             kickoff = datetime.fromisoformat(str(row["utcDate"]).replace("Z", "+00:00")).astimezone(
                 UTC
             )
@@ -888,8 +888,8 @@ class ProductSync:
             away_goals = score.get("away")
             if not isinstance(home_goals, int) or not isinstance(away_goals, int):
                 continue
-            home_id = self._fallback_team_id(home, competition_id, snapshot_id, observed_at)
-            away_id = self._fallback_team_id(away, competition_id, snapshot_id, observed_at)
+            home_id = self._fallback_team_id(home, snapshot_id, observed_at)
+            away_id = self._fallback_team_id(away, snapshot_id, observed_at)
             kickoff = datetime.fromisoformat(str(row["utcDate"]).replace("Z", "+00:00")).astimezone(
                 UTC
             )
@@ -962,7 +962,7 @@ class ProductSync:
         count = 0
         for row in rows:
             team = _mapping(row, "team")
-            team_id = self._fallback_team_id(team, competition_id, snapshot_id, observed_at)
+            team_id = self._fallback_team_id(team, snapshot_id, observed_at)
             values = (
                 row.get("position"),
                 row.get("playedGames"),
@@ -1047,7 +1047,6 @@ class ProductSync:
                 team_id = self._team_id(
                     team,
                     str(league.get("country") or ""),
-                    competition_id,
                     snapshot_id,
                     observed_at,
                 )
@@ -1277,7 +1276,6 @@ class ProductSync:
         self,
         row: Mapping[str, Any],
         country: str,
-        competition_id: UUID,
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> UUID:
@@ -1292,16 +1290,11 @@ class ProductSync:
                 (PROVIDER_CODE, provider_team_id),
             )
             found = cursor.fetchone()
-        existing_team_id = cast(UUID, found[0]) if found is not None else None
-        team_id = existing_team_id
-        if existing_team_id is None or not self._team_has_history(existing_team_id):
-            historical_team_id = self._historical_team_candidate(
-                normalized_name, country, competition_id
-            )
-            if historical_team_id is not None:
-                team_id = historical_team_id
-        if team_id is None:
-            team_id = stable_id("team", PROVIDER_CODE, provider_team_id)
+        team_id = (
+            cast(UUID, found[0])
+            if found is not None
+            else stable_id("team", PROVIDER_CODE, provider_team_id)
+        )
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1333,44 +1326,6 @@ class ProductSync:
             )
         self._reconcile_team_provider_mapping(team_id, provider_team_id, snapshot_id, observed_at)
         return team_id
-
-    def _team_has_history(self, team_id: UUID) -> bool:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT EXISTS (
-                    SELECT 1 FROM football.product_team_match_history
-                    WHERE home_team_id = %s OR away_team_id = %s
-                )
-                """,
-                (team_id, team_id),
-            )
-            found = cursor.fetchone()
-        return bool(found and found[0])
-
-    def _historical_team_candidate(
-        self, normalized_name: str, country: str, competition_id: UUID
-    ) -> UUID | None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT DISTINCT alias.team_id
-                FROM football.product_team_aliases alias
-                WHERE alias.normalized_name = %s
-                  AND (alias.country IS NULL OR %s = '' OR lower(alias.country) = lower(%s))
-                  AND alias.team_id IN (
-                      SELECT home_team_id FROM football.product_team_match_history
-                      WHERE competition_id = %s
-                      UNION
-                      SELECT away_team_id FROM football.product_team_match_history
-                      WHERE competition_id = %s
-                  )
-                ORDER BY alias.team_id
-                """,
-                (normalized_name, country, country, competition_id, competition_id),
-            )
-            candidates = cursor.fetchall()
-        return cast(UUID, candidates[0][0]) if len(candidates) == 1 else None
 
     def _reconcile_team_provider_mapping(
         self,
@@ -1425,7 +1380,6 @@ class ProductSync:
     def _fallback_team_id(
         self,
         row: Mapping[str, Any],
-        competition_id: UUID,
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> UUID:
@@ -1440,34 +1394,6 @@ class ProductSync:
                 (FALLBACK_PROVIDER_CODE, provider_team_id),
             )
             found = cursor.fetchone()
-            if found is None:
-                cursor.execute(
-                    """
-                    SELECT DISTINCT pta.team_id
-                    FROM football.product_team_aliases pta
-                    WHERE pta.provider_code = %s AND pta.normalized_name = %s
-                      AND pta.team_id IN (
-                          SELECT home_team_id FROM football.product_fixtures
-                          WHERE competition_id = %s
-                          UNION SELECT away_team_id FROM football.product_fixtures
-                          WHERE competition_id = %s
-                          UNION SELECT home_team_id FROM football.product_team_match_history
-                          WHERE competition_id = %s
-                          UNION SELECT away_team_id FROM football.product_team_match_history
-                          WHERE competition_id = %s
-                      )
-                    """,
-                    (
-                        PROVIDER_CODE,
-                        normalized_name,
-                        competition_id,
-                        competition_id,
-                        competition_id,
-                        competition_id,
-                    ),
-                )
-                candidates = cursor.fetchall()
-                found = candidates[0] if len(candidates) == 1 else None
         team_id = (
             cast(UUID, found[0])
             if found is not None
@@ -1505,7 +1431,7 @@ class ProductSync:
                 INSERT INTO football.team_provider_mappings (
                     team_id, provider_id, provider_team_id, first_seen_at, last_seen_at,
                     mapping_method, mapping_confidence, source_snapshot_id
-                ) SELECT %s, id, %s, %s, %s, 'explicit_crosswalk',
+                ) SELECT %s, id, %s, %s, %s, 'deterministic',
                     1.0, %s FROM football.providers p
                 WHERE p.code = %s AND NOT EXISTS (
                     SELECT 1 FROM football.team_provider_mappings existing

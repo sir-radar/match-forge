@@ -10,7 +10,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test build integration check project-status-check postgres-restore-test sprint2-evaluate dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -60,6 +60,10 @@ test:
 	@$(TOOL_ENV); cargo test --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go test ./...
 
+test-coverage:
+	@$(TOOL_ENV); uv run coverage run --branch -m pytest --ignore=tests/integration
+	@$(TOOL_ENV); uv run coverage report
+
 build:
 	@mkdir -p .local/dist .local/bin
 	@$(TOOL_ENV); UV_CACHE_DIR="$${TMPDIR:-/tmp}/football-forecasting-uv-build-cache" uv build --no-build-isolation --out-dir .local/dist
@@ -78,6 +82,14 @@ check: format-check lint test build project-status-check web-lint web-test web-b
 
 project-status-check:
 	@$(TOOL_ENV); uv run python -m football.project_status docs/project-status.json
+
+identity-check: migrate
+	@set -a; . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.identity_audit --database-url "$$DATABASE_URL"
+
+pretraining-snapshot-check:
+	@$(TOOL_ENV); uv run python scripts/verify_pretraining_snapshot.py $(if $(SNAPSHOT_ROOT),--root "$(SNAPSHOT_ROOT)",) $(if $(RESTORE_TO),--restore-to "$(RESTORE_TO)",)
+
+pretraining-check: project-status-check identity-check pretraining-snapshot-check test-coverage
 
 sprint2-evaluate: up
 	@test -z "$$(git status --porcelain)" || { echo "Sprint 2 evaluation requires a clean worktree" >&2; exit 2; }
