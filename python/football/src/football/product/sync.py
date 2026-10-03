@@ -93,6 +93,7 @@ class ProductSync:
         if max_history_leagues < 0:
             raise ValueError("max_history_leagues must be non-negative")
         fixture_dates = _fixture_sync_dates(requested_date, fixture_from_date)
+        fixture_history_start = fixture_from_date or fixture_dates[0]
         competition_response = self.client.competitions()
         competition_snapshot = self._record_response("competitions", competition_response)
         competition_count = self._store_competitions(
@@ -173,7 +174,7 @@ class ProductSync:
             )
         completed_at = datetime.now(UTC)
         history_fixture_count = self.backfill_fixtures_from_history(
-            fixture_dates[0], fixture_dates[-1], completed_at
+            fixture_history_start, requested_date, completed_at
         )
         settled_count = self._settle_external_predictions(completed_at)
         forecast_count = self.refresh_forecasts(completed_at)
@@ -1660,9 +1661,10 @@ class ProductSync:
 def _fixture_sync_dates(
     requested_date: date, fixture_from_date: date | None = None
 ) -> tuple[date, ...]:
-    start = fixture_from_date or requested_date - timedelta(days=1)
-    if start > requested_date:
+    if fixture_from_date is not None and fixture_from_date > requested_date:
         raise ValueError("fixture backfill start date must not be after requested date")
+    live_window_start = requested_date - timedelta(days=1)
+    start = max(fixture_from_date or live_window_start, live_window_start)
     return tuple(
         start + timedelta(days=offset) for offset in range((requested_date - start).days + 1)
     )
