@@ -33,9 +33,6 @@ from football.providers import (
 from football.reports import IngestionReportError
 from football.validation import DatasetValidationError
 
-DEFAULT_DATABASE_URL = (
-    "postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable"
-)
 DEFAULT_DATA_ROOT = Path(".local/football-data")
 DEFAULT_SPRINT2_REPORT_ROOT = Path(".local/reports/sprint2")
 _PACKAGED_QUALITY_POLICY = (
@@ -216,7 +213,7 @@ def run(
     database_url = (
         args.database_url
         or environment.get("FOOTBALL_DATABASE_URL")
-        or environment.get("DATABASE_URL", DEFAULT_DATABASE_URL)
+        or environment.get("DATABASE_URL")
     )
     data_root = args.data_root or Path(
         environment.get("FOOTBALL_DATA_ROOT", str(DEFAULT_DATA_ROOT))
@@ -248,6 +245,9 @@ def run(
     provider_status_result = _provider_status_preflight(args, output, errors)
     if provider_status_result is not None:
         return provider_status_result
+    if not database_url:
+        print("error: DATABASE_URL is required", file=errors)
+        return 2
 
     try:
         provider = (

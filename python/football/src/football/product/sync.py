@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Iterable, Mapping, Sequence
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 from uuid import UUID
@@ -91,8 +91,7 @@ class ProductSync:
         competition_count = self._store_competitions(
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
-        fixture_count, league_seasons = self._store_requested_fixtures(requested_date)
-        league_seasons = league_seasons[:max_history_leagues]
+        fixture_count, league_seasons = self._sync_fixtures(requested_date, max_history_leagues)
         history_count = 0
         standings_count = 0
         for league_id, season in league_seasons:
@@ -178,12 +177,27 @@ class ProductSync:
             "settled_external_predictions": settled_count,
         }
 
+    def _sync_fixtures(
+        self, requested_date: date, max_history_leagues: int
+    ) -> tuple[int, list[tuple[int, int]]]:
+        fixture_count = 0
+        league_seasons: set[tuple[int, int]] = set()
+        for fixture_date in _fixture_sync_dates(requested_date):
+            stored_count, stored_leagues = self._store_requested_fixtures(fixture_date)
+            fixture_count += stored_count
+            league_seasons.update(stored_leagues)
+        ordered_leagues = sorted(
+            league_seasons,
+            key=lambda item: (item[0] not in FOOTBALL_DATA_COMPETITIONS, item),
+        )
+        return fixture_count, ordered_leagues[:max_history_leagues]
+
     def _store_requested_fixtures(self, requested_date: date) -> tuple[int, list[tuple[int, int]]]:
         try:
             response = self.client.fixtures_for_date(requested_date)
         except RuntimeError:
             response = None
-        if response is not None and response.rows:
+        if response is not None:
             snapshot = self._record_response(f"fixtures-{requested_date}", response)
             fixtures = self._store_fixtures(response.rows, snapshot, response.fetched_at)
             return len(fixtures), _league_seasons(fixtures)
@@ -555,16 +569,17 @@ class ProductSync:
             competition_id = self._competition_id(str(_integer(league, "id")), snapshot_id)
             season = int(league["season"])
             season_id = stable_id("season", competition_id, season)
+            self._ensure_season(competition_id, season_id)
             if not self._competition_exists(competition_id):
-                self._store_fixture_competition(
-                    row, competition_id, season_id, snapshot_id, observed_at
-                )
+                self._store_fixture_competition(row, competition_id, observed_at)
             country = str(league.get("country") or "World")
             home_id = self._team_id(home, country, snapshot_id, observed_at)
             away_id = self._team_id(away, country, snapshot_id, observed_at)
             kickoff = datetime.fromisoformat(str(fixture["date"])).astimezone(UTC)
-            match_id = fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
             provider_fixture_id = str(_integer(fixture, "id"))
+            match_id = self._mapped_match_id(
+                PROVIDER_CODE, provider_fixture_id
+            ) or fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
             status = fixture_status(str(_mapping(fixture, "status")["short"]))
             goals = _mapping(row, "goals")
             home_score = goals.get("home") if status == "FINISHED" else None
@@ -589,6 +604,7 @@ class ProductSync:
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         'NOT_ENOUGH_HISTORY', %s)
                     ON CONFLICT (fixture_id) DO UPDATE SET
+                        kickoff_at = EXCLUDED.kickoff_at,
                         status = EXCLUDED.status, home_score = EXCLUDED.home_score,
                         away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
                         round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at
@@ -638,6 +654,7 @@ class ProductSync:
                 continue
             season = int(season_row[0])
             season_id = stable_id("season", competition_id, season)
+            self._ensure_season(competition_id, season_id)
             home = _mapping(row, "homeTeam")
             away = _mapping(row, "awayTeam")
             home_id = self._fallback_team_id(home, competition_id, snapshot_id, observed_at)
@@ -645,7 +662,10 @@ class ProductSync:
             kickoff = datetime.fromisoformat(str(row["utcDate"]).replace("Z", "+00:00")).astimezone(
                 UTC
             )
-            match_id = fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
+            provider_fixture_id = str(_integer(row, "id"))
+            match_id = self._mapped_match_id(
+                FALLBACK_PROVIDER_CODE, provider_fixture_id
+            ) or fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
             status = _football_data_status(str(row.get("status")))
             score = _mapping(_mapping(row, "score"), "fullTime")
             home_score = score.get("home") if status == "FINISHED" else None
@@ -661,7 +681,7 @@ class ProductSync:
                 self._ensure_provider_match_mapping(
                     cursor,
                     match_id,
-                    str(_integer(row, "id")),
+                    provider_fixture_id,
                     snapshot_id,
                     observed_at,
                     FALLBACK_PROVIDER_CODE,
@@ -675,6 +695,7 @@ class ProductSync:
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         'NOT_ENOUGH_HISTORY', %s)
                     ON CONFLICT (fixture_id) DO UPDATE SET
+                        kickoff_at = EXCLUDED.kickoff_at,
                         status = EXCLUDED.status, home_score = EXCLUDED.home_score,
                         away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
                         round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at
@@ -1000,7 +1021,7 @@ class ProductSync:
             )
             targets = cursor.fetchall()
         for fixture_id, home_id, away_id, kickoff_at in targets:
-            history = self._history_before(kickoff_at)
+            history = self._history_before(kickoff_at, home_id, away_id)
             forecast = forecast_from_history(
                 artifact_path=self.artifact_path,
                 target_kickoff=kickoff_at,
@@ -1083,7 +1104,9 @@ class ProductSync:
                 )
         return count
 
-    def _history_before(self, cutoff: datetime) -> list[FinishedMatch]:
+    def _history_before(
+        self, cutoff: datetime, home_team_id: UUID, away_team_id: UUID
+    ) -> list[FinishedMatch]:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1091,14 +1114,25 @@ class ProductSync:
                        home_goals, away_goals, home_xg, away_xg
                 FROM football.product_team_match_history
                 WHERE (
-                    source_kickoff_precision = 'EXACT' AND kickoff_at < %s
-                ) OR (
-                    source_kickoff_precision = 'DATE_ONLY'
-                    AND kickoff_at::date < %s::date
+                    (source_kickoff_precision = 'EXACT' AND kickoff_at < %s)
+                    OR (
+                        source_kickoff_precision = 'DATE_ONLY'
+                        AND kickoff_at::date < %s::date
+                    )
+                )
+                AND (
+                    home_team_id IN (%s, %s) OR away_team_id IN (%s, %s)
                 )
                 ORDER BY kickoff_at, fixture_id
                 """,
-                (cutoff, cutoff),
+                (
+                    cutoff,
+                    cutoff,
+                    home_team_id,
+                    away_team_id,
+                    home_team_id,
+                    away_team_id,
+                ),
             )
             return [FinishedMatch(*row) for row in cursor.fetchall()]
 
@@ -1345,6 +1379,20 @@ class ProductSync:
             ),
         )
 
+    def _mapped_match_id(self, provider_code: str, provider_match_id: str) -> UUID | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT mapping.match_id
+                FROM football.match_provider_mappings mapping
+                JOIN football.providers provider ON provider.id = mapping.provider_id
+                WHERE provider.code = %s AND mapping.provider_match_id = %s
+                """,
+                (provider_code, provider_match_id),
+            )
+            found = cursor.fetchone()
+        return cast(UUID, found[0]) if found is not None else None
+
     def _ensure_provider_match_mapping(
         self,
         cursor: Any,
@@ -1386,18 +1434,7 @@ class ProductSync:
             )
             return cursor.fetchone() is not None
 
-    def _store_fixture_competition(
-        self,
-        row: Mapping[str, Any],
-        competition_id: UUID,
-        season_id: UUID,
-        snapshot_id: UUID,
-        observed_at: datetime,
-    ) -> None:
-        league = _mapping(row, "league")
-        name = str(league["name"])
-        country = str(league.get("country") or "World")
-        season = int(league["season"])
+    def _ensure_season(self, competition_id: UUID, season_id: UUID) -> None:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1406,6 +1443,18 @@ class ProductSync:
                 """,
                 (season_id, competition_id),
             )
+
+    def _store_fixture_competition(
+        self,
+        row: Mapping[str, Any],
+        competition_id: UUID,
+        observed_at: datetime,
+    ) -> None:
+        league = _mapping(row, "league")
+        name = str(league["name"])
+        country = str(league.get("country") or "World")
+        season = int(league["season"])
+        with self.connection.cursor() as cursor:
             cursor.execute(
                 """
                 INSERT INTO football.product_competitions (
@@ -1429,6 +1478,10 @@ class ProductSync:
                     observed_at,
                 ),
             )
+
+
+def _fixture_sync_dates(requested_date: date) -> tuple[date, date]:
+    return requested_date - timedelta(days=1), requested_date
 
 
 def _mapping(value: Mapping[str, Any], key: str) -> Mapping[str, Any]:

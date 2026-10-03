@@ -7,6 +7,13 @@ export FOOTBALL_PROJECT_ROOT
 . "$FOOTBALL_PROJECT_ROOT/scripts/toolchain.sh"
 cd "$FOOTBALL_PROJECT_ROOT"
 
+[ -f .env ] || { printf '[doctor] FAIL env                missing .env\n' >&2; exit 3; }
+set -a
+. ./.env
+set +a
+: "${POSTGRES_USER:?Set POSTGRES_USER in .env}"
+: "${POSTGRES_DB:?Set POSTGRES_DB in .env}"
+
 pass() {
 	printf '[doctor] PASS %-18s %s\n' "$1" "$2"
 }
@@ -52,7 +59,7 @@ printf '%s\n' "$running_services" | grep -qx postgres || fail postgres-service "
 pass postgres-service "container running"
 printf '%s\n' "$running_services" | grep -qx redis || fail redis-service "container is not running"
 pass redis-service "container running"
-postgres_probe=$(docker compose exec -T postgres psql -U "${POSTGRES_USER:-football}" -d "${POSTGRES_DB:-football}" -tAc 'SELECT 1') || fail postgres-probe "query failed"
+postgres_probe=$(docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc 'SELECT 1') || fail postgres-probe "query failed"
 [ "$postgres_probe" = 1 ] || fail postgres-probe "expected SELECT 1 result"
 pass postgres-probe "SQL query succeeded"
 redis_probe=$(docker compose exec -T redis redis-cli ping) || fail redis-probe "PING failed"

@@ -59,6 +59,9 @@ func TestOperationalEndpoints(t *testing.T) {
 }
 
 func TestConfigFromEnvRejectsInvalidAddress(t *testing.T) {
+	t.Setenv("DATABASE_URL", "test-database-url")
+	t.Setenv("POSTGRES_ADDR", "127.0.0.1:1")
+	t.Setenv("REDIS_ADDR", "127.0.0.1:2")
 	t.Setenv("API_ADDR", "missing-port")
 
 	_, err := ConfigFromEnv("test")
@@ -69,11 +72,24 @@ func TestConfigFromEnvRejectsInvalidAddress(t *testing.T) {
 }
 
 func TestConfigFromEnvRejectsNonPositiveDuration(t *testing.T) {
+	t.Setenv("DATABASE_URL", "test-database-url")
+	t.Setenv("POSTGRES_ADDR", "127.0.0.1:1")
+	t.Setenv("REDIS_ADDR", "127.0.0.1:2")
 	t.Setenv("DEPENDENCY_TIMEOUT", "0s")
 
 	_, err := ConfigFromEnv("test")
 
 	if err == nil || err.Error() != "DEPENDENCY_TIMEOUT must be a positive duration" {
 		t.Fatalf("error = %v, want positive duration validation error", err)
+	}
+}
+
+func TestConfigFromEnvRequiresDatabaseURL(t *testing.T) {
+	t.Setenv("DATABASE_URL", "")
+
+	_, err := ConfigFromEnv("test")
+
+	if err == nil || err.Error() != "DATABASE_URL is required" {
+		t.Fatalf("error = %v, want required DATABASE_URL error", err)
 	}
 }

@@ -30,8 +30,8 @@ def test_container_images_are_digest_pinned_and_loopback_only() -> None:
         "redis:8.10.0-alpine3.23@sha256:"
         "978f0e01593e65eed801f2402944efcd936d43b5027e4908a7897baf88ed6241"
     ) in compose
-    assert '"127.0.0.1:${POSTGRES_PORT:-55433}:5432"' in compose
-    assert '"127.0.0.1:${REDIS_PORT:-56379}:6379"' in compose
+    assert '"127.0.0.1:${POSTGRES_PORT:?Set POSTGRES_PORT in .env}:5432"' in compose
+    assert '"127.0.0.1:${REDIS_PORT:?Set REDIS_PORT in .env}:6379"' in compose
 
 
 def test_gate_a_migration_is_not_a_production_migration() -> None:

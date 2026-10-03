@@ -10,8 +10,6 @@ import (
 
 const (
 	defaultAPIAddress       = "127.0.0.1:8080"
-	defaultPostgresAddress  = "127.0.0.1:55433"
-	defaultRedisAddress     = "127.0.0.1:56379"
 	defaultDependencyWait   = 500 * time.Millisecond
 	defaultReadHeaderWait   = 5 * time.Second
 	defaultShutdownDeadline = 5 * time.Second
@@ -33,6 +31,18 @@ type Config struct {
 
 // ConfigFromEnv loads and validates process configuration.
 func ConfigFromEnv(version string) (Config, error) {
+	databaseURL, err := requiredEnv("DATABASE_URL")
+	if err != nil {
+		return Config{}, err
+	}
+	postgresAddress, err := requiredEnv("POSTGRES_ADDR")
+	if err != nil {
+		return Config{}, err
+	}
+	redisAddress, err := requiredEnv("REDIS_ADDR")
+	if err != nil {
+		return Config{}, err
+	}
 	dependencyTimeout, err := durationFromEnv("DEPENDENCY_TIMEOUT", defaultDependencyWait)
 	if err != nil {
 		return Config{}, err
@@ -51,10 +61,10 @@ func ConfigFromEnv(version string) (Config, error) {
 	}
 	config := Config{
 		Address:           valueFromEnv("API_ADDR", defaultAPIAddress),
-		DatabaseURL:       valueFromEnv("DATABASE_URL", "postgresql://football:football-local-only@127.0.0.1:55433/football?sslmode=disable"),
+		DatabaseURL:       databaseURL,
 		AllowedOrigin:     valueFromEnv("WEB_ORIGIN", "http://127.0.0.1:3000"),
-		PostgresAddress:   valueFromEnv("POSTGRES_ADDR", defaultPostgresAddress),
-		RedisAddress:      valueFromEnv("REDIS_ADDR", defaultRedisAddress),
+		PostgresAddress:   postgresAddress,
+		RedisAddress:      redisAddress,
 		Version:           version,
 		RepoRoot:          repoRoot,
 		DependencyTimeout: dependencyTimeout,
@@ -118,6 +128,14 @@ func valueFromEnv(name, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func requiredEnv(name string) (string, error) {
+	value := os.Getenv(name)
+	if value == "" {
+		return "", fmt.Errorf("%s is required", name)
+	}
+	return value, nil
 }
 
 func durationFromEnv(name string, fallback time.Duration) (time.Duration, error) {

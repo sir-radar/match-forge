@@ -218,6 +218,24 @@ jobs:
       - name: Install Playwright browsers
         run: cd web && pnpm exec playwright install --with-deps chromium webkit
 
+      - name: Create ephemeral CI environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          postgres_password="$(openssl rand -hex 24)"
+          {
+            printf 'POSTGRES_DB=football_ci\n'
+            printf 'POSTGRES_USER=football_ci\n'
+            printf 'POSTGRES_PASSWORD=%s\n' "$postgres_password"
+            printf 'POSTGRES_PORT=55433\n'
+            printf 'REDIS_PORT=56379\n'
+            printf 'DATABASE_URL=postgresql://football_ci:%s@127.0.0.1:55433/football_ci?sslmode=disable\n' "$postgres_password"
+            printf 'POSTGRES_ADDR=127.0.0.1:55433\n'
+            printf 'REDIS_ADDR=127.0.0.1:56379\n'
+          } > .env
+
       # One invocation runs shared phony prerequisites only once: check and
       # integration share build; check and web-e2e share web-build.
       - name: Run deterministic, integration, E2E and accessibility checks

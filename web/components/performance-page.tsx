@@ -24,7 +24,7 @@ export function PerformancePage() {
     {performance.error && <ResourceError message={performance.error} retry={performance.retry} />}
     {performance.data?.length === 0 && <EmptyState title="No leagues match these filters" detail="Performance appears only after an immutable pre-kickoff forecast has a stored completed result." />}
     {performance.data?.length ? <PerformanceTable items={performance.data} /> : null}
-    <section className="panel performance-note"><header><h4>Rating contract</h4></header><p>UNRATED means fewer than 50 settled forecasts. WATCH, GOOD, and STRONG use the frozen league-comparison rule. Ratings describe forecast performance, not betting advice.</p></section>
+    <section className="panel performance-note"><header><h2>Rating contract</h2></header><p>UNRATED means fewer than 50 settled forecasts. WATCH, GOOD, and STRONG use the frozen league-comparison rule. Ratings describe forecast performance, not betting advice.</p></section>
   </div>;
 }
 
@@ -43,7 +43,7 @@ function PerformanceFilters({ filters, setFilters, competitions }: { filters: Fi
 }
 
 function PerformanceTable({ items }: { items: Performance[] }) {
-  return <section className="panel"><div className="table-scroll"><table><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Score</th><th>Top-5 Score</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{items.map((item) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div></section>;
+  return <section className="panel"><div className="table-scroll" tabIndex={0}><table><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Score</th><th>Top-5 Score</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{items.map((item) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div></section>;
 }
 
 function metric(value: number | null, percentage = false) { return value === null ? "—" : percentage ? `${(value * 100).toFixed(1)}%` : value.toFixed(3); }

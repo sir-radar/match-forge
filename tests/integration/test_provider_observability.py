@@ -55,7 +55,7 @@ def test_provider_status_reads_real_lifecycle_evidence_and_excludes_fixture_data
             "--provider-sync-policy-config",
             str(policy_path),
         ],
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=stdout,
         stderr=stderr,
         connection_factory=lambda _: nullcontext(connection),
@@ -94,7 +94,7 @@ def test_provider_status_reads_real_lifecycle_evidence_and_excludes_fixture_data
     resolved_stdout = StringIO()
     resolved_exit = run(
         _status_args("provider_observability_first", policy_path, "2026-09-05T12:00:00+00:00"),
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=resolved_stdout,
         stderr=StringIO(),
         connection_factory=lambda _: nullcontext(connection),
@@ -144,7 +144,7 @@ def test_provider_status_is_stale_with_history_and_fails_closed_without_policy(
     unresolved_stderr = StringIO()
     unresolved_exit = run(
         _status_args("provider_observability_second", unresolved, "2026-09-05T13:00:01+00:00"),
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=StringIO(),
         stderr=unresolved_stderr,
         connection_factory=lambda _: nullcontext(connection),
@@ -167,7 +167,7 @@ def test_provider_status_reports_no_history_and_rejects_unknown_run_policy(
 
     empty_exit = run(
         _status_args(empty_provider, configured, "2026-09-05T13:00:01+00:00"),
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=empty_stdout,
         stderr=StringIO(),
         connection_factory=lambda _: nullcontext(connection),
@@ -187,7 +187,7 @@ def test_provider_status_reports_no_history_and_rejects_unknown_run_policy(
     unknown_stderr = StringIO()
     unknown_exit = run(
         _status_args(unknown_provider, unknown_config, "2026-09-05T13:00:01+00:00"),
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=StringIO(),
         stderr=unknown_stderr,
         connection_factory=lambda _: nullcontext(connection),
@@ -315,7 +315,7 @@ def _status_output(
     stdout = StringIO()
     exit_code = run(
         _status_args(provider_id, policy_path, as_of),
-        environ={},
+        environ={"DATABASE_URL": os.environ["TEST_DATABASE_URL"]},
         stdout=stdout,
         stderr=StringIO(),
         connection_factory=lambda _: nullcontext(connection),

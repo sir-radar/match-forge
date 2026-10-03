@@ -7,6 +7,14 @@ export FOOTBALL_PROJECT_ROOT
 . "$FOOTBALL_PROJECT_ROOT/scripts/toolchain.sh"
 cd "$FOOTBALL_PROJECT_ROOT"
 
+[ -f .env ] || { printf 'Missing .env\n' >&2; exit 8; }
+set -a
+. ./.env
+set +a
+: "${POSTGRES_USER:?Set POSTGRES_USER in .env}"
+: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
+: "${POSTGRES_PORT:?Set POSTGRES_PORT in .env}"
+
 TEST_DATABASE="football_storage_test_$$"
 DATABASE_CREATED=0
 
@@ -17,16 +25,16 @@ esac
 
 cleanup() {
 	if [ "$DATABASE_CREATED" -eq 1 ]; then
-		docker compose exec -T postgres dropdb --if-exists --force -U "${POSTGRES_USER:-football}" "$TEST_DATABASE" >/dev/null
+		docker compose exec -T postgres dropdb --if-exists --force -U "$POSTGRES_USER" "$TEST_DATABASE" >/dev/null
 	fi
 }
 
 trap cleanup EXIT HUP INT TERM
 
-docker compose exec -T postgres createdb -U "${POSTGRES_USER:-football}" "$TEST_DATABASE"
+docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$TEST_DATABASE"
 DATABASE_CREATED=1
 
-TEST_DATABASE_URL="postgresql://${POSTGRES_USER:-football}:${POSTGRES_PASSWORD:-football-local-only}@127.0.0.1:${POSTGRES_PORT:-55433}/$TEST_DATABASE?sslmode=disable"
+TEST_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/$TEST_DATABASE?sslmode=disable"
 export TEST_DATABASE_URL
 
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
