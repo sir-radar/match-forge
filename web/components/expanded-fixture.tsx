@@ -111,16 +111,12 @@ function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast
   const favorite = outcomes[0];
   const runnerUp = outcomes[1];
   const lead = favorite.probability - runnerUp.probability;
-  const edge = lead < 0.05 ? "very narrow" : lead < 0.1 ? "narrow" : lead < 0.2 ? "moderate" : "clear";
+  const edge = edgeLabel(lead);
   const totalExpectedGoals = forecast.expected_home_goals + forecast.expected_away_goals;
   const over = forecast.probabilities.total_over_2_5;
   const btts = forecast.probabilities.btts_yes;
   const modalScore = [...forecast.score_matrix].sort((left, right) => right.probability - left.probability)[0];
-  const goalReading = Number.isFinite(over)
-    ? over >= 0.6 ? `Over 2.5 goals is favored at ${percent(over)}, pointing to a higher-scoring game.`
-      : over <= 0.4 ? `Under 2.5 goals is favored at ${percent(1 - over)}, pointing to a lower-scoring game.`
-        : `Over 2.5 goals is ${percent(over)}, so there is no strong high- or low-scoring lean.`
-    : "The published forecast does not include an over/under split.";
+  const goalReading = goalTotalReading(over);
   return <section className="panel interpretation-panel">
     <header><h4>MatchForge interpretation</h4><small>Plain-language model reading</small></header>
     <div className="interpretation-copy">
@@ -134,6 +130,20 @@ function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast
       <div><dt>Score matrix</dt><dd>Probability of each exact home–away score combination; all cells form one distribution.</dd></div>
     </dl>
   </section>;
+}
+
+function edgeLabel(lead: number) {
+  if (lead < 0.05) return "very narrow";
+  if (lead < 0.1) return "narrow";
+  if (lead < 0.2) return "moderate";
+  return "clear";
+}
+
+function goalTotalReading(over: number) {
+  if (!Number.isFinite(over)) return "The published forecast does not include an over/under split.";
+  if (over >= 0.6) return `Over 2.5 goals is favored at ${percent(over)}, pointing to a higher-scoring game.`;
+  if (over <= 0.4) return `Under 2.5 goals is favored at ${percent(1 - over)}, pointing to a lower-scoring game.`;
+  return `Over 2.5 goals is ${percent(over)}, so there is no strong high- or low-scoring lean.`;
 }
 
 function H2H({ fixture, context }: { fixture: Fixture; context: MatchContext | null }) {

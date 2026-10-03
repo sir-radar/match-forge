@@ -11,7 +11,7 @@ attribution requirements, retention limits, rate limits, and restrictions on
 automated or bulk acquisition. Third-party source data must not be published
 unless its terms permit publication.
 
-Current priority: `MVP_PRODUCT_DELIVERY_ACTIVE`. Model research is paused; prior gate and research results remain unchanged.
+Current status: MVP implementation complete; live settlement evidence pending. Model research remains paused; prior gate and research results remain unchanged.
 
 Gate A and Sprint 1 are complete. Sprint 2 implementation now includes versioned team Elo, Dixon–Coles goal products, Poisson/NB2 corner baselines, retained point-in-time walk-forward execution, paired bootstrap uncertainty, chronological calibration analysis, and immutable model governance. Sprint 2's phase gate intentionally remains `FAIL` pending review of the retained baseline evidence. See the [architecture](docs/architecture.md), [backtesting contract](docs/backtesting.md), [model governance](docs/model-governance.md), and [Sprint 2 phase gate](docs/sprint2-phase-gate.md). Simulation and 360 normalization remain deferred.
 

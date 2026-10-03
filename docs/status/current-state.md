@@ -2,7 +2,7 @@
 
 **Verified against:** `docs/project-status.json`, immutable research evidence, and owner decision `MVP_PRODUCT_DELIVERY_ACTIVE` on 29 September 2026. Machine-readable status and append-only evidence remain authoritative if this summary becomes stale.
 
-The active work is the working multi-league MVP. Model research is `MODEL_RESEARCH_PAUSED_FOR_MVP`. MatchForge uses the retained rolling-goals Poisson reference as `MVP_FORECAST`; this product authorization does not relabel a prior research result or authorize V6, H2H fitting, confirmation, calibration work, or a new experiment.
+MVP implementation is complete; live settlement evidence remains pending. Model research is `MODEL_RESEARCH_PAUSED_FOR_MVP`. MatchForge uses the retained rolling-goals Poisson reference as `MVP_FORECAST`; this product authorization does not relabel a prior research result or authorize V6, H2H fitting, confirmation, calibration work, or a new experiment.
 
 | Subject | Verified value | Required treatment |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ The active work is the working multi-league MVP. Model research is `MODEL_RESEAR
 
 ## Current authorized work
 
-1. Deliver the MVP fixture, forecast, context, performance and external-comparison product on `ft/mvp-product-delivery`.
+1. Preserve the completed MVP while collecting pending live settlement evidence.
 2. Keep H2H display-only with zero model weight.
 3. Do not acquire research data, fit/evaluate an H2H candidate, execute confirmation, build V6, or start another forecasting experiment.
 4. Resume only after a new owner decision; see `docs/MVP-RESUME-RESEARCH.md` for the exact preserved handoff.
