@@ -335,6 +335,8 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
   const envelope = object(value, "external predictions response");
   return array(envelope.predictions, "predictions").map((entry) => {
     const item = object(entry, "external prediction");
+    const agreement = text(item.agreement, "agreement");
+    if (!["AGREES", "WEAK_SUPPORT", "DISAGREES", "UNABLE_TO_EVALUATE"].includes(agreement)) throw new Error("invalid agreement");
     return {
       id: text(item.id, "id"),
       source: text(item.source, "source"),
@@ -350,8 +352,8 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       market: text(item.market, "market"),
       selection: text(item.selection, "selection"),
       match_status: text(item.match_status, "match_status"),
-      matchforge_probability: nullableNumber(item.matchforge_probability, "matchforge_probability"),
-      agreement: text(item.agreement, "agreement") as ExternalPrediction["agreement"],
+      matchforge_probability: item.matchforge_probability === null ? null : probability(item.matchforge_probability, "matchforge_probability"),
+      agreement: agreement as ExternalPrediction["agreement"],
     };
   });
 }

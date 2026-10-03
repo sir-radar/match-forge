@@ -12,3 +12,10 @@ JavaScript and CSS, including framework/runtime chunks. App-route JavaScript is
 
 Lighthouse was not run: no Lighthouse CI is configured and production data needs
 local service state. Deterministic Playwright covers the changed journeys.
+
+3 October 2026 redesign check: production build passes. All emitted static
+JavaScript and CSS total 318,844 gzip bytes across every route and shared
+runtime; this is not a route-only transfer measurement. No dependency, image,
+chart, animation, or state library was added. The changed route remains within
+the existing Next.js client bundle, and its only raster asset is design evidence
+excluded from the build.

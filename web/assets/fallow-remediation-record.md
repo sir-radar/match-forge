@@ -30,3 +30,13 @@ the changed components and Playwright test. The root scan lacked
 `node_modules`; the frontend-specific full scan used `web/node_modules`.
 Security-sink enforcement is advisory in the repository's current Fallow
 configuration.
+
+Run 3 October 2026 after the `/predictions` overhaul: the final frontend-scoped
+scan reports zero dead-code, dependency, duplicate, or framework-contract
+findings. The initial `PredictionsPage` cognitive finding was removed by
+extracting focused resource-state renderers. The final file has 0.25 complexity
+density, an 85.3 maintainability index, and no function over a configured
+complexity threshold. The frontend health command still fails on three
+pre-existing functions outside this change (`MatchInterpretation`,
+`PerformancePage`, and `DataSyncAdmin`). No suppression or automated
+remediation was applied.

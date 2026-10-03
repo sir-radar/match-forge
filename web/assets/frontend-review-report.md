@@ -20,6 +20,14 @@ No blocking, high, or medium frontend findings remain.
 - Production build, deterministic desktop/mobile Playwright flows, and axe
   checks pass.
 
-Residual verification limits: the collapsed-desktop reference PNG is corrupt,
-the analytics directory has no `code.html`, and no approved predictions screen
-was supplied. Those routes therefore use the approved shared visual system.
+3 October 2026 follow-up: `/predictions` now has an approved 1187×1600 PNG and
+HTML source. Final review found no fabricated prototype totals or identities,
+no nested landmarks, no stale-response regression, and no new dependency.
+Mobile composition remains inferred because no mobile prediction reference was
+supplied. The earlier collapsed-fixtures PNG limitation remains unrelated.
+
+Owner correction completed: the route now has a dedicated Stitch-matched shell
+and an exact-day table. Both API requests and rendering are day-scoped; previous
+and next-day navigation, complete daily result rendering, loading, empty,
+failure, and refresh states are covered. The unsupported proof-log action is
+present only as a disabled reference control.
