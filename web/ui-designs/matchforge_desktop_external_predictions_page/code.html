@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary":"#4edea3","error-container":"#93000a","primary-fixed":"#6ffbbe","primary-fixed-dim":"#4edea3","inverse-surface":"#dfe2ef","tertiary-container":"#9699ff","secondary-container":"#00a6e0","on-surface":"#dfe2ef","on-tertiary-fixed":"#07006c","surface-container-lowest":"#0a0e17","on-secondary":"#00354a","primary-container":"#10b981","on-primary":"#003824","surface":"#0f131c","tertiary":"#c0c1ff","surface-tint":"#4edea3","surface-container-high":"#262a34","error":"#ffb4ab","outline":"#86948a","on-secondary-fixed":"#001e2c","surface-bright":"#353943","tertiary-fixed-dim":"#c0c1ff","on-primary-fixed-variant":"#005236","secondary-fixed":"#c4e7ff","on-primary-fixed":"#002113","inverse-on-surface":"#2c303a","on-secondary-container":"#00374d","on-error-container":"#ffdad6","on-primary-container":"#00422b","background":"#0f131c","on-surface-variant":"#bbcabf","surface-container":"#1c1f29","on-tertiary":"#1000a9","surface-dim":"#0f131c","secondary":"#7bd0ff","secondary-fixed-dim":"#7bd0ff","on-secondary-fixed-variant":"#004c69","surface-container-highest":"#31353f","on-error":"#690005","on-background":"#dfe2ef","on-tertiary-fixed-variant":"#2f2ebe","on-tertiary-container":"#1d17b2","outline-variant":"#3c4a42","surface-container-low":"#181b25","surface-variant":"#31353f","tertiary-fixed":"#e1e0ff","inverse-primary":"#006c49"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","margin":"1rem","gutter-desktop":"1rem","space-lg":"1.25rem","space-sm":"0.375rem","margin-desktop":"1.5rem","gutter":"0.75rem","space-xl":"2rem","space-md":"0.75rem"},fontFamily:{"headline-sm":["Space Grotesk"],"headline-xl":["Space Grotesk"],"body-sm":["Geist"],"headline-xl-mobile":["Space Grotesk"],"headline-lg":["Space Grotesk"],"label-md":["JetBrains Mono"],"headline-md":["Space Grotesk"],"body-md":["Geist"],"label-sm":["JetBrains Mono"],"body-lg":["Geist"],"label-lg":["JetBrains Mono"]},fontSize:{"headline-sm":["15px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"600"}],"headline-xl":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-xl-mobile":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"700"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-md":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"500"}],"headline-md":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"label-sm":["10px",{"lineHeight":"12px","letterSpacing":"0.06em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"label-lg":["13px",{"lineHeight":"18px","letterSpacing":"0.02em","fontWeight":"500"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-container-high"><div class="h-14 w-full px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #10b981
+- Font: spaceGrotesk
+- Mode: dark
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Uu1EnR5nW2Ex1vHzhsMz8BEJ3FtenxQsYp_ny39xJuWEOjan-GAqyhhIIXauZW9mtMADoC_1K0lkCfD6TwJxc_oi28EBCsm85eg37lAK9xfxrdsPIEmTHEI2xKEhPSRagNUi3_18CqvBVkmcaKsyZENsOtaZ8QTMe9J9U8V8tkX5X2jpvp5wzhPQ0EmyaebwAWazbb-Bvm2kJPe07BcMl4b7RCe4nnD06ppxZ5JtCqg_oC3U_TMev8Yw"/><span class="font-headline-md text-headline-md tracking-tight text-on-surface">MatchForge</span><span class="font-label-sm text-label-sm text-outline px-space-xs py-0.5 rounded bg-surface-container border border-outline-variant">CORE.v4</span></div><nav class="flex items-center space-x-1 pl-space-md" data-active-classes="bg-surface-container-high text-primary border-b-2 border-primary font-headline-sm"><a class="px-space-md py-2 font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="matches" href="#">Matches</a><a class="px-space-md py-2 font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="performance" href="#">Performance</a><a aria-current="page" class="px-space-md py-2 transition-colors bg-surface-container-high text-primary border-b-2 border-primary font-headline-sm" data-path="external-predictions" href="#">External Predictions</a><a class="px-space-md py-2 font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="admin" href="#">Admin</a></nav></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-2 px-space-sm py-1 rounded bg-surface-container border border-outline-variant"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span></span><span class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase">Feed: Live</span></div><div class="flex items-center gap-1 text-on-surface-variant font-label-md text-label-md px-space-xs"><span class="material-symbols-outlined text-[16px] text-outline">schedule</span><span>UTC+0 London</span></div><div class="h-4 w-[1px] bg-surface-container-high mx-space-xs"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="text-right hidden sm:block"><p class="font-label-sm text-label-sm text-on-surface font-semibold leading-none">Dr. A. Vance</p><p class="font-label-sm text-label-sm text-outline leading-none mt-1">Lead Quant</p></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="w-full pt-14 bg-surface min-h-[calc(100vh-3.5rem)]"><div class="flex flex-col w-full">
+<!-- Operational Sub-Header & Security Isolation Banner -->
+<section class="w-full bg-surface-container-lowest px-gutter-desktop py-space-md border-b border-surface-container-high">
+<div class="max-w-[1720px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary flex items-center gap-1.5 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            INDEPENDENT COMPARISON ARCHIVE
+          </span>
+<span class="text-outline text-body-sm font-label-md">/</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">VERIFIED_EXTERNAL_EVID_V2</span>
+</div>
+<div class="flex items-baseline gap-space-md">
+<h1 class="font-headline-lg text-headline-lg font-semibold text-on-surface tracking-tight">External predictions</h1>
+<span class="hidden md:inline-block font-label-md text-label-md text-outline">Audit Partition #EXP-2026-Q3</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-3xl leading-relaxed">
+          Public selections are cataloged strictly as immutable empirical evidence. They never calibrate, feed, weight, or overwrite MatchForge Poisson goal models or probability densities.
+        </p>
+</div>
+<!-- Prominent Strict Isolation Indicator -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-space-sm bg-surface-container-low border border-primary/25 px-space-md py-space-sm rounded">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">shield_lock</span>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-primary font-bold tracking-wide uppercase">Model influence: 0.00%</span>
+<span class="px-1.5 py-0.2 rounded bg-primary/10 text-primary font-label-sm text-label-sm border border-primary/30 uppercase">Air-Gapped</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline mt-0.5" title="Strict isolation: external evidence does not alter Poisson means or probability distributions.">
+              Strict isolation: Poisson distributions execute without back-propagation.
+            </p>
+</div>
+</div>
+<button class="sm:ml-auto px-2 py-1 bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-sm text-label-sm rounded transition-colors flex items-center gap-1" id="inspect-isolation-btn">
+<span class="material-symbols-outlined text-[14px] text-secondary">verified_user</span>
+<span>Proof Log</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Metric Strip: 4 High-Density Cards -->
+<section class="w-full bg-surface px-gutter-desktop py-space-md border-b border-surface-container-high">
+<div class="max-w-[1720px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-low p-space-md rounded border border-surface-container-high flex flex-col justify-between hover:border-outline/40 transition-all">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Sources Reviewed</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">hub</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-sm">
+<span class="font-label-lg text-2xl font-bold font-mono text-on-surface">12</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center font-semibold">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary mr-1"></span>
+            Active Registries
+          </span>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/60 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Daily Ingestion Cadence</span>
+<span class="text-on-surface-variant font-mono">04:00 UTC Batch</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low p-space-md rounded border border-surface-container-high flex flex-col justify-between hover:border-outline/40 transition-all">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Approved Adapters</span>
+<span class="material-symbols-outlined text-primary text-[18px]">gavel</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-sm">
+<span class="font-label-lg text-2xl font-bold font-mono text-on-surface">8</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px] text-primary mr-0.5">check_circle</span>
+            All Compliant
+          </span>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/60 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Reuse License Status</span>
+<span class="text-on-surface-variant font-mono">100% Academic/Open</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low p-space-md rounded border border-surface-container-high flex flex-col justify-between hover:border-outline/40 transition-all">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Stored Selections</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">dataset</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-sm">
+<span class="font-label-lg text-2xl font-bold font-mono text-on-surface">1,842</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Recorded Records</span>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/60 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Active Scope</span>
+<span class="text-on-surface-variant font-mono">4 UEFA Top Tiers</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-low p-space-md rounded border border-primary/20 flex flex-col justify-between hover:border-primary/40 transition-all">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-medium">Model Influence</span>
+<span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+</div>
+<div class="mt-space-sm flex items-baseline gap-space-sm">
+<span class="font-label-lg text-2xl font-bold font-mono text-primary">0.0%</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center">
+            Immutable Isolation
+          </span>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/60 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Feedback Prevention</span>
+<span class="text-primary font-mono font-medium">Cryptographically Enforced</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Sticky Parametric Filter Toolbar (9 Facet Controls + Active Pills) -->
+<section class="sticky top-14 z-30 w-full bg-surface-container-lowest/95 backdrop-blur border-b border-surface-container-high px-gutter-desktop py-space-sm">
+<div class="max-w-[1720px] mx-auto flex flex-col gap-space-sm">
+<!-- Primary 9-Control Inputs Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-9 gap-1.5 items-center">
+<!-- 1. Date Range -->
+<div class="col-span-2 sm:col-span-2 md:col-span-2 relative">
+<label class="sr-only">Date Range</label>
+<div class="flex items-center h-8 px-2 bg-surface-container border border-surface-container-high focus-within:border-secondary rounded text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-outline mr-1.5">calendar_month</span>
+<input class="bg-transparent text-on-surface font-label-sm text-label-sm font-mono w-full focus:outline-none" title="Date Range Filter" type="text" value="2026-09-28 to 2026-09-29"/>
+</div>
+</div>
+<!-- 2. Source Selector -->
+<div>
+<label class="sr-only">Source</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option>All Sources (12)</option>
+<option selected="">TacticalQuant Lab</option>
+<option>StatsWire Review</option>
+<option>EuroModel Benchmark</option>
+<option>ProFoot Analysis</option>
+<option>GlobalScout Picks</option>
+<option>Opta-Indep Wire</option>
+</select>
+</div>
+<!-- 3. Continent -->
+<div>
+<label class="sr-only">Continent</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option selected="">Europe (UEFA)</option>
+<option>Americas (CONMEBOL)</option>
+<option>Asia (AFC)</option>
+</select>
+</div>
+<!-- 4. Country -->
+<div>
+<label class="sr-only">Country</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option selected="">England</option>
+<option>Spain</option>
+<option>Germany</option>
+<option>Italy</option>
+</select>
+</div>
+<!-- 5. Competition -->
+<div>
+<label class="sr-only">Competition</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option selected="">Premier League</option>
+<option>La Liga</option>
+<option>Bundesliga</option>
+<option>Serie A</option>
+</select>
+</div>
+<!-- 6. Market -->
+<div>
+<label class="sr-only">Market</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option>All Markets</option>
+<option selected="">1X2 Match Result</option>
+<option>Total Goals O/U</option>
+<option>Both Teams To Score</option>
+<option>Double Chance</option>
+</select>
+</div>
+<!-- 7. Agreement Status -->
+<div>
+<label class="sr-only">Agreement Status</label>
+<select class="w-full h-8 px-2 bg-surface-container border border-surface-container-high focus:border-secondary rounded text-on-surface font-label-sm text-label-sm truncate">
+<option selected="">All Statuses</option>
+<option>Agrees (&gt;= 40%)</option>
+<option>Weak support</option>
+<option>Disagrees</option>
+<option>Unable to eval</option>
+</select>
+</div>
+<!-- 8 & 9. Actions (Search & Reset) -->
+<div class="flex items-center gap-1 col-span-2 sm:col-span-1">
+<button class="w-full h-8 px-2 bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm rounded flex items-center justify-center gap-1 transition-colors" id="clear-filters-btn" title="Reset all parametric filters">
+<span class="material-symbols-outlined text-[15px]">restart_alt</span>
+<span>Reset</span>
+</button>
+<button class="h-8 px-2.5 bg-primary text-on-primary font-headline-sm text-label-sm rounded hover:bg-primary-fixed transition-colors flex items-center justify-center" title="Apply Parameters">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+</div>
+</div>
+<!-- Active Filter Pill Bar + Result Summary -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-1 text-label-sm font-label-sm border-t border-surface-container-high/40">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="text-outline uppercase text-[10px] tracking-wider font-mono mr-1">Active Filters:</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface">
+<span>Comp:</span> <strong class="text-secondary font-mono">Premier League</strong>
+<button class="hover:text-error ml-1">×</button>
+</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface">
+<span>Market:</span> <strong class="text-secondary font-mono">1X2</strong>
+<button class="hover:text-error ml-1">×</button>
+</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface">
+<span>Date:</span> <strong class="text-on-surface font-mono">2026-09-28</strong>
+<button class="hover:text-error ml-1">×</button>
+</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface">
+<span>Isolation:</span> <strong class="text-primary font-mono">Zero Weight</strong>
+<span class="material-symbols-outlined text-[12px] text-primary">lock</span>
+</span>
+<button class="text-outline hover:text-on-surface underline text-[11px] ml-1" id="quick-clear-all">Clear all</button>
+</div>
+<div class="flex items-center gap-space-md ml-auto">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface font-mono">
+            Showing <strong class="text-primary font-bold">28</strong> of 1,842 recorded selections
+          </span>
+<div class="flex items-center gap-1 text-outline">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+<span>Cluster Synced</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Multi-Source External Consensus Module -->
+<section class="w-full bg-surface px-gutter-desktop py-space-md border-b border-surface-container-high">
+<div class="max-w-[1720px] mx-auto">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-xs mb-space-sm border-b border-surface-container-high">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface tracking-tight">Multi-Source External Consensus</h2>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-surface-container-high text-secondary border border-surface-bright">Cluster Evaluation</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Informational only · Source concurrence never increments or calibrates MatchForge generative Poisson matrices.
+          </p>
+</div>
+<div class="mt-2 sm:mt-0 flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">Threshold: 2+ verified sources</span>
+<button class="p-1 rounded bg-surface-container hover:bg-surface-bright text-on-surface transition-colors" title="Export Consensus Matrix">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+<!-- Compact Row Cards (3 Featured Consensus Fixtures) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-sm">
+<!-- Fixture 1: Arsenal vs Chelsea -->
+<div class="bg-surface-container-low border border-surface-container-high rounded p-space-sm hover:border-outline/40 transition-colors">
+<div class="flex items-center justify-between border-b border-surface-container-high/60 pb-1 mb-2">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-1.5">
+              Arsenal <span class="text-outline font-normal">vs</span> Chelsea
+            </span>
+<span class="font-label-sm text-label-sm font-mono text-outline">28 Sep 15:00 UTC</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Dominant Ext. Pick:</span>
+<span class="font-label-md text-label-md font-mono font-semibold px-1.5 py-0.5 rounded bg-surface-container text-secondary">
+                Arsenal Win (Home)
+              </span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Consensus Ratio:</span>
+<div class="flex items-center gap-1.5">
+<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden flex">
+<div class="w-3/4 bg-primary h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm font-mono text-on-surface">3 of 4 sources (75%)</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm pt-1 border-t border-surface-container-high/40">
+<span class="text-on-surface-variant">MatchForge Audit:</span>
+<span class="font-label-sm text-label-sm font-mono text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Agrees (43.9% Home Win)
+              </span>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/40 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Modal outcome confirmed</span>
+<button class="text-secondary hover:underline flex items-center gap-0.5">
+<span>Inspect breakdown</span>
+<span class="material-symbols-outlined text-[13px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Fixture 2: Aston Villa vs Newcastle -->
+<div class="bg-surface-container-low border border-surface-container-high rounded p-space-sm hover:border-outline/40 transition-colors">
+<div class="flex items-center justify-between border-b border-surface-container-high/60 pb-1 mb-2">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-1.5">
+              Aston Villa <span class="text-outline font-normal">vs</span> Newcastle
+            </span>
+<span class="font-label-sm text-label-sm font-mono text-outline">28 Sep 12:30 UTC</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Dominant Ext. Pick:</span>
+<span class="font-label-md text-label-md font-mono font-semibold px-1.5 py-0.5 rounded bg-surface-container text-secondary">
+                Total Over 2.5 Goals
+              </span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Consensus Ratio:</span>
+<div class="flex items-center gap-1.5">
+<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden flex">
+<div class="w-full bg-primary h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm font-mono text-on-surface">4 of 4 sources (100%)</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm pt-1 border-t border-surface-container-high/40">
+<span class="text-on-surface-variant">MatchForge Audit:</span>
+<span class="font-label-sm text-label-sm font-mono text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Agrees (58.2% Over 2.5)
+              </span>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/40 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>xG Combined λ = 3.12</span>
+<button class="text-secondary hover:underline flex items-center gap-0.5">
+<span>Inspect breakdown</span>
+<span class="material-symbols-outlined text-[13px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Fixture 3: Liverpool vs Everton -->
+<div class="bg-surface-container-low border border-surface-container-high rounded p-space-sm hover:border-outline/40 transition-colors">
+<div class="flex items-center justify-between border-b border-surface-container-high/60 pb-1 mb-2">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-1.5">
+              Liverpool <span class="text-outline font-normal">vs</span> Everton
+            </span>
+<span class="font-label-sm text-label-sm font-mono text-outline">28 Sep 17:30 UTC</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Dominant Ext. Pick:</span>
+<span class="font-label-md text-label-md font-mono font-semibold px-1.5 py-0.5 rounded bg-surface-container text-amber-300">
+                Liverpool Win (Home)
+              </span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Consensus Ratio:</span>
+<div class="flex items-center gap-1.5">
+<div class="w-16 h-1.5 bg-surface-container rounded-full overflow-hidden flex">
+<div class="w-2/3 bg-amber-400 h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm font-mono text-on-surface">2 of 3 sources (66%)</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm pt-1 border-t border-surface-container-high/40">
+<span class="text-on-surface-variant">MatchForge Audit:</span>
+<span class="font-label-sm text-label-sm font-mono text-amber-300 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                Weak support (38.1% H, 34.0% D)
+              </span>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container-high/40 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span>Elevated derby variance flagged</span>
+<button class="text-secondary hover:underline flex items-center gap-0.5">
+<span>Inspect breakdown</span>
+<span class="material-symbols-outlined text-[13px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive State Drawer / Toggle Bar for Validation -->
+<section class="w-full bg-surface-container px-gutter-desktop py-space-xs border-b border-surface-container-high">
+<div class="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-space-sm text-label-sm font-label-sm">
+<div class="flex items-center gap-2">
+<span class="text-outline uppercase text-[10px] font-mono tracking-wider">Terminal State View:</span>
+<button class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-mono border border-primary/40 font-semibold" id="view-normal">Live Feed (28)</button>
+<button class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface font-mono border border-surface-container-high" id="view-empty">Empty State</button>
+<button class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface font-mono border border-surface-container-high" id="view-loading">Ingestion Skeleton</button>
+</div>
+<div class="flex items-center gap-space-sm font-mono text-outline">
+<span>Display density: <strong>Compact 40px</strong></span>
+<span>•</span>
+<span>Deterministic sorting: <strong>Date DESC</strong></span>
+</div>
+</div>
+</section>
+<!-- PRIMARY WORKSPACE: Dense Prediction Results Data Table -->
+<main class="w-full bg-surface px-gutter-desktop py-space-md">
+<div class="max-w-[1720px] mx-auto">
+<!-- Primary Table Container -->
+<div class="bg-surface-container-lowest border border-surface-container-high rounded overflow-hidden shadow-sm" id="table-normal-view">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1180px]">
+<thead>
+<tr class="h-10 bg-surface-container-low border-b border-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider font-semibold">
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-44">
+<div class="flex items-center justify-between cursor-pointer hover:text-on-surface">
+<span>Date (UTC)</span>
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+</div>
+</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-44">Source Provider</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-36">Competition</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60">Fixture / Match</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-24 text-center">Kickoff</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-40">Target Market</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-48">External Pick</th>
+<th class="px-3 py-2 border-r border-surface-container-high/60 w-32 text-right">MF Prob. (%)</th>
+<th class="px-3 py-2 w-48 text-center">Consensus Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/50 font-body-md text-body-md text-on-surface">
+<!-- Row 1: TacticalQuant Lab / Arsenal -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 08:15
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">TacticalQuant Lab</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Arsenal <span class="text-outline font-normal">vs</span> Chelsea
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  15:00
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  1X2 Match Result
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-secondary border border-surface-bright font-semibold">
+                    Home Win (Arsenal)
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-primary border-r border-surface-container-high/40">
+                  43.9%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-950/40 text-primary border border-primary/30">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Agrees
+                  </span>
+</td>
+</tr>
+<!-- Row 2: StatsWire Review / Villa -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-low/40">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 07:42
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">StatsWire Review</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Aston Villa <span class="text-outline font-normal">vs</span> Newcastle
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  12:30
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  Total Goals O/U 2.5
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-secondary border border-surface-bright font-semibold">
+                    Over 2.5 Goals
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-primary border-r border-surface-container-high/40">
+                  58.2%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-950/40 text-primary border border-primary/30">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Agrees
+                  </span>
+</td>
+</tr>
+<!-- Row 3: EuroModel Benchmark / Liverpool (Weak Support) -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 06:10
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">EuroModel Benchmark</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Liverpool <span class="text-outline font-normal">vs</span> Everton
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  17:30
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  1X2 Match Result
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-amber-300 border border-surface-bright font-semibold">
+                    Home Win (Liverpool)
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-amber-300 border-r border-surface-container-high/40">
+                  38.1%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-amber-950/30 text-amber-300 border border-amber-400/30">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Weak support
+                  </span>
+</td>
+</tr>
+<!-- Row 4: Opta-Indep Wire / Spurs (Disagrees) -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-low/40">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 05:55
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">Opta-Indep Wire</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Tottenham <span class="text-outline font-normal">vs</span> Brighton
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  15:00
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  1X2 Match Result
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-error border border-surface-bright font-semibold">
+                    Away Win (Brighton)
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-error border-r border-surface-container-high/40">
+                  22.4%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-rose-950/30 text-error border border-error/30">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    Disagrees
+                  </span>
+</td>
+</tr>
+<!-- Row 5: ProFoot Analysis / Real Madrid (Unable to evaluate - unsupported market) -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 04:30
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">ProFoot Analysis</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  La Liga
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Real Madrid <span class="text-outline font-normal">vs</span> Atl. Madrid
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  20:00
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  Corners Multi-Split
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-outline border border-surface-bright font-semibold">
+                    Over 10.5 Corners
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right text-outline border-r border-surface-container-high/40" title="Reason: Model scope restricted to goal Poisson and xG distributions.">
+                  —
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-surface-container-high text-outline border border-outline-variant" title="Market unsupported by MatchForge core">
+<span class="material-symbols-outlined text-[12px]">do_not_disturb_on</span>
+                    Unable to eval
+                  </span>
+</td>
+</tr>
+<!-- Row 6: GlobalScout Picks / Chelsea DC -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-low/40">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 04:12
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">GlobalScout Picks</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Arsenal <span class="text-outline font-normal">vs</span> Chelsea
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  15:00
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  Double Chance
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-secondary border border-surface-bright font-semibold">
+                    Home or Draw (1X)
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-primary border-r border-surface-container-high/40">
+                  70.3%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-950/40 text-primary border border-primary/30">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Agrees
+                  </span>
+</td>
+</tr>
+<!-- Row 7: TacticalQuant Lab / Newcastle BTTS -->
+<tr class="h-11 hover:bg-surface-container-high/60 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-outline border-r border-surface-container-high/40 whitespace-nowrap">
+                  2026-09-28 03:45
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-label-md font-semibold text-on-surface">TacticalQuant Lab</span>
+<span class="material-symbols-outlined text-[13px] text-outline hover:text-secondary cursor-pointer">open_in_new</span>
+</div>
+</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40 whitespace-nowrap">
+                  Premier League
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<div class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                    Aston Villa <span class="text-outline font-normal">vs</span> Newcastle
+                  </div>
+</td>
+<td class="px-3 py-2 font-mono font-label-sm text-label-sm text-center text-outline border-r border-surface-container-high/40">
+                  12:30
+                </td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-on-surface-variant border-r border-surface-container-high/40">
+                  Both Teams to Score
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="px-2 py-0.5 rounded font-mono font-label-sm text-label-sm bg-surface-container text-secondary border border-surface-bright font-semibold">
+                    BTTS: Yes
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono font-label-md text-label-md text-right font-bold text-primary border-r border-surface-container-high/40">
+                  51.1%
+                </td>
+<td class="px-3 py-2 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-950/40 text-primary border border-primary/30">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Agrees
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Density Control Footer -->
+<div class="px-gutter-desktop py-space-sm bg-surface-container-low border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-space-md text-outline">
+<span>Showing <strong class="text-on-surface font-mono">1–7</strong> of <strong class="text-on-surface font-mono">28</strong> selections (Filtered subset)</span>
+<div class="h-3 w-[1px] bg-surface-container-high hidden sm:block"></div>
+<span class="hidden sm:inline">Partition Checksum: <code class="font-mono text-[10px] text-on-surface-variant">0x8F9A4E2B</code></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline">Page 1 of 4</span>
+<div class="flex items-center space-x-1">
+<button class="px-2 py-1 bg-surface-container opacity-40 rounded text-on-surface cursor-not-allowed font-mono" disabled="">Prev</button>
+<button class="px-2 py-1 bg-surface-container-high text-primary rounded font-mono border border-primary/30">1</button>
+<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">2</button>
+<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">3</button>
+<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">4</button>
+<button class="px-2 py-1 bg-surface-container hover:bg-surface-bright text-on-surface rounded font-mono">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State View (Toggleable) -->
+<div class="hidden bg-surface-container-lowest border border-surface-container-high rounded p-12 text-center flex-col items-center justify-center" id="table-empty-view">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-outline text-[28px]">search_off</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface mb-1">No approved external selections</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-4">
+          No external selections match the current filters. MatchForge collects only sources whose access and reuse conditions have been reviewed.
+        </p>
+<div class="flex items-center gap-space-sm">
+<button class="px-3 py-1.5 bg-primary text-on-primary font-headline-sm text-label-sm rounded font-medium hover:bg-primary-fixed transition-colors" id="reset-filters-from-empty">
+            Reset All Filters
+          </button>
+<button class="px-3 py-1.5 bg-surface-container-high text-on-surface hover:bg-surface-bright font-headline-sm text-label-sm rounded transition-colors">
+            Review Source Registry
+          </button>
+</div>
+</div>
+<!-- Loading Skeleton View (Toggleable) -->
+<div class="hidden bg-surface-container-lowest border border-surface-container-high rounded overflow-hidden p-space-md space-y-3" id="table-loading-view">
+<div class="flex items-center justify-between pb-2 border-b border-surface-container-high">
+<div class="h-4 bg-surface-container-high rounded w-48 animate-pulse"></div>
+<div class="h-4 bg-surface-container-high rounded w-24 animate-pulse"></div>
+</div>
+<div class="space-y-2">
+<div class="h-8 bg-surface-container-low rounded w-full animate-pulse"></div>
+<div class="h-8 bg-surface-container-low rounded w-full animate-pulse"></div>
+<div class="h-8 bg-surface-container-low rounded w-full animate-pulse"></div>
+<div class="h-8 bg-surface-container-low rounded w-full animate-pulse"></div>
+<div class="h-8 bg-surface-container-low rounded w-full animate-pulse"></div>
+</div>
+<div class="pt-2 flex justify-between">
+<div class="h-3 bg-surface-container-high rounded w-32 animate-pulse"></div>
+<div class="h-3 bg-surface-container-high rounded w-24 animate-pulse"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Section 6: Source Access and Adapter Performance Audit -->
+<section class="w-full bg-surface-container-lowest px-gutter-desktop py-space-xl border-t border-surface-container-high mt-space-md">
+<div class="max-w-[1720px] mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between pb-space-xs mb-space-sm border-b border-surface-container-high">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">assignment_turned_in</span>
+<h2 class="font-headline-lg text-headline-md font-semibold text-on-surface tracking-tight">Source Access &amp; Adapter Performance Audit</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-4xl">
+            Metrics reflect the active source, competition, market, and date-range filters. Demonstrates external calibration tracking without back-feeding into MatchForge models.
+          </p>
+</div>
+<div class="mt-2 md:mt-0 font-label-sm text-label-sm text-outline flex items-center gap-2">
+<span>Audit Period: Rolling 90-Day Standard</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+</div>
+<!-- Audit Dense Table -->
+<div class="bg-surface-container-low border border-surface-container-high rounded overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1100px]">
+<thead>
+<tr class="h-9 bg-surface-container border-b border-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider font-semibold">
+<th class="px-3 py-1.5 border-r border-surface-container-high/60">Source Provider</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-36">Access Status</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-44">Adapter Health</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-28 text-right">Tracked</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-28 text-right">Settled</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-28 text-right">Correct</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-28 text-right">Hit Rate</th>
+<th class="px-3 py-1.5 border-r border-surface-container-high/60 w-36 text-right">MF Agreement</th>
+<th class="px-3 py-1.5">Known Issue / Advisory</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/50 font-body-sm text-body-sm text-on-surface">
+<!-- Source 1 -->
+<tr class="h-10 hover:bg-surface-container-high/50 transition-colors bg-surface-container-low">
+<td class="px-3 py-2 font-headline-sm text-label-md font-semibold text-on-surface border-r border-surface-container-high/40">
+                  TacticalQuant Lab
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40 font-label-sm text-label-sm text-secondary">
+                  Academic Export
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="inline-flex items-center gap-1 font-mono font-label-sm text-label-sm text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Operational
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">482</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">410</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">246</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-primary font-bold">60.0%</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-secondary font-bold">64.2%</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-outline">
+                  None (Stable API v2, REST Webhook)
+                </td>
+</tr>
+<!-- Source 2 -->
+<tr class="h-10 hover:bg-surface-container-high/50 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-headline-sm text-label-md font-semibold text-on-surface border-r border-surface-container-high/40">
+                  StatsWire Review
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40 font-label-sm text-label-sm text-secondary">
+                  Public Feed
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="inline-flex items-center gap-1 font-mono font-label-sm text-label-sm text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Operational
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">395</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">340</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">187</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-primary font-bold">55.0%</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-secondary font-bold">58.1%</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-outline">
+                  Minor kickoff timestamp skew (fixed)
+                </td>
+</tr>
+<!-- Source 3 -->
+<tr class="h-10 hover:bg-surface-container-high/50 transition-colors bg-surface-container-low">
+<td class="px-3 py-2 font-headline-sm text-label-md font-semibold text-on-surface border-r border-surface-container-high/40">
+                  EuroModel Benchmark
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40 font-label-sm text-label-sm text-secondary">
+                  Academic Export
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="inline-flex items-center gap-1 font-mono font-label-sm text-label-sm text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Operational
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">512</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">480</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">298</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-primary font-bold">62.1%</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-secondary font-bold">71.4%</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-outline">
+                  Schema v1.4 migration pending
+                </td>
+</tr>
+<!-- Source 4 -->
+<tr class="h-10 hover:bg-surface-container-high/50 transition-colors bg-surface-container-lowest">
+<td class="px-3 py-2 font-headline-sm text-label-md font-semibold text-on-surface border-r border-surface-container-high/40">
+                  ProFoot Analysis
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40 font-label-sm text-label-sm text-amber-300">
+                  Open Web Crawler
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="inline-flex items-center gap-1 font-mono font-label-sm text-label-sm text-amber-300">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Degraded / Rate Limited
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">210</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">180</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">92</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-amber-300 font-bold">51.1%</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-outline font-bold">49.3%</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-amber-300">
+                  Access condition review in progress (manual throttle active)
+                </td>
+</tr>
+<!-- Source 5 -->
+<tr class="h-10 hover:bg-surface-container-high/50 transition-colors bg-surface-container-low">
+<td class="px-3 py-2 font-headline-sm text-label-md font-semibold text-on-surface border-r border-surface-container-high/40">
+                  GlobalScout Picks
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40 font-label-sm text-label-sm text-secondary">
+                  Public Feed
+                </td>
+<td class="px-3 py-2 border-r border-surface-container-high/40">
+<span class="inline-flex items-center gap-1 font-mono font-label-sm text-label-sm text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Operational
+                  </span>
+</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">243</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">205</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-on-surface">115</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-primary font-bold">56.1%</td>
+<td class="px-3 py-2 font-mono text-right border-r border-surface-container-high/40 text-secondary font-bold">54.0%</td>
+<td class="px-3 py-2 font-label-sm text-label-sm text-outline">
+                  None
+                </td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-gutter-desktop py-space-sm bg-surface-container border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between text-label-sm font-label-sm text-outline">
+<div>Composite Registry Consensus: <strong>58.8% Mean Hit Rate</strong> across 1,615 settled records.</div>
+<div class="flex items-center gap-2">
+<span>Last automated ingest run: 14 mins ago</span>
+<span class="text-primary font-mono font-semibold">SUCCESS (HTTP 200)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Client-side Interactive Behavior for System States -->
+<script>
+    (function initExternalPredictions() {
+      const normalView = document.getElementById('table-normal-view');
+      const emptyView = document.getElementById('table-empty-view');
+      const loadingView = document.getElementById('table-loading-view');
+
+      const btnNormal = document.getElementById('view-normal');
+      const btnEmpty = document.getElementById('view-empty');
+      const btnLoading = document.getElementById('view-loading');
+      const btnResetFromEmpty = document.getElementById('reset-filters-from-empty');
+      const btnQuickClear = document.getElementById('quick-clear-all');
+      const btnClearFilters = document.getElementById('clear-filters-btn');
+
+      function switchState(state) {
+        // Reset button states
+        [btnNormal, btnEmpty, btnLoading].forEach(b => {
+          b.className = 'px-2 py-0.5 rounded bg-surface-container text-on-surface-variant hover:text-on-surface font-mono border border-surface-container-high';
+        });
+
+        // Hide all views
+        normalView.classList.add('hidden');
+        emptyView.classList.add('hidden');
+        emptyView.classList.remove('flex');
+        loadingView.classList.add('hidden');
+
+        if (state === 'normal') {
+          normalView.classList.remove('hidden');
+          btnNormal.className = 'px-2 py-0.5 rounded bg-surface-container-high text-primary font-mono border border-primary/40 font-semibold';
+        } else if (state === 'empty') {
+          emptyView.classList.remove('hidden');
+          emptyView.classList.add('flex');
+          btnEmpty.className = 'px-2 py-0.5 rounded bg-surface-container-high text-amber-300 font-mono border border-amber-400/40 font-semibold';
+        } else if (state === 'loading') {
+          loadingView.classList.remove('hidden');
+          btnLoading.className = 'px-2 py-0.5 rounded bg-surface-container-high text-secondary font-mono border border-secondary/40 font-semibold';
+        }
+      }
+
+      btnNormal.addEventListener('click', () => switchState('normal'));
+      btnEmpty.addEventListener('click', () => switchState('empty'));
+      btnLoading.addEventListener('click', () => switchState('loading'));
+
+      if (btnResetFromEmpty) {
+        btnResetFromEmpty.addEventListener('click', () => switchState('normal'));
+      }
+      if (btnQuickClear) {
+        btnQuickClear.addEventListener('click', () => switchState('normal'));
+      }
+      if (btnClearFilters) {
+        btnClearFilters.addEventListener('click', () => switchState('normal'));
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-lowest border-t border-surface-container-high py-space-sm px-gutter-desktop"><div class="w-full flex items-center justify-between font-label-sm text-label-sm text-outline"><div>MatchForge Quantitative Football Engine © 2025. Institutional Analytical Terminal.</div><div class="flex items-center gap-space-md"><span class="flex items-center gap-1"><span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>Poisson v3.8 Operational</span><span>Latency: 28ms</span><span>Data Provider: Opta Matrix Pro</span></div></div></footer></body></html>

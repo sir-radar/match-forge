@@ -9,3 +9,8 @@
 - Keep all new APIs additive. No existing frontend consumers exist.
 - Native controls own keyboard behavior: buttons, links, date input, selects,
   tables, and disclosure buttons.
+- Keep the supplied external-prediction composition route-local. Reuse
+  `Icon`, `Logo`, `useResource`, and API contracts; do not promote mock-only
+  cards, audit rows, or badges into shared APIs. `AppShell` yields the complete
+  route shell on `/predictions` so the route can match the supplied fixed header
+  and footer without changing other pages.

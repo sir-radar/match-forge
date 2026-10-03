@@ -2,6 +2,10 @@
 
 - axe-core 4.10.2: zero violations across fixtures, performance, predictions,
   and admin journeys in the configured desktop and mobile Chromium projects.
+- Reverified `/predictions` on 3 October 2026 at 1187×1600 desktop and iPhone 13:
+  zero axe-core violations; one top-level `main` landmark; labeled native filters;
+  labeled previous/next-day controls; keyboard-focusable horizontal tables;
+  visible text on every status color.
 - Native links, buttons, inputs, selects, disclosures, tabs, and tables.
 - Skip link, main/primary/mobile landmarks, complementary rail, grouped fixture
   sections, tablist, and tabpanel.
