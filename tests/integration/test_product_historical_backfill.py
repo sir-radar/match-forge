@@ -395,3 +395,218 @@ def test_fixture_sync_accepts_successful_empty_provider_response(
 
     assert fixture_count == 0
     assert league_seasons == []
+
+
+def test_fixture_backfill_uses_provider_neutral_historical_result(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
+    store = HistoricalBackfillStore(
+        connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
+    )
+    snapshot_id = store.ensure_snapshot(
+        source_identity="test/result.csv",
+        source_revision="c" * 64,
+        acquired_at=observed_at,
+        manifest_path="football_data_uk/test/result.csv",
+    )
+    result = HistoricalMatch(
+        provider_match_id="test-result-1",
+        provider_competition_id="E0",
+        competition_name="Premier League",
+        country="England",
+        division=1,
+        season="2026-2027",
+        home_team_id="Result Home",
+        home_team_name="Result Home",
+        away_team_id="Result Away",
+        away_team_name="Result Away",
+        kickoff_at=datetime(2026, 9, 30, 19, 45, tzinfo=UTC),
+        kickoff_precision="EXACT",
+        home_goals=2,
+        away_goals=1,
+        source_path="test/result.csv",
+    )
+    assert store.import_match(result, snapshot_id, observed_at) == "inserted"
+    with connection.cursor() as cursor:
+        history = cursor.execute(
+            """
+            SELECT history.competition_id, history.home_team_id, history.away_team_id,
+                   history.kickoff_at, m.season_id
+            FROM football.product_team_match_history history
+            JOIN football.matches m ON m.id = history.fixture_id
+            WHERE history.source_snapshot_id = %s
+            """,
+            (snapshot_id,),
+        ).fetchone()
+    assert history is not None
+    competition_id, home_id, away_id, kickoff_at, season_id = history
+    fixture_id = stable_id("scheduled-before-result", competition_id, home_id, away_id)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO football.matches (id, competition_id, season_id) VALUES (%s, %s, %s)",
+            (fixture_id, competition_id, season_id),
+        )
+        cursor.execute(
+            """
+            INSERT INTO football.product_fixtures (
+                fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                status, forecast_availability, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, 'SCHEDULED', 'NOT_ENOUGH_HISTORY', %s)
+            """,
+            (fixture_id, competition_id, home_id, away_id, kickoff_at, observed_at),
+        )
+    sync = ProductSync(
+        connection,
+        ApiFootballClient("test"),
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+
+    changed = sync.backfill_fixtures_from_history(date(2026, 9, 29), date(2026, 10, 1), observed_at)
+
+    with connection.cursor() as cursor:
+        stored = cursor.execute(
+            """
+            SELECT status, home_score, away_score
+            FROM football.product_fixtures WHERE fixture_id = %s
+            """,
+            (fixture_id,),
+        ).fetchone()
+        logical_count = _first(
+            cursor.execute(
+                """
+                SELECT count(*) FROM football.product_fixtures
+                WHERE competition_id = %s AND home_team_id = %s AND away_team_id = %s
+                  AND kickoff_at::date = %s
+                """,
+                (competition_id, home_id, away_id, kickoff_at.date()),
+            ).fetchone()
+        )
+    assert changed == 1
+    assert stored == ("FINISHED", 2, 1)
+    assert logical_count == 1
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE football.product_fixtures
+            SET home_score = 4, away_score = 4
+            WHERE fixture_id = %s
+            """,
+            (fixture_id,),
+        )
+    assert (
+        sync.backfill_fixtures_from_history(date(2026, 9, 29), date(2026, 10, 1), observed_at) == 0
+    )
+    with connection.cursor() as cursor:
+        preserved = cursor.execute(
+            """
+            SELECT status, home_score, away_score
+            FROM football.product_fixtures WHERE fixture_id = %s
+            """,
+            (fixture_id,),
+        ).fetchone()
+    assert preserved == ("FINISHED", 4, 4)
+
+
+def test_standings_refresh_handles_teams_swapping_positions(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
+    sync = ProductSync(
+        connection,
+        ApiFootballClient("test"),
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+    snapshot_id = sync._record_response(
+        "standings-39-2026",
+        ApiResponse("/standings", observed_at, b"{}", (), None),
+    )
+    competition_id = sync._competition_id("39", snapshot_id)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO football.product_competitions (
+                competition_id, name, country, continent, competition_type,
+                season_label, fixtures_available, results_available, standings_available,
+                h2h_available, forecast_available, xg_available, team_stats_available,
+                availability_status, source_roles, updated_at
+            ) VALUES (
+                %s, 'Premier League', 'England', 'Europe', 'LEAGUE', '2026',
+                true, true, true, false, false, false, false,
+                'NOT_ENOUGH_HISTORY', '{}'::jsonb, %s
+            )
+            """,
+            (competition_id, observed_at),
+        )
+    first_team = sync._team_id(
+        {"id": 1, "name": "First FC", "logo": None}, "England", snapshot_id, observed_at
+    )
+    second_team = sync._team_id(
+        {"id": 2, "name": "Second FC", "logo": None}, "England", snapshot_id, observed_at
+    )
+    with connection.cursor() as cursor:
+        cursor.executemany(
+            """
+            INSERT INTO football.product_standings (
+                competition_id, team_id, position, played, won, drawn, lost,
+                goals_for, goals_against, goal_difference, points,
+                source_provider_code, updated_at
+            ) VALUES (%s, %s, %s, 1, 1, 0, 0, 1, 0, 1, 3, 'api_football', %s)
+            """,
+            (
+                (competition_id, first_team, 1, observed_at),
+                (competition_id, second_team, 2, observed_at),
+            ),
+        )
+    rows = (
+        {
+            "league": {
+                "id": 39,
+                "country": "England",
+                "standings": [
+                    [
+                        {
+                            "rank": 1,
+                            "team": {"id": 2, "name": "Second FC", "logo": None},
+                            "all": {
+                                "played": 2,
+                                "win": 2,
+                                "draw": 0,
+                                "lose": 0,
+                                "goals": {"for": 3, "against": 0},
+                            },
+                            "goalsDiff": 3,
+                            "points": 6,
+                        },
+                        {
+                            "rank": 2,
+                            "team": {"id": 1, "name": "First FC", "logo": None},
+                            "all": {
+                                "played": 2,
+                                "win": 1,
+                                "draw": 0,
+                                "lose": 1,
+                                "goals": {"for": 1, "against": 1},
+                            },
+                            "goalsDiff": 0,
+                            "points": 3,
+                        },
+                    ]
+                ],
+            }
+        },
+    )
+
+    assert sync._store_standings(rows, snapshot_id, observed_at) == 2
+    with connection.cursor() as cursor:
+        positions = cursor.execute(
+            """
+            SELECT team_id, position FROM football.product_standings
+            WHERE competition_id = %s ORDER BY position
+            """,
+            (competition_id,),
+        ).fetchall()
+    assert positions == [(second_team, 1), (first_team, 2)]

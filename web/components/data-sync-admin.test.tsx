@@ -30,6 +30,8 @@ describe("DataSyncAdmin", () => {
     render(<DataSyncAdmin />);
     expect(await screen.findByRole("heading", { name: "Historical Coverage" })).toBeInTheDocument();
     expect(screen.getByText("124,806")).toBeInTheDocument();
+    expect(screen.getByLabelText("Backfill fixtures from")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Backfill fixtures from"), { target: { value: "2026-09-29" } });
     for (const name of ["Run MVP Sync", "Sync OpenFootball", "Sync Football-Data.co.uk", "Run Both Historical Sources", "Refresh Forecasts", "Sync External Predictions", "Run Full Sync"]) {
       expect(screen.getByRole("button", { name })).toBeEnabled();
     }
@@ -38,7 +40,7 @@ describe("DataSyncAdmin", () => {
     expect(screen.getByRole("button", { name: "Run MVP Sync" })).toBeDisabled();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/v1/admin/sync/all"),
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({ method: "POST", body: expect.stringContaining('"from_date"') }),
     ));
   });
 

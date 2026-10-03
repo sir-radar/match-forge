@@ -49,6 +49,7 @@ const (
 type SyncRequest struct {
 	Type        SyncType `json:"sync_type"`
 	Date        string   `json:"date,omitempty"`
+	FromDate    string   `json:"from_date,omitempty"`
 	Season      string   `json:"season,omitempty"`
 	Competition string   `json:"competition,omitempty"`
 	Country     string   `json:"country,omitempty"`
@@ -127,7 +128,7 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
-	requestedDate, err := parseSyncDate(request.Date)
+	requestedDate, err := validateSyncDateRange(request.Date, request.FromDate)
 	if err != nil {
 		return SyncRun{}, err
 	}
@@ -159,7 +160,8 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 func syncParameters(request SyncRequest) map[string]interface{} {
 	parameters := map[string]interface{}{}
 	for key, value := range map[string]string{
-		"season": request.Season, "competition": request.Competition, "country": request.Country,
+		"from_date": request.FromDate, "season": request.Season,
+		"competition": request.Competition, "country": request.Country,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -177,6 +179,21 @@ func parseSyncDate(value string) (*time.Time, error) {
 		return nil, fmt.Errorf("date must use YYYY-MM-DD")
 	}
 	return &parsed, nil
+}
+
+func validateSyncDateRange(dateValue string, fromDateValue string) (*time.Time, error) {
+	requestedDate, err := parseSyncDate(dateValue)
+	if err != nil {
+		return nil, err
+	}
+	fromDate, err := parseSyncDate(fromDateValue)
+	if err != nil {
+		return nil, fmt.Errorf("from_date %w", err)
+	}
+	if requestedDate != nil && fromDate != nil && fromDate.After(*requestedDate) {
+		return nil, fmt.Errorf("from_date must not be after date")
+	}
+	return requestedDate, nil
 }
 
 func (runner *CommandSyncRunner) activeRunConflict(ctx context.Context) error {
@@ -433,6 +450,9 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	if request.Date != "" && dateTypes[request.Type] {
 		args = append(args, "--date", request.Date)
 	}
+	if request.FromDate != "" && dateTypes[request.Type] {
+		args = append(args, "--from-date", request.FromDate)
+	}
 	selectorTypes := map[SyncType]bool{
 		SyncOpenFootball: true, SyncFootballDataUK: true, SyncHistoryBackfill: true,
 	}
@@ -479,6 +499,7 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
 		var input struct {
 			Date        string `json:"date"`
+			FromDate    string `json:"from_date"`
 			Season      string `json:"season"`
 			Competition string `json:"competition"`
 			Country     string `json:"country"`
@@ -492,7 +513,7 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			}
 		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
-			Type: syncType, Date: input.Date, Season: input.Season,
+			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
 			Competition: input.Competition, Country: input.Country,
 		})
 		if err != nil {

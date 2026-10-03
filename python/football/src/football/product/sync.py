@@ -83,15 +83,22 @@ class ProductSync:
         self.artifact_path = artifact_path
         self.history_fallback = history_fallback
 
-    def run(self, requested_date: date, *, max_history_leagues: int = 20) -> dict[str, int]:
+    def run(
+        self,
+        requested_date: date,
+        *,
+        fixture_from_date: date | None = None,
+        max_history_leagues: int = 20,
+    ) -> dict[str, int]:
         if max_history_leagues < 0:
             raise ValueError("max_history_leagues must be non-negative")
+        fixture_dates = _fixture_sync_dates(requested_date, fixture_from_date)
         competition_response = self.client.competitions()
         competition_snapshot = self._record_response("competitions", competition_response)
         competition_count = self._store_competitions(
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
-        fixture_count, league_seasons = self._sync_fixtures(requested_date, max_history_leagues)
+        fixture_count, league_seasons = self._sync_fixtures(fixture_dates, max_history_leagues)
         history_count = 0
         standings_count = 0
         for league_id, season in league_seasons:
@@ -165,12 +172,16 @@ class ProductSync:
                 standings_response.rows, standings_snapshot, standings_response.fetched_at
             )
         completed_at = datetime.now(UTC)
+        history_fixture_count = self.backfill_fixtures_from_history(
+            fixture_dates[0], fixture_dates[-1], completed_at
+        )
         settled_count = self._settle_external_predictions(completed_at)
         forecast_count = self.refresh_forecasts(completed_at)
         self.connection.commit()
         return {
             "competitions": competition_count,
             "fixtures": fixture_count,
+            "fixtures_from_history": history_fixture_count,
             "history_matches": history_count,
             "standings_rows": standings_count,
             "forecasts": forecast_count,
@@ -178,11 +189,13 @@ class ProductSync:
         }
 
     def _sync_fixtures(
-        self, requested_date: date, max_history_leagues: int
+        self,
+        fixture_dates: Sequence[date],
+        max_history_leagues: int,
     ) -> tuple[int, list[tuple[int, int]]]:
         fixture_count = 0
         league_seasons: set[tuple[int, int]] = set()
-        for fixture_date in _fixture_sync_dates(requested_date):
+        for fixture_date in fixture_dates:
             stored_count, stored_leagues = self._store_requested_fixtures(fixture_date)
             fixture_count += stored_count
             league_seasons.update(stored_leagues)
@@ -192,20 +205,92 @@ class ProductSync:
         )
         return fixture_count, ordered_leagues[:max_history_leagues]
 
+    def backfill_fixtures_from_history(
+        self, from_date: date, through_date: date, observed_at: datetime
+    ) -> int:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                WITH matching_results AS (
+                    SELECT pf.fixture_id,
+                           MIN(history.home_goals) AS home_goals,
+                           MIN(history.away_goals) AS away_goals
+                    FROM football.product_fixtures pf
+                    JOIN football.product_team_match_history history
+                      ON history.competition_id = pf.competition_id
+                     AND history.home_team_id = pf.home_team_id
+                     AND history.away_team_id = pf.away_team_id
+                     AND history.kickoff_at::date = pf.kickoff_at::date
+                    WHERE pf.kickoff_at::date BETWEEN %s AND %s
+                    GROUP BY pf.fixture_id
+                    HAVING COUNT(DISTINCT (history.home_goals, history.away_goals)) = 1
+                )
+                UPDATE football.product_fixtures fixture
+                SET status = 'FINISHED',
+                    home_score = result.home_goals,
+                    away_score = result.away_goals,
+                    updated_at = %s
+                FROM matching_results result
+                WHERE fixture.fixture_id = result.fixture_id
+                  AND (
+                      fixture.status <> 'FINISHED'
+                      OR fixture.home_score IS NULL
+                      OR fixture.away_score IS NULL
+                  )
+                """,
+                (from_date, through_date, observed_at),
+            )
+            updated = cursor.rowcount
+            cursor.execute(
+                """
+                INSERT INTO football.product_fixtures (
+                    fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                    status, home_score, away_score, forecast_availability, updated_at
+                )
+                SELECT history.fixture_id, history.competition_id,
+                       history.home_team_id, history.away_team_id, history.kickoff_at,
+                       'FINISHED', history.home_goals, history.away_goals,
+                       'NOT_ENOUGH_HISTORY', %s
+                FROM football.product_team_match_history history
+                WHERE history.kickoff_at::date BETWEEN %s AND %s
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM football.product_fixtures fixture
+                      WHERE fixture.competition_id = history.competition_id
+                        AND fixture.home_team_id = history.home_team_id
+                        AND fixture.away_team_id = history.away_team_id
+                        AND fixture.kickoff_at::date = history.kickoff_at::date
+                  )
+                ON CONFLICT (fixture_id) DO UPDATE SET
+                    status = 'FINISHED',
+                    home_score = EXCLUDED.home_score,
+                    away_score = EXCLUDED.away_score,
+                    updated_at = EXCLUDED.updated_at
+                WHERE football.product_fixtures.status <> 'FINISHED'
+                   OR football.product_fixtures.home_score IS NULL
+                   OR football.product_fixtures.away_score IS NULL
+                """,
+                (observed_at, from_date, through_date),
+            )
+            return updated + cursor.rowcount
+
     def _store_requested_fixtures(self, requested_date: date) -> tuple[int, list[tuple[int, int]]]:
         try:
             response = self.client.fixtures_for_date(requested_date)
         except RuntimeError:
             response = None
-        if response is not None:
+        if response is not None and response.rows:
             snapshot = self._record_response(f"fixtures-{requested_date}", response)
             fixtures = self._store_fixtures(response.rows, snapshot, response.fetched_at)
             return len(fixtures), _league_seasons(fixtures)
         fallback = self._fallback_fixtures(requested_date)
-        if fallback is None:
-            raise ValueError("fixture providers unavailable")
-        snapshot = self._record_fallback_response(f"fixtures-{requested_date}", fallback)
-        return self._store_fallback_fixtures(fallback.rows, snapshot, fallback.fetched_at)
+        if fallback is not None:
+            snapshot = self._record_fallback_response(f"fixtures-{requested_date}", fallback)
+            return self._store_fallback_fixtures(fallback.rows, snapshot, fallback.fetched_at)
+        if response is not None:
+            self._record_response(f"fixtures-{requested_date}", response)
+            return 0, []
+        raise ValueError("fixture providers unavailable")
 
     def _settle_external_predictions(self, settled_at: datetime) -> int:
         with self.connection.cursor() as cursor:
@@ -510,6 +595,7 @@ class ProductSync:
                 str(item[0]),
             ),
         )
+        self._reset_standings(competition_id)
         with self.connection.cursor() as cursor:
             for position, (team_id, row) in enumerate(ranked, start=1):
                 cursor.execute(
@@ -867,6 +953,8 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
+        if rows:
+            self._reset_standings(competition_id)
         count = 0
         for row in rows:
             team = _mapping(row, "team")
@@ -949,6 +1037,7 @@ class ProductSync:
             groups = cast(list[list[Mapping[str, Any]]], league.get("standings", []))
             if not groups:
                 continue
+            self._reset_standings(competition_id)
             for row in groups[0]:
                 team = _mapping(row, "team")
                 team_id = self._team_id(
@@ -999,6 +1088,13 @@ class ProductSync:
                     (observed_at, competition_id),
                 )
         return count
+
+    def _reset_standings(self, competition_id: UUID) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM football.product_standings WHERE competition_id = %s",
+                (competition_id,),
+            )
 
     def refresh_forecasts(self, now: datetime | None = None) -> int:
         """Publish only missing future forecasts from already stored canonical history."""
@@ -1480,8 +1576,15 @@ class ProductSync:
             )
 
 
-def _fixture_sync_dates(requested_date: date) -> tuple[date, date]:
-    return requested_date - timedelta(days=1), requested_date
+def _fixture_sync_dates(
+    requested_date: date, fixture_from_date: date | None = None
+) -> tuple[date, ...]:
+    start = fixture_from_date or requested_date - timedelta(days=1)
+    if start > requested_date:
+        raise ValueError("fixture backfill start date must not be after requested date")
+    return tuple(
+        start + timedelta(days=offset) for offset in range((requested_date - start).days + 1)
+    )
 
 
 def _mapping(value: Mapping[str, Any], key: str) -> Mapping[str, Any]:

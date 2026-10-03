@@ -81,6 +81,31 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 	}
 }
 
+func TestAdminSyncPassesFixtureBackfillStartDate(t *testing.T) {
+	runner := &syncRunnerStub{}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/admin/sync/mvp",
+		strings.NewReader(`{"date":"2026-10-03","from_date":"2026-09-29"}`),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	newAdminTestApp(runner).Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("response = %d %s", response.Code, response.Body.String())
+	}
+	if len(runner.started) != 1 || runner.started[0].FromDate != "2026-09-29" {
+		t.Fatalf("started = %+v", runner.started)
+	}
+}
+
+func TestValidateSyncDateRangeRejectsReversedRange(t *testing.T) {
+	_, err := validateSyncDateRange("2026-10-03", "2026-10-04")
+	if err == nil || err.Error() != "from_date must not be after date" {
+		t.Fatalf("error = %v", err)
+	}
+}
+
 func TestAdminSyncListGetAndErrors(t *testing.T) {
 	runner := &syncRunnerStub{runs: []SyncRun{{ID: "one", Type: SyncMVP, Status: "SUCCEEDED"}}}
 	application := newAdminTestApp(runner)
