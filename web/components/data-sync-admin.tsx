@@ -4,24 +4,24 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { HistoricalCoverage, SyncRun, SyncType } from "@/lib/contracts";
 
-type Filters = { date: string; season: string; competition: string; country: string };
+type Filters = { date: string; from_date: string; season: string; competition: string; country: string };
 type Action = {
   type: SyncType; title: string; kind: string; description: string; button: string;
   start: (body: Record<string, string>) => Promise<SyncRun>; prominent?: boolean;
 };
 
 const ACTIONS: Action[] = [
-  { type: "MVP_SYNC", title: "MVP Provider Sync", kind: "Live provider catalog", description: "API-Football discovery and football-data.org fallback.", button: "Run MVP Sync", start: api.startMvpSync },
+  { type: "MVP_SYNC", title: "MVP Provider Sync", kind: "Live fixture backfill", description: "Backfill the selected fixture range, update scores, then refresh history and standings. Uses football-data.org when API-Football has no fixtures.", button: "Run MVP Sync", start: api.startMvpSync },
   { type: "OPENFOOTBALL", title: "OpenFootball", kind: "Historical bulk JSON", description: "Discover every usable season and competition in the football.json repository.", button: "Sync OpenFootball", start: api.startOpenFootballSync },
   { type: "FOOTBALL_DATA_UK", title: "Football-Data.co.uk", kind: "Historical CSV/ZIP archive", description: "Discover and import completed results from published download archives.", button: "Sync Football-Data.co.uk", start: api.startFootballDataUKSync },
   { type: "HISTORY_BACKFILL", title: "Historical Backfill", kind: "Both bulk sources", description: "Run OpenFootball, then Football-Data.co.uk, across all discoverable history.", button: "Run Both Historical Sources", start: api.startHistoryBackfill },
   { type: "FORECAST_REFRESH", title: "Forecast Refresh", kind: "Stored data only", description: "Generate missing MatchForge forecasts from currently stored historical data.", button: "Refresh Forecasts", start: api.startForecastRefresh },
   { type: "EXTERNAL_PREDICTIONS", title: "External Predictions", kind: "Public source collection", description: "Run the existing private-local external prediction collection.", button: "Sync External Predictions", start: api.startExternalPredictionsSync },
-  { type: "ALL_DATA", title: "Full Data Sync", kind: "Complete owner workflow", description: "MVP providers → both historical sources → forecast refresh → external predictions.", button: "Run Full Sync", start: api.startAllDataSync, prominent: true },
+  { type: "ALL_DATA", title: "Full Data Sync", kind: "Complete owner workflow", description: "Fixture range and scores → both historical sources → forecast refresh → external predictions.", button: "Run Full Sync", start: api.startAllDataSync, prominent: true },
 ];
 
 export function DataSyncAdmin() {
-  const [filters, setFilters] = useState<Filters>(() => ({ date: localDate(), season: "", competition: "", country: "" }));
+  const [filters, setFilters] = useState<Filters>(() => ({ date: localDate(), from_date: "", season: "", competition: "", country: "" }));
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [coverage, setCoverage] = useState<HistoricalCoverage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +73,8 @@ export function DataSyncAdmin() {
     <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
     <section className="sync-controls" aria-labelledby="sync-controls-title">
       <h2 id="sync-controls-title" className="sr-only">Sync controls</h2>
-      <label>Date<input type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} /></label>
+      <label>Through date<input type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} /></label>
+      <label htmlFor="fixture-from-date">Backfill fixtures from</label><div><input id="fixture-from-date" type="date" max={filters.date} value={filters.from_date} onChange={(event) => setFilters({ ...filters, from_date: event.target.value })} /><small>Optional for MVP and Full Sync. Blank refreshes the through date and previous day.</small></div>
       <details><summary>Advanced filters</summary><div>
         <label>Season<input value={filters.season} onChange={(event) => setFilters({ ...filters, season: event.target.value })} placeholder="All seasons" /></label>
         <label>Competition<input value={filters.competition} onChange={(event) => setFilters({ ...filters, competition: event.target.value })} placeholder="All competitions" /></label>

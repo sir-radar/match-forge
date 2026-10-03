@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 import urllib.error
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -35,6 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     sync = commands.add_parser("sync", aliases=["mvp-sync"])
     sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
+    sync.add_argument("--from-date", type=date.fromisoformat)
     sync.add_argument(
         "--data-root",
         type=Path,
@@ -55,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("refresh-forecasts")
     all_sync = commands.add_parser("sync-all")
     all_sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
+    all_sync.add_argument("--from-date", type=date.fromisoformat)
     all_sync.add_argument(
         "--data-root",
         type=Path,
@@ -107,7 +109,11 @@ def main(argv: list[str] | None = None) -> int:
                 args.data_root,
                 MODEL_ARTIFACT_PATH,
                 history_fallback,
-            ).run(args.date, max_history_leagues=args.max_history_leagues)
+            ).run(
+                args.date,
+                fixture_from_date=args.from_date,
+                max_history_leagues=args.max_history_leagues,
+            )
     except (ApiFootballError, FootballDataOrgError, psycopg.Error, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
@@ -199,7 +205,9 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         connection, ApiFootballClient(api_key), args.data_root, MODEL_ARTIFACT_PATH, fallback
     )
     mvp = product.run(
-        args.date, max_history_leagues=int(os.environ.get("MVP_MAX_HISTORY_LEAGUES", "20"))
+        args.date,
+        fixture_from_date=args.from_date,
+        max_history_leagues=int(os.environ.get("MVP_MAX_HISTORY_LEAGUES", "20")),
     )
     selectors = argparse.Namespace(
         data_root=args.data_root,
@@ -209,6 +217,11 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         refresh=False,
     )
     history = _history_backfill(connection, selectors)
+    fixture_start = args.from_date or args.date - timedelta(days=1)
+    mvp["fixtures_from_history"] += product.backfill_fixtures_from_history(
+        fixture_start, args.date, datetime.now(UTC)
+    )
+    connection.commit()
     forecasts = _refresh(connection, args.data_root)
     external_args = argparse.Namespace(
         database_url=args.database_url,

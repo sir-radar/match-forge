@@ -130,7 +130,7 @@ web-e2e: web-build
 	cd web && pnpm test:e2e
 
 mvp-sync: migrate
-	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(MAX_HISTORY_LEAGUES),--max-history-leagues $(MAX_HISTORY_LEAGUES),)
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(MAX_HISTORY_LEAGUES),--max-history-leagues $(MAX_HISTORY_LEAGUES),)
 
 openfootball-sync: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-openfootball $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)
@@ -145,7 +145,7 @@ forecast-refresh: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli refresh-forecasts
 
 all-data-sync: migrate
-	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync-all $(if $(DATE),--date $(DATE),)
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync-all $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),)
 
 external-predictions:
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli external-predictions $(if $(DATE),--date $(DATE),) $(if $(SOURCE),--source $(SOURCE),)

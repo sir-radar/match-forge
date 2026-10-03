@@ -41,6 +41,7 @@ The web app is served at `http://127.0.0.1:3000` and the API at `http://127.0.0.
 
 ```bash
 make mvp-sync DATE=YYYY-MM-DD
+make mvp-sync FROM_DATE=YYYY-MM-DD DATE=YYYY-MM-DD
 make external-predictions DATE=YYYY-MM-DD
 ```
 
@@ -49,7 +50,8 @@ The second command collects public predictions from the four enabled sources whe
 Forebet remains disabled because an ordinary request receives a managed anti-bot response.
 `infrastructure/systemd/matchforge-mvp-refresh.timer` provides the 06:00 `Africa/Lagos`
 deployment schedule and invokes `scripts/mvp-refresh.sh`. Each fixture sync refreshes the
-requested date and previous date so completed scores settle on the next scheduled run; adjust its `/opt/matchforge`
+requested date and previous date so completed scores settle on the next scheduled run. Set
+`FROM_DATE` for an inclusive fixture and score backfill through `DATE`; adjust the timer's `/opt/matchforge`
 user/path settings during installation. No unnecessary realtime scheduler is bundled.
 
 The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. To run it separately after `make up`:
