@@ -287,6 +287,358 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     assert forecast_count == 1
 
 
+def test_fixture_sync_repairs_zero_history_provider_team_aliases(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
+    sync = ProductSync(
+        connection,
+        ApiFootballClient("test"),
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+    api_snapshot = sync._record_response(
+        "fixtures-2026-10-10",
+        ApiResponse("/fixtures", observed_at, b"{}", (), None),
+    )
+    competition_id = sync._competition_id("39", api_snapshot)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO football.product_competitions (
+                competition_id, name, country, continent, division, competition_type,
+                season_label, fixtures_available, results_available, standings_available,
+                h2h_available, forecast_available, xg_available, team_stats_available,
+                availability_status, source_roles, updated_at
+            ) VALUES (
+                %s, 'Premier League', 'England', 'Europe', 1, 'LEAGUE', '2026',
+                true, false, false, false, false, false, false,
+                'NOT_ENOUGH_HISTORY', '{}'::jsonb, %s
+            )
+            """,
+            (competition_id, observed_at),
+        )
+
+    store = HistoricalBackfillStore(
+        connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
+    )
+    history_snapshot = store.ensure_snapshot(
+        source_identity="test/premier-league.csv",
+        source_revision="d" * 64,
+        acquired_at=observed_at,
+        manifest_path="football_data_uk/test/premier-league.csv",
+    )
+    for index in range(10):
+        kickoff = datetime(2026, 8, 1, 12, tzinfo=UTC) + timedelta(days=index)
+        for side in ("home", "away"):
+            home_name = "Canonical Home FC" if side == "home" else f"Home Opponent {index}"
+            away_name = f"Away Opponent {index}" if side == "home" else "Canonical Away FC"
+            assert (
+                store.import_match(
+                    HistoricalMatch(
+                        provider_match_id=f"history-{side}-{index}",
+                        provider_competition_id="E0",
+                        competition_name="Premier League",
+                        country="England",
+                        division=1,
+                        season="2026-2027",
+                        home_team_id=home_name,
+                        home_team_name=home_name,
+                        away_team_id=away_name,
+                        away_team_name=away_name,
+                        kickoff_at=kickoff,
+                        kickoff_precision="EXACT",
+                        home_goals=2,
+                        away_goals=1,
+                        source_path="test/premier-league.csv",
+                    ),
+                    history_snapshot,
+                    observed_at,
+                )
+                == "inserted"
+            )
+
+    with connection.cursor() as cursor:
+        canonical_home_id = _first(
+            cursor.execute(
+                """
+                SELECT team_id FROM football.product_team_aliases
+                WHERE provider_code = 'football_data_uk'
+                  AND provider_team_id = 'Canonical Home FC'
+                """
+            ).fetchone()
+        )
+        canonical_away_id = _first(
+            cursor.execute(
+                """
+                SELECT team_id FROM football.product_team_aliases
+                WHERE provider_code = 'football_data_uk'
+                  AND provider_team_id = 'Canonical Away FC'
+                """
+            ).fetchone()
+        )
+        duplicate_home_id = stable_id("team", "api_football", "1001")
+        duplicate_away_id = stable_id("team", "api_football", "1002")
+        for team_id, provider_team_id, name in (
+            (duplicate_home_id, "1001", "Canonical Home FC"),
+            (duplicate_away_id, "1002", "Canonical Away FC"),
+        ):
+            cursor.execute(
+                "INSERT INTO football.teams (id, entity_kind) VALUES (%s, 'club')",
+                (team_id,),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_teams (team_id, name, country, updated_at)
+                VALUES (%s, %s, 'England', %s)
+                """,
+                (team_id, name, observed_at),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_team_aliases (
+                    provider_code, provider_team_id, normalized_name, country, team_id
+                ) VALUES ('api_football', %s, %s, 'England', %s)
+                """,
+                (provider_team_id, name.casefold(), team_id),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.team_provider_mappings (
+                    team_id, provider_id, provider_team_id, first_seen_at, last_seen_at,
+                    mapping_method, mapping_confidence, source_snapshot_id
+                ) SELECT %s, id, %s, %s, %s, 'deterministic', 1.0, %s
+                FROM football.providers WHERE code = 'api_football'
+                """,
+                (
+                    team_id,
+                    provider_team_id,
+                    observed_at,
+                    observed_at,
+                    api_snapshot,
+                ),
+            )
+
+    fixture = {
+        "fixture": {
+            "id": 5001,
+            "date": "2026-10-10T15:00:00+00:00",
+            "status": {"short": "NS"},
+            "venue": {"name": "Test Ground"},
+        },
+        "league": {
+            "id": 39,
+            "name": "Premier League",
+            "country": "England",
+            "season": 2026,
+            "round": "Regular Season - 1",
+        },
+        "teams": {
+            "home": {"id": 1001, "name": "Canonical Home FC", "logo": None},
+            "away": {"id": 1002, "name": "Canonical Away FC", "logo": None},
+        },
+        "goals": {"home": None, "away": None},
+    }
+    sync._store_fixture_competition(fixture, competition_id, observed_at)
+    season_id = stable_id("season", competition_id, 2026)
+    sync._ensure_season(competition_id, season_id)
+    fixture_id = stable_id("existing-api-fixture", 5001)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO football.matches (id, competition_id, season_id) VALUES (%s, %s, %s)",
+            (fixture_id, competition_id, season_id),
+        )
+        sync._ensure_match_mapping(cursor, fixture_id, "5001", api_snapshot, observed_at)
+        cursor.execute(
+            """
+            INSERT INTO football.product_fixtures (
+                fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                status, forecast_availability, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, 'SCHEDULED', 'NOT_ENOUGH_HISTORY', %s)
+            """,
+            (
+                fixture_id,
+                competition_id,
+                duplicate_home_id,
+                duplicate_away_id,
+                datetime(2026, 10, 10, 15, tzinfo=UTC),
+                observed_at,
+            ),
+        )
+
+    sync._store_fixtures([fixture], api_snapshot, observed_at)
+    created = sync.refresh_forecasts(observed_at)
+
+    with connection.cursor() as cursor:
+        stored_fixture = cursor.execute(
+            """
+            SELECT home_team_id, away_team_id, forecast_availability
+            FROM football.product_fixtures WHERE fixture_id = %s
+            """,
+            (fixture_id,),
+        ).fetchone()
+        aliases = cursor.execute(
+            """
+            SELECT provider_team_id, team_id
+            FROM football.product_team_aliases
+            WHERE provider_code = 'api_football' AND provider_team_id IN ('1001', '1002')
+            ORDER BY provider_team_id
+            """
+        ).fetchall()
+        active_mappings = cursor.execute(
+            """
+            SELECT mapping.provider_team_id, mapping.team_id
+            FROM football.team_provider_mappings mapping
+            JOIN football.providers provider ON provider.id = mapping.provider_id
+            WHERE provider.code = 'api_football'
+              AND mapping.provider_team_id IN ('1001', '1002')
+              AND mapping.valid_to IS NULL
+            ORDER BY mapping.provider_team_id
+            """
+        ).fetchall()
+        closed_mappings = cursor.execute(
+            """
+            SELECT mapping.provider_team_id, mapping.team_id, mapping.valid_to
+            FROM football.team_provider_mappings mapping
+            JOIN football.providers provider ON provider.id = mapping.provider_id
+            WHERE provider.code = 'api_football'
+              AND mapping.provider_team_id IN ('1001', '1002')
+              AND mapping.valid_to IS NOT NULL
+            ORDER BY mapping.provider_team_id
+            """
+        ).fetchall()
+
+    assert created == 1
+    assert stored_fixture == (
+        canonical_home_id,
+        canonical_away_id,
+        "FORECAST_AVAILABLE",
+    )
+    assert aliases == [("1001", canonical_home_id), ("1002", canonical_away_id)]
+    assert active_mappings == [("1001", canonical_home_id), ("1002", canonical_away_id)]
+    assert closed_mappings == [
+        ("1001", duplicate_home_id, observed_at),
+        ("1002", duplicate_away_id, observed_at),
+    ]
+
+
+def test_fixture_sync_preserves_alias_when_historical_identity_is_ambiguous(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    observed_at = datetime(2026, 10, 3, 6, tzinfo=UTC)
+    sync = ProductSync(
+        connection,
+        ApiFootballClient("test"),
+        tmp_path,
+        PROJECT_ROOT / MODEL_ARTIFACT_PATH,
+    )
+    snapshot_id = sync._record_response(
+        "fixtures-2026-10-10",
+        ApiResponse("/fixtures", observed_at, b"{}", (), None),
+    )
+    competition_id = sync._competition_id("999001", snapshot_id)
+    season_id = stable_id("season", competition_id, 2026)
+    sync._ensure_season(competition_id, season_id)
+
+    duplicate_id = stable_id("team", "api_football", "2001")
+    candidate_ids = (
+        stable_id("team", "openfootball", "shared-club-a"),
+        stable_id("team", "football_data_uk", "shared-club-b"),
+    )
+    opponent_id = stable_id("team", "test", "opponent")
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO football.product_competitions (
+                competition_id, name, country, continent, division, competition_type,
+                season_label, fixtures_available, results_available, standings_available,
+                h2h_available, forecast_available, xg_available, team_stats_available,
+                availability_status, source_roles, updated_at
+            ) VALUES (
+                %s, 'Identity Test League', 'England', 'Europe', 1, 'LEAGUE', '2026',
+                true, true, false, false, false, false, false,
+                'NOT_ENOUGH_HISTORY', '{}'::jsonb, %s
+            )
+            """,
+            (competition_id, observed_at),
+        )
+        for team_id, name in (
+            (duplicate_id, "Shared Club"),
+            (candidate_ids[0], "Shared Club A"),
+            (candidate_ids[1], "Shared Club B"),
+            (opponent_id, "Opponent"),
+        ):
+            cursor.execute(
+                "INSERT INTO football.teams (id, entity_kind) VALUES (%s, 'club')",
+                (team_id,),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_teams (team_id, name, country, updated_at)
+                VALUES (%s, %s, 'England', %s)
+                """,
+                (team_id, name, observed_at),
+            )
+        cursor.execute(
+            """
+            INSERT INTO football.product_team_aliases (
+                provider_code, provider_team_id, normalized_name, country, team_id
+            ) VALUES
+                ('api_football', '2001', 'shared club', 'England', %s),
+                ('openfootball', 'shared-club-a', 'shared club', 'England', %s),
+                ('football_data_uk', 'shared-club-b', 'shared club', 'England', %s)
+            """,
+            (duplicate_id, candidate_ids[0], candidate_ids[1]),
+        )
+        for index, candidate_id in enumerate(candidate_ids):
+            match_id = stable_id("ambiguous-history", index)
+            cursor.execute(
+                """
+                INSERT INTO football.matches (id, competition_id, season_id)
+                VALUES (%s, %s, %s)
+                """,
+                (match_id, competition_id, season_id),
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.product_team_match_history (
+                    fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                    home_goals, away_goals, source_provider_code, source_snapshot_id,
+                    source_kickoff_precision
+                ) VALUES (%s, %s, %s, %s, %s, 1, 0, 'api_football', %s, 'EXACT')
+                """,
+                (
+                    match_id,
+                    competition_id,
+                    candidate_id,
+                    opponent_id,
+                    datetime(2026, 9, index + 1, 12, tzinfo=UTC),
+                    snapshot_id,
+                ),
+            )
+
+    resolved = sync._team_id(
+        {"id": 2001, "name": "Shared Club", "logo": None},
+        "England",
+        competition_id,
+        snapshot_id,
+        observed_at,
+    )
+
+    with connection.cursor() as cursor:
+        alias_team_id = _first(
+            cursor.execute(
+                """
+                SELECT team_id FROM football.product_team_aliases
+                WHERE provider_code = 'api_football' AND provider_team_id = '2001'
+                """
+            ).fetchone()
+        )
+
+    assert resolved == duplicate_id
+    assert alias_team_id == duplicate_id
+
+
 def test_fixture_sync_creates_new_season_for_existing_competition(
     connection: Connection[Any], tmp_path: Path
 ) -> None:
@@ -542,10 +894,18 @@ def test_standings_refresh_handles_teams_swapping_positions(
             (competition_id, observed_at),
         )
     first_team = sync._team_id(
-        {"id": 1, "name": "First FC", "logo": None}, "England", snapshot_id, observed_at
+        {"id": 1, "name": "First FC", "logo": None},
+        "England",
+        competition_id,
+        snapshot_id,
+        observed_at,
     )
     second_team = sync._team_id(
-        {"id": 2, "name": "Second FC", "logo": None}, "England", snapshot_id, observed_at
+        {"id": 2, "name": "Second FC", "logo": None},
+        "England",
+        competition_id,
+        snapshot_id,
+        observed_at,
     )
     with connection.cursor() as cursor:
         cursor.executemany(

@@ -659,8 +659,8 @@ class ProductSync:
             if not self._competition_exists(competition_id):
                 self._store_fixture_competition(row, competition_id, observed_at)
             country = str(league.get("country") or "World")
-            home_id = self._team_id(home, country, snapshot_id, observed_at)
-            away_id = self._team_id(away, country, snapshot_id, observed_at)
+            home_id = self._team_id(home, country, competition_id, snapshot_id, observed_at)
+            away_id = self._team_id(away, country, competition_id, snapshot_id, observed_at)
             kickoff = datetime.fromisoformat(str(fixture["date"])).astimezone(UTC)
             provider_fixture_id = str(_integer(fixture, "id"))
             match_id = self._mapped_match_id(
@@ -690,6 +690,9 @@ class ProductSync:
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         'NOT_ENOUGH_HISTORY', %s)
                     ON CONFLICT (fixture_id) DO UPDATE SET
+                        competition_id = EXCLUDED.competition_id,
+                        home_team_id = EXCLUDED.home_team_id,
+                        away_team_id = EXCLUDED.away_team_id,
                         kickoff_at = EXCLUDED.kickoff_at,
                         status = EXCLUDED.status, home_score = EXCLUDED.home_score,
                         away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
@@ -1041,7 +1044,11 @@ class ProductSync:
             for row in groups[0]:
                 team = _mapping(row, "team")
                 team_id = self._team_id(
-                    team, str(league.get("country") or ""), snapshot_id, observed_at
+                    team,
+                    str(league.get("country") or ""),
+                    competition_id,
+                    snapshot_id,
+                    observed_at,
                 )
                 all_results = _mapping(row, "all")
                 goals = _mapping(all_results, "goals")
@@ -1269,6 +1276,7 @@ class ProductSync:
         self,
         row: Mapping[str, Any],
         country: str,
+        competition_id: UUID,
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> UUID:
@@ -1283,11 +1291,16 @@ class ProductSync:
                 (PROVIDER_CODE, provider_team_id),
             )
             found = cursor.fetchone()
-        team_id = (
-            cast(UUID, found[0])
-            if found is not None
-            else stable_id("team", PROVIDER_CODE, provider_team_id)
-        )
+        existing_team_id = cast(UUID, found[0]) if found is not None else None
+        team_id = existing_team_id
+        if existing_team_id is None or not self._team_has_history(existing_team_id):
+            historical_team_id = self._historical_team_candidate(
+                normalized_name, country, competition_id
+            )
+            if historical_team_id is not None:
+                team_id = historical_team_id
+        if team_id is None:
+            team_id = stable_id("team", PROVIDER_CODE, provider_team_id)
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1310,27 +1323,96 @@ class ProductSync:
                 INSERT INTO football.product_team_aliases (
                     provider_code, provider_team_id, normalized_name, country, team_id
                 ) VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (provider_code, provider_team_id) DO NOTHING
+                ON CONFLICT (provider_code, provider_team_id) DO UPDATE SET
+                    normalized_name = EXCLUDED.normalized_name,
+                    country = EXCLUDED.country,
+                    team_id = EXCLUDED.team_id
                 """,
                 (PROVIDER_CODE, provider_team_id, normalized_name, country or None, team_id),
+            )
+        self._reconcile_team_provider_mapping(team_id, provider_team_id, snapshot_id, observed_at)
+        return team_id
+
+    def _team_has_history(self, team_id: UUID) -> bool:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1 FROM football.product_team_match_history
+                    WHERE home_team_id = %s OR away_team_id = %s
+                )
+                """,
+                (team_id, team_id),
+            )
+            found = cursor.fetchone()
+        return bool(found and found[0])
+
+    def _historical_team_candidate(
+        self, normalized_name: str, country: str, competition_id: UUID
+    ) -> UUID | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT DISTINCT alias.team_id
+                FROM football.product_team_aliases alias
+                WHERE alias.normalized_name = %s
+                  AND (alias.country IS NULL OR %s = '' OR lower(alias.country) = lower(%s))
+                  AND alias.team_id IN (
+                      SELECT home_team_id FROM football.product_team_match_history
+                      WHERE competition_id = %s
+                      UNION
+                      SELECT away_team_id FROM football.product_team_match_history
+                      WHERE competition_id = %s
+                  )
+                ORDER BY alias.team_id
+                """,
+                (normalized_name, country, country, competition_id, competition_id),
+            )
+            candidates = cursor.fetchall()
+        return cast(UUID, candidates[0][0]) if len(candidates) == 1 else None
+
+    def _reconcile_team_provider_mapping(
+        self,
+        team_id: UUID,
+        provider_team_id: str,
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE football.team_provider_mappings mapping
+                SET valid_to = %s, last_seen_at = GREATEST(last_seen_at, %s)
+                FROM football.providers provider
+                WHERE mapping.provider_id = provider.id
+                  AND provider.code = %s
+                  AND mapping.provider_team_id = %s
+                  AND mapping.valid_to IS NULL
+                  AND mapping.team_id <> %s
+                """,
+                (observed_at, observed_at, PROVIDER_CODE, provider_team_id, team_id),
             )
             cursor.execute(
                 """
                 INSERT INTO football.team_provider_mappings (
-                    team_id, provider_id, provider_team_id, first_seen_at, last_seen_at,
-                    mapping_method, mapping_confidence, source_snapshot_id
-                ) SELECT %s, id, %s, %s, %s, 'deterministic', 1.0, %s
-                  FROM football.providers p
-                 WHERE p.code = %s
-                   AND NOT EXISTS (
-                       SELECT 1 FROM football.team_provider_mappings existing
-                       WHERE existing.provider_id = p.id
-                         AND existing.provider_team_id = %s
-                   )
+                    team_id, provider_id, provider_team_id, valid_from,
+                    first_seen_at, last_seen_at, mapping_method,
+                    mapping_confidence, source_snapshot_id
+                ) SELECT %s, provider.id, %s, %s, %s, %s,
+                    'deterministic', 1.0, %s
+                FROM football.providers provider
+                WHERE provider.code = %s
+                  AND NOT EXISTS (
+                      SELECT 1 FROM football.team_provider_mappings existing
+                      WHERE existing.provider_id = provider.id
+                        AND existing.provider_team_id = %s
+                        AND existing.valid_to IS NULL
+                  )
                 """,
                 (
                     team_id,
                     provider_team_id,
+                    observed_at,
                     observed_at,
                     observed_at,
                     snapshot_id,
@@ -1338,7 +1420,6 @@ class ProductSync:
                     provider_team_id,
                 ),
             )
-        return team_id
 
     def _fallback_team_id(
         self,
