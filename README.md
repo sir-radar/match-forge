@@ -48,7 +48,8 @@ The second command collects public predictions from the four enabled sources whe
 `EXTERNAL_PREDICTION_USAGE_MODE=PRIVATE_LOCAL`. Use `SOURCE=<source>` to run one source.
 Forebet remains disabled because an ordinary request receives a managed anti-bot response.
 `infrastructure/systemd/matchforge-mvp-refresh.timer` provides the 06:00 `Africa/Lagos`
-deployment schedule and invokes `scripts/mvp-refresh.sh`; adjust its `/opt/matchforge`
+deployment schedule and invokes `scripts/mvp-refresh.sh`. Each fixture sync refreshes the
+requested date and previous date so completed scores settle on the next scheduled run; adjust its `/opt/matchforge`
 user/path settings during installation. No unnecessary realtime scheduler is bundled.
 
 The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. To run it separately after `make up`:
