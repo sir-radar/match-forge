@@ -50,6 +50,21 @@ describe("DataSyncAdmin", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("database unavailable");
     expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
   });
+
+  it("shows internal history queue progress without changing top-level status", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({ runs: [{
+      run_id: "run-active", sync_type: "MVP_SYNC", status: "RUNNING",
+      requested_at: "2026-10-04T10:00:00Z", started_at: "2026-10-04T10:00:01Z",
+      finished_at: null, requested_date: "2026-10-04", parameters: {}, summary: {},
+      error_message: null, log_path: ".local/sync-runs/run-active.log",
+      history_queue: { total: 227, pending: 181, running: 3, succeeded: 40, failed: 3 },
+    }], coverage })));
+
+    render(<DataSyncAdmin />);
+
+    expect(await screen.findByText("Running")).toBeInTheDocument();
+    expect(screen.getByText("History queue: 40/227 succeeded, 3 running, 181 pending, 3 failed")).toBeInTheDocument();
+  });
 });
 
 function json(value: object, status = 200) {

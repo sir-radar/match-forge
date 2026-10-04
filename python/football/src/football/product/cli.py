@@ -9,9 +9,12 @@ import os
 import subprocess
 import sys
 import urllib.error
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import psycopg
@@ -23,7 +26,7 @@ from football.product.external_predictions import import_predictions, parse_impo
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.openfootball import run_backfill as run_openfootball_backfill
-from football.product.sync import ProductSync
+from football.product.sync import HistoryWorkerFactory, ProductSync
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -62,11 +65,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
     )
-    sync.add_argument(
-        "--max-history-leagues",
-        type=int,
-        default=int(os.environ.get("MVP_MAX_HISTORY_LEAGUES", "20")),
-    )
+    for command in (sync, all_sync):
+        command.add_argument(
+            "--history-concurrency",
+            type=int,
+            default=int(os.environ.get("MVP_HISTORY_SYNC_CONCURRENCY", "3")),
+        )
     external = commands.add_parser("external-predictions")
     external.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
     external.add_argument("--source")
@@ -102,6 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         client = ApiFootballClient(api_key)
         fallback_token = os.environ.get("FOOTBALL_DATA_DOT_ORG_API_TOKEN", "")
         history_fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
+        sync_run_id = _sync_run_id()
         with psycopg.connect(args.database_url) as connection:
             result = ProductSync(
                 connection,
@@ -110,10 +115,18 @@ def main(argv: list[str] | None = None) -> int:
                 MODEL_ARTIFACT_PATH,
                 history_fallback,
                 api_football_max_history_season=_api_football_max_history_season(),
+                history_worker_factory=_history_worker_factory(
+                    args.database_url,
+                    api_key,
+                    fallback_token,
+                    args.data_root,
+                    sync_run_id,
+                ),
+                sync_run_id=sync_run_id,
             ).run(
                 args.date,
                 fixture_from_date=args.from_date,
-                max_history_leagues=args.max_history_leagues,
+                history_concurrency=args.history_concurrency,
             )
     except (ApiFootballError, FootballDataOrgError, psycopg.Error, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
@@ -202,6 +215,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
     api_key = os.environ.get("API_FOOTBALL_API_KEY", "")
     fallback_token = os.environ.get("FOOTBALL_DATA_DOT_ORG_API_TOKEN", "")
     fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
+    sync_run_id = _sync_run_id()
     product = ProductSync(
         connection,
         ApiFootballClient(api_key),
@@ -209,11 +223,19 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         MODEL_ARTIFACT_PATH,
         fallback,
         api_football_max_history_season=_api_football_max_history_season(),
+        history_worker_factory=_history_worker_factory(
+            args.database_url,
+            api_key,
+            fallback_token,
+            args.data_root,
+            sync_run_id,
+        ),
+        sync_run_id=sync_run_id,
     )
     mvp = product.run(
         args.date,
         fixture_from_date=args.from_date,
-        max_history_leagues=int(os.environ.get("MVP_MAX_HISTORY_LEAGUES", "20")),
+        history_concurrency=args.history_concurrency,
     )
     selectors = argparse.Namespace(
         data_root=args.data_root,
@@ -259,6 +281,35 @@ def _lagos_today() -> date:
 def _api_football_max_history_season() -> int | None:
     value = os.environ.get("API_FOOTBALL_MAX_HISTORY_SEASON")
     return int(value) if value else None
+
+
+def _sync_run_id() -> UUID | None:
+    value = os.environ.get("MATCHFORGE_SYNC_RUN_ID")
+    return UUID(value) if value else None
+
+
+def _history_worker_factory(
+    database_url: str,
+    api_key: str,
+    fallback_token: str,
+    data_root: Path,
+    sync_run_id: UUID | None,
+) -> HistoryWorkerFactory:
+    @contextmanager
+    def create_worker() -> Iterator[ProductSync]:
+        fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
+        with psycopg.connect(database_url) as connection:
+            yield ProductSync(
+                connection,
+                ApiFootballClient(api_key),
+                data_root,
+                MODEL_ARTIFACT_PATH,
+                fallback,
+                api_football_max_history_season=_api_football_max_history_season(),
+                sync_run_id=sync_run_id,
+            )
+
+    return create_worker
 
 
 def _run_external_predictions(args: argparse.Namespace) -> int:

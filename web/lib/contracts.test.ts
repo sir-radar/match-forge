@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFixtureGroups, parsePerformanceList, parsePredictions } from "@/lib/contracts";
+import { parseFixtureGroups, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
 
 describe("API contract boundary", () => {
   it("rejects invalid forecast probabilities", () => {
@@ -24,5 +24,18 @@ describe("API contract boundary", () => {
     expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, page_size: 25 } })).toThrow(/page_size/);
     expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, page: 1.5 } })).toThrow(/integer/);
     expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, total_pages: 1 } })).toThrow(/total_pages/);
+  });
+
+  it("keeps queue progress separate from top-level sync status", () => {
+    const run = parseSyncRun({
+      run_id: "run", sync_type: "MVP_SYNC", status: "RUNNING",
+      requested_at: "2026-10-04T10:00:00Z", started_at: null, finished_at: null,
+      requested_date: "2026-10-04", parameters: {}, summary: {},
+      error_message: null, log_path: null,
+      history_queue: { total: 227, pending: 184, running: 3, succeeded: 40, failed: 0 },
+    });
+
+    expect(run.status).toBe("RUNNING");
+    expect(run.history_queue).toEqual({ total: 227, pending: 184, running: 3, succeeded: 40, failed: 0 });
   });
 });

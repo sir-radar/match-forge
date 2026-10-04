@@ -194,6 +194,13 @@ export type ExternalSource = {
 
 export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "EXTERNAL_PREDICTIONS" | "ALL_DATA";
 export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
+export type HistoryQueueProgress = {
+  total: number;
+  pending: number;
+  running: number;
+  succeeded: number;
+  failed: number;
+};
 export type SyncRun = {
   run_id: string;
   sync_type: SyncType;
@@ -206,6 +213,7 @@ export type SyncRun = {
   summary: Record<string, unknown>;
   error_message: string | null;
   log_path: string | null;
+  history_queue?: HistoryQueueProgress;
 };
 export type HistoricalCoverage = {
   historical_matches: number;
@@ -410,6 +418,7 @@ export function parseSyncRun(value: unknown): SyncRun {
   const status = text(item.status, "status") as SyncStatus;
   if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "EXTERNAL_PREDICTIONS", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
   if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED"].includes(status)) throw new Error("invalid sync status");
+  const historyQueue = item.history_queue === undefined ? undefined : object(item.history_queue, "history_queue");
   return {
     run_id: text(item.run_id, "run_id"), sync_type: syncType, status,
     requested_at: text(item.requested_at, "requested_at"),
@@ -419,6 +428,13 @@ export function parseSyncRun(value: unknown): SyncRun {
     parameters: object(item.parameters, "parameters"), summary: object(item.summary, "summary"),
     error_message: nullableText(item.error_message, "error_message"),
     log_path: nullableText(item.log_path, "log_path"),
+    history_queue: historyQueue ? {
+      total: numeric(historyQueue.total, "history_queue.total"),
+      pending: numeric(historyQueue.pending, "history_queue.pending"),
+      running: numeric(historyQueue.running, "history_queue.running"),
+      succeeded: numeric(historyQueue.succeeded, "history_queue.succeeded"),
+      failed: numeric(historyQueue.failed, "history_queue.failed"),
+    } : undefined,
   };
 }
 
