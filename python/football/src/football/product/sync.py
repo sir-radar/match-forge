@@ -95,10 +95,7 @@ class ProductSync:
         history_fallback: FootballDataOrgClient | None = None,
         api_football_max_history_season: int | None = None,
     ) -> None:
-        if (
-            api_football_max_history_season is not None
-            and api_football_max_history_season <= 0
-        ):
+        if api_football_max_history_season is not None and api_football_max_history_season <= 0:
             raise ValueError("api_football_max_history_season must be positive")
         self.connection = connection
         self.client = client
@@ -207,9 +204,7 @@ class ProductSync:
             paths.append("INSUFFICIENT_HISTORY")
         return self._finish_history_sync(league_id, season, latest, stored, paths, providers)
 
-    def _history_attempts(
-        self, league_id: int, season: int
-    ) -> tuple[tuple[str, int, str], ...]:
+    def _history_attempts(self, league_id: int, season: int) -> tuple[tuple[str, int, str], ...]:
         attempts: list[tuple[str, int, str]] = []
         cap = self.api_football_max_history_season
         if cap is None or season <= cap:

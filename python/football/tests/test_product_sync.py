@@ -160,13 +160,9 @@ def test_history_sync_uses_cross_competition_local_history_for_promoted_team(
         Path("artifact"),
         api_football_max_history_season=2024,
     )
-    monkeypatch.setattr(
-        sync, "_local_history_result", lambda *_args: (snapshot, observed_at, 0)
-    )
+    monkeypatch.setattr(sync, "_local_history_result", lambda *_args: (snapshot, observed_at, 0))
     recorded: list[tuple[object, ...]] = []
-    monkeypatch.setattr(
-        sync, "_record_history_sync_attempt", lambda *args: recorded.append(args)
-    )
+    monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *args: recorded.append(args))
 
     assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 0)
     assert recorded[0][-2:] == ("LOCAL_HISTORY", ())
@@ -225,9 +221,7 @@ def test_history_sync_records_insufficient_history_when_all_providers_fail(
     monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: False)
     recorded: list[tuple[object, ...]] = []
-    monkeypatch.setattr(
-        sync, "_record_history_sync_attempt", lambda *args: recorded.append(args)
-    )
+    monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *args: recorded.append(args))
 
     assert sync._sync_league_history(999, 2026) is None
     assert recorded[0][-2:] == ("INSUFFICIENT_HISTORY", ())
@@ -239,9 +233,12 @@ def test_history_storage_deduplicates_cross_provider_fixture_and_keeps_xg_separa
 
     assert "fixture_id uuid PRIMARY KEY" in migration
     assert "ON CONFLICT (fixture_id) DO NOTHING" in implementation
-    assert "home_xg" not in implementation.split("def _store_fallback_history", 1)[1].split(
-        "def _store_fallback_standings", 1
-    )[0]
+    assert (
+        "home_xg"
+        not in implementation.split("def _store_fallback_history", 1)[1].split(
+            "def _store_fallback_standings", 1
+        )[0]
+    )
 
 
 def test_fixture_sync_includes_stored_future_competitions(

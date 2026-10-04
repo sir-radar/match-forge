@@ -125,10 +125,7 @@ def forecast_from_history(
     )
     home_history = _team_history(eligible, home_team_id)
     away_history = _team_history(eligible, away_team_id)
-    if (
-        len(home_history) < MINIMUM_HISTORY_MATCHES
-        or len(away_history) < MINIMUM_HISTORY_MATCHES
-    ):
+    if len(home_history) < MINIMUM_HISTORY_MATCHES or len(away_history) < MINIMUM_HISTORY_MATCHES:
         return None
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     parameters = TransferableParametersV1(**artifact["parameters"])
