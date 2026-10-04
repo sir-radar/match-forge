@@ -177,7 +177,7 @@ def test_history_sufficiency_counts_previous_competition_matches() -> None:
         statement = ""
         parameters: tuple[object, ...] = ()
 
-        def __enter__(self) -> Cursor:
+        def __enter__(self) -> "Cursor":
             return self
 
         def __exit__(self, *_args: object) -> None:

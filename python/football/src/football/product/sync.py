@@ -20,8 +20,8 @@ from football.product.api_football import (
     inferred_division,
 )
 from football.product.domain import (
-    FinishedMatch,
     MINIMUM_HISTORY_MATCHES,
+    FinishedMatch,
     external_selection_correct,
     fixture_identity,
     forecast_from_history,
