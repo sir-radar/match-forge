@@ -21,6 +21,7 @@ from football.product.api_football import (
 )
 from football.product.domain import (
     FinishedMatch,
+    MINIMUM_HISTORY_MATCHES,
     external_selection_correct,
     fixture_identity,
     forecast_from_history,
@@ -92,16 +93,19 @@ class ProductSync:
         data_root: Path,
         artifact_path: Path,
         history_fallback: FootballDataOrgClient | None = None,
-        maximum_history_season: int | None = None,
+        api_football_max_history_season: int | None = None,
     ) -> None:
-        if maximum_history_season is not None and maximum_history_season <= 0:
-            raise ValueError("maximum_history_season must be positive")
+        if (
+            api_football_max_history_season is not None
+            and api_football_max_history_season <= 0
+        ):
+            raise ValueError("api_football_max_history_season must be positive")
         self.connection = connection
         self.client = client
         self.data_root = data_root
         self.artifact_path = artifact_path
         self.history_fallback = history_fallback
-        self.maximum_history_season = maximum_history_season
+        self.api_football_max_history_season = api_football_max_history_season
 
     def run(
         self,
@@ -176,54 +180,199 @@ class ProductSync:
     def _sync_league_history(
         self, league_id: int, season: int
     ) -> tuple[UUID, datetime, int] | None:
-        provider_season = (
-            min(season, self.maximum_history_season)
-            if self.maximum_history_season is not None
-            else season
-        )
-        try:
-            response = self.client.finished_fixtures(league_id, provider_season)
-        except RuntimeError:
-            response = None
-        if response is not None and response.rows:
-            snapshot = self._record_response(f"history-{league_id}-{provider_season}", response)
-            stored = self._store_history(response.rows, snapshot, response.fetched_at)
-            self._record_history_sync_attempt(league_id, season, response.fetched_at, "STORED")
-            return snapshot, response.fetched_at, stored
-        if response is not None:
-            self._record_response(f"history-{league_id}-{provider_season}", response)
-        fallback = self._fallback_history(league_id, season)
-        if fallback is None:
+        local = self._local_history_result(league_id, season)
+        if local is not None:
             self._record_history_sync_attempt(
-                league_id,
-                season,
-                datetime.now(UTC),
-                "EMPTY" if response is not None else "UNAVAILABLE",
+                league_id, season, local[1], "STORED", ("LOCAL_HISTORY",), ()
             )
+            return local
+
+        paths: list[str] = []
+        providers: list[str] = []
+        latest: tuple[UUID, datetime, int] | None = None
+        stored = 0
+        sufficient = False
+        for provider_code, provider_season, path in self._history_attempts(league_id, season):
+            result = self._history_attempt(provider_code, league_id, provider_season)
+            paths.append(path)
+            if result is not None:
+                latest = result
+                stored += result[2]
+                providers.append(provider_code)
+            if self._history_sufficient(league_id, season):
+                sufficient = True
+                break
+
+        if not sufficient:
+            paths.append("INSUFFICIENT_HISTORY")
+        return self._finish_history_sync(league_id, season, latest, stored, paths, providers)
+
+    def _history_attempts(
+        self, league_id: int, season: int
+    ) -> tuple[tuple[str, int, str], ...]:
+        attempts: list[tuple[str, int, str]] = []
+        cap = self.api_football_max_history_season
+        if cap is None or season <= cap:
+            attempts.append((PROVIDER_CODE, season, "API_FOOTBALL_REQUESTED"))
+        if self.history_fallback is not None and league_id in FOOTBALL_DATA_COMPETITIONS:
+            attempts.extend(
+                (
+                    (FALLBACK_PROVIDER_CODE, season, "FOOTBALL_DATA_ORG_REQUESTED"),
+                    (
+                        FALLBACK_PROVIDER_CODE,
+                        season - 1,
+                        "FOOTBALL_DATA_ORG_PREVIOUS_SEASON",
+                    ),
+                )
+            )
+        if cap is not None and season > cap:
+            attempts.append((PROVIDER_CODE, cap, "API_FOOTBALL_CAPPED"))
+        return tuple(attempts)
+
+    def _history_attempt(
+        self, provider_code: str, league_id: int, season: int
+    ) -> tuple[UUID, datetime, int] | None:
+        if provider_code == PROVIDER_CODE:
+            return self._api_football_history(league_id, season)
+        return self._football_data_org_history(league_id, season)
+
+    def _api_football_history(
+        self, league_id: int, season: int
+    ) -> tuple[UUID, datetime, int] | None:
+        try:
+            response = self.client.finished_fixtures(league_id, season)
+        except RuntimeError:
             return None
-        snapshot = self._record_fallback_response(f"history-{league_id}-{season}", fallback)
+        snapshot = self._record_response(f"history-{league_id}-{season}", response)
+        stored = self._store_history(response.rows, snapshot, response.fetched_at)
+        return snapshot, response.fetched_at, stored
+
+    def _football_data_org_history(
+        self, league_id: int, season: int
+    ) -> tuple[UUID, datetime, int] | None:
+        response = self._fallback_history(league_id, season)
+        if response is None:
+            return None
+        snapshot = self._record_fallback_response(f"history-{league_id}-{season}", response)
         competition_id = self._competition_id(str(league_id), snapshot)
         stored = self._store_fallback_history(
-            fallback.rows,
+            response.rows,
             competition_id,
             season,
             snapshot,
-            fallback.fetched_at,
+            response.fetched_at,
         )
-        previous = self._fallback_history(league_id, season - 1)
-        if previous is not None:
-            previous_snapshot = self._record_fallback_response(
-                f"history-{league_id}-{season - 1}", previous
+        return snapshot, response.fetched_at, stored
+
+    def _finish_history_sync(
+        self,
+        league_id: int,
+        season: int,
+        latest: tuple[UUID, datetime, int] | None,
+        stored: int,
+        paths: Sequence[str],
+        providers: Sequence[str],
+    ) -> tuple[UUID, datetime, int] | None:
+        attempted_at = latest[1] if latest is not None else datetime.now(UTC)
+        status = "UNAVAILABLE" if latest is None else ("STORED" if stored else "EMPTY")
+        self._record_history_sync_attempt(
+            league_id,
+            season,
+            attempted_at,
+            status,
+            tuple(paths),
+            tuple(dict.fromkeys(providers)),
+        )
+        if latest is None:
+            return None
+        return latest[0], latest[1], stored
+
+    def _local_history_result(
+        self, league_id: int, season: int
+    ) -> tuple[UUID, datetime, int] | None:
+        if not self._history_sufficient(league_id, season):
+            return None
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT mapping.source_snapshot_id
+                FROM football.competition_provider_mappings mapping
+                JOIN football.providers provider ON provider.id = mapping.provider_id
+                WHERE provider.code = %s
+                  AND mapping.provider_competition_id = %s
+                  AND mapping.valid_to IS NULL
+                ORDER BY mapping.first_seen_at
+                LIMIT 1
+                """,
+                (PROVIDER_CODE, str(league_id)),
             )
-            stored += self._store_fallback_history(
-                previous.rows,
-                competition_id,
-                season - 1,
-                previous_snapshot,
-                previous.fetched_at,
+            row = cursor.fetchone()
+        if row is None:
+            return None
+        return cast(UUID, row[0]), datetime.now(UTC), 0
+
+    def _history_sufficient(self, league_id: int, season: int) -> bool:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                WITH targets AS (
+                    SELECT fixture.fixture_id, fixture.home_team_id AS team_id,
+                           fixture.kickoff_at
+                    FROM football.product_fixtures fixture
+                    JOIN football.product_competitions competition
+                      ON competition.competition_id = fixture.competition_id
+                    JOIN football.competition_provider_mappings mapping
+                      ON mapping.competition_id = fixture.competition_id
+                    JOIN football.providers provider ON provider.id = mapping.provider_id
+                    WHERE fixture.status = 'SCHEDULED'
+                      AND provider.code = %s
+                      AND mapping.provider_competition_id = %s
+                      AND competition.season_label = %s
+                      AND mapping.valid_to IS NULL
+                    UNION ALL
+                    SELECT fixture.fixture_id, fixture.away_team_id AS team_id,
+                           fixture.kickoff_at
+                    FROM football.product_fixtures fixture
+                    JOIN football.product_competitions competition
+                      ON competition.competition_id = fixture.competition_id
+                    JOIN football.competition_provider_mappings mapping
+                      ON mapping.competition_id = fixture.competition_id
+                    JOIN football.providers provider ON provider.id = mapping.provider_id
+                    WHERE fixture.status = 'SCHEDULED'
+                      AND provider.code = %s
+                      AND mapping.provider_competition_id = %s
+                      AND competition.season_label = %s
+                      AND mapping.valid_to IS NULL
+                ), history_counts AS (
+                    SELECT target.fixture_id, target.team_id,
+                           count(history.fixture_id) AS match_count
+                    FROM targets target
+                    LEFT JOIN football.product_team_match_history history
+                      ON (history.home_team_id = target.team_id
+                          OR history.away_team_id = target.team_id)
+                     AND (
+                         (history.source_kickoff_precision = 'EXACT'
+                          AND history.kickoff_at < target.kickoff_at)
+                         OR (history.source_kickoff_precision = 'DATE_ONLY'
+                             AND history.kickoff_at::date < target.kickoff_at::date)
+                     )
+                    GROUP BY target.fixture_id, target.team_id
+                )
+                SELECT count(*) > 0 AND bool_and(match_count >= %s)
+                FROM history_counts
+                """,
+                (
+                    PROVIDER_CODE,
+                    str(league_id),
+                    str(season),
+                    PROVIDER_CODE,
+                    str(league_id),
+                    str(season),
+                    MINIMUM_HISTORY_MATCHES,
+                ),
             )
-        self._record_history_sync_attempt(league_id, season, fallback.fetched_at, "STORED")
-        return snapshot, fallback.fetched_at, stored
+            row = cursor.fetchone()
+        return bool(row and row[0])
 
     def _sync_fixtures(
         self,
@@ -296,19 +445,31 @@ class ProductSync:
         season: int,
         attempted_at: datetime,
         status: str,
+        resolution_path: Sequence[str],
+        provider_codes: Sequence[str],
     ) -> None:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
                 INSERT INTO football.product_history_sync_attempts (
-                    provider_competition_id, season, last_attempted_at, last_status
-                ) VALUES (%s, %s, %s, %s)
+                    provider_competition_id, season, last_attempted_at, last_status,
+                    last_resolution_path, last_provider_codes
+                ) VALUES (%s, %s, %s, %s, %s::jsonb, %s::jsonb)
                 ON CONFLICT (provider_competition_id, season) DO UPDATE SET
                     last_attempted_at = EXCLUDED.last_attempted_at,
                     last_status = EXCLUDED.last_status,
+                    last_resolution_path = EXCLUDED.last_resolution_path,
+                    last_provider_codes = EXCLUDED.last_provider_codes,
                     attempt_count = football.product_history_sync_attempts.attempt_count + 1
                 """,
-                (str(league_id), season, attempted_at, status),
+                (
+                    str(league_id),
+                    season,
+                    attempted_at,
+                    status,
+                    json.dumps(list(resolution_path)),
+                    json.dumps(list(provider_codes)),
+                ),
             )
 
     def backfill_fixtures_from_history(

@@ -109,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.data_root,
                 MODEL_ARTIFACT_PATH,
                 history_fallback,
-                maximum_history_season=_optional_history_season(),
+                api_football_max_history_season=_api_football_max_history_season(),
             ).run(
                 args.date,
                 fixture_from_date=args.from_date,
@@ -208,7 +208,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         args.data_root,
         MODEL_ARTIFACT_PATH,
         fallback,
-        maximum_history_season=_optional_history_season(),
+        api_football_max_history_season=_api_football_max_history_season(),
     )
     mvp = product.run(
         args.date,
@@ -256,8 +256,8 @@ def _lagos_today() -> date:
     return datetime.now(ZoneInfo("Africa/Lagos")).date()
 
 
-def _optional_history_season() -> int | None:
-    value = os.environ.get("MVP_MAX_HISTORY_SEASON")
+def _api_football_max_history_season() -> int | None:
+    value = os.environ.get("API_FOOTBALL_MAX_HISTORY_SEASON")
     return int(value) if value else None
 
 
