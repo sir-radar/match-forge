@@ -144,6 +144,16 @@ export type Performance = {
   latest_fifty_baseline_log_loss: number | null;
 };
 
+export type PerformancePage = {
+  performance: Performance[];
+  pagination: {
+    page: number;
+    page_size: 20 | 50 | 100;
+    total_items: number;
+    total_pages: number;
+  };
+};
+
 export type ExternalPrediction = {
   id: string;
   source: string;
@@ -316,9 +326,20 @@ export function parsePerformance(value: unknown): Performance {
   };
 }
 
-export function parsePerformanceList(value: unknown): Performance[] {
+export function parsePerformanceList(value: unknown): PerformancePage {
   const envelope = object(value, "performance response");
-  return array(envelope.performance, "performance").map(parsePerformance);
+  const pagination = object(envelope.pagination, "pagination");
+  const page = integer(pagination.page, "page", 1);
+  const pageSize = integer(pagination.page_size, "page_size", 1);
+  const totalItems = integer(pagination.total_items, "total_items", 0);
+  const totalPages = integer(pagination.total_pages, "total_pages", 0);
+  if (pageSize !== 20 && pageSize !== 50 && pageSize !== 100) throw new Error("page_size must be 20, 50, or 100");
+  if (totalItems === 0 && totalPages !== 0) throw new Error("total_pages must be 0 when total_items is 0");
+  if (totalItems > 0 && (totalPages < 1 || page > totalPages)) throw new Error("pagination page range is invalid");
+  return {
+    performance: array(envelope.performance, "performance").map(parsePerformance),
+    pagination: { page, page_size: pageSize, total_items: totalItems, total_pages: totalPages },
+  };
 }
 
 function parseH2HSummary(value: unknown): MatchContext["h2h_summary"] {
@@ -507,6 +528,11 @@ function nullableText(value: unknown, field: string): string | null {
 function numeric(value: unknown, field: string): number {
   if (typeof value !== "number" || !Number.isFinite(value)) throw new Error(`${field} must be finite`);
   return value;
+}
+function integer(value: unknown, field: string, minimum: number): number {
+  const result = numeric(value, field);
+  if (!Number.isInteger(result) || result < minimum) throw new Error(`${field} must be an integer of at least ${minimum}`);
+  return result;
 }
 function nullableNumber(value: unknown, field: string): number | null {
   return value === null ? null : numeric(value, field);

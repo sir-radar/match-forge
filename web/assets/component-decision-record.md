@@ -14,3 +14,10 @@
   cards, audit rows, or badges into shared APIs. `AppShell` yields the complete
   route shell on `/predictions` so the route can match the supplied fixed header
   and footer without changing other pages.
+- Keep `BackToTop` route-local to `AppShell`. Reuse the existing chevron icon,
+  colors, focus treatment, and native button behavior; do not add a shared
+  floating-action API for one consumer.
+- Keep performance paging controls local to `PerformancePage`. The backend owns
+  slicing and totals; the route owns page and page-size state. No Figma source
+  was supplied, so existing MatchForge tokens and responsive rules remain the
+  design source.

@@ -13,5 +13,9 @@ predictions, and admin sync.
 - Added one shared typed `Icon` primitive for shell and fixture glyphs. Inline
   SVG removes the runtime Material Symbols font dependency.
 - Kept performance and predictions route-local using shared approved tokens.
+- Added one route-local `BackToTop` control owned by `AppShell`; it reuses the
+  shared `Icon` primitive and is rendered only for `/`.
+- Kept performance pagination inside `PerformancePage`; its native select and
+  buttons have no second consumer or shared-component contract.
 
 No public component API changed. Duplicate search found one owner per role.

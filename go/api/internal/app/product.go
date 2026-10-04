@@ -45,6 +45,8 @@ type PerformanceFilters struct {
 	CompetitionID    string
 	Rating           string
 	MinimumForecasts int
+	Page             int
+	PageSize         int
 }
 
 type ProductStore interface {
@@ -54,7 +56,7 @@ type ProductStore interface {
 	Forecast(context.Context, string, string) (Forecast, error)
 	Standings(context.Context, string) ([]StandingRow, error)
 	Performance(context.Context, string) (Performance, error)
-	Performances(context.Context, PerformanceFilters) ([]Performance, error)
+	Performances(context.Context, PerformanceFilters) (PerformancePage, error)
 	ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error)
 	ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error)
 }
@@ -79,8 +81,8 @@ func (unavailableProductStore) Standings(context.Context, string) ([]StandingRow
 func (unavailableProductStore) Performance(context.Context, string) (Performance, error) {
 	return Performance{}, errProductUnavailable
 }
-func (unavailableProductStore) Performances(context.Context, PerformanceFilters) ([]Performance, error) {
-	return nil, errProductUnavailable
+func (unavailableProductStore) Performances(context.Context, PerformanceFilters) (PerformancePage, error) {
+	return PerformancePage{}, errProductUnavailable
 }
 func (unavailableProductStore) ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error) {
 	return nil, errProductUnavailable
@@ -242,6 +244,18 @@ type Performance struct {
 	LatestBaseLog    *float64 `json:"latest_fifty_baseline_log_loss"`
 }
 
+type Pagination struct {
+	Page       int `json:"page"`
+	PageSize   int `json:"page_size"`
+	TotalItems int `json:"total_items"`
+	TotalPages int `json:"total_pages"`
+}
+
+type PerformancePage struct {
+	Performance []Performance `json:"performance"`
+	Pagination  Pagination    `json:"pagination"`
+}
+
 type ExternalPrediction struct {
 	ID                    string     `json:"id"`
 	Source                string     `json:"source"`
@@ -353,13 +367,46 @@ func (application *App) listPerformance(response http.ResponseWriter, request *h
 		}
 		minimum = parsed
 	}
+	page, pageSize, err := performancePagination(request)
+	if err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
 	items, err := application.product.Performances(request.Context(), PerformanceFilters{
 		Continent:     request.URL.Query().Get("continent"),
 		Country:       request.URL.Query().Get("country"),
 		CompetitionID: request.URL.Query().Get("competition"),
 		Rating:        request.URL.Query().Get("rating"), MinimumForecasts: minimum,
+		Page: page, PageSize: pageSize,
 	})
-	application.respondProduct(response, map[string]any{"performance": items}, err)
+	application.respondProduct(response, items, err)
+}
+
+func performancePagination(request *http.Request) (int, int, error) {
+	page, err := positiveQueryInteger(request, "page", 1)
+	if err != nil {
+		return 0, 0, err
+	}
+	pageSize, err := positiveQueryInteger(request, "page_size", 20)
+	if err != nil {
+		return 0, 0, err
+	}
+	if pageSize != 20 && pageSize != 50 && pageSize != 100 {
+		return 0, 0, errors.New("page_size must be one of 20, 50, or 100")
+	}
+	return page, pageSize, nil
+}
+
+func positiveQueryInteger(request *http.Request, name string, fallback int) (int, error) {
+	value := request.URL.Query().Get(name)
+	if value == "" {
+		return fallback, nil
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 1 {
+		return 0, fmt.Errorf("invalid %s", name)
+	}
+	return parsed, nil
 }
 
 func (application *App) externalPredictions(response http.ResponseWriter, request *http.Request) {

@@ -14,6 +14,12 @@
 - Dedicated 390px mobile composition; wide tabs/matrix/tables scroll locally.
   Overflowing data tables are keyboard-focusable.
 - Reduced-motion and forced-colors rules; labels accompany color/status values.
+- Reverified `/` and `/performance` on 4 October 2026 in desktop Chromium and
+  320px-wide mobile Chromium. Pagination uses labeled native controls, keyboard
+  activation, disabled boundary states, and a polite page-status announcement.
+  Back-to-top uses a 44px native button, keyboard activation, main-content focus
+  transfer, reduced-motion scrolling, forced-colors styling, and mobile-nav
+  clearance. axe-core reported zero violations in normal color mode.
 
 Manual VoiceOver interaction and formal all-criteria WCAG 2.2 conformance were
 not run, so this report claims only the checks above.
