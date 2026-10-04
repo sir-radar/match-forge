@@ -85,6 +85,7 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: False)
     monkeypatch.setattr(sync, "_record_response", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
+    monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_store_history", lambda *_args: 1)
     monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 0)
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
@@ -142,6 +143,7 @@ def test_history_sync_prefers_alternate_current_data_over_capped_api_football(
     monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: True)
     monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
+    monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 1)
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
 
@@ -165,7 +167,7 @@ def test_history_sync_uses_cross_competition_local_history_for_promoted_team(
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *args: recorded.append(args))
 
     assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 0)
-    assert recorded[0][-2:] == ("LOCAL_HISTORY", ())
+    assert recorded[0][-2:] == (("LOCAL_HISTORY",), ())
 
 
 def test_history_sufficiency_counts_previous_competition_matches() -> None:
@@ -224,7 +226,10 @@ def test_history_sync_records_insufficient_history_when_all_providers_fail(
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *args: recorded.append(args))
 
     assert sync._sync_league_history(999, 2026) is None
-    assert recorded[0][-2:] == ("INSUFFICIENT_HISTORY", ())
+    assert recorded[0][-2:] == (
+        ("API_FOOTBALL_CAPPED", "INSUFFICIENT_HISTORY"),
+        (),
+    )
 
 
 def test_history_storage_deduplicates_cross_provider_fixture_and_keeps_xg_separate() -> None:
