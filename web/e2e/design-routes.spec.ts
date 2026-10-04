@@ -42,7 +42,10 @@ test("landing page offers an accessible back-to-top control", async ({ page }) =
   if (test.info().project.name === "mobile") await page.setViewportSize({ width: 320, height: 800 });
   await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
   await page.goto("/");
-  await page.evaluate(() => { document.body.style.minHeight = "2000px"; window.scrollTo(0, 500); });
+  await page.evaluate(() => { document.body.style.minHeight = "2000px"; });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(800);
+  await page.evaluate(() => { window.scrollTo(0, 500); window.dispatchEvent(new Event("scroll")); });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(300);
   const button = page.getByRole("button", { name: "Back to top" });
   await expect(button).toBeVisible();
   await expect(button).toHaveCSS("border-top-style", "solid");
