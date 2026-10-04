@@ -236,12 +236,39 @@ class ProductSync:
             stored_count, stored_leagues = self._store_requested_fixtures(fixture_date)
             fixture_count += stored_count
             league_seasons.update(stored_leagues)
+        league_seasons.update(self._scheduled_history_leagues())
         ordered_leagues = _history_sync_batch(
             league_seasons,
             self._history_sync_attempts(league_seasons),
             max_history_leagues,
         )
         return fixture_count, ordered_leagues
+
+    def _scheduled_history_leagues(self) -> set[tuple[int, int]]:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT DISTINCT mapping.provider_competition_id,
+                       competition.season_label
+                FROM football.product_fixtures fixture
+                JOIN football.product_competitions competition
+                  ON competition.competition_id = fixture.competition_id
+                JOIN football.competition_provider_mappings mapping
+                  ON mapping.competition_id = fixture.competition_id
+                JOIN football.providers provider ON provider.id = mapping.provider_id
+                WHERE fixture.status = 'SCHEDULED'
+                  AND fixture.kickoff_at > clock_timestamp()
+                  AND provider.code = %s
+                  AND mapping.valid_to IS NULL
+                  AND mapping.provider_competition_id ~ '^[0-9]+$'
+                  AND competition.season_label ~ '^[0-9]+$'
+                """,
+                (PROVIDER_CODE,),
+            )
+            return {
+                (int(provider_competition_id), int(season))
+                for provider_competition_id, season in cursor.fetchall()
+            }
 
     def _history_sync_attempts(
         self, league_seasons: set[tuple[int, int]]

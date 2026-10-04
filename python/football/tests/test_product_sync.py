@@ -90,6 +90,25 @@ def test_history_sync_rejects_invalid_accessible_season() -> None:
         )
 
 
+def test_fixture_sync_includes_stored_future_competitions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sync = ProductSync(
+        cast(Any, _Connection()),
+        cast(Any, object()),
+        Path("data"),
+        Path("artifact"),
+    )
+    monkeypatch.setattr(sync, "_store_requested_fixtures", lambda _date: (1, [(39, 2026)]))
+    monkeypatch.setattr(sync, "_scheduled_history_leagues", lambda: {(999, 2026)})
+    monkeypatch.setattr(sync, "_history_sync_attempts", lambda _leagues: {})
+
+    fixture_count, leagues = sync._sync_fixtures((date(2026, 10, 4),), 20)
+
+    assert fixture_count == 1
+    assert leagues == [(39, 2026), (999, 2026)]
+
+
 def test_run_uses_history_for_dates_before_live_provider_window(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
