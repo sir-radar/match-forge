@@ -226,11 +226,11 @@ func (store *PostgresProductStore) Performance(ctx context.Context, competitionI
 	return item, productQueryError(err)
 }
 
-func (store *PostgresProductStore) Performances(ctx context.Context, filters PerformanceFilters) ([]Performance, error) {
+func (store *PostgresProductStore) Performances(ctx context.Context, filters PerformanceFilters) (PerformancePage, error) {
 	competitionFilters := CompetitionFilters{Continent: filters.Continent, Country: filters.Country}
 	competitions, err := store.Competitions(ctx, competitionFilters)
 	if err != nil {
-		return nil, err
+		return PerformancePage{}, err
 	}
 	items := make([]Performance, 0, len(competitions))
 	for _, competition := range competitions {
@@ -239,15 +239,47 @@ func (store *PostgresProductStore) Performances(ctx context.Context, filters Per
 		}
 		item, err := store.Performance(ctx, competition.ID)
 		if err != nil {
-			return nil, err
-		}
-		if !performanceMatchesFilter(item, filters) {
-			continue
+			return PerformancePage{}, err
 		}
 		items = append(items, item)
 	}
-	sort.Slice(items, func(i, j int) bool { return performanceLess(items[i], items[j]) })
-	return items, nil
+	return filterSortAndPaginatePerformances(items, filters), nil
+}
+
+func filterSortAndPaginatePerformances(items []Performance, filters PerformanceFilters) PerformancePage {
+	filtered := make([]Performance, 0, len(items))
+	for _, item := range items {
+		if performanceMatchesFilter(item, filters) {
+			filtered = append(filtered, item)
+		}
+	}
+	sort.Slice(filtered, func(i, j int) bool { return performanceLess(filtered[i], filtered[j]) })
+	return paginatePerformances(filtered, filters.Page, filters.PageSize)
+}
+
+func paginatePerformances(items []Performance, page, pageSize int) PerformancePage {
+	totalItems := len(items)
+	totalPages := 0
+	if totalItems > 0 {
+		totalPages = (totalItems + pageSize - 1) / pageSize
+		if page > totalPages {
+			page = totalPages
+		}
+	} else {
+		page = 1
+	}
+	start := (page - 1) * pageSize
+	end := min(start+pageSize, totalItems)
+	pageItems := items[start:end]
+	if pageItems == nil {
+		pageItems = []Performance{}
+	}
+	return PerformancePage{
+		Performance: pageItems,
+		Pagination: Pagination{
+			Page: page, PageSize: pageSize, TotalItems: totalItems, TotalPages: totalPages,
+		},
+	}
 }
 
 func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPrediction, error) {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/logo";
 import { Icon } from "@/components/icon";
+import { BackToTop } from "@/components/back-to-top";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -37,7 +38,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Icon name="person" className="profile-mark" />
         </div>
       </header>
-      <main id="main">{children}</main>
+      <main id="main" tabIndex={-1}>{children}</main>
+      {pathname === "/" && <BackToTop />}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         <Link href="/" aria-current={current("/")}><Icon name="analytics" />Fixtures</Link>
         <Link href="/performance" aria-current={current("/performance")}><Icon name="monitoring" />Performance</Link>

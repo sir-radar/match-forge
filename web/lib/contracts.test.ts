@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFixtureGroups, parsePredictions } from "@/lib/contracts";
+import { parseFixtureGroups, parsePerformanceList, parsePredictions } from "@/lib/contracts";
 
 describe("API contract boundary", () => {
   it("rejects invalid forecast probabilities", () => {
@@ -16,5 +16,13 @@ describe("API contract boundary", () => {
       kickoff_at: null, competition: "League", home_team: "Home", away_team: "Away", market: "RESULT_1X2",
       selection: "Home", match_status: "MATCHED", matchforge_probability: 0.5, agreement: "UNKNOWN",
     }] })).toThrow(/invalid agreement/);
+  });
+
+  it("validates performance pagination metadata", () => {
+    const valid = { performance: [], pagination: { page: 1, page_size: 20, total_items: 0, total_pages: 0 } };
+    expect(parsePerformanceList(valid).pagination).toEqual(valid.pagination);
+    expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, page_size: 25 } })).toThrow(/page_size/);
+    expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, page: 1.5 } })).toThrow(/integer/);
+    expect(() => parsePerformanceList({ ...valid, pagination: { ...valid.pagination, total_pages: 1 } })).toThrow(/total_pages/);
   });
 });
