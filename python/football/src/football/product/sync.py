@@ -68,6 +68,22 @@ def _empty_standing() -> dict[str, int]:
     }
 
 
+def _history_sync_batch(
+    league_seasons: set[tuple[int, int]],
+    last_attempts: Mapping[tuple[int, int], datetime],
+    limit: int,
+) -> list[tuple[int, int]]:
+    return sorted(
+        league_seasons,
+        key=lambda item: (
+            item in last_attempts,
+            last_attempts.get(item, datetime.min.replace(tzinfo=UTC)),
+            item[0] not in FOOTBALL_DATA_COMPETITIONS,
+            item,
+        ),
+    )[:limit]
+
+
 class ProductSync:
     def __init__(
         self,
@@ -76,12 +92,16 @@ class ProductSync:
         data_root: Path,
         artifact_path: Path,
         history_fallback: FootballDataOrgClient | None = None,
+        maximum_history_season: int | None = None,
     ) -> None:
+        if maximum_history_season is not None and maximum_history_season <= 0:
+            raise ValueError("maximum_history_season must be positive")
         self.connection = connection
         self.client = client
         self.data_root = data_root
         self.artifact_path = artifact_path
         self.history_fallback = history_fallback
+        self.maximum_history_season = maximum_history_season
 
     def run(
         self,
@@ -103,47 +123,11 @@ class ProductSync:
         history_count = 0
         standings_count = 0
         for league_id, season in league_seasons:
-            history_observed_at: datetime
-            try:
-                history_response = self.client.finished_fixtures(league_id, season)
-            except RuntimeError:
-                history_response = None
-            if history_response is not None and history_response.rows:
-                history_snapshot = self._record_response(
-                    f"history-{league_id}-{season}", history_response
-                )
-                history_count += self._store_history(
-                    history_response.rows, history_snapshot, history_response.fetched_at
-                )
-                history_observed_at = history_response.fetched_at
-            else:
-                fallback = self._fallback_history(league_id, season)
-                if fallback is None:
-                    continue
-                history_snapshot = self._record_fallback_response(
-                    f"history-{league_id}-{season}", fallback
-                )
-                competition_id = self._competition_id(str(league_id), history_snapshot)
-                history_count += self._store_fallback_history(
-                    fallback.rows,
-                    competition_id,
-                    season,
-                    history_snapshot,
-                    fallback.fetched_at,
-                )
-                previous = self._fallback_history(league_id, season - 1)
-                if previous is not None:
-                    previous_snapshot = self._record_fallback_response(
-                        f"history-{league_id}-{season - 1}", previous
-                    )
-                    history_count += self._store_fallback_history(
-                        previous.rows,
-                        competition_id,
-                        season - 1,
-                        previous_snapshot,
-                        previous.fetched_at,
-                    )
-                history_observed_at = fallback.fetched_at
+            history_result = self._sync_league_history(league_id, season)
+            if history_result is None:
+                continue
+            history_snapshot, history_observed_at, stored_history = history_result
+            history_count += stored_history
             try:
                 standings_response = self.client.standings(league_id, season)
             except RuntimeError:
@@ -189,6 +173,58 @@ class ProductSync:
             "settled_external_predictions": settled_count,
         }
 
+    def _sync_league_history(
+        self, league_id: int, season: int
+    ) -> tuple[UUID, datetime, int] | None:
+        provider_season = (
+            min(season, self.maximum_history_season)
+            if self.maximum_history_season is not None
+            else season
+        )
+        try:
+            response = self.client.finished_fixtures(league_id, provider_season)
+        except RuntimeError:
+            response = None
+        if response is not None and response.rows:
+            snapshot = self._record_response(f"history-{league_id}-{provider_season}", response)
+            stored = self._store_history(response.rows, snapshot, response.fetched_at)
+            self._record_history_sync_attempt(league_id, season, response.fetched_at, "STORED")
+            return snapshot, response.fetched_at, stored
+        if response is not None:
+            self._record_response(f"history-{league_id}-{provider_season}", response)
+        fallback = self._fallback_history(league_id, season)
+        if fallback is None:
+            self._record_history_sync_attempt(
+                league_id,
+                season,
+                datetime.now(UTC),
+                "EMPTY" if response is not None else "UNAVAILABLE",
+            )
+            return None
+        snapshot = self._record_fallback_response(f"history-{league_id}-{season}", fallback)
+        competition_id = self._competition_id(str(league_id), snapshot)
+        stored = self._store_fallback_history(
+            fallback.rows,
+            competition_id,
+            season,
+            snapshot,
+            fallback.fetched_at,
+        )
+        previous = self._fallback_history(league_id, season - 1)
+        if previous is not None:
+            previous_snapshot = self._record_fallback_response(
+                f"history-{league_id}-{season - 1}", previous
+            )
+            stored += self._store_fallback_history(
+                previous.rows,
+                competition_id,
+                season - 1,
+                previous_snapshot,
+                previous.fetched_at,
+            )
+        self._record_history_sync_attempt(league_id, season, fallback.fetched_at, "STORED")
+        return snapshot, fallback.fetched_at, stored
+
     def _sync_fixtures(
         self,
         fixture_dates: Sequence[date],
@@ -200,11 +236,53 @@ class ProductSync:
             stored_count, stored_leagues = self._store_requested_fixtures(fixture_date)
             fixture_count += stored_count
             league_seasons.update(stored_leagues)
-        ordered_leagues = sorted(
+        ordered_leagues = _history_sync_batch(
             league_seasons,
-            key=lambda item: (item[0] not in FOOTBALL_DATA_COMPETITIONS, item),
+            self._history_sync_attempts(league_seasons),
+            max_history_leagues,
         )
-        return fixture_count, ordered_leagues[:max_history_leagues]
+        return fixture_count, ordered_leagues
+
+    def _history_sync_attempts(
+        self, league_seasons: set[tuple[int, int]]
+    ) -> dict[tuple[int, int], datetime]:
+        if not league_seasons:
+            return {}
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT provider_competition_id, season, last_attempted_at
+                FROM football.product_history_sync_attempts
+                WHERE provider_competition_id = ANY(%s)
+                """,
+                ([str(league_id) for league_id, _season in league_seasons],),
+            )
+            return {
+                (int(provider_competition_id), int(season)): last_attempted_at
+                for provider_competition_id, season, last_attempted_at in cursor.fetchall()
+                if (int(provider_competition_id), int(season)) in league_seasons
+            }
+
+    def _record_history_sync_attempt(
+        self,
+        league_id: int,
+        season: int,
+        attempted_at: datetime,
+        status: str,
+    ) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO football.product_history_sync_attempts (
+                    provider_competition_id, season, last_attempted_at, last_status
+                ) VALUES (%s, %s, %s, %s)
+                ON CONFLICT (provider_competition_id, season) DO UPDATE SET
+                    last_attempted_at = EXCLUDED.last_attempted_at,
+                    last_status = EXCLUDED.last_status,
+                    attempt_count = football.product_history_sync_attempts.attempt_count + 1
+                """,
+                (str(league_id), season, attempted_at, status),
+            )
 
     def backfill_fixtures_from_history(
         self, from_date: date, through_date: date, observed_at: datetime

@@ -6,7 +6,7 @@ from uuid import UUID
 import pytest
 from football.product.api_football import ApiResponse
 from football.product.football_data_org import FootballDataResponse
-from football.product.sync import ProductSync, _fixture_sync_dates
+from football.product.sync import ProductSync, _fixture_sync_dates, _history_sync_batch
 
 
 class _Connection:
@@ -31,6 +31,63 @@ def test_fixture_sync_dates_limit_explicit_backfill_to_live_provider_window() ->
 def test_fixture_sync_dates_reject_backfill_start_after_end() -> None:
     with pytest.raises(ValueError, match="fixture backfill start date"):
         _fixture_sync_dates(date(2026, 10, 3), date(2026, 10, 4))
+
+
+def test_history_sync_batch_rotates_past_previously_attempted_leagues() -> None:
+    older = datetime(2026, 10, 1, tzinfo=UTC)
+    newer = datetime(2026, 10, 2, tzinfo=UTC)
+    leagues = {(39, 2026), (40, 2026), (141, 2026), (999, 2026)}
+
+    selected = _history_sync_batch(
+        leagues,
+        {(39, 2026): newer, (40, 2026): older},
+        3,
+    )
+
+    assert selected == [(141, 2026), (999, 2026), (40, 2026)]
+
+
+def test_history_sync_uses_configured_accessible_season(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed_at = datetime(2026, 10, 4, tzinfo=UTC)
+
+    class PrimaryClient:
+        def __init__(self) -> None:
+            self.seasons: list[int] = []
+
+        def finished_fixtures(self, _league_id: int, season: int) -> ApiResponse:
+            self.seasons.append(season)
+            return ApiResponse("/fixtures", observed_at, b"{}", ({"fixture": {}},), None)
+
+    client = PrimaryClient()
+    sync = ProductSync(
+        cast(Any, _Connection()),
+        cast(Any, client),
+        Path("data"),
+        Path("artifact"),
+        maximum_history_season=2024,
+    )
+    snapshot = UUID("10000000-0000-4000-8000-000000000001")
+    monkeypatch.setattr(sync, "_record_response", lambda *_args: snapshot)
+    monkeypatch.setattr(sync, "_store_history", lambda *_args: 1)
+    monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
+
+    result = sync._sync_league_history(39, 2026)
+
+    assert client.seasons == [2024]
+    assert result == (snapshot, observed_at, 1)
+
+
+def test_history_sync_rejects_invalid_accessible_season() -> None:
+    with pytest.raises(ValueError, match="maximum_history_season"):
+        ProductSync(
+            cast(Any, _Connection()),
+            cast(Any, object()),
+            Path("data"),
+            Path("artifact"),
+            maximum_history_season=0,
+        )
 
 
 def test_run_uses_history_for_dates_before_live_provider_window(

@@ -71,6 +71,16 @@ make forecast-refresh
 make all-data-sync
 ```
 
+The live provider history budget is bounded by `MVP_MAX_HISTORY_LEAGUES` per
+sync. MatchForge selects leagues with no prior attempt first, then the
+least-recently attempted leagues. Repeated syncs therefore cover every observed
+competition with scheduled fixtures instead of repeatedly spending the budget
+on the same leagues.
+When a provider plan limits recent historical seasons,
+`MVP_MAX_HISTORY_SEASON` selects the newest accessible season. This affects
+history acquisition only; target fixtures and point-in-time filtering remain
+unchanged.
+
 Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
 
 ## Admin operations
