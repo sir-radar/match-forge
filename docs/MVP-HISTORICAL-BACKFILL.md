@@ -37,11 +37,13 @@ Competition resolution uses, in order:
 
 Team resolution uses, in order:
 
-1. an existing provider mapping or product alias;
-2. a new traceable provider-specific team.
+1. an approved provider-ID crosswalk;
+2. an existing provider mapping or product alias;
+3. a new traceable provider-specific team.
 
-Cross-provider merging requires an explicit crosswalk. Names never establish
-canonical identity.
+Cross-provider merging requires an explicit provider-ID crosswalk. Names never
+establish canonical identity. Migration `202610040100` repairs previously split
+product fixtures and history without changing match results or forecast rules.
 
 Matches reconcile on canonical competition, home team, away team, and kickoff. Exact timestamps allow a three-hour provider tolerance. Date-only sources use the calendar date and preserve `source_kickoff_precision = DATE_ONLY`. Forecast history admits a date-only result only when its calendar date is before the target date, preventing ambiguous same-day ordering.
 

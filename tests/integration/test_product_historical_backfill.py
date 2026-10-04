@@ -141,6 +141,61 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
     assert canonical_score == (2, 1)
 
 
+def test_verified_team_crosswalk_uses_stable_canonical_identity(
+    connection: Connection[Any],
+) -> None:
+    observed_at = datetime(2026, 10, 4, tzinfo=UTC)
+    store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
+    snapshot = store.ensure_snapshot(
+        source_identity="test/explicit-team-crosswalk",
+        source_revision="e" * 40,
+        acquired_at=observed_at,
+        manifest_path="openfootball/test/explicit-team-crosswalk.json",
+    )
+    match = HistoricalMatch(
+        provider_match_id="explicit-team-crosswalk-1",
+        provider_competition_id="en.1",
+        competition_name="Premier League",
+        country="England",
+        division=1,
+        season="2026-2027",
+        home_team_id="Hull City AFC",
+        home_team_name="Hull City AFC",
+        away_team_id="Crosswalk Opponent",
+        away_team_name="Crosswalk Opponent",
+        kickoff_at=datetime(2026, 9, 1, 15, tzinfo=UTC),
+        kickoff_precision="EXACT",
+        home_goals=1,
+        away_goals=0,
+        source_path="2026-27/en.1.json",
+    )
+
+    assert store.import_match(match, snapshot, observed_at) == "inserted"
+
+    canonical_team_id = stable_id("team", "football_data_org", "322")
+    with connection.cursor() as cursor:
+        alias = cursor.execute(
+            """
+            SELECT team_id FROM football.product_team_aliases
+            WHERE provider_code = 'openfootball'
+              AND provider_team_id = 'Hull City AFC'
+            """
+        ).fetchone()
+        mapping = cursor.execute(
+            """
+            SELECT mapping.team_id, mapping.mapping_method
+            FROM football.team_provider_mappings mapping
+            JOIN football.providers provider ON provider.id = mapping.provider_id
+            WHERE provider.code = 'openfootball'
+              AND mapping.provider_team_id = 'Hull City AFC'
+              AND mapping.valid_to IS NULL
+            """
+        ).fetchone()
+
+    assert alias == (canonical_team_id,)
+    assert mapping == (canonical_team_id, "explicit_crosswalk")
+
+
 def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
     store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
