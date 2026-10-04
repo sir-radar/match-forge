@@ -71,12 +71,15 @@ make forecast-refresh
 make all-data-sync
 ```
 
-The live provider history budget is bounded by `MVP_MAX_HISTORY_LEAGUES` per
-sync. MatchForge selects leagues with no prior attempt first, then the
-least-recently attempted leagues. Repeated syncs therefore cover every observed
-competition with scheduled fixtures instead of repeatedly spending the budget
-on the same leagues. The candidate set includes stored future fixtures, not only
-fixtures in the current two-day provider window.
+MVP and full sync queue every eligible competition-season in
+`football.product_history_sync_queue`. `MVP_HISTORY_SYNC_CONCURRENCY` controls
+the bounded worker pool and defaults to `3`; it does not cap queue size.
+Workers process existing due jobs first, then candidates with no prior attempt,
+then least-recently attempted candidates. Each job commits independently.
+Transient failures return to `PENDING` with a capped retry delay, and expired
+worker leases are recovered by a later sync. The command exits when no job is
+currently runnable, leaving future retries persisted. The candidate set includes
+stored future fixtures, not only fixtures in the current two-day provider window.
 `API_FOOTBALL_MAX_HISTORY_SEASON` is an API-Football-only entitlement cap. It
 does not limit other providers or canonical MatchForge history. For each
 scheduled competition-season, history resolution now uses this order:

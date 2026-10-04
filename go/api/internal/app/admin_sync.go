@@ -67,6 +67,15 @@ type SyncRun struct {
 	Summary       map[string]interface{} `json:"summary"`
 	ErrorMessage  *string                `json:"error_message"`
 	LogPath       *string                `json:"log_path"`
+	HistoryQueue  *HistoryQueueProgress  `json:"history_queue,omitempty"`
+}
+
+type HistoryQueueProgress struct {
+	Total     int `json:"total"`
+	Pending   int `json:"pending"`
+	Running   int `json:"running"`
+	Succeeded int `json:"succeeded"`
+	Failed    int `json:"failed"`
 }
 
 type Coverage struct {
@@ -227,7 +236,7 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 		return
 	}
 	defer logFile.Close()
-	summary, err := runner.runCommand(args, logFile)
+	summary, err := runner.runCommand(runID, args, logFile)
 	if err != nil {
 		runner.fail(runID, err)
 		return
@@ -250,11 +259,11 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 }
 
 func (runner *CommandSyncRunner) runCommand(
-	args []string, logFile *os.File,
+	runID string, args []string, logFile *os.File,
 ) (map[string]interface{}, error) {
 	command := exec.CommandContext(runner.ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
-	command.Env = os.Environ()
+	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
 	pipe, err := command.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -394,7 +403,21 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 const syncRunSelect = `
 	SELECT run_id::text, sync_type, status, requested_at, started_at, finished_at,
 	       requested_date::text, parameters, COALESCE(summary, '{}'::jsonb),
-	       error_message, log_path
+	       error_message, log_path,
+	       CASE WHEN sync_type IN ('MVP_SYNC', 'ALL_DATA') AND EXISTS (
+	           SELECT 1 FROM football.product_history_sync_queue
+	           WHERE sync_run_id = product_sync_runs.run_id
+	       ) THEN (
+	           SELECT jsonb_build_object(
+	               'total', count(*),
+	               'pending', count(*) FILTER (WHERE job_status = 'PENDING'),
+	               'running', count(*) FILTER (WHERE job_status = 'RUNNING'),
+	               'succeeded', count(*) FILTER (WHERE job_status = 'SUCCEEDED'),
+	               'failed', count(*) FILTER (WHERE job_status = 'FAILED')
+	           )
+	           FROM football.product_history_sync_queue
+	           WHERE sync_run_id = product_sync_runs.run_id
+	       ) END
 	FROM football.product_sync_runs`
 
 type rowScanner interface {
@@ -405,6 +428,7 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 	var run SyncRun
 	var parameters []byte
 	var summary []byte
+	var historyQueue []byte
 	err := row.Scan(
 		&run.ID,
 		&run.Type,
@@ -417,6 +441,7 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 		&summary,
 		&run.ErrorMessage,
 		&run.LogPath,
+		&historyQueue,
 	)
 	if err != nil {
 		return SyncRun{}, err
@@ -426,6 +451,12 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 	}
 	if err = json.Unmarshal(summary, &run.Summary); err != nil {
 		return SyncRun{}, err
+	}
+	if len(historyQueue) > 0 {
+		run.HistoryQueue = &HistoryQueueProgress{}
+		if err = json.Unmarshal(historyQueue, run.HistoryQueue); err != nil {
+			return SyncRun{}, err
+		}
 	}
 	return run, nil
 }

@@ -121,7 +121,7 @@ function SyncControls({ filters, setFilters }: { filters: Filters; setFilters: D
 
 function SyncStatus({ active, clock }: { active: SyncRun | null; clock: number }) {
   return <div className="sync-status" role="status" aria-live="polite">
-    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
+    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span>{active.history_queue && <span>{queueProgress(active)}</span>}</> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
   </div>;
 }
 
@@ -132,6 +132,7 @@ function SyncAction({ action, latest, disabled, busy, onStart }: { action: Actio
       <Metric term="Last successful sync" value={latest ? formatTime(latest.finished_at) : "Never"} />
       {action.type === "OPENFOOTBALL" && <><Metric term="Latest source revision" value={shortMetric(latest, "source_revision")} /><Metric term="Resources cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>}
       {action.type === "FOOTBALL_DATA_UK" && <><Metric term="Files cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>}
+      {(action.type === "MVP_SYNC" || action.type === "ALL_DATA") && latest?.history_queue && <><Metric term="History queue total" value={latest.history_queue.total.toLocaleString()} /><Metric term="History queue succeeded" value={latest.history_queue.succeeded.toLocaleString()} /><Metric term="History queue pending" value={latest.history_queue.pending.toLocaleString()} /><Metric term="History queue failed" value={latest.history_queue.failed.toLocaleString()} /></>}
     </dl>
     <button type="button" onClick={onStart} disabled={disabled} aria-busy={busy}>{busy ? "Starting…" : action.button}</button>
   </article>;
@@ -163,3 +164,4 @@ function elapsed(value: string, now: number) { return `${Math.max(0, Math.floor(
 function duration(run: SyncRun, clock: number) { if (!run.started_at) return "—"; const end = run.finished_at ? new Date(run.finished_at).getTime() : clock; return `${Math.max(0, Math.round((end - new Date(run.started_at).getTime()) / 1000))}s`; }
 function localDate() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 function errorMessage(cause: unknown) { if (cause instanceof ApiError) { if (cause.status === 409) return "A data synchronization is already running. Status has been refreshed."; if (cause.status >= 500) return `The API could not start or read the sync. ${cause.message}`; return cause.message; } if (cause instanceof Error) return `Network or response error: ${cause.message}`; return "Unknown synchronization error."; }
+function queueProgress(run: SyncRun) { const queue = run.history_queue; return queue ? `History queue: ${queue.succeeded}/${queue.total} succeeded, ${queue.running} running, ${queue.pending} pending, ${queue.failed} failed` : ""; }

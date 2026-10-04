@@ -4,16 +4,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from collections.abc import Iterable, Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import AbstractContextManager, nullcontext
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Protocol, cast
 from uuid import UUID
 
+import psycopg
 from psycopg import Connection
 
 from football.product.api_football import (
     ApiFootballClient,
+    ApiFootballError,
     ApiResponse,
     continent_for_country,
     fixture_status,
@@ -56,6 +61,13 @@ FOOTBALL_DATA_COMPETITIONS = {
     140: "PD",
 }
 
+HISTORY_JOB_LEASE = timedelta(minutes=30)
+HISTORY_RETRY_MAX_SECONDS = 3600
+
+
+class HistoryWorkerFactory(Protocol):
+    def __call__(self) -> AbstractContextManager[ProductSync]: ...
+
 
 def _empty_standing() -> dict[str, int]:
     return {
@@ -69,10 +81,9 @@ def _empty_standing() -> dict[str, int]:
     }
 
 
-def _history_sync_batch(
+def _history_sync_candidates(
     league_seasons: set[tuple[int, int]],
     last_attempts: Mapping[tuple[int, int], datetime],
-    limit: int,
 ) -> list[tuple[int, int]]:
     return sorted(
         league_seasons,
@@ -82,7 +93,7 @@ def _history_sync_batch(
             item[0] not in FOOTBALL_DATA_COMPETITIONS,
             item,
         ),
-    )[:limit]
+    )
 
 
 class ProductSync:
@@ -94,6 +105,8 @@ class ProductSync:
         artifact_path: Path,
         history_fallback: FootballDataOrgClient | None = None,
         api_football_max_history_season: int | None = None,
+        history_worker_factory: HistoryWorkerFactory | None = None,
+        sync_run_id: UUID | None = None,
     ) -> None:
         if api_football_max_history_season is not None and api_football_max_history_season <= 0:
             raise ValueError("api_football_max_history_season must be positive")
@@ -103,16 +116,18 @@ class ProductSync:
         self.artifact_path = artifact_path
         self.history_fallback = history_fallback
         self.api_football_max_history_season = api_football_max_history_season
+        self.history_worker_factory = history_worker_factory
+        self.sync_run_id = sync_run_id
 
     def run(
         self,
         requested_date: date,
         *,
         fixture_from_date: date | None = None,
-        max_history_leagues: int = 20,
+        history_concurrency: int = 3,
     ) -> dict[str, int]:
-        if max_history_leagues < 0:
-            raise ValueError("max_history_leagues must be non-negative")
+        if history_concurrency <= 0:
+            raise ValueError("history_concurrency must be positive")
         fixture_dates = _fixture_sync_dates(requested_date, fixture_from_date)
         fixture_history_start = fixture_from_date or fixture_dates[0]
         competition_response = self.client.competitions()
@@ -120,43 +135,11 @@ class ProductSync:
         competition_count = self._store_competitions(
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
-        fixture_count, league_seasons = self._sync_fixtures(fixture_dates, max_history_leagues)
-        history_count = 0
-        standings_count = 0
-        for league_id, season in league_seasons:
-            history_result = self._sync_league_history(league_id, season)
-            if history_result is None:
-                continue
-            history_snapshot, history_observed_at, stored_history = history_result
-            history_count += stored_history
-            try:
-                standings_response = self.client.standings(league_id, season)
-            except RuntimeError:
-                standings_response = None
-            if standings_response is None or not standings_response.rows:
-                competition_id = self._competition_id(str(league_id), history_snapshot)
-                fallback_standings = self._fallback_standings(league_id, season)
-                if fallback_standings is not None:
-                    snapshot = self._record_fallback_response(
-                        f"standings-{league_id}-{season}", fallback_standings
-                    )
-                    standings_count += self._store_fallback_standings(
-                        fallback_standings.rows,
-                        competition_id,
-                        snapshot,
-                        fallback_standings.fetched_at,
-                    )
-                else:
-                    standings_count += self._calculate_standings(
-                        competition_id, season, history_observed_at
-                    )
-                continue
-            standings_snapshot = self._record_response(
-                f"standings-{league_id}-{season}", standings_response
-            )
-            standings_count += self._store_standings(
-                standings_response.rows, standings_snapshot, standings_response.fetched_at
-            )
+        fixture_count, league_seasons = self._sync_fixtures(fixture_dates)
+        self._recover_abandoned_history_jobs()
+        self._enqueue_history_jobs(league_seasons)
+        self.connection.commit()
+        queue_result = self._process_history_queue(history_concurrency)
         completed_at = datetime.now(UTC)
         history_fixture_count = self.backfill_fixtures_from_history(
             fixture_history_start, requested_date, completed_at
@@ -168,11 +151,47 @@ class ProductSync:
             "competitions": competition_count,
             "fixtures": fixture_count,
             "fixtures_from_history": history_fixture_count,
-            "history_matches": history_count,
-            "standings_rows": standings_count,
+            "history_matches": queue_result["history_matches"],
+            "standings_rows": queue_result["standings_rows"],
             "forecasts": forecast_count,
             "settled_external_predictions": settled_count,
+            "history_queue_total": queue_result["total"],
+            "history_queue_processed": queue_result["processed"],
+            "history_queue_succeeded": queue_result["succeeded"],
+            "history_queue_failed": queue_result["failed"],
+            "history_queue_pending_retry": queue_result["pending_retry"],
+            "history_queue_peak_concurrency": queue_result["peak_concurrency"],
         }
+
+    def _sync_history_job(self, league_id: int, season: int) -> tuple[int, int]:
+        history_result = self._sync_league_history(league_id, season)
+        if history_result is None:
+            return 0, 0
+        history_snapshot, history_observed_at, stored_history = history_result
+        standings_response = self.client.standings(league_id, season)
+        if not standings_response.rows:
+            competition_id = self._competition_id(str(league_id), history_snapshot)
+            fallback_standings = self._fallback_standings(league_id, season)
+            if fallback_standings is not None:
+                snapshot = self._record_fallback_response(
+                    f"standings-{league_id}-{season}", fallback_standings
+                )
+                standings = self._store_fallback_standings(
+                    fallback_standings.rows,
+                    competition_id,
+                    snapshot,
+                    fallback_standings.fetched_at,
+                )
+            else:
+                standings = self._calculate_standings(competition_id, season, history_observed_at)
+            return stored_history, standings
+        standings_snapshot = self._record_response(
+            f"standings-{league_id}-{season}", standings_response
+        )
+        standings = self._store_standings(
+            standings_response.rows, standings_snapshot, standings_response.fetched_at
+        )
+        return stored_history, standings
 
     def _sync_league_history(
         self, league_id: int, season: int
@@ -189,9 +208,14 @@ class ProductSync:
         latest: tuple[UUID, datetime, int] | None = None
         stored = 0
         sufficient = False
+        transient_errors: list[Exception] = []
         for provider_code, provider_season, path in self._history_attempts(league_id, season):
-            result = self._history_attempt(provider_code, league_id, provider_season)
             paths.append(path)
+            try:
+                result = self._history_attempt(provider_code, league_id, provider_season)
+            except (ApiFootballError, FootballDataOrgError, OSError) as error:
+                transient_errors.append(error)
+                continue
             if result is not None:
                 latest = result
                 stored += result[2]
@@ -202,6 +226,8 @@ class ProductSync:
 
         if not sufficient:
             paths.append("INSUFFICIENT_HISTORY")
+            if transient_errors:
+                raise transient_errors[0]
         return self._finish_history_sync(league_id, season, latest, stored, paths, providers)
 
     def _history_attempts(self, league_id: int, season: int) -> tuple[tuple[str, int, str], ...]:
@@ -234,10 +260,7 @@ class ProductSync:
     def _api_football_history(
         self, league_id: int, season: int
     ) -> tuple[UUID, datetime, int] | None:
-        try:
-            response = self.client.finished_fixtures(league_id, season)
-        except RuntimeError:
-            return None
+        response = self.client.finished_fixtures(league_id, season)
         snapshot = self._record_response(f"history-{league_id}-{season}", response)
         stored = self._store_history(response.rows, snapshot, response.fetched_at)
         return snapshot, response.fetched_at, stored
@@ -372,7 +395,6 @@ class ProductSync:
     def _sync_fixtures(
         self,
         fixture_dates: Sequence[date],
-        max_history_leagues: int,
     ) -> tuple[int, list[tuple[int, int]]]:
         fixture_count = 0
         league_seasons: set[tuple[int, int]] = set()
@@ -381,12 +403,242 @@ class ProductSync:
             fixture_count += stored_count
             league_seasons.update(stored_leagues)
         league_seasons.update(self._scheduled_history_leagues())
-        ordered_leagues = _history_sync_batch(
+        ordered_leagues = _history_sync_candidates(
             league_seasons,
             self._history_sync_attempts(league_seasons),
-            max_history_leagues,
         )
         return fixture_count, ordered_leagues
+
+    def _recover_abandoned_history_jobs(self) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE football.product_history_sync_queue
+                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
+                    next_attempt_at = NULL, updated_at = clock_timestamp(),
+                    last_error = COALESCE(last_error, 'worker lease expired')
+                WHERE job_status = 'RUNNING'
+                  AND claimed_at < clock_timestamp() - %s
+                """,
+                (HISTORY_JOB_LEASE,),
+            )
+
+    def _enqueue_history_jobs(self, candidates: Sequence[tuple[int, int]]) -> None:
+        with self.connection.cursor() as cursor:
+            for league_id, season in candidates:
+                cursor.execute(
+                    """
+                    INSERT INTO football.product_history_sync_queue (
+                        provider_competition_id, season, sync_run_id
+                    ) VALUES (%s, %s, %s)
+                    ON CONFLICT (provider_competition_id, season) DO UPDATE SET
+                        sync_run_id = EXCLUDED.sync_run_id,
+                        job_status = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN 'PENDING'
+                            ELSE football.product_history_sync_queue.job_status
+                        END,
+                        queued_at = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN clock_timestamp()
+                            ELSE football.product_history_sync_queue.queued_at
+                        END,
+                        started_at = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN NULL
+                            ELSE football.product_history_sync_queue.started_at
+                        END,
+                        finished_at = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN NULL
+                            ELSE football.product_history_sync_queue.finished_at
+                        END,
+                        next_attempt_at = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN NULL
+                            ELSE football.product_history_sync_queue.next_attempt_at
+                        END,
+                        last_error = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN NULL
+                            ELSE football.product_history_sync_queue.last_error
+                        END,
+                        updated_at = clock_timestamp()
+                    """,
+                    (str(league_id), season, self.sync_run_id),
+                )
+            if self.sync_run_id is not None:
+                cursor.execute(
+                    """
+                    UPDATE football.product_history_sync_queue
+                    SET sync_run_id = %s, updated_at = clock_timestamp()
+                    WHERE job_status = 'PENDING'
+                    """,
+                    (self.sync_run_id,),
+                )
+
+    def _process_history_queue(self, concurrency: int) -> dict[str, int]:
+        if concurrency > 1 and self.history_worker_factory is None:
+            raise ValueError("history_worker_factory is required for concurrent history sync")
+        factory = self.history_worker_factory or (lambda: nullcontext(self))
+        total = self._history_queue_total()
+        lock = threading.Lock()
+        active = 0
+        peak = 0
+
+        def consume() -> dict[str, int]:
+            nonlocal active, peak
+            counts = {
+                "processed": 0,
+                "succeeded": 0,
+                "failed": 0,
+                "pending_retry": 0,
+                "history_matches": 0,
+                "standings_rows": 0,
+            }
+            with factory() as worker:
+                while (job := worker._claim_history_job()) is not None:
+                    job_id, league_id, season, attempt_count = job
+                    with lock:
+                        active += 1
+                        peak = max(peak, active)
+                    try:
+                        history_matches, standings_rows = worker._sync_history_job(
+                            league_id, season
+                        )
+                        worker._complete_history_job(job_id)
+                    except (
+                        ApiFootballError,
+                        FootballDataOrgError,
+                        psycopg.Error,
+                        OSError,
+                    ) as error:
+                        worker.connection.rollback()
+                        worker._retry_history_job(job_id, attempt_count, error)
+                        counts["pending_retry"] += 1
+                    except Exception as error:
+                        worker.connection.rollback()
+                        worker._fail_history_job(job_id, error)
+                        counts["failed"] += 1
+                    else:
+                        counts["succeeded"] += 1
+                        counts["history_matches"] += history_matches
+                        counts["standings_rows"] += standings_rows
+                    finally:
+                        counts["processed"] += 1
+                        with lock:
+                            active -= 1
+            return counts
+
+        results: list[dict[str, int]] = []
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            results = [
+                future.result() for future in [executor.submit(consume) for _ in range(concurrency)]
+            ]
+        return {
+            "total": total,
+            "peak_concurrency": peak,
+            **{
+                key: sum(result[key] for result in results)
+                for key in (
+                    "processed",
+                    "succeeded",
+                    "failed",
+                    "pending_retry",
+                    "history_matches",
+                    "standings_rows",
+                )
+            },
+        }
+
+    def _history_queue_total(self) -> int:
+        with self.connection.cursor() as cursor:
+            if self.sync_run_id is None:
+                cursor.execute(
+                    "SELECT count(*) FROM football.product_history_sync_queue "
+                    "WHERE job_status IN ('PENDING', 'RUNNING')"
+                )
+            else:
+                cursor.execute(
+                    "SELECT count(*) FROM football.product_history_sync_queue "
+                    "WHERE sync_run_id = %s",
+                    (self.sync_run_id,),
+                )
+            row = cursor.fetchone()
+        return int(row[0]) if row else 0
+
+    def _claim_history_job(self) -> tuple[UUID, int, int, int] | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                WITH candidate AS (
+                    SELECT job_id
+                    FROM football.product_history_sync_queue
+                    WHERE job_status = 'PENDING'
+                      AND (next_attempt_at IS NULL OR next_attempt_at <= clock_timestamp())
+                    ORDER BY queued_at, job_id
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT 1
+                )
+                UPDATE football.product_history_sync_queue queue
+                SET job_status = 'RUNNING', claimed_at = clock_timestamp(),
+                    started_at = clock_timestamp(), finished_at = NULL,
+                    attempt_count = attempt_count + 1, updated_at = clock_timestamp(),
+                    sync_run_id = COALESCE(%s, sync_run_id)
+                FROM candidate
+                WHERE queue.job_id = candidate.job_id
+                RETURNING queue.job_id, queue.provider_competition_id,
+                          queue.season, queue.attempt_count
+                """,
+                (self.sync_run_id,),
+            )
+            row = cursor.fetchone()
+        self.connection.commit()
+        if row is None:
+            return None
+        return cast(tuple[UUID, int, int, int], (row[0], int(row[1]), row[2], row[3]))
+
+    def _complete_history_job(self, job_id: UUID) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE football.product_history_sync_queue
+                SET job_status = 'SUCCEEDED', finished_at = clock_timestamp(),
+                    claimed_at = NULL, next_attempt_at = NULL, last_error = NULL,
+                    updated_at = clock_timestamp()
+                WHERE job_id = %s
+                """,
+                (job_id,),
+            )
+        self.connection.commit()
+
+    def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> None:
+        delay = min(60 * (2 ** max(0, attempt_count - 1)), HISTORY_RETRY_MAX_SECONDS)
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE football.product_history_sync_queue
+                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
+                    next_attempt_at = clock_timestamp() + %s * interval '1 second',
+                    last_error = %s, updated_at = clock_timestamp()
+                WHERE job_id = %s
+                """,
+                (delay, str(error)[:4000], job_id),
+            )
+        self.connection.commit()
+
+    def _fail_history_job(self, job_id: UUID, error: Exception) -> None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE football.product_history_sync_queue
+                SET job_status = 'FAILED', finished_at = clock_timestamp(),
+                    claimed_at = NULL, last_error = %s, updated_at = clock_timestamp()
+                WHERE job_id = %s
+                """,
+                (str(error)[:4000], job_id),
+            )
+        self.connection.commit()
 
     def _scheduled_history_leagues(self) -> set[tuple[int, int]]:
         with self.connection.cursor() as cursor:
@@ -713,10 +965,7 @@ class ProductSync:
         competition_code = FOOTBALL_DATA_COMPETITIONS.get(league_id)
         if self.history_fallback is None or competition_code is None:
             return None
-        try:
-            return self.history_fallback.finished_matches(competition_code, season)
-        except FootballDataOrgError:
-            return None
+        return self.history_fallback.finished_matches(competition_code, season)
 
     def _fallback_fixtures(self, requested_date: date) -> FootballDataResponse | None:
         if self.history_fallback is None:
@@ -730,10 +979,7 @@ class ProductSync:
         competition_code = FOOTBALL_DATA_COMPETITIONS.get(league_id)
         if self.history_fallback is None or competition_code is None:
             return None
-        try:
-            return self.history_fallback.standings(competition_code, season)
-        except FootballDataOrgError:
-            return None
+        return self.history_fallback.standings(competition_code, season)
 
     def _store_competitions(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
