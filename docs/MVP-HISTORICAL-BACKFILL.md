@@ -37,11 +37,13 @@ Competition resolution uses, in order:
 
 Team resolution uses, in order:
 
-1. an existing provider mapping or product alias;
-2. a new traceable provider-specific team.
+1. an approved provider-ID crosswalk;
+2. an existing provider mapping or product alias;
+3. a new traceable provider-specific team.
 
-Cross-provider merging requires an explicit crosswalk. Names never establish
-canonical identity.
+Cross-provider merging requires an explicit provider-ID crosswalk. Names never
+establish canonical identity. Migration `202610040100` repairs previously split
+product fixtures and history without changing match results or forecast rules.
 
 Matches reconcile on canonical competition, home team, away team, and kickoff. Exact timestamps allow a three-hour provider tolerance. Date-only sources use the calendar date and preserve `source_kickoff_precision = DATE_ONLY`. Forecast history admits a date-only result only when its calendar date is before the target date, preventing ambiguous same-day ordering.
 
@@ -68,6 +70,33 @@ make history-backfill
 make forecast-refresh
 make all-data-sync
 ```
+
+The live provider history budget is bounded by `MVP_MAX_HISTORY_LEAGUES` per
+sync. MatchForge selects leagues with no prior attempt first, then the
+least-recently attempted leagues. Repeated syncs therefore cover every observed
+competition with scheduled fixtures instead of repeatedly spending the budget
+on the same leagues. The candidate set includes stored future fixtures, not only
+fixtures in the current two-day provider window.
+`API_FOOTBALL_MAX_HISTORY_SEASON` is an API-Football-only entitlement cap. It
+does not limit other providers or canonical MatchForge history. For each
+scheduled competition-season, history resolution now uses this order:
+
+1. sufficient eligible local history, including a team's mapped history from a
+   previous competition;
+2. requested-season API-Football history when that season is within its cap;
+3. requested and previous-season football-data.org history for explicitly
+   mapped qualified competitions;
+4. the capped API-Football season only after newer alternate-provider data is
+   exhausted.
+
+Compatible result observations contribute to the same canonical history and
+canonical fixture identity deduplicates overlap. Provider match mappings,
+source snapshots, original seasons, kickoff timestamps, and result-conflict
+records preserve provenance. Sync attempts record the ordered fallback path and
+providers used. Provider-specific metrics such as xG are never copied between
+series; no alternate MVP provider currently supplies qualified compatible xG.
+If real history remains below the ten-match requirement, MatchForge leaves the
+fixture unavailable instead of manufacturing history or relabelling a season.
 
 Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
 

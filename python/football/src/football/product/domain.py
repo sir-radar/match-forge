@@ -23,6 +23,7 @@ from football.forecasting.pitchapi_v3 import (
 PRODUCT_NAMESPACE = UUID("4944b082-913a-4b04-9c42-76374ff3d840")
 MODEL_ARTIFACT_PATH = Path("docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json")
 MODEL_LABEL = "MVP_FORECAST"
+MINIMUM_HISTORY_MATCHES = 10
 
 
 class ForecastAvailability(StrEnum):
@@ -124,13 +125,13 @@ def forecast_from_history(
     )
     home_history = _team_history(eligible, home_team_id)
     away_history = _team_history(eligible, away_team_id)
-    if len(home_history) < 10 or len(away_history) < 10:
+    if len(home_history) < MINIMUM_HISTORY_MATCHES or len(away_history) < MINIMUM_HISTORY_MATCHES:
         return None
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     parameters = TransferableParametersV1(**artifact["parameters"])
     features = MatchHistoryFeaturesV1(
-        home=_team_features(home_history[-10:]),
-        away=_team_features(away_history[-10:]),
+        home=_team_features(home_history[-MINIMUM_HISTORY_MATCHES:]),
+        away=_team_features(away_history[-MINIMUM_HISTORY_MATCHES:]),
     )
     goal_forecast = TransferableGoalModelV1(parameters).forecast_features(features)
     score_cells = tuple(

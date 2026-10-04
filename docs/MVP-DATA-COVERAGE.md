@@ -12,7 +12,16 @@ Checked 30 September 2026. Counts below describe live provider discovery, not gu
 | OpenFootball | Bulk historical completed results | 291 resources; 21 season labels; 47 competitions; 90,036 mapped matches; 20 countries; 2010-07-12 to 2026-09-20 | Public Git repository; exact commit recorded | Some competitions and early seasons omit exact kickoff times. Date-only provenance remains explicit. |
 | Football-Data.co.uk | Bulk historical completed results | 37 resources; 713 CSV files; 34 ZIP archives; 34 season labels; 22 competitions; 241,379 mapped matches; 11 countries; 1993-07-23 to 2026-09-28 | Public downloadable archives | Result coverage is broad for its published leagues; bookmaker columns are retained only in raw cached artifacts and never enter `MVP_FORECAST`. |
 
-API-Football remains the primary discovery and same-day fixture source. Empty or rejected history and standings responses use football-data.org for explicitly mapped competitions. Empty API-Football fixture responses use the competition-scoped football-data.org fixture route. If provider standings are unavailable, MatchForge reconstructs them from stored results.
+API-Football remains the primary discovery and same-day fixture source. Its
+history entitlement is configured independently with
+`API_FOOTBALL_MAX_HISTORY_SEASON`. History resolution first reuses eligible
+local data, then prefers requested-season data from qualified providers over an
+older capped API-Football season. Compatible result observations merge through
+canonical fixture identity; provider-specific metrics such as xG remain
+separate unless an explicit compatibility rule exists. Empty API-Football
+fixture responses use the competition-scoped football-data.org fixture route.
+If provider standings are unavailable, MatchForge reconstructs them from stored
+results.
 
 ## Discovered domestic-league breadth
 

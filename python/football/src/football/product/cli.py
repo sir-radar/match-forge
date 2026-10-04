@@ -109,6 +109,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.data_root,
                 MODEL_ARTIFACT_PATH,
                 history_fallback,
+                api_football_max_history_season=_api_football_max_history_season(),
             ).run(
                 args.date,
                 fixture_from_date=args.from_date,
@@ -202,7 +203,12 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
     fallback_token = os.environ.get("FOOTBALL_DATA_DOT_ORG_API_TOKEN", "")
     fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
     product = ProductSync(
-        connection, ApiFootballClient(api_key), args.data_root, MODEL_ARTIFACT_PATH, fallback
+        connection,
+        ApiFootballClient(api_key),
+        args.data_root,
+        MODEL_ARTIFACT_PATH,
+        fallback,
+        api_football_max_history_season=_api_football_max_history_season(),
     )
     mvp = product.run(
         args.date,
@@ -248,6 +254,11 @@ def _refresh(connection: psycopg.Connection[Any], data_root: Path) -> int:
 
 def _lagos_today() -> date:
     return datetime.now(ZoneInfo("Africa/Lagos")).date()
+
+
+def _api_football_max_history_season() -> int | None:
+    value = os.environ.get("API_FOOTBALL_MAX_HISTORY_SEASON")
+    return int(value) if value else None
 
 
 def _run_external_predictions(args: argparse.Namespace) -> int:

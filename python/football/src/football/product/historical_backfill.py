@@ -14,7 +14,10 @@ from uuid import UUID
 from psycopg import Connection
 
 from football.product.domain import normalize_team_name, sha256_json, stable_id
-from football.product.identity_crosswalks import COMPETITION_CROSSWALKS
+from football.product.identity_crosswalks import (
+    COMPETITION_CROSSWALKS,
+    canonical_team_provider_identity,
+)
 
 KickoffPrecision = Literal["EXACT", "DATE_ONLY"]
 
@@ -442,6 +445,9 @@ class HistoricalBackfillStore:
         observed_at: datetime,
     ) -> tuple[UUID | None, bool]:
         normalized = normalize_team_name(name)
+        canonical_provider_identity = canonical_team_provider_identity(
+            self.provider_code, provider_team_id
+        )
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -451,9 +457,16 @@ class HistoricalBackfillStore:
                 (self.provider_code, provider_team_id),
             )
             found = cursor.fetchone()
-            if found is not None:
+            if found is not None and canonical_provider_identity is None:
                 return cast(UUID, found[0]), False
-        team_id = stable_id("team", self.provider_code, provider_team_id, country)
+        team_id = (
+            stable_id("team", *canonical_provider_identity)
+            if canonical_provider_identity is not None
+            else stable_id("team", self.provider_code, provider_team_id, country)
+        )
+        mapping_method = (
+            "explicit_crosswalk" if canonical_provider_identity is not None else "deterministic"
+        )
         provider_id = self._provider_id()
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -476,7 +489,10 @@ class HistoricalBackfillStore:
                 INSERT INTO football.product_team_aliases (
                     provider_code, provider_team_id, normalized_name, country, team_id
                 ) VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (provider_code, provider_team_id) DO NOTHING
+                ON CONFLICT (provider_code, provider_team_id) DO UPDATE SET
+                    normalized_name = EXCLUDED.normalized_name,
+                    country = EXCLUDED.country,
+                    team_id = EXCLUDED.team_id
                 """,
                 (self.provider_code, provider_team_id, normalized, country or None, team_id),
             )
@@ -485,7 +501,7 @@ class HistoricalBackfillStore:
                 INSERT INTO football.team_provider_mappings (
                     team_id, provider_id, provider_team_id, first_seen_at, last_seen_at,
                     mapping_method, mapping_confidence, source_snapshot_id
-                ) SELECT %s, %s, %s, %s, %s, 'deterministic', 1.0, %s
+                ) SELECT %s, %s, %s, %s, %s, %s, 1.0, %s
                 WHERE NOT EXISTS (
                     SELECT 1 FROM football.team_provider_mappings
                     WHERE provider_id = %s AND provider_team_id = %s
@@ -497,13 +513,25 @@ class HistoricalBackfillStore:
                     provider_team_id,
                     observed_at,
                     observed_at,
+                    mapping_method,
                     snapshot_id,
                     provider_id,
                     provider_team_id,
                 ),
             )
             self.team_mappings_created += cursor.rowcount
-        return team_id, True
+            if canonical_provider_identity is not None:
+                cursor.execute(
+                    """
+                    UPDATE football.team_provider_mappings
+                    SET team_id = %s, mapping_method = 'explicit_crosswalk',
+                        last_seen_at = GREATEST(last_seen_at, %s)
+                    WHERE provider_id = %s AND provider_team_id = %s
+                      AND valid_to IS NULL
+                    """,
+                    (team_id, observed_at, provider_id, provider_team_id),
+                )
+        return team_id, found is None
 
     def _existing_match(
         self, match: HistoricalMatch, competition_id: UUID, home_id: UUID, away_id: UUID
