@@ -14,6 +14,7 @@ from uuid import UUID
 from psycopg import Connection
 
 from football.product.domain import normalize_team_name, sha256_json, stable_id
+from football.product.identity_crosswalks import COMPETITION_CROSSWALKS
 
 KickoffPrecision = Literal["EXACT", "DATE_ONLY"]
 
@@ -58,51 +59,6 @@ class BackfillSummary:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
-
-
-_OPENFOOTBALL_CROSSWALK = {
-    "en.1": ("api_football", "39"),
-    "en.2": ("api_football", "40"),
-    "en.3": ("api_football", "41"),
-    "en.4": ("api_football", "42"),
-    "fr.1": ("api_football", "61"),
-    "fr.2": ("api_football", "62"),
-    "br.1": ("api_football", "71"),
-    "de.1": ("api_football", "78"),
-    "nl.1": ("api_football", "88"),
-    "pt.1": ("api_football", "94"),
-    "it.1": ("api_football", "135"),
-    "it.2": ("api_football", "136"),
-    "es.1": ("api_football", "140"),
-    "sco.1": ("api_football", "179"),
-    "tr.1": ("api_football", "203"),
-    "ch.1": ("api_football", "207"),
-}
-
-_FOOTBALL_DATA_UK_CROSSWALK = {
-    "E0": ("api_football", "39"),
-    "E1": ("api_football", "40"),
-    "E2": ("api_football", "41"),
-    "E3": ("api_football", "42"),
-    "EC": ("api_football", "43"),
-    "F1": ("api_football", "61"),
-    "F2": ("api_football", "62"),
-    "D1": ("api_football", "78"),
-    "D2": ("api_football", "79"),
-    "N1": ("api_football", "88"),
-    "P1": ("api_football", "94"),
-    "I1": ("api_football", "135"),
-    "I2": ("api_football", "136"),
-    "SP1": ("api_football", "140"),
-    "SP2": ("api_football", "141"),
-    "B1": ("api_football", "144"),
-    "SC0": ("api_football", "179"),
-    "SC1": ("api_football", "180"),
-    "SC2": ("api_football", "183"),
-    "SC3": ("api_football", "184"),
-    "G1": ("api_football", "197"),
-    "T1": ("api_football", "203"),
-}
 
 
 def cache_resource(source: Path, cache_root: Path, provider: str, revision: str) -> Path:
@@ -379,11 +335,9 @@ class HistoricalBackfillStore:
             found = cursor.fetchone()
             if found is not None:
                 return cast(UUID, found[0]), False
-            crosswalks = {
-                "openfootball": _OPENFOOTBALL_CROSSWALK,
-                "football_data_uk": _FOOTBALL_DATA_UK_CROSSWALK,
-            }
-            crosswalk = crosswalks.get(self.provider_code, {}).get(match.provider_competition_id)
+            crosswalk = COMPETITION_CROSSWALKS.get(self.provider_code, {}).get(
+                match.provider_competition_id
+            )
             if crosswalk is not None:
                 cursor.execute(
                     """
