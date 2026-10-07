@@ -276,22 +276,27 @@ def league_rating(
     return LeagueRating.STRONG if recent_better else LeagueRating.GOOD
 
 
-def _team_history(matches: Sequence[FinishedMatch], team_id: UUID) -> list[tuple[int, int, float]]:
-    rows: list[tuple[int, int, float]] = []
+def _team_history(
+    matches: Sequence[FinishedMatch], team_id: UUID
+) -> list[tuple[int, int, float | None]]:
+    rows: list[tuple[int, int, float | None]] = []
     for match in matches:
         if match.home_team_id == team_id:
-            rows.append((match.home_goals, match.away_goals, match.home_xg or 0.0))
+            rows.append((match.home_goals, match.away_goals, match.home_xg))
         elif match.away_team_id == team_id:
-            rows.append((match.away_goals, match.home_goals, match.away_xg or 0.0))
+            rows.append((match.away_goals, match.home_goals, match.away_xg))
     return rows
 
 
-def _team_features(rows: Sequence[tuple[int, int, float]]) -> TeamHistoryFeaturesV1:
+def _team_features(rows: Sequence[tuple[int, int, float | None]]) -> TeamHistoryFeaturesV1:
+    xg_values = tuple(row[2] for row in rows if row[2] is not None)
     return TeamHistoryFeaturesV1(
         appearances=len(rows),
         goals_for_mean=sum(row[0] for row in rows) / len(rows),
         goals_against_mean=sum(row[1] for row in rows) / len(rows),
-        npxg_for_mean=sum(row[2] for row in rows) / len(rows),
+        # The production control has beta_xg_for=0.0. Keep missing xG explicit until this
+        # boundary; the ignored value is only materialized to satisfy its frozen contract.
+        npxg_for_mean=(sum(xg_values) / len(xg_values) if xg_values else 0.0),
     )
 
 

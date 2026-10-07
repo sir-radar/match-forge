@@ -50,6 +50,9 @@ class ApiFootballClient:
     def standings(self, league_id: int, season: int) -> ApiResponse:
         return self._get("/standings", {"league": str(league_id), "season": str(season)})
 
+    def predictions(self, fixture_id: int) -> ApiResponse:
+        return self._get("/predictions", {"fixture": str(fixture_id)})
+
     def _get(self, path: str, query: Mapping[str, str]) -> ApiResponse:
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"
         fetched_at = datetime.now(UTC)

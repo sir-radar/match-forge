@@ -20,6 +20,7 @@ from football.forecasting.corner_labels import CornerLabelError
 from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
 from football.forecasting.kickoff import KickoffClaimError
 from football.forecasting.lifecycle import LifecycleClaimError
+from football.forecasting.multimodel_cli import add_multimodel_commands, run_multimodel_command
 from football.ingestion import CanonicalIngestionError, SourceIntegrityError
 from football.integrity import IntegrityArtifactKind
 from football.providers import (
@@ -194,6 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="exclude the approved synthetic evaluation rows from hard-gate scope",
     )
     retire_evaluation.add_argument("--evidence-reference", required=True)
+    add_multimodel_commands(commands)
     return parser
 
 
@@ -210,6 +212,8 @@ def run(
     output = sys.stdout if stdout is None else stdout
     errors = sys.stderr if stderr is None else stderr
     args = build_parser().parse_args(argv)
+    if args.command in {"models", "benchmarks"}:
+        return run_multimodel_command(args, environment, output, errors)
     database_url = (
         args.database_url
         or environment.get("FOOTBALL_DATABASE_URL")
@@ -245,41 +249,21 @@ def run(
     provider_status_result = _provider_status_preflight(args, output, errors)
     if provider_status_result is not None:
         return provider_status_result
-    if not database_url:
-        print("error: DATABASE_URL is required", file=errors)
-        return 2
-
     try:
-        provider = (
-            provider_factory(source_git_sha)
-            if args.command == "ingest" and source_git_sha
-            else None
+        return _run_database_command(
+            args,
+            database_url,
+            data_root,
+            quality_policy,
+            report_root,
+            source_git_sha,
+            code_commit_sha,
+            dependency_lock_sha256,
+            output,
+            errors,
+            connection_factory,
+            provider_factory,
         )
-        with connection_factory(database_url) as connection:
-            evaluation_provenance = (
-                Sprint2EvidenceProvenanceV1(
-                    code_commit_sha,
-                    dependency_lock_sha256,
-                    args.authoritative_worktree_clean,
-                )
-                if code_commit_sha and dependency_lock_sha256
-                else None
-            )
-            provider_sync_policies = (
-                ProviderSyncPolicyRegistryV1.from_path(args.provider_sync_policy_config)
-                if args.command == "provider" and args.scope == "status"
-                else None
-            )
-            application = FootballApplication(
-                connection,
-                data_root,
-                provider,
-                quality_policy,
-                report_root,
-                evaluation_provenance,
-                provider_sync_policies,
-            )
-            return _execute(application, args, output, errors, code_commit_sha)
     except ValueError as error:
         print(f"error: {error}", file=errors)
         return 2
@@ -304,6 +288,53 @@ def run(
     except psycopg.Error:
         print("error: database operation failed", file=errors)
         return 4
+
+
+def _run_database_command(
+    args: argparse.Namespace,
+    database_url: str | None,
+    data_root: Path,
+    quality_policy: Path,
+    report_root: Path,
+    source_git_sha: str | None,
+    code_commit_sha: str | None,
+    dependency_lock_sha256: str | None,
+    output: TextIO,
+    errors: TextIO,
+    connection_factory: ConnectionFactory,
+    provider_factory: ProviderFactory,
+) -> int:
+    if not database_url:
+        print("error: DATABASE_URL is required", file=errors)
+        return 2
+    provider = (
+        provider_factory(source_git_sha) if args.command == "ingest" and source_git_sha else None
+    )
+    with connection_factory(database_url) as connection:
+        evaluation_provenance = (
+            Sprint2EvidenceProvenanceV1(
+                code_commit_sha,
+                dependency_lock_sha256,
+                args.authoritative_worktree_clean,
+            )
+            if code_commit_sha and dependency_lock_sha256
+            else None
+        )
+        provider_sync_policies = (
+            ProviderSyncPolicyRegistryV1.from_path(args.provider_sync_policy_config)
+            if args.command == "provider" and args.scope == "status"
+            else None
+        )
+        application = FootballApplication(
+            connection,
+            data_root,
+            provider,
+            quality_policy,
+            report_root,
+            evaluation_provenance,
+            provider_sync_policies,
+        )
+        return _execute(application, args, output, errors, code_commit_sha)
 
 
 def main() -> int:
