@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 import subprocess
 from dataclasses import dataclass
@@ -25,6 +26,7 @@ from football.product.historical_backfill import (
 PROVIDER_CODE = "openfootball"
 REPOSITORY_URL = "https://github.com/openfootball/football.json.git"
 PARSER_VERSION = "openfootball-product-v1"
+LOGGER = logging.getLogger(__name__)
 _SEASON = re.compile(r"^(?:19|20)\d{2}(?:[-_]\d{2,4})?$")
 _COUNTRIES = {
     "at": "Austria",
@@ -96,11 +98,16 @@ class OpenFootballCatalogEntry:
 def update_mirror(mirror: Path, repository: str = REPOSITORY_URL) -> str:
     mirror.parent.mkdir(parents=True, exist_ok=True)
     if (mirror / ".git").exists():
-        subprocess.run(
-            ["git", "-C", str(mirror), "fetch", "--depth=1", "origin", "master"],
-            check=True,
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                ["git", "-C", str(mirror), "fetch", "--depth=1", "origin", "master"],
+                check=True,
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError:
+            revision = _local_revision(mirror)
+            LOGGER.warning("OpenFootball refresh failed; using cached revision %s", revision)
+            return revision
         subprocess.run(
             ["git", "-C", str(mirror), "checkout", "--detach", "FETCH_HEAD"],
             check=True,
@@ -112,16 +119,7 @@ def update_mirror(mirror: Path, repository: str = REPOSITORY_URL) -> str:
             check=True,
             capture_output=True,
         )
-    result = subprocess.run(
-        ["git", "-C", str(mirror), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    revision = result.stdout.strip()
-    if not re.fullmatch(r"[0-9a-f]{40}", revision):
-        raise ValueError("OpenFootball mirror returned an invalid source revision")
-    return revision
+    return _local_revision(mirror)
 
 
 def discover_catalog(root: Path, source_revision: str) -> list[OpenFootballCatalogEntry]:
@@ -320,7 +318,10 @@ def _local_revision(mirror: Path) -> str:
         capture_output=True,
         text=True,
     )
-    return result.stdout.strip()
+    revision = result.stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("OpenFootball mirror returned an invalid source revision")
+    return revision
 
 
 def _count_result(summary: BackfillSummary, result: str) -> None:

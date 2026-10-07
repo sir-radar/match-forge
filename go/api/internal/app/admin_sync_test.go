@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -103,6 +104,22 @@ func TestValidateSyncDateRangeRejectsReversedRange(t *testing.T) {
 	_, err := validateSyncDateRange("2026-10-03", "2026-10-04")
 	if err == nil || err.Error() != "from_date must not be after date" {
 		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestCommandFailureIncludesLastLogLine(t *testing.T) {
+	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	if _, err = logFile.WriteString("progress\nerror: OpenFootball fetch failed\n"); err != nil {
+		t.Fatal(err)
+	}
+
+	failure := commandFailure(errors.New("exit status 1"), logFile)
+	if failure.Error() != "exit status 1: error: OpenFootball fetch failed" {
+		t.Fatalf("failure = %q", failure)
 	}
 }
 
