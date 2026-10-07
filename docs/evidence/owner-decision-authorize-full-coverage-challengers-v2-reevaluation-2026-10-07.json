@@ -1,0 +1,30 @@
+{
+  "authorization": "FRESH_DEVELOPMENT_CORPUS_QUALIFICATION_FIT_SELECTION_AND_ONE_DEVELOPMENT_HOLDOUT_DECISION",
+  "authorized_scope": [
+    "outcome-blind retained-corpus discovery and qualification",
+    "fresh TRAIN fitting",
+    "fresh VALIDATION hyperparameter selection from the frozen grids",
+    "one DEVELOPMENT_HOLDOUT decision",
+    "V2A and V2B component evaluation",
+    "V2A and V2B ensemble evaluation",
+    "immutable evidence generation"
+  ],
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+  "effective_date": "2026-10-07",
+  "forbidden_scope": [
+    "reuse of the exposed 300-target V2 development holdout",
+    "reuse of the 712-target multimodel evaluation corpus",
+    "reuse of PitchAPI V5 spent targets",
+    "StatsBomb protected evaluation use",
+    "H2H research or H2H data for V2 parameter selection",
+    "contextual feature research",
+    "new provider acquisition",
+    "automatic production promotion"
+  ],
+  "independent_evaluation_condition": "ALREADY_EXISTING_UNSPENT_QUALIFIED_INDEPENDENT_GOVERNANCE_APPROVED_CORPUS_ONLY",
+  "new_provider_acquisition_authorized": false,
+  "production_champion_change_authorized": false,
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+  "recorded_at": "2026-10-07T21:01:14Z"
+}

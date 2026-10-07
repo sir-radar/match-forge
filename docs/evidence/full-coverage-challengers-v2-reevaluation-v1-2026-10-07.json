@@ -1,0 +1,70 @@
+{
+  "authorization": {
+    "decision_id": "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+    "decision_ref": "docs/evidence/owner-decision-authorize-full-coverage-challengers-v2-reevaluation-2026-10-07.json",
+    "decision_sha256": "b59275db932261278bcd17821987571b0759ef905cf2f8fb8cd712dd59b6d91c"
+  },
+  "contract": "MatchForgeFullCoverageChallengersV2ReevaluationGapEvidenceV1",
+  "corpus_discovery": {
+    "available_competitions": [],
+    "available_seasons": [],
+    "available_unspent_qualified_target_count": 0,
+    "cold_start_target_count": 0,
+    "fitted_team_target_count": 0,
+    "missing_fitted_team_holdout_count": 50,
+    "missing_target_count": 600,
+    "promoted_team_target_count": 0,
+    "required_competition_domains": 3,
+    "required_fitted_team_holdout_count": 50,
+    "required_target_count": 600,
+    "retained_canonical_inventory": {
+      "competition_count": 67,
+      "first_kickoff": "1993-07-23T23:59:59.999999+00:00",
+      "last_kickoff": "2026-10-05T17:30:00+00:00",
+      "match_count": 330643,
+      "qualified_for_this_protocol": false,
+      "reason": "Frozen V1 challenger team IDs have zero intersection with retained canonical history team IDs, and no explicit PitchAPI-to-canonical team crosswalk exists. The corpus cannot provide the required NATIVE_FITTED holdout subset without inventing identity mappings."
+    },
+    "retained_compatible_pitchapi_inventory": {
+      "fully_forbidden_target_count": 2198,
+      "fresh_qualified_target_count": 0,
+      "multimodel_v1_development_target_count": 216,
+      "pitchapi_v5_and_multimodel_evaluation_target_count": 712,
+      "v2_development_target_count": 1270,
+      "v2_exposed_holdout_target_count": 300
+    }
+  },
+  "development_disposition": "DEFER_INSUFFICIENT_FRESH_DATA",
+  "evaluation_completed": false,
+  "firewall": {
+    "candidate_target_count": 0,
+    "global_forbidden_manifest_ref": "docs/evaluation/full-coverage-challengers-v2-spent-targets-v1.json",
+    "global_forbidden_manifest_sha256": "b516cda36e3641dd0a8c45a53a900c79825b0e458f44db21445bf94f3009635c",
+    "global_forbidden_target_count": 2198,
+    "global_forbidden_target_ids_sha256": "457fa7018419b5dc77a7d7e97c8009d4d540a0a025ac8ff94c0c98b3350c5597",
+    "old_300_overlap": 0,
+    "old_712_overlap": 0,
+    "other_protected_overlap": 0,
+    "pitchapi_v5_overlap": 0,
+    "status": "NO_CANDIDATE_CORPUS_FROZEN"
+  },
+  "independent_evaluation_available": false,
+  "logical_execution_attempts": 0,
+  "new_development_outcomes_loaded": false,
+  "pr150_merge_commit": "862dcdd",
+  "pr150_merge_verified": true,
+  "preregistration_created": false,
+  "production_champion_changed": false,
+  "production_promotion_justified": false,
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+  "recorded_at": "2026-10-07T21:01:14Z",
+  "source_branch": "ft/full-coverage-v2-reevaluation",
+  "source_commit_at_discovery": "04a5b201e50656cedf8703c8b467e47c81d167b7",
+  "stop_code": "FRESH_DEVELOPMENT_CORPUS_REQUIRED",
+  "verification": {
+    "corpus_discovery_used_outcome_fields": false,
+    "frozen_v1_artifact_team_count": 18,
+    "retained_post_cutoff_matches_with_any_fitted_team_id": 0,
+    "retained_post_cutoff_matches_with_both_fitted_team_ids": 0
+  }
+}

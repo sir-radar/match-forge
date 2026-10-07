@@ -2,7 +2,7 @@
 
 **Verified against:** `docs/project-status.json`, immutable research evidence, and owner decision `MVP_PRODUCT_DELIVERY_ACTIVE` on 29 September 2026. Machine-readable status and append-only evidence remain authoritative if this summary becomes stale.
 
-MVP implementation is complete; live settlement evidence remains pending. Model research is `MODEL_RESEARCH_PAUSED_FOR_MVP`. MatchForge uses the retained rolling-goals Poisson reference as `MVP_FORECAST`; this product authorization does not relabel a prior research result or authorize V6, H2H fitting, confirmation, calibration work, or a new experiment.
+MVP implementation is complete; live settlement evidence remains pending. MatchForge uses the retained rolling-goals Poisson reference as `MVP_FORECAST`. The separately authorized full-coverage V2 clean re-evaluation stopped before fitting or fresh outcome loading because no retained corpus met its fresh-data and fitted-team floors. This does not authorize V6, H2H fitting, confirmation, calibration work, or another experiment.
 
 | Subject | Verified value | Required treatment |
 | --- | --- | --- |
@@ -21,6 +21,7 @@ MVP implementation is complete; live settlement evidence remains pending. Model 
 | V5 targets | `SPENT_FOR_MODEL_SELECTION` | Reproduction and post-hoc description only; never fresh confirmation evidence. |
 | Calibration research | `PITCHAPI_V5_CALIBRATION_POSTHOC_RESEARCH_V1` descriptive diagnosis complete | Successor research hypothesis exists but no model is admitted. Development-only implementation needs owner approval. |
 | StatsBomb Evaluation V2 | Independent and unchanged | Do not merge its result into PitchAPI V5. |
+| Full-coverage V2 clean re-evaluation | `DEFER_INSUFFICIENT_FRESH_DATA` / `FRESH_DEVELOPMENT_CORPUS_REQUIRED` | Preserve the 2,198-ID forbidden-target manifest. No fresh outcomes were loaded and no rerun is authorized. |
 | Production capability | No enablement is recorded in `docs/project-status.json` | Do not infer production enablement from a roadmap, proposal, or research decision. |
 
 ## Current authorized work
@@ -28,6 +29,6 @@ MVP implementation is complete; live settlement evidence remains pending. Model 
 1. Preserve the completed MVP while collecting pending live settlement evidence.
 2. Keep H2H display-only with zero model weight.
 3. Do not acquire research data, fit/evaluate an H2H candidate, execute confirmation, build V6, or start another forecasting experiment.
-4. Resume only after a new owner decision; see `docs/MVP-RESUME-RESEARCH.md` for the exact preserved handoff.
+4. Resume only after a new owner decision and a qualifying fresh corpus; see `docs/MVP-RESUME-RESEARCH.md` for the preserved handoff.
 
 The status and owner decision records agree. V5 is the first valid completed PitchAPI model comparison; its favorable predictive deltas do not override its frozen calibration rejection.

@@ -219,7 +219,13 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
         ("MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1", "PITCHAPI"),
         ("MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1", "PITCHAPI"),
     }
-    allowed = required | {("MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1", "PITCHAPI")}
+    allowed = required | {
+        ("MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1", "PITCHAPI"),
+        (
+            "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+            "MULTISOURCE_RETAINED_ONLY",
+        ),
+    }
     observed: set[tuple[str, str]] = set()
     for track in tracks:
         if not isinstance(track, Mapping):
