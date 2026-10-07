@@ -43,3 +43,25 @@ all-time meeting counts
 friendly results mixed with league results
 meetings played by materially different club identities
 ```
+
+## Residualized secondary matchup prior
+
+`MATCHFORGE_SECONDARY_MATCHUP_PRIOR_V1` is the reusable, development-research feature
+defined by `football.forecasting.h2h_residual.H2HResidualV1`. It does not replace the
+forecast snapshot. It consumes point-in-time eligible meetings and returns:
+
+```text
+secondary_matchup_prior
+h2h_usable_meeting_count
+h2h_effective_weight
+h2h_relevance
+h2h_latest_age_days
+h2h_same_orientation_count
+h2h_reversed_orientation_count
+status
+```
+
+Only `secondary_matchup_prior` is predictive. Fewer than two usable meetings produces
+zero with `INSUFFICIENT_H2H`; normal forecasting continues. `ContextualGoalAdjustmentV1`
+applies the scalar anti-symmetrically to baseline log goal rates. This contract does not
+authorize production use or promotion.
