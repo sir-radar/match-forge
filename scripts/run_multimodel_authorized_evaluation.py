@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 from football.forecasting.multimodel_authorized_evaluation import execute_authorized_evaluation
@@ -29,6 +30,19 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
+    head = subprocess.run(
+        ("git", "rev-parse", "HEAD"), check=True, capture_output=True, text=True
+    ).stdout.strip()
+    if args.source_commit != head:
+        raise RuntimeError("source commit must equal the current Git HEAD")
+    tracked_status = subprocess.run(
+        ("git", "status", "--porcelain", "--untracked-files=no"),
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if tracked_status:
+        raise RuntimeError("tracked worktree must be clean before protected evaluation")
     preregistration_sha256 = hashlib.sha256(args.preregistration.read_bytes()).hexdigest()
     result = execute_authorized_evaluation(
         snapshot_root=args.snapshot_root,
