@@ -673,6 +673,31 @@
       "api_use_authorized": false,
       "snapshot_mutation_authorized": false,
       "owner_disposition": "REFERENCE_RETAINED_CHALLENGER_REJECTED_CALIBRATION"
+    },
+    {
+      "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1",
+      "provider": "PITCHAPI",
+      "status": "FAIL_CLOSED_PROTOCOL_VIOLATION",
+      "evidence_ref": "docs/evidence/full-coverage-challengers-v2-development-2026-10-07.json",
+      "evidence_sha256": "4c2b631ffd16049ed068fb7b5bb1043db4006e929298c5781aa3b37953eeea69",
+      "report_ref": "docs/evidence/full-coverage-challengers-v2-development-2026-10-07.md",
+      "report_sha256": "92fe9f6bd6d6c3e09975c67311087eb98ddd569ae0d6425002575e76dd05423f",
+      "implementation_source_commit": "dfdd0876394b40998bfb2edbfc8c264b8b634614",
+      "development_snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5",
+      "development_corpus_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+      "development_firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+      "development_target_count": 1270,
+      "diagnostic_holdout_target_count": 300,
+      "diagnostic_coverage": 1.0,
+      "diagnostic_metrics_published": false,
+      "evaluation_execution_attempted": true,
+      "evaluation_completed": false,
+      "evaluation_outcomes_loaded": true,
+      "result_classification": "FAIL_CLOSED_PROTOCOL_VIOLATION",
+      "model_promoted": false,
+      "production_promotion_justified": false,
+      "independent_evaluation_available": false,
+      "rerun_authorized": false
     }
   ],
   "mvp_product": {

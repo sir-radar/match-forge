@@ -1,0 +1,135 @@
+{
+  "acceptance_metrics": {
+    "status": "NOT_PUBLISHED_PROTOCOL_FAILURE"
+  },
+  "architecture_verification": {
+    "full_coverage_invariant": "PASS_IN_NON_AUTHORITATIVE_DIAGNOSTIC",
+    "structured_lineage": "PASS",
+    "v1_artifacts_immutable": "PASS",
+    "whole_fixture_fallback": "PASS"
+  },
+  "contract": "MatchForgeFullCoverageChallengersV2DevelopmentFailureEvidenceV1",
+  "development_corpus_sha256": "2ace8fb86f8881dae1baeb5c7cdb277e1174e124eb264def17f658b9550c2193",
+  "development_firewall_sha256": "8b67bb05d52768b8163ce205db2fbc127f22ff879206b1f9fd11ff46b9c87704",
+  "development_mapping_sha256": "b7a586fb822446f438cbec01bd87f5dec399166b82127dddb235fc15b101d53f",
+  "development_normalized_manifest_sha256": "3d325501d63e3e070b76172e3fd94bea89bfce66181b554106afbc81de20e50f",
+  "development_snapshot_sha256": "5d179ba9933ee2284d3646a1298f0305c355a5cf178e5e580fe974b28e97b1e5",
+  "diagnostic_observations": {
+    "development_holdout_target_count": 300,
+    "metrics": "COMPUTED_IN_MEMORY_BUT_DISCARDED_AND_NOT_PUBLISHED",
+    "model_coverage": {
+      "matchforge-ensemble-v2a": {
+        "champion_fallback_rate": 0.0,
+        "coverage": 1.0
+      },
+      "matchforge-ensemble-v2b": {
+        "champion_fallback_rate": 0.0,
+        "cold_start_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-dixon-coles-hybrid-v2a": {
+        "champion_fallback_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-dixon-coles-transferable-v2b": {
+        "champion_fallback_rate": 0.0,
+        "cold_start_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-negative-binomial-hybrid-v2a": {
+        "champion_fallback_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-negative-binomial-transferable-v2b": {
+        "champion_fallback_rate": 0.0,
+        "cold_start_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-weibull-copula-hybrid-v2a": {
+        "champion_fallback_rate": 0.55,
+        "coverage": 1.0
+      },
+      "pb-weibull-copula-transferable-v2b": {
+        "champion_fallback_rate": 0.55,
+        "coverage": 1.0
+      }
+    },
+    "status": "NON_AUTHORITATIVE_PROTOCOL_INVALID"
+  },
+  "evaluation_completed": false,
+  "execution_attempted": true,
+  "execution_timestamp": "2026-10-07T16:07:21Z",
+  "fail_closed_findings": [
+    {
+      "code": "CLEAN_COMMITTED_SOURCE_PREFLIGHT",
+      "detail": "The executor was called through execute() while implementation changes were uncommitted. At that time execute() did not repeat the CLI preflight, so the supplied source identity did not identify the tested working tree.",
+      "status": "FAIL"
+    },
+    {
+      "code": "DEVELOPMENT_OUTCOMES_LOADED",
+      "detail": "The development outcomes were loaded and the diagnostic completed before the preflight defect was identified.",
+      "status": "FAIL_CLOSED"
+    },
+    {
+      "code": "DIRECT_EXECUTOR_PREFLIGHT",
+      "detail": "execute() now performs the clean-HEAD preflight before loading data; a regression test proves the rejection path.",
+      "status": "REMEDIATED"
+    },
+    {
+      "code": "RERUN",
+      "detail": "No rerun was performed after the protocol defect was found.",
+      "status": "PASS"
+    },
+    {
+      "code": "INDEPENDENT_EVALUATION",
+      "detail": "No unspent authorized independent evaluation corpus exists.",
+      "status": "NOT_AVAILABLE"
+    }
+  ],
+  "implementation_source_commit": "dfdd0876394b40998bfb2edbfc8c264b8b634614",
+  "independent_evaluation_available": false,
+  "next_owner_decision_required": "Authorize a new protocol and an unspent development or independent evaluation corpus. Do not rerun this development protocol without explicit owner authorization.",
+  "overall_result": "FAIL_CLOSED_PROTOCOL_VIOLATION",
+  "production_promotion_justified": false,
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1",
+  "published_metric_count": 0,
+  "rerun_authorized": false,
+  "selected_cold_start_diagnostic": {
+    "away_rate_coefficients": [
+      -0.08236015601146623,
+      -0.12990861829871161,
+      -0.01033431197354976,
+      0.058453427262442965,
+      -0.06123248359794786,
+      0.058453427262442965,
+      -0.09980342951360782,
+      -0.19831268908968452,
+      0.0,
+      -0.018887712414408484
+    ],
+    "home_rate_coefficients": [
+      0.0420760096217401,
+      0.08666790996826546,
+      -0.03989296600172927,
+      0.013362416014908186,
+      -0.013773970553708548,
+      0.013362475786423597,
+      0.006370249425241138,
+      0.23159048058906162,
+      0.0,
+      -0.12852492142971886
+    ],
+    "l2_regularization": 0.01,
+    "shrinkage_k": 40.0,
+    "status": "NON_AUTHORITATIVE_DO_NOT_PROMOTE",
+    "transfer_weight": 0.0
+  },
+  "spent_evaluation_target_count": 712,
+  "tests": {
+    "aggregate_check": "PASS",
+    "integration": "PASS",
+    "python": "721 passed",
+    "rust": "15 passed",
+    "web": "6 files and 21 tests passed"
+  }
+}
