@@ -37,6 +37,8 @@ def build_forecast_snapshot(
     history: Iterable[HistoricalMatch],
     source_references: tuple[str, ...] = (),
     availability_status: str = "UNKNOWN",
+    home_promoted: bool | None = None,
+    away_promoted: bool | None = None,
 ) -> ForecastInputSnapshot:
     for name, value in (
         ("kickoff_at", kickoff_at),
@@ -90,6 +92,10 @@ def build_forecast_snapshot(
         missingness.append("HOME_XG_UNAVAILABLE")
     if not any(row.xg_for is not None for row in away_rows[-10:]):
         missingness.append("AWAY_XG_UNAVAILABLE")
+    if not home_rows:
+        missingness.append("HOME_RATING_UNAVAILABLE")
+    if not away_rows:
+        missingness.append("AWAY_RATING_UNAVAILABLE")
     if availability_status == "UNKNOWN":
         missingness.append("AVAILABILITY_UNKNOWN")
     snapshot = ForecastInputSnapshot(
@@ -124,6 +130,8 @@ def build_forecast_snapshot(
         availability_status=availability_status,
         source_references=source_references,
         missingness=tuple(missingness),
+        home_promoted=home_promoted,
+        away_promoted=away_promoted,
     )
     LOGGER.info(
         "forecast snapshot built",

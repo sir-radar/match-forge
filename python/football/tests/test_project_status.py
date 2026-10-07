@@ -69,6 +69,12 @@ def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
             "status": "COMPLETE_RETAIN_CHAMPION",
             "evidence_ref": "docs/evidence/shared-pace-admission.md",
         },
+        {
+            "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1",
+            "provider": "PITCHAPI",
+            "status": "FAIL_CLOSED_PROTOCOL_VIOLATION",
+            "evidence_ref": "docs/evidence/shared-pace-admission.md",
+        },
     ]
 
     _write_json(status_path, status)
@@ -360,6 +366,12 @@ def _valid_status() -> dict[str, object]:
                 "evaluation_protocol_id": "MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1",
                 "provider": "PITCHAPI",
                 "status": "COMPLETE_RETAIN_CHAMPION",
+                "evidence_ref": "docs/evidence/shared-pace-admission.md",
+            },
+            {
+                "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1",
+                "provider": "PITCHAPI",
+                "status": "FAIL_CLOSED_PROTOCOL_VIOLATION",
                 "evidence_ref": "docs/evidence/shared-pace-admission.md",
             },
         ],
