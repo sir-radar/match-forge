@@ -216,6 +216,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3", "PITCHAPI"),
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4", "PITCHAPI"),
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5", "PITCHAPI"),
+        ("MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1", "PITCHAPI"),
     }
     observed: set[tuple[str, str]] = set()
     for track in tracks:

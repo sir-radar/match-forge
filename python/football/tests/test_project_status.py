@@ -63,6 +63,12 @@ def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
             "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
             "evidence_ref": "docs/evidence/shared-pace-admission.md",
         },
+        {
+            "evaluation_protocol_id": "MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+            "provider": "PITCHAPI",
+            "status": "COMPLETE_RETAIN_CHAMPION",
+            "evidence_ref": "docs/evidence/shared-pace-admission.md",
+        },
     ]
 
     _write_json(status_path, status)
@@ -348,6 +354,12 @@ def _valid_status() -> dict[str, object]:
                 "evaluation_protocol_id": "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V5",
                 "provider": "PITCHAPI",
                 "status": "PREPARED_AWAITING_OWNER_FREEZE_AND_EXECUTION_AUTHORIZATION",
+                "evidence_ref": "docs/evidence/shared-pace-admission.md",
+            },
+            {
+                "evaluation_protocol_id": "MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+                "provider": "PITCHAPI",
+                "status": "COMPLETE_RETAIN_CHAMPION",
                 "evidence_ref": "docs/evidence/shared-pace-admission.md",
             },
         ],
