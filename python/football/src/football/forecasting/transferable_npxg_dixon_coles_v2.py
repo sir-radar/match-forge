@@ -20,7 +20,7 @@ TAIL_START = 10
 RATE_MINIMUM = 0.05
 RATE_MAXIMUM = 6.0
 TAU_MINIMUM = 1e-9
-ModelRole = Literal["reference", "v5", "candidate"]
+ModelRole = Literal["reference", "v5", "candidate", "poisson_candidate"]
 
 
 class ResearchModelError(ValueError):
@@ -487,7 +487,11 @@ class _Layout:
             "rho": 6,
         }
         self.comp_start = 7
-        self.comp_free = max(0, len(competitions) - 1) if role == "candidate" else 0
+        self.comp_free = (
+            max(0, len(competitions) - 1)
+            if role in ("candidate", "poisson_candidate")
+            else 0
+        )
         self.home_comp_start = self.comp_start + self.comp_free
         self.size = 7 + 2 * self.comp_free
 
@@ -516,6 +520,8 @@ class _Layout:
             bounds[4] = bounds[5] = bounds[6] = (0.0, 0.0)
         elif self.role == "v5":
             bounds[5] = bounds[6] = (0.0, 0.0)
+        elif self.role == "poisson_candidate":
+            bounds[6] = (0.0, 0.0)
         bounds.extend([(-0.75, 0.75)] * (2 * self.comp_free))
         return tuple(bounds)
 

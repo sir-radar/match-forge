@@ -1,0 +1,16 @@
+{
+  "authorization": "IMPLEMENT_PREREGISTER_FIT_AND_EVALUATE_DEVELOPMENT_ONLY",
+  "confirmation_evaluation_authorized": false,
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+  "development_evaluation_authorized": true,
+  "development_fitting_authorized": true,
+  "effective_date": "2026-10-07",
+  "new_pitchapi_acquisition_authorized": false,
+  "production_champion_change_authorized": false,
+  "protected_evaluation_authorized": false,
+  "recorded_at": "2026-10-07T00:00:00Z",
+  "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+  "scope": "Residualized point-in-time H2H incremental signal beyond the frozen transferable baseline only",
+  "v6_authorized": false
+}

@@ -1,0 +1,85 @@
+{
+  "acceptance": {
+    "calibration": {
+      "absolute_intercept_maximum_each_outcome": 0.25,
+      "candidate_absolute_error_no_greater_than_baseline_each_outcome": true,
+      "intercept_interval_width_maximum_each_outcome": 0.3,
+      "slope_interval_width_maximum_each_outcome": 0.4,
+      "slope_maximum_each_outcome": 1.2,
+      "slope_minimum_each_outcome": 0.8
+    },
+    "domain": {
+      "leave_domain_out_joint_score_delta_interval_upper_maximum": 0.05,
+      "minimum_domains_with_negative_joint_score_point_delta": 3,
+      "no_domain_joint_score_point_delta_above": 0.02
+    },
+    "primary": {
+      "joint_score_log_loss_delta_interval_upper_below": 0.0,
+      "joint_score_log_loss_delta_maximum": -0.003,
+      "one_x_two_log_loss_delta_interval_upper_maximum": 0.0
+    },
+    "rule": "ALL_GATES_PASS_OR_DEVELOPMENT_REJECTED",
+    "secondary_delta_interval_upper_limits": {
+      "one_x_two_brier": 0.01,
+      "one_x_two_rps": 0.01,
+      "total_goal_crps": 0.02
+    }
+  },
+  "baseline": "TRANSFERABLE_ROLLING_GOALS_NPXG_FOR_AGAINST_POISSON_RHO_ZERO_NO_H2H",
+  "beta_h2h": {
+    "bounds": [
+      0.0,
+      0.25
+    ],
+    "initial": 0.05,
+    "method": "L-BFGS-B",
+    "objective": "JOINT_SCORE_NEGATIVE_LOG_LIKELIHOOD"
+  },
+  "bootstrap": {
+    "confidence_percent": 95,
+    "moving_block_length": 10,
+    "replicates": 2000,
+    "seed": 20260921
+  },
+  "candidate": "IDENTICAL_BASELINE_PLUS_MATCHFORGE_SECONDARY_MATCHUP_PRIOR_V1_ONLY",
+  "contract": "MatchForgeH2HIncrementalSignalPreregistrationV1",
+  "development_only": true,
+  "dispositions": [
+    "DEVELOPMENT_ACCEPTED_FOR_CONFIRMATION",
+    "DEVELOPMENT_REJECTED",
+    "DEFER_INSUFFICIENT_ELIGIBLE_TARGETS",
+    "FAIL_CLOSED_PROTOCOL_VIOLATION"
+  ],
+  "feature_contract": "MATCHFORGE_SECONDARY_MATCHUP_PRIOR_V1",
+  "firewall": {
+    "protected_or_spent_target_intersection_required": 0,
+    "verify_before_loading_development_outcomes": true
+  },
+  "maximum_positive_disposition": "DEVELOPMENT_ACCEPTED_FOR_CONFIRMATION",
+  "metrics": [
+    "joint_score_log_loss",
+    "one_x_two_log_loss",
+    "one_x_two_brier",
+    "one_x_two_rps",
+    "total_goal_crps",
+    "calibration_intercept",
+    "calibration_slope"
+  ],
+  "prequential": {
+    "minimum_h2h_training_targets": 100,
+    "ordering": [
+      "kickoff_at",
+      "fixture_id"
+    ],
+    "same_kickoff_batch_sealed": true,
+    "warmup_excluded_from_primary_evaluation": true
+  },
+  "production_champion_change_authorized": false,
+  "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+  "snapshot": {
+    "history_manifest_sha256": "90f9e5343aa1e07ccc2df721d39e4deaee99295615046f806cdadda101c656c4",
+    "name": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_QUALIFIED_V1",
+    "snapshot_id": "fcb43dd0-5910-55c0-8922-4c1c1e77246a",
+    "snapshot_sha256": "be0b5fb6a0dcc097649d5bfd413cda59b3cafcaaa3188c80fa63f2c13c1e9352"
+  }
+}
