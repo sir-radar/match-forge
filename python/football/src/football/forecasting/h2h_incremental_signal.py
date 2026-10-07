@@ -95,9 +95,7 @@ def verify_firewall(payload: Mapping[str, object]) -> None:
             raise H2HResearchError("FAIL_CLOSED_PROTOCOL_VIOLATION")
         counts = list(nested.values())
     else:
-        counts = [
-            value for key, value in payload.items() if "intersection" in str(key)
-        ]
+        counts = [value for key, value in payload.items() if "intersection" in str(key)]
     if payload.get("status") != "PASS":
         raise H2HResearchError("FAIL_CLOSED_PROTOCOL_VIOLATION")
     if not counts or any(value != 0 for value in counts):
@@ -215,6 +213,10 @@ def execute(
             "history_manifest_sha256": HISTORY_MANIFEST_SHA256,
         },
         "firewall": {"status": "PASS", "protected_or_spent_intersections": 0},
+        "pre_evaluation_aborted_invocations": 1,
+        "pre_evaluation_abort_reason": (
+            "script path launch could not import repository scripts; no outcomes loaded"
+        ),
         "coverage": coverage,
         "warmup_targets": warmup_count,
         "scored_targets": len(scored),

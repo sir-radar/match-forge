@@ -102,7 +102,7 @@ sprint2-evaluate: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run football --database-url "$$DATABASE_URL" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" --authoritative-worktree-clean evaluate sprint2
 
 h2h-context-evaluate:
-	@$(TOOL_ENV); uv run python scripts/run_h2h_incremental_signal_research.py
+	@$(TOOL_ENV); uv run python -m scripts.run_h2h_incremental_signal_research
 
 model-fit:
 	@$(TOOL_ENV); uv run football models fit --model-id "$(MODEL_ID)" --training-data "$(TRAINING_DATA)" --config "$(MODEL_CONFIG)" --artifact-root "$(ARTIFACT_ROOT)"
