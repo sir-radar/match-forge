@@ -290,6 +290,36 @@ artifact identities may not
 
 Target outcomes remain separate from forecast payloads.
 
+## Full-Coverage Challenger Forecasts
+
+A full-coverage challenger must return a valid forecast for every fixture that is
+eligible for the champion. It may do so with its fitted model, an approved native
+cold-start calculation, or an explicit whole-fixture champion fallback.
+
+Do not combine one team's challenger estimate with the other team's champion
+estimate. The score matrix is one joint fixture distribution.
+
+Each forecast must store its mode and exact model artifacts. Required modes are:
+
+```text
+NATIVE
+COLD_START_HOME
+COLD_START_AWAY
+COLD_START_BOTH
+CHAMPION_FALLBACK
+```
+
+Store native, cold-start, and champion-fallback coverage separately. Overall
+coverage does not prove native challenger coverage.
+
+Team state has separate parts: presence in the fitted artifact, eligible prior
+history, and known promotion status. Do not collapse them into one field when a
+team can be unseen in the artifact but have qualified history elsewhere.
+
+Cold-start selection uses development data only. Once a protected corpus has
+influenced model selection, it may be used for reproduction and historical
+diagnostics but not for new tuning, acceptance, calibration, or promotion.
+
 ---
 
 ## Forecast Identity and Retry Convergence

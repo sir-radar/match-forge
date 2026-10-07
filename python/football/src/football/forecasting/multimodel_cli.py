@@ -14,7 +14,10 @@ import psycopg
 from football.forecasting.model_contracts import (
     CompetitionContext,
     FittedModelArtifact,
+    ForecastFallbackReason,
     ForecastInputSnapshot,
+    ForecastLineage,
+    ForecastMode,
     HistoricalMatch,
     ModelAvailability,
     ModelForecast,
@@ -275,6 +278,8 @@ def _load_snapshot(path: Path) -> ForecastInputSnapshot:
         history=history,
         source_references=tuple(str(item) for item in row.get("source_references", [])),
         availability_status=str(row.get("availability_status", "UNKNOWN")),
+        home_promoted=cast(bool | None, row.get("home_promoted")),
+        away_promoted=cast(bool | None, row.get("away_promoted")),
     )
 
 
@@ -306,11 +311,47 @@ def _forecast_dict(forecast: ModelForecast) -> dict[str, object]:
         "score_labels": list(forecast.score_labels),
         "score_matrix": [list(row) for row in forecast.score_matrix],
         "input_snapshot_sha256": forecast.input_snapshot_sha256,
+        "warnings": list(forecast.warnings),
     }
 
 
 def _forecast_from_dict(row: Mapping[str, Any]) -> ModelForecast:
     probabilities = cast(Mapping[str, Any], row["probabilities"])
+    lineage_row = cast(Mapping[str, Any] | None, row.get("lineage"))
+    lineage = (
+        ForecastLineage(
+            forecast_mode=ForecastMode(str(lineage_row["forecast_mode"])),
+            primary_model_id=str(lineage_row["primary_model_id"]),
+            primary_model_artifact_sha256=str(lineage_row["primary_model_artifact_sha256"]),
+            fallback_model_id=(
+                str(lineage_row["fallback_model_id"])
+                if lineage_row.get("fallback_model_id") is not None
+                else None
+            ),
+            fallback_model_artifact_sha256=(
+                str(lineage_row["fallback_model_artifact_sha256"])
+                if lineage_row.get("fallback_model_artifact_sha256") is not None
+                else None
+            ),
+            fallback_reason=ForecastFallbackReason(str(lineage_row["fallback_reason"])),
+            home_artifact_state=str(lineage_row["home_artifact_state"]),
+            away_artifact_state=str(lineage_row["away_artifact_state"]),
+            home_history_state=str(lineage_row["home_history_state"]),
+            away_history_state=str(lineage_row["away_history_state"]),
+            home_promoted=cast(bool | None, lineage_row.get("home_promoted")),
+            away_promoted=cast(bool | None, lineage_row.get("away_promoted")),
+            native_component_used=bool(lineage_row["native_component_used"]),
+            cold_start_component_used=bool(lineage_row["cold_start_component_used"]),
+            champion_fallback_used=bool(lineage_row["champion_fallback_used"]),
+            ensemble_mode=(
+                str(lineage_row["ensemble_mode"])
+                if lineage_row.get("ensemble_mode") is not None
+                else None
+            ),
+        )
+        if lineage_row is not None
+        else None
+    )
     return ModelForecast(
         fixture_id=UUID(str(row["fixture_id"])),
         model_id=str(row["model_id"]),
@@ -339,8 +380,15 @@ def _forecast_from_dict(row: Mapping[str, Any]) -> ModelForecast:
         home_clean_sheet=float(probabilities["home_clean_sheet"]),
         away_clean_sheet=float(probabilities["away_clean_sheet"]),
         status=ModelStatus.SUCCESS,
-        warnings=(),
+        warnings=tuple(str(item) for item in row.get("warnings", [])),
         input_snapshot_sha256=str(row["input_snapshot_sha256"]),
+        component_weights=tuple(
+            (str(model_id), float(weight))
+            for model_id, weight in cast(
+                Mapping[str, Any], row.get("component_weights", {})
+            ).items()
+        ),
+        lineage=lineage,
     )
 
 

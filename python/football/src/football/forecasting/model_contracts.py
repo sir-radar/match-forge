@@ -28,6 +28,48 @@ class ModelRole(StrEnum):
     EXTERNAL_BENCHMARK = "EXTERNAL_BENCHMARK"
 
 
+class ForecastMode(StrEnum):
+    NATIVE = "NATIVE"
+    COLD_START_HOME = "COLD_START_HOME"
+    COLD_START_AWAY = "COLD_START_AWAY"
+    COLD_START_BOTH = "COLD_START_BOTH"
+    CHAMPION_FALLBACK = "CHAMPION_FALLBACK"
+
+
+class ForecastFallbackReason(StrEnum):
+    NONE = "NONE"
+    HOME_UNSEEN = "HOME_UNSEEN"
+    AWAY_UNSEEN = "AWAY_UNSEEN"
+    BOTH_UNSEEN = "BOTH_UNSEEN"
+    HOME_INSUFFICIENT_HISTORY = "HOME_INSUFFICIENT_HISTORY"
+    AWAY_INSUFFICIENT_HISTORY = "AWAY_INSUFFICIENT_HISTORY"
+    BOTH_INSUFFICIENT_HISTORY = "BOTH_INSUFFICIENT_HISTORY"
+    COLD_START_UNAVAILABLE = "COLD_START_UNAVAILABLE"
+    MODEL_FIT_UNAVAILABLE = "MODEL_FIT_UNAVAILABLE"
+    MODEL_ERROR = "MODEL_ERROR"
+    INVALID_DISTRIBUTION = "INVALID_DISTRIBUTION"
+
+
+@dataclass(frozen=True, slots=True)
+class ForecastLineage:
+    forecast_mode: ForecastMode
+    primary_model_id: str
+    primary_model_artifact_sha256: str
+    fallback_model_id: str | None
+    fallback_model_artifact_sha256: str | None
+    fallback_reason: ForecastFallbackReason
+    home_artifact_state: str
+    away_artifact_state: str
+    home_history_state: str
+    away_history_state: str
+    home_promoted: bool | None
+    away_promoted: bool | None
+    native_component_used: bool
+    cold_start_component_used: bool
+    champion_fallback_used: bool
+    ensemble_mode: str | None = None
+
+
 class CompetitionContext(StrEnum):
     LEAGUE = "LEAGUE"
     DOMESTIC_CUP = "DOMESTIC_CUP"
@@ -140,6 +182,8 @@ class ForecastInputSnapshot:
     availability_status: str = "UNKNOWN"
     source_references: tuple[str, ...] = ()
     missingness: tuple[str, ...] = ()
+    home_promoted: bool | None = None
+    away_promoted: bool | None = None
 
     @property
     def sha256(self) -> str:
@@ -197,6 +241,7 @@ class ModelForecast:
     warnings: tuple[str, ...]
     input_snapshot_sha256: str
     component_weights: tuple[tuple[str, float], ...] = ()
+    lineage: ForecastLineage | None = None
 
     def __post_init__(self) -> None:
         if self.status is ModelStatus.SUCCESS:

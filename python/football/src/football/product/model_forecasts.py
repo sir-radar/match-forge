@@ -166,4 +166,26 @@ def model_forecast_payload(forecast: ModelForecast | None) -> dict[str, object] 
         "away_goal_distribution": list(forecast.away_goal_distribution),
         "total_goal_distribution": list(forecast.total_goal_distribution),
         "component_weights": dict(forecast.component_weights),
+        "lineage": (
+            {
+                "forecast_mode": forecast.lineage.forecast_mode.value,
+                "primary_model_id": forecast.lineage.primary_model_id,
+                "primary_model_artifact_sha256": (forecast.lineage.primary_model_artifact_sha256),
+                "fallback_model_id": forecast.lineage.fallback_model_id,
+                "fallback_model_artifact_sha256": (forecast.lineage.fallback_model_artifact_sha256),
+                "fallback_reason": forecast.lineage.fallback_reason.value,
+                "home_artifact_state": forecast.lineage.home_artifact_state,
+                "away_artifact_state": forecast.lineage.away_artifact_state,
+                "home_history_state": forecast.lineage.home_history_state,
+                "away_history_state": forecast.lineage.away_history_state,
+                "home_promoted": forecast.lineage.home_promoted,
+                "away_promoted": forecast.lineage.away_promoted,
+                "native_component_used": forecast.lineage.native_component_used,
+                "cold_start_component_used": forecast.lineage.cold_start_component_used,
+                "champion_fallback_used": forecast.lineage.champion_fallback_used,
+                "ensemble_mode": forecast.lineage.ensemble_mode,
+            }
+            if forecast.lineage is not None
+            else None
+        ),
     }
