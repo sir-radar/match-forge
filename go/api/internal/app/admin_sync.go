@@ -230,7 +230,7 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 		runner.fail(runID, err)
 		return
 	}
-	logFile, err := os.OpenFile(absoluteLog, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o600)
+	logFile, err := os.OpenFile(absoluteLog, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0o600)
 	if err != nil {
 		runner.fail(runID, err)
 		return
@@ -275,7 +275,7 @@ func (runner *CommandSyncRunner) runCommand(
 	lastLine, scanErr := lastOutputLine(io.TeeReader(pipe, logFile))
 	waitErr := command.Wait()
 	if waitErr != nil {
-		return nil, waitErr
+		return nil, commandFailure(waitErr, logFile)
 	}
 	if scanErr != nil {
 		return nil, scanErr
@@ -297,6 +297,17 @@ func lastOutputLine(reader io.Reader) (string, error) {
 		}
 	}
 	return lastLine, scanner.Err()
+}
+
+func commandFailure(cause error, logFile *os.File) error {
+	if _, err := logFile.Seek(0, io.SeekStart); err != nil {
+		return cause
+	}
+	lastLine, err := lastOutputLine(logFile)
+	if err != nil || strings.TrimSpace(lastLine) == "" {
+		return cause
+	}
+	return fmt.Errorf("%w: %s", cause, lastLine)
 }
 
 func (runner *CommandSyncRunner) fail(runID string, cause error) {

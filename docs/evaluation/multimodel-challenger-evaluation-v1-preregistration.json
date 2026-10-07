@@ -1,0 +1,105 @@
+{
+  "acceptance": {
+    "coverage": "all 712 frozen evaluation targets on all three domains",
+    "every_domain_calibration_worsening_maximums": {
+      "absolute_intercept_deviation_from_zero": 0.05,
+      "absolute_slope_deviation_from_one": 0.1
+    },
+    "every_domain_joint_log_loss_interval_upper_maximum": 0.05,
+    "macro_guardrail_interval_upper_maximums": {
+      "multiclass_brier": 0.01,
+      "ranked_probability_score": 0.01,
+      "result_log_loss": 0.02,
+      "total_goal_crps": 0.02
+    },
+    "macro_primary_interval_upper_strict_maximum": 0.0,
+    "macro_primary_point_delta_maximum": -0.01,
+    "promotion_requires_all_gates": true
+  },
+  "authorization": {
+    "authorized_at": "2026-10-07",
+    "models": [
+      "pb-dixon-coles-v1",
+      "pb-hierarchical-bayes-v1",
+      "pb-negative-binomial-v1",
+      "pb-weibull-copula-v1",
+      "matchforge-ensemble-v1"
+    ],
+    "owner_authorized_protected_evaluation": true,
+    "owner_instruction": "Promote only if a challenger materially and robustly outperforms the current champion under existing governance criteria; otherwise retain the champion."
+  },
+  "champion": {
+    "artifact_path": "docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json",
+    "model_id": "transferable-rolling-goals-poisson-v1"
+  },
+  "contract": "MatchForgeMultiModelEvaluationPreregistrationV1",
+  "development": {
+    "classical_half_life_days": [180.0, 365.0, 730.0],
+    "configuration_selection_rule": "maximize valid chronological development coverage, then minimize joint-score log loss, then select the shorter half-life",
+    "ensemble_constraints": "nonnegative weights summing to one",
+    "ensemble_objective": "joint_score_log_loss",
+    "ensemble_sources": "chronological development predictions only",
+    "folds": 4,
+    "hierarchical_bayes": {
+      "burn": 1500,
+      "chains": 4,
+      "half_life_days": 365.0,
+      "maximum_rhat": 1.1,
+      "minimum_effective_sample_size": 100.0,
+      "n_cores": 1,
+      "random_seed": 20261007,
+      "samples": 3000,
+      "thin": 1
+    },
+    "manifest_sha256": "be4251a4f53307bae0895c856b5a9ffdf21cdd64da9f0610c8273924d4bef62e",
+    "scope": "bundesliga_2021_22",
+    "target_count": 216
+  },
+  "evaluation": {
+    "domains": {
+      "bundesliga_2022_23": {
+        "manifest_sha256": "893b888a36474c7cf55a207cb266d32a60351c0c87e9659a38a2cdc962784f74",
+        "targets": 216
+      },
+      "bundesliga_2023_24": {
+        "manifest_sha256": "0700ee9d976366db3a12b0c3bc4c9e3d6a953d95b7fbe1dac153773553ae9b87",
+        "targets": 216
+      },
+      "ligue1_2022_23": {
+        "manifest_sha256": "ded84fa1ce6f2695469f1e258bffd8c2b3ac79ee5edec5afa24be0e4d0b0939d",
+        "targets": 280
+      }
+    },
+    "fit_or_refit_from_evaluation_outcomes": false,
+    "model_selection_from_evaluation_outcomes": false,
+    "protected_target_count": 712
+  },
+  "feature_ablation": {
+    "h2h": "measure only where a model consumes it; otherwise retain as descriptive with zero predictive influence",
+    "rating": "measure only where a model consumes it; otherwise retain as descriptive with zero predictive influence",
+    "xg_xga": "measure only where a model consumes it; otherwise retain as descriptive with zero predictive influence"
+  },
+  "metrics": [
+    "joint_score_log_loss",
+    "result_log_loss",
+    "multiclass_brier",
+    "ranked_probability_score",
+    "total_goal_crps",
+    "calibration_intercept",
+    "calibration_slope",
+    "reliability_bins",
+    "coverage"
+  ],
+  "protocol_id": "MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+  "snapshot": {
+    "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+    "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+    "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea"
+  },
+  "uncertainty": {
+    "block_length_kickoff_batches": 10,
+    "method": "paired moving-block bootstrap within competition",
+    "replicates": 2000,
+    "seed": 20260924
+  }
+}

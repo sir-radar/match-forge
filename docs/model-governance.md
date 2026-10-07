@@ -559,6 +559,31 @@ Retirement is also an explicit governance event.
 
 Historical forecasts continue to reference the exact artifact identities they originally used even after a mutable production alias changes.
 
+### Multi-model research runners
+
+The research runner may compare the frozen production control with these versioned
+penaltyblog 1.13.0 adapters:
+
+- `pb-dixon-coles-v1`;
+- `pb-hierarchical-bayes-v1`;
+- `pb-negative-binomial-v1`;
+- `pb-weibull-copula-v1`.
+
+All adapters consume the same point-in-time `ForecastInputSnapshot`; they do not query
+their own history. Each fit records the exact dependency version, configuration,
+training interval, dataset checksum, feature contract, code revision, random seed, and
+available diagnostics. The Bayesian adapter uses an explicitly normalized
+posterior-predictive grid and records that choice in its artifact identity. The other
+adapters retain explicit unresolved tail mass within the declared numerical tolerance.
+
+Penaltyblog's public persistence API uses pickle. MatchForge therefore permits that file
+only as a checksum-verified, trusted-local research execution cache. It is not a
+canonical production artifact and must never be loaded from an untrusted location.
+
+These adapters, learned linear pools, and third-party prediction feeds remain research
+or benchmark inputs until a governed chronological evaluation and explicit promotion
+decision succeed. Enabling a runner does not change the production champion.
+
 ---
 
 ## Failure and Stop Semantics

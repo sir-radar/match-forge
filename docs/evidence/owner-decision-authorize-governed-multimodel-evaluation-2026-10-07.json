@@ -1,0 +1,31 @@
+{
+  "authorized_models": [
+    "pb-dixon-coles-v1",
+    "pb-hierarchical-bayes-v1",
+    "pb-negative-binomial-v1",
+    "pb-weibull-copula-v1",
+    "matchforge-ensemble-v1"
+  ],
+  "authorized_scope": [
+    "governed chronological out-of-sample evaluation against the current production champion",
+    "feature ablation where evaluated models consume the feature",
+    "ensemble fitting from development predictions only",
+    "final model comparison and selection"
+  ],
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_GOVERNED_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+  "evaluation_metrics": [
+    "joint_score_log_loss",
+    "one_x_two_log_loss",
+    "multiclass_brier",
+    "ranked_probability_score",
+    "total_goal_crps",
+    "calibration",
+    "competition_level_performance"
+  ],
+  "evaluation_outcomes_may_fit_tune_refit_or_calibrate_models": false,
+  "evaluation_outcomes_may_fit_ensemble_weights": false,
+  "model_promotion_authorized_only_if_existing_governance_criteria_pass": true,
+  "recorded_at": "2026-10-07T00:00:00Z",
+  "retain_champion_if_no_challenger_materially_and_robustly_outperforms": true
+}

@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-09-30T00:00:00Z",
+  "updated_at": "2026-10-07T00:00:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -46,7 +46,8 @@
     "AUTHORIZE_REVISED_H2H_DEVELOPMENT_HISTORY_ACQUISITION_V2",
     "AUTHORIZE_REGULAR_SEASON_FILTERING_AND_COMPLETE_H2H_HISTORY_ACQUISITION_V3",
     "AUTHORIZE_FIREWALL_SAFE_H2H_HISTORY_EXTENSION_V1",
-    "MVP_PRODUCT_DELIVERY_ACTIVE"
+    "MVP_PRODUCT_DELIVERY_ACTIVE",
+    "AUTHORIZE_GOVERNED_MULTIMODEL_CHALLENGER_EVALUATION_V1"
   ],
   "closed_routes": [
     {
@@ -67,6 +68,44 @@
     }
   ],
   "evaluation_tracks": [
+    {
+      "evaluation_protocol_id": "MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+      "provider": "PITCHAPI",
+      "status": "COMPLETE_RETAIN_CHAMPION",
+      "owner_decision": "AUTHORIZE_GOVERNED_MULTIMODEL_CHALLENGER_EVALUATION_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-governed-multimodel-evaluation-2026-10-07.json",
+      "owner_decision_sha256": "e6587eb956dfe5e5f1c2f7df8c02bb4d406d210ae5d3f8b84780ea166ead3bd8",
+      "preregistration_ref": "docs/evaluation/multimodel-challenger-evaluation-v1-preregistration.json",
+      "preregistration_sha256": "bb0800536f136b0e52df95055f72bec204613f37dd315f6a594f9980328db207",
+      "evidence_ref": "docs/evidence/multimodel-challenger-evaluation-v1-2026-10-07.json",
+      "evidence_sha256": "a5ca0e1eb30d407330ee548e98db2b1817eaec1e347ef87f19bf7c20440e3984",
+      "report_ref": "docs/evidence/multimodel-challenger-evaluation-v1-2026-10-07.md",
+      "report_sha256": "557ece1e082fed45c7a307849750a54802e7630aaeccdbd9d340053b11f53970",
+      "implementation_source_commit": "9a25646d00ebc0c20983dbff8d5d205843f1b8be",
+      "snapshot_sha256": "435bc3760cd3790e9f79cfc48801da0289fa73dbd30b02e63dc84468fd5a74ea",
+      "corpus_sha256": "42d229ddbdc8a1349115c2cb258d970b82083265f64cadf6050b7a2f46b8f9a4",
+      "firewall_sha256": "bb5e9899fc73acda3d1f1f67e27ad4004ee83867b30ceb3b74e2e870303e14d2",
+      "exact_evaluation_targets": 712,
+      "champion_target_count": 712,
+      "best_challenger_target_count": 318,
+      "best_challenger_coverage": 0.44662921348314605,
+      "hierarchical_bayes_target_count": 0,
+      "hierarchical_bayes_failure": "Bayesian R-hat exceeds configured maximum",
+      "ensemble_artifact_sha256": "aa9ebc24fef384746a6ae17d920e9016dfb5a0f87a35dd1292b974e4553901e9",
+      "prediction_manifest_sha256": "fadcd93146d62881a8c374d999b1469a83046cde347fcd7db97ba28cb0f532cb",
+      "evaluation_execution_authorized": true,
+      "evaluation_executed": true,
+      "exact_logical_execution_attempts": 1,
+      "pre_evaluation_aborted_invocations": 1,
+      "pre_evaluation_abort_reason": "supplied source SHA did not match HEAD; stopped before protected outcomes loaded; no result written",
+      "evaluation_outcomes_loaded": true,
+      "evaluation_outcomes_used_for_fit_tune_refit_calibrate_or_ensemble": false,
+      "result_classification": "RETAIN_CHAMPION",
+      "winning_model": "transferable-rolling-goals-poisson-v1",
+      "model_promoted": false,
+      "production_promotion_justified": false,
+      "rerun_authorized": false
+    },
     {
       "evaluation_protocol_id": "EVALUATION_V2",
       "provider": "STATSBOMB",

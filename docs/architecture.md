@@ -288,6 +288,20 @@ Python correctness prototype
 → equivalence tests
 ```
 
+## Multi-model Forecast Boundary
+
+Python constructs one immutable, point-in-time forecast snapshot per fixture and passes
+that same snapshot to every eligible model through the model registry. One model failure
+is recorded without suppressing successful forecasts from other models. Model artifacts,
+per-model forecasts, evaluations, and external probability benchmarks have separate
+append-only storage; the existing production forecast table remains the champion-serving
+contract.
+
+The canonical joint score distribution is the source for 1X2, totals, BTTS, clean-sheet,
+and simulation inputs. Context features retain structured competition type, home/away
+splits, missingness, rest, opponent-adjusted form, and recency-weighted head-to-head data.
+External provider predictions are benchmark-only and require exact fixture mapping.
+
 ## API Boundary
 
 The Go API exposes only capabilities supported by executed data and evaluation gates.

@@ -10,7 +10,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -100,6 +100,18 @@ pretraining-check: project-status-check identity-check pretraining-snapshot-chec
 sprint2-evaluate: up
 	@test -z "$$(git status --porcelain)" || { echo "Sprint 2 evaluation requires a clean worktree" >&2; exit 2; }
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run football --database-url "$$DATABASE_URL" --data-root "$(CURDIR)/.local/football-data" --report-root "$(SPRINT2_REPORT_ROOT)" --code-commit-sha "$(CODE_COMMIT_SHA)" --dependency-lock-sha256 "$(DEPENDENCY_LOCK_SHA256)" --authoritative-worktree-clean evaluate sprint2
+
+model-fit:
+	@$(TOOL_ENV); uv run football models fit --model-id "$(MODEL_ID)" --training-data "$(TRAINING_DATA)" --config "$(MODEL_CONFIG)" --artifact-root "$(ARTIFACT_ROOT)"
+
+model-forecast:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run football models forecast --manifest "$(MODEL_MANIFEST)" --snapshot "$(FORECAST_SNAPSHOT)" $(if $(PERSIST),--persist,)
+
+model-evaluate:
+	@$(TOOL_ENV); uv run football models evaluate --observations "$(MODEL_OBSERVATIONS)"
+
+probability-benchmark:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run football benchmarks collect --provider "$(BENCHMARK_PROVIDER)" --provider-fixture-id "$(PROVIDER_FIXTURE_ID)"
 
 prototype-bootstrap:
 	@test -x $(UV) || { echo "missing $(UV); run make bootstrap" >&2; exit 3; }

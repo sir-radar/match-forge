@@ -1624,6 +1624,8 @@ class ProductSync:
                   AND NOT EXISTS (
                       SELECT 1 FROM football.product_forecasts forecast
                       WHERE forecast.fixture_id = football.product_fixtures.fixture_id
+                        AND forecast.model_algorithm_version =
+                            'transferable-rolling-goals-poisson-v1'
                   )
                 ORDER BY kickoff_at, fixture_id
                 """,
