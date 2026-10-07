@@ -124,11 +124,16 @@ def _mapped_prediction(
     home_team: str,
     away_team: str,
     raw_selection: str,
+    unmapped_market: str = "UNMAPPED",
 ) -> ImportedPrediction | None:
+    selection_text = raw_selection.strip()
+    if not selection_text:
+        return None
     mapped = map_external_market(raw_selection)
     if mapped is None:
-        return None
-    market, selection = mapped
+        market, selection = unmapped_market, selection_text
+    else:
+        market, selection = mapped
     return ImportedPrediction(
         source_page=source_page,
         prediction_date=prediction_date,
@@ -246,11 +251,20 @@ def parse_slybet(
         flag = _first(date_cell, tag="img") if date_cell is not None else None
         competition = flag.attrs.get("alt", "Unknown") if flag is not None else "Unknown"
         raw_values = (
-            _text(_first(item, class_name="smp-col-1x2") or Element("td", {})),
-            _slybet_total(_text(_first(item, class_name="smp-col-ou") or Element("td", {}))),
-            _slybet_btts(_text(_first(item, class_name="smp-col-btts") or Element("td", {}))),
+            (
+                "RESULT_1X2",
+                _text(_first(item, class_name="smp-col-1x2") or Element("td", {})),
+            ),
+            (
+                "TOTAL_GOALS",
+                _slybet_total(_text(_first(item, class_name="smp-col-ou") or Element("td", {}))),
+            ),
+            (
+                "BTTS",
+                _slybet_btts(_text(_first(item, class_name="smp-col-btts") or Element("td", {}))),
+            ),
         )
-        for raw_selection in raw_values:
+        for unmapped_market, raw_selection in raw_values:
             row = _mapped_prediction(
                 source_page=source_page,
                 prediction_date=prediction_date,
@@ -259,6 +273,7 @@ def parse_slybet(
                 home_team=_text(home),
                 away_team=_text(away),
                 raw_selection=raw_selection,
+                unmapped_market=unmapped_market,
             )
             if row is not None:
                 rows.append(row)

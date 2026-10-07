@@ -67,6 +67,7 @@ describe("PredictionsPage", () => {
     expect(screen.getByText("64.2%")).toBeInTheDocument();
     expect(screen.getByText("0.0%", { selector: "strong" })).toBeInTheDocument();
     expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-28");
+    expect(screen.getByRole("option", { name: "Unmapped Provider Market" })).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("external-predictions?date=2026-09-28"),
       expect.any(Object),

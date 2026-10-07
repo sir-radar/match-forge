@@ -20,14 +20,22 @@ def test_r2bet_parser_extracts_dated_fixture_and_market() -> None:
       <div data-link="https://r2bet.com/match/1"><p>Odds: <span>1.41</span></p>
         <p>Pick: <span>Home(1)</span></p></div>
     </article>
+    <article>
+      <div data-link="https://r2bet.com/match/2"><p>Spain La Liga</p><p>19:00</p></div>
+      <div class="teams"><p>Valencia</p><svg></svg><p>Villarreal</p></div>
+      <div data-link="https://r2bet.com/match/2"><p>Odds: <span>1.90</span></p>
+        <p>Pick: <span>Asian Handicap -1.5</span></p></div>
+    </article>
     """
 
     rows = parse_r2bet(html, TARGET_DATE, "https://r2bet.com/picks")
 
     assert [(row.competition, row.home_team, row.away_team) for row in rows] == [
-        ("UEFA U21 Championship", "Poland U21", "Sweden U21")
+        ("UEFA U21 Championship", "Poland U21", "Sweden U21"),
+        ("Spain La Liga", "Valencia", "Villarreal"),
     ]
     assert (rows[0].market, rows[0].selection) == ("RESULT_1X2", "HOME_WIN")
+    assert (rows[1].market, rows[1].selection) == ("UNMAPPED", "Asian Handicap -1.5")
     assert rows[0].original_date_text == "30th , Wed Sep 2026"
 
 
@@ -38,18 +46,22 @@ def test_1960tips_parser_selects_structured_public_tip() -> None:
       <div class="table-row"><div class="tb-league">ENG NL</div>
         <div class="tb-match">Eastleigh vs Southend United</div>
         <div class="tb-tip">X2</div></div>
+      <div class="table-row"><div class="tb-league">Spain La Liga</div>
+        <div class="tb-match">Valencia vs Villarreal</div>
+        <div class="tb-tip">Draw No Bet</div></div>
     </div>
     """
 
     rows = parse_1960tips(html, TARGET_DATE, "https://www.1960tips.com/todays-predictions")
 
-    assert len(rows) == 1
+    assert len(rows) == 2
     assert (rows[0].competition, rows[0].home_team, rows[0].away_team) == (
         "ENG NL",
         "Eastleigh",
         "Southend United",
     )
     assert (rows[0].market, rows[0].selection) == ("DOUBLE_CHANCE", "DRAW_OR_AWAY")
+    assert (rows[1].market, rows[1].selection) == ("UNMAPPED", "Draw No Bet")
 
 
 def test_slybet_parser_emits_each_supported_market() -> None:
@@ -59,7 +71,12 @@ def test_slybet_parser_emits_each_supported_market() -> None:
         <td class="smp-col-teams"><span class="smp-team1">Eastleigh</span>
           <span class="smp-team2">Southend</span></td>
         <td class="smp-col-1x2">1X</td><td class="smp-col-ou">+2.5</td>
-        <td class="smp-col-btts">Yes</td></tr></tbody>
+        <td class="smp-col-btts">Yes</td></tr>
+      <tr><td class="smp-col-date"><img alt="Spain" /></td>
+        <td class="smp-col-teams"><span class="smp-team1">Valencia</span>
+          <span class="smp-team2">Villarreal</span></td>
+        <td class="smp-col-1x2">Draw No Bet</td><td class="smp-col-ou">Over 3.5</td>
+        <td class="smp-col-btts">No</td></tr></tbody>
     </table>
     """
 
@@ -69,11 +86,14 @@ def test_slybet_parser_emits_each_supported_market() -> None:
         ("DOUBLE_CHANCE", "HOME_OR_DRAW"),
         ("TOTAL_GOALS", "TOTAL_OVER_2_5"),
         ("BTTS", "BTTS_YES"),
+        ("RESULT_1X2", "Draw No Bet"),
+        ("TOTAL_GOALS", "Over 3.5"),
+        ("BTTS", "No"),
     }
-    assert all(row.competition == "England" for row in rows)
+    assert {row.competition for row in rows} == {"England", "Spain"}
 
 
-def test_matchoutlook_parser_extracts_supported_public_selections_only() -> None:
+def test_matchoutlook_parser_preserves_unmapped_public_selections() -> None:
     html = """
     <h1>Today's Football Predictions</h1>
     <div id="today-div">
@@ -86,6 +106,9 @@ def test_matchoutlook_parser_extracts_supported_public_selections_only() -> None
       <div class="match-section"><div class="match-title">Egypt Cup <b>18:00</b></div>
         <div class="match-content"><b>Ceramica Cleopatra</b><b>vs</b><b>Al-Masry</b>
           <b class="our-bet">Best Bet: <b>Under 3.5</b></b></div></div>
+      <div class="match-section"><div class="match-title">Spain La Liga</div>
+        <div class="match-content"><b>Valencia</b><b>vs</b><b>Villarreal</b>
+          <b class="our-bet">Best Bet: <b>Asian Handicap -1.5</b></b></div></div>
     </div>
     """
 
@@ -93,10 +116,42 @@ def test_matchoutlook_parser_extracts_supported_public_selections_only() -> None
         html, TARGET_DATE, "https://www.matchoutlook.com/todays-football-predictions"
     )
 
-    assert [(row.competition, row.home_team, row.away_team, row.selection) for row in rows] == [
-        ("UEFA Champions League", "SK Brann", "HJK Helsinki", "HOME_WIN"),
-        ("England National League", "Eastleigh", "Southend", "TOTAL_OVER_1_5"),
-        ("Egypt Cup", "Ceramica Cleopatra", "Al-Masry", "TOTAL_UNDER_3_5"),
+    assert [
+        (row.competition, row.home_team, row.away_team, row.market, row.selection) for row in rows
+    ] == [
+        ("UEFA Champions League", "SK Brann", "HJK Helsinki", "RESULT_1X2", "HOME_WIN"),
+        (
+            "England National League",
+            "Eastleigh",
+            "Southend",
+            "TOTAL_GOALS",
+            "TOTAL_OVER_1_5",
+        ),
+        ("Egypt Cup", "Ceramica Cleopatra", "Al-Masry", "TOTAL_GOALS", "TOTAL_UNDER_3_5"),
+        ("Spain La Liga", "Valencia", "Villarreal", "UNMAPPED", "Asian Handicap -1.5"),
+    ]
+
+
+def test_collection_enables_source_when_only_selection_is_unmapped() -> None:
+    html = """
+    <h1>Today's Football Predictions</h1>
+    <div id="today-div"><div class="match-section">
+      <div class="match-title">Spain La Liga</div>
+      <div class="match-content"><b>Valencia</b><b>vs</b><b>Villarreal</b>
+        <b class="our-bet">Best Bet: <b>Asian Handicap -1.5</b></b></div>
+    </div></div>
+    """
+
+    result = collect_sources(
+        TARGET_DATE,
+        requested_source="matchoutlook",
+        fetcher=lambda _: html,
+        today=TARGET_DATE,
+    )[0]
+
+    assert result.status == "ENABLED"
+    assert [(row.market, row.selection) for row in result.rows] == [
+        ("UNMAPPED", "Asian Handicap -1.5")
     ]
 
 

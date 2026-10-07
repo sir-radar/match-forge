@@ -243,6 +243,9 @@ func TestSelectionAgreement(t *testing.T) {
 	if probability, agreement := selectionAgreement("UNKNOWN", "UNKNOWN", values); probability != nil || agreement != "UNABLE_TO_EVALUATE" {
 		t.Fatalf("unsupported selection = (%v, %s)", probability, agreement)
 	}
+	if probability, agreement := selectionAgreement("RESULT_1X2", "Draw No Bet", values); probability != nil || agreement != "UNABLE_TO_EVALUATE" {
+		t.Fatalf("unmapped selection = (%v, %s)", probability, agreement)
+	}
 }
 
 func TestContextSummariesUseOnlyStoredMatches(t *testing.T) {

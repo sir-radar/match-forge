@@ -117,6 +117,10 @@ def test_agreement_is_independent_of_source_count() -> None:
         agreement_for_selection("TOTAL_GOALS", "TOTAL_UNDER_3_5", probabilities) == Agreement.AGREES
     )
     assert (
+        agreement_for_selection("RESULT_1X2", "Draw No Bet", probabilities)
+        == Agreement.UNABLE_TO_EVALUATE
+    )
+    assert (
         agreement_for_selection("UNKNOWN", "UNKNOWN", probabilities) == Agreement.UNABLE_TO_EVALUATE
     )
 
