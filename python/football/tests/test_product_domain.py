@@ -91,7 +91,9 @@ def test_forecast_uses_only_pre_kickoff_history_and_returns_coherent_probabiliti
         ("1", ("RESULT_1X2", "HOME_WIN")),
         ("X2", ("DOUBLE_CHANCE", "DRAW_OR_AWAY")),
         ("GG", ("BTTS", "BTTS_YES")),
+        ("Over 1.5", ("TOTAL_GOALS", "TOTAL_OVER_1_5")),
         ("Over 2.5", ("TOTAL_GOALS", "TOTAL_OVER_2_5")),
+        ("Under 3.5", ("TOTAL_GOALS", "TOTAL_UNDER_3_5")),
     ],
 )
 def test_external_market_mapping(raw: str, expected: tuple[str, str]) -> None:
@@ -99,9 +101,21 @@ def test_external_market_mapping(raw: str, expected: tuple[str, str]) -> None:
 
 
 def test_agreement_is_independent_of_source_count() -> None:
-    probabilities = {"home": 0.57, "draw": 0.24, "away": 0.19}
+    probabilities = {
+        "home": 0.57,
+        "draw": 0.24,
+        "away": 0.19,
+        "total_over_1_5": 0.72,
+        "total_under_3_5": 0.68,
+    }
     assert agreement_for_selection("RESULT_1X2", "HOME_WIN", probabilities) == Agreement.AGREES
     assert agreement_for_selection("RESULT_1X2", "DRAW", probabilities) == Agreement.DISAGREES
+    assert (
+        agreement_for_selection("TOTAL_GOALS", "TOTAL_OVER_1_5", probabilities) == Agreement.AGREES
+    )
+    assert (
+        agreement_for_selection("TOTAL_GOALS", "TOTAL_UNDER_3_5", probabilities) == Agreement.AGREES
+    )
     assert (
         agreement_for_selection("UNKNOWN", "UNKNOWN", probabilities) == Agreement.UNABLE_TO_EVALUATE
     )
@@ -114,8 +128,10 @@ def test_agreement_is_independent_of_source_count() -> None:
         ("RESULT_1X2", "DRAW", (2, 1), False),
         ("DOUBLE_CHANCE", "DRAW_OR_AWAY", (1, 1), True),
         ("BTTS", "BTTS_YES", (3, 0), False),
+        ("TOTAL_GOALS", "TOTAL_OVER_1_5", (1, 1), True),
         ("TOTAL_GOALS", "TOTAL_OVER_2_5", (2, 1), True),
         ("TOTAL_GOALS", "TOTAL_UNDER_2_5", (1, 1), True),
+        ("TOTAL_GOALS", "TOTAL_UNDER_3_5", (2, 1), True),
         ("UNKNOWN", "UNKNOWN", (1, 1), None),
     ],
 )

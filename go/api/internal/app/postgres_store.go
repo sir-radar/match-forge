@@ -770,24 +770,26 @@ func selectionAgreement(market, selection string, values map[string]float64) (*f
 	return floatPointer(probability), agreementLabel(market, probability, values)
 }
 
+var directSelectionProbabilityKeys = map[string]string{
+	"HOME_WIN":        "home",
+	"DRAW":            "draw",
+	"AWAY_WIN":        "away",
+	"BTTS_YES":        "btts_yes",
+	"TOTAL_OVER_1_5":  "total_over_1_5",
+	"TOTAL_OVER_2_5":  "total_over_2_5",
+	"TOTAL_UNDER_2_5": "total_under_2_5",
+	"TOTAL_UNDER_3_5": "total_under_3_5",
+}
+
 func selectionProbability(selection string, values map[string]float64) (float64, bool) {
 	switch selection {
-	case "HOME_WIN":
-		return mapProbability(values, "home")
-	case "DRAW":
-		return mapProbability(values, "draw")
-	case "AWAY_WIN":
-		return mapProbability(values, "away")
 	case "HOME_OR_DRAW":
 		return sumProbabilities(values, "home", "draw")
 	case "DRAW_OR_AWAY":
 		return sumProbabilities(values, "draw", "away")
-	case "BTTS_YES":
-		return mapProbability(values, "btts_yes")
-	case "TOTAL_OVER_2_5":
-		return mapProbability(values, "total_over_2_5")
-	case "TOTAL_UNDER_2_5":
-		return mapProbability(values, "total_under_2_5")
+	}
+	if key, found := directSelectionProbabilityKeys[selection]; found {
+		return mapProbability(values, key)
 	}
 	return 0, false
 }

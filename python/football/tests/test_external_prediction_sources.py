@@ -83,6 +83,9 @@ def test_matchoutlook_parser_extracts_supported_public_selections_only() -> None
       <div class="match-section"><div class="match-title">England National League</div>
         <div class="match-content"><b>Eastleigh</b><b>vs</b><b>Southend</b>
           <b class="our-bet">Best Bet: <b>Over 1.5</b></b></div></div>
+      <div class="match-section"><div class="match-title">Egypt Cup <b>18:00</b></div>
+        <div class="match-content"><b>Ceramica Cleopatra</b><b>vs</b><b>Al-Masry</b>
+          <b class="our-bet">Best Bet: <b>Under 3.5</b></b></div></div>
     </div>
     """
 
@@ -90,13 +93,11 @@ def test_matchoutlook_parser_extracts_supported_public_selections_only() -> None
         html, TARGET_DATE, "https://www.matchoutlook.com/todays-football-predictions"
     )
 
-    assert len(rows) == 1
-    assert (rows[0].competition, rows[0].home_team, rows[0].away_team) == (
-        "UEFA Champions League",
-        "SK Brann",
-        "HJK Helsinki",
-    )
-    assert rows[0].selection == "HOME_WIN"
+    assert [(row.competition, row.home_team, row.away_team, row.selection) for row in rows] == [
+        ("UEFA Champions League", "SK Brann", "HJK Helsinki", "HOME_WIN"),
+        ("England National League", "Eastleigh", "Southend", "TOTAL_OVER_1_5"),
+        ("Egypt Cup", "Ceramica Cleopatra", "Al-Masry", "TOTAL_UNDER_3_5"),
+    ]
 
 
 def test_collection_isolates_source_failure_and_keeps_forebet_disabled() -> None:

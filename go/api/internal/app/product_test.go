@@ -220,7 +220,10 @@ func TestPerformanceFilteringAndOrderingPrecedePagination(t *testing.T) {
 }
 
 func TestSelectionAgreement(t *testing.T) {
-	values := map[string]float64{"home": 0.55, "draw": 0.25, "away": 0.2, "btts_yes": 0.44}
+	values := map[string]float64{
+		"home": 0.55, "draw": 0.25, "away": 0.2, "btts_yes": 0.44,
+		"total_over_1_5": 0.72, "total_under_3_5": 0.68,
+	}
 	tests := []struct {
 		market, selection, want string
 		probability             float64
@@ -228,6 +231,8 @@ func TestSelectionAgreement(t *testing.T) {
 		{market: "RESULT_1X2", selection: "HOME_WIN", want: "AGREES", probability: 0.55},
 		{market: "BTTS", selection: "BTTS_YES", want: "WEAK_SUPPORT", probability: 0.44},
 		{market: "RESULT_1X2", selection: "AWAY_WIN", want: "DISAGREES", probability: 0.2},
+		{market: "TOTAL_GOALS", selection: "TOTAL_OVER_1_5", want: "AGREES", probability: 0.72},
+		{market: "TOTAL_GOALS", selection: "TOTAL_UNDER_3_5", want: "AGREES", probability: 0.68},
 	}
 	for _, test := range tests {
 		probability, agreement := selectionAgreement(test.market, test.selection, values)
