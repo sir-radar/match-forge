@@ -1,0 +1,429 @@
+{
+  "beta_h2h": {
+    "bounds": [
+      0.0,
+      0.25
+    ],
+    "final": 0.004221489656006503,
+    "fit_count": 552,
+    "initial": 0.05,
+    "maximum": 0.029346833710536972,
+    "mean": 0.0005008360793789549,
+    "minimum": 0.0
+  },
+  "calibration": {
+    "away": {
+      "baseline": {
+        "absolute_error": 0.1556238927684291,
+        "intercept": 0.010064322842525756,
+        "intercept_95_interval": [
+          -0.3558868388064642,
+          0.3760154844915157
+        ],
+        "slope": 1.1455595699259034,
+        "slope_95_interval": [
+          0.7184706167494148,
+          1.572648523102392
+        ]
+      },
+      "candidate": {
+        "absolute_error": 0.15362604473243077,
+        "intercept": 0.009292531583172095,
+        "intercept_95_interval": [
+          -0.3566284689157865,
+          0.3752135320821307
+        ],
+        "slope": 1.1443335131492587,
+        "slope_95_interval": [
+          0.7173641396733302,
+          1.5713028866251872
+        ]
+      }
+    },
+    "draw": {
+      "baseline": {
+        "absolute_error": 0.09100197987514828,
+        "intercept": 0.06462929625685225,
+        "intercept_95_interval": [
+          -1.531366022049096,
+          1.6606246145628005
+        ],
+        "slope": 1.026372683618296,
+        "slope_95_interval": [
+          -0.36455179875595345,
+          2.4172971659925455
+        ]
+      },
+      "candidate": {
+        "absolute_error": 0.0938905052954744,
+        "intercept": 0.06617342888465562,
+        "intercept_95_interval": [
+          -1.5298540731538979,
+          1.662200930923209
+        ],
+        "slope": 1.0277170764108188,
+        "slope_95_interval": [
+          -0.3632427837964942,
+          2.418676936618132
+        ]
+      }
+    },
+    "home": {
+      "baseline": {
+        "absolute_error": 0.2027421610153552,
+        "intercept": 0.07950125291952798,
+        "intercept_95_interval": [
+          -0.15362775654930177,
+          0.3126302623883577
+        ],
+        "slope": 1.1232409080958272,
+        "slope_95_interval": [
+          0.7223602000441962,
+          1.5241216161474582
+        ]
+      },
+      "candidate": {
+        "absolute_error": 0.20137810618684004,
+        "intercept": 0.07918748990484681,
+        "intercept_95_interval": [
+          -0.15391242483555148,
+          0.31228740464524507
+        ],
+        "slope": 1.1221906162819932,
+        "slope_95_interval": [
+          0.7214339145709947,
+          1.5229473179929918
+        ]
+      }
+    }
+  },
+  "confirmation_evaluation_performed": false,
+  "contract": "MatchForgeH2HIncrementalSignalDevelopmentResultV1",
+  "coverage": {
+    "all_targets": 1270,
+    "eligible_by_competition": {
+      "Bundesliga": 98,
+      "La Liga": 125,
+      "Premier League": 128,
+      "Serie A": 128
+    },
+    "eligible_targets": 479,
+    "neutral_insufficient_h2h_targets": 791
+  },
+  "final_disposition": "DEVELOPMENT_REJECTED",
+  "firewall": {
+    "protected_or_spent_intersections": 0,
+    "status": "PASS"
+  },
+  "gate_results": {
+    "at_least_three_domains_negative_joint_delta": false,
+    "away_calibration": false,
+    "draw_calibration": false,
+    "home_calibration": false,
+    "joint_delta_at_most_minus_0_003": false,
+    "joint_delta_interval_upper_below_zero": false,
+    "leave_domain_out_joint_interval_upper_at_most_0_05": true,
+    "no_domain_joint_delta_above_0_02": true,
+    "one_x_two_brier_interval_upper_at_most_0.01": true,
+    "one_x_two_interval_upper_at_most_zero": false,
+    "one_x_two_rps_interval_upper_at_most_0.01": true,
+    "total_goal_crps_interval_upper_at_most_0.02": true
+  },
+  "metrics": {
+    "by_domain": {
+      "Bundesliga": {
+        "joint_score_log_loss": {
+          "baseline": 3.2104018182834326,
+          "candidate": 3.2105184698689238,
+          "candidate_minus_baseline": 0.00011665158549130899,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            0.00011665158549130899
+          ]
+        },
+        "one_x_two_brier": {
+          "baseline": 0.6155665123029961,
+          "candidate": 0.6156111313736199,
+          "candidate_minus_baseline": 4.461907062385115e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            4.461907062385115e-05
+          ]
+        },
+        "one_x_two_log_loss": {
+          "baseline": 1.031489321019443,
+          "candidate": 1.031550837142928,
+          "candidate_minus_baseline": 6.151612348509698e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            6.151612348509698e-05
+          ]
+        },
+        "one_x_two_rps": {
+          "baseline": 0.21636405599679068,
+          "candidate": 0.21638656038487764,
+          "candidate_minus_baseline": 2.2504388086933344e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            2.2504388086933344e-05
+          ]
+        },
+        "target_count": 98,
+        "total_goal_crps": {
+          "baseline": 0.973521671528106,
+          "candidate": 0.9735175539288277,
+          "candidate_minus_baseline": -4.117599278274024e-06,
+          "candidate_minus_baseline_95_interval": [
+            -4.117599278274024e-06,
+            0.0
+          ]
+        }
+      },
+      "La Liga": {
+        "joint_score_log_loss": {
+          "baseline": 2.734024325727865,
+          "candidate": 2.7340239178802235,
+          "candidate_minus_baseline": -4.078476420321664e-07,
+          "candidate_minus_baseline_95_interval": [
+            -1.2235429260964992e-06,
+            0.0
+          ]
+        },
+        "one_x_two_brier": {
+          "baseline": 0.5930479509850711,
+          "candidate": 0.5930529567950416,
+          "candidate_minus_baseline": 5.005809970407837e-06,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            1.5017429911223512e-05
+          ]
+        },
+        "one_x_two_log_loss": {
+          "baseline": 0.9926566529148841,
+          "candidate": 0.9926636106358201,
+          "candidate_minus_baseline": 6.95772093597391e-06,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            2.087316280792173e-05
+          ]
+        },
+        "one_x_two_rps": {
+          "baseline": 0.2001399916295312,
+          "candidate": 0.20014228622348834,
+          "candidate_minus_baseline": 2.294593957136021e-06,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            6.883781871408062e-06
+          ]
+        },
+        "target_count": 100,
+        "total_goal_crps": {
+          "baseline": 0.8841451944298956,
+          "candidate": 0.8841402705682776,
+          "candidate_minus_baseline": -4.923861617927017e-06,
+          "candidate_minus_baseline_95_interval": [
+            -1.4771584853781051e-05,
+            0.0
+          ]
+        }
+      },
+      "Premier League": {
+        "joint_score_log_loss": {
+          "baseline": 2.957901005449547,
+          "candidate": 2.958059114638661,
+          "candidate_minus_baseline": 0.00015810918911373723,
+          "candidate_minus_baseline_95_interval": [
+            -1.6362694844541043e-05,
+            0.0004906902621857527
+          ]
+        },
+        "one_x_two_brier": {
+          "baseline": 0.6295410131124717,
+          "candidate": 0.6296373325526937,
+          "candidate_minus_baseline": 9.631944022211531e-05,
+          "candidate_minus_baseline_95_interval": [
+            -1.6207973557236004e-05,
+            0.0003051662942235819
+          ]
+        },
+        "one_x_two_log_loss": {
+          "baseline": 1.0481661240914562,
+          "candidate": 1.0483586655831107,
+          "candidate_minus_baseline": 0.00019254149165452404,
+          "candidate_minus_baseline_95_interval": [
+            -1.636269484450484e-05,
+            0.0005939871698080769
+          ]
+        },
+        "one_x_two_rps": {
+          "baseline": 0.22713339010875935,
+          "candidate": 0.2271876516841597,
+          "candidate_minus_baseline": 5.4261575400331136e-05,
+          "candidate_minus_baseline_95_interval": [
+            -5.31617179093029e-06,
+            0.0001681008979919237
+          ]
+        },
+        "target_count": 92,
+        "total_goal_crps": {
+          "baseline": 0.949085665191187,
+          "candidate": 0.9491517775584539,
+          "candidate_minus_baseline": 6.611236726693408e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            0.0001983371018008022
+          ]
+        }
+      },
+      "Serie A": {
+        "joint_score_log_loss": {
+          "baseline": 2.727837885964348,
+          "candidate": 2.72797053733086,
+          "candidate_minus_baseline": 0.00013265136651198728,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            0.00039795409953596183
+          ]
+        },
+        "one_x_two_brier": {
+          "baseline": 0.579832485843488,
+          "candidate": 0.5798628014530686,
+          "candidate_minus_baseline": 3.031560958051826e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            9.094682874155477e-05
+          ]
+        },
+        "one_x_two_log_loss": {
+          "baseline": 0.9715745829483874,
+          "candidate": 0.9716147584861355,
+          "candidate_minus_baseline": 4.017553774809883e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            0.0001205266132442965
+          ]
+        },
+        "one_x_two_rps": {
+          "baseline": 0.1952428739388279,
+          "candidate": 0.19525702824813523,
+          "candidate_minus_baseline": 1.415430930734284e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            4.2462927922028516e-05
+          ]
+        },
+        "target_count": 89,
+        "total_goal_crps": {
+          "baseline": 0.7934736435928452,
+          "candidate": 0.7934887052140458,
+          "candidate_minus_baseline": 1.5061621200727295e-05,
+          "candidate_minus_baseline_95_interval": [
+            0.0,
+            4.5184863602181886e-05
+          ]
+        }
+      }
+    },
+    "leave_domain_out": {
+      "Bundesliga": {
+        "baseline": 2.805362622508796,
+        "candidate": 2.80545625678728,
+        "candidate_minus_baseline": 9.36342784833718e-05,
+        "candidate_minus_baseline_95_interval": [
+          -4.436786873503989e-06,
+          0.0002823014702013903
+        ]
+      },
+      "La Liga": {
+        "baseline": 2.9732037367167083,
+        "candidate": 2.9733391627826444,
+        "candidate_minus_baseline": 0.00013542606593612536,
+        "candidate_minus_baseline_95_interval": [
+          -4.322409846779227e-06,
+          0.0002887506056623292
+        ]
+      },
+      "Premier League": {
+        "baseline": 2.894771367997874,
+        "candidate": 2.894852193929001,
+        "candidate_minus_baseline": 8.082593112721927e-05,
+        "candidate_minus_baseline_95_interval": [
+          -2.8421438469140515e-07,
+          0.0001234073688456467
+        ]
+      },
+      "Serie A": {
+        "baseline": 2.966030011261797,
+        "candidate": 2.9661194495928744,
+        "candidate_minus_baseline": 8.943833107727204e-05,
+        "candidate_minus_baseline_95_interval": [
+          -5.331560999658595e-06,
+          0.00016604910335339586
+        ]
+      }
+    },
+    "weighted": {
+      "joint_score_log_loss": {
+        "baseline": 2.910095712709098,
+        "candidate": 2.910195298692296,
+        "candidate_minus_baseline": 9.958598319782521e-05,
+        "candidate_minus_baseline_95_interval": [
+          -1.0761151504806502e-07,
+          0.00020443573841225147
+        ]
+      },
+      "one_x_two_brier": {
+        "baseline": 0.604625798814297,
+        "candidate": 0.6046691569348016,
+        "candidate_minus_baseline": 4.335812050469374e-05,
+        "candidate_minus_baseline_95_interval": [
+          0.0,
+          9.748627174897305e-05
+        ]
+      },
+      "one_x_two_log_loss": {
+        "baseline": 1.0112217415572937,
+        "candidate": 1.0112956565765203,
+        "candidate_minus_baseline": 7.391501922673853e-05,
+        "candidate_minus_baseline_95_interval": [
+          0.0,
+          0.0001786617986927296
+        ]
+      },
+      "one_x_two_rps": {
+        "baseline": 0.20973763673139884,
+        "candidate": 0.20976055675222577,
+        "candidate_minus_baseline": 2.292002082695791e-05,
+        "candidate_minus_baseline_95_interval": [
+          0.0,
+          5.319264034602927e-05
+        ]
+      },
+      "target_count": 379,
+      "total_goal_crps": {
+        "baseline": 0.9017273845121276,
+        "candidate": 0.9017446059136693,
+        "candidate_minus_baseline": 1.722140154184461e-05,
+        "candidate_minus_baseline_95_interval": [
+          -1.064709048208059e-06,
+          5.476935070458362e-05
+        ]
+      }
+    }
+  },
+  "pre_evaluation_abort_reason": "script path launch could not import repository scripts; no outcomes loaded",
+  "pre_evaluation_aborted_invocations": 1,
+  "production_champion_changed": false,
+  "protected_evaluation_performed": false,
+  "research_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
+  "scored_targets": 379,
+  "snapshot": {
+    "history_manifest_sha256": "90f9e5343aa1e07ccc2df721d39e4deaee99295615046f806cdadda101c656c4",
+    "name": "MATCHFORGE_H2H_DEVELOPMENT_HISTORY_QUALIFIED_V1",
+    "snapshot_id": "fcb43dd0-5910-55c0-8922-4c1c1e77246a",
+    "snapshot_sha256": "be0b5fb6a0dcc097649d5bfd413cda59b3cafcaaa3188c80fa63f2c13c1e9352"
+  },
+  "source_commit": "45ed83edda33656efc45f456b71db68b4c9e4fa9",
+  "v6_created": false,
+  "warmup_targets": 100
+}

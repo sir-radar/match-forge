@@ -488,9 +488,7 @@ class _Layout:
         }
         self.comp_start = 7
         self.comp_free = (
-            max(0, len(competitions) - 1)
-            if role in ("candidate", "poisson_candidate")
-            else 0
+            max(0, len(competitions) - 1) if role in ("candidate", "poisson_candidate") else 0
         )
         self.home_comp_start = self.comp_start + self.comp_free
         self.size = 7 + 2 * self.comp_free

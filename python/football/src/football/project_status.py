@@ -209,7 +209,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
     tracks = status.get("evaluation_tracks")
     if not isinstance(tracks, list):
         raise ProjectStatusError("evaluation_tracks must be a list")
-    expected = {
+    required = {
         ("EVALUATION_V2", "STATSBOMB"),
         ("PITCHAPI_RETROSPECTIVE_EVALUATION_V1", "PITCHAPI"),
         ("PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2", "PITCHAPI"),
@@ -219,6 +219,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
         ("MATCHFORGE_MULTIMODEL_CHALLENGER_EVALUATION_V1", "PITCHAPI"),
         ("MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_DEVELOPMENT_V1", "PITCHAPI"),
     }
+    allowed = required | {("MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1", "PITCHAPI")}
     observed: set[tuple[str, str]] = set()
     for track in tracks:
         if not isinstance(track, Mapping):
@@ -234,7 +235,7 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
             raise ProjectStatusError(f"duplicate evaluation track: {identity[0]} / {identity[1]}")
         observed.add(identity)
         _evidence_path(track, f"evaluation_tracks[{identity[0]}]", root)
-    if observed != expected:
+    if not required.issubset(observed) or not observed.issubset(allowed):
         raise ProjectStatusError(
             "evaluation_tracks must contain the isolated StatsBomb and PitchAPI tracks"
         )
