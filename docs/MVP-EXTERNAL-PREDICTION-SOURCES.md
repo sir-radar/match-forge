@@ -24,8 +24,11 @@ Terms notes:
 The enabled adapters preserve source URL, displayed or resolved prediction date, original date
 text, capture time, competition text, team text, normalized market and selection, immutable
 revision identity, and fixture-match result. Supported mappings include 1/X/2, 1X, X2,
-BTTS/GG, over 2.5, and under 2.5. Unsupported provider markets are skipped rather than
-silently reinterpreted.
+BTTS/GG, over 1.5, over 2.5, under 2.5, and under 3.5. Unsupported provider markets are
+stored verbatim rather than dropped or silently reinterpreted. Parsers retain a known provider
+market family where the page supplies one; otherwise they use market `UNMAPPED`. These rows
+remain visible but report `UNABLE_TO_EVALUATE` until MatchForge has a probability contract for
+the selection.
 
 `make external-predictions` runs all enabled sources independently. `DATE=YYYY-MM-DD` limits
 parsing to that prediction date, and `SOURCE=<source>` runs one source. R2Bet supports a dated

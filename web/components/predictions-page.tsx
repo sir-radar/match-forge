@@ -302,7 +302,7 @@ function FiltersBar({ day, filters, sources, count, refreshing, onDayChange, onF
           <input aria-label="Continent" className={control} placeholder="All continents" value={filters.continent} onChange={(event) => onFilterChange("continent", event.target.value)} />
           <input aria-label="Country" className={control} placeholder="All countries" value={filters.country} onChange={(event) => onFilterChange("country", event.target.value)} />
           <input aria-label="Competition" className={control} placeholder="All competitions" value={filters.competition} onChange={(event) => onFilterChange("competition", event.target.value)} />
-          <select aria-label="Market" className={control} value={filters.market} onChange={(event) => onFilterChange("market", event.target.value)}><option value="">All Markets</option><option value="RESULT_1X2">1X2 Match Result</option><option value="TOTAL_GOALS">Total Goals O/U</option><option value="BTTS">Both Teams To Score</option><option value="DOUBLE_CHANCE">Double Chance</option></select>
+          <select aria-label="Market" className={control} value={filters.market} onChange={(event) => onFilterChange("market", event.target.value)}><option value="">All Markets</option><option value="RESULT_1X2">1X2 Match Result</option><option value="TOTAL_GOALS">Total Goals O/U</option><option value="BTTS">Both Teams To Score</option><option value="DOUBLE_CHANCE">Double Chance</option><option value="UNMAPPED">Unmapped Provider Market</option></select>
           <select aria-label="Agreement" className={control} value={filters.agreement} onChange={(event) => onFilterChange("agreement", event.target.value)}><option value="">All Statuses</option><option value="AGREES">Agrees</option><option value="WEAK_SUPPORT">Weak support</option><option value="DISAGREES">Disagrees</option><option value="UNABLE_TO_EVALUATE">Unable to evaluate</option></select>
           <div className="col-span-2 flex items-center gap-1 sm:col-span-1">
             <button type="button" aria-label="Reset filters" onClick={onReset} className={`flex h-8 flex-1 items-center justify-center gap-1 rounded-sm bg-[#262a34] px-2 text-[10px] text-[#bbcabf] hover:bg-[#353943] ${mono}`}><span aria-hidden="true">↻</span> Reset</button>
@@ -556,7 +556,7 @@ function agreement(value: ExternalPrediction["agreement"]) {
 }
 
 function market(value: string) {
-  return ({ RESULT_1X2: "1X2 Match Result", DOUBLE_CHANCE: "Double Chance", TOTAL_GOALS: "Total Goals O/U", BTTS: "Both Teams to Score" } as Record<string, string>)[value] ?? status(value);
+  return ({ RESULT_1X2: "1X2 Match Result", DOUBLE_CHANCE: "Double Chance", TOTAL_GOALS: "Total Goals O/U", BTTS: "Both Teams to Score", UNMAPPED: "Unmapped Provider Market" } as Record<string, string>)[value] ?? status(value);
 }
 
 function filterDisplay(key: keyof FacetFilters, value: string) {

@@ -331,6 +331,12 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 (fixture_id,),
             ).fetchone()
         )
+        probabilities = _first(
+            cursor.execute(
+                "SELECT probabilities FROM football.product_forecasts WHERE fixture_id = %s",
+                (fixture_id,),
+            ).fetchone()
+        )
 
     assert created >= 1
     assert len(relevant_history) == 20
@@ -341,6 +347,8 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     )
     assert availability == "FORECAST_AVAILABLE"
     assert forecast_count == 1
+    assert probabilities["total_over_1_5"] >= probabilities["total_over_2_5"]
+    assert probabilities["total_under_3_5"] >= probabilities["total_under_2_5"]
 
 
 def test_fixture_sync_does_not_reassign_provider_aliases_by_name(

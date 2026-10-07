@@ -1659,7 +1659,9 @@ class ProductSync:
                 "btts_yes": forecast.btts_yes,
                 "home_clean_sheet": forecast.home_clean_sheet,
                 "away_clean_sheet": forecast.away_clean_sheet,
+                "total_over_1_5": sum(forecast.total_goal_distribution[2:]),
                 "total_over_2_5": sum(forecast.total_goal_distribution[3:]),
+                "total_under_3_5": sum(forecast.total_goal_distribution[:4]),
             }
             probabilities["total_under_2_5"] = 1.0 - probabilities["total_over_2_5"]
             with self.connection.cursor() as cursor:

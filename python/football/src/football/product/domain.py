@@ -197,9 +197,11 @@ def map_external_market(value: str) -> tuple[str, str] | None:
         "away win or draw(x2)": ("DOUBLE_CHANCE", "DRAW_OR_AWAY"),
         "gg": ("BTTS", "BTTS_YES"),
         "btts": ("BTTS", "BTTS_YES"),
+        "over 1.5": ("TOTAL_GOALS", "TOTAL_OVER_1_5"),
         "over 2.5": ("TOTAL_GOALS", "TOTAL_OVER_2_5"),
         "ov2.5": ("TOTAL_GOALS", "TOTAL_OVER_2_5"),
         "under 2.5": ("TOTAL_GOALS", "TOTAL_UNDER_2_5"),
+        "under 3.5": ("TOTAL_GOALS", "TOTAL_UNDER_3_5"),
     }
     return aliases.get(key)
 
@@ -233,8 +235,10 @@ def external_selection_correct(
         ("DOUBLE_CHANCE", "HOME_OR_DRAW"): home_goals >= away_goals,
         ("DOUBLE_CHANCE", "DRAW_OR_AWAY"): away_goals >= home_goals,
         ("BTTS", "BTTS_YES"): home_goals > 0 and away_goals > 0,
+        ("TOTAL_GOALS", "TOTAL_OVER_1_5"): home_goals + away_goals > 1,
         ("TOTAL_GOALS", "TOTAL_OVER_2_5"): home_goals + away_goals > 2,
         ("TOTAL_GOALS", "TOTAL_UNDER_2_5"): home_goals + away_goals <= 2,
+        ("TOTAL_GOALS", "TOTAL_UNDER_3_5"): home_goals + away_goals <= 3,
     }
     return outcomes.get((market, selection))
 
@@ -318,8 +322,10 @@ def _selection_probability(
         ("RESULT_1X2", "DRAW"): "draw",
         ("RESULT_1X2", "AWAY_WIN"): "away",
         ("BTTS", "BTTS_YES"): "btts_yes",
+        ("TOTAL_GOALS", "TOTAL_OVER_1_5"): "total_over_1_5",
         ("TOTAL_GOALS", "TOTAL_OVER_2_5"): "total_over_2_5",
         ("TOTAL_GOALS", "TOTAL_UNDER_2_5"): "total_under_2_5",
+        ("TOTAL_GOALS", "TOTAL_UNDER_3_5"): "total_under_3_5",
     }
     if selection == "HOME_OR_DRAW":
         return values.get("home", 0.0) + values.get("draw", 0.0)
