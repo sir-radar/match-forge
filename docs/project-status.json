@@ -52,7 +52,8 @@
     "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
     "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1",
     "AUTHORIZE_HISTORICAL_CONTEXT_CORPUS_V1",
-    "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1_RERUN"
+    "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1_RERUN",
+    "AUTHORIZE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1"
   ],
   "closed_routes": [
     {
@@ -852,6 +853,37 @@
       "production_promotion_justified": false,
       "independent_evaluation_available": false,
       "rerun_authorized": false
+    },
+    {
+      "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
+      "provider": "MULTISOURCE_RETAINED_ONLY",
+      "status": "FRESH_DEVELOPMENT_CORPUS_QUALIFIED",
+      "owner_decision": "AUTHORIZE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-full-coverage-v2-fresh-corpus-qualification-2026-10-08.json",
+      "owner_decision_sha256": "da8b162e4ddeb8e831b773305e8ec2718ebf325acbe96b887b0fd3e541a8eaeb",
+      "implementation_source_commit": "7bc2d6dbd8cf2e73bdbe1817f151de59bbc90e43",
+      "evidence_ref": "docs/evidence/full-coverage-v2-fresh-corpus-qualification-v1-2026-10-08.json",
+      "evidence_sha256": "298a1164326524814fca9444589685683de2215aa5f4df4be334a2caa49a9d4f",
+      "report_ref": "docs/evidence/full-coverage-v2-fresh-corpus-qualification-v1-2026-10-08.md",
+      "report_sha256": "ff8389d0fbe3321717b867fc7b0698eb77524c2ba4fa61301c2e258b29d9feb8",
+      "identity_crosswalk_ref": "docs/evaluation/full-coverage-v2-team-identity-crosswalk-v1.json",
+      "identity_crosswalk_file_sha256": "bade3d3e5831d24f1058f7dc7143a594c71abba4ae18ae4bcea2c6a873ed9ede",
+      "fresh_corpus_ref": "docs/evaluation/full-coverage-v2-fresh-development-corpus-v1.json",
+      "fresh_corpus_file_sha256": "f33dcabc1889b94b9ce1f8749996055f67b970d82fe61f6b306659b0fd6654d9",
+      "fresh_corpus_id": "MATCHFORGE_FULL_COVERAGE_V2_FRESH_DEVELOPMENT_CORPUS_V1",
+      "fresh_corpus_sha256": "0234d64bb21d4340e8499e6178b03f3342dd480e94dd2357253523d5f62a0835",
+      "fresh_target_count": 1572,
+      "development_holdout_target_count": 315,
+      "development_holdout_native_fitted_count": 64,
+      "development_holdout_cold_start_count": 251,
+      "global_forbidden_overlap_count": 0,
+      "target_outcomes_loaded": false,
+      "xg_coverage_read_post_freeze_only": true,
+      "evaluation_completed": false,
+      "model_promoted": false,
+      "production_promotion_justified": false,
+      "rerun_authorized": false,
+      "next_action": "READY_FOR_MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1"
     }
   ],
   "mvp_product": {
