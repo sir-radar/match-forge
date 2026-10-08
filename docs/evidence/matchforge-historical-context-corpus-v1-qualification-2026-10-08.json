@@ -1,0 +1,35 @@
+{
+  "chronology_and_leakage": "PASS",
+  "coach_observations_acquired": 0,
+  "confirmed_lineups_acquired": 0,
+  "context_goal_model_evaluation_executed": false,
+  "context_snapshot_sha256": "613b07bcf5e21fb3d8c07059d9082585aa0bda72a8ea43e1a515d9b29cf7145a",
+  "contract": "HistoricalContextCorpusQualificationV1",
+  "corpus_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "created_at": "2026-10-08T00:00:00Z",
+  "family_results": {
+    "AVAILABILITY": "INSUFFICIENT",
+    "LINEUP": "INSUFFICIENT",
+    "MANAGER": "INSUFFICIENT",
+    "REST": "QUALIFIED",
+    "TRAVEL": "INSUFFICIENT"
+  },
+  "final_disposition": "PARTIAL_CONTEXT_CORPUS_QUALIFIED",
+  "firewall_sha256": "fa448cad8d4c8e7cdb4416af5705c0c53380aab15b09fa43c4cedbd1bae044d1",
+  "global_forbidden_target_overlap": 0,
+  "historical_fixtures_considered": 4318,
+  "identity_map_sha256": "712db202224f6e9d01e0499c145ed33fd5bfc7b066d7417d89718dceb1544405",
+  "production_champion_changed": false,
+  "qualified_rest_targets": 4316,
+  "rest_targets_by_competition": {
+    "Bundesliga": 917,
+    "La Liga": 1130,
+    "Premier League": 1140,
+    "Serie A": 1129
+  },
+  "result_sha256": "972cf21230b48090c966cea95c3b9b753a4d081c7ada301d90b5c324596f97a5",
+  "source_data_sha256": "9f8d29ec7840340c85230f723aa1d3e8991beba28b311900949756f7c6e96004",
+  "tier_a_availability_fixtures": 0,
+  "tier_b_availability_fixtures": 0,
+  "verified_venues_or_coordinates": 0
+}

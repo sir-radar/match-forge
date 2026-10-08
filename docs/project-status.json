@@ -49,7 +49,9 @@
     "MVP_PRODUCT_DELIVERY_ACTIVE",
     "AUTHORIZE_GOVERNED_MULTIMODEL_CHALLENGER_EVALUATION_V1",
     "AUTHORIZE_MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
-    "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1"
+    "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+    "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1",
+    "AUTHORIZE_HISTORICAL_CONTEXT_CORPUS_V1"
   ],
   "closed_routes": [
     {
@@ -70,6 +72,73 @@
     }
   ],
   "evaluation_tracks": [
+    {
+      "evaluation_protocol_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+      "provider": "MULTISOURCE_RETAINED",
+      "status": "COMPLETE_PARTIAL_CONTEXT_CORPUS_QUALIFIED",
+      "owner_decision": "AUTHORIZE_HISTORICAL_CONTEXT_CORPUS_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-historical-context-corpus-v1-2026-10-08.json",
+      "owner_decision_sha256": "05031a1b7059a653e2da36d8355879f4fd15acc489a283cd21eb0e4de52c1dd0",
+      "preflight_ref": "docs/evaluation/matchforge-historical-context-corpus-v1-preflight.json",
+      "preflight_sha256": "cf1481d3abd3093d730962e9c10b0f8b62c5f7ee0b2ff8d48e3ed3a500a97764",
+      "acquisition_manifest_ref": "docs/evaluation/matchforge-historical-context-corpus-v1-acquisition-manifest.json",
+      "acquisition_manifest_sha256": "7f672e5666f41d928f4072359d1bb4092841924a81dc83084d0a8330e2e35677",
+      "corpus_manifest_ref": "docs/evaluation/matchforge-historical-context-corpus-v1-manifest.json",
+      "corpus_manifest_file_sha256": "7d592acc456a41b1e44eda0840fecf289a08f869f55c11442a2f52fb001ad59e",
+      "corpus_manifest_sha256": "64a22005cb7b04ba39a7d4d42c14ad09fa68f1c2658d63478ae09a77e1dc27d5",
+      "rest_corpus_id": "MATCHFORGE_REST_CONTEXT_CORPUS_V1",
+      "rest_corpus_manifest_sha256": "c14108b1d7fff9731c05e4e2b9405c4bb7d4de8db61d4fd6324a60bb220207e0",
+      "evidence_ref": "docs/evidence/matchforge-historical-context-corpus-v1-qualification-2026-10-08.json",
+      "evidence_sha256": "332456e44ca3dd0efffd7d910572c763e886d0b14f63689ff860b7d964a188d8",
+      "qualification_ref": "docs/evidence/matchforge-historical-context-corpus-v1-qualification-2026-10-08.json",
+      "qualification_sha256": "332456e44ca3dd0efffd7d910572c763e886d0b14f63689ff860b7d964a188d8",
+      "report_ref": "docs/evidence/matchforge-historical-context-corpus-v1-qualification-2026-10-08.md",
+      "report_sha256": "7f63b06653af03d48b642dd392ddd02a95e7083cbb1f5837b1287f27617a78df",
+      "provider_calls_made": 0,
+      "provider_requests_used": 0,
+      "historical_fixtures_considered": 4318,
+      "qualified_rest_targets": 4316,
+      "qualified_context_families": [
+        "REST"
+      ],
+      "insufficient_context_families": [
+        "LINEUP",
+        "AVAILABILITY",
+        "MANAGER",
+        "TRAVEL"
+      ],
+      "global_forbidden_target_overlap": 0,
+      "result_classification": "PARTIAL_CONTEXT_CORPUS_QUALIFIED",
+      "context_goal_model_evaluation_executed": false,
+      "model_promoted": false,
+      "production_champion_changed": false,
+      "next_action": "READY_TO_RERUN_MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1"
+    },
+    {
+      "evaluation_protocol_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1",
+      "provider": "MULTISOURCE_CONTEXT",
+      "status": "COMPLETE_INSUFFICIENT_QUALIFIED_COVERAGE",
+      "owner_decision": "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-context-feature-evaluation-2026-10-08.json",
+      "owner_decision_sha256": "565387736a96517c876ad486114a29eaf52b25c008003267a2acc78ebe2c78f8",
+      "preregistration_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-preregistration.json",
+      "preregistration_sha256": "1302d3361ece26d0ef7f7b4abe1e913b260fc3d1b96a69de5c9dff4bc53a552d",
+      "dataset_manifest_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-dataset-manifest.json",
+      "dataset_manifest_sha256": "15e75e64bdb7f1ed5fcf444e41109f45df9d2027c922fbb593a9f1f8d9a4eb5d",
+      "evidence_ref": "docs/evidence/matchforge-context-feature-evaluation-v1-2026-10-08.json",
+      "evidence_sha256": "2ed4d23ad4f0f8c2093acac72958c848700b27d93c84d20e7518b9f97c4126f2",
+      "report_ref": "docs/evidence/matchforge-context-feature-evaluation-v1-2026-10-08.md",
+      "report_sha256": "a091f52d5b9564d9a67de287fa2ed95e79556704e57d04814042550fe231b60b",
+      "candidate_artifact_ref": "docs/evaluation/matchforge-contextual-goal-model-v1-artifact.json",
+      "candidate_artifact_sha256": "ad2e4568e780d2b7e086b5da17ad0df0229b99ab735164fa9f9a8e92bb5e982b",
+      "implementation_source_commit": "266095ce32dd69c2bec8b9fdc5fa4eaf574176a7",
+      "result_classification": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "included_feature_families": [],
+      "protected_outcomes_loaded": false,
+      "independent_evaluation_available": false,
+      "model_promoted": false,
+      "production_promotion_justified": false
+    },
     {
       "evaluation_protocol_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
       "provider": "PITCHAPI",

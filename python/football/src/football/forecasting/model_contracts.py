@@ -6,7 +6,7 @@ import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Protocol
+from typing import Protocol, cast
 from uuid import UUID
 
 PROBABILITY_TOLERANCE = 1e-10
@@ -191,6 +191,8 @@ class ForecastInputSnapshot:
     rest_context: dict[str, object] | None = None
     context_missingness: tuple[str, ...] = ()
     context_provenance: tuple[dict[str, object], ...] = ()
+    travel_context: dict[str, object] | None = None
+    predictive_context_families: tuple[str, ...] = ()
 
     @property
     def sha256(self) -> str:
@@ -199,8 +201,15 @@ class ForecastInputSnapshot:
     @property
     def predictive_input_snapshot_sha256(self) -> str:
         payload = self.to_dict()
+        active = tuple(cast(list[str], payload.pop("predictive_context_families")))
+        predictive_context: dict[str, object] = {}
         for field_name in _NON_PREDICTIVE_CONTEXT_FIELDS:
-            payload.pop(field_name)
+            value = payload.pop(field_name)
+            if field_name in _predictive_fields(active):
+                predictive_context[field_name] = value
+        if predictive_context:
+            payload["predictive_context"] = predictive_context
+            payload["predictive_context_families"] = sorted(active)
         return hashlib.sha256(_canonical_json(payload)).hexdigest()
 
     @property
@@ -222,7 +231,21 @@ _NON_PREDICTIVE_CONTEXT_FIELDS = (
     "rest_context",
     "context_missingness",
     "context_provenance",
+    "travel_context",
 )
+
+
+def _predictive_fields(families: tuple[str, ...]) -> frozenset[str]:
+    allowed = {
+        "AVAILABILITY_LINEUP": frozenset(("availability", "predicted_lineup", "confirmed_lineup")),
+        "REST_CONGESTION": frozenset(("rest_context",)),
+        "MANAGER": frozenset(("coach_context",)),
+        "TRAVEL": frozenset(("travel_context",)),
+    }
+    unknown = set(families).difference(allowed)
+    if unknown:
+        raise ValueError("unknown predictive context families: " + ", ".join(sorted(unknown)))
+    return frozenset(field for family in families for field in allowed[family])
 
 
 @dataclass(frozen=True, slots=True)

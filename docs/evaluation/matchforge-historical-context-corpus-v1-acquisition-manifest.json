@@ -1,0 +1,23 @@
+{
+  "competitions_or_seasons_acquired": [],
+  "completed_resource_keys": [],
+  "context_goal_model_evaluation_executed": false,
+  "contract": "HistoricalContextAcquisitionManifestV1",
+  "corpus_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "created_at": "2026-10-08T00:00:00Z",
+  "manifest_sha256": "ac6b85b0a475b1c935f62036d74c0abad54ca21965f3ea5629d887a1890b8550",
+  "new_raw_payloads": 0,
+  "new_source_snapshots": 0,
+  "preflight_decision": "STOP_BEFORE_PROVIDER_CALLS",
+  "provider_calls_made": 0,
+  "provider_requests_used": 0,
+  "reason": "The 8660-call historical request plan exceeds the configured 80-call ceiling after reserve. Historical coverage cannot be probed and downloaded within this run without violating the frozen budget.",
+  "resumable": true,
+  "retained_competitions_used": [
+    "Premier League",
+    "La Liga",
+    "Serie A",
+    "Bundesliga"
+  ],
+  "status": "STOPPED_BEFORE_NETWORK"
+}

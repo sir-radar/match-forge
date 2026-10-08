@@ -1,0 +1,83 @@
+{
+  "contract": "HistoricalContextCorpusPreflightV1",
+  "corpus_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "created_at": "2026-10-08T00:00:00Z",
+  "source_priority": [
+    "RETAINED_MATCHFORGE_SNAPSHOT",
+    "EXISTING_CANONICAL_OR_PROVIDER_DATA",
+    "QUALIFIED_API_FOOTBALL_HISTORICAL_ENDPOINT",
+    "OTHER_APPROVED_PROVIDER",
+    "UNAVAILABLE"
+  ],
+  "retained_sources": {
+    "openfootball": {
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+      "source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "manifest_sha256": "200039cbf8d26a6b19fc1dba5c70c596a47e387248d5699996c4ef5da578e1b9",
+      "resource_count": 291,
+      "size_bytes": 30036862
+    },
+    "api_football": {
+      "retained_snapshot_count": 70,
+      "retained_resource_count": 70,
+      "historical_context_resource_count": 0,
+      "coverage_resource": ".local/football-data/mvp/api_football/2026/09/30/699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b.json",
+      "coverage_resource_sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+      "coverage_limit": "The retained leagues response used current=true and does not qualify historical season coverage."
+    }
+  },
+  "selected_seasons": [
+    {"competition": "Bundesliga", "season": "2022/2023", "season_id": "60b412c2-e173-5d6d-a276-d9850372810e", "fixtures": 306},
+    {"competition": "Bundesliga", "season": "2023/2024", "season_id": "ded6c756-04a7-54a1-a15b-03e57ded585c", "fixtures": 306},
+    {"competition": "Bundesliga", "season": "2024/2025", "season_id": "0f5d3234-900c-5887-aa21-cfae8565144e", "fixtures": 306},
+    {"competition": "La Liga", "season": "2022/2023", "season_id": "c6a6b06d-941a-5692-844b-f67cfb7c22ed", "fixtures": 380},
+    {"competition": "La Liga", "season": "2023/2024", "season_id": "35cee030-cc9f-5b93-afd3-273540bd8367", "fixtures": 380},
+    {"competition": "La Liga", "season": "2024/2025", "season_id": "c43bd509-5376-52cf-9818-d76396700957", "fixtures": 370},
+    {"competition": "Premier League", "season": "2022/2023", "season_id": "7a4857e6-f606-55aa-b8ac-511c7e74f838", "fixtures": 380},
+    {"competition": "Premier League", "season": "2023/2024", "season_id": "9f9e8ed8-d137-56c5-b6e4-3f834bd07fab", "fixtures": 380},
+    {"competition": "Premier League", "season": "2024/2025", "season_id": "7aa76d0b-f9a6-54d2-949a-d4c8db5b3622", "fixtures": 380},
+    {"competition": "Serie A", "season": "2022/2023", "season_id": "d1e0f82a-aff6-5cf1-9a28-7d091b670d14", "fixtures": 380},
+    {"competition": "Serie A", "season": "2023/2024", "season_id": "00c7c996-4056-50f9-bc99-c4c65747f9eb", "fixtures": 380},
+    {"competition": "Serie A", "season": "2024/2025", "season_id": "fd7d19c2-0c02-5229-b34e-d24eb91cb645", "fixtures": 370}
+  ],
+  "local_inventory": {
+    "fixtures": 4318,
+    "confirmed_lineups": 0,
+    "context_player_identities": 0,
+    "coach_observations": 0,
+    "injury_or_suspension_observations": 0,
+    "venue_names": 0,
+    "qualified_coordinates": 0,
+    "rest_history": "AVAILABLE_FROM_RETAINED_FINISHED_FIXTURES"
+  },
+  "historical_api_football_coverage": {
+    "fixtures": "UNKNOWN",
+    "lineups": "UNKNOWN",
+    "players": "UNKNOWN",
+    "statistics": "UNKNOWN",
+    "injuries": "UNKNOWN"
+  },
+  "request_plan": {
+    "historical_coverage_calls": 12,
+    "fixture_mapping_calls": 12,
+    "lineup_calls": 4318,
+    "injury_calls": 4318,
+    "expected_total_calls": 8660,
+    "configured_request_cap": 100,
+    "daily_reserve": 20,
+    "hard_request_ceiling": 80,
+    "estimated_storage_mib": 512,
+    "batching": "No supported batch endpoint is implemented for fixture lineups or injuries.",
+    "resumable_key": "provider endpoint plus sorted request parameters plus raw SHA-256"
+  },
+  "expected_coverage": {
+    "potential_lineup_cases": 4318,
+    "tier_a_availability_cases": 0,
+    "potential_tier_b_availability_cases": 4318,
+    "rest_cases": 4318,
+    "manager_cases": 0,
+    "travel_cases": 0
+  },
+  "decision": "STOP_BEFORE_PROVIDER_CALLS",
+  "reason": "The 8660-call historical request plan exceeds the configured 80-call ceiling after reserve. Historical coverage cannot be probed and downloaded within this run without violating the frozen budget."
+}

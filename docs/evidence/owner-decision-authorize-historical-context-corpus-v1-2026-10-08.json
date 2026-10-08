@@ -1,0 +1,12 @@
+{
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "effective_date": "2026-10-08",
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "research_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "scope": "DATA_ACQUISITION_AND_QUALIFICATION_ONLY",
+  "model_fitting_authorized": false,
+  "context_evaluation_authorized": false,
+  "production_promotion_authorized": false,
+  "H2H_authorized": false
+}
