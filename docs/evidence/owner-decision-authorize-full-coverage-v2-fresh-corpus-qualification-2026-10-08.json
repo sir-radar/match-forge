@@ -1,0 +1,33 @@
+{
+  "authorization": "IDENTITY_RECONCILIATION_RETAINED_CORPUS_QUALIFICATION_AND_SPLIT_FREEZE_ONLY",
+  "authorized_scope": [
+    "identity investigation",
+    "retained-data inspection",
+    "provider and canonical identity reconciliation",
+    "fresh-target discovery",
+    "spent and protected target firewall checking",
+    "point-in-time target classification",
+    "corpus qualification",
+    "chronological split freezing",
+    "immutable evidence generation"
+  ],
+  "contract": "OwnerDecisionEvidenceV1",
+  "decision_id": "AUTHORIZE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
+  "effective_date": "2026-10-08",
+  "forbidden_scope": [
+    "V2A evaluation",
+    "V2B evaluation",
+    "hyperparameter fitting",
+    "model training",
+    "holdout outcome scoring",
+    "production promotion",
+    "H2H research",
+    "new contextual features",
+    "external scraping",
+    "provider API acquisition"
+  ],
+  "new_provider_acquisition_authorized": false,
+  "production_champion_change_authorized": false,
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
+  "recorded_at": "2026-10-08T00:00:00Z"
+}
