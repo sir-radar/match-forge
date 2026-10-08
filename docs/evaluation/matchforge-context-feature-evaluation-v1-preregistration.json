@@ -1,0 +1,100 @@
+{
+  "acceptance": {
+    "domain": {
+      "minimum_negative_joint_log_loss_domains_when_three_available": 3,
+      "no_domain_joint_log_loss_point_delta_above": 0.02
+    },
+    "primary": {
+      "joint_log_loss_delta_interval_upper_below": 0.0,
+      "joint_log_loss_delta_maximum": -0.003,
+      "one_x_two_log_loss_point_delta_maximum": 0.0
+    },
+    "secondary_interval_upper_limits": {
+      "brier": 0.01,
+      "crps": 0.02,
+      "rps": 0.01
+    }
+  },
+  "baseline": "transferable-rolling-goals-poisson-v1",
+  "bootstrap": {
+    "confidence_percent": 95,
+    "moving_block_length": 10,
+    "replicates": 2000,
+    "seed": 20260921
+  },
+  "coefficient_bounds": "UNBOUNDED_WITH_L2_REGULARIZATION",
+  "contract": "MatchForgeContextFeatureEvaluationPreregistrationV1",
+  "development_only": true,
+  "dispositions": [
+    "DEVELOPMENT_ACCEPTED",
+    "DEVELOPMENT_REJECTED",
+    "INSUFFICIENT_QUALIFIED_COVERAGE",
+    "FAIL_CLOSED_PROTOCOL_VIOLATION"
+  ],
+  "family_order": [
+    "H2H_IF_PREQUALIFIED",
+    "AVAILABILITY_LINEUP",
+    "REST_CONGESTION",
+    "MANAGER",
+    "TRAVEL"
+  ],
+  "h2h_prerequisite": {
+    "required_result": "DEVELOPMENT_ACCEPTED_FOR_CONFIRMATION",
+    "result": "DEVELOPMENT_REJECTED",
+    "status": "NOT_AVAILABLE"
+  },
+  "horizons": [
+    "24H",
+    "6H",
+    "1H",
+    "15M",
+    "CONFIRMED_LINEUP"
+  ],
+  "lineup_predictor_admission": {
+    "mean_correct_starters_must_exceed_naive": true,
+    "replacement_accuracy_must_exceed_naive": true
+  },
+  "minimum_coverage": {
+    "manager": {
+      "competition_domains": 3,
+      "qualified_coach_coverage": 0.7,
+      "targets": 300
+    },
+    "travel": {
+      "competition_domains": 3,
+      "qualified_coordinate_coverage": 0.8,
+      "targets": 500
+    }
+  },
+  "missingness": {
+    "full_family_missing_adjustment": 0.0,
+    "indicators": [
+      "value",
+      "coverage",
+      "missingness"
+    ],
+    "preserve_baseline_forecast_coverage": true
+  },
+  "model_id": "MATCHFORGE_CONTEXTUAL_GOAL_MODEL_V1",
+  "production_champion_change_authorized": false,
+  "regularization": {
+    "grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
+    "type": "L2"
+  },
+  "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1",
+  "split": {
+    "development_holdout_fraction": 0.2,
+    "same_kickoff_batch_sealed": true,
+    "training_fraction": 0.6,
+    "validation_fraction": 0.2
+  },
+  "training_statistics_only": [
+    "continuous_feature_mean",
+    "continuous_feature_scale"
+  ]
+}
