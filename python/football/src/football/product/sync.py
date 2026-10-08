@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import threading
 from collections.abc import Iterable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
@@ -16,13 +17,22 @@ from uuid import UUID
 import psycopg
 from psycopg import Connection
 
+from football.forecasting.revisions import RevisionReason, classify_horizon
 from football.product.api_football import (
     ApiFootballClient,
     ApiFootballError,
     ApiResponse,
+    context_capability,
     continent_for_country,
     fixture_status,
     inferred_division,
+)
+from football.product.context_ingestion import ContextObservationStore
+from football.product.context_sync import (
+    ContextResource,
+    ContextSyncConfig,
+    FixtureContextTarget,
+    plan_context_requests,
 )
 from football.product.domain import (
     MINIMUM_HISTORY_MATCHES,
@@ -107,6 +117,7 @@ class ProductSync:
         api_football_max_history_season: int | None = None,
         history_worker_factory: HistoryWorkerFactory | None = None,
         sync_run_id: UUID | None = None,
+        context_config: ContextSyncConfig | None = None,
     ) -> None:
         if api_football_max_history_season is not None and api_football_max_history_season <= 0:
             raise ValueError("api_football_max_history_season must be positive")
@@ -118,6 +129,7 @@ class ProductSync:
         self.api_football_max_history_season = api_football_max_history_season
         self.history_worker_factory = history_worker_factory
         self.sync_run_id = sync_run_id
+        self.context_config = context_config or ContextSyncConfig.from_environ(os.environ)
 
     def run(
         self,
@@ -136,6 +148,7 @@ class ProductSync:
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
         fixture_count, league_seasons = self._sync_fixtures(fixture_dates)
+        context_observations = self.sync_context(competition_response.remaining_day)
         self._recover_abandoned_history_jobs()
         self._enqueue_history_jobs(league_seasons)
         self.connection.commit()
@@ -150,6 +163,7 @@ class ProductSync:
         return {
             "competitions": competition_count,
             "fixtures": fixture_count,
+            "context_observations": context_observations,
             "fixtures_from_history": history_fixture_count,
             "history_matches": queue_result["history_matches"],
             "standings_rows": queue_result["standings_rows"],
@@ -162,6 +176,106 @@ class ProductSync:
             "history_queue_pending_retry": queue_result["pending_retry"],
             "history_queue_peak_concurrency": queue_result["peak_concurrency"],
         }
+
+    def sync_context(self, remaining_day: int | None, now: datetime | None = None) -> int:
+        """Fetch enabled pre-match context without letting provider failures break fixture sync."""
+        now = now or datetime.now(UTC)
+        if not self.context_config.context_enabled:
+            return 0
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT fixture.fixture_id, mapping.provider_match_id, fixture.kickoff_at,
+                       injury.status, lineup.status,
+                       (SELECT max(snapshot.acquired_at)
+                          FROM football.source_snapshots snapshot
+                         WHERE snapshot.provider_id = provider.id
+                           AND snapshot.source_identity =
+                               'fixture-' || mapping.provider_match_id || '-injuries'),
+                       (SELECT max(snapshot.acquired_at)
+                          FROM football.source_snapshots snapshot
+                         WHERE snapshot.provider_id = provider.id
+                           AND snapshot.source_identity =
+                               'fixture-' || mapping.provider_match_id || '-lineups'),
+                       (SELECT count(DISTINCT team_id) = 2
+                          FROM football.product_lineup_observations observation
+                         WHERE observation.fixture_id = fixture.fixture_id
+                           AND observation.lineup_mode = 'CONFIRMED'),
+                       fixture.home_team_id, fixture.away_team_id
+                FROM football.product_fixtures fixture
+                JOIN football.match_provider_mappings mapping
+                  ON mapping.match_id = fixture.fixture_id
+                JOIN football.providers provider ON provider.id = mapping.provider_id
+                JOIN football.product_context_capabilities injury
+                  ON injury.competition_id = fixture.competition_id
+                 AND injury.provider = 'api_football' AND injury.resource = 'INJURIES'
+                JOIN football.product_context_capabilities lineup
+                  ON lineup.competition_id = fixture.competition_id
+                 AND lineup.provider = 'api_football' AND lineup.resource = 'LINEUPS'
+                WHERE provider.code = 'api_football' AND fixture.status = 'SCHEDULED'
+                  AND fixture.kickoff_at > %s
+                  AND fixture.kickoff_at <= %s + interval '72 hours'
+                ORDER BY fixture.kickoff_at, fixture.fixture_id
+                """,
+                (now, now),
+            )
+            rows = cursor.fetchall()
+        targets = tuple(
+            FixtureContextTarget(str(row[1]), row[2], row[3], row[4], row[5], row[6], row[7])
+            for row in rows
+        )
+        by_provider_id = {str(row[1]): (row[0], row[2]) for row in rows}
+        requests = plan_context_requests(targets, now, remaining_day, self.context_config)
+        store = ContextObservationStore(self.connection)
+        count = 0
+        for request in requests:
+            fixture_id, kickoff_at = by_provider_id[request.provider_fixture_id]
+            try:
+                if request.resource is ContextResource.INJURIES:
+                    response = self.client.injuries(int(request.provider_fixture_id))
+                    snapshot_id = self._record_response(
+                        f"fixture-{request.provider_fixture_id}-injuries", response
+                    )
+                    count += store.persist_availability(fixture_id, response, snapshot_id)
+                else:
+                    response = self.client.lineups(int(request.provider_fixture_id))
+                    snapshot_id = self._record_response(
+                        f"fixture-{request.provider_fixture_id}-lineups", response
+                    )
+                    count += store.persist_lineups(fixture_id, kickoff_at, response, snapshot_id)
+            except ApiFootballError as error:
+                if error.capability_status is not None:
+                    affected_resources = (
+                        ("INJURIES", "SUSPENSIONS")
+                        if request.resource is ContextResource.INJURIES
+                        else (request.resource.value,)
+                    )
+                    for resource in affected_resources:
+                        with self.connection.cursor() as cursor:
+                            cursor.execute(
+                                """
+                                UPDATE football.product_context_capabilities capability
+                                SET status = %s, observed_at = %s
+                                FROM football.product_fixtures fixture
+                                WHERE fixture.fixture_id = %s
+                                  AND capability.competition_id = fixture.competition_id
+                                  AND capability.provider = 'api_football'
+                                  AND capability.resource = %s
+                                """,
+                                (
+                                    error.capability_status.value,
+                                    now,
+                                    fixture_id,
+                                    resource,
+                                ),
+                            )
+                continue
+            except ValueError:
+                continue
+        fixtures = tuple((row[0], row[2], row[8], row[9]) for row in rows)
+        count += store.persist_predicted_lineups(fixtures, now)
+        store.persist_context_snapshots(fixtures, now)
+        return count
 
     def _sync_history_job(self, league_id: int, season: int) -> tuple[int, int]:
         history_result = self._sync_league_history(league_id, season)
@@ -1050,6 +1164,32 @@ class ProductSync:
                         observed_at,
                     ),
                 )
+                for resource in ("INJURIES", "SUSPENSIONS", "LINEUPS"):
+                    cursor.execute(
+                        """
+                        INSERT INTO football.product_context_capabilities (
+                            competition_id, provider, resource, status,
+                            observed_at, source_snapshot_id
+                        ) VALUES (%s, 'api_football', %s, %s, %s, %s)
+                        ON CONFLICT (competition_id, provider, resource) DO UPDATE SET
+                            status = CASE
+                                WHEN football.product_context_capabilities.status =
+                                     'PLAN_RESTRICTION'
+                                 AND EXCLUDED.status <> 'UNSUPPORTED_BY_COMPETITION'
+                                THEN football.product_context_capabilities.status
+                                ELSE EXCLUDED.status
+                            END,
+                            observed_at = EXCLUDED.observed_at,
+                            source_snapshot_id = EXCLUDED.source_snapshot_id
+                        """,
+                        (
+                            competition_id,
+                            resource,
+                            context_capability(current, resource).value,
+                            observed_at,
+                            snapshot_id,
+                        ),
+                    )
             count += 1
         return count
 
@@ -1621,12 +1761,6 @@ class ProductSync:
                 SELECT fixture_id, home_team_id, away_team_id, kickoff_at
                 FROM football.product_fixtures
                 WHERE status = 'SCHEDULED' AND kickoff_at > %s
-                  AND NOT EXISTS (
-                      SELECT 1 FROM football.product_forecasts forecast
-                      WHERE forecast.fixture_id = football.product_fixtures.fixture_id
-                        AND forecast.model_algorithm_version =
-                            'transferable-rolling-goals-poisson-v1'
-                  )
                 ORDER BY kickoff_at, fixture_id
                 """,
                 (now,),
@@ -1645,12 +1779,66 @@ class ProductSync:
                 continue
             payload = forecast_payload(forecast)
             payload_sha = sha256_json(payload)
+            predictive_input_sha = sha256_json(
+                {
+                    "fixture_id": str(fixture_id),
+                    "kickoff_at": kickoff_at.isoformat(),
+                    "home_team_id": str(home_id),
+                    "away_team_id": str(away_id),
+                    "qualified_history": [
+                        {
+                            "fixture_id": str(match.fixture_id),
+                            "kickoff_at": match.kickoff_at.isoformat(),
+                            "home_team_id": str(match.home_team_id),
+                            "away_team_id": str(match.away_team_id),
+                            "home_goals": match.home_goals,
+                            "away_goals": match.away_goals,
+                            "home_xg": match.home_xg,
+                            "away_xg": match.away_xg,
+                        }
+                        for match in history
+                    ],
+                }
+            )
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT forecast_id, model_artifact_sha256
+                    FROM football.product_forecasts
+                    WHERE fixture_id = %s AND model_algorithm_version =
+                        'transferable-rolling-goals-poisson-v1'
+                    ORDER BY created_at DESC, forecast_id DESC LIMIT 1
+                    """,
+                    (fixture_id,),
+                )
+                previous = cursor.fetchone()
+                cursor.execute(
+                    """
+                    SELECT context_snapshot_sha256, source_information_ids
+                    FROM football.product_context_snapshots
+                    WHERE fixture_id = %s AND knowledge_cutoff <= %s
+                    ORDER BY knowledge_cutoff DESC, context_snapshot_id DESC LIMIT 1
+                    """,
+                    (fixture_id, now),
+                )
+                context_row = cursor.fetchone()
+            context_sha = context_row[0] if context_row is not None else sha256_json({})
+            context_information_ids = context_row[1] if context_row is not None else []
+            new_information_ids = sorted(
+                {str(value) for value in context_information_ids}
+                | {str(match.fixture_id) for match in history}
+            )
+            if previous is None:
+                revision_reasons = [RevisionReason.INITIAL_FORECAST.value]
+            elif previous[1] != artifact_sha:
+                revision_reasons = [RevisionReason.MODEL_ARTIFACT_CHANGED.value]
+            else:
+                revision_reasons = [RevisionReason.BASELINE_HISTORY_CHANGED.value]
             semantic_sha = sha256_json(
                 {
                     "fixture_id": str(fixture_id),
                     "artifact_sha256": artifact_sha,
-                    "knowledge_cutoff": now.isoformat(),
-                    "payload_sha256": payload_sha,
+                    "predictive_input_snapshot_sha256": predictive_input_sha,
                 }
             )
             forecast_id = stable_id("product-forecast", semantic_sha)
@@ -1675,10 +1863,13 @@ class ProductSync:
                         football_cutoff, knowledge_cutoff, knowledge_mode,
                         expected_home_goals, expected_away_goals, probabilities,
                         score_matrix, payload_sha256, publication_mode
+                        , forecast_horizon, supersedes_forecast_id,
+                        predictive_input_snapshot_sha256, context_snapshot_sha256,
+                        revision_reason_codes, new_information_ids
                     ) VALUES (%s, %s, %s, 'MVP_FORECAST',
                         'transferable-rolling-goals-poisson-v1', %s, %s, %s, %s,
                         'bitemporal', %s, %s, %s::jsonb, %s::jsonb, %s,
-                        'MVP_OWNER_AUTHORIZED')
+                        'MVP_OWNER_AUTHORIZED', %s, %s, %s, %s, %s::jsonb, %s::jsonb)
                     ON CONFLICT (semantic_sha256) DO NOTHING
                     """,
                     (
@@ -1694,6 +1885,12 @@ class ProductSync:
                         json.dumps(probabilities),
                         json.dumps(forecast.score_matrix),
                         payload_sha,
+                        classify_horizon(now, kickoff_at).value,
+                        previous[0] if previous is not None else None,
+                        predictive_input_sha,
+                        context_sha,
+                        json.dumps(revision_reasons),
+                        json.dumps(new_information_ids),
                     ),
                 )
                 count += cursor.rowcount

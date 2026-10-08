@@ -24,6 +24,18 @@ type performanceStoreStub struct {
 	items   []Performance
 }
 
+type forecastHistoryStoreStub struct {
+	unavailableProductStore
+	fixtureID string
+}
+
+func (store *forecastHistoryStoreStub) ForecastHistory(
+	_ context.Context, fixtureID string,
+) ([]ForecastRevision, error) {
+	store.fixtureID = fixtureID
+	return []ForecastRevision{{ForecastID: "forecast-1", FixtureID: fixtureID}}, nil
+}
+
 func (store *performanceStoreStub) Performances(_ context.Context, filters PerformanceFilters) (PerformancePage, error) {
 	store.filters = filters
 	return paginatePerformances(store.items, filters.Page, filters.PageSize), nil
@@ -52,6 +64,24 @@ func TestFixtureListAPI(t *testing.T) {
 	}
 	if response.Header().Get("Access-Control-Allow-Origin") != "http://127.0.0.1:3000" {
 		t.Fatal("expected exact configured CORS origin")
+	}
+}
+
+func TestForecastHistoryAPI(t *testing.T) {
+	store := &forecastHistoryStoreStub{}
+	application := New(
+		Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, store,
+	)
+	request := httptest.NewRequest(http.MethodGet, "/v1/fixtures/fixture-1/forecasts", nil)
+	response := httptest.NewRecorder()
+
+	application.Handler().ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK || store.fixtureID != "fixture-1" {
+		t.Fatalf("response = %d %s, fixture = %s", response.Code, response.Body.String(), store.fixtureID)
+	}
+	if !strings.Contains(response.Body.String(), `"forecast_id":"forecast-1"`) {
+		t.Fatalf("response = %s", response.Body.String())
 	}
 }
 

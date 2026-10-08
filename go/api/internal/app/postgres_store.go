@@ -104,30 +104,32 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 
 func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID string) (MatchContext, error) {
 	var competitionID, homeID, awayID string
+	var kickoffAt, knowledgeCutoff time.Time
 	err := store.pool.QueryRow(ctx, `
-		SELECT competition_id::text, home_team_id::text, away_team_id::text
+		SELECT competition_id::text, home_team_id::text, away_team_id::text,
+		       kickoff_at, LEAST(kickoff_at, clock_timestamp())
 		FROM football.product_fixtures WHERE fixture_id::text = $1`, fixtureID,
-	).Scan(&competitionID, &homeID, &awayID)
+	).Scan(&competitionID, &homeID, &awayID, &kickoffAt, &knowledgeCutoff)
 	if err != nil {
 		return MatchContext{}, productQueryError(err)
 	}
-	homeForm, err := store.form(ctx, homeID)
+	homeForm, err := store.form(ctx, homeID, kickoffAt, knowledgeCutoff)
 	if err != nil {
 		return MatchContext{}, err
 	}
-	awayForm, err := store.form(ctx, awayID)
+	awayForm, err := store.form(ctx, awayID, kickoffAt, knowledgeCutoff)
 	if err != nil {
 		return MatchContext{}, err
 	}
-	h2h, err := store.h2h(ctx, homeID, awayID)
+	h2h, err := store.h2h(ctx, homeID, awayID, kickoffAt, knowledgeCutoff)
 	if err != nil {
 		return MatchContext{}, err
 	}
-	standings, err := store.Standings(ctx, competitionID)
+	standings, err := store.standingsAt(ctx, competitionID, kickoffAt)
 	if err != nil {
 		return MatchContext{}, err
 	}
-	return MatchContext{
+	item := MatchContext{
 		FixtureID: fixtureID, HomeForm: homeForm, AwayForm: awayForm, H2H: h2h,
 		H2HSummary: summarizeH2H(h2h), HomeStats: summarizeForm(homeForm),
 		AwayStats: summarizeForm(awayForm), Standings: standings,
@@ -136,7 +138,65 @@ func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID
 			"h2h":         len(h2h) > 0, "standings": len(standings) > 0,
 			"team_stats": len(homeForm) > 0 && len(awayForm) > 0,
 		},
-	}, nil
+	}
+	if err := store.addLiveContext(ctx, &item, homeID, awayID, kickoffAt, knowledgeCutoff); err != nil {
+		return MatchContext{}, err
+	}
+	return item, nil
+}
+
+func (store *PostgresProductStore) ForecastHistory(ctx context.Context, fixtureID string) ([]ForecastRevision, error) {
+	rows, err := store.pool.Query(ctx, `
+		SELECT forecast_id::text, fixture_id::text, created_at, football_cutoff,
+		       knowledge_cutoff, forecast_horizon, supersedes_forecast_id::text,
+		       model_algorithm_version, model_artifact_sha256,
+		       predictive_input_snapshot_sha256, context_snapshot_sha256,
+		       revision_reason_codes, new_information_ids, expected_home_goals,
+		       expected_away_goals, probabilities, score_matrix, payload_sha256
+		FROM football.product_forecasts
+		WHERE fixture_id::text = $1 AND model_label = 'MVP_FORECAST'
+		ORDER BY created_at, forecast_id`, fixtureID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ForecastRevision{}
+	for rows.Next() {
+		var item ForecastRevision
+		var reasons, information, probabilities, scoreMatrix []byte
+		var expectedHomeGoals, expectedAwayGoals float64
+		if err := rows.Scan(
+			&item.ForecastID, &item.FixtureID, &item.IssuedAt, &item.FootballCutoff,
+			&item.KnowledgeCutoff, &item.ForecastHorizon, &item.SupersedesForecastID,
+			&item.ModelID, &item.ArtifactSHA256, &item.PredictiveInputSnapshotSHA256,
+			&item.ContextSnapshotSHA256, &reasons, &information, &expectedHomeGoals,
+			&expectedAwayGoals, &probabilities, &scoreMatrix, &item.PayloadSHA256,
+		); err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(reasons, &item.RevisionReasonCodes); err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(information, &item.NewInformationIDs); err != nil {
+			return nil, err
+		}
+		var probabilityValues map[string]float64
+		var scoreValues []map[string]any
+		if err := json.Unmarshal(probabilities, &probabilityValues); err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(scoreMatrix, &scoreValues); err != nil {
+			return nil, err
+		}
+		item.ProbabilityPayload = map[string]any{
+			"expected_home_goals": expectedHomeGoals,
+			"expected_away_goals": expectedAwayGoals,
+			"probabilities":       probabilityValues,
+			"score_matrix":        scoreValues,
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
 }
 
 func (store *PostgresProductStore) Forecast(ctx context.Context, fixtureID, forecastID string) (Forecast, error) {
@@ -168,12 +228,19 @@ func (store *PostgresProductStore) Forecast(ctx context.Context, fixtureID, fore
 }
 
 func (store *PostgresProductStore) Standings(ctx context.Context, competitionID string) ([]StandingRow, error) {
+	return store.standingsAt(ctx, competitionID, time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC))
+}
+
+func (store *PostgresProductStore) standingsAt(
+	ctx context.Context, competitionID string, cutoff time.Time,
+) ([]StandingRow, error) {
 	rows, err := store.pool.Query(ctx, `
 		SELECT s.position, s.team_id::text, t.name, s.played, s.won, s.drawn, s.lost,
 		       s.goals_for, s.goals_against, s.goal_difference, s.points
 		FROM football.product_standings s
 		JOIN football.product_teams t ON t.team_id = s.team_id
-		WHERE s.competition_id::text = $1 ORDER BY s.position`, competitionID)
+		WHERE s.competition_id::text = $1 AND s.updated_at < $2
+		ORDER BY s.position`, competitionID, cutoff)
 	if err != nil {
 		return nil, err
 	}
@@ -412,7 +479,9 @@ func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context
 	return items, nil
 }
 
-func (store *PostgresProductStore) form(ctx context.Context, teamID string) ([]FormMatch, error) {
+func (store *PostgresProductStore) form(
+	ctx context.Context, teamID string, kickoffAt, knowledgeCutoff time.Time,
+) ([]FormMatch, error) {
 	rows, err := store.pool.Query(ctx, `
 		SELECT history.kickoff_at,
 		       CASE WHEN history.home_team_id::text = $1 THEN away.name ELSE home.name END,
@@ -420,10 +489,15 @@ func (store *PostgresProductStore) form(ctx context.Context, teamID string) ([]F
 		       CASE WHEN history.home_team_id::text = $1 THEN history.home_goals ELSE history.away_goals END,
 		       CASE WHEN history.home_team_id::text = $1 THEN history.away_goals ELSE history.home_goals END
 		FROM football.product_team_match_history history
+		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
 		JOIN football.product_teams home ON home.team_id = history.home_team_id
 		JOIN football.product_teams away ON away.team_id = history.away_team_id
-		WHERE history.home_team_id::text = $1 OR history.away_team_id::text = $1
-		ORDER BY history.kickoff_at DESC LIMIT 5`, teamID)
+		WHERE (history.home_team_id::text = $1 OR history.away_team_id::text = $1)
+		  AND ((history.source_kickoff_precision = 'EXACT' AND history.kickoff_at < $2)
+		    OR (history.source_kickoff_precision = 'DATE_ONLY'
+		        AND history.kickoff_at::date < $2::date))
+		  AND snapshot.acquired_at <= $3
+		ORDER BY history.kickoff_at DESC LIMIT 5`, teamID, kickoffAt, knowledgeCutoff)
 	if err != nil {
 		return nil, err
 	}
@@ -447,16 +521,23 @@ func (store *PostgresProductStore) form(ctx context.Context, teamID string) ([]F
 	return items, rows.Err()
 }
 
-func (store *PostgresProductStore) h2h(ctx context.Context, homeID, awayID string) ([]H2HMatch, error) {
+func (store *PostgresProductStore) h2h(
+	ctx context.Context, homeID, awayID string, kickoffAt, knowledgeCutoff time.Time,
+) ([]H2HMatch, error) {
 	rows, err := store.pool.Query(ctx, `
 		SELECT history.kickoff_at, home.name, away.name,
 		       history.home_goals, history.away_goals, history.home_xg, history.away_xg
 		FROM football.product_team_match_history history
+		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
 		JOIN football.product_teams home ON home.team_id = history.home_team_id
 		JOIN football.product_teams away ON away.team_id = history.away_team_id
-		WHERE (history.home_team_id::text = $1 AND history.away_team_id::text = $2)
-		   OR (history.home_team_id::text = $2 AND history.away_team_id::text = $1)
-		ORDER BY history.kickoff_at DESC LIMIT 10`, homeID, awayID)
+		WHERE ((history.home_team_id::text = $1 AND history.away_team_id::text = $2)
+		   OR (history.home_team_id::text = $2 AND history.away_team_id::text = $1))
+		  AND ((history.source_kickoff_precision = 'EXACT' AND history.kickoff_at < $3)
+		    OR (history.source_kickoff_precision = 'DATE_ONLY'
+		        AND history.kickoff_at::date < $3::date))
+		  AND snapshot.acquired_at <= $4
+		ORDER BY history.kickoff_at DESC LIMIT 10`, homeID, awayID, kickoffAt, knowledgeCutoff)
 	if err != nil {
 		return nil, err
 	}
@@ -469,6 +550,272 @@ func (store *PostgresProductStore) h2h(ctx context.Context, homeID, awayID strin
 		)
 		return item, err
 	})
+}
+
+func (store *PostgresProductStore) addLiveContext(
+	ctx context.Context,
+	item *MatchContext,
+	homeID, awayID string,
+	kickoffAt, knowledgeCutoff time.Time,
+) error {
+	availability, provenance, err := store.availabilityContext(
+		ctx, item.FixtureID, kickoffAt, knowledgeCutoff,
+	)
+	if err != nil {
+		return err
+	}
+	lineups, lineupProvenance, err := store.lineupContext(
+		ctx, item.FixtureID, kickoffAt, knowledgeCutoff,
+	)
+	if err != nil {
+		return err
+	}
+	coaches, err := store.coachContext(ctx, []string{homeID, awayID}, kickoffAt, knowledgeCutoff)
+	if err != nil {
+		return err
+	}
+	rest, err := store.restContext(ctx, []string{homeID, awayID}, kickoffAt, knowledgeCutoff)
+	if err != nil {
+		return err
+	}
+	item.Availability = availability
+	item.ContextProvenance = append(provenance, lineupProvenance...)
+	item.CoachContext = coaches
+	item.RestContext = rest
+	assignLineups(item, lineups)
+	item.ContextMissingness = contextMissingness(item, len(availability), len(coaches))
+	item.DataStatus["availability"] = len(availability) > 0
+	item.DataStatus["predicted_lineup"] = len(item.PredictedLineups) > 0
+	item.DataStatus["confirmed_lineup"] = len(item.ConfirmedLineups) > 0
+	item.DataStatus["coach_context"] = len(coaches) == 2
+	item.DataStatus["rest_context"] = len(rest) == 2
+	return nil
+}
+
+func assignLineups(item *MatchContext, lineups []LineupContext) {
+	item.PredictedLineups = []LineupContext{}
+	item.ConfirmedLineups = []LineupContext{}
+	for _, lineup := range lineups {
+		if lineup.Mode == "CONFIRMED" {
+			item.ConfirmedLineups = append(item.ConfirmedLineups, lineup)
+		} else if lineup.Mode == "PREDICTED_REPEAT_XI" {
+			item.PredictedLineups = append(item.PredictedLineups, lineup)
+		}
+	}
+}
+
+func contextMissingness(item *MatchContext, availabilityCount, coachCount int) []string {
+	missingness := []string{}
+	if availabilityCount == 0 {
+		missingness = append(missingness, "AVAILABILITY_UNVERIFIED")
+	}
+	if len(item.PredictedLineups) == 0 {
+		missingness = append(missingness, "PREDICTED_LINEUP_UNAVAILABLE")
+	}
+	if len(item.ConfirmedLineups) == 0 {
+		missingness = append(missingness, "CONFIRMED_LINEUP_UNAVAILABLE")
+	}
+	if coachCount < 2 {
+		missingness = append(missingness, "COACH_CONTEXT_INCOMPLETE")
+	}
+	return missingness
+}
+
+func (store *PostgresProductStore) availabilityContext(
+	ctx context.Context, fixtureID string, kickoffAt, knowledgeCutoff time.Time,
+) ([]AvailabilityContext, []ContextProvenance, error) {
+	rows, err := store.pool.Query(ctx, `
+		SELECT DISTINCT ON (team_id, provider_player_id, availability_type)
+		       team_id::text, canonical_player_id::text, provider_player_id,
+		       availability_type, availability_state, reason, observed_at, known_at,
+		       provider, source_snapshot_id::text, source_checksum
+		FROM football.product_availability_observations
+		WHERE fixture_id::text = $1 AND observed_at < $2 AND known_at <= $3
+		ORDER BY team_id, provider_player_id, availability_type,
+		         known_at DESC, observed_at DESC, observation_id DESC`,
+		fixtureID, kickoffAt, knowledgeCutoff)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	items := []AvailabilityContext{}
+	provenance := []ContextProvenance{}
+	for rows.Next() {
+		var item AvailabilityContext
+		var sourceID, checksum string
+		if err := rows.Scan(
+			&item.TeamID, &item.PlayerID, &item.ProviderPlayerID, &item.Type, &item.State,
+			&item.Reason, &item.ObservedAt, &item.KnownAt, &item.Provider, &sourceID, &checksum,
+		); err != nil {
+			return nil, nil, err
+		}
+		if knowledgeCutoff.Sub(item.ObservedAt) > 4*time.Hour {
+			item.State = "AVAILABILITY_UNVERIFIED"
+		}
+		items = append(items, item)
+		provenance = append(provenance, ContextProvenance{
+			Provider: item.Provider, SourceSnapshotID: sourceID,
+			SourceChecksum: checksum, KnownAt: item.KnownAt,
+		})
+	}
+	return items, provenance, rows.Err()
+}
+
+func (store *PostgresProductStore) lineupContext(
+	ctx context.Context, fixtureID string, kickoffAt, knowledgeCutoff time.Time,
+) ([]LineupContext, []ContextProvenance, error) {
+	rows, err := store.pool.Query(ctx, `
+		SELECT lineup_observation_id::text, team_id::text, lineup_mode, formation,
+		       coach_id::text, prediction_confidence, coach_context,
+		       supersedes_predicted_lineup_id::text, observed_at, known_at,
+		       provider, source_snapshot_id::text, source_checksum
+		FROM (
+			SELECT observation.*, row_number() OVER (
+				PARTITION BY team_id, lineup_mode
+				ORDER BY known_at DESC, observed_at DESC, lineup_observation_id DESC
+			) AS position
+			FROM football.product_lineup_observations observation
+			WHERE fixture_id::text = $1 AND observed_at < $2 AND known_at <= $3
+		) latest WHERE position = 1
+		ORDER BY team_id, lineup_mode`, fixtureID, kickoffAt, knowledgeCutoff)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	items := []LineupContext{}
+	provenance := []ContextProvenance{}
+	for rows.Next() {
+		var item LineupContext
+		var provider, sourceID, checksum string
+		if err := rows.Scan(
+			&item.ID, &item.TeamID, &item.Mode, &item.Formation, &item.CoachID,
+			&item.PredictionConfidence, &item.CoachContext, &item.SupersedesPredictedID,
+			&item.ObservedAt, &item.KnownAt, &provider, &sourceID, &checksum,
+		); err != nil {
+			return nil, nil, err
+		}
+		players, err := store.lineupPlayers(ctx, item.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		item.Players = players
+		items = append(items, item)
+		provenance = append(provenance, ContextProvenance{
+			Provider: provider, SourceSnapshotID: sourceID,
+			SourceChecksum: checksum, KnownAt: item.KnownAt,
+		})
+	}
+	return items, provenance, rows.Err()
+}
+
+func (store *PostgresProductStore) lineupPlayers(
+	ctx context.Context, lineupID string,
+) ([]LineupPlayerContext, error) {
+	rows, err := store.pool.Query(ctx, `
+		SELECT canonical_player_id::text, provider_player_id, role, position,
+		       normalized_position, grid_position, availability_state,
+		       selection_reason, replaced_player_id::text, replacement_reason,
+		       preference_score, historical_start_count, slot_status
+		FROM football.product_lineup_players
+		WHERE lineup_observation_id::text = $1 ORDER BY slot_order`, lineupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (LineupPlayerContext, error) {
+		var item LineupPlayerContext
+		err := row.Scan(
+			&item.PlayerID, &item.ProviderPlayerID, &item.Role, &item.Position,
+			&item.NormalizedPosition, &item.GridPosition, &item.AvailabilityState,
+			&item.SelectionReason, &item.ReplacedPlayerID, &item.ReplacementReason,
+			&item.PreferenceScore, &item.HistoricalStartCount, &item.SlotStatus,
+		)
+		return item, err
+	})
+}
+
+func (store *PostgresProductStore) coachContext(
+	ctx context.Context, teamIDs []string, kickoffAt, knowledgeCutoff time.Time,
+) ([]CoachContext, error) {
+	items := []CoachContext{}
+	for _, teamID := range teamIDs {
+		var item CoachContext
+		var effectiveAt time.Time
+		err := store.pool.QueryRow(ctx, `
+			SELECT team_id::text, coach_id::text, effective_at
+			FROM football.product_coach_observations
+			WHERE team_id::text = $1 AND effective_at < $2 AND known_at <= $3
+			ORDER BY effective_at DESC, known_at DESC LIMIT 1`,
+			teamID, kickoffAt, knowledgeCutoff,
+		).Scan(&item.TeamID, &item.CoachID, &effectiveAt)
+		if errors.Is(err, pgx.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		var tenureStart time.Time
+		if err := store.pool.QueryRow(ctx, `
+			SELECT count(*), COALESCE(min(kickoff_at), $3)
+			FROM football.product_lineup_observations
+			WHERE team_id::text = $1 AND coach_id::text = $2
+			  AND lineup_mode = 'CONFIRMED' AND kickoff_at < $3 AND known_at <= $4`,
+			teamID, item.CoachID, kickoffAt, knowledgeCutoff,
+		).Scan(&item.MatchesUnderCoach, &tenureStart); err != nil {
+			return nil, err
+		}
+		item.CoachTenureDays = int(kickoffAt.Sub(tenureStart).Hours() / 24)
+		item.CoachChangedRecently = item.MatchesUnderCoach < 5
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (store *PostgresProductStore) restContext(
+	ctx context.Context, teamIDs []string, kickoffAt, knowledgeCutoff time.Time,
+) (map[string]RestContext, error) {
+	items := map[string]RestContext{}
+	for _, teamID := range teamIDs {
+		var item RestContext
+		var last, next *time.Time
+		err := store.pool.QueryRow(ctx, `
+			SELECT max(kickoff_at) FILTER (WHERE kickoff_at < $2),
+			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '3 days' AND kickoff_at < $2),
+			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '7 days' AND kickoff_at < $2),
+			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '14 days' AND kickoff_at < $2),
+			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '30 days' AND kickoff_at < $2)
+			FROM football.product_team_match_history history
+			JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
+			WHERE (home_team_id::text = $1 OR away_team_id::text = $1)
+			  AND ((source_kickoff_precision = 'EXACT' AND kickoff_at < $2)
+			    OR (source_kickoff_precision = 'DATE_ONLY'
+			        AND kickoff_at::date < $2::date))
+			  AND snapshot.acquired_at <= $3`,
+			teamID, kickoffAt, knowledgeCutoff,
+		).Scan(&last, &item.MatchesLast3Days, &item.MatchesLast7Days,
+			&item.MatchesLast14Days, &item.MatchesLast30Days)
+		if err != nil {
+			return nil, err
+		}
+		if err := store.pool.QueryRow(ctx, `
+			SELECT min(kickoff_at) FROM football.product_fixtures
+			WHERE (home_team_id::text = $1 OR away_team_id::text = $1)
+			  AND kickoff_at > $2 AND updated_at <= $3`,
+			teamID, kickoffAt, knowledgeCutoff,
+		).Scan(&next); err != nil {
+			return nil, err
+		}
+		if last != nil {
+			value := kickoffAt.Sub(*last).Hours() / 24
+			item.DaysSinceLastMatch = &value
+		}
+		if next != nil {
+			value := next.Sub(kickoffAt).Hours() / 24
+			item.DaysToNextMatch = &value
+		}
+		items[teamID] = item
+	}
+	return items, nil
 }
 
 func summarizeForm(matches []FormMatch) *TeamStatistics {

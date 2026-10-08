@@ -9,6 +9,7 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from enum import StrEnum
 from typing import Any, cast
 
 API_BASE_URL = "https://v3.football.api-sports.io"
@@ -17,6 +18,17 @@ Transport = Callable[[str, Mapping[str, str]], bytes]
 
 class ApiFootballError(RuntimeError):
     """The provider request or response could not be used safely."""
+
+    def __init__(self, message: str, *, capability_status: CapabilityStatus | None = None) -> None:
+        super().__init__(message)
+        self.capability_status = capability_status
+
+
+class CapabilityStatus(StrEnum):
+    SUPPORTED = "SUPPORTED"
+    UNSUPPORTED_BY_COMPETITION = "UNSUPPORTED_BY_COMPETITION"
+    PLAN_RESTRICTION = "PLAN_RESTRICTION"
+    UNKNOWN = "UNKNOWN"
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +65,12 @@ class ApiFootballClient:
     def predictions(self, fixture_id: int) -> ApiResponse:
         return self._get("/predictions", {"fixture": str(fixture_id)})
 
+    def injuries(self, fixture_id: int) -> ApiResponse:
+        return self._get("/injuries", {"fixture": str(fixture_id)})
+
+    def lineups(self, fixture_id: int) -> ApiResponse:
+        return self._get("/fixtures/lineups", {"fixture": str(fixture_id)})
+
     def _get(self, path: str, query: Mapping[str, str]) -> ApiResponse:
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"
         fetched_at = datetime.now(UTC)
@@ -66,7 +84,17 @@ class ApiFootballClient:
             raise ApiFootballError("API-Football returned invalid JSON") from error
         provider_errors = payload.get("errors")
         if provider_errors not in ({}, []):
-            raise ApiFootballError(f"API-Football rejected {path}: {provider_errors}")
+            detail = str(provider_errors)
+            lowered = detail.casefold()
+            capability_status = (
+                CapabilityStatus.PLAN_RESTRICTION
+                if any(marker in lowered for marker in ("plan", "subscription", "access"))
+                else None
+            )
+            raise ApiFootballError(
+                f"API-Football rejected {path}: {provider_errors}",
+                capability_status=capability_status,
+            )
         response = payload.get("response")
         if not isinstance(response, list):
             raise ApiFootballError("API-Football response must contain a list")
@@ -130,6 +158,25 @@ def inferred_division(name: str, competition_type: str) -> int | None:
     if any(marker in value for marker in lower_markers):
         return None
     return 1
+
+
+def context_capability(competition: Mapping[str, Any], resource: str) -> CapabilityStatus:
+    """Return only capability states explicitly supported by provider coverage metadata."""
+    coverage = competition.get("coverage")
+    if not isinstance(coverage, Mapping):
+        return CapabilityStatus.UNKNOWN
+    if resource in {"INJURIES", "SUSPENSIONS"}:
+        value = coverage.get("injuries")
+    elif resource == "LINEUPS":
+        fixtures = coverage.get("fixtures")
+        value = fixtures.get("lineups") if isinstance(fixtures, Mapping) else None
+    else:
+        raise ValueError(f"unsupported context resource: {resource}")
+    if value is True:
+        return CapabilityStatus.SUPPORTED
+    if value is False:
+        return CapabilityStatus.UNSUPPORTED_BY_COMPETITION
+    return CapabilityStatus.UNKNOWN
 
 
 def _http_get(url: str, headers: Mapping[str, str]) -> bytes:

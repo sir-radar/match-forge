@@ -79,6 +79,18 @@ def test_snapshot_excludes_future_same_kickoff_and_late_known_facts() -> None:
     assert snapshot.home_form_5.goals_for < 10
 
 
+def test_non_predictive_context_changes_only_context_hash() -> None:
+    snapshot = _snapshot(_training_history())
+    enriched = replace(
+        snapshot,
+        availability=({"player_id": "1", "state": "UNAVAILABLE_INJURY"},),
+        context_missingness=("LINEUP_UNAVAILABLE",),
+    )
+
+    assert enriched.predictive_input_snapshot_sha256 == snapshot.predictive_input_snapshot_sha256
+    assert enriched.context_snapshot_sha256 != snapshot.context_snapshot_sha256
+
+
 def test_snapshot_keeps_league_and_cup_h2h_separate_and_missing_xg_explicit() -> None:
     history = list(_training_history())
     history.extend(

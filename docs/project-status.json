@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-07T00:00:00Z",
+  "updated_at": "2026-10-08T00:00:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -776,6 +776,14 @@
     "external_prediction_collection_status": "ENABLED_4_PUBLIC_SOURCES_FOREBET_TECHNICALLY_UNAVAILABLE",
     "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
     "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md",
+    "live_context": {
+      "status": "IMPLEMENTED_VERIFIED",
+      "contract_ref": "docs/contracts/live-match-context-v1.md",
+      "migration": "infrastructure/migrations/202610070200_live_context_revisions.sql",
+      "delivery_branch": "ft/live-context-and-revisions-v1",
+      "predictive_weights_changed": false,
+      "champion_changed": false
+    },
     "historical_backfill": {
       "status": "COMPLETE",
       "completed_at": "2026-09-30",

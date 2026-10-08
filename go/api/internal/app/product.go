@@ -53,6 +53,7 @@ type ProductStore interface {
 	Competitions(context.Context, CompetitionFilters) ([]Competition, error)
 	Fixtures(context.Context, FixtureFilters) ([]FixtureGroup, error)
 	FixtureContext(context.Context, string) (MatchContext, error)
+	ForecastHistory(context.Context, string) ([]ForecastRevision, error)
 	Forecast(context.Context, string, string) (Forecast, error)
 	Standings(context.Context, string) ([]StandingRow, error)
 	Performance(context.Context, string) (Performance, error)
@@ -71,6 +72,9 @@ func (unavailableProductStore) Fixtures(context.Context, FixtureFilters) ([]Fixt
 }
 func (unavailableProductStore) FixtureContext(context.Context, string) (MatchContext, error) {
 	return MatchContext{}, errProductUnavailable
+}
+func (unavailableProductStore) ForecastHistory(context.Context, string) ([]ForecastRevision, error) {
+	return nil, errProductUnavailable
 }
 func (unavailableProductStore) Forecast(context.Context, string, string) (Forecast, error) {
 	return Forecast{}, errProductUnavailable
@@ -196,15 +200,106 @@ type TeamStatistics struct {
 }
 
 type MatchContext struct {
-	FixtureID  string          `json:"fixture_id"`
-	HomeForm   []FormMatch     `json:"home_form"`
-	AwayForm   []FormMatch     `json:"away_form"`
-	H2H        []H2HMatch      `json:"h2h"`
-	H2HSummary H2HSummary      `json:"h2h_summary"`
-	HomeStats  *TeamStatistics `json:"home_team_statistics"`
-	AwayStats  *TeamStatistics `json:"away_team_statistics"`
-	Standings  []StandingRow   `json:"standings"`
-	DataStatus map[string]bool `json:"data_availability"`
+	FixtureID          string                 `json:"fixture_id"`
+	HomeForm           []FormMatch            `json:"home_form"`
+	AwayForm           []FormMatch            `json:"away_form"`
+	H2H                []H2HMatch             `json:"h2h"`
+	H2HSummary         H2HSummary             `json:"h2h_summary"`
+	HomeStats          *TeamStatistics        `json:"home_team_statistics"`
+	AwayStats          *TeamStatistics        `json:"away_team_statistics"`
+	Standings          []StandingRow          `json:"standings"`
+	DataStatus         map[string]bool        `json:"data_availability"`
+	Availability       []AvailabilityContext  `json:"availability"`
+	PredictedLineups   []LineupContext        `json:"predicted_lineups"`
+	ConfirmedLineups   []LineupContext        `json:"confirmed_lineups"`
+	CoachContext       []CoachContext         `json:"coach_context"`
+	RestContext        map[string]RestContext `json:"rest_context"`
+	ContextProvenance  []ContextProvenance    `json:"context_provenance"`
+	ContextMissingness []string               `json:"context_missingness"`
+}
+
+type AvailabilityContext struct {
+	TeamID           string    `json:"team_id"`
+	PlayerID         *string   `json:"player_id"`
+	ProviderPlayerID string    `json:"provider_player_id"`
+	Type             string    `json:"availability_type"`
+	State            string    `json:"availability_state"`
+	Reason           *string   `json:"reason"`
+	ObservedAt       time.Time `json:"observed_at"`
+	KnownAt          time.Time `json:"known_at"`
+	Provider         string    `json:"provider"`
+}
+
+type LineupPlayerContext struct {
+	PlayerID             *string  `json:"player_id"`
+	ProviderPlayerID     string   `json:"provider_player_id"`
+	Role                 string   `json:"role"`
+	Position             string   `json:"position"`
+	NormalizedPosition   string   `json:"normalized_position"`
+	GridPosition         *string  `json:"grid_position"`
+	AvailabilityState    string   `json:"availability_state"`
+	SelectionReason      *string  `json:"selection_reason"`
+	ReplacedPlayerID     *string  `json:"replaced_player_id"`
+	ReplacementReason    *string  `json:"replacement_reason"`
+	PreferenceScore      *float64 `json:"preference_score"`
+	HistoricalStartCount *int     `json:"historical_start_count"`
+	SlotStatus           string   `json:"slot_status"`
+}
+
+type LineupContext struct {
+	ID                    string                `json:"lineup_observation_id"`
+	TeamID                string                `json:"team_id"`
+	Mode                  string                `json:"lineup_mode"`
+	Formation             *string               `json:"formation"`
+	CoachID               *string               `json:"coach_id"`
+	PredictionConfidence  *string               `json:"prediction_confidence"`
+	CoachContext          *string               `json:"coach_context"`
+	SupersedesPredictedID *string               `json:"supersedes_predicted_lineup_id"`
+	ObservedAt            time.Time             `json:"observed_at"`
+	KnownAt               time.Time             `json:"known_at"`
+	Players               []LineupPlayerContext `json:"players"`
+}
+
+type CoachContext struct {
+	TeamID               string `json:"team_id"`
+	CoachID              string `json:"coach_id"`
+	CoachTenureDays      int    `json:"coach_tenure_days"`
+	MatchesUnderCoach    int    `json:"matches_under_coach"`
+	CoachChangedRecently bool   `json:"coach_changed_recently"`
+}
+
+type RestContext struct {
+	DaysSinceLastMatch *float64 `json:"days_since_last_match"`
+	MatchesLast3Days   int      `json:"matches_last_3_days"`
+	MatchesLast7Days   int      `json:"matches_last_7_days"`
+	MatchesLast14Days  int      `json:"matches_last_14_days"`
+	MatchesLast30Days  int      `json:"matches_last_30_days"`
+	DaysToNextMatch    *float64 `json:"days_to_next_match"`
+}
+
+type ContextProvenance struct {
+	Provider         string    `json:"provider"`
+	SourceSnapshotID string    `json:"source_snapshot_id"`
+	SourceChecksum   string    `json:"source_checksum"`
+	KnownAt          time.Time `json:"known_at"`
+}
+
+type ForecastRevision struct {
+	ForecastID                    string         `json:"forecast_id"`
+	FixtureID                     string         `json:"fixture_id"`
+	IssuedAt                      time.Time      `json:"issued_at"`
+	FootballCutoff                time.Time      `json:"football_cutoff"`
+	KnowledgeCutoff               time.Time      `json:"knowledge_cutoff"`
+	ForecastHorizon               string         `json:"forecast_horizon"`
+	SupersedesForecastID          *string        `json:"supersedes_forecast_id"`
+	ModelID                       string         `json:"model_id"`
+	ArtifactSHA256                string         `json:"artifact_sha256"`
+	PredictiveInputSnapshotSHA256 string         `json:"predictive_input_snapshot_sha256"`
+	ContextSnapshotSHA256         string         `json:"context_snapshot_sha256"`
+	RevisionReasonCodes           []string       `json:"revision_reason_codes"`
+	NewInformationIDs             []string       `json:"new_information_ids"`
+	ProbabilityPayload            map[string]any `json:"probability_payload"`
+	PayloadSHA256                 string         `json:"payload_sha256"`
 }
 
 type StandingRow struct {
@@ -338,6 +433,13 @@ func (application *App) listFixtures(response http.ResponseWriter, request *http
 func (application *App) fixtureContext(response http.ResponseWriter, request *http.Request) {
 	item, err := application.product.FixtureContext(request.Context(), request.PathValue("fixture_id"))
 	application.respondProduct(response, item, err)
+}
+
+func (application *App) forecastHistory(response http.ResponseWriter, request *http.Request) {
+	items, err := application.product.ForecastHistory(
+		request.Context(), request.PathValue("fixture_id"),
+	)
+	application.respondProduct(response, map[string]any{"forecasts": items}, err)
 }
 
 func (application *App) forecast(response http.ResponseWriter, request *http.Request) {
