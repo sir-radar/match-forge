@@ -182,6 +182,33 @@ def build_full_coverage_ensemble_forecast(
         for forecast in forecasts
         if forecast.status is ModelStatus.SUCCESS and trained_weight(forecast) > 0
     )
+    challenger_components = tuple(
+        item for item in available if item.model_id != champion_forecast.model_id
+    )
+    if challenger_components and all(
+        item.lineage is not None and item.lineage.champion_fallback_used
+        for item in challenger_components
+    ):
+        reference = challenger_components[0].lineage
+        lineage = _ensemble_lineage(
+            reference,
+            model_id,
+            model_artifact_sha256,
+            champion_forecast,
+            ForecastMode.CHAMPION_FALLBACK,
+            ForecastFallbackReason.MODEL_FIT_UNAVAILABLE,
+            "ENSEMBLE_FULL_CHAMPION_FALLBACK",
+            champion_fallback=True,
+        )
+        return replace(
+            champion_forecast,
+            model_id=model_id,
+            model_family="LINEAR_SCORE_DISTRIBUTION_POOL",
+            model_version=model_id,
+            model_artifact_sha256=model_artifact_sha256,
+            component_weights=(),
+            lineage=lineage,
+        )
     available_mass = sum(trained_weight(item) for item in available)
     component_lineages = tuple(item.lineage for item in available if item.lineage is not None)
     reference = component_lineages[0] if component_lineages else None

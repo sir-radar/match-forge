@@ -65,6 +65,7 @@ class HybridModelError(RuntimeError):
 class HybridArtifactRuntime:
     primary_artifact: FittedModelArtifact
     fallback_artifact: FittedModelArtifact
+    team_id_aliases: tuple[tuple[str, str], ...] = ()
 
 
 class HybridGoalModel:
@@ -123,16 +124,18 @@ class HybridGoalModel:
         self, artifact: FittedModelArtifact, fixture: ForecastInputSnapshot
     ) -> ModelForecast:
         runtime = self._runtime(artifact)
+        aliases = dict(runtime.team_id_aliases)
         trained = _trained_teams(runtime.primary_artifact)
-        home_state = _artifact_state(fixture.home_team_id, trained)
-        away_state = _artifact_state(fixture.away_team_id, trained)
+        home_state = _artifact_state(fixture.home_team_id, trained, aliases)
+        away_state = _artifact_state(fixture.away_team_id, trained, aliases)
         estimator = ColdStartStrengthV1(self.cold_start_config or ColdStartConfig(shrinkage_k=10.0))
         home_history = estimator.classify_history(fixture, fixture.home_team_id)
         away_history = estimator.classify_history(fixture, fixture.away_team_id)
         fitted = home_state is away_state is ArtifactTeamState.FITTED
         if fitted:
             try:
-                forecast = self.primary.predict(runtime.primary_artifact, fixture)
+                primary_fixture = _primary_fixture(fixture, aliases)
+                forecast = self.primary.predict(runtime.primary_artifact, primary_fixture)
             except (ArithmeticError, RuntimeError, ValueError):
                 return self._fallback(
                     artifact,
@@ -145,7 +148,7 @@ class HybridGoalModel:
                     away_history.value,
                 )
             return self._relabel(
-                forecast,
+                replace(forecast, input_snapshot_sha256=fixture.sha256),
                 artifact,
                 ForecastLineage(
                     forecast_mode=ForecastMode.NATIVE,
@@ -184,6 +187,7 @@ class HybridGoalModel:
                 home_state,
                 away_state,
                 estimator,
+                aliases,
             )
         except (ArithmeticError, ColdStartError, HybridModelError, ValueError):
             return self._fallback(
@@ -206,6 +210,7 @@ class HybridGoalModel:
         home_state: ArtifactTeamState,
         away_state: ArtifactTeamState,
         estimator: ColdStartStrengthV1,
+        team_id_aliases: dict[str, str],
     ) -> ModelForecast:
         home_strength = (
             estimator.estimate(fixture, fixture.home_team_id)
@@ -224,6 +229,7 @@ class HybridGoalModel:
             home_strength,
             away_strength,
             self.cold_start_config,
+            team_id_aliases,
         )
         mode = (
             ForecastMode.COLD_START_BOTH
@@ -353,6 +359,7 @@ def build_hybrid_artifact(
     *,
     code_commit_sha: str | None = None,
     dependency_lock_sha256: str | None = None,
+    team_id_aliases: tuple[tuple[str, str], ...] = (),
 ) -> FittedModelArtifact:
     if primary_artifact.model_id != model.primary.model_id:
         raise ValueError("primary artifact identity does not match hybrid model")
@@ -385,6 +392,7 @@ def build_hybrid_artifact(
         "dependency_version": primary_artifact.dependency_version,
         "feature_contract": primary_artifact.feature_contract,
         "global_family_parameters": global_parameters,
+        "team_id_aliases": [list(item) for item in sorted(team_id_aliases)],
         "cold_start": _json_value(asdict(model.cold_start_config))
         if model.cold_start_config is not None
         else None,
@@ -412,7 +420,11 @@ def build_hybrid_artifact(
         code_commit_sha=resolved_code_commit,
         feature_contract=primary_artifact.feature_contract,
         random_seed=primary_artifact.random_seed,
-        runtime_model=HybridArtifactRuntime(primary_artifact, fallback_artifact),
+        runtime_model=HybridArtifactRuntime(
+            primary_artifact,
+            fallback_artifact,
+            tuple(sorted(team_id_aliases)),
+        ),
         diagnostics={
             "primary_diagnostics": primary_artifact.diagnostics,
             "fallback_diagnostics": fallback_artifact.diagnostics,
@@ -452,6 +464,7 @@ def _cold_start_matrix(
     home_strength: ColdStartStrength | None,
     away_strength: ColdStartStrength | None,
     cold_start_config: ColdStartConfig | None,
+    team_id_aliases: dict[str, str],
 ) -> tuple[tuple[str, ...], tuple[tuple[float, ...], ...]]:
     if model_id not in ("pb-dixon-coles-v1", "pb-negative-binomial-v1"):
         raise HybridModelError("model family has no tested cold-start compatibility adapter")
@@ -468,6 +481,7 @@ def _cold_start_matrix(
         params,
         "attack_",
         fixture.home_team_id,
+        team_id_aliases,
         sum(attacks) / len(attacks),
         home_strength.attack_log_strength if home_strength else None,
     )
@@ -475,6 +489,7 @@ def _cold_start_matrix(
         params,
         "attack_",
         fixture.away_team_id,
+        team_id_aliases,
         sum(attacks) / len(attacks),
         away_strength.attack_log_strength if away_strength else None,
     )
@@ -482,6 +497,7 @@ def _cold_start_matrix(
         params,
         defence_prefix,
         fixture.home_team_id,
+        team_id_aliases,
         sum(defences) / len(defences),
         home_strength.defence_log_strength if home_strength else None,
     )
@@ -489,6 +505,7 @@ def _cold_start_matrix(
         params,
         defence_prefix,
         fixture.away_team_id,
+        team_id_aliases,
         sum(defences) / len(defences),
         away_strength.defence_log_strength if away_strength else None,
     )
@@ -546,10 +563,11 @@ def _team_parameter(
     params: dict[str, float],
     prefix: str,
     team_id: object,
+    team_id_aliases: dict[str, str],
     family_mean: float,
     cold_start_adjustment: float | None,
 ) -> float:
-    key = f"{prefix}{team_id}"
+    key = f"{prefix}{team_id_aliases.get(str(team_id), str(team_id))}"
     if cold_start_adjustment is None:
         try:
             return params[key]
@@ -563,8 +581,24 @@ def _trained_teams(artifact: FittedModelArtifact) -> frozenset[str]:
     return frozenset(str(team) for team in teams)
 
 
-def _artifact_state(team_id: object, trained: frozenset[str]) -> ArtifactTeamState:
-    return ArtifactTeamState.FITTED if str(team_id) in trained else ArtifactTeamState.UNSEEN_TEAM
+def _artifact_state(
+    team_id: object, trained: frozenset[str], aliases: dict[str, str]
+) -> ArtifactTeamState:
+    return (
+        ArtifactTeamState.FITTED
+        if aliases.get(str(team_id), str(team_id)) in trained
+        else ArtifactTeamState.UNSEEN_TEAM
+    )
+
+
+def _primary_fixture(
+    fixture: ForecastInputSnapshot, aliases: dict[str, str]
+) -> ForecastInputSnapshot:
+    return replace(
+        fixture,
+        home_team_id=UUID(aliases.get(str(fixture.home_team_id), str(fixture.home_team_id))),
+        away_team_id=UUID(aliases.get(str(fixture.away_team_id), str(fixture.away_team_id))),
+    )
 
 
 def _unseen_reason(home: ArtifactTeamState, away: ArtifactTeamState) -> ForecastFallbackReason:

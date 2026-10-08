@@ -57,6 +57,15 @@ class ColdStartDevelopmentMetrics:
     joint_score_log_loss: float
     result_log_loss: float
     multiclass_brier: float
+    ranked_probability_score: float
+    total_goal_crps: float
+
+
+@dataclass(frozen=True, slots=True)
+class ColdStartValidationCandidate:
+    config: ColdStartConfig
+    transfer_weight: float
+    metrics: ColdStartDevelopmentMetrics
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +76,15 @@ class ColdStartSelectionResult:
     validation_metrics: ColdStartDevelopmentMetrics
     development_holdout_metrics: ColdStartDevelopmentMetrics
     candidate_count: int
+    validation_candidates: tuple[ColdStartValidationCandidate, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class FrozenColdStartSelection:
+    config: ColdStartConfig
+    selected_transfer_weight: float
+    validation_metrics: ColdStartDevelopmentMetrics
+    validation_candidates: tuple[ColdStartValidationCandidate, ...]
 
 
 def chronological_development_split(
@@ -105,8 +123,61 @@ def select_cold_start_config(
     competition_relationships: tuple[tuple[UUID, UUID], ...] = (),
 ) -> ColdStartSelectionResult:
     split = chronological_development_split(observations)
+    candidates = _validation_candidates(
+        split.train,
+        split.validation,
+        competition_relationships=competition_relationships,
+    )
+    selected_candidate = min(candidates, key=_candidate_key)
+    selected = selected_candidate.config
+    transfer_weight = selected_candidate.transfer_weight
+    validation_metrics = _evaluate(split.validation, selected)
+    holdout_metrics = _evaluate(split.development_holdout, selected)
+    return ColdStartSelectionResult(
+        config=selected,
+        selected_transfer_weight=transfer_weight,
+        split=split,
+        validation_metrics=validation_metrics,
+        development_holdout_metrics=holdout_metrics,
+        candidate_count=len(candidates),
+        validation_candidates=candidates,
+    )
+
+
+def select_cold_start_config_from_partitions(
+    train: tuple[ColdStartDevelopmentObservation, ...],
+    validation: tuple[ColdStartDevelopmentObservation, ...],
+    *,
+    competition_relationships: tuple[tuple[UUID, UUID], ...] = (),
+) -> FrozenColdStartSelection:
+    if not train or not validation:
+        raise ValueError("frozen TRAIN and VALIDATION partitions must be non-empty")
+    if max(item.snapshot.kickoff_at for item in train) >= min(
+        item.snapshot.kickoff_at for item in validation
+    ):
+        raise ValueError("frozen TRAIN must precede VALIDATION")
+    candidates = _validation_candidates(
+        train,
+        validation,
+        competition_relationships=competition_relationships,
+    )
+    selected = min(candidates, key=_candidate_key)
+    return FrozenColdStartSelection(
+        config=selected.config,
+        selected_transfer_weight=selected.transfer_weight,
+        validation_metrics=selected.metrics,
+        validation_candidates=candidates,
+    )
+
+
+def _validation_candidates(
+    train: tuple[ColdStartDevelopmentObservation, ...],
+    validation: tuple[ColdStartDevelopmentObservation, ...],
+    *,
+    competition_relationships: tuple[tuple[UUID, UUID], ...],
+) -> tuple[ColdStartValidationCandidate, ...]:
     transfer_grid = TRANSFER_WEIGHT_GRID if competition_relationships else (0.0,)
-    candidates: list[tuple[tuple[float, float, float, int, float], ColdStartConfig, float]] = []
+    output: list[ColdStartValidationCandidate] = []
     for shrinkage_k in SHRINKAGE_GRID:
         for transfer_weight in transfer_grid:
             relationships = tuple(
@@ -118,30 +189,34 @@ def select_cold_start_config(
                     competition_transfer_weights=relationships,
                     l2_regularization=l2,
                 )
-                fitted = _fit_coefficients(split.train, initial)
-                metrics = _evaluate(split.validation, fitted)
-                complexity = sum(
-                    abs(value) > 1e-12
-                    for value in fitted.home_rate_coefficients + fitted.away_rate_coefficients
+                fitted = _fit_coefficients(train, initial)
+                output.append(
+                    ColdStartValidationCandidate(
+                        config=fitted,
+                        transfer_weight=transfer_weight,
+                        metrics=_evaluate(validation, fitted),
+                    )
                 )
-                key = (
-                    metrics.joint_score_log_loss,
-                    metrics.result_log_loss,
-                    metrics.multiclass_brier,
-                    complexity,
-                    -shrinkage_k,
-                )
-                candidates.append((key, fitted, transfer_weight))
-    _, selected, transfer_weight = min(candidates, key=lambda item: item[0])
-    validation_metrics = _evaluate(split.validation, selected)
-    holdout_metrics = _evaluate(split.development_holdout, selected)
-    return ColdStartSelectionResult(
-        config=selected,
-        selected_transfer_weight=transfer_weight,
-        split=split,
-        validation_metrics=validation_metrics,
-        development_holdout_metrics=holdout_metrics,
-        candidate_count=len(candidates),
+    return tuple(output)
+
+
+def _candidate_key(
+    candidate: ColdStartValidationCandidate,
+) -> tuple[float, float, float, float, float, int, float]:
+    metrics = candidate.metrics
+    config = candidate.config
+    complexity = sum(
+        abs(value) > 1e-12
+        for value in config.home_rate_coefficients + config.away_rate_coefficients
+    )
+    return (
+        metrics.joint_score_log_loss,
+        metrics.result_log_loss,
+        metrics.multiclass_brier,
+        metrics.ranked_probability_score,
+        metrics.total_goal_crps,
+        complexity,
+        -config.shrinkage_k,
     )
 
 
@@ -189,7 +264,7 @@ def _fit_poisson(
 def _evaluate(
     observations: tuple[ColdStartDevelopmentObservation, ...], config: ColdStartConfig
 ) -> ColdStartDevelopmentMetrics:
-    losses: list[tuple[float, float, float]] = []
+    losses: list[tuple[float, float, float, float, float]] = []
     for item in observations:
         try:
             features, home_offset, away_offset, home_goals, away_goals = _design_row(item, config)
@@ -207,6 +282,15 @@ def _evaluate(
         result_probabilities = _result_probabilities(home_lambda, away_lambda)
         outcome = 0 if home_goals > away_goals else 1 if home_goals == away_goals else 2
         one_hot = tuple(float(index == outcome) for index in range(3))
+        cumulative_probability = 0.0
+        total_goal_crps = 0.0
+        observed_total = home_goals + away_goals
+        for total in range(40):
+            probability = float(poisson.pmf(total, home_lambda + away_lambda))
+            cumulative_probability += probability
+            total_goal_crps += (
+                cumulative_probability - (1.0 if total >= observed_total else 0.0)
+            ) ** 2
         losses.append(
             (
                 -math.log(max(joint_probability, 1e-15)),
@@ -215,6 +299,13 @@ def _evaluate(
                     (probability - actual) ** 2
                     for probability, actual in zip(result_probabilities, one_hot, strict=True)
                 ),
+                (
+                    (result_probabilities[0] - one_hot[0]) ** 2
+                    + (result_probabilities[0] + result_probabilities[1] - one_hot[0] - one_hot[1])
+                    ** 2
+                )
+                / 2.0,
+                total_goal_crps,
             )
         )
     if not losses:
@@ -224,6 +315,8 @@ def _evaluate(
         joint_score_log_loss=sum(item[0] for item in losses) / len(losses),
         result_log_loss=sum(item[1] for item in losses) / len(losses),
         multiclass_brier=sum(item[2] for item in losses) / len(losses),
+        ranked_probability_score=sum(item[3] for item in losses) / len(losses),
+        total_goal_crps=sum(item[4] for item in losses) / len(losses),
     )
 
 

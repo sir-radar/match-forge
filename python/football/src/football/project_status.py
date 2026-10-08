@@ -234,6 +234,10 @@ def _validate_evaluation_tracks(status: Mapping[str, object], root: Path) -> Non
             "MATCHFORGE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
             "MULTISOURCE_RETAINED_ONLY",
         ),
+        (
+            "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_1",
+            "MULTISOURCE_RETAINED_ONLY",
+        ),
     }
     observed: set[tuple[str, str]] = set()
     for track in tracks:

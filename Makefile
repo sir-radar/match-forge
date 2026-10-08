@@ -10,7 +10,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
@@ -103,6 +103,9 @@ sprint2-evaluate: up
 
 h2h-context-evaluate:
 	@$(TOOL_ENV); uv run python -m scripts.run_h2h_incremental_signal_research
+
+full-coverage-v2-reevaluate:
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.run_full_coverage_v2_reevaluation --database-url "$$DATABASE_URL"
 
 model-fit:
 	@$(TOOL_ENV); uv run football models fit --model-id "$(MODEL_ID)" --training-data "$(TRAINING_DATA)" --config "$(MODEL_CONFIG)" --artifact-root "$(ARTIFACT_ROOT)"
