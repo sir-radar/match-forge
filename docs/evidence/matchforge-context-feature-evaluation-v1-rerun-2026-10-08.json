@@ -1,0 +1,457 @@
+{
+  "candidate_artifact_ref": "docs/evaluation/matchforge-contextual-goal-model-v1-rerun-artifact.json",
+  "candidate_artifact_sha256": "776353b86c0e99efba8005ad630cd1dca0b344cc8c3a8df3fa577cf1dd7b4e35",
+  "configuration_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-preregistration.json",
+  "configuration_sha256": "1302d3361ece26d0ef7f7b4abe1e913b260fc3d1b96a69de5c9dff4bc53a552d",
+  "contract": "MatchForgeContextFeatureEvaluationRerunResultV1",
+  "dataset_manifest_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-rerun-dataset-manifest.json",
+  "dataset_manifest_sha256": "a41b7bc2b0ad1381166d1286acc54a2bce108f4d07c66de48ae977a735b85e18",
+  "development_dataset_sha256": "1c2d52fe069f4430509135c91dff7b72191787a69fa58a3611759d5f3d6c7e0d",
+  "family_results": {
+    "availability_lineup": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 4298,
+      "metrics": null,
+      "missing_context_targets": 4298,
+      "reason": "No historical availability or lineup observations are qualified.",
+      "sample_count": 0
+    },
+    "h2h": {
+      "coverage": 0.3771653543307087,
+      "disposition": "DEVELOPMENT_REJECTED",
+      "eligible_targets": 479,
+      "metrics": {
+        "brier_delta": 4.335812050469374e-05,
+        "crps_delta": 1.722140154184461e-05,
+        "joint_log_loss_delta": 9.958598319782521e-05,
+        "joint_log_loss_delta_95_interval": [
+          -1.0761151504806502e-07,
+          0.00020443573841225147
+        ],
+        "one_x_two_log_loss_delta": 7.391501922673853e-05,
+        "rps_delta": 2.292002082695791e-05
+      },
+      "report_ref": "docs/evidence/matchforge-h2h-incremental-signal-research-v1-2026-10-07.json",
+      "sample_count": 379
+    },
+    "manager": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 4298,
+      "metrics": null,
+      "missing_context_targets": 4298,
+      "reason": "Zero qualified coach observations; minimum is 300 targets, three domains, and 70 percent coverage.",
+      "sample_count": 0
+    },
+    "rest_congestion": {
+      "baseline_eligible_targets": 4298,
+      "baseline_metrics": {
+        "brier": 0.6264880028025398,
+        "calibration": [
+          {
+            "intercept": -0.10600721704164252,
+            "outcome": "HOME",
+            "slope": 1.5569615545308768
+          },
+          {
+            "intercept": -0.11062611008383798,
+            "outcome": "DRAW",
+            "slope": 0.8233105371189572
+          },
+          {
+            "intercept": 0.6416275641858478,
+            "outcome": "AWAY",
+            "slope": 1.6602891947543932
+          }
+        ],
+        "crps": 0.893691653869393,
+        "joint_log_loss": 2.939101436447041,
+        "one_x_two_log_loss": 1.0413317464835012,
+        "rps": 0.21773519708644476,
+        "sample_count": 859
+      },
+      "calibration": [
+        {
+          "intercept": -0.1482850193768962,
+          "outcome": "HOME",
+          "slope": 1.4273234782473392
+        },
+        {
+          "intercept": -0.12636584323801778,
+          "outcome": "DRAW",
+          "slope": 0.803596857889015
+        },
+        {
+          "intercept": 0.49473122985682405,
+          "outcome": "AWAY",
+          "slope": 1.4512186412305985
+        }
+      ],
+      "candidate_metrics": {
+        "brier": 0.6268213983865217,
+        "calibration": [
+          {
+            "intercept": -0.1482850193768962,
+            "outcome": "HOME",
+            "slope": 1.4273234782473392
+          },
+          {
+            "intercept": -0.12636584323801778,
+            "outcome": "DRAW",
+            "slope": 0.803596857889015
+          },
+          {
+            "intercept": 0.49473122985682405,
+            "outcome": "AWAY",
+            "slope": 1.4512186412305985
+          }
+        ],
+        "crps": 0.8978942423409763,
+        "joint_log_loss": 2.9482511421055526,
+        "one_x_two_log_loss": 1.0418190445078817,
+        "rps": 0.21792144312409614,
+        "sample_count": 859
+      },
+      "context_qualified_targets": 4298,
+      "coverage": 1.0,
+      "disposition": "DEVELOPMENT_REJECTED",
+      "domain_results": [
+        {
+          "baseline": {
+            "brier": 0.651025204844748,
+            "calibration": [
+              {
+                "intercept": -0.34815487369303577,
+                "outcome": "HOME",
+                "slope": 1.5270269186337528
+              },
+              {
+                "intercept": -0.5331743335154737,
+                "outcome": "DRAW",
+                "slope": 0.45604899349847283
+              },
+              {
+                "intercept": 0.3829066268401286,
+                "outcome": "AWAY",
+                "slope": 1.0340851686308232
+              }
+            ],
+            "crps": 0.9669895820375599,
+            "joint_log_loss": 3.1363490598918284,
+            "one_x_two_log_loss": 1.0773195390523793,
+            "rps": 0.2305111425381541,
+            "sample_count": 189
+          },
+          "candidate": {
+            "brier": 0.6487998602069713,
+            "calibration": [
+              {
+                "intercept": -0.32788913386569096,
+                "outcome": "HOME",
+                "slope": 1.6098981658111895
+              },
+              {
+                "intercept": -0.16189409287196285,
+                "outcome": "DRAW",
+                "slope": 0.7666417887196288
+              },
+              {
+                "intercept": 0.3754476468143752,
+                "outcome": "AWAY",
+                "slope": 1.0341229852967582
+              }
+            ],
+            "crps": 0.9714160691977632,
+            "joint_log_loss": 3.1401905957134626,
+            "one_x_two_log_loss": 1.074573317500751,
+            "rps": 0.22954234665436546,
+            "sample_count": 189
+          },
+          "domain": "Bundesliga",
+          "joint_log_loss_delta": 0.003841535821633976
+        },
+        {
+          "baseline": {
+            "brier": 0.6138786503859854,
+            "calibration": [
+              {
+                "intercept": 0.12247437945209391,
+                "outcome": "HOME",
+                "slope": 1.7937453959931415
+              },
+              {
+                "intercept": 1.117834542108677,
+                "outcome": "DRAW",
+                "slope": 1.9370203144092508
+              },
+              {
+                "intercept": 0.6492790278831378,
+                "outcome": "AWAY",
+                "slope": 1.8827096537757413
+              }
+            ],
+            "crps": 0.9172629069580432,
+            "joint_log_loss": 2.8346607617756936,
+            "one_x_two_log_loss": 1.0246887640966083,
+            "rps": 0.21204777953249299,
+            "sample_count": 214
+          },
+          "candidate": {
+            "brier": 0.6073228162908179,
+            "calibration": [
+              {
+                "intercept": 0.04126423306033956,
+                "outcome": "HOME",
+                "slope": 1.5978372624013344
+              },
+              {
+                "intercept": 1.077050868371272,
+                "outcome": "DRAW",
+                "slope": 1.8749149163070176
+              },
+              {
+                "intercept": 0.3946021646057782,
+                "outcome": "AWAY",
+                "slope": 1.521607169859589
+              }
+            ],
+            "crps": 0.9191241527522639,
+            "joint_log_loss": 2.8287563735182872,
+            "one_x_two_log_loss": 1.0161969300501414,
+            "rps": 0.20899083514896474,
+            "sample_count": 214
+          },
+          "domain": "La Liga",
+          "joint_log_loss_delta": -0.0059043882574065796
+        },
+        {
+          "baseline": {
+            "brier": 0.62287703958993,
+            "calibration": [
+              {
+                "intercept": -0.18023405971488052,
+                "outcome": "HOME",
+                "slope": 1.4513500502650563
+              },
+              {
+                "intercept": -1.5640560353359745,
+                "outcome": "DRAW",
+                "slope": -0.28948975122733206
+              },
+              {
+                "intercept": 0.7986293417200641,
+                "outcome": "AWAY",
+                "slope": 1.679387303395489
+              }
+            ],
+            "crps": 0.9003502218372386,
+            "joint_log_loss": 3.045748414544612,
+            "one_x_two_log_loss": 1.0347147446534377,
+            "rps": 0.22292637535241766,
+            "sample_count": 232
+          },
+          "candidate": {
+            "brier": 0.6308203512652495,
+            "calibration": [
+              {
+                "intercept": -0.2511322444574155,
+                "outcome": "HOME",
+                "slope": 1.0915554709303292
+              },
+              {
+                "intercept": -2.4704402500785596,
+                "outcome": "DRAW",
+                "slope": -1.0318548157968566
+              },
+              {
+                "intercept": 0.5748178869522202,
+                "outcome": "AWAY",
+                "slope": 1.368804286202718
+              }
+            ],
+            "crps": 0.9086804562420825,
+            "joint_log_loss": 3.0753600733145876,
+            "one_x_two_log_loss": 1.0445527952138254,
+            "rps": 0.22640022708859303,
+            "sample_count": 232
+          },
+          "domain": "Premier League",
+          "joint_log_loss_delta": 0.02961165876997546
+        },
+        {
+          "baseline": {
+            "brier": 0.6215710996618732,
+            "calibration": [
+              {
+                "intercept": -0.012245692675962318,
+                "outcome": "HOME",
+                "slope": 1.5816035426310067
+              },
+              {
+                "intercept": -0.3989430506039518,
+                "outcome": "DRAW",
+                "slope": 0.4490931022820457
+              },
+              {
+                "intercept": 0.6995224443123091,
+                "outcome": "AWAY",
+                "slope": 2.037687000885942
+              }
+            ],
+            "crps": 0.8024311880064688,
+            "joint_log_loss": 2.761996099973679,
+            "one_x_two_log_loss": 1.0337203619292683,
+            "rps": 0.20701243060638624,
+            "sample_count": 224
+          },
+          "candidate": {
+            "brier": 0.6227634082818375,
+            "calibration": [
+              {
+                "intercept": -0.036558348799545524,
+                "outcome": "HOME",
+                "slope": 1.5554435676164684
+              },
+              {
+                "intercept": 0.06875397546125929,
+                "outcome": "DRAW",
+                "slope": 0.8712829693282246
+              },
+              {
+                "intercept": 0.5848255986104867,
+                "outcome": "AWAY",
+                "slope": 1.8434652455546714
+              }
+            ],
+            "crps": 0.8044066185507756,
+            "joint_log_loss": 2.7688138729327116,
+            "one_x_two_log_loss": 1.0358295120727254,
+            "rps": 0.2078666282120155,
+            "sample_count": 224
+          },
+          "domain": "Serie A",
+          "joint_log_loss_delta": 0.006817772959032693
+        }
+      ],
+      "forecasted_targets": 4298,
+      "metrics": {
+        "brier": {
+          "confidence_interval_95": [
+            -0.0021987095605294927,
+            0.003221061189637933
+          ],
+          "point": 0.0003333955839819496
+        },
+        "crps": {
+          "confidence_interval_95": [
+            -0.002905854450066271,
+            0.009494046211374597
+          ],
+          "point": 0.004202588471583432
+        },
+        "joint_log_loss": {
+          "confidence_interval_95": [
+            0.00022599783603984485,
+            0.017277118856294918
+          ],
+          "point": 0.009149705658511574
+        },
+        "one_x_two_log_loss": {
+          "confidence_interval_95": [
+            -0.0030979731758622635,
+            0.004300822081499853
+          ],
+          "point": 0.0004872980243803895
+        },
+        "rps": {
+          "confidence_interval_95": [
+            -0.0009873778780966663,
+            0.0015664967089928875
+          ],
+          "point": 0.00018624603765141204
+        }
+      },
+      "missing_context_targets": 0,
+      "sample_count": 859,
+      "selected_l2": 10.0,
+      "validation_joint_log_loss": {
+        "0.01": 3.0067010556866562,
+        "0.1": 3.00670043685423,
+        "1.0": 3.006694228137335,
+        "10.0": 3.0066333259153195
+      }
+    },
+    "travel": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 4298,
+      "metrics": null,
+      "missing_context_targets": 4298,
+      "reason": "No qualified venue-coordinate corpus; minimum is 500 targets, three domains, and 80 percent coverage.",
+      "sample_count": 0
+    }
+  },
+  "final_development_metrics": {
+    "brier": 0.6264880028025398,
+    "calibration": [
+      {
+        "intercept": -0.10600721704164252,
+        "outcome": "HOME",
+        "slope": 1.5569615545308768
+      },
+      {
+        "intercept": -0.11062611008383798,
+        "outcome": "DRAW",
+        "slope": 0.8233105371189572
+      },
+      {
+        "intercept": 0.6416275641858478,
+        "outcome": "AWAY",
+        "slope": 1.6602891947543932
+      }
+    ],
+    "crps": 0.893691653869393,
+    "joint_log_loss": 2.939101436447041,
+    "one_x_two_log_loss": 1.0413317464835012,
+    "rps": 0.21773519708644476,
+    "sample_count": 859
+  },
+  "final_disposition": "DEVELOPMENT_COMPLETE_NO_ACCEPTED_CONTEXT_FAMILIES",
+  "final_included_feature_families": [],
+  "implementation_source_commit": "aacf98bdfaf4889053267cad84d13dbb768ae95e",
+  "independent_evaluation_available": false,
+  "lineup_predictor": {
+    "coverage_by_confidence": {
+      "HIGH": 0,
+      "LOW": 0,
+      "MEDIUM": 0
+    },
+    "exact_position_replacement_accuracy": null,
+    "exact_xi_rate": null,
+    "formation_accuracy": null,
+    "injury_replacement_accuracy": null,
+    "mean_correct_starters": null,
+    "median_correct_starters": null,
+    "naive_mean_correct_starters": null,
+    "naive_replacement_accuracy": null,
+    "prediction_coverage": 0.0,
+    "sample_count": 0,
+    "status": "INSUFFICIENT_QUALIFIED_COVERAGE",
+    "suspension_replacement_accuracy": null
+  },
+  "production_baseline": "transferable-rolling-goals-poisson-v1",
+  "production_champion_changed": false,
+  "production_promotion_justified": false,
+  "protected_outcomes_loaded": false,
+  "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1"
+}

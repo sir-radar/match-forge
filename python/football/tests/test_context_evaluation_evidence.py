@@ -45,3 +45,32 @@ def test_context_evidence_references_exact_immutable_inputs() -> None:
     assert evidence["configuration_sha256"] == _sha256(evidence["configuration_ref"])
     assert evidence["dataset_manifest_sha256"] == _sha256(evidence["dataset_manifest_ref"])
     assert evidence["candidate_artifact_sha256"] == _sha256(evidence["candidate_artifact_ref"])
+
+
+def test_context_rerun_rejects_rest_and_preserves_champion() -> None:
+    evidence = _load("docs/evidence/matchforge-context-feature-evaluation-v1-rerun-2026-10-08.json")
+    rest = cast(dict[str, Any], evidence["family_results"])["rest_congestion"]
+
+    assert evidence["final_disposition"] == "DEVELOPMENT_COMPLETE_NO_ACCEPTED_CONTEXT_FAMILIES"
+    assert evidence["final_included_feature_families"] == []
+    assert evidence["production_champion_changed"] is False
+    assert evidence["production_promotion_justified"] is False
+    assert evidence["protected_outcomes_loaded"] is False
+    assert rest["disposition"] == "DEVELOPMENT_REJECTED"
+    assert rest["baseline_eligible_targets"] == 4298
+    assert rest["forecasted_targets"] == 4298
+    assert rest["metrics"]["joint_log_loss"]["point"] == 0.009149705658511574
+    assert rest["domain_results"][2]["joint_log_loss_delta"] > 0.02
+
+
+def test_context_rerun_artifact_is_neutral_and_hashes_match() -> None:
+    evidence = _load("docs/evidence/matchforge-context-feature-evaluation-v1-rerun-2026-10-08.json")
+    artifact = _load("docs/evaluation/matchforge-contextual-goal-model-v1-rerun-artifact.json")
+
+    assert evidence["configuration_sha256"] == _sha256(evidence["configuration_ref"])
+    assert evidence["dataset_manifest_sha256"] == _sha256(evidence["dataset_manifest_ref"])
+    assert evidence["candidate_artifact_sha256"] == _sha256(evidence["candidate_artifact_ref"])
+    assert artifact["status"] == "NEUTRAL_NO_ACCEPTED_FAMILIES"
+    assert artifact["included_feature_families"] == []
+    assert artifact["coefficients"] == []
+    assert artifact["scaler_parameters"] == []

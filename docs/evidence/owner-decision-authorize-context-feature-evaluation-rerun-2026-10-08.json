@@ -1,0 +1,11 @@
+{
+  "decision_id": "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1_RERUN",
+  "decision": "Rerun Step 5 governed context feature evaluation using the newly qualified firewall-safe historical context corpus. Preserve the production champion, retain the frozen family order and admission criteria, exclude rejected H2H, and do not load protected or spent targets.",
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "scope": {
+    "authorized_development_corpus": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+    "independent_evaluation_authorized": false,
+    "production_promotion_authorized": false,
+    "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1"
+  }
+}

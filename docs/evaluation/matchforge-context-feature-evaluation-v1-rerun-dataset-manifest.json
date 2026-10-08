@@ -1,0 +1,28 @@
+{
+  "authorized_development_corpus": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "baseline_eligible_targets": 4298,
+  "baseline_unforecastable_targets": 18,
+  "context_snapshot_file_sha256": "2d4a0176c3a7c367f576f9b89ee51c19061af96042374a6d16af608160090c97",
+  "contract": "MatchForgeContextFeatureEvaluationRerunDatasetManifestV1",
+  "created_at": "2026-10-08T00:00:00Z",
+  "dataset_sha256": "1c2d52fe069f4430509135c91dff7b72191787a69fa58a3611759d5f3d6c7e0d",
+  "excluded_corpora": [
+    "SPENT_PITCHAPI_V5",
+    "SPENT_MULTIMODEL_712",
+    "OTHER_PROTECTED_OR_SPENT_TARGETS"
+  ],
+  "firewall_manifest_sha256": "b516cda36e3641dd0a8c45a53a900c79825b0e458f44db21445bf94f3009635c",
+  "historical_context_manifest_sha256": "7d592acc456a41b1e44eda0840fecf289a08f869f55c11442a2f52fb001ad59e",
+  "outcome_source": "openfootball",
+  "partitions": {
+    "DEVELOPMENT_HOLDOUT": 859,
+    "TRAIN": 2579,
+    "VALIDATION": 860
+  },
+  "protected_outcomes_loaded": false,
+  "qualified_context_targets": 4298,
+  "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1",
+  "rest_context_manifest_sha256": "cdc12f52d0f23553fd6e2e63baacd808cf1648f2fb88142f4054531f96534ed8",
+  "source_commit": "aacf98bdfaf4889053267cad84d13dbb768ae95e",
+  "target_manifest_file_sha256": "b3b3c277cbb5bc07a3aad9bb16a5f6cc752cbe556aadab7e1d48aa9f75ecf4a1"
+}
