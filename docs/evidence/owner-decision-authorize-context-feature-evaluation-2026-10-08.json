@@ -1,0 +1,10 @@
+{
+  "decision_id": "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1",
+  "decision": "Authorize Step 5 governed context feature evaluation. Preserve the production champion, evaluate families in the fixed order, exclude rejected H2H, fail closed on unavailable point-in-time evidence, and do not reuse protected or spent outcomes.",
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "scope": {
+    "independent_evaluation_authorized": false,
+    "production_promotion_authorized": false,
+    "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1"
+  }
+}

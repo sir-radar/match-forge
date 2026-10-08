@@ -49,7 +49,8 @@
     "MVP_PRODUCT_DELIVERY_ACTIVE",
     "AUTHORIZE_GOVERNED_MULTIMODEL_CHALLENGER_EVALUATION_V1",
     "AUTHORIZE_MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
-    "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1"
+    "AUTHORIZE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1",
+    "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1"
   ],
   "closed_routes": [
     {
@@ -70,6 +71,31 @@
     }
   ],
   "evaluation_tracks": [
+    {
+      "evaluation_protocol_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1",
+      "provider": "MULTISOURCE_CONTEXT",
+      "status": "COMPLETE_INSUFFICIENT_QUALIFIED_COVERAGE",
+      "owner_decision": "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-context-feature-evaluation-2026-10-08.json",
+      "owner_decision_sha256": "565387736a96517c876ad486114a29eaf52b25c008003267a2acc78ebe2c78f8",
+      "preregistration_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-preregistration.json",
+      "preregistration_sha256": "1302d3361ece26d0ef7f7b4abe1e913b260fc3d1b96a69de5c9dff4bc53a552d",
+      "dataset_manifest_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-dataset-manifest.json",
+      "dataset_manifest_sha256": "15e75e64bdb7f1ed5fcf444e41109f45df9d2027c922fbb593a9f1f8d9a4eb5d",
+      "evidence_ref": "docs/evidence/matchforge-context-feature-evaluation-v1-2026-10-08.json",
+      "evidence_sha256": "2ed4d23ad4f0f8c2093acac72958c848700b27d93c84d20e7518b9f97c4126f2",
+      "report_ref": "docs/evidence/matchforge-context-feature-evaluation-v1-2026-10-08.md",
+      "report_sha256": "a091f52d5b9564d9a67de287fa2ed95e79556704e57d04814042550fe231b60b",
+      "candidate_artifact_ref": "docs/evaluation/matchforge-contextual-goal-model-v1-artifact.json",
+      "candidate_artifact_sha256": "ad2e4568e780d2b7e086b5da17ad0df0229b99ab735164fa9f9a8e92bb5e982b",
+      "implementation_source_commit": "266095ce32dd69c2bec8b9fdc5fa4eaf574176a7",
+      "result_classification": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "included_feature_families": [],
+      "protected_outcomes_loaded": false,
+      "independent_evaluation_available": false,
+      "model_promoted": false,
+      "production_promotion_justified": false
+    },
     {
       "evaluation_protocol_id": "MATCHFORGE_H2H_INCREMENTAL_SIGNAL_RESEARCH_V1",
       "provider": "PITCHAPI",

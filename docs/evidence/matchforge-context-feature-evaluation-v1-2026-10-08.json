@@ -1,0 +1,105 @@
+{
+  "candidate_artifact_ref": "docs/evaluation/matchforge-contextual-goal-model-v1-artifact.json",
+  "candidate_artifact_sha256": "ad2e4568e780d2b7e086b5da17ad0df0229b99ab735164fa9f9a8e92bb5e982b",
+  "configuration_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-preregistration.json",
+  "configuration_sha256": "1302d3361ece26d0ef7f7b4abe1e913b260fc3d1b96a69de5c9dff4bc53a552d",
+  "contract": "MatchForgeContextFeatureEvaluationResultV1",
+  "dataset_manifest_ref": "docs/evaluation/matchforge-context-feature-evaluation-v1-dataset-manifest.json",
+  "dataset_manifest_sha256": "15e75e64bdb7f1ed5fcf444e41109f45df9d2027c922fbb593a9f1f8d9a4eb5d",
+  "family_results": {
+    "availability_lineup": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 0,
+      "metrics": null,
+      "missing_context_targets": 0,
+      "reason": "No historical availability or lineup observations exist in the point-in-time context store.",
+      "sample_count": 0
+    },
+    "h2h": {
+      "coverage": 0.3771653543307087,
+      "disposition": "DEVELOPMENT_REJECTED",
+      "eligible_targets": 479,
+      "metrics": {
+        "brier_delta": 0.00004335812050469374,
+        "crps_delta": 0.00001722140154184461,
+        "joint_log_loss_delta": 0.00009958598319782521,
+        "joint_log_loss_delta_95_interval": [
+          -1.0761151504806502e-07,
+          0.00020443573841225147
+        ],
+        "one_x_two_log_loss_delta": 0.00007391501922673853,
+        "rps_delta": 0.00002292002082695791
+      },
+      "report_ref": "docs/evidence/matchforge-h2h-incremental-signal-research-v1-2026-10-07.json",
+      "sample_count": 379
+    },
+    "manager": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 0,
+      "metrics": null,
+      "missing_context_targets": 0,
+      "reason": "Zero coach observations; minimum is 300 targets, three domains, and 70 percent qualified coverage.",
+      "sample_count": 0
+    },
+    "rest_congestion": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 0,
+      "metrics": null,
+      "missing_context_targets": 0,
+      "reason": "No authorized unspent development target corpus is available. Protected and spent outcomes were not loaded.",
+      "sample_count": 0
+    },
+    "travel": {
+      "calibration": null,
+      "context_qualified_targets": 0,
+      "coverage": 0.0,
+      "disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+      "domain_results": [],
+      "forecasted_targets": 0,
+      "metrics": null,
+      "missing_context_targets": 0,
+      "reason": "No qualified venue-coordinate development corpus; minimum is 500 targets, three domains, and 80 percent qualified coverage.",
+      "sample_count": 0
+    }
+  },
+  "final_disposition": "INSUFFICIENT_QUALIFIED_COVERAGE",
+  "final_included_feature_families": [],
+  "implementation_source_commit": "266095ce32dd69c2bec8b9fdc5fa4eaf574176a7",
+  "independent_evaluation_available": false,
+  "lineup_predictor": {
+    "coverage_by_confidence": {
+      "HIGH": 0,
+      "LOW": 0,
+      "MEDIUM": 0
+    },
+    "exact_position_replacement_accuracy": null,
+    "exact_xi_rate": null,
+    "formation_accuracy": null,
+    "injury_replacement_accuracy": null,
+    "mean_correct_starters": null,
+    "median_correct_starters": null,
+    "naive_mean_correct_starters": null,
+    "naive_replacement_accuracy": null,
+    "prediction_coverage": 0.0,
+    "sample_count": 0,
+    "status": "INSUFFICIENT_QUALIFIED_COVERAGE",
+    "suspension_replacement_accuracy": null
+  },
+  "production_baseline": "transferable-rolling-goals-poisson-v1",
+  "production_champion_changed": false,
+  "production_promotion_justified": false,
+  "protected_outcomes_loaded": false,
+  "research_id": "MATCHFORGE_CONTEXT_FEATURE_EVALUATION_V1"
+}
