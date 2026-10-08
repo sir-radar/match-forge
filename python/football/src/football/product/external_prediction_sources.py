@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date
 from html.parser import HTMLParser
 from urllib.request import Request, urlopen
 
@@ -157,10 +157,27 @@ def parse_r2bet(
     html: str, prediction_date: date, source_page: str
 ) -> tuple[ImportedPrediction, ...]:
     root = _tree(html)
+    best_picks = next(
+        (
+            section
+            for section in _elements(root, tag="section")
+            if any(
+                _text(heading).casefold() == "best picks"
+                for heading in _elements(section, tag="h2")
+            )
+            and not any(
+                _text(heading).casefold() == "recent winnings"
+                for heading in _elements(section, tag="h2")
+            )
+        ),
+        None,
+    )
+    if best_picks is None:
+        raise ParserBrokenError("R2Bet Best Picks section was not found")
     date_text = next(
         (
             _text(item)
-            for item in _elements(root, tag="p")
+            for item in _elements(best_picks, tag="p")
             if re.search(r"\d{1,2}(?:st|nd|rd|th)\s*,\s*\w{3}\s+\w{3}\s+\d{4}", _text(item))
         ),
         None,
@@ -168,7 +185,7 @@ def parse_r2bet(
     if date_text is None or prediction_date.strftime("%b %Y") not in date_text:
         raise ParserBrokenError("R2Bet prediction date was not found")
     rows: list[ImportedPrediction] = []
-    for article in _elements(root, tag="article"):
+    for article in _elements(best_picks, tag="article"):
         values = [_text(item) for item in _elements(article, tag="p")]
         pick_index = next(
             (index for index, value in enumerate(values) if value.startswith("Pick:")), None
@@ -422,11 +439,7 @@ _ADAPTERS = (
     ),
     SourceAdapter(
         "slybet",
-        lambda target, today: (
-            "https://slybet.net/football-predictions/"
-            if target == today + timedelta(days=1)
-            else "https://slybet.net/"
-        ),
+        lambda _target, _today: "https://slybet.net/football-predictions/",
         parse_slybet,
     ),
     SourceAdapter(

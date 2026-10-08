@@ -152,9 +152,10 @@ def discover_catalog(
             parsed = urllib.parse.urlparse(candidate)
             if parsed.netloc != origin or candidate in visited:
                 continue
+            discovery_target = f"{parsed.path}?{parsed.query}"
             if parsed.path.casefold().endswith((".php", ".html", ".htm")) and re.search(
                 r"data|download|result|league|argentina|brazil|china|japan|usa|world",
-                candidate,
+                discovery_target,
                 re.IGNORECASE,
             ):
                 pending.append(candidate)

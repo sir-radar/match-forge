@@ -4,9 +4,12 @@ import io
 import zipfile
 from datetime import UTC, datetime
 
+import pytest
 from football.product.football_data_uk import (
+    INDEX_URL,
     _is_closed_season,
     csv_members,
+    discover_catalog,
     discover_resources,
     parse_csv_resource,
 )
@@ -30,6 +33,31 @@ def test_discovers_csv_and_zip_without_hardcoded_catalog() -> None:
     csv_resource = next(resource for resource in resources if not resource.archive)
     assert csv_resource.season == "2025-2026"
     assert csv_resource.division == "E0"
+
+
+def test_catalog_follows_data_pages_but_not_unrelated_php_links(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data_page = "https://www.football-data.co.uk/data/england.php"
+    pages = {
+        INDEX_URL: b"""
+            <a href="resources/footiqo.php">Unrelated resource</a>
+            <a href="data/england.php">England data</a>
+        """,
+        data_page: b'<a href="../mmz4281/2526/E0.csv">Premier League</a>',
+    }
+    calls: list[str] = []
+
+    def download(url: str) -> bytes:
+        calls.append(url)
+        return pages[url]
+
+    monkeypatch.setattr("football.product.football_data_uk._download", download)
+
+    resources = discover_catalog()
+
+    assert calls == [INDEX_URL, data_page]
+    assert [resource.division for resource in resources] == ["E0"]
 
 
 def test_csv_parser_handles_bom_old_dates_time_and_incomplete_rows() -> None:
