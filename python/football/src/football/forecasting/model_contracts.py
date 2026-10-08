@@ -184,13 +184,45 @@ class ForecastInputSnapshot:
     missingness: tuple[str, ...] = ()
     home_promoted: bool | None = None
     away_promoted: bool | None = None
+    availability: tuple[dict[str, object], ...] = ()
+    predicted_lineup: dict[str, object] | None = None
+    confirmed_lineup: dict[str, object] | None = None
+    coach_context: dict[str, object] | None = None
+    rest_context: dict[str, object] | None = None
+    context_missingness: tuple[str, ...] = ()
+    context_provenance: tuple[dict[str, object], ...] = ()
 
     @property
     def sha256(self) -> str:
-        return hashlib.sha256(_canonical_json(self.to_dict())).hexdigest()
+        return self.predictive_input_snapshot_sha256
+
+    @property
+    def predictive_input_snapshot_sha256(self) -> str:
+        payload = self.to_dict()
+        for field_name in _NON_PREDICTIVE_CONTEXT_FIELDS:
+            payload.pop(field_name)
+        return hashlib.sha256(_canonical_json(payload)).hexdigest()
+
+    @property
+    def context_snapshot_sha256(self) -> str:
+        payload = self.to_dict()
+        return hashlib.sha256(
+            _canonical_json({name: payload[name] for name in _NON_PREDICTIVE_CONTEXT_FIELDS})
+        ).hexdigest()
 
     def to_dict(self) -> dict[str, object]:
         return _json_value(self)  # type: ignore[return-value]
+
+
+_NON_PREDICTIVE_CONTEXT_FIELDS = (
+    "availability",
+    "predicted_lineup",
+    "confirmed_lineup",
+    "coach_context",
+    "rest_context",
+    "context_missingness",
+    "context_provenance",
+)
 
 
 @dataclass(frozen=True, slots=True)

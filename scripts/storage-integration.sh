@@ -51,6 +51,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_postgres_recovery.py \
 	tests/integration/test_team_elo.py \
 	tests/integration/test_product_historical_backfill.py \
-	tests/integration/test_product_history_queue.py
+	tests/integration/test_product_history_queue.py \
+	tests/integration/test_live_context.py
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'

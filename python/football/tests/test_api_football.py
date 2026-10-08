@@ -5,6 +5,8 @@ import pytest
 from football.product.api_football import (
     ApiFootballClient,
     ApiFootballError,
+    CapabilityStatus,
+    context_capability,
     continent_for_country,
     fixture_status,
     inferred_division,
@@ -32,6 +34,46 @@ def test_client_rejects_provider_error() -> None:
     )
     with pytest.raises(ApiFootballError, match="rejected"):
         client.competitions()
+
+
+def test_client_classifies_plan_restriction_without_claiming_unsupported() -> None:
+    client = ApiFootballClient(
+        "secret",
+        transport=lambda _url, _headers: (
+            b'{"errors":{"access":"endpoint unavailable on your plan"},"response":[]}'
+        ),
+    )
+
+    with pytest.raises(ApiFootballError) as caught:
+        client.injuries(123)
+
+    assert caught.value.capability_status is CapabilityStatus.PLAN_RESTRICTION
+
+
+def test_client_reuses_transport_for_fixture_context_resources() -> None:
+    calls: list[str] = []
+
+    def transport(url: str, headers: object) -> bytes:
+        calls.append(url)
+        return b'{"errors":[],"response":[]}'
+
+    client = ApiFootballClient("secret", transport=transport)
+    client.injuries(123)
+    client.lineups(123)
+
+    assert calls == [
+        "https://v3.football.api-sports.io/injuries?fixture=123",
+        "https://v3.football.api-sports.io/fixtures/lineups?fixture=123",
+    ]
+
+
+def test_context_capability_distinguishes_explicit_unsupported_from_unknown() -> None:
+    supported = {"coverage": {"injuries": True, "fixtures": {"lineups": True}}}
+    unsupported = {"coverage": {"injuries": False, "fixtures": {"lineups": False}}}
+
+    assert context_capability(supported, "INJURIES") is CapabilityStatus.SUPPORTED
+    assert context_capability(unsupported, "LINEUPS") is CapabilityStatus.UNSUPPORTED_BY_COMPETITION
+    assert context_capability({}, "INJURIES") is CapabilityStatus.UNKNOWN
 
 
 @pytest.mark.parametrize(

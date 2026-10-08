@@ -1,8 +1,7 @@
 # Forecast Revision V1
 
-> **Document status:** proposed supporting specification extracted from the supplied 21 September PLAN; not proof of implemented code, passed gates, or additional authorization. The current repository evidence and owner events take precedence.
-
-**Source-derived proposed field contract.** Require separate owner approval, point-in-time eligibility and implementation/schema review before production use. A revision is a new forecast; the publication and Rust validation gates apply prospectively once enabled, and historical revisions remain immutable.
+> **Document status:** implemented for MVP champion forecasts by migration
+> `202610070200_live_context_revisions.sql`. This contract does not enable predictive context weights.
 
 ---
 
@@ -12,15 +11,24 @@
 forecast_id
 fixture_id
 issued_at
+football_cutoff
 knowledge_cutoff
 forecast_horizon
 supersedes_forecast_id
-model_feature_and_calibration_ids
-probability_distributions
+model_id
+artifact_sha256
+predictive_input_snapshot_sha256
+context_snapshot_sha256
 revision_reason_codes
 new_information_ids
-distribution_change_metrics
-version
+probability payload
+payload_sha256
 ```
 
-Supported research horizons may include `7d`, `3d`, `24h`, `6h`, `1h`, `15m`, and `CONFIRMED_LINEUP`, but only where historical availability can be reconstructed. A revision creates a new artifact and never overwrites an earlier forecast.
+Supported horizons are `EARLY_GT_7D`, `7D`, `3D`, `24H`, `6H`, `1H`, `15M`, and
+`CONFIRMED_LINEUP`. The confirmed-lineup horizon applies only when the active model consumes that
+lineup. The current champion does not.
+
+A revision creates a new forecast and never overwrites an earlier forecast. Semantic identity uses
+the model artifact and predictive input hash. Time passing, an unchanged provider response, or a
+context-only update does not create a forecast revision.

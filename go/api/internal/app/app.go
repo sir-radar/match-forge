@@ -46,6 +46,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/competitions", application.listCompetitions)
 	mux.HandleFunc("GET /v1/fixtures", application.listFixtures)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/context", application.fixtureContext)
+	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts", application.forecastHistory)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts/{forecast_id}", application.forecast)
 	mux.HandleFunc("GET /v1/competitions/{competition_id}/standings", application.standings)
 	mux.HandleFunc("GET /v1/competitions/{competition_id}/performance", application.performance)

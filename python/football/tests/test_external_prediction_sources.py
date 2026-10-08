@@ -13,7 +13,7 @@ TARGET_DATE = date(2026, 9, 30)
 
 def test_r2bet_parser_extracts_dated_fixture_and_market() -> None:
     html = """
-    <h2>Best Picks</h2><p>30th , Wed Sep 2026</p>
+    <section><h2>Best Picks</h2><p>30th , Wed Sep 2026</p>
     <article>
       <div data-link="https://r2bet.com/match/1"><p>UEFA U21 Championship</p><p>17:00</p></div>
       <div class="teams"><p>Poland U21</p><svg></svg><p>Sweden U21</p></div>
@@ -26,6 +26,7 @@ def test_r2bet_parser_extracts_dated_fixture_and_market() -> None:
       <div data-link="https://r2bet.com/match/2"><p>Odds: <span>1.90</span></p>
         <p>Pick: <span>Asian Handicap -1.5</span></p></div>
     </article>
+    </section>
     """
 
     rows = parse_r2bet(html, TARGET_DATE, "https://r2bet.com/picks")
@@ -37,6 +38,25 @@ def test_r2bet_parser_extracts_dated_fixture_and_market() -> None:
     assert (rows[0].market, rows[0].selection) == ("RESULT_1X2", "HOME_WIN")
     assert (rows[1].market, rows[1].selection) == ("UNMAPPED", "Asian Handicap -1.5")
     assert rows[0].original_date_text == "30th , Wed Sep 2026"
+
+
+def test_r2bet_parser_excludes_recent_winnings() -> None:
+    html = """
+    <section>
+      <header><h2>Best Picks</h2><p>30th , Wed Sep 2026</p></header>
+      <article><p>England Premier League</p><p>15:00</p><p>Arsenal</p><p>Chelsea</p>
+        <p>Odds: <span>1.60</span></p><p>Pick: <span>Home(1)</span></p></article>
+    </section>
+    <section>
+      <h2>Recent Winnings</h2>
+      <article><p>Spain La Liga</p><p>29/09/2026</p><p>Valencia</p><p>Villarreal</p>
+        <p>Odds: <span>1.80</span></p><p>Pick: <span>Over 2.5</span></p></article>
+    </section>
+    """
+
+    rows = parse_r2bet(html, TARGET_DATE, "https://r2bet.com/picks")
+
+    assert [(row.home_team, row.away_team) for row in rows] == [("Arsenal", "Chelsea")]
 
 
 def test_1960tips_parser_selects_structured_public_tip() -> None:
@@ -157,7 +177,7 @@ def test_collection_enables_source_when_only_selection_is_unmapped() -> None:
 
 def test_collection_isolates_source_failure_and_keeps_forebet_disabled() -> None:
     pages = {
-        "r2bet.com": "<h2>Best Picks</h2><p>30th , Wed Sep 2026</p>",
+        "r2bet.com": "<section><h2>Best Picks</h2><p>30th , Wed Sep 2026</p></section>",
         "slybet.net": "".join(
             (
                 '<table class="smp-picks-table">',
@@ -196,4 +216,4 @@ def test_collection_source_filter_fetches_only_requested_source() -> None:
     )
 
     assert [result.source_code for result in results] == ["slybet"]
-    assert len(requested_urls) == 1
+    assert requested_urls == ["https://slybet.net/football-predictions/"]
