@@ -1,0 +1,34 @@
+{
+  "algorithm_version": "contextual-goal-adjustment-v1",
+  "artifact_schema_version": "MatchForgeContextualGoalArtifactV1",
+  "baseline_model": "transferable-rolling-goals-poisson-v1",
+  "coefficients": [],
+  "configuration_sha256": "1302d3361ece26d0ef7f7b4abe1e913b260fc3d1b96a69de5c9dff4bc53a552d",
+  "dataset_sha256": "1c2d52fe069f4430509135c91dff7b72191787a69fa58a3611759d5f3d6c7e0d",
+  "dependency_lock_sha256": "d24a6a728d545f45c0b9cb98b34e15faeb9d0e46c325875026f311aa11c8f4ca",
+  "excluded_feature_families": [
+    "AVAILABILITY_LINEUP",
+    "REST_CONGESTION",
+    "MANAGER",
+    "TRAVEL"
+  ],
+  "family_results": {
+    "AVAILABILITY_LINEUP": "INSUFFICIENT_QUALIFIED_COVERAGE",
+    "MANAGER": "INSUFFICIENT_QUALIFIED_COVERAGE",
+    "REST_CONGESTION": "DEVELOPMENT_REJECTED",
+    "TRAVEL": "INSUFFICIENT_QUALIFIED_COVERAGE"
+  },
+  "included_feature_families": [],
+  "logical_model_state_sha256": "fd2c5b9028ad9c1690b0d44f0733ea331ee2da9ac58338f4367065291cd363b4",
+  "missingness_rule": "FULLY_MISSING_FAMILY_IS_NEUTRAL",
+  "model_id": "MATCHFORGE_CONTEXTUAL_GOAL_MODEL_V1",
+  "regularization": {
+    "selected_l2": 10.0,
+    "type": "L2"
+  },
+  "runtime_compatibility": "ContextualGoalAdjustmentV1",
+  "scaler_parameters": [],
+  "source_commit": "aacf98bdfaf4889053267cad84d13dbb768ae95e",
+  "status": "NEUTRAL_NO_ACCEPTED_FAMILIES",
+  "training_cutoff": "2024-04-01T18:45:00+00:00"
+}
