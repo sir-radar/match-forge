@@ -1,0 +1,21 @@
+{
+  "cases": 0,
+  "confidence_buckets": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0
+  },
+  "contract": "PredictedLineupV1HistoricalValidationV1",
+  "corpus_id": "MATCHFORGE_LINEUP_PREDICTION_CORPUS_V1",
+  "exact_position_replacement_accuracy": null,
+  "exact_xi_rate": null,
+  "formation_accuracy": null,
+  "goal_model_metrics_calculated": false,
+  "mean_correct_starters": null,
+  "median_correct_starters": null,
+  "naive_previous_xi_mean_correct_starters": null,
+  "naive_previous_xi_replacement_accuracy": null,
+  "replacement_accuracy": null,
+  "result_sha256": "aba77d0a5797044db157270b93162c7eb522f3ae67d2a71a05048177acbb7bfa",
+  "status": "INSUFFICIENT_LINEUP_CORPUS"
+}

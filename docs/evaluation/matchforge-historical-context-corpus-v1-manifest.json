@@ -1,0 +1,64 @@
+{
+  "context_snapshot_sha256": "613b07bcf5e21fb3d8c07059d9082585aa0bda72a8ea43e1a515d9b29cf7145a",
+  "contract": "HistoricalContextCorpusManifestV1",
+  "corpus_id": "MATCHFORGE_HISTORICAL_CONTEXT_CORPUS_V1",
+  "created_at": "2026-10-08T00:00:00Z",
+  "family_corpora": {
+    "availability": {
+      "corpus_id": "MATCHFORGE_AVAILABILITY_CONTEXT_CORPUS_V1",
+      "manifest_sha256": "ac5937e13cda8ddc0f1d93a0ba3955fca5618addae016e7558d0f44c889ed156",
+      "status": "INSUFFICIENT"
+    },
+    "lineup": {
+      "corpus_id": "MATCHFORGE_LINEUP_PREDICTION_CORPUS_V1",
+      "manifest_sha256": "3e1c41736d3f0823692e34046dd79316dcb914626fc0589a10c1d811b1314f86",
+      "status": "INSUFFICIENT"
+    },
+    "manager": {
+      "corpus_id": "MATCHFORGE_MANAGER_CONTEXT_CORPUS_V1",
+      "manifest_sha256": "6f7006d6664f8c023aeeee953c644937bc1a3a2b8cac6ef263372d39fe626cef",
+      "status": "INSUFFICIENT"
+    },
+    "rest": {
+      "corpus_id": "MATCHFORGE_REST_CONTEXT_CORPUS_V1",
+      "manifest_sha256": "c14108b1d7fff9731c05e4e2b9405c4bb7d4de8db61d4fd6324a60bb220207e0",
+      "status": "QUALIFIED"
+    },
+    "travel": {
+      "corpus_id": "MATCHFORGE_TRAVEL_CONTEXT_CORPUS_V1",
+      "manifest_sha256": "7d820234dda52b5cc01738e8c6952902bb759c553108548e5ffb70b237a86966",
+      "status": "INSUFFICIENT"
+    }
+  },
+  "firewall": {
+    "admitted_target_overlap": 0,
+    "duplicate_real_fixtures_excluded": 0,
+    "forbidden_candidates_excluded": 0,
+    "forbidden_target_count": 2198,
+    "source_manifest_id": "MATCHFORGE_GLOBAL_SPENT_TARGETS_2026_10_07_V1",
+    "source_manifest_sha256": "b516cda36e3641dd0a8c45a53a900c79825b0e458f44db21445bf94f3009635c"
+  },
+  "firewall_sha256": "fa448cad8d4c8e7cdb4416af5705c0c53380aab15b09fa43c4cedbd1bae044d1",
+  "historical_context_snapshots": {
+    "count": 4316,
+    "format": "JSONL",
+    "path": "docs/evaluation/matchforge-historical-context-snapshots-v1.jsonl",
+    "sha256": "2d4a0176c3a7c367f576f9b89ee51c19061af96042374a6d16af608160090c97"
+  },
+  "identity_map_sha256": "712db202224f6e9d01e0499c145ed33fd5bfc7b066d7417d89718dceb1544405",
+  "manifest_sha256": "64a22005cb7b04ba39a7d4d42c14ad09fa68f1c2658d63478ae09a77e1dc27d5",
+  "shared_intersections": {
+    "all_context_families": 0,
+    "lineup_and_availability": 0,
+    "lineup_and_manager": 0,
+    "lineup_and_rest": 0
+  },
+  "source_data_sha256": "9f8d29ec7840340c85230f723aa1d3e8991beba28b311900949756f7c6e96004",
+  "target_count": 4316,
+  "target_manifest": {
+    "format": "JSONL",
+    "path": "docs/evaluation/matchforge-historical-context-corpus-v1-targets.jsonl",
+    "sha256": "b3b3c277cbb5bc07a3aad9bb16a5f6cc752cbe556aadab7e1d48aa9f75ecf4a1"
+  },
+  "target_manifest_outcome_blind": true
+}
