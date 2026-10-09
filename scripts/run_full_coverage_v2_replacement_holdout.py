@@ -872,7 +872,7 @@ def _update_project_status(root: Path, result: Mapping[str, object]) -> None:
         }
     )
     status["updated_at"] = f"{DATE}T00:00:00Z"
-    _write(path, status)
+    _write_pretty(path, status)
 
 
 def _markdown(result: Mapping[str, object]) -> str:
@@ -915,6 +915,10 @@ def _json(path: Path) -> dict[str, object]:
 def _write(path: Path, value: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n")
+
+
+def _write_pretty(path: Path, value: Mapping[str, object]) -> None:
+    path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
 
 def _file_sha(path: Path) -> str:
