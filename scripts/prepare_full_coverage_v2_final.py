@@ -40,8 +40,8 @@ FIT_CUTOFF = datetime.fromisoformat("2022-05-14T13:35:00+00:00")
 RESEARCH_CUTOFF = datetime.fromisoformat("2026-10-09T00:00:00+00:00")
 TARGET_COUNT = 750
 DOMAIN_TARGET_COUNT = 250
-DOMAIN_ELIGIBLE_COUNT = 150
-DOMAIN_INELIGIBLE_COUNT = 100
+DOMAIN_MIN_STRATUM_COUNT = 75
+TOTAL_INELIGIBLE_COUNT = 300
 
 OLD_CONFIG = ROOT / "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-1-config.json"
 OLD_FIREWALL = ROOT / "docs/evaluation/full-coverage-v2-global-forbidden-targets-v1-2.json"
@@ -265,24 +265,36 @@ def _select_domain_strata(
     eligible_domains = [
         competition_id
         for competition_id, strata in by_domain.items()
-        if len(strata[ChampionEligibility.ELIGIBLE.value]) >= DOMAIN_ELIGIBLE_COUNT
-        and len(strata[ChampionEligibility.INELIGIBLE.value]) >= DOMAIN_INELIGIBLE_COUNT
+        if len(strata[ChampionEligibility.ELIGIBLE.value]) >= DOMAIN_MIN_STRATUM_COUNT
+        and len(strata[ChampionEligibility.INELIGIBLE.value]) >= DOMAIN_MIN_STRATUM_COUNT
+        and sum(len(values) for values in strata.values()) >= DOMAIN_TARGET_COUNT
     ]
     if len(eligible_domains) < 3:
         raise RuntimeError("DEFER_INSUFFICIENT_FRESH_HOLDOUT")
     domains = sorted(
         eligible_domains,
         key=lambda key: (
+            -len(by_domain[key][ChampionEligibility.INELIGIBLE.value]),
             -sum(len(values) for values in by_domain[key].values()),
             key,
         ),
     )[:3]
+    ineligible_counts = {competition_id: DOMAIN_MIN_STRATUM_COUNT for competition_id in domains}
+    remaining = TOTAL_INELIGIBLE_COUNT - sum(ineligible_counts.values())
+    for competition_id in domains:
+        available = len(by_domain[competition_id][ChampionEligibility.INELIGIBLE.value])
+        added = min(remaining, available - ineligible_counts[competition_id])
+        ineligible_counts[competition_id] += added
+        remaining -= added
+    if remaining:
+        raise RuntimeError("DEFER_INSUFFICIENT_CHAMPION_INELIGIBLE_SAMPLE")
     selected: list[dict[str, object]] = []
     for competition_id in domains:
         strata = by_domain[competition_id]
+        ineligible_count = ineligible_counts[competition_id]
         for status, count in (
-            (ChampionEligibility.ELIGIBLE.value, DOMAIN_ELIGIBLE_COUNT),
-            (ChampionEligibility.INELIGIBLE.value, DOMAIN_INELIGIBLE_COUNT),
+            (ChampionEligibility.ELIGIBLE.value, DOMAIN_TARGET_COUNT - ineligible_count),
+            (ChampionEligibility.INELIGIBLE.value, ineligible_count),
         ):
             ordered = sorted(
                 strata[status], key=lambda item: (str(item["kickoff"]), str(item["fixture_id"]))

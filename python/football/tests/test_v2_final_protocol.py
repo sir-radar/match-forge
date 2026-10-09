@@ -20,6 +20,7 @@ from football.history.fixture_identity import (
 from scripts.prepare_full_coverage_v2_final import (
     ROOT,
     _relevant_history_manifest,
+    _select_domain_strata,
     _verify_v1_2_spent,
 )
 from scripts.run_full_coverage_v2_final import (
@@ -58,6 +59,30 @@ def test_resolved_history_manifest_excludes_selected_real_fixtures() -> None:
     )
     manifest = _relevant_history_manifest(metadata, (target,))
     assert [row["real_fixture_id"] for row in manifest] == [str(UUID(int=102))]
+
+
+def test_domain_selection_allocates_global_ineligible_floor_deterministically() -> None:
+    domains = {
+        "brazil": {
+            "CHAMPION_ELIGIBLE": _selection_rows("brazil-e", 1_000),
+            "CHAMPION_INELIGIBLE": _selection_rows("brazil-i", 277),
+        },
+        "j2": {
+            "CHAMPION_ELIGIBLE": _selection_rows("j2-e", 283),
+            "CHAMPION_INELIGIBLE": _selection_rows("j2-i", 97),
+        },
+        "j3": {
+            "CHAMPION_ELIGIBLE": _selection_rows("j3-e", 283),
+            "CHAMPION_INELIGIBLE": _selection_rows("j3-i", 97),
+        },
+    }
+    selected = _select_domain_strata(domains)
+    counts = {
+        status: sum(row["champion_eligibility"] == status for row in selected)
+        for status in ("CHAMPION_ELIGIBLE", "CHAMPION_INELIGIBLE")
+    }
+    assert len(selected) == 750
+    assert counts == {"CHAMPION_ELIGIBLE": 450, "CHAMPION_INELIGIBLE": 300}
 
 
 def test_every_batch_forecast_is_sealed_before_outcome_access() -> None:
@@ -213,3 +238,15 @@ def _metadata(real_fixture_id: UUID, kickoff: datetime) -> dict[str, object]:
         "resolution_status": "UNIQUE",
         "evidence_sha256": "a" * 64,
     }
+
+
+def _selection_rows(prefix: str, count: int) -> list[dict[str, object]]:
+    status = "CHAMPION_INELIGIBLE" if prefix.endswith("-i") else "CHAMPION_ELIGIBLE"
+    return [
+        {
+            "fixture_id": f"{prefix}-{index:04d}",
+            "kickoff": (KICKOFF + timedelta(minutes=index)).isoformat(),
+            "champion_eligibility": status,
+        }
+        for index in range(count)
+    ]
