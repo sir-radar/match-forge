@@ -17,6 +17,7 @@ from football.history.fixture_identity import (
     audit_canonical_history,
 )
 
+from scripts.prepare_full_coverage_v2_final import ROOT, _verify_v1_2_spent
 from scripts.run_full_coverage_v2_final import (
     _competition_match,
     _historical,
@@ -32,6 +33,10 @@ AWAY = UUID(int=2)
 THIRD = UUID(int=3)
 COMPETITION = UUID(int=10)
 SNAPSHOT = UUID(int=20)
+
+
+def test_v1_2_spent_guard_matches_immutable_execution_state() -> None:
+    _verify_v1_2_spent(ROOT)
 
 
 def test_every_batch_forecast_is_sealed_before_outcome_access() -> None:

@@ -450,7 +450,7 @@ def _verify_v1_2_spent(root: Path) -> None:
     result = _json(
         root / "docs/evidence/full-coverage-challengers-v2-reevaluation-v1-2-2026-10-09.json"
     )
-    if not state.get("outcomes_loaded") or state.get("logical_execution_attempts") != 1:
+    if not state.get("outcomes_loaded") or state.get("logical_executions") != 1:
         raise RuntimeError("V1.2 spent state changed")
     if result.get("final_disposition") != "FAIL_CLOSED_PROTOCOL_VIOLATION":
         raise RuntimeError("V1.2 disposition changed")
