@@ -204,12 +204,13 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
     history_by_real_fixture: dict[tuple[datetime, UUID, frozenset[UUID]], HistoricalMatch] = {}
     outcomes: dict[UUID, tuple[int, int]] = {}
     for fixture_id, rows in by_fixture.items():
-        target = target_by_id.get(fixture_id)
+        selected_target: FrozenTarget | None = target_by_id.get(fixture_id)
         chosen = next(
             (
                 row
                 for row in rows
-                if target and row["source_provider_code"] == target.source_provider
+                if selected_target
+                and row["source_provider_code"] == selected_target.source_provider
             ),
             rows[0],
         )
