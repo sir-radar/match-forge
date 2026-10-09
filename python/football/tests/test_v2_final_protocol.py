@@ -17,7 +17,11 @@ from football.history.fixture_identity import (
     audit_canonical_history,
 )
 
-from scripts.prepare_full_coverage_v2_final import ROOT, _verify_v1_2_spent
+from scripts.prepare_full_coverage_v2_final import (
+    ROOT,
+    _relevant_history_manifest,
+    _verify_v1_2_spent,
+)
 from scripts.run_full_coverage_v2_final import (
     _competition_match,
     _historical,
@@ -37,6 +41,22 @@ SNAPSHOT = UUID(int=20)
 
 def test_v1_2_spent_guard_matches_immutable_execution_state() -> None:
     _verify_v1_2_spent(ROOT)
+
+
+def test_resolved_history_manifest_excludes_selected_real_fixtures() -> None:
+    target = {
+        "real_fixture_id": str(UUID(int=101)),
+        "home_team": str(HOME),
+        "away_team": str(AWAY),
+        "competition_id": str(COMPETITION),
+        "kickoff": KICKOFF.isoformat(),
+    }
+    metadata = (
+        _metadata(UUID(int=101), KICKOFF - timedelta(days=1)),
+        _metadata(UUID(int=102), KICKOFF - timedelta(days=2)),
+    )
+    manifest = _relevant_history_manifest(metadata, (target,))
+    assert [row["real_fixture_id"] for row in manifest] == [str(UUID(int=102))]
 
 
 def test_every_batch_forecast_is_sealed_before_outcome_access() -> None:
@@ -177,3 +197,17 @@ def _row(
         "EXACT",
         (evidence,),
     )
+
+
+def _metadata(real_fixture_id: UUID, kickoff: datetime) -> dict[str, object]:
+    return {
+        "real_fixture_id": str(real_fixture_id),
+        "member_fixture_ids": [str(real_fixture_id)],
+        "representative_fixture_id": str(real_fixture_id),
+        "competition_id": str(COMPETITION),
+        "kickoff_at": kickoff,
+        "home_team_id": str(HOME),
+        "away_team_id": str(AWAY),
+        "resolution_status": "UNIQUE",
+        "evidence_sha256": "a" * 64,
+    }

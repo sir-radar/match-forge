@@ -1006,6 +1006,7 @@ def _current_relevant_manifest(
 ) -> list[dict[str, object]]:
     teams = {str(row[field]) for row in targets for field in ("home_team", "away_team")}
     competitions = {str(row["competition_id"]) for row in targets}
+    target_real_ids = {str(row["real_fixture_id"]) for row in targets}
     maximum = max(datetime.fromisoformat(str(row["kickoff"])) for row in targets)
     return [
         {
@@ -1020,7 +1021,8 @@ def _current_relevant_manifest(
             "source_evidence_sha256": str(row["evidence_sha256"]),
         }
         for row in metadata
-        if cast(datetime, row["kickoff_at"]) <= maximum
+        if str(row["real_fixture_id"]) not in target_real_ids
+        and cast(datetime, row["kickoff_at"]) <= maximum
         and (
             str(row["competition_id"]) in competitions
             or str(row["home_team_id"]) in teams
