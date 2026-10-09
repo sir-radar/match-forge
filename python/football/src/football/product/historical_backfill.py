@@ -59,6 +59,7 @@ class BackfillSummary:
     competition_mappings_created: int = 0
     mapping_failures: int = 0
     result_conflicts: int = 0
+    identity_conflicts: int = 0
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -210,7 +211,7 @@ class HistoricalBackfillStore:
 
     def import_match(
         self, match: HistoricalMatch, snapshot_id: UUID, observed_at: datetime
-    ) -> Literal["inserted", "existing", "conflict", "mapping_failure"]:
+    ) -> Literal["inserted", "existing", "conflict", "identity_conflict", "mapping_failure"]:
         competition_id, competition_created = self._competition_id(match, snapshot_id, observed_at)
         if competition_id is None:
             return "mapping_failure"
@@ -230,6 +231,24 @@ class HistoricalBackfillStore:
         )
         if home_id is None or away_id is None or home_id == away_id:
             return "mapping_failure"
+        mapped = self._mapped_match(match.provider_match_id)
+        if mapped is not None:
+            mapped_history = self._history_facts(mapped)
+            if mapped_history is None:
+                return "mapping_failure"
+            if mapped_history == (
+                competition_id,
+                home_id,
+                away_id,
+                match.kickoff_at.astimezone(UTC),
+                match.home_goals,
+                match.away_goals,
+            ):
+                return "existing"
+            self._record_identity_conflict(
+                match, snapshot_id, observed_at, (mapped,), "PROVIDER_MATCH_ID_REUSED"
+            )
+            return "identity_conflict"
         season_id = stable_id("season", competition_id, match.season)
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -257,6 +276,33 @@ class HistoricalBackfillStore:
                 )
                 return "conflict"
             return "existing"
+        collisions = self._team_timestamp_collisions(match.kickoff_at, home_id, away_id)
+        if collisions:
+            safe_alias = [
+                row
+                for row in collisions
+                if row[1:]
+                == (
+                    competition_id,
+                    home_id,
+                    away_id,
+                    match.home_goals,
+                    match.away_goals,
+                )
+            ]
+            if len(collisions) == 1 and len(safe_alias) == 1:
+                self._ensure_match_mapping(
+                    safe_alias[0][0], match.provider_match_id, snapshot_id, observed_at
+                )
+                return "existing"
+            self._record_identity_conflict(
+                match,
+                snapshot_id,
+                observed_at,
+                tuple(row[0] for row in collisions),
+                "TEAM_TIMESTAMP_CONFLICT",
+            )
+            return "identity_conflict"
         kickoff = match.kickoff_at.astimezone(UTC)
         fixture_id = stable_id(
             "bulk-history-match",
@@ -611,6 +657,107 @@ class HistoricalBackfillStore:
         else:
             with self.connection.cursor() as active:
                 execute(active)
+
+    def _mapped_match(self, provider_match_id: str) -> UUID | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT mapping.match_id
+                  FROM football.match_provider_mappings mapping
+                  JOIN football.providers provider ON provider.id = mapping.provider_id
+                 WHERE provider.code = %s AND mapping.provider_match_id = %s
+                   AND mapping.valid_to IS NULL
+                """,
+                (self.provider_code, provider_match_id),
+            )
+            row = cursor.fetchone()
+        return cast(UUID, row[0]) if row is not None else None
+
+    def _history_facts(
+        self, fixture_id: UUID
+    ) -> tuple[UUID, UUID, UUID, datetime, int, int] | None:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT competition_id, home_team_id, away_team_id, kickoff_at,
+                       home_goals, away_goals
+                  FROM football.product_team_match_history
+                 WHERE fixture_id = %s
+                """,
+                (fixture_id,),
+            )
+            row = cursor.fetchone()
+        return cast(tuple[UUID, UUID, UUID, datetime, int, int], tuple(row)) if row else None
+
+    def _team_timestamp_collisions(
+        self, kickoff_at: datetime, home_id: UUID, away_id: UUID
+    ) -> tuple[tuple[UUID, UUID, UUID, UUID, int, int], ...]:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT fixture_id, competition_id, home_team_id, away_team_id,
+                       home_goals, away_goals
+                  FROM football.product_team_match_history
+                 WHERE kickoff_at = %s
+                   AND (
+                       home_team_id = ANY(%s::uuid[])
+                       OR away_team_id = ANY(%s::uuid[])
+                   )
+                 ORDER BY fixture_id
+                """,
+                (kickoff_at.astimezone(UTC), [home_id, away_id], [home_id, away_id]),
+            )
+            rows = cursor.fetchall()
+        return tuple(cast(tuple[UUID, UUID, UUID, UUID, int, int], tuple(row)) for row in rows)
+
+    def _record_identity_conflict(
+        self,
+        match: HistoricalMatch,
+        snapshot_id: UUID,
+        observed_at: datetime,
+        existing_fixture_ids: tuple[UUID, ...],
+        reason: str,
+    ) -> None:
+        facts = {
+            "provider_competition_id": match.provider_competition_id,
+            "home_provider_team_id": match.home_team_id,
+            "away_provider_team_id": match.away_team_id,
+            "kickoff_at": match.kickoff_at.astimezone(UTC).isoformat(),
+            "home_goals": match.home_goals,
+            "away_goals": match.away_goals,
+            "source_path": match.source_path,
+        }
+        conflict_sha = sha256_json(
+            {
+                "provider": self.provider_code,
+                "provider_match_id": match.provider_match_id,
+                "snapshot_id": str(snapshot_id),
+                "existing_fixture_ids": sorted(map(str, existing_fixture_ids)),
+                "reason": reason,
+                "facts": facts,
+            }
+        )
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO football.fixture_identity_ingestion_conflicts (
+                    conflict_sha256, provider_code, provider_match_id,
+                    source_snapshot_id, existing_fixture_ids, conflict_reason,
+                    incoming_facts, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb, %s)
+                ON CONFLICT (conflict_sha256) DO NOTHING
+                """,
+                (
+                    conflict_sha,
+                    self.provider_code,
+                    match.provider_match_id,
+                    snapshot_id,
+                    list(existing_fixture_ids),
+                    reason,
+                    json.dumps(facts, sort_keys=True, separators=(",", ":")),
+                    observed_at,
+                ),
+            )
 
     def _ensure_provider(self) -> UUID:
         proposed = stable_id("provider", self.provider_code)

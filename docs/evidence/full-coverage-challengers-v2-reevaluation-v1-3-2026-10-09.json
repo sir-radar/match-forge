@@ -1,0 +1,276 @@
+{
+  "contract": "MatchForgeFullCoverageChallengersV2FinalResultV1",
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+  "parent_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_2",
+  "branch": "ft/canonical-history-integrity-v2-final-evaluation",
+  "pr_158_merged": true,
+  "source_commit": "6b0246c3d964f63e4af4bbfb921508e89e35a074",
+  "execution": {
+    "source_commit": "6b0246c3d964f63e4af4bbfb921508e89e35a074",
+    "execution_commit": null,
+    "preflight_status": "NOT_RUN_READINESS_FAILED",
+    "outcomes_loaded": false,
+    "logical_executions": 0,
+    "target_outcome_columns_selected": 0,
+    "target_outcome_getter_calls": 0
+  },
+  "final_disposition": "PREEXECUTION_DATA_INTEGRITY_BLOCK",
+  "development_winner": null,
+  "scientific_evaluation_completed": false,
+  "frozen_v2_artifact_shas_verified": true,
+  "frozen_artifact_sha256": {
+    "matchforge-ensemble-v2a": "3264d9848dc45001edeccf51a686588f1f578c2c11dc23a5f8ffac09f89c00a0",
+    "matchforge-ensemble-v2b": "d61625324300e310b8c1d8e7e2f4df86bb55f218e4b3735486dc391765f5387c",
+    "pb-dixon-coles-hybrid-v2a": "879ae28d0503829843f492d71b05f5016a78894b5d60a13c020264c33bf206df",
+    "pb-dixon-coles-transferable-v2b": "62041a5c67c5673e173368986c1c9f9c3e57ac4f15ac4e1e7a6d292723ea3b27",
+    "pb-negative-binomial-hybrid-v2a": "720dc4b568afca885a6c15db810f2b2e608bba1b68d90a3ef481cc8e1666b3c3",
+    "pb-negative-binomial-transferable-v2b": "e5d87b998a80e03b2aae730c8b1782826aacf4a0fad1f7345d03b6a8a92e863b",
+    "pb-weibull-copula-hybrid-v2a": "2b732b3a8aa9a3272dfb466001a06aeaa6174a54ed62d17d7b4d076efaa44cf2",
+    "pb-weibull-copula-transferable-v2b": "93c8fb0ae16bb166b4fb537280fc2ba9ea178f55cf58236aed6db57b261f2763"
+  },
+  "canonical_history_audit": {
+    "ambiguous_quarantined_clusters": 241,
+    "auto_resolved_duplicate_clusters": 300,
+    "competition_identity_conflicts": 241,
+    "exact_duplicate_clusters": 798,
+    "provider_match_identity_conflicts": 0,
+    "raw_fixture_rows": 330643,
+    "resolved_history_rows": 318041,
+    "rows_excluded_from_model_history": 12602,
+    "score_conflicts": 0,
+    "team_double_booking_clusters": 11549,
+    "unique_real_fixtures": 318041,
+    "unresolved_admitted_timeline_conflicts": 0,
+    "duplicate_alias_rows_collapsed": 314,
+    "quarantined_source_rows": 12288,
+    "quarantined_clusters": 11790
+  },
+  "known_openfootball_duplicate": [
+    {
+      "away_team_id": "8bd16c14-8120-5ff2-bc2e-1cee641a324a",
+      "competition_id": null,
+      "home_team_id": "aed9e5e3-e7bd-5e84-8c63-5863c09e9cae",
+      "kickoff_at": "2019-07-12T17:00:00+00:00",
+      "member_fixture_ids": [
+        "10151aeb-0deb-57e1-9d36-22aa6f7b2d9e",
+        "ddfe2ee5-c301-58e4-89dc-710a2170695b"
+      ],
+      "real_fixture_id": "5cf5d17f-1ec4-5404-9854-b9cfe9df8aec",
+      "representative_fixture_id": "10151aeb-0deb-57e1-9d36-22aa6f7b2d9e",
+      "resolution_reason": "COMPETITION_IDENTITY_CONFLICT_NO_UNIQUE_PROVIDER_SUPPORT",
+      "resolution_status": "AMBIGUOUS_QUARANTINED",
+      "source_evidence_sha256": "da718c45956ebeae541021716eddd223bb3ed121b7c2bbe463057abaf8abff72",
+      "version": "RealFixtureIdentityV1"
+    }
+  ],
+  "known_openfootball_source_facts": [
+    {
+      "away_goals": 1,
+      "away_team_name": "Dinamo Moskva",
+      "competition_id": "84f1e098-5204-5f42-a9da-33373c3c2031",
+      "fixture_id": "10151aeb-0deb-57e1-9d36-22aa6f7b2d9e",
+      "home_goals": 1,
+      "home_team_name": "Arsenal Tula",
+      "provider_evidence": [
+        {
+          "provider_code": "openfootball",
+          "provider_competition_id": "ru.1",
+          "provider_match_id": "2019-20/ru.1.json#1",
+          "provider_path": "2019-20/ru.1.json",
+          "resource_sha256": "66b0f56e008fcef5303425609205d16683da444797208742ee953a2af40bef22",
+          "source_identity": "https://github.com/openfootball/football.json.git",
+          "source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d"
+        }
+      ],
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d"
+    },
+    {
+      "away_goals": 1,
+      "away_team_name": "Dinamo Moskva",
+      "competition_id": "44ef4ba2-8229-596c-b85c-7258cb904d6a",
+      "fixture_id": "ddfe2ee5-c301-58e4-89dc-710a2170695b",
+      "home_goals": 1,
+      "home_team_name": "Arsenal Tula",
+      "provider_evidence": [
+        {
+          "provider_code": "openfootball",
+          "provider_competition_id": "ru.2",
+          "provider_match_id": "2019-20/ru.2.json#1",
+          "provider_path": "2019-20/ru.2.json",
+          "resource_sha256": "7eda7c911d458f248b24954d093fbf0790a1eab889de6030fe5cdfd220146597",
+          "source_identity": "https://github.com/openfootball/football.json.git",
+          "source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d"
+        }
+      ],
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d"
+    }
+  ],
+  "resolved_history_manifest": {
+    "contract": "MatchForgeResolvedHistoryManifestV1",
+    "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+    "resolution_version": "RealFixtureIdentityV1",
+    "resolved_history_manifest_sha256": "51fab6acb33d1c767d118834a6d1c88186117c6e643958614bb440b5514da399"
+  },
+  "global_forbidden_targets": {
+    "contract": "MatchForgeSpentTargetManifestV1_3",
+    "generated_from_outcome_fields": false,
+    "manifest_id": "MATCHFORGE_GLOBAL_FORBIDDEN_TARGETS_2026_10_09_V1_3",
+    "unique_forbidden_target_count": 8586,
+    "unique_forbidden_target_ids_sha256": "a2bf2443d46a81f71f9b4a9adf8e3e7767f047909a8894608e6703b6a1e68d9b",
+    "manifest_ref": "docs/evaluation/full-coverage-v2-global-forbidden-targets-v1-3.json"
+  },
+  "holdout": {
+    "contract": "MatchForgeReplacementHoldoutManifestV2",
+    "global_firewall_sha256": "fca2083630376402d615975245b08b20dd7a9c70f857b0f87377ee0a7cececcf",
+    "manifest_id": "MATCHFORGE_FULL_COVERAGE_V2_REPLACEMENT_HOLDOUT_V2",
+    "outcome_fields_read_for_selection": false,
+    "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+    "qualification": {
+      "champion_eligibility_counts": {
+        "CHAMPION_ELIGIBLE": 450,
+        "CHAMPION_INELIGIBLE": 300
+      },
+      "champion_ineligibility_reason_counts": {
+        "AWAY_INSUFFICIENT_HISTORY": 39,
+        "BOTH_INSUFFICIENT_HISTORY": 217,
+        "HOME_INSUFFICIENT_HISTORY": 44
+      },
+      "competition_counts": {
+        "Eredivisie": 250,
+        "J3 League": 250,
+        "Serie A": 250
+      },
+      "failures": [],
+      "global_firewall_overlap": 0,
+      "season_counts": {
+        "2025": 250,
+        "2021/2022": 13,
+        "2022/2023": 162,
+        "2023/2024": 226,
+        "2024/2025": 95,
+        "2025/2026": 4
+      },
+      "target_count": 750,
+      "target_real_fixture_duplicates": 0,
+      "team_timestamp_target_conflicts": 0
+    },
+    "research_cutoff": "2026-10-09T00:00:00+00:00",
+    "resolved_history_manifest_sha256": "51fab6acb33d1c767d118834a6d1c88186117c6e643958614bb440b5514da399",
+    "selection_mode": "OUTCOME_BLIND_RESOLVED_METADATA_ONLY",
+    "target_manifest_sha256": "0cbdda69bf819311efe613c0d5a2f6523ceb7061622cf5f6d84ab792557c80a0"
+  },
+  "readiness": {
+    "champion_eligible_count": 450,
+    "champion_ineligible_count": 300,
+    "competition_prior_readiness_count": 177,
+    "contract": "MatchForgeV2PreOutcomeReadinessRehearsalV1",
+    "distribution_validation_count": 177,
+    "duplicates_collapsed": 12602,
+    "elo_readiness_count": 750,
+    "expected_native_cold_start_count": 0,
+    "final_disposition": "PREEXECUTION_DATA_INTEGRITY_BLOCK",
+    "frozen_artifact_sha256_verified": {
+      "matchforge-ensemble-v2a": "3264d9848dc45001edeccf51a686588f1f578c2c11dc23a5f8ffac09f89c00a0",
+      "matchforge-ensemble-v2b": "d61625324300e310b8c1d8e7e2f4df86bb55f218e4b3735486dc391765f5387c",
+      "pb-dixon-coles-hybrid-v2a": "879ae28d0503829843f492d71b05f5016a78894b5d60a13c020264c33bf206df",
+      "pb-dixon-coles-transferable-v2b": "62041a5c67c5673e173368986c1c9f9c3e57ac4f15ac4e1e7a6d292723ea3b27",
+      "pb-negative-binomial-hybrid-v2a": "720dc4b568afca885a6c15db810f2b2e608bba1b68d90a3ef481cc8e1666b3c3",
+      "pb-negative-binomial-transferable-v2b": "e5d87b998a80e03b2aae730c8b1782826aacf4a0fad1f7345d03b6a8a92e863b",
+      "pb-weibull-copula-hybrid-v2a": "2b732b3a8aa9a3272dfb466001a06aeaa6174a54ed62d17d7b4d076efaa44cf2",
+      "pb-weibull-copula-transferable-v2b": "93c8fb0ae16bb166b4fb537280fc2ba9ea178f55cf58236aed6db57b261f2763"
+    },
+    "frozen_ensemble_component_weights": {
+      "pb-negative-binomial-v1": 0.10812554040848568,
+      "pb-weibull-copula-v1": 0.07925078093692774,
+      "transferable-rolling-goals-poisson-v1": 0.8126236786545866
+    },
+    "logical_executions": 0,
+    "mode": "STATIC_PRE_HOLDOUT_READINESS",
+    "outcomes_loaded": false,
+    "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+    "quarantined_history_rows": 12602,
+    "raw_history_row_count": 330643,
+    "reference_route_counts": {
+      "CHAMPION": 450,
+      "COMPETITION_PRIOR": 300
+    },
+    "rehearsal_id": "MATCHFORGE_V2_PREOUTCOME_READINESS_REHEARSAL_V1",
+    "resolved_history_row_count": 11763,
+    "selected_target_count": 750,
+    "sequential_outcome_dependent_state": "STRUCTURALLY_VALIDATED_NOT_OBSERVED",
+    "snapshot_readiness_count": 750,
+    "status": "FAIL",
+    "target_history_identity_conflicts": 0,
+    "target_outcome_columns_selected": 0,
+    "target_outcome_getter_calls": 0,
+    "team_timeline_conflicts": 0,
+    "v2a_applicable_count": 450,
+    "v2b_expected_routing_counts": {
+      "matchforge-ensemble-v2b": {
+        "COLD_START_BOTH": 177
+      },
+      "pb-dixon-coles-transferable-v2b": {
+        "COLD_START_BOTH": 177
+      },
+      "pb-negative-binomial-transferable-v2b": {
+        "COLD_START_BOTH": 177
+      },
+      "pb-weibull-copula-transferable-v2b": {
+        "CHAMPION_FALLBACK": 177
+      }
+    },
+    "unresolved_failure_count": 574,
+    "failure_types": [
+      {
+        "failure": "MODEL_READINESS_FAILURE:FROZEN_ENSEMBLE_REQUIRES_CHAMPION",
+        "count": 300
+      },
+      {
+        "failure": "champion could not forecast eligible fixture",
+        "count": 273
+      }
+    ]
+  },
+  "readiness_count_caveats": [
+    "The rehearsal duplicates_collapsed and quarantined_history_rows fields both report the aggregate 12602 excluded rows. Actual duplicate alias rows collapsed: 314; quarantined source rows: 12288.",
+    "Reference route counts describe assigned routes, not successful reference forecasts. The readiness competition_prior_readiness_count is the 177 successful compound forecast sets, not evidence that all 750 references passed.",
+    "273 champion-eligible targets fail with static history excluding every sealed target. Sequential history-count eligibility includes prior selected identities; their labels were not observed, and execution-dependent forecast availability was not claimed.",
+    "300 champion-ineligible targets fail the frozen ensemble precondition before model/reference prediction. Their snapshots and Elo were checked; remaining model/reference checks are not claimed."
+  ],
+  "qualification_runtime_history_count_parity": {
+    "synthetic_regression": "PASS",
+    "static_vs_sequential": "DIFFERENT_BY_DESIGN_SEALED_TARGET_LABELS",
+    "scientific_execution": "NOT_RUN",
+    "full_runtime_parity": "NOT_PROVEN_READINESS_FAILED"
+  },
+  "frozen_ensemble_block": {
+    "champion_weight": 0.8126236786545866,
+    "remaining_weight_mass": 0.18737632134541343,
+    "minimum_available_weight_mass": 0.5,
+    "champion_fallback_available_for_ineligible_targets": false,
+    "competition_prior_substitution_authorized": false
+  },
+  "scientific_metrics": {
+    "v2a_stratum_a": "NOT_RUN",
+    "v2b_stratum_a_vs_champion": "NOT_RUN",
+    "v2b_stratum_b_vs_competition_prior": "NOT_RUN",
+    "overall_vs_reference_stack": "NOT_RUN",
+    "confidence_intervals": "NOT_RUN",
+    "low_history": "NOT_RUN",
+    "promoted_teams": "NOT_RUN",
+    "per_domain": "NOT_RUN"
+  },
+  "independent_evaluation_available": null,
+  "independent_evaluation_search": "NOT_RUN_DEVELOPMENT_BLOCKED",
+  "production_champion_changed": false,
+  "model_promoted": false,
+  "verification": {
+    "comprehensive_local": "make check integration: PASS (856 Python, 15 Rust, 21 web tests; Go tests, lint/type/build, fresh-database migrations and operational integration)",
+    "focused_final": "20 fixture/protocol tests PASS; 21 project-status tests PASS; affected-file ruff and mypy PASS; git diff --check PASS",
+    "canonical_audit": "PASS",
+    "readiness": "FAIL_AS_REQUIRED_GATE_NO_OUTCOME_ACCESS"
+  },
+  "next_action": "OWNER_DECISION_REQUIRED: define authorized frozen ensemble semantics for champion-ineligible targets and static/sequential readiness; no retuning or scientific execution under current failed controls."
+}

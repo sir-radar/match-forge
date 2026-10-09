@@ -141,6 +141,69 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
     assert canonical_score == (2, 1)
 
 
+def test_bulk_ingestion_quarantines_team_timestamp_conflict(
+    connection: Connection[Any],
+) -> None:
+    observed_at = datetime(2026, 10, 9, tzinfo=UTC)
+    store = HistoricalBackfillStore(
+        connection, "openfootball", "OpenFootball", "identity-guard-test-v1"
+    )
+    snapshot = store.ensure_snapshot(
+        source_identity="test/identity-guard",
+        source_revision="f" * 40,
+        acquired_at=observed_at,
+        manifest_path="openfootball/test/identity-guard.json",
+    )
+    first = HistoricalMatch(
+        provider_match_id="identity-guard-1",
+        provider_competition_id="guard.1",
+        competition_name="Guard League",
+        country="Testland",
+        division=1,
+        season="2026",
+        home_team_id="Guard Home",
+        home_team_name="Guard Home",
+        away_team_id="Guard Away One",
+        away_team_name="Guard Away One",
+        kickoff_at=datetime(2026, 8, 1, 15, tzinfo=UTC),
+        kickoff_precision="EXACT",
+        home_goals=1,
+        away_goals=0,
+        source_path="2026/guard.1.json",
+    )
+    assert store.import_match(first, snapshot, observed_at) == "inserted"
+    conflict = replace(
+        first,
+        provider_match_id="identity-guard-2",
+        away_team_id="Guard Away Two",
+        away_team_name="Guard Away Two",
+    )
+    assert store.import_match(conflict, snapshot, observed_at) == "identity_conflict"
+
+    with connection.cursor() as cursor:
+        history_count = _first(
+            cursor.execute(
+                """
+                SELECT count(*) FROM football.product_team_match_history
+                WHERE source_snapshot_id = %s
+                """,
+                (snapshot,),
+            ).fetchone()
+        )
+        conflict_count = _first(
+            cursor.execute(
+                """
+                SELECT count(*) FROM football.fixture_identity_ingestion_conflicts
+                WHERE source_snapshot_id = %s
+                """,
+                (snapshot,),
+            ).fetchone()
+        )
+
+    assert history_count == 1
+    assert conflict_count == 1
+
+
 def test_verified_team_crosswalk_uses_stable_canonical_identity(
     connection: Connection[Any],
 ) -> None:

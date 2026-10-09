@@ -55,7 +55,8 @@
     "AUTHORIZE_GOVERNED_CONTEXT_FEATURE_EVALUATION_V1_RERUN",
     "AUTHORIZE_FULL_COVERAGE_V2_FRESH_CORPUS_QUALIFICATION_V1",
     "CORRECT_FULL_COVERAGE_V2_REEVALUATION_COMMIT_INVARIANT_V1",
-    "AUTHORIZE_FULL_COVERAGE_V2_REPLACEMENT_HOLDOUT_V1"
+    "AUTHORIZE_FULL_COVERAGE_V2_REPLACEMENT_HOLDOUT_V1",
+    "AUTHORIZE_CANONICAL_HISTORY_REPAIR_AND_V2_FINAL_REPLACEMENT_EVALUATION_V1"
   ],
   "closed_routes": [
     {
@@ -944,6 +945,25 @@
       "independent_evaluation_available": false,
       "rerun_authorized": false,
       "next_action": "OWNER_DECISION_REQUIRED_NO_RERUN_AUTHORIZED"
+    },
+    {
+      "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+      "provider": "MULTISOURCE_RETAINED_RESOLVED",
+      "status": "PREEXECUTION_DATA_INTEGRITY_BLOCK",
+      "owner_decision": "AUTHORIZE_CANONICAL_HISTORY_REPAIR_AND_V2_FINAL_REPLACEMENT_EVALUATION_V1",
+      "owner_decision_ref": "docs/evidence/owner-decision-authorize-canonical-history-repair-v2-final-2026-10-09.json",
+      "source_commit": "6b0246c3d964f63e4af4bbfb921508e89e35a074",
+      "execution_commit": null,
+      "evidence_ref": "docs/evidence/full-coverage-challengers-v2-reevaluation-v1-3-2026-10-09.json",
+      "report_ref": "docs/evidence/full-coverage-challengers-v2-reevaluation-v1-3-2026-10-09.md",
+      "execution_receipt_ref": "docs/evidence/full-coverage-challengers-v2-reevaluation-v1-3-receipt-2026-10-09.json",
+      "replacement_holdout_target_count": 750,
+      "development_outcomes_loaded": false,
+      "logical_executions": 0,
+      "evaluation_completed": false,
+      "model_promoted": false,
+      "production_champion_changed": false,
+      "next_action": "OWNER_DECISION_REQUIRED_READINESS_FAILED_NO_EXECUTION"
     }
   ],
   "mvp_product": {

@@ -10,9 +10,9 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
-	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol full-coverage-v2-replacement-evaluate
+	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate
 
 bootstrap:
 	./scripts/bootstrap.sh
@@ -92,6 +92,9 @@ entity-crosswalk-review: migrate
 entity-crosswalk-apply: migrate
 	@set -a; . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.crosswalk_resolution --database-url "$$DATABASE_URL" --apply
 
+canonical-history-audit: migrate
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.audit_canonical_history --database-url "$$DATABASE_URL"
+
 pretraining-snapshot-check:
 	@$(TOOL_ENV); uv run python scripts/verify_pretraining_snapshot.py $(if $(SNAPSHOT_ROOT),--root "$(SNAPSHOT_ROOT)",) $(if $(RESTORE_TO),--restore-to "$(RESTORE_TO)",)
 
@@ -109,6 +112,12 @@ full-coverage-v2-reevaluate:
 
 full-coverage-v2-replacement-evaluate:
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.run_full_coverage_v2_replacement_holdout --database-url "$$DATABASE_URL"
+
+v2-final-readiness:
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.run_full_coverage_v2_final --database-url "$$DATABASE_URL" --readiness
+
+v2-final-evaluate:
+	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; uv run python -m scripts.run_full_coverage_v2_final --database-url "$$DATABASE_URL"
 
 model-fit:
 	@$(TOOL_ENV); uv run football models fit --model-id "$(MODEL_ID)" --training-data "$(TRAINING_DATA)" --config "$(MODEL_CONFIG)" --artifact-root "$(ARTIFACT_ROOT)"

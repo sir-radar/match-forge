@@ -1,0 +1,12 @@
+{
+  "contract": "MatchForgeV2FinalExecutionReceiptV1",
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+  "source_commit": "6b0246c3d964f63e4af4bbfb921508e89e35a074",
+  "execution_commit": null,
+  "status": "PREEXECUTION_DATA_INTEGRITY_BLOCK",
+  "outcomes_loaded": false,
+  "logical_executions": 0,
+  "readiness_report_ref": "docs/evidence/v2-preoutcome-readiness-rehearsal-v1-2026-10-09.json",
+  "scientific_execution_started": false,
+  "preregistration_created": false
+}

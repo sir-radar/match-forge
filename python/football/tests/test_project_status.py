@@ -23,6 +23,25 @@ def test_repository_project_status_is_valid() -> None:
     validate_project_status(repository_root / "docs/project-status.json", repository_root)
 
 
+def test_v1_3_preexecution_block_is_an_isolated_evaluation_track(tmp_path: Path) -> None:
+    repository_root, status_path = _write_repository(tmp_path)
+    status = _read_json(status_path)
+    tracks = status["evaluation_tracks"]
+    assert isinstance(tracks, list)
+    tracks.append(
+        {
+            "evaluation_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_3",
+            "provider": "MULTISOURCE_RETAINED_RESOLVED",
+            "status": "PREEXECUTION_DATA_INTEGRITY_BLOCK",
+            "development_outcomes_loaded": False,
+            "logical_executions": 0,
+            "evidence_ref": "docs/evidence/shared-pace-admission.md",
+        }
+    )
+    _write_json(status_path, status)
+    validate_project_status(status_path, repository_root)
+
+
 def test_parallel_evaluation_tracks_are_required(tmp_path: Path) -> None:
     repository_root, status_path = _write_repository(tmp_path)
     status = _read_json(status_path)

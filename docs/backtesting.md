@@ -68,6 +68,24 @@ Elo / Dixon-Coles / corner models / challengers / evaluator
 
 Models must not independently query current database state for "previous matches".
 
+Retained product history must pass `make canonical-history-audit` before a new
+evaluation corpus is selected. `football.history.fixture_identity` resolves exact
+home-team, away-team, and kickoff candidates into `RealFixtureIdentityV1` records.
+Provider-ID contradictions, unsupported competition disagreements, and remaining
+team/kickoff conflicts are quarantined. Source rows and provider lineage remain intact.
+
+The V1.3 evaluator reads admitted `ResolvedHistoricalMatchV1` records from
+`football.fixture_identity_resolutions`. Qualification counts, snapshots, Elo,
+champion forecasts, and competition priors use those same real fixtures. Selected
+target real-fixture IDs are excluded in SQL before historical outcome columns are
+loaded. Each sealed target batch is admitted once after its forecasts are frozen.
+
+`make v2-final-readiness` checks the frozen models without opening target outcomes.
+A failed rehearsal records `PREEXECUTION_DATA_INTEGRITY_BLOCK` and leaves
+`logical_executions = 0` and `outcomes_loaded = false`. A frozen ensemble that needs
+an unavailable champion component fails readiness; changing its weights or
+substituting another component requires a separate owner decision.
+
 ## Same-kickoff batching
 
 Matches that could not legitimately observe each other's outcomes must be forecast as one batch.
