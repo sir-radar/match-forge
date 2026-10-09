@@ -253,6 +253,26 @@ def test_hybrid_artifact_keeps_v1_artifacts_immutable() -> None:
     }
 
 
+def test_hybrid_artifact_uses_verified_team_id_alias_for_native_forecast() -> None:
+    primary = default_penaltyblog_models()[0]
+    history = _competition_history()
+    primary_artifact = primary.fit(history, {"code_commit_sha": "a" * 40})
+    champion = _ChampionModel()
+    model = HybridGoalModel.v2a(primary, champion)
+    artifact = build_hybrid_artifact(
+        model,
+        primary_artifact,
+        _artifact("transferable-rolling-goals-poisson-v1"),
+        team_id_aliases=((str(UNSEEN), str(AWAY)),),
+    )
+
+    forecast = model.predict(artifact, _snapshot(history, away=UNSEEN))
+
+    assert forecast.lineage is not None
+    assert forecast.lineage.forecast_mode is ForecastMode.NATIVE
+    assert forecast.input_snapshot_sha256 == _snapshot(history, away=UNSEEN).sha256
+
+
 def test_hybrid_artifact_manifest_records_reproducibility_contract() -> None:
     primary = _artifact("pb-dixon-coles-v1")
     champion = _artifact("transferable-rolling-goals-poisson-v1")
@@ -341,6 +361,51 @@ def test_v2_ensemble_renormalizes_frozen_weights_and_falls_back_below_half_mass(
     assert fallback.lineage is not None
     assert fallback.lineage.ensemble_mode == "ENSEMBLE_FULL_CHAMPION_FALLBACK"
     assert fallback.lineage.champion_fallback_used
+
+
+def test_v2_ensemble_uses_whole_champion_when_every_challenger_falls_back() -> None:
+    champion_model = _ChampionModel()
+    champion_artifact = _artifact("transferable-rolling-goals-poisson-v1")
+    snapshot = _snapshot(_competition_history(), away=UNSEEN)
+    champion = champion_model.predict(champion_artifact, snapshot)
+    component = replace(
+        champion,
+        model_id="pb-dixon-coles-hybrid-v2a",
+        lineage=ForecastLineage(
+            forecast_mode=ForecastMode.CHAMPION_FALLBACK,
+            primary_model_id="pb-dixon-coles-v1",
+            primary_model_artifact_sha256="a" * 64,
+            fallback_model_id=champion.model_id,
+            fallback_model_artifact_sha256=champion.model_artifact_sha256,
+            fallback_reason=ForecastFallbackReason.AWAY_UNSEEN,
+            home_artifact_state="FITTED",
+            away_artifact_state="UNSEEN_TEAM",
+            home_history_state="FULL_HISTORY",
+            away_history_state="ZERO_HISTORY",
+            home_promoted=False,
+            away_promoted=None,
+            native_component_used=False,
+            cold_start_component_used=False,
+            champion_fallback_used=True,
+        ),
+    )
+    weights = EnsembleWeights(
+        (("pb-dixon-coles-v1", 0.6), (champion.model_id, 0.4)),
+        (TARGET,),
+    )
+
+    result = build_full_coverage_ensemble_forecast(
+        model_id="matchforge-ensemble-v2a",
+        forecasts=(champion, component),
+        champion_forecast=champion,
+        weights=weights,
+        model_artifact_sha256="e" * 64,
+    )
+
+    assert result.score_matrix == champion.score_matrix
+    assert result.lineage is not None
+    assert result.lineage.forecast_mode is ForecastMode.CHAMPION_FALLBACK
+    assert result.lineage.champion_fallback_used
 
 
 def test_coverage_accounting_keeps_native_cold_start_and_fallback_distinct() -> None:

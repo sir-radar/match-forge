@@ -1,0 +1,26 @@
+{
+  "contract": "MatchForgeV2ReevaluationExecutionReceiptV1",
+  "execution_commit": "c0db55c24faa0c97f3abdf75ab199cacb4679266",
+  "execution_commit_changed_files": [
+    "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-1-config.json",
+    "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-1-execution-state.json",
+    "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-1-preregistration.json",
+    "docs/evidence/owner-decision-correct-full-coverage-v2-reevaluation-commit-invariant-2026-10-09.json"
+  ],
+  "execution_parent": "93333f26a04d9df9cd2b3bdd936b7ec6cb268e1b",
+  "execution_parent_matches_source": true,
+  "execution_status": "FAIL_CLOSED",
+  "failure": {
+    "code": "CHAMPION_COVERAGE_INVARIANT_VIOLATION",
+    "exception": "ValueError",
+    "message": "champion could not forecast eligible fixture",
+    "stage": "EVALUATE_HOLDOUT"
+  },
+  "logical_execution_attempts": 1,
+  "outcomes_loaded": true,
+  "preflight_status": "PASS",
+  "preregistration_sha256": "293d1efeb1a430c969bd2cacd1a2208788da1f318bf4890295a6212cd2396085",
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_1",
+  "scientific_source_sha256_actual": "e8dc1412f4f98fc992233bc2c861a1a15b67312afd183274c816c34b7755b672",
+  "scientific_source_sha256_expected": "e8dc1412f4f98fc992233bc2c861a1a15b67312afd183274c816c34b7755b672"
+}
