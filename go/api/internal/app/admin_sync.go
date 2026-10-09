@@ -246,16 +246,28 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 		runner.fail(runID, err)
 		return
 	}
+	status, errorMessage := syncCompletion(summary)
 	if _, err = runner.pool.Exec(
 		runner.ctx,
 		`UPDATE football.product_sync_runs
-		 SET status = 'SUCCEEDED', finished_at = clock_timestamp(), summary = $2::jsonb
+		 SET status = $2, finished_at = clock_timestamp(), summary = $3::jsonb,
+		     error_message = $4
 		 WHERE run_id = $1`,
 		runID,
+		status,
 		encoded,
+		errorMessage,
 	); err != nil {
 		runner.logger.Error("finish sync run", "run_id", runID, "error", err)
 	}
+}
+
+func syncCompletion(summary map[string]interface{}) (string, *string) {
+	if summary["status"] != "COMPLETED_WITH_ERRORS" {
+		return "SUCCEEDED", nil
+	}
+	message := "one or more data synchronization operations failed; see summary.errors"
+	return "FAILED", &message
 }
 
 func (runner *CommandSyncRunner) runCommand(
@@ -274,13 +286,17 @@ func (runner *CommandSyncRunner) runCommand(
 	}
 	lastLine, scanErr := lastOutputLine(io.TeeReader(pipe, logFile))
 	waitErr := command.Wait()
-	if waitErr != nil {
-		return nil, commandFailure(waitErr, logFile)
-	}
 	if scanErr != nil {
 		return nil, scanErr
 	}
 	summary := map[string]interface{}{}
+	if waitErr != nil {
+		if json.Unmarshal([]byte(lastLine), &summary) == nil &&
+			summary["status"] == "COMPLETED_WITH_ERRORS" {
+			return summary, nil
+		}
+		return nil, commandFailure(waitErr, logFile)
+	}
 	if err = json.Unmarshal([]byte(lastLine), &summary); err != nil {
 		return nil, fmt.Errorf("sync command did not return structured JSON: %w", err)
 	}

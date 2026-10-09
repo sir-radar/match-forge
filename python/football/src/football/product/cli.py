@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 import urllib.error
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -27,6 +27,16 @@ from football.product.football_data_org import FootballDataOrgClient, FootballDa
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.sync import HistoryWorkerFactory, ProductSync
+
+_DATA_OPERATION_ERRORS = (
+    ApiFootballError,
+    FootballDataOrgError,
+    psycopg.Error,
+    OSError,
+    subprocess.SubprocessError,
+    urllib.error.URLError,
+    ValueError,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -156,19 +166,11 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 result = _history_backfill(connection, args)
             else:
                 result = _sync_all(connection, args)
-    except (
-        ApiFootballError,
-        FootballDataOrgError,
-        psycopg.Error,
-        OSError,
-        subprocess.SubprocessError,
-        urllib.error.URLError,
-        ValueError,
-    ) as error:
+    except _DATA_OPERATION_ERRORS as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
-    return 0
+    return 1 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
 
 
 def _openfootball(
@@ -214,29 +216,33 @@ def _history_backfill(
 def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> dict[str, object]:
     api_key = os.environ.get("API_FOOTBALL_API_KEY", "")
     fallback_token = os.environ.get("FOOTBALL_DATA_DOT_ORG_API_TOKEN", "")
-    fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
     sync_run_id = _sync_run_id()
-    product = ProductSync(
-        connection,
-        ApiFootballClient(api_key),
-        args.data_root,
-        MODEL_ARTIFACT_PATH,
-        fallback,
-        api_football_max_history_season=_api_football_max_history_season(),
-        history_worker_factory=_history_worker_factory(
-            args.database_url,
-            api_key,
-            fallback_token,
+    errors: dict[str, str] = {}
+
+    def mvp_sync() -> dict[str, int]:
+        fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
+        return ProductSync(
+            connection,
+            ApiFootballClient(api_key),
             args.data_root,
-            sync_run_id,
-        ),
-        sync_run_id=sync_run_id,
-    )
-    mvp = product.run(
-        args.date,
-        fixture_from_date=args.from_date,
-        history_concurrency=args.history_concurrency,
-    )
+            MODEL_ARTIFACT_PATH,
+            fallback,
+            api_football_max_history_season=_api_football_max_history_season(),
+            history_worker_factory=_history_worker_factory(
+                args.database_url,
+                api_key,
+                fallback_token,
+                args.data_root,
+                sync_run_id,
+            ),
+            sync_run_id=sync_run_id,
+        ).run(
+            args.date,
+            fixture_from_date=args.from_date,
+            history_concurrency=args.history_concurrency,
+        )
+
+    mvp = _run_sync_step(connection, "mvp", mvp_sync, errors)
     selectors = argparse.Namespace(
         data_root=args.data_root,
         season=None,
@@ -244,13 +250,37 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         country=None,
         refresh=False,
     )
-    history = _history_backfill(connection, selectors)
+    history = {
+        "openfootball": _run_sync_step(
+            connection, "openfootball", lambda: _openfootball(connection, selectors), errors
+        ),
+        "football_data_uk": _run_sync_step(
+            connection,
+            "football_data_uk",
+            lambda: _football_data_uk(connection, selectors),
+            errors,
+        ),
+    }
     fixture_start = args.from_date or args.date - timedelta(days=1)
-    mvp["fixtures_from_history"] += product.backfill_fixtures_from_history(
-        fixture_start, args.date, datetime.now(UTC)
+    fixtures_from_history = _run_sync_step(
+        connection,
+        "fixture_history",
+        lambda: ProductSync(
+            connection,
+            ApiFootballClient("stored-data-only"),
+            args.data_root,
+            MODEL_ARTIFACT_PATH,
+        ).backfill_fixtures_from_history(fixture_start, args.date, datetime.now(UTC)),
+        errors,
     )
-    connection.commit()
-    forecasts = _refresh(connection, args.data_root)
+    if mvp is not None and fixtures_from_history is not None:
+        mvp["fixtures_from_history"] += fixtures_from_history
+    forecasts = _run_sync_step(
+        connection,
+        "forecasts",
+        lambda: _refresh(connection, args.data_root),
+        errors,
+    )
     external_args = argparse.Namespace(
         database_url=args.database_url,
         date=args.date,
@@ -258,12 +288,33 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         import_file=None,
     )
     external_status = _run_external_predictions(external_args)
+    if external_status != 0:
+        errors["external_predictions"] = f"exited with status {external_status}"
     return {
+        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
+        "errors": errors,
         "mvp": mvp,
         "history": history,
+        "fixtures_from_history": fixtures_from_history,
         "forecasts_created": forecasts,
         "external_predictions_exit_code": external_status,
     }
+
+
+def _run_sync_step[T](
+    connection: psycopg.Connection[Any],
+    name: str,
+    operation: Callable[[], T],
+    errors: dict[str, str],
+) -> T | None:
+    try:
+        result = operation()
+        connection.commit()
+        return result
+    except _DATA_OPERATION_ERRORS as error:
+        connection.rollback()
+        errors[name] = str(error)
+        return None
 
 
 def _refresh(connection: psycopg.Connection[Any], data_root: Path) -> int:

@@ -123,6 +123,45 @@ func TestCommandFailureIncludesLastLogLine(t *testing.T) {
 	}
 }
 
+func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
+	status, message := syncCompletion(map[string]interface{}{
+		"status": "COMPLETED_WITH_ERRORS",
+		"errors": map[string]interface{}{"mvp": "API-Football request limit reached"},
+	})
+	if status != "FAILED" {
+		t.Fatalf("status = %q", status)
+	}
+	if message == nil || *message != "one or more data synchronization operations failed; see summary.errors" {
+		t.Fatalf("message = %v", message)
+	}
+
+	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"})
+	if status != "SUCCEEDED" || message != nil {
+		t.Fatalf("completion = %q %v", status, message)
+	}
+}
+
+func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
+	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	runner := &CommandSyncRunner{ctx: context.Background(), repoRoot: t.TempDir()}
+
+	summary, err := runner.runCommand(
+		"run-id",
+		[]string{"/bin/sh", "-c", `echo '{"status":"COMPLETED_WITH_ERRORS","errors":{"mvp":"quota"}}'; exit 1`},
+		logFile,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if summary["status"] != "COMPLETED_WITH_ERRORS" {
+		t.Fatalf("summary = %+v", summary)
+	}
+}
+
 func TestAdminSyncListGetAndErrors(t *testing.T) {
 	runner := &syncRunnerStub{runs: []SyncRun{{ID: "one", Type: SyncMVP, Status: "SUCCEEDED"}}}
 	application := newAdminTestApp(runner)
