@@ -409,5 +409,7 @@ def _count_result(summary: BackfillSummary, result: str) -> None:
         summary.matches_existing += 1
     elif result == "conflict":
         summary.result_conflicts += 1
+    elif result == "identity_conflict":
+        summary.identity_conflicts += 1
     else:
         summary.mapping_failures += 1
