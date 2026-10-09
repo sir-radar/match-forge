@@ -170,6 +170,7 @@ def prepare(database_url: str, source_commit: str, root: Path = ROOT) -> dict[st
         "contract": "MatchForgeOwnerDecisionV1",
         "decision_id": AUTHORIZATION_ID,
         "authorized_at": f"{DATE}T00:00:00Z",
+        "recorded_at": f"{DATE}T00:00:00Z",
         "protocol_id": PROTOCOL_ID,
         "parent_protocol_id": PARENT_PROTOCOL_ID,
         "amendment_reason": AMENDMENT_REASON,
