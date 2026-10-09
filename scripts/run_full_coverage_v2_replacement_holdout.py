@@ -119,12 +119,12 @@ def execute(database_url: str, root: Path = ROOT) -> dict[str, object]:
     old_config = _json(root / OLD_CONFIG.relative_to(ROOT))
     reference = _json(root / REFERENCE_CONFIG.relative_to(ROOT))
     receipt = _preflight(root, preregistration, config, old_config, reference)
-    _consume(root / EXECUTION_STATE.relative_to(ROOT))
-    observations = _load_observations(database_url, root / TARGET_MANIFEST.relative_to(ROOT))
     runtime = build_runtime(old_config, root)
     expected_artifacts = cast(dict[str, str], config["frozen_v2_candidate_artifact_sha256"])
     if runtime["artifact_shas"] != expected_artifacts:
         raise RuntimeError("FAIL_CLOSED_FROZEN_CANDIDATE_MISMATCH")
+    _consume(root / EXECUTION_STATE.relative_to(ROOT))
+    observations = _load_observations(database_url, root / TARGET_MANIFEST.relative_to(ROOT))
     result = _evaluate(observations, runtime, old_config, reference, receipt)
     _write(root / RESULT.relative_to(ROOT), result)
     _write(
