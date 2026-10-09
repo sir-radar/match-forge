@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -397,10 +397,24 @@ def audit_canonical_history(rows: Sequence[CanonicalHistoryRow]) -> CanonicalHis
 
     identities = [_resolve_exact_cluster(tuple(cluster)) for cluster in grouped.values()]
     by_real_id = {item.canonical_real_fixture_id: item for item in identities}
+    provider_members: dict[tuple[str, str], set[UUID]] = defaultdict(set)
+    for item in identities:
+        for evidence in item.provider_evidence:
+            provider_members[(evidence.provider_code, evidence.provider_match_id)].add(
+                item.canonical_real_fixture_id
+            )
+    conflicting_provider_ids = {
+        real_id for members in provider_members.values() if len(members) > 1 for real_id in members
+    }
+    for real_id in conflicting_provider_ids:
+        by_real_id[real_id] = replace(
+            by_real_id[real_id],
+            canonical_competition_id=None,
+            resolution_status=ResolutionStatus.AMBIGUOUS_QUARANTINED,
+            resolution_reason="PROVIDER_MATCH_ID_HAS_CONTRADICTORY_FIXTURE_FACTS",
+        )
     slots: dict[tuple[UUID, datetime], set[UUID]] = defaultdict(set)
     for item in identities:
-        if not item.admitted:
-            continue
         slots[(item.home_team_id, item.kickoff_at)].add(item.canonical_real_fixture_id)
         slots[(item.away_team_id, item.kickoff_at)].add(item.canonical_real_fixture_id)
     impossible_ids = {
@@ -408,6 +422,8 @@ def audit_canonical_history(rows: Sequence[CanonicalHistoryRow]) -> CanonicalHis
     }
     for real_id in impossible_ids:
         current = by_real_id[real_id]
+        if not current.admitted:
+            continue
         by_real_id[real_id] = replace(
             current,
             canonical_competition_id=None,
@@ -699,6 +715,10 @@ def _counts(
             > 1
             for item in identities
         ),
+        "provider_match_identity_conflicts": sum(
+            item.resolution_reason == "PROVIDER_MATCH_ID_HAS_CONTRADICTORY_FIXTURE_FACTS"
+            for item in identities
+        ),
         "rows_excluded_from_model_history": len(rows) - len(resolved),
         "resolved_history_rows": len(resolved),
         "unresolved_admitted_timeline_conflicts": physical_timeline_conflicts(resolved),
@@ -765,7 +785,3 @@ def _row(value: Mapping[str, object]) -> CanonicalHistoryRow:
         str(value["source_kickoff_precision"]),
         evidence,
     )
-
-
-def member_fixture_ids(history: Iterable[ResolvedHistoricalMatchV1]) -> frozenset[UUID]:
-    return frozenset(value for row in history for value in row.member_fixture_ids)

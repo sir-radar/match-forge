@@ -14,6 +14,7 @@ import psycopg
 from football.history.fixture_identity import (
     RESOLUTION_VERSION,
     audit_canonical_history,
+    evidence_payload,
     load_canonical_history,
     persist_resolutions,
     semantic_sha256,
@@ -61,6 +62,23 @@ def run_audit(database_url: str, *, persist: bool) -> dict[str, object]:
             "ddfe2ee5-c301-58e4-89dc-710a2170695b",
         }
     ]
+    known_members = {
+        str(member) for item in known for member in cast(Sequence[str], item["member_fixture_ids"])
+    }
+    known_facts = [
+        {
+            "fixture_id": str(row.fixture_id),
+            "competition_id": str(row.competition_id),
+            "source_snapshot_id": str(row.source_snapshot_id),
+            "home_team_name": row.home_team_name,
+            "away_team_name": row.away_team_name,
+            "home_goals": row.home_goals,
+            "away_goals": row.away_goals,
+            "provider_evidence": [evidence_payload(value) for value in row.provider_evidence],
+        }
+        for row in audit.raw_rows
+        if str(row.fixture_id) in known_members
+    ]
     return {
         "contract": "MatchForgeCanonicalHistoryIntegrityAuditV1",
         "resolution_version": RESOLUTION_VERSION,
@@ -70,6 +88,7 @@ def run_audit(database_url: str, *, persist: bool) -> dict[str, object]:
         "by_competition": audit.by_competition,
         "by_season": audit.by_season,
         "known_openfootball_duplicate": known,
+        "known_openfootball_source_facts": known_facts,
         "resolved_history_manifest_sha256": semantic_sha256(manifest),
         "resolution_manifest": manifest,
     }

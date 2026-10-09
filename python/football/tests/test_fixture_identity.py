@@ -89,6 +89,28 @@ def test_same_provider_match_id_for_two_fixture_ids_resolves_once() -> None:
     assert audit.identities[0].resolution_status is ResolutionStatus.DUPLICATE_RESOLVED
 
 
+def test_reused_provider_match_id_with_different_kickoff_is_quarantined() -> None:
+    audit = audit_canonical_history(
+        (
+            _row(provider_match_id="immutable-1"),
+            _row(2, provider_match_id="immutable-1", kickoff_at=KICKOFF + timedelta(days=1)),
+        )
+    )
+    assert not audit.resolved_history
+    assert audit.counts["provider_match_identity_conflicts"] == 2
+
+
+def test_ambiguous_cluster_cannot_hide_another_team_timestamp_conflict() -> None:
+    audit = audit_canonical_history(
+        (
+            _row(),
+            _row(2, competition_id=OTHER_COMPETITION),
+            _row(3, away_team_id=THIRD),
+        )
+    )
+    assert not audit.resolved_history
+
+
 def test_competition_disagreement_is_quarantined_without_unique_support() -> None:
     audit = audit_canonical_history(
         (_row(), _row(2, fixture_id=UUID(int=102), competition_id=OTHER_COMPETITION))

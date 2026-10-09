@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import pytest
 from football.forecasting.replacement_holdout import (
     ChampionEligibility,
     ChampionEligibilityInput,
@@ -26,6 +27,7 @@ from scripts.prepare_full_coverage_v2_final import (
 from scripts.run_full_coverage_v2_final import (
     _competition_history_count,
     _competition_match,
+    _forecast_target,
     _historical,
     _history_counts,
     _prepare_before_reveal,
@@ -43,6 +45,15 @@ SNAPSHOT = UUID(int=20)
 
 def test_v1_2_spent_guard_matches_immutable_execution_state() -> None:
     _verify_v1_2_spent(ROOT)
+
+
+def test_frozen_ensemble_refuses_missing_champion_before_model_or_outcome_access() -> None:
+    target = _target(UUID(int=200))
+    snapshot = _snapshot(
+        target, (), {"real_fixture_id": str(UUID(int=200)), "source_evidence_sha256": "a" * 64}
+    )
+    with pytest.raises(RuntimeError, match="FROZEN_ENSEMBLE_REQUIRES_CHAMPION"):
+        _forecast_target(target, snapshot, (), {}, CompetitionPriorPoissonV1(1.5, 1.1), {})
 
 
 def test_resolved_history_manifest_excludes_selected_real_fixtures() -> None:

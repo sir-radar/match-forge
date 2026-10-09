@@ -19,6 +19,7 @@ from uuid import UUID
 
 import psycopg
 from football.forecasting.champion_adapter import TransferableRollingGoalsChampion
+from football.forecasting.ensemble import EnsembleWeights, build_full_coverage_ensemble_forecast
 from football.forecasting.model_contracts import (
     CompetitionContext,
     FittedModelArtifact,
@@ -44,6 +45,7 @@ from football.history.fixture_identity import (
     ResolvedHistoricalMatchV1,
     load_persisted_resolved_history,
     load_persisted_resolved_metadata,
+    physical_timeline_conflicts,
 )
 
 from scripts.prepare_full_coverage_v2_final import (
@@ -124,6 +126,7 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
     config = _json(root / CONFIG.relative_to(ROOT))
     reference = _json(root / REFERENCE_CONFIG.relative_to(ROOT))
     runtime = build_runtime(old_config, root)
+    runtime["ensemble_weights"] = old_config["ensemble_weights"]
     if runtime["artifact_shas"] != config["frozen_v2_candidate_artifact_sha256"]:
         raise RuntimeError("FAIL_CLOSED_FROZEN_CANDIDATE_MISMATCH")
 
@@ -146,19 +149,35 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
     route_counts: dict[str, Counter[str]] = defaultdict(Counter)
     per_target: list[dict[str, object]] = []
     updated_rows: list[dict[str, object]] = []
+    failures: list[str] = []
     for row, target in zip(target_rows, targets, strict=True):
-        snapshot = _snapshot(target, model_history, row)
-        prepared = _forecast_target(
-            target, snapshot, competition_history, runtime, prior, reference
-        )
+        snapshot = None
+        try:
+            snapshot = _snapshot(target, model_history, row)
+            prepared = _forecast_target(
+                target, snapshot, competition_history, runtime, prior, reference
+            )
+        except (ArithmeticError, RuntimeError, ValueError) as error:
+            failures.append(f"MODEL_READINESS_FAILURE:{target.fixture_id}:{error}")
+            per_target.append(
+                {
+                    "fixture_id": str(target.fixture_id),
+                    "snapshot_semantic_sha256": snapshot.sha256 if snapshot else None,
+                    "snapshot_ready": snapshot is not None,
+                    "elo_ready": snapshot is not None,
+                    "competition_prior_ready": False,
+                    "distribution_valid": False,
+                    "model_failure": str(error),
+                }
+            )
+            continue
         routes = {model_id: _route(forecast) for model_id, forecast in prepared.v2b.items()}
-        if len(set(routes.values())) != 1:
-            raise RuntimeError("MODEL_READINESS_FAILURE: inconsistent V2B routes")
-        expected_route = next(iter(routes.values()))
+        expected_route = routes["matchforge-ensemble-v2b"]
         for model_id, route in routes.items():
             route_counts[model_id][route] += 1
         updated = dict(row)
         updated["V2B_expected_route"] = expected_route
+        updated["V2B_expected_routes"] = routes
         updated_rows.append(updated)
         static_home, static_away = _history_counts(snapshot, target)
         static_competition = _competition_history_count(target, competition_history)
@@ -178,7 +197,7 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
                 "champion_eligibility": target.champion_eligibility,
                 "reference_mode": target.reference_mode,
                 "v2a_applicable": target.champion_eligibility == ChampionEligibility.ELIGIBLE.value,
-                "v2b_route": expected_route,
+                "v2b_routes": routes,
                 "snapshot_ready": True,
                 "elo_ready": True,
                 "competition_prior_ready": True,
@@ -189,17 +208,22 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
     target_manifest["targets"] = updated_rows
     target_manifest["target_manifest_sha256"] = _semantic_sha(updated_rows)
     qualification = cast(dict[str, object], target_manifest["qualification"])
-    cold = sum(str(row["V2B_expected_route"]).startswith("COLD_START") for row in updated_rows)
+    cold = min(
+        (
+            sum(count for route, count in counts.items() if route.startswith("COLD_START"))
+            for counts in route_counts.values()
+        ),
+        default=0,
+    )
     qualification["expected_native_cold_start_count"] = cold
-    failures: list[str] = []
     if cold < 100:
         failures.append("MODEL_READINESS_FAILURE: insufficient native cold-start forecasts")
-    target_ids = {str(row["real_fixture_id"]) for row in updated_rows}
+    target_ids = {str(row["real_fixture_id"]) for row in target_rows}
     historical_ids = {str(row.real_fixture_id) for row in history}
     target_history_collisions = len(target_ids & historical_ids)
     if target_history_collisions:
         failures.append("TARGET_HISTORY_COLLISION")
-    current_relevant = _current_relevant_manifest(metadata, updated_rows)
+    current_relevant = _current_relevant_manifest(metadata, target_rows)
     frozen_relevant = cast(
         list[dict[str, object]],
         _json(root / RESOLVED_HISTORY_MANIFEST.relative_to(ROOT))["rows"],
@@ -212,6 +236,8 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
         "protocol_id": PROTOCOL_ID,
         "mode": "STATIC_PRE_HOLDOUT_READINESS",
         "sequential_outcome_dependent_state": "STRUCTURALLY_VALIDATED_NOT_OBSERVED",
+        "frozen_ensemble_component_weights": old_config["ensemble_weights"],
+        "frozen_artifact_sha256_verified": runtime["artifact_shas"],
         "selected_target_count": len(targets),
         "raw_history_row_count": cast(
             dict[str, int], _json(root / AUDIT.relative_to(ROOT))["counts"]
@@ -242,10 +268,12 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
             key: dict(sorted(value.items())) for key, value in sorted(route_counts.items())
         },
         "expected_native_cold_start_count": cold,
-        "snapshot_readiness_count": len(per_target),
-        "elo_readiness_count": len(per_target),
-        "competition_prior_readiness_count": len(per_target),
-        "distribution_validation_count": len(per_target),
+        "snapshot_readiness_count": sum(bool(row["snapshot_ready"]) for row in per_target),
+        "elo_readiness_count": sum(bool(row["elo_ready"]) for row in per_target),
+        "competition_prior_readiness_count": sum(
+            bool(row["competition_prior_ready"]) for row in per_target
+        ),
+        "distribution_validation_count": sum(bool(row["distribution_valid"]) for row in per_target),
         "target_outcome_columns_selected": 0,
         "target_outcome_getter_calls": 0,
         "unresolved_failures": failures,
@@ -253,6 +281,13 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
         "targets": per_target,
     }
     if report["status"] != "PASS":
+        report["final_disposition"] = "PREEXECUTION_DATA_INTEGRITY_BLOCK"
+        report["outcomes_loaded"] = False
+        report["logical_executions"] = 0
+        _write(root / READINESS.relative_to(ROOT), report)
+        state = _json(root / EXECUTION_STATE.relative_to(ROOT))
+        state["readiness_rehearsal"] = "FAIL"
+        _write(root / EXECUTION_STATE.relative_to(ROOT), state)
         raise RuntimeError(str(failures[0] if failures else "MODEL_READINESS_FAILURE"))
     _write(root / TARGET_MANIFEST.relative_to(ROOT), target_manifest)
     _write(root / READINESS.relative_to(ROOT), report)
@@ -285,10 +320,23 @@ def execute(database_url: str, root: Path = ROOT) -> dict[str, object]:
     reference = _json(root / REFERENCE_CONFIG.relative_to(ROOT))
     receipt = _preflight(root, prereg, target_manifest, config)
     runtime = build_runtime(old_config, root)
+    runtime["ensemble_weights"] = old_config["ensemble_weights"]
     if runtime["artifact_shas"] != config["frozen_v2_candidate_artifact_sha256"]:
         raise RuntimeError("FAIL_CLOSED_FROZEN_CANDIDATE_MISMATCH")
     target_real_ids = tuple(UUID(str(row["real_fixture_id"])) for row in target_rows)
     with psycopg.connect(database_url) as connection:
+        missing_resolution = connection.execute(
+            """
+            SELECT count(*) FROM football.product_team_match_history history
+            WHERE NOT EXISTS (
+                SELECT 1 FROM football.fixture_identity_resolutions resolution
+                WHERE resolution.member_fixture_id = history.fixture_id AND resolution.active
+            )
+            """
+        ).fetchone()
+        if missing_resolution is None or int(missing_resolution[0]) != 0:
+            raise RuntimeError("CANONICAL_HISTORY_REPAIR_REQUIRED")
+        metadata = load_persisted_resolved_metadata(connection)
         history = _relevant_history(
             load_persisted_resolved_history(
                 connection,
@@ -299,6 +347,16 @@ def execute(database_url: str, root: Path = ROOT) -> dict[str, object]:
             ),
             targets,
         )
+    frozen_history = _json(root / RESOLVED_HISTORY_MANIFEST.relative_to(ROOT))
+    if (
+        _semantic_sha(_current_relevant_manifest(metadata, target_rows))
+        != frozen_history["resolved_history_manifest_sha256"]
+    ):
+        raise RuntimeError("UNRESOLVED_HISTORY")
+    if physical_timeline_conflicts(history) or len(history) != len(
+        {row.real_fixture_id for row in history}
+    ):
+        raise RuntimeError("IMPOSSIBLE_TEAM_TIMELINE")
     _consume(root / EXECUTION_STATE.relative_to(ROOT))
     try:
         scored = _execute_batches(database_url, target_rows, targets, history, runtime, reference)
@@ -376,7 +434,10 @@ def _execute_batches(
             item = _forecast_target(
                 target, snapshot, competition_history, runtime, prior, reference
             )
-            if any(_route(value) != target.expected_route for value in item.v2b.values()):
+            expected_routes = cast(Mapping[str, str], row["V2B_expected_routes"])
+            if any(
+                _route(value) != expected_routes[model_id] for model_id, value in item.v2b.items()
+            ):
                 raise RuntimeError("MODEL_READINESS_FAILURE: execution route drift")
             return item
 
@@ -434,6 +495,8 @@ def _forecast_target(
     prior: CompetitionPriorPoissonV1,
     reference: Mapping[str, object],
 ) -> PreparedTargetForecasts:
+    if target.champion_eligibility == ChampionEligibility.INELIGIBLE.value:
+        raise RuntimeError("MODEL_READINESS_FAILURE:FROZEN_ENSEMBLE_REQUIRES_CHAMPION")
     champion_model = cast(TransferableRollingGoalsChampion, runtime["champion_model"])
     champion_artifact = cast(FittedModelArtifact, runtime["champion_artifact"])
     champion: ModelForecast | None = None
@@ -455,6 +518,25 @@ def _forecast_target(
         forecast = model.predict(runtime["v2b_artifacts"][model.model_id], snapshot)
         _require_success(forecast)
         v2b[model.model_id] = forecast
+    if champion is None:
+        raise RuntimeError("MODEL_READINESS_FAILURE:FROZEN_ENSEMBLE_REQUIRES_CHAMPION")
+    weights = EnsembleWeights(
+        tuple((str(key), float(value)) for key, value in runtime["ensemble_weights"].items()),
+        (UUID(int=0),),
+    )
+    for model_id, forecasts in (
+        ("matchforge-ensemble-v2a", v2a),
+        ("matchforge-ensemble-v2b", v2b),
+    ):
+        forecast = build_full_coverage_ensemble_forecast(
+            model_id=model_id,
+            forecasts=(champion, *forecasts.values()),
+            champion_forecast=champion,
+            weights=weights,
+            model_artifact_sha256=runtime["ensemble_shas"][model_id],
+        )
+        _require_success(forecast)
+        forecasts[model_id] = forecast
     return PreparedTargetForecasts(target, snapshot, reference_forecast, champion, v2a, v2b)
 
 
