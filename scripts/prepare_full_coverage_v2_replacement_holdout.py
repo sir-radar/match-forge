@@ -194,6 +194,7 @@ def prepare(database_url: str, source_commit: str, root: Path = ROOT) -> dict[st
         ],
     }
     _write(root / OWNER_DECISION.relative_to(ROOT), decision)
+    _record_owner_decision(root)
     _write(
         root / EXECUTION_STATE.relative_to(ROOT),
         {"logical_executions": 0, "outcomes_loaded": False, "protocol_id": PROTOCOL_ID},
@@ -210,6 +211,7 @@ def prepare(database_url: str, source_commit: str, root: Path = ROOT) -> dict[st
             OWNER_DECISION,
             PREREGISTRATION,
             EXECUTION_STATE,
+            ROOT / "docs/project-status.json",
         )
     )
     preregistration = {
@@ -549,6 +551,16 @@ def _verify_previous_protocol(root: Path) -> None:
         raise RuntimeError("previous V1.1 execution state changed")
     if result.get("development_disposition") != "FAIL_CLOSED_PROTOCOL_VIOLATION":
         raise RuntimeError("previous V1.1 disposition changed")
+
+
+def _record_owner_decision(root: Path) -> None:
+    path = root / "docs/project-status.json"
+    status = _json(path)
+    decisions = cast(list[str], status["owner_decisions"])
+    if AUTHORIZATION_ID not in decisions:
+        decisions.append(AUTHORIZATION_ID)
+    status["updated_at"] = f"{DATE}T00:00:00Z"
+    _write(path, status)
 
 
 def _promotion(
