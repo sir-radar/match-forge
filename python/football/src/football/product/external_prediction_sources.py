@@ -399,7 +399,7 @@ def _collect_source(
     if source_page is None:
         return SourceCollection(adapter.source_code, "", "NO_DATE_PAGE")
     source_pages = (source_page, *adapter.additional_page_urls)
-    rows: list[ImportedPrediction] = []
+    rows: tuple[ImportedPrediction, ...] = ()
     parsed_pages = 0
     parser_errors: list[str] = []
     transport_errors: list[str] = []
@@ -413,8 +413,7 @@ def _collect_source(
             transport_errors.append(f"{page_label}{error}")
         else:
             parsed_pages += 1
-            rows.extend(page_rows)
-    rows = _deduplicate_predictions(rows)
+            rows = rows or page_rows
     if not rows:
         if transport_errors:
             return SourceCollection(
@@ -436,27 +435,8 @@ def _collect_source(
         adapter.source_code,
         rows[0].source_page if rows else source_page,
         "ENABLED" if rows else "NO_PREDICTIONS",
-        rows=tuple(rows),
+        rows=rows,
     )
-
-
-def _deduplicate_predictions(rows: list[ImportedPrediction]) -> list[ImportedPrediction]:
-    unique: list[ImportedPrediction] = []
-    seen: set[tuple[object, ...]] = set()
-    for row in rows:
-        key = (
-            row.prediction_date,
-            row.original_date_text,
-            row.competition,
-            row.home_team,
-            row.away_team,
-            row.market,
-            row.selection,
-        )
-        if key not in seen:
-            seen.add(key)
-            unique.append(row)
-    return unique
 
 
 def _relative_page(
