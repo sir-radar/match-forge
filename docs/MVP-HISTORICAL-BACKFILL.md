@@ -77,8 +77,9 @@ the bounded worker pool and defaults to `3`; it does not cap queue size.
 Workers process existing due jobs first, then candidates with no prior attempt,
 then least-recently attempted candidates. Each job commits independently.
 Transient failures return to `PENDING` with a capped retry delay, and expired
-worker leases are recovered by a later sync. The command exits when no job is
-currently runnable, leaving future retries persisted. The candidate set includes
+worker leases are recovered by a later sync. Each invocation attempts a queued
+job at most once. The command exits when no job is currently runnable, leaving
+future retries for a later invocation. The candidate set includes
 stored future fixtures, not only fixtures in the current two-day provider window.
 `API_FOOTBALL_MAX_HISTORY_SEASON` is an API-Football-only entitlement cap. It
 does not limit other providers or canonical MatchForge history. For each

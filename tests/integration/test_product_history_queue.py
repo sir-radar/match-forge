@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -55,12 +55,13 @@ def test_history_queue_deduplicates_recovers_and_claims_once() -> None:
             second_sync = ProductSync(
                 second_connection, cast(Any, object()), Path("data"), Path("artifact")
             )
-            first_job = first_sync._claim_history_job()
-            second_job = second_sync._claim_history_job()
+            batch_started_at = datetime.now(UTC)
+            first_job = first_sync._claim_history_job(batch_started_at)
+            second_job = second_sync._claim_history_job(batch_started_at)
             assert first_job is not None
             assert second_job is not None
             assert first_job[0] != second_job[0]
-            assert first_sync._claim_history_job() is None
+            assert first_sync._claim_history_job(batch_started_at) is None
 
             first_sync._retry_history_job(
                 first_job[0], first_job[3], ApiFootballError("temporary provider failure")

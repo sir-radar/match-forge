@@ -8,7 +8,7 @@ from typing import Any, cast
 from uuid import UUID
 
 import pytest
-from football.product.api_football import ApiFootballError, ApiResponse
+from football.product.api_football import ApiFootballError, ApiResponse, CapabilityStatus
 from football.product.cli import _api_football_max_history_season, build_parser
 from football.product.domain import MINIMUM_HISTORY_MATCHES
 from football.product.football_data_org import FootballDataResponse
@@ -99,6 +99,7 @@ def test_history_queue_honors_concurrency_and_isolates_failures(
     lock = threading.Lock()
     completed: list[int] = []
     failed: list[int] = []
+    batch_started_at: list[datetime] = []
 
     class Connection:
         def rollback(self) -> None:
@@ -107,7 +108,8 @@ def test_history_queue_honors_concurrency_and_isolates_failures(
     class Worker:
         connection = Connection()
 
-        def _claim_history_job(self) -> tuple[UUID, int, int, int] | None:
+        def _claim_history_job(self, started_at: datetime) -> tuple[UUID, int, int, int] | None:
+            batch_started_at.append(started_at)
             with lock:
                 return jobs.popleft() if jobs else None
 
@@ -147,6 +149,7 @@ def test_history_queue_honors_concurrency_and_isolates_failures(
     assert result["failed"] == 1
     assert failed == [2]
     assert sorted(completed) == [1, 3, 4, 5, 6, 7, 8, 9]
+    assert len(set(batch_started_at)) == 1
 
 
 def test_transient_queue_failure_returns_to_pending_retry(
@@ -162,7 +165,9 @@ def test_transient_queue_failure_returns_to_pending_retry(
     class Worker:
         connection = Connection()
 
-        def _claim_history_job(self) -> tuple[UUID, int, int, int] | None:
+        def _claim_history_job(
+            self, _batch_started_at: datetime
+        ) -> tuple[UUID, int, int, int] | None:
             return jobs.popleft() if jobs else None
 
         def _sync_history_job(self, _league_id: int, _season: int) -> tuple[int, int]:
@@ -208,6 +213,7 @@ def test_history_queue_migration_enforces_states_deduplication_and_recovery() ->
     assert "FOR UPDATE SKIP LOCKED" in implementation
     assert "claimed_at < clock_timestamp()" in implementation
     assert "next_attempt_at = clock_timestamp() + %s * interval '1 second'" in implementation
+    assert "queue.updated_at < %s" in implementation
     assert "last_status" not in migration
 
 
@@ -354,6 +360,40 @@ def test_history_sync_uses_alternate_provider_after_transient_primary_failure(
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
 
     assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 1)
+
+
+def test_history_sync_records_plan_restriction_as_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts: list[tuple[object, ...]] = []
+
+    class PrimaryClient:
+        def finished_fixtures(self, _league_id: int, _season: int) -> ApiResponse:
+            raise ApiFootballError(
+                "season unavailable on plan",
+                capability_status=CapabilityStatus.PLAN_RESTRICTION,
+            )
+
+    sync = ProductSync(
+        cast(Any, _Connection()),
+        cast(Any, PrimaryClient()),
+        Path("data"),
+        Path("artifact"),
+    )
+    monkeypatch.setattr(sync, "_local_history_result", lambda *_args: None)
+    monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: False)
+    monkeypatch.setattr(
+        sync,
+        "_record_history_sync_attempt",
+        lambda *args: attempts.append(args),
+    )
+
+    assert sync._sync_league_history(999, 2026) is None
+    assert attempts[0][3:] == (
+        "UNAVAILABLE",
+        ("API_FOOTBALL_REQUESTED", "INSUFFICIENT_HISTORY"),
+        (),
+    )
 
 
 def test_history_sync_uses_cross_competition_local_history_for_promoted_team(

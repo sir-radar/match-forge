@@ -22,6 +22,7 @@ from football.product.api_football import (
     ApiFootballClient,
     ApiFootballError,
     ApiResponse,
+    CapabilityStatus,
     context_capability,
     continent_for_country,
     fixture_status,
@@ -327,7 +328,11 @@ class ProductSync:
             paths.append(path)
             try:
                 result = self._history_attempt(provider_code, league_id, provider_season)
-            except (ApiFootballError, FootballDataOrgError, OSError) as error:
+            except ApiFootballError as error:
+                if error.capability_status is not CapabilityStatus.PLAN_RESTRICTION:
+                    transient_errors.append(error)
+                continue
+            except (FootballDataOrgError, OSError) as error:
                 transient_errors.append(error)
                 continue
             if result is not None:
@@ -596,6 +601,8 @@ class ProductSync:
             raise ValueError("history_worker_factory is required for concurrent history sync")
         factory = self.history_worker_factory or (lambda: nullcontext(self))
         total = self._history_queue_total()
+        self.connection.commit()
+        batch_started_at = datetime.now(UTC)
         lock = threading.Lock()
         active = 0
         peak = 0
@@ -611,7 +618,7 @@ class ProductSync:
                 "standings_rows": 0,
             }
             with factory() as worker:
-                while (job := worker._claim_history_job()) is not None:
+                while (job := worker._claim_history_job(batch_started_at)) is not None:
                     job_id, league_id, season, attempt_count = job
                     with lock:
                         active += 1
@@ -681,15 +688,16 @@ class ProductSync:
             row = cursor.fetchone()
         return int(row[0]) if row else 0
 
-    def _claim_history_job(self) -> tuple[UUID, int, int, int] | None:
+    def _claim_history_job(self, batch_started_at: datetime) -> tuple[UUID, int, int, int] | None:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
                 WITH candidate AS (
                     SELECT job_id
-                    FROM football.product_history_sync_queue
+                    FROM football.product_history_sync_queue queue
                     WHERE job_status = 'PENDING'
                       AND (next_attempt_at IS NULL OR next_attempt_at <= clock_timestamp())
+                      AND queue.updated_at < %s
                     ORDER BY queued_at, job_id
                     FOR UPDATE SKIP LOCKED
                     LIMIT 1
@@ -704,7 +712,7 @@ class ProductSync:
                 RETURNING queue.job_id, queue.provider_competition_id,
                           queue.season, queue.attempt_count
                 """,
-                (self.sync_run_id,),
+                (batch_started_at, self.sync_run_id),
             )
             row = cursor.fetchone()
         self.connection.commit()

@@ -113,6 +113,73 @@ def test_slybet_parser_emits_each_supported_market() -> None:
     assert {row.competition for row in rows} == {"England", "Spain"}
 
 
+def test_slybet_collection_checks_both_pages_and_uses_one_current_date_copy() -> None:
+    requested_urls: list[str] = []
+    pages = {
+        "https://slybet.net/": """
+          <table class="smp-picks-table"><th class="smp-col-date">30.09.26</th>
+            <tr><td class="smp-col-date"><img alt="England" /></td>
+              <td><span class="smp-team1">Eastleigh</span>
+                <span class="smp-team2">Southend</span></td>
+              <td class="smp-col-1x2">1X</td></tr></table>
+        """,
+        "https://slybet.net/football-predictions/": """
+          <table class="smp-picks-table"><th class="smp-col-date">29.09.26</th></table>
+          <table class="smp-picks-table"><th class="smp-col-date">30.09.26</th>
+            <tr><td class="smp-col-date"><img alt="England" /></td>
+              <td><span class="smp-team1">Eastleigh</span>
+                <span class="smp-team2">Southend</span></td>
+              <td class="smp-col-1x2">1X</td></tr>
+            <tr><td class="smp-col-date"><img alt="Spain" /></td>
+              <td><span class="smp-team1">Valencia</span>
+                <span class="smp-team2">Villarreal</span></td>
+              <td class="smp-col-1x2">2</td></tr></table>
+        """,
+    }
+
+    def fetch(url: str) -> str:
+        requested_urls.append(url)
+        return pages[url]
+
+    result = collect_sources(
+        TARGET_DATE, requested_source="slybet", fetcher=fetch, today=TARGET_DATE
+    )[0]
+
+    assert requested_urls == ["https://slybet.net/", "https://slybet.net/football-predictions/"]
+    assert result.status == "ENABLED"
+    assert [(row.home_team, row.away_team, row.selection) for row in result.rows] == [
+        ("Eastleigh", "Southend", "HOME_OR_DRAW"),
+    ]
+    assert result.rows[0].source_page == "https://slybet.net/"
+
+
+def test_slybet_collection_falls_back_to_predictions_page_for_current_date() -> None:
+    pages = {
+        "https://slybet.net/": (
+            '<table class="smp-picks-table"><th class="smp-col-date">29.09.26</th></table>'
+        ),
+        "https://slybet.net/football-predictions/": """
+          <table class="smp-picks-table"><th class="smp-col-date">30.09.26</th>
+            <tr><td class="smp-col-date"><img alt="Spain" /></td>
+              <td><span class="smp-team1">Valencia</span>
+                <span class="smp-team2">Villarreal</span></td>
+              <td class="smp-col-1x2">2</td></tr></table>
+        """,
+    }
+
+    result = collect_sources(
+        TARGET_DATE,
+        requested_source="slybet",
+        fetcher=pages.__getitem__,
+        today=TARGET_DATE,
+    )[0]
+
+    assert [(row.home_team, row.away_team, row.selection) for row in result.rows] == [
+        ("Valencia", "Villarreal", "AWAY_WIN"),
+    ]
+    assert result.source_page == "https://slybet.net/football-predictions/"
+
+
 def test_matchoutlook_parser_preserves_unmapped_public_selections() -> None:
     html = """
     <h1>Today's Football Predictions</h1>
@@ -216,4 +283,4 @@ def test_collection_source_filter_fetches_only_requested_source() -> None:
     )
 
     assert [result.source_code for result in results] == ["slybet"]
-    assert requested_urls == ["https://slybet.net/football-predictions/"]
+    assert requested_urls == ["https://slybet.net/", "https://slybet.net/football-predictions/"]

@@ -32,10 +32,13 @@ the selection.
 
 `make external-predictions` runs all enabled sources independently. `DATE=YYYY-MM-DD` limits
 parsing to that prediction date, and `SOURCE=<source>` runs one source. R2Bet supports a dated
-URL. The other enabled sites expose today/yesterday/tomorrow or recent dated tables; requests
-outside those published windows report `NO_DATE_PAGE` or no matching predictions. One source
-failure does not fail successful sources. Pages are fetched once per source per run and reused
-by that source parser.
+URL. SlyBet checks both its landing page and `/football-predictions/` and considers only a table
+whose displayed date matches the requested date. It uses one mirrored copy: the landing page when
+available, otherwise `/football-predictions/`. It never combines the two copies.
+The other enabled sites expose today/yesterday/tomorrow or recent dated tables; requests outside
+those published windows report `NO_DATE_PAGE` or no matching predictions. One source failure does
+not fail successful sources. Each configured page is fetched once per source run and reused by
+that source parser.
 
 An optional `MVP_EXTERNAL_PREDICTIONS_IMPORT_FILE` still invokes the append-only manual import
 path. `scripts/mvp-refresh.sh` invokes automated collection after the product sync. The systemd
