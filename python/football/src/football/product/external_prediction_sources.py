@@ -69,6 +69,7 @@ class SourceAdapter:
     source_code: str
     page_url: Callable[[date, date], str | None]
     parser: Parser
+    additional_page_urls: tuple[str, ...] = ()
 
 
 def _tree(value: str) -> Element:
@@ -248,16 +249,19 @@ def parse_slybet(
 ) -> tuple[ImportedPrediction, ...]:
     root = _tree(html)
     expected = prediction_date.strftime("%d.%m.%y")
+    tables = _elements(root, tag="table", class_name="smp-picks-table")
+    if not tables:
+        raise ParserBrokenError("SlyBet predictions table was not found")
     table = next(
         (
             item
-            for item in _elements(root, tag="table", class_name="smp-picks-table")
+            for item in tables
             if any(_text(header) == expected for header in _elements(item, tag="th"))
         ),
         None,
     )
     if table is None:
-        raise ParserBrokenError("SlyBet prediction date was not found")
+        return ()
     rows: list[ImportedPrediction] = []
     for item in _elements(table, tag="tr"):
         home = _first(item, class_name="smp-team1")
@@ -394,20 +398,65 @@ def _collect_source(
     source_page = adapter.page_url(prediction_date, today)
     if source_page is None:
         return SourceCollection(adapter.source_code, "", "NO_DATE_PAGE")
-    try:
-        rows = adapter.parser(fetcher(source_page), prediction_date, source_page)
-    except ParserBrokenError as error:
-        return SourceCollection(adapter.source_code, source_page, "PARSER_BROKEN", error=str(error))
-    except OSError as error:
-        return SourceCollection(
-            adapter.source_code, source_page, "TECHNICALLY_UNAVAILABLE", error=str(error)
-        )
+    source_pages = (source_page, *adapter.additional_page_urls)
+    rows: list[ImportedPrediction] = []
+    parsed_pages = 0
+    parser_errors: list[str] = []
+    transport_errors: list[str] = []
+    for page in source_pages:
+        page_label = f"{page}: " if len(source_pages) > 1 else ""
+        try:
+            page_rows = adapter.parser(fetcher(page), prediction_date, page)
+        except ParserBrokenError as error:
+            parser_errors.append(f"{page_label}{error}")
+        except OSError as error:
+            transport_errors.append(f"{page_label}{error}")
+        else:
+            parsed_pages += 1
+            rows.extend(page_rows)
+    rows = _deduplicate_predictions(rows)
+    if not rows:
+        if transport_errors:
+            return SourceCollection(
+                adapter.source_code,
+                source_page,
+                "TECHNICALLY_UNAVAILABLE",
+                error="; ".join(transport_errors),
+            )
+        if parser_errors:
+            return SourceCollection(
+                adapter.source_code,
+                source_page,
+                "PARSER_BROKEN",
+                error="; ".join(parser_errors),
+            )
+        if parsed_pages > 0:
+            return SourceCollection(adapter.source_code, source_page, "NO_PREDICTIONS")
     return SourceCollection(
         adapter.source_code,
-        source_page,
+        rows[0].source_page if rows else source_page,
         "ENABLED" if rows else "NO_PREDICTIONS",
-        rows=rows,
+        rows=tuple(rows),
     )
+
+
+def _deduplicate_predictions(rows: list[ImportedPrediction]) -> list[ImportedPrediction]:
+    unique: list[ImportedPrediction] = []
+    seen: set[tuple[object, ...]] = set()
+    for row in rows:
+        key = (
+            row.prediction_date,
+            row.original_date_text,
+            row.competition,
+            row.home_team,
+            row.away_team,
+            row.market,
+            row.selection,
+        )
+        if key not in seen:
+            seen.add(key)
+            unique.append(row)
+    return unique
 
 
 def _relative_page(
@@ -439,8 +488,9 @@ _ADAPTERS = (
     ),
     SourceAdapter(
         "slybet",
-        lambda _target, _today: "https://slybet.net/football-predictions/",
+        lambda _target, _today: "https://slybet.net/",
         parse_slybet,
+        ("https://slybet.net/football-predictions/",),
     ),
     SourceAdapter(
         "matchoutlook",
