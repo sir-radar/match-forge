@@ -219,14 +219,18 @@ def _select_targets(
     metadata: Sequence[Mapping[str, object]], forbidden: frozenset[str]
 ) -> list[dict[str, object]]:
     history: dict[str, list[tuple[datetime, str, int | None]]] = defaultdict(list)
+    competition_history: dict[str, list[datetime]] = defaultdict(list)
     for row in metadata:
         kickoff = cast(datetime, row["kickoff_at"])
+        competition_history[str(row["competition_id"])].append(kickoff)
         for field in ("home_team_id", "away_team_id"):
             history[str(row[field])].append(
                 (kickoff, str(row["competition_id"]), cast(int | None, row["division"]))
             )
     for values in history.values():
         values.sort()
+    for kickoffs in competition_history.values():
+        kickoffs.sort()
     by_domain: dict[str, dict[str, list[dict[str, object]]]] = defaultdict(
         lambda: defaultdict(list)
     )
@@ -239,47 +243,25 @@ def _select_targets(
         home_history, away_history = history[home_id], history[away_id]
         home_count = bisect_left([item[0] for item in home_history], kickoff)
         away_count = bisect_left([item[0] for item in away_history], kickoff)
-        eligibility = champion_eligibility(
-            ChampionEligibilityInput(True, True, True, True, True, home_count, away_count)
+        competition_count = bisect_left(competition_history[str(row["competition_id"])], kickoff)
+        if competition_count == 0:
+            continue
+        target = _selection_target(
+            row,
+            members,
+            home_history,
+            away_history,
+            home_count,
+            away_count,
+            competition_count,
         )
-        reference = ReferenceStackV1().select(eligibility)
-        season = _season(str(row["country"]), kickoff)
-        target: dict[str, object] = {
-            "fixture_id": str(row["representative_fixture_id"]),
-            "real_fixture_id": str(row["real_fixture_id"]),
-            "member_fixture_ids": members,
-            "kickoff": kickoff.astimezone(UTC).isoformat(),
-            "competition_id": str(row["competition_id"]),
-            "competition": str(row["competition_name"]),
-            "country": str(row["country"]),
-            "division": cast(int | None, row["division"]),
-            "season": season,
-            "home_team": home_id,
-            "away_team": away_id,
-            "home_team_name": str(row["home_team_name"]),
-            "away_team_name": str(row["away_team_name"]),
-            "home_prior_match_count": home_count,
-            "away_prior_match_count": away_count,
-            "champion_eligibility": eligibility.status.value,
-            "champion_ineligibility_reason": eligibility.reason.value
-            if eligibility.reason
-            else None,
-            "home_promotion_state": _promotion(
-                home_history, season, cast(int | None, row["division"])
-            ),
-            "away_promotion_state": _promotion(
-                away_history, season, cast(int | None, row["division"])
-            ),
-            "reference_model_id": reference.model_id,
-            "reference_mode": reference.mode.value,
-            "V2B_expected_route": "PENDING_REHEARSAL",
-            "source_provider": str(row["source_provider_code"]),
-            "representative_fixture_id": str(row["representative_fixture_id"]),
-            "source_snapshot_id": str(row["source_snapshot_id"]),
-            "identity_status": str(row["resolution_status"]),
-            "source_evidence_sha256": str(row["evidence_sha256"]),
-        }
-        by_domain[str(row["competition_id"])][eligibility.status.value].append(target)
+        by_domain[str(row["competition_id"])][str(target["champion_eligibility"])].append(target)
+    return _select_domain_strata(by_domain)
+
+
+def _select_domain_strata(
+    by_domain: Mapping[str, Mapping[str, Sequence[dict[str, object]]]],
+) -> list[dict[str, object]]:
     eligible_domains = [
         competition_id
         for competition_id, strata in by_domain.items()
@@ -307,6 +289,54 @@ def _select_targets(
             )
             selected.extend(ordered[:count])
     return sorted(selected, key=lambda item: (str(item["kickoff"]), str(item["fixture_id"])))
+
+
+def _selection_target(
+    row: Mapping[str, object],
+    members: list[str],
+    home_history: Sequence[tuple[datetime, str, int | None]],
+    away_history: Sequence[tuple[datetime, str, int | None]],
+    home_count: int,
+    away_count: int,
+    competition_count: int,
+) -> dict[str, object]:
+    kickoff = cast(datetime, row["kickoff_at"])
+    home_id, away_id = str(row["home_team_id"]), str(row["away_team_id"])
+    eligibility = champion_eligibility(
+        ChampionEligibilityInput(True, True, True, True, True, home_count, away_count)
+    )
+    reference = ReferenceStackV1().select(eligibility)
+    season = _season(str(row["country"]), kickoff)
+    return {
+        "fixture_id": str(row["representative_fixture_id"]),
+        "real_fixture_id": str(row["real_fixture_id"]),
+        "member_fixture_ids": members,
+        "kickoff": kickoff.astimezone(UTC).isoformat(),
+        "competition_id": str(row["competition_id"]),
+        "competition": str(row["competition_name"]),
+        "country": str(row["country"]),
+        "division": cast(int | None, row["division"]),
+        "season": season,
+        "home_team": home_id,
+        "away_team": away_id,
+        "home_team_name": str(row["home_team_name"]),
+        "away_team_name": str(row["away_team_name"]),
+        "home_prior_match_count": home_count,
+        "away_prior_match_count": away_count,
+        "competition_prior_match_count": competition_count,
+        "champion_eligibility": eligibility.status.value,
+        "champion_ineligibility_reason": eligibility.reason.value if eligibility.reason else None,
+        "home_promotion_state": _promotion(home_history, season, cast(int | None, row["division"])),
+        "away_promotion_state": _promotion(away_history, season, cast(int | None, row["division"])),
+        "reference_model_id": reference.model_id,
+        "reference_mode": reference.mode.value,
+        "V2B_expected_route": "PENDING_REHEARSAL",
+        "source_provider": str(row["source_provider_code"]),
+        "representative_fixture_id": str(row["representative_fixture_id"]),
+        "source_snapshot_id": str(row["source_snapshot_id"]),
+        "identity_status": str(row["resolution_status"]),
+        "source_evidence_sha256": str(row["evidence_sha256"]),
+    }
 
 
 def _qualify(
@@ -342,6 +372,8 @@ def _qualify(
         failures.append("FAIL_CLOSED_DUPLICATE_TARGET_REAL_FIXTURE")
     if any(value > 1 for value in team_slots.values()):
         failures.append("IMPOSSIBLE_TEAM_TIMELINE")
+    if any(int(cast(int, row["competition_prior_match_count"])) < 1 for row in targets):
+        failures.append("MODEL_READINESS_FAILURE")
     overlaps = sorted(set(fixture_ids) & forbidden)
     if overlaps:
         failures.append("FAIL_CLOSED_SPENT_OR_PROTECTED_INTERSECTION")

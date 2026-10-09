@@ -161,6 +161,7 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
         updated["V2B_expected_route"] = expected_route
         updated_rows.append(updated)
         static_home, static_away = _history_counts(snapshot, target)
+        static_competition = _competition_history_count(target, competition_history)
         per_target.append(
             {
                 "fixture_id": str(target.fixture_id),
@@ -168,8 +169,12 @@ def rehearse(database_url: str, root: Path = ROOT) -> dict[str, object]:
                 "snapshot_semantic_sha256": snapshot.sha256,
                 "static_home_prior_match_count": static_home,
                 "static_away_prior_match_count": static_away,
+                "static_competition_prior_match_count": static_competition,
                 "frozen_sequential_home_prior_match_count": target.home_prior_match_count,
                 "frozen_sequential_away_prior_match_count": target.away_prior_match_count,
+                "frozen_sequential_competition_prior_match_count": int(
+                    cast(int, row["competition_prior_match_count"])
+                ),
                 "champion_eligibility": target.champion_eligibility,
                 "reference_mode": target.reference_mode,
                 "v2a_applicable": target.champion_eligibility == ChampionEligibility.ELIGIBLE.value,
@@ -364,6 +369,10 @@ def _execute_batches(
             counts = _history_counts(snapshot, target)
             if counts != (target.home_prior_match_count, target.away_prior_match_count):
                 raise RuntimeError("FAIL_CLOSED_RESOLVED_HISTORY_COUNT_MISMATCH")
+            if _competition_history_count(target, competition_history) != int(
+                cast(int, row["competition_prior_match_count"])
+            ):
+                raise RuntimeError("FAIL_CLOSED_RESOLVED_HISTORY_COUNT_MISMATCH")
             item = _forecast_target(
                 target, snapshot, competition_history, runtime, prior, reference
             )
@@ -556,6 +565,15 @@ def _historical(row: ResolvedHistoricalMatchV1) -> HistoricalMatch:
 
 def _competition_match(row: ResolvedHistoricalMatchV1) -> CompetitionPriorMatch:
     return CompetitionPriorMatch(row.competition_id, row.kickoff_at, row.home_goals, row.away_goals)
+
+
+def _competition_history_count(
+    target: FrozenTarget, history: Sequence[CompetitionPriorMatch]
+) -> int:
+    return sum(
+        row.competition_id == target.competition_id and row.kickoff_at < target.kickoff_at
+        for row in history
+    )
 
 
 def _resolved_target(

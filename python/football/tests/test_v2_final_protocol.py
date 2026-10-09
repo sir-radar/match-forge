@@ -23,6 +23,7 @@ from scripts.prepare_full_coverage_v2_final import (
     _verify_v1_2_spent,
 )
 from scripts.run_full_coverage_v2_final import (
+    _competition_history_count,
     _competition_match,
     _historical,
     _history_counts,
@@ -117,6 +118,7 @@ def test_resolved_history_drives_qualification_snapshot_elo_and_competition_prio
     assert len(resolved) == 2
     assert _history_counts(first, target) == qualification_counts == (2, 1)
     assert prior_count == sum(row.competition_id == COMPETITION for row in resolved) == 2
+    assert _competition_history_count(target, prior_history) == prior_count
     assert eligibility.status is ChampionEligibility.INELIGIBLE
     assert reference.model_id == target.reference_model_id
     assert tuple(row.fixture_id for row in first.qualified_history) == tuple(
