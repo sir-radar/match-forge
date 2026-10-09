@@ -714,3 +714,15 @@ docs/engineering/review-checklist.md
 docs/engineering/testing.md
 docs/engineering/writing-style.md
 ```
+
+## Token-Efficient Validation Policy
+
+- Review the Makefile's dependency graph before choosing validation commands.
+- Never independently run targets already covered by a planned aggregate command.
+- For comprehensive validation, prefer a single `make check integration` invocation.
+- During development, run only relevant checks for modified files.
+- Run comprehensive validation once after the final code changes.
+- Do not repeat successful tests unless relevant code changes or a failure requires it.
+- Capture verbose logs, report concise summaries, and preserve full failure details.
+- Avoid unnecessary polling of long-running tests.
+- Never skip required validation or release gates just to save tokens.
