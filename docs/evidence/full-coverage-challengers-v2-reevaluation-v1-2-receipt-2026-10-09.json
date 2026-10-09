@@ -1,0 +1,41 @@
+{
+  "contract": "MatchForgeV2ReplacementExecutionReceiptV1",
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_2",
+  "source_commit": "bfb97495ade07077eb80bc5a013809e8094df1c2",
+  "execution_commit": "e52d08b51302df435b6d520996b2f4b5907dfe13",
+  "execution_parent_matches_source": true,
+  "execution_commit_changed_files": [
+    "docs/evaluation/competition-prior-poisson-v1-artifact.json",
+    "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-2-config.json",
+    "docs/evaluation/full-coverage-challengers-v2-reevaluation-v1-2-preregistration.json"
+  ],
+  "scientific_source_sha256": "354da1d530968af2cd2afbd06f77b69f69cb2dd179e5ce1ebe55cb8289a80f8d",
+  "target_manifest_sha256": "8f799fb36d53d7dd3d4c02c582bddabf460bff9c0c00e68ca5717a2ddc9d7e6d",
+  "firewall_overlap": 0,
+  "preflight": "PASS",
+  "frozen_v2_artifacts_reproduced_byte_for_byte": true,
+  "reference_artifact_verified": true,
+  "outcomes_loaded": true,
+  "logical_executions": 1,
+  "execution_status": "FAILED_AFTER_OUTCOME_LOAD",
+  "failure_code": "ELO_DUPLICATE_TEAM_KICKOFF_HISTORY",
+  "failure_type": "football.forecasting.elo.EloContractError",
+  "failure_message": "one team cannot play two matches at the same timestamp",
+  "target_under_construction": "77597b10-9b5d-5dc6-b44b-39990d253f26",
+  "duplicate_history": {
+    "kickoff_at": "2019-07-12T17:00:00+00:00",
+    "home_team_id": "aed9e5e3-e7bd-5e84-8c63-5863c09e9cae",
+    "away_team_id": "8bd16c14-8120-5ff2-bc2e-1cee641a324a",
+    "fixture_ids": [
+      "10151aeb-0deb-57e1-9d36-22aa6f7b2d9e",
+      "ddfe2ee5-c301-58e4-89dc-710a2170695b"
+    ],
+    "competition_ids": [
+      "84f1e098-5204-5f42-a9da-33373c3c2031",
+      "44ef4ba2-8229-596c-b85c-7258cb904d6a"
+    ],
+    "source_provider_code": "openfootball",
+    "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d"
+  },
+  "rerun_authorized": false
+}

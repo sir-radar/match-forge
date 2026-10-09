@@ -1,0 +1,92 @@
+{
+  "contract": "MatchForgeFullCoverageChallengersV2ReevaluationResultV1_2",
+  "protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_2",
+  "parent_protocol_id": "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_1",
+  "final_disposition": "FAIL_CLOSED_PROTOCOL_VIOLATION",
+  "development_winner": null,
+  "source_commit": "bfb97495ade07077eb80bc5a013809e8094df1c2",
+  "execution": {
+    "execution_commit": "e52d08b51302df435b6d520996b2f4b5907dfe13",
+    "execution_parent": "bfb97495ade07077eb80bc5a013809e8094df1c2",
+    "execution_parent_matches_source": true,
+    "preflight_status": "PASS",
+    "outcomes_loaded": true,
+    "logical_execution_attempts": 1,
+    "failure_code": "ELO_DUPLICATE_TEAM_KICKOFF_HISTORY",
+    "failure_message": "one team cannot play two matches at the same timestamp",
+    "rerun_authorized": false
+  },
+  "qualification": {
+    "target_count": 500,
+    "competitions": {
+      "Championship": 167,
+      "League Two": 166,
+      "National League": 167
+    },
+    "seasons": {
+      "2021/2022": 15,
+      "2022/2023": 399,
+      "2023/2024": 20,
+      "2024/2025": 20,
+      "2025/2026": 20,
+      "2026/2027": 26
+    },
+    "champion_eligible": 404,
+    "champion_eligible_rate": 0.808,
+    "champion_ineligible": 96,
+    "champion_ineligible_rate": 0.192,
+    "champion_ineligibility_reasons": {
+      "HOME_INSUFFICIENT_HISTORY": 49,
+      "AWAY_INSUFFICIENT_HISTORY": 46,
+      "BOTH_INSUFFICIENT_HISTORY": 1
+    },
+    "low_history_counts": {
+      "0": 10,
+      "1-4": 40,
+      "5-9": 46,
+      ">=10": 404
+    },
+    "expected_v2b_routes": {
+      "COLD_START_BOTH": 500
+    },
+    "promoted_team_targets": 27,
+    "global_firewall_overlap": 0,
+    "previous_1572_corpus_forbidden": true
+  },
+  "frozen_candidate_artifacts": {
+    "matchforge-ensemble-v2a": "3264d9848dc45001edeccf51a686588f1f578c2c11dc23a5f8ffac09f89c00a0",
+    "matchforge-ensemble-v2b": "d61625324300e310b8c1d8e7e2f4df86bb55f218e4b3735486dc391765f5387c",
+    "pb-dixon-coles-hybrid-v2a": "879ae28d0503829843f492d71b05f5016a78894b5d60a13c020264c33bf206df",
+    "pb-dixon-coles-transferable-v2b": "62041a5c67c5673e173368986c1c9f9c3e57ac4f15ac4e1e7a6d292723ea3b27",
+    "pb-negative-binomial-hybrid-v2a": "720dc4b568afca885a6c15db810f2b2e608bba1b68d90a3ef481cc8e1666b3c3",
+    "pb-negative-binomial-transferable-v2b": "e5d87b998a80e03b2aae730c8b1782826aacf4a0fad1f7345d03b6a8a92e863b",
+    "pb-weibull-copula-hybrid-v2a": "2b732b3a8aa9a3272dfb466001a06aeaa6174a54ed62d17d7b4d076efaa44cf2",
+    "pb-weibull-copula-transferable-v2b": "93c8fb0ae16bb166b4fb537280fc2ba9ea178f55cf58236aed6db57b261f2763"
+  },
+  "frozen_hyperparameters": {
+    "shrinkage_k": 40.0,
+    "l2": 0.01,
+    "competition_transfer_weight": 0.0,
+    "ensemble_status": "PREVIOUSLY_VALID_FROZEN_DEVELOPMENT"
+  },
+  "diagnosis": {
+    "stage": "POINT_IN_TIME_SNAPSHOT_CONSTRUCTION",
+    "target_under_construction": "77597b10-9b5d-5dc6-b44b-39990d253f26",
+    "reason": "Retained canonical history contains two fixture identities for the same teams and kickoff from one OpenFootball snapshot, under different competition identities. Elo correctly rejected the impossible history.",
+    "duplicate_fixture_ids": [
+      "10151aeb-0deb-57e1-9d36-22aa6f7b2d9e",
+      "ddfe2ee5-c301-58e4-89dc-710a2170695b"
+    ]
+  },
+  "v2a_stratum_a_results": null,
+  "stratum_a_results": null,
+  "stratum_b_results": null,
+  "overall_results": null,
+  "promoted_team_results": null,
+  "domain_results": null,
+  "coverage": null,
+  "metrics_published": false,
+  "independent_evaluation_available": false,
+  "production_promotion_justified": false,
+  "production_champion_changed": false
+}
