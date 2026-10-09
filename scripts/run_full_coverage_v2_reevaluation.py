@@ -171,6 +171,14 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
     all_team_ids = tuple(
         sorted({team for row in selected for team in (row.home_team_id, row.away_team_id)}, key=str)
     )
+    competition_ids = tuple(sorted({row.competition_id for row in selected}, key=str))
+    providers_by_competition: dict[UUID, str] = {}
+    for target in selected:
+        existing_provider = providers_by_competition.setdefault(
+            target.competition_id, target.source_provider
+        )
+        if existing_provider != target.source_provider:
+            raise RuntimeError("frozen competition has conflicting outcome providers")
     maximum = max(row.kickoff_at for row in selected)
     minimum = min(row.kickoff_at for row in selected)
     with psycopg.connect(database_url, row_factory=dict_row) as connection:
@@ -179,18 +187,21 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
             SELECT fixture_id, kickoff_at, competition_id, home_team_id, away_team_id,
                    home_goals, away_goals, home_xg, away_xg,
                    source_provider_code, source_snapshot_id
-              FROM football.product_team_match_history
+             FROM football.product_team_match_history
              WHERE kickoff_at <= %s
+               AND competition_id = ANY(%s::uuid[])
                AND (home_team_id = ANY(%s::uuid[]) OR away_team_id = ANY(%s::uuid[]))
              ORDER BY kickoff_at, fixture_id, source_provider_code, source_snapshot_id
             """,
-            (maximum, list(all_team_ids), list(all_team_ids)),
+            (maximum, list(competition_ids), list(all_team_ids), list(all_team_ids)),
         ).fetchall()
     by_fixture: dict[UUID, list[Mapping[str, object]]] = defaultdict(list)
     for row in raw:
+        if row["source_provider_code"] != providers_by_competition[row["competition_id"]]:
+            continue
         by_fixture[cast(UUID, row["fixture_id"])].append(row)
     target_by_id = {row.fixture_id: row for row in selected}
-    history: list[HistoricalMatch] = []
+    history_by_real_fixture: dict[tuple[datetime, UUID, frozenset[UUID]], HistoricalMatch] = {}
     outcomes: dict[UUID, tuple[int, int]] = {}
     for fixture_id, rows in by_fixture.items():
         target = target_by_id.get(fixture_id)
@@ -203,13 +214,38 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
             rows[0],
         )
         historical = _historical(chosen)
-        history.append(historical)
+        real_key = (
+            historical.kickoff_at,
+            historical.competition_id,
+            frozenset((historical.home_team_id, historical.away_team_id)),
+        )
+        existing = history_by_real_fixture.get(real_key)
+        if existing is not None:
+            existing_score = {
+                existing.home_team_id: existing.home_goals,
+                existing.away_team_id: existing.away_goals,
+            }
+            candidate_score = {
+                historical.home_team_id: historical.home_goals,
+                historical.away_team_id: historical.away_goals,
+            }
+            if existing_score != candidate_score:
+                raise RuntimeError("retained duplicate real fixture has conflicting outcomes")
+            if str(historical.fixture_id) < str(existing.fixture_id):
+                history_by_real_fixture[real_key] = historical
+        else:
+            history_by_real_fixture[real_key] = historical
         if target is not None:
             outcomes[fixture_id] = (historical.home_goals, historical.away_goals)
     missing = target_ids - outcomes.keys()
     if missing:
         raise RuntimeError(f"frozen targets missing retained outcomes: {len(missing)}")
-    ordered_history = tuple(sorted(history, key=lambda row: (row.kickoff_at, str(row.fixture_id))))
+    ordered_history = tuple(
+        sorted(
+            history_by_real_fixture.values(),
+            key=lambda row: (row.kickoff_at, str(row.fixture_id)),
+        )
+    )
     result: list[EvaluationObservation] = []
     for target in sorted(selected, key=lambda row: (row.kickoff_at, str(row.fixture_id))):
         eligible_history = tuple(
