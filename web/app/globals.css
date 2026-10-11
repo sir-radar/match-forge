@@ -29,3 +29,5 @@
 .topbar nav a[aria-current=page]{color:var(--primary);background:var(--container);border-color:var(--primary)}
 .mobile-nav a[aria-current=page]{color:var(--primary)}
 @media(max-width:760px){.mobile-nav a:first-child:not([aria-current=page]){color:var(--muted)}}
+.live-indicator{display:inline-flex;padding:2px 5px;border-radius:2px;color:#fff;background:#c62828;font-weight:800;letter-spacing:.04em}.fixture-summary:has(.live-indicator) .score{color:#ff8a80;font-size:15px}
+@media(forced-colors:active){.live-indicator{border:1px solid CanvasText;color:CanvasText;background:Canvas}}

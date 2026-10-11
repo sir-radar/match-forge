@@ -86,4 +86,5 @@ def test_sync_all_continues_after_api_football_quota_failure(
         "fixtures_from_history": 2,
         "forecasts_created": 3,
         "external_predictions_exit_code": 0,
+        "operational_providers": {},
     }

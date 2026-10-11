@@ -135,6 +135,13 @@ type Fixture struct {
 	Round                *string          `json:"round"`
 	ForecastAvailability string           `json:"forecast_availability"`
 	Forecast             *ForecastSummary `json:"forecast"`
+	Provider             *string          `json:"provider"`
+	ProviderStatus       *string          `json:"provider_status"`
+	MatchMinute          *int             `json:"match_minute"`
+	AddedTime            *int             `json:"added_time"`
+	Period               *string          `json:"period"`
+	LastSuccessfulUpdate *time.Time       `json:"last_successful_update"`
+	Stale                bool             `json:"stale"`
 }
 
 type Team struct {
@@ -368,6 +375,11 @@ type ExternalPrediction struct {
 	MatchStatus           string     `json:"match_status"`
 	MatchForgeProbability *float64   `json:"matchforge_probability"`
 	Agreement             string     `json:"agreement"`
+	SettlementState       string     `json:"settlement_state"`
+	ActualHomeScore       *int       `json:"actual_home_score"`
+	ActualAwayScore       *int       `json:"actual_away_score"`
+	ResultProvider        *string    `json:"result_provider"`
+	ResultUpdatedAt       *time.Time `json:"result_updated_at"`
 }
 
 type ExternalPredictionSource struct {

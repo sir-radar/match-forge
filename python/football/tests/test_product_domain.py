@@ -9,6 +9,7 @@ from football.product.domain import (
     LeagueRating,
     agreement_for_selection,
     external_selection_correct,
+    external_settlement_state,
     fixture_identity,
     forecast_from_history,
     league_rating,
@@ -146,6 +147,32 @@ def test_external_selection_settlement(
     expected: bool | None,
 ) -> None:
     assert external_selection_correct(market, selection, *score) is expected
+
+
+@pytest.mark.parametrize(
+    ("status", "score", "score_basis", "expected"),
+    [
+        ("LIVE", (1, 0), "UNKNOWN", "PENDING"),
+        ("POSTPONED", (None, None), "UNKNOWN", "PENDING"),
+        ("CANCELLED", (None, None), "UNKNOWN", "VOID"),
+        ("ABANDONED", (2, 1), "UNKNOWN", "VOID"),
+        ("AWARDED", (3, 0), "UNKNOWN", "VOID"),
+        ("FINISHED", (2, 1), "REGULATION_90", "WON"),
+        ("FINISHED", (0, 1), "REGULATION_90", "LOST"),
+        ("FINISHED", (2, 1), "EXTRA_TIME", "PENDING"),
+        ("FINISHED", (4, 3), "PENALTY_SHOOTOUT", "PENDING"),
+        ("FINISHED", (2, 1), "UNKNOWN", "PENDING"),
+    ],
+)
+def test_external_settlement_requires_final_regulation_score(
+    status: str,
+    score: tuple[int | None, int | None],
+    score_basis: str,
+    expected: str,
+) -> None:
+    assert (
+        external_settlement_state("RESULT_1X2", "HOME_WIN", status, *score, score_basis) == expected
+    )
 
 
 def test_league_rating_thresholds() -> None:

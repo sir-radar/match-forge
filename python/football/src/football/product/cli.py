@@ -26,7 +26,10 @@ from football.product.external_predictions import import_predictions, parse_impo
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.openfootball import run_backfill as run_openfootball_backfill
+from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.sync import HistoryWorkerFactory, ProductSync
+from football.providers.fotmob import FotmobClient
+from football.providers.pitchapi import PitchApiClient
 
 _DATA_OPERATION_ERRORS = (
     ApiFootballError,
@@ -67,6 +70,21 @@ def build_parser() -> argparse.ArgumentParser:
             default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
         )
     commands.add_parser("refresh-forecasts")
+    for name in ("fotmob-sync", "pitchapi-sync"):
+        provider_sync = commands.add_parser(name)
+        provider_sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
+        provider_sync.add_argument("--from-date", type=date.fromisoformat)
+        provider_sync.add_argument("--competition")
+        provider_sync.add_argument(
+            "--details-limit",
+            type=int,
+            default=int(os.environ.get("MATCHFORGE_PROVIDER_DETAILS_LIMIT", "10")),
+        )
+        provider_sync.add_argument(
+            "--data-root",
+            type=Path,
+            default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+        )
     all_sync = commands.add_parser("sync-all")
     all_sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
     all_sync.add_argument("--from-date", type=date.fromisoformat)
@@ -103,6 +121,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.command == "external-predictions":
         return _run_external_predictions(args)
+    if args.command in {"fotmob-sync", "pitchapi-sync"}:
+        return _run_operational_provider_sync(args)
     if args.command in {
         "backfill-openfootball",
         "backfill-football-data-uk",
@@ -166,6 +186,64 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 result = _history_backfill(connection, args)
             else:
                 result = _sync_all(connection, args)
+    except _DATA_OPERATION_ERRORS as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 1 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
+
+
+def _run_operational_provider_sync(args: argparse.Namespace) -> int:
+    from_date = args.from_date or args.date
+    try:
+        with psycopg.connect(args.database_url) as connection:
+            stale_after = int(os.environ.get("MATCHFORGE_LIVE_STALE_AFTER_SECONDS", "180"))
+            minimum_interval = float(
+                os.environ.get("MATCHFORGE_PROVIDER_MIN_INTERVAL_SECONDS", "1")
+            )
+            if args.command == "fotmob-sync":
+                enabled = os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true"
+                result = OperationalProviderSync(
+                    connection,
+                    args.data_root,
+                    provider_code="fotmob",
+                    stale_after_seconds=stale_after,
+                    minimum_interval_seconds=minimum_interval,
+                ).sync_fotmob(
+                    FotmobClient(
+                        access_approved=enabled,
+                        timeout_seconds=float(
+                            os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
+                        ),
+                    ),
+                    from_date,
+                    args.date,
+                    details_limit=args.details_limit,
+                    competition_id=args.competition,
+                )
+            else:
+                result = OperationalProviderSync(
+                    connection,
+                    args.data_root,
+                    provider_code="pitchapi",
+                    stale_after_seconds=stale_after,
+                    minimum_interval_seconds=minimum_interval,
+                ).sync_pitchapi(
+                    PitchApiClient(
+                        os.environ.get("PITCH_API_TOKEN", ""),
+                        connection_timeout_seconds=float(
+                            os.environ.get("MATCHFORGE_PROVIDER_CONNECTION_TIMEOUT_SECONDS", "5")
+                        ),
+                        request_timeout_seconds=float(
+                            os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
+                        ),
+                    ),
+                    from_date,
+                    args.date,
+                    details_limit=args.details_limit,
+                    competition_id=args.competition,
+                )
+            connection.commit()
     except _DATA_OPERATION_ERRORS as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
@@ -290,6 +368,33 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
     external_status = _run_external_predictions(external_args)
     if external_status != 0:
         errors["external_predictions"] = f"exited with status {external_status}"
+    operational: dict[str, object | None] = {}
+    if os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true":
+        operational["pitchapi"] = _run_sync_step(
+            connection,
+            "pitchapi",
+            lambda: OperationalProviderSync(
+                connection, args.data_root, provider_code="pitchapi"
+            ).sync_pitchapi(
+                PitchApiClient(os.environ.get("PITCH_API_TOKEN", "")),
+                args.from_date or args.date,
+                args.date,
+            ),
+            errors,
+        )
+    if os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true":
+        operational["fotmob"] = _run_sync_step(
+            connection,
+            "fotmob",
+            lambda: OperationalProviderSync(
+                connection, args.data_root, provider_code="fotmob"
+            ).sync_fotmob(
+                FotmobClient(access_approved=True),
+                args.from_date or args.date,
+                args.date,
+            ),
+            errors,
+        )
     return {
         "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
         "errors": errors,
@@ -298,6 +403,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         "fixtures_from_history": fixtures_from_history,
         "forecasts_created": forecasts,
         "external_predictions_exit_code": external_status,
+        "operational_providers": operational,
     }
 
 

@@ -32,6 +32,7 @@ class HttpResponseV1:
     content_type: str
     etag: str | None
     last_modified: str | None
+    cache_control: str | None = None
 
     def __post_init__(self) -> None:
         if not 100 <= self.status <= 599 or not self.content_type:
@@ -86,6 +87,7 @@ class UrllibHttpTransport:
                     content_type=headers.get_content_type(),
                     etag=headers.get("ETag"),
                     last_modified=headers.get("Last-Modified"),
+                    cache_control=headers.get("Cache-Control"),
                 )
             if retryable and attempt < _MAX_TRANSPORT_ATTEMPTS:
                 sleep(_RETRY_DELAYS_SECONDS[attempt - 1])

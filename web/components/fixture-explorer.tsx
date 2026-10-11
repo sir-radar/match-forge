@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Competition, Fixture, FixtureGroup } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
@@ -11,6 +11,7 @@ import { Icon } from "@/components/icon";
 
 type Filters = { continent: string; country: string; competition: string; forecast: string };
 type CoverageOptions = ReturnType<typeof coverageOptions>;
+const DISPLAY_TIME_ZONE = process.env.NEXT_PUBLIC_TIME_ZONE ?? "Africa/Lagos";
 
 export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   const [date, setDate] = useState(initialDate);
@@ -30,6 +31,7 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
     return api.fixtures(query, signal);
   }, [date, filters]);
   const fixtures = useResource(fixtureKey, fixtureLoad);
+  useLiveRefresh(fixtures.data, fixtures.retry);
   const options = useMemo(() => coverageOptions(competitions.data ?? []), [competitions.data]);
 
   const moveDate = (days: number) => {
@@ -42,27 +44,10 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   return (
     <div className="workspace">
       <h1 className="sr-only">MatchForge fixtures</h1>
-      <aside className="competition-rail" aria-label="Competition coverage">
-        <div className="rail-heading"><span>Competitions</span><b>{competitions.data?.[0]?.season ?? "—"}</b></div>
-        {competitions.error && <ResourceError message={competitions.error} retry={competitions.retry} />}
-        <small className="rail-section">Available leagues</small>
-        {(competitions.data ?? []).slice(0, 18).map((item) => (
-          <button key={item.id} className={filters.competition === item.id ? "active" : ""} onClick={() => setFilters((old) => ({ ...old, competition: old.competition === item.id ? "" : item.id }))}>
-            <span>{item.country} – {item.name}</span><small>{item.division ? `D${item.division}` : item.type}</small>
-          </button>
-        ))}
-        <div className="rail-engine"><span aria-hidden="true" />MatchForge Forecast</div>
-      </aside>
+      <CompetitionRail state={competitions} filters={filters} setFilters={setFilters} />
       <section className="fixture-workbench" aria-label="Football fixtures">
         <div className="environment-strip"><span>Environment: <b>Production pre-match</b></span><i /> <span>Forecasts: immutable published records</span></div>
-        <div className="fixture-toolbar">
-          <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{fixtureCount(fixtures.data)} matches scoped · {longDate(date)}</small></div></div>
-          <div className="date-bar">
-            <button aria-label="Previous day" onClick={() => moveDate(-1)}><Icon name="chevron-left" /><span>Prev Day</span></button>
-            <label><span>Selected date</span><input type="date" value={date} onChange={(event) => { setDate(event.target.value); setExpanded(null); }} /></label>
-            <button aria-label="Next day" onClick={() => moveDate(1)}><span>Next Day</span><Icon name="chevron-right" /></button>
-          </div>
-        </div>
+        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={(value) => { setDate(value); setExpanded(null); }} />
         <StatusFilters groups={fixtures.data ?? []} value={statusFilter} onChange={setStatusFilter} />
         <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} teamQuery={teamQuery} setTeamQuery={setTeamQuery} />
         <div className="engine-strip"><Icon name="monitoring" /><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
@@ -72,9 +57,35 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   );
 }
 
+function CompetitionRail({ state, filters, setFilters }: { state: ReturnType<typeof useResource<Competition[]>>; filters: Filters; setFilters: (update: (old: Filters) => Filters) => void }) {
+  return <aside className="competition-rail" aria-label="Competition coverage">
+    <div className="rail-heading"><span>Competitions</span><b>{state.data?.[0]?.season ?? "—"}</b></div>
+    {state.error && <ResourceError message={state.error} retry={state.retry} />}
+    <small className="rail-section">Available leagues</small>
+    {(state.data ?? []).slice(0, 18).map((item) => (
+      <button key={item.id} className={filters.competition === item.id ? "active" : ""} onClick={() => setFilters((old) => ({ ...old, competition: old.competition === item.id ? "" : item.id }))}>
+        <span>{item.country} – {item.name}</span><small>{item.division ? `D${item.division}` : item.type}</small>
+      </button>
+    ))}
+    <div className="rail-engine"><span aria-hidden="true" />MatchForge Forecast</div>
+  </aside>;
+}
+
+function FixtureToolbar({ date, count, moveDate, setDate }: { date: string; count: number | string; moveDate: (days: number) => void; setDate: (value: string) => void }) {
+  return <div className="fixture-toolbar">
+    <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{count} matches scoped · {longDate(date)}</small></div></div>
+    <div className="date-bar">
+      <button aria-label="Previous day" onClick={() => moveDate(-1)}><Icon name="chevron-left" /><span>Prev Day</span></button>
+      <label><span>Selected date</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
+      <button aria-label="Next day" onClick={() => moveDate(1)}><span>Next Day</span><Icon name="chevron-right" /></button>
+    </div>
+  </div>;
+}
+
 function StatusFilters({ groups, value, onChange }: { groups: FixtureGroup[]; value: string; onChange: (value: string) => void }) {
   const fixtures = groups.flatMap((group) => group.fixtures);
-  const items = [["ALL", "All", fixtures.length], ["UPCOMING", "Upcoming", fixtures.filter((item) => ["SCHEDULED", "TIMED", "UPCOMING"].includes(item.status)).length], ["LIVE", "Live", fixtures.filter((item) => item.status === "LIVE").length], ["FINISHED", "Finished", fixtures.filter((item) => item.status === "FINISHED").length]] as const;
+  const active = (status: string) => ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(status);
+  const items = [["ALL", "All", fixtures.length], ["UPCOMING", "Upcoming", fixtures.filter((item) => ["SCHEDULED", "TIMED", "UPCOMING"].includes(item.status)).length], ["LIVE", "Live", fixtures.filter((item) => active(item.status)).length], ["FINISHED", "Finished", fixtures.filter((item) => item.status === "FINISHED").length]] as const;
   return <div className="status-filters" aria-label="Fixture status">{items.map(([key, label, count]) => <button key={key} aria-pressed={value === key} onClick={() => onChange(key)}>{label} <b>{count}</b></button>)}</div>;
 }
 
@@ -98,7 +109,7 @@ function FixtureResults({ state, expanded, setExpanded, teamQuery, statusFilter 
   const query = teamQuery.trim().toLocaleLowerCase();
   const groups = (state.data ?? []).map((group) => ({ ...group, fixtures: group.fixtures.filter((fixture) => {
     const matchesTeam = !query || fixture.home.name.toLocaleLowerCase().includes(query) || fixture.away.name.toLocaleLowerCase().includes(query);
-    const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : fixture.status === statusFilter);
+    const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : statusFilter === "LIVE" ? ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(fixture.status) : fixture.status === statusFilter);
     return matchesTeam && matchesStatus;
   }) })).filter((group) => group.fixtures.length);
   if (!groups.length) return <EmptyState title="No fixtures found" detail="No team in the selected fixture set matches this filter." />;
@@ -115,17 +126,48 @@ function FixtureGroupView({ group, expanded, setExpanded }: { group: FixtureGrou
 
 function FixtureRow({ fixture, competition, expanded, toggle }: { fixture: Fixture; competition: Competition; expanded: boolean; toggle: () => void }) {
   const forecast = fixture.forecast;
+  const active = isActive(fixture);
   return <article className={`fixture ${expanded ? "expanded" : ""}`}>
     <button className="fixture-summary" aria-expanded={expanded} aria-controls={`fixture-panel-${fixture.id}`} onClick={toggle}>
-      <span className="kickoff"><b>{timeLabel(fixture.kickoff_at)}</b><small>{fixture.status}</small></span>
+      <span className="kickoff"><b>{active ? <span className="live-indicator">LIVE</span> : timeLabel(fixture.kickoff_at)}</b><small>{fixtureStateLabel(fixture)}</small></span>
       <span className="teams"><strong>{fixture.home.name}</strong><i>vs</i><strong>{fixture.away.name}</strong></span>
-      <span className="score">{fixture.status === "FINISHED" ? `${fixture.home_score}–${fixture.away_score}` : ""}</span>
+      <span className="score">{fixtureScore(fixture)}</span>
       <span className="forecast-cell">{forecast ? <ProbabilityBar values={forecast.probabilities} /> : <span className="availability">{availabilityLabel(fixture.forecast_availability)}</span>}</span>
       <span className="xg">{forecast ? `λ ${forecast.expected_home_goals.toFixed(2)} · ${forecast.expected_away_goals.toFixed(2)}` : "—"}</span>
       <Icon name={expanded ? "chevron-up" : "chevron-down"} className="chevron" />
     </button>
     {expanded && <div id={`fixture-panel-${fixture.id}`}><ExpandedFixture fixture={fixture} competition={competition} /></div>}
   </article>;
+}
+
+function useLiveRefresh(groups: FixtureGroup[] | null, retry: () => void) {
+  const hasLiveFixtures = Boolean(groups?.some((group) => group.fixtures.some(isActive)));
+  useEffect(() => {
+    if (!hasLiveFixtures) return;
+    const timer = window.setInterval(retry, 20_000);
+    return () => window.clearInterval(timer);
+  }, [hasLiveFixtures, retry]);
+}
+
+function isActive(fixture: Fixture) {
+  return ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(fixture.status);
+}
+
+function fixtureStateLabel(fixture: Fixture) {
+  let label = fixture.status;
+  if (fixture.status === "HALF_TIME") label = "HT";
+  else if (fixture.status === "FINISHED") label = "FT";
+  else if (fixture.match_minute !== null) {
+    label = `${fixture.match_minute}${fixture.added_time ? `+${fixture.added_time}` : ""}′`;
+  }
+  return `${label}${fixture.stale ? " · stale" : ""}`;
+}
+
+function fixtureScore(fixture: Fixture) {
+  if ((!isActive(fixture) && fixture.status !== "FINISHED") || fixture.home_score === null) {
+    return "";
+  }
+  return `${fixture.home_score}–${fixture.away_score}`;
 }
 
 function coverageOptions(competitions: Competition[]) {
@@ -135,7 +177,7 @@ function coverageOptions(competitions: Competition[]) {
   };
 }
 
-function timeLabel(value: string) { return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(new Date(value)); }
+function timeLabel(value: string) { return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: DISPLAY_TIME_ZONE }).format(new Date(value)); }
 function availabilityLabel(value: string) { return value === "NOT_ENOUGH_HISTORY" ? "Not enough history" : value === "SOURCE_DATA_INCOMPLETE" ? "Source incomplete" : value === "TEMPORARILY_UNAVAILABLE" ? "Temporarily unavailable" : "Forecast unavailable"; }
 function fixtureCount(groups: FixtureGroup[] | null) { return groups?.reduce((total, group) => total + group.fixtures.length, 0) ?? "—"; }
-function longDate(value: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`)); }
+function longDate(value: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: DISPLAY_TIME_ZONE }).format(new Date(`${value}T12:00:00Z`)); }

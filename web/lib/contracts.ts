@@ -46,6 +46,13 @@ export type Fixture = {
   round: string | null;
   forecast_availability: string;
   forecast: ForecastSummary | null;
+  provider: string | null;
+  provider_status: string | null;
+  match_minute: number | null;
+  added_time: number | null;
+  period: string | null;
+  last_successful_update: string | null;
+  stale: boolean;
 };
 
 export type FixtureGroup = { competition: Competition; fixtures: Fixture[] };
@@ -171,6 +178,11 @@ export type ExternalPrediction = {
   match_status: string;
   matchforge_probability: number | null;
   agreement: "AGREES" | "WEAK_SUPPORT" | "DISAGREES" | "UNABLE_TO_EVALUATE";
+  settlement_state: "WON" | "LOST" | "VOID" | "PENDING";
+  actual_home_score: number | null;
+  actual_away_score: number | null;
+  result_provider: string | null;
+  result_updated_at: string | null;
 };
 
 export type ExternalSource = {
@@ -192,7 +204,7 @@ export type ExternalSource = {
   matchforge_agreement_rate: number | null;
 };
 
-export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "EXTERNAL_PREDICTIONS" | "ALL_DATA";
+export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "EXTERNAL_PREDICTIONS" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA";
 export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
 export type HistoryQueueProgress = {
   total: number;
@@ -226,7 +238,12 @@ export type HistoricalCoverage = {
   mapping_failures: number;
   source_conflicts: number;
 };
-export type SyncRunsResponse = { runs: SyncRun[]; coverage: HistoricalCoverage };
+export type ProviderConfiguration = {
+  fotmob_enabled: boolean;
+  pitchapi_enabled: boolean;
+  operational_sync_interval: string;
+};
+export type SyncRunsResponse = { runs: SyncRun[]; coverage: HistoricalCoverage; provider_configuration: ProviderConfiguration };
 
 export function parseCompetitions(value: unknown): Competition[] {
   const envelope = object(value, "competitions response");
@@ -366,6 +383,8 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
     const item = object(entry, "external prediction");
     const agreement = text(item.agreement, "agreement");
     if (!["AGREES", "WEAK_SUPPORT", "DISAGREES", "UNABLE_TO_EVALUATE"].includes(agreement)) throw new Error("invalid agreement");
+    const settlement = item.settlement_state === undefined ? "PENDING" : text(item.settlement_state, "settlement_state");
+    if (!["WON", "LOST", "VOID", "PENDING"].includes(settlement)) throw new Error("invalid settlement_state");
     return {
       id: text(item.id, "id"),
       source: text(item.source, "source"),
@@ -383,6 +402,11 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       match_status: text(item.match_status, "match_status"),
       matchforge_probability: item.matchforge_probability === null ? null : probability(item.matchforge_probability, "matchforge_probability"),
       agreement: agreement as ExternalPrediction["agreement"],
+      settlement_state: settlement as ExternalPrediction["settlement_state"],
+      actual_home_score: item.actual_home_score === undefined ? null : nullableNumber(item.actual_home_score, "actual_home_score"),
+      actual_away_score: item.actual_away_score === undefined ? null : nullableNumber(item.actual_away_score, "actual_away_score"),
+      result_provider: item.result_provider === undefined ? null : nullableText(item.result_provider, "result_provider"),
+      result_updated_at: item.result_updated_at === undefined ? null : nullableText(item.result_updated_at, "result_updated_at"),
     };
   });
 }
@@ -416,7 +440,7 @@ export function parseSyncRun(value: unknown): SyncRun {
   const item = object(value, "sync run");
   const syncType = text(item.sync_type, "sync_type") as SyncType;
   const status = text(item.status, "status") as SyncStatus;
-  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "EXTERNAL_PREDICTIONS", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
+  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "EXTERNAL_PREDICTIONS", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
   if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED"].includes(status)) throw new Error("invalid sync status");
   const historyQueue = item.history_queue === undefined ? undefined : object(item.history_queue, "history_queue");
   return {
@@ -441,8 +465,14 @@ export function parseSyncRun(value: unknown): SyncRun {
 export function parseSyncRuns(value: unknown): SyncRunsResponse {
   const envelope = object(value, "sync runs response");
   const coverage = object(envelope.coverage, "coverage");
+  const providerConfiguration = envelope.provider_configuration === undefined ? null : object(envelope.provider_configuration, "provider_configuration");
   return {
     runs: array(envelope.runs, "runs").map(parseSyncRun),
+    provider_configuration: providerConfiguration ? {
+      fotmob_enabled: boolean(providerConfiguration.fotmob_enabled, "fotmob_enabled"),
+      pitchapi_enabled: boolean(providerConfiguration.pitchapi_enabled, "pitchapi_enabled"),
+      operational_sync_interval: text(providerConfiguration.operational_sync_interval, "operational_sync_interval"),
+    } : { fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" },
     coverage: {
       historical_matches: numeric(coverage.historical_matches, "historical_matches"),
       competitions_with_history: numeric(coverage.competitions_with_history, "competitions_with_history"),
@@ -496,6 +526,13 @@ function parseFixture(value: unknown): Fixture {
     round: nullableText(item.round, "round"),
     forecast_availability: text(item.forecast_availability, "forecast_availability"),
     forecast: item.forecast === null ? null : parseForecastSummary(item.forecast),
+    provider: item.provider === undefined ? null : nullableText(item.provider, "provider"),
+    provider_status: item.provider_status === undefined ? null : nullableText(item.provider_status, "provider_status"),
+    match_minute: item.match_minute === undefined ? null : nullableNumber(item.match_minute, "match_minute"),
+    added_time: item.added_time === undefined ? null : nullableNumber(item.added_time, "added_time"),
+    period: item.period === undefined ? null : nullableText(item.period, "period"),
+    last_successful_update: item.last_successful_update === undefined ? null : nullableText(item.last_successful_update, "last_successful_update"),
+    stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
   };
 }
 
