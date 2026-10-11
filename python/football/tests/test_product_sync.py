@@ -257,7 +257,11 @@ def test_existing_sync_and_history_status_contracts_are_unchanged() -> None:
         "infrastructure/migrations/202610040200_product_history_sync_attempts.sql"
     ).read_text()
 
+    cancellation = Path(
+        "infrastructure/migrations/202610110200_sync_run_cancellation.sql"
+    ).read_text()
     assert "status IN ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED')" in sync_runs
+    assert "'CANCELLED'" in cancellation
     assert "last_status IN ('STORED', 'EMPTY', 'UNAVAILABLE')" in history_attempts
 
 
@@ -506,6 +510,40 @@ def test_transient_history_failure_does_not_record_unavailable(
     with pytest.raises(ApiFootballError, match="temporary timeout"):
         sync._sync_league_history(999, 2026)
     assert recorded == []
+
+
+@pytest.mark.parametrize(
+    "error",
+    (
+        ApiFootballError("temporary standings timeout"),
+        ApiFootballError(
+            "standings unavailable on plan",
+            capability_status=CapabilityStatus.PLAN_RESTRICTION,
+        ),
+    ),
+)
+def test_history_job_calculates_standings_when_provider_request_fails(
+    monkeypatch: pytest.MonkeyPatch, error: ApiFootballError
+) -> None:
+    snapshot = UUID("10000000-0000-4000-8000-000000000001")
+    observed_at = datetime(2026, 10, 4, tzinfo=UTC)
+
+    class PrimaryClient:
+        def standings(self, _league_id: int, _season: int) -> ApiResponse:
+            raise error
+
+    sync = ProductSync(
+        cast(Any, _Connection()),
+        cast(Any, PrimaryClient()),
+        Path("data"),
+        Path("artifact"),
+    )
+    monkeypatch.setattr(sync, "_sync_league_history", lambda *_args: (snapshot, observed_at, 4))
+    monkeypatch.setattr(sync, "_competition_id", lambda *_args: UUID(int=2))
+    monkeypatch.setattr(sync, "_fallback_standings", lambda *_args: None)
+    monkeypatch.setattr(sync, "_calculate_standings", lambda *_args: 7)
+
+    assert sync._sync_history_job(39, 2026) == (4, 7)
 
 
 def test_history_storage_deduplicates_cross_provider_fixture_and_keeps_xg_separate() -> None:

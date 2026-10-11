@@ -283,8 +283,11 @@ class ProductSync:
         if history_result is None:
             return 0, 0
         history_snapshot, history_observed_at, stored_history = history_result
-        standings_response = self.client.standings(league_id, season)
-        if not standings_response.rows:
+        try:
+            standings_response = self.client.standings(league_id, season)
+        except ApiFootballError:
+            standings_response = None
+        if standings_response is None or not standings_response.rows:
             competition_id = self._competition_id(str(league_id), history_snapshot)
             fallback_standings = self._fallback_standings(league_id, season)
             if fallback_standings is not None:
@@ -581,6 +584,11 @@ class ProductSync:
                             WHEN football.product_history_sync_queue.job_status IN
                                  ('SUCCEEDED', 'FAILED') THEN NULL
                             ELSE football.product_history_sync_queue.last_error
+                        END,
+                        attempt_count = CASE
+                            WHEN football.product_history_sync_queue.job_status IN
+                                 ('SUCCEEDED', 'FAILED') THEN 0
+                            ELSE football.product_history_sync_queue.attempt_count
                         END,
                         updated_at = clock_timestamp()
                     """,

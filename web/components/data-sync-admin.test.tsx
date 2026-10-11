@@ -53,18 +53,56 @@ describe("DataSyncAdmin", () => {
   });
 
   it("shows internal history queue progress without changing top-level status", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => json({ runs: [{
+    const active = {
       run_id: "run-active", sync_type: "MVP_SYNC", status: "RUNNING",
       requested_at: "2026-10-04T10:00:00Z", started_at: "2026-10-04T10:00:01Z",
       finished_at: null, requested_date: "2026-10-04", parameters: {}, summary: {},
       error_message: null, log_path: ".local/sync-runs/run-active.log",
       history_queue: { total: 227, pending: 181, running: 3, succeeded: 40, failed: 3 },
-    }], coverage })));
+    };
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST" && String(input).endsWith("/stop")) {
+        return json({ ...active, status: "CANCELLED", finished_at: "2026-10-04T10:02:00Z", error_message: "stopped by operator" });
+      }
+      return json({ runs: [active], coverage });
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<DataSyncAdmin />);
 
     expect(await screen.findByText("Running")).toBeInTheDocument();
     expect(screen.getByText("History queue: 40/227 succeeded, 3 running, 181 pending, 3 failed")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stop sync" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/v1/admin/sync-runs/run-active/stop"),
+      expect.objectContaining({ method: "POST" }),
+    ));
+  });
+
+  it("retries failed and cancelled runs", async () => {
+    const failed = {
+      run_id: "run-failed", sync_type: "PITCHAPI_SYNC", status: "FAILED",
+      requested_at: "2026-10-04T10:00:00Z", started_at: "2026-10-04T10:00:01Z",
+      finished_at: "2026-10-04T10:01:00Z", requested_date: "2026-10-04",
+      parameters: {}, summary: {}, error_message: "provider timeout", log_path: null,
+    };
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") return json({
+        ...failed, run_id: "run-retry", status: "QUEUED", started_at: null,
+        finished_at: null, error_message: null,
+      }, 202);
+      return json({ runs: [failed], coverage });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<DataSyncAdmin />);
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+
+    expect(await screen.findByText("Queued")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/v1/admin/sync-runs/run-failed/retry"),
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 });
 

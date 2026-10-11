@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -23,8 +25,10 @@ import (
 )
 
 var (
-	errSyncAlreadyRunning = errors.New("a data synchronization is already running")
-	errSyncRunNotFound    = errors.New("sync run not found")
+	errSyncAlreadyRunning  = errors.New("a data synchronization is already running")
+	errSyncRunNotFound     = errors.New("sync run not found")
+	errSyncRunNotActive    = errors.New("sync run is not active")
+	errSyncRunNotRetryable = errors.New("only failed or cancelled sync runs can be retried")
 )
 
 type syncConflictError struct {
@@ -55,6 +59,7 @@ type SyncRequest struct {
 	Season      string   `json:"season,omitempty"`
 	Competition string   `json:"competition,omitempty"`
 	Country     string   `json:"country,omitempty"`
+	RetryOf     string   `json:"-"`
 }
 
 type SyncRun struct {
@@ -94,6 +99,8 @@ type Coverage struct {
 
 type SyncRunner interface {
 	Start(context.Context, SyncRequest) (SyncRun, error)
+	Stop(context.Context, string) (SyncRun, error)
+	Retry(context.Context, string) (SyncRun, error)
 	List(context.Context) ([]SyncRun, error)
 	Get(context.Context, string) (SyncRun, error)
 	Coverage(context.Context) (Coverage, error)
@@ -102,6 +109,12 @@ type SyncRunner interface {
 type unavailableSyncRunner struct{}
 
 func (unavailableSyncRunner) Start(context.Context, SyncRequest) (SyncRun, error) {
+	return SyncRun{}, errProductUnavailable
+}
+func (unavailableSyncRunner) Stop(context.Context, string) (SyncRun, error) {
+	return SyncRun{}, errProductUnavailable
+}
+func (unavailableSyncRunner) Retry(context.Context, string) (SyncRun, error) {
 	return SyncRun{}, errProductUnavailable
 }
 func (unavailableSyncRunner) List(context.Context) ([]SyncRun, error) {
@@ -119,6 +132,13 @@ type CommandSyncRunner struct {
 	pool     *pgxpool.Pool
 	repoRoot string
 	logger   *slog.Logger
+	mu       sync.Mutex
+	active   map[string]*syncRunControl
+}
+
+type syncRunControl struct {
+	cancel context.CancelFunc
+	done   chan struct{}
 }
 
 func NewCommandSyncRunner(
@@ -127,7 +147,10 @@ func NewCommandSyncRunner(
 	repoRoot string,
 	logger *slog.Logger,
 ) *CommandSyncRunner {
-	return &CommandSyncRunner{ctx: ctx, pool: pool, repoRoot: repoRoot, logger: logger}
+	return &CommandSyncRunner{
+		ctx: ctx, pool: pool, repoRoot: repoRoot, logger: logger,
+		active: make(map[string]*syncRunControl),
+	}
 }
 
 func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest) (SyncRun, error) {
@@ -164,7 +187,12 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
-	go runner.execute(runID, logPath, args)
+	runContext, cancel := context.WithCancel(runner.ctx)
+	control := &syncRunControl{cancel: cancel, done: make(chan struct{})}
+	runner.mu.Lock()
+	runner.active[runID] = control
+	runner.mu.Unlock()
+	go runner.execute(runContext, runID, logPath, args, control)
 	return run, nil
 }
 
@@ -173,6 +201,7 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
+		"retry_of_run_id": request.RetryOf,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -218,12 +247,25 @@ func (runner *CommandSyncRunner) activeRunConflict(ctx context.Context) error {
 	return syncConflictError{ActiveRun: activeRun}
 }
 
-func (runner *CommandSyncRunner) execute(runID string, logPath string, args []string) {
+func (runner *CommandSyncRunner) execute(
+	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl,
+) {
+	defer func() {
+		control.cancel()
+		runner.mu.Lock()
+		delete(runner.active, runID)
+		close(control.done)
+		runner.mu.Unlock()
+	}()
 	if _, err := runner.pool.Exec(
-		runner.ctx,
+		ctx,
 		"UPDATE football.product_sync_runs SET status = 'RUNNING', started_at = clock_timestamp() WHERE run_id = $1",
 		runID,
 	); err != nil {
+		if errors.Is(ctx.Err(), context.Canceled) {
+			runner.cancelled(runID)
+			return
+		}
 		runner.logger.Error("start sync run", "run_id", runID, "error", err)
 		return
 	}
@@ -238,9 +280,17 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 		return
 	}
 	defer logFile.Close()
-	summary, err := runner.runCommand(runID, args, logFile)
+	summary, err := runner.runCommand(ctx, runID, args, logFile)
 	if err != nil {
+		if errors.Is(ctx.Err(), context.Canceled) {
+			runner.cancelled(runID)
+			return
+		}
 		runner.fail(runID, err)
+		return
+	}
+	if errors.Is(ctx.Err(), context.Canceled) {
+		runner.cancelled(runID)
 		return
 	}
 	encoded, err := json.Marshal(summary)
@@ -249,6 +299,10 @@ func (runner *CommandSyncRunner) execute(runID string, logPath string, args []st
 		return
 	}
 	status, errorMessage := syncCompletion(summary)
+	if errors.Is(ctx.Err(), context.Canceled) {
+		runner.cancelled(runID)
+		return
+	}
 	if _, err = runner.pool.Exec(
 		runner.ctx,
 		`UPDATE football.product_sync_runs
@@ -273,11 +327,18 @@ func syncCompletion(summary map[string]interface{}) (string, *string) {
 }
 
 func (runner *CommandSyncRunner) runCommand(
-	runID string, args []string, logFile *os.File,
+	ctx context.Context, runID string, args []string, logFile *os.File,
 ) (map[string]interface{}, error) {
-	command := exec.CommandContext(runner.ctx, args[0], args[1:]...)
+	command := exec.CommandContext(ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
 	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
+	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	command.Cancel = func() error {
+		if command.Process == nil {
+			return os.ErrProcessDone
+		}
+		return syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
+	}
 	pipe, err := command.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -303,6 +364,72 @@ func (runner *CommandSyncRunner) runCommand(
 		return nil, fmt.Errorf("sync command did not return structured JSON: %w", err)
 	}
 	return summary, nil
+}
+
+func (runner *CommandSyncRunner) cancelled(runID string) {
+	message := "stopped by operator"
+	if _, err := runner.pool.Exec(
+		context.WithoutCancel(runner.ctx),
+		`UPDATE football.product_sync_runs
+		 SET status = 'CANCELLED', finished_at = clock_timestamp(), error_message = $2
+		 WHERE run_id = $1 AND status IN ('QUEUED', 'RUNNING')`,
+		runID,
+		message,
+	); err != nil {
+		runner.logger.Error("cancel sync run", "run_id", runID, "error", err)
+	}
+}
+
+func (runner *CommandSyncRunner) Stop(ctx context.Context, id string) (SyncRun, error) {
+	run, err := runner.Get(ctx, id)
+	if err != nil {
+		return SyncRun{}, err
+	}
+	if run.Status != "QUEUED" && run.Status != "RUNNING" {
+		return SyncRun{}, errSyncRunNotActive
+	}
+	runner.mu.Lock()
+	control := runner.active[id]
+	runner.mu.Unlock()
+	if control == nil {
+		runner.cancelled(id)
+		return runner.Get(ctx, id)
+	}
+	control.cancel()
+	select {
+	case <-control.done:
+		return runner.Get(ctx, id)
+	case <-ctx.Done():
+		return SyncRun{}, ctx.Err()
+	}
+}
+
+func (runner *CommandSyncRunner) Retry(ctx context.Context, id string) (SyncRun, error) {
+	run, err := runner.Get(ctx, id)
+	if err != nil {
+		return SyncRun{}, err
+	}
+	if run.Status != "FAILED" && run.Status != "CANCELLED" {
+		return SyncRun{}, errSyncRunNotRetryable
+	}
+	return runner.Start(ctx, syncRequestFromRun(run))
+}
+
+func syncRequestFromRun(run SyncRun) SyncRequest {
+	request := SyncRequest{Type: run.Type, RetryOf: run.ID}
+	if run.RequestedDate != nil {
+		request.Date = *run.RequestedDate
+	}
+	request.FromDate = stringParameter(run.Parameters, "from_date")
+	request.Season = stringParameter(run.Parameters, "season")
+	request.Competition = stringParameter(run.Parameters, "competition")
+	request.Country = stringParameter(run.Parameters, "country")
+	return request
+}
+
+func stringParameter(parameters map[string]interface{}, key string) string {
+	value, _ := parameters[key].(string)
+	return value
 }
 
 func lastOutputLine(reader io.Reader) (string, error) {
@@ -579,6 +706,24 @@ func (application *App) getSyncRun(response http.ResponseWriter, request *http.R
 	application.writeJSON(response, http.StatusOK, run)
 }
 
+func (application *App) stopSyncRun(response http.ResponseWriter, request *http.Request) {
+	run, err := application.syncRunner.Stop(request.Context(), request.PathValue("run_id"))
+	if err != nil {
+		application.writeSyncError(response, err)
+		return
+	}
+	application.writeJSON(response, http.StatusOK, run)
+}
+
+func (application *App) retrySyncRun(response http.ResponseWriter, request *http.Request) {
+	run, err := application.syncRunner.Retry(request.Context(), request.PathValue("run_id"))
+	if err != nil {
+		application.writeSyncError(response, err)
+		return
+	}
+	application.writeJSON(response, http.StatusAccepted, run)
+}
+
 func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
 		var input struct {
@@ -623,6 +768,9 @@ func (application *App) writeSyncError(response http.ResponseWriter, err error) 
 		}
 	} else if errors.Is(err, errSyncRunNotFound) {
 		status = http.StatusNotFound
+		message = err.Error()
+	} else if errors.Is(err, errSyncRunNotActive) || errors.Is(err, errSyncRunNotRetryable) {
+		status = http.StatusConflict
 		message = err.Error()
 	} else if errors.Is(err, errProductUnavailable) {
 		status = http.StatusServiceUnavailable

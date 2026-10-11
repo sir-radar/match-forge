@@ -15,9 +15,20 @@ import (
 
 type syncRunnerStub struct {
 	started  []SyncRequest
+	stopped  []string
+	retried  []string
 	runs     []SyncRun
 	startErr error
 	getErr   error
+}
+
+func (runner *syncRunnerStub) Stop(_ context.Context, id string) (SyncRun, error) {
+	runner.stopped = append(runner.stopped, id)
+	return SyncRun{ID: id, Type: SyncMVP, Status: "CANCELLED", Parameters: map[string]interface{}{}, Summary: map[string]interface{}{}}, nil
+}
+func (runner *syncRunnerStub) Retry(_ context.Context, id string) (SyncRun, error) {
+	runner.retried = append(runner.retried, id)
+	return SyncRun{ID: "10000000-0000-4000-8000-000000000002", Type: SyncMVP, Status: "QUEUED", Parameters: map[string]interface{}{}, Summary: map[string]interface{}{}}, nil
 }
 
 func (runner *syncRunnerStub) Start(_ context.Context, request SyncRequest) (SyncRun, error) {
@@ -171,6 +182,7 @@ func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 	runner := &CommandSyncRunner{ctx: context.Background(), repoRoot: t.TempDir()}
 
 	summary, err := runner.runCommand(
+		context.Background(),
 		"run-id",
 		[]string{"/bin/sh", "-c", `echo '{"status":"COMPLETED_WITH_ERRORS","errors":{"mvp":"quota"}}'; exit 1`},
 		logFile,
@@ -180,6 +192,71 @@ func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" {
 		t.Fatalf("summary = %+v", summary)
+	}
+}
+
+func TestRunCommandCancellationStopsProcessGroup(t *testing.T) {
+	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
+	done := make(chan error, 1)
+	go func() {
+		_, runErr := runner.runCommand(
+			ctx, "run-id", []string{"/bin/sh", "-c", "sleep 30"}, logFile,
+		)
+		done <- runErr
+	}()
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	select {
+	case runErr := <-done:
+		if runErr == nil {
+			t.Fatal("expected cancelled command error")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("cancelled command did not stop")
+	}
+}
+
+func TestAdminSyncStopAndRetryRoutes(t *testing.T) {
+	runner := &syncRunnerStub{}
+	application := newAdminTestApp(runner)
+	for _, test := range []struct {
+		path   string
+		status int
+	}{
+		{path: "/v1/admin/sync-runs/run-one/stop", status: http.StatusOK},
+		{path: "/v1/admin/sync-runs/run-one/retry", status: http.StatusAccepted},
+	} {
+		response := httptest.NewRecorder()
+		application.Handler().ServeHTTP(response, httptest.NewRequest(http.MethodPost, test.path, nil))
+		if response.Code != test.status {
+			t.Fatalf("%s response = %d %s", test.path, response.Code, response.Body.String())
+		}
+	}
+	if len(runner.stopped) != 1 || runner.stopped[0] != "run-one" {
+		t.Fatalf("stopped = %v", runner.stopped)
+	}
+	if len(runner.retried) != 1 || runner.retried[0] != "run-one" {
+		t.Fatalf("retried = %v", runner.retried)
+	}
+}
+
+func TestRetryReconstructsRequestAndRecordsLineage(t *testing.T) {
+	requestedDate := "2026-10-11"
+	run := SyncRun{
+		ID: "10000000-0000-4000-8000-000000000001", Type: SyncPitchAPI,
+		Status: "FAILED", RequestedDate: &requestedDate,
+		Parameters: map[string]interface{}{"from_date": "2026-10-09", "competition": "l_0bfbkO"},
+	}
+	request := syncRequestFromRun(run)
+	parameters := syncParameters(request)
+	if parameters["retry_of_run_id"] != run.ID || request.FromDate != "2026-10-09" || request.Competition != "l_0bfbkO" {
+		t.Fatalf("request = %+v parameters = %+v", request, parameters)
 	}
 }
 
