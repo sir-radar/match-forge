@@ -257,16 +257,7 @@ func (runner *CommandSyncRunner) execute(
 		close(control.done)
 		runner.mu.Unlock()
 	}()
-	if _, err := runner.pool.Exec(
-		ctx,
-		"UPDATE football.product_sync_runs SET status = 'RUNNING', started_at = clock_timestamp() WHERE run_id = $1",
-		runID,
-	); err != nil {
-		if errors.Is(ctx.Err(), context.Canceled) {
-			runner.cancelled(runID)
-			return
-		}
-		runner.logger.Error("start sync run", "run_id", runID, "error", err)
+	if !runner.markRunning(ctx, runID) {
 		return
 	}
 	absoluteLog := filepath.Join(runner.repoRoot, logPath)
@@ -282,15 +273,13 @@ func (runner *CommandSyncRunner) execute(
 	defer logFile.Close()
 	summary, err := runner.runCommand(ctx, runID, args, logFile)
 	if err != nil {
-		if errors.Is(ctx.Err(), context.Canceled) {
-			runner.cancelled(runID)
+		if runner.cancelIfRequested(ctx, runID) {
 			return
 		}
 		runner.fail(runID, err)
 		return
 	}
-	if errors.Is(ctx.Err(), context.Canceled) {
-		runner.cancelled(runID)
+	if runner.cancelIfRequested(ctx, runID) {
 		return
 	}
 	encoded, err := json.Marshal(summary)
@@ -299,8 +288,7 @@ func (runner *CommandSyncRunner) execute(
 		return
 	}
 	status, errorMessage := syncCompletion(summary)
-	if errors.Is(ctx.Err(), context.Canceled) {
-		runner.cancelled(runID)
+	if runner.cancelIfRequested(ctx, runID) {
 		return
 	}
 	if _, err = runner.pool.Exec(
@@ -316,6 +304,29 @@ func (runner *CommandSyncRunner) execute(
 	); err != nil {
 		runner.logger.Error("finish sync run", "run_id", runID, "error", err)
 	}
+}
+
+func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) bool {
+	_, err := runner.pool.Exec(
+		ctx,
+		"UPDATE football.product_sync_runs SET status = 'RUNNING', started_at = clock_timestamp() WHERE run_id = $1",
+		runID,
+	)
+	if err == nil {
+		return true
+	}
+	if !runner.cancelIfRequested(ctx, runID) {
+		runner.logger.Error("start sync run", "run_id", runID, "error", err)
+	}
+	return false
+}
+
+func (runner *CommandSyncRunner) cancelIfRequested(ctx context.Context, runID string) bool {
+	if !errors.Is(ctx.Err(), context.Canceled) {
+		return false
+	}
+	runner.cancelled(runID)
+	return true
 }
 
 func syncCompletion(summary map[string]interface{}) (string, *string) {
