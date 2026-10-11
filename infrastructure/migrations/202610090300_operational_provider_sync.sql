@@ -25,11 +25,6 @@ ALTER TABLE football.product_fixtures
 ALTER TABLE football.product_fixtures
     ADD CONSTRAINT product_fixtures_score_state_check CHECK (
         status <> 'FINISHED' OR (home_score IS NOT NULL AND away_score IS NOT NULL)
-    ),
-    ADD COLUMN result_score_basis text NOT NULL DEFAULT 'UNKNOWN' CHECK (
-        result_score_basis IN (
-            'REGULATION_90', 'EXTRA_TIME', 'PENALTY_SHOOTOUT', 'UNKNOWN'
-        )
     );
 
 CREATE TABLE football.product_provider_fixture_observations (
@@ -119,9 +114,7 @@ CREATE TABLE football.external_prediction_result_revisions (
     fixture_status text NOT NULL,
     home_score smallint,
     away_score smallint,
-    score_basis text NOT NULL CHECK (score_basis IN (
-        'REGULATION_90', 'EXTRA_TIME', 'PENALTY_SHOOTOUT', 'UNKNOWN', 'NOT_SETTLED'
-    )),
+    score_basis text NOT NULL CHECK (score_basis IN ('REGULATION_90', 'NOT_SETTLED')),
     provider_code text,
     provider_updated_at timestamptz,
     evidence jsonb NOT NULL CHECK (jsonb_typeof(evidence) = 'object'),
@@ -145,7 +138,6 @@ ALTER TABLE football.external_predictions
     DROP COLUMN source_kickoff_at;
 DROP TABLE football.product_provider_resource_observations;
 DROP TABLE football.product_provider_fixture_observations;
-ALTER TABLE football.product_fixtures DROP COLUMN result_score_basis;
 ALTER TABLE football.product_fixtures DROP CONSTRAINT product_fixtures_score_state_check;
 ALTER TABLE football.product_fixtures ADD CONSTRAINT product_fixtures_check1 CHECK (
     (status = 'FINISHED') = (home_score IS NOT NULL AND away_score IS NOT NULL)

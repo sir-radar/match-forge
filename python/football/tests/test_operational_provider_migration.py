@@ -12,6 +12,13 @@ def test_operational_provider_migration_preserves_observations_and_experiment_is
     assert "development_only boolean NOT NULL DEFAULT true CHECK (development_only)" in migration
     assert "point_in_time_eligibility" in migration
     assert "external_prediction_result_revisions" in migration
+    assert "'FOTMOB_SYNC'" in migration and "'PITCHAPI_SYNC'" in migration
+
+
+def test_score_basis_migration_distinguishes_knockout_results() -> None:
+    migration = Path(
+        "infrastructure/migrations/202610090400_external_prediction_score_basis.sql"
+    ).read_text(encoding="utf-8")
+
     assert "result_score_basis" in migration
     assert "'EXTRA_TIME', 'PENALTY_SHOOTOUT', 'UNKNOWN'" in migration
-    assert "'FOTMOB_SYNC'" in migration and "'PITCHAPI_SYNC'" in migration
