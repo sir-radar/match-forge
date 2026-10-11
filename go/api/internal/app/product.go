@@ -378,6 +378,7 @@ type ExternalPrediction struct {
 	SettlementState       string     `json:"settlement_state"`
 	ActualHomeScore       *int       `json:"actual_home_score"`
 	ActualAwayScore       *int       `json:"actual_away_score"`
+	ResultScoreBasis      *string    `json:"result_score_basis"`
 	ResultProvider        *string    `json:"result_provider"`
 	ResultUpdatedAt       *time.Time `json:"result_updated_at"`
 }

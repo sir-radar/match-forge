@@ -134,6 +134,8 @@ class PitchApiFixture:
     period: str | None
     source_updated_at: datetime | None
     observed_at: datetime
+    provider_competition_name: str | None = None
+    result_score_basis: str = "UNKNOWN"
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -244,6 +246,7 @@ def normalize_pitchapi_matches(response: PitchApiResponse) -> tuple[PitchApiFixt
         raise PitchApiPayloadError("PitchAPI match listing is missing matches")
     league = data.get("league")
     default_league = league.get("id") if isinstance(league, Mapping) else None
+    default_league_name = league.get("name") if isinstance(league, Mapping) else None
     result: list[PitchApiFixture] = []
     seen: set[str] = set()
     for value in rows:
@@ -255,6 +258,9 @@ def normalize_pitchapi_matches(response: PitchApiResponse) -> tuple[PitchApiFixt
         seen.add(match_id)
         row_league = value.get("league")
         league_id = row_league.get("id") if isinstance(row_league, Mapping) else default_league
+        league_name = (
+            row_league.get("name") if isinstance(row_league, Mapping) else default_league_name
+        )
         home = _mapping(value.get("home_team"), "home_team")
         away = _mapping(value.get("away_team"), "away_team")
         kickoff = _timestamp(value.get("time_utc"), "time_utc")
@@ -281,6 +287,11 @@ def normalize_pitchapi_matches(response: PitchApiResponse) -> tuple[PitchApiFixt
                 period=_optional_text(value.get("period"), 40),
                 source_updated_at=_optional_timestamp(value.get("updated_at")),
                 observed_at=response.fetched_at,
+                provider_competition_name=(
+                    league_name.strip()
+                    if isinstance(league_name, str) and league_name.strip()
+                    else None
+                ),
             )
         )
     return tuple(result)

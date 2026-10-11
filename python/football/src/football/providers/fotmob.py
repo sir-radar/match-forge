@@ -69,6 +69,8 @@ class FotmobLiveScore:
     source_updated_at: datetime | None
     cache_expires_at: datetime | None
     observed_at: datetime
+    provider_competition_name: str | None = None
+    result_score_basis: str = "UNKNOWN"
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
@@ -218,6 +220,9 @@ def normalize_daily_matches(response: FotmobResponse) -> tuple[FotmobLiveScore, 
         if not isinstance(league, Mapping) or not isinstance(league.get("matches"), list):
             raise FotmobPayloadError("invalid league match list")
         league_id = _provider_id(league.get("id"))
+        league_name = league.get("name")
+        if not isinstance(league_name, str) or not league_name.strip():
+            league_name = None
         for row in league["matches"]:
             if not isinstance(row, Mapping):
                 raise FotmobPayloadError("invalid match row")
@@ -226,6 +231,7 @@ def normalize_daily_matches(response: FotmobResponse) -> tuple[FotmobLiveScore, 
                 league_id,
                 response.fetched_at,
                 response.cache_max_age_seconds,
+                league_name,
             )
             if observation.provider_match_id in seen:
                 raise FotmobPayloadError("duplicate FotMob match ID")
@@ -239,6 +245,7 @@ def _normalize_match(
     league_id: str,
     observed_at: datetime,
     cache_max_age_seconds: int | None,
+    league_name: str | None,
 ) -> FotmobLiveScore:
     home = _object(row.get("home"), "home team")
     away = _object(row.get("away"), "away team")
@@ -285,7 +292,22 @@ def _normalize_match(
             else None
         ),
         observed_at=observed_at,
+        provider_competition_name=league_name,
+        result_score_basis=_result_score_basis(provider_status, status),
     )
+
+
+def _result_score_basis(provider_status: str | None, status: Mapping[str, Any]) -> str:
+    if not status.get("finished"):
+        return "UNKNOWN"
+    label = (provider_status or "").upper()
+    if label in {"AET", "AFTER EXTRA TIME"}:
+        return "EXTRA_TIME"
+    if label in {"AP", "PEN", "PENS", "AFTER PENALTIES"}:
+        return "PENALTY_SHOOTOUT"
+    if label in {"FT", "FULL TIME", "FULL-TIME"}:
+        return "REGULATION_90"
+    return "UNKNOWN"
 
 
 def _match_status(status: Mapping[str, Any]) -> str:

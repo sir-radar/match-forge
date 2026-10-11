@@ -73,7 +73,7 @@ def response(matches: list[dict[str, Any]]) -> FotmobResponse:
         fetched_at=datetime(2026, 10, 9, 20, 42, tzinfo=UTC),
         sha256="a" * 64,
         raw=b"{}",
-        data={"leagues": [{"id": 47, "matches": matches}]},
+        data={"leagues": [{"id": 47, "name": "Premier League", "matches": matches}]},
     )
 
 
@@ -121,6 +121,7 @@ def test_live_snapshot_keeps_provider_ids_and_utc_kickoff() -> None:
     assert row.to_dict()["kickoff_at"] == "2026-10-09T20:00:00+00:00"
     assert row.to_dict()["source_updated_at"] is None
     assert row.home_score == 2 and row.away_score == 1
+    assert row.provider_competition_name == "Premier League"
 
 
 @pytest.mark.parametrize(
@@ -215,3 +216,15 @@ def test_half_time_suspended_and_added_time_are_preserved() -> None:
     }
     row = normalize_daily_matches(response([match(status=status)]))[0]
     assert (row.status, row.minute, row.added_time, row.period) == ("HALF_TIME", 45, 3, "HT")
+
+
+def test_finished_score_basis_is_explicit_only_when_provider_proves_it() -> None:
+    status = {
+        "utcTime": "2026-10-09T20:00:00Z",
+        "started": True,
+        "finished": True,
+        "cancelled": False,
+        "reason": {"short": "FT"},
+    }
+    row = normalize_daily_matches(response([match(status=status)]))[0]
+    assert row.result_score_basis == "REGULATION_90"

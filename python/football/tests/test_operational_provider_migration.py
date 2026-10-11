@@ -22,3 +22,13 @@ def test_score_basis_migration_distinguishes_knockout_results() -> None:
 
     assert "result_score_basis" in migration
     assert "'EXTRA_TIME', 'PENALTY_SHOOTOUT', 'UNKNOWN'" in migration
+
+
+def test_reconciliation_migration_keeps_reviewable_decisions() -> None:
+    migration = Path(
+        "infrastructure/migrations/202610090500_operational_provider_reconciliation.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "product_provider_mapping_decisions" in migration
+    assert "'AUTO_ACCEPTED', 'MANUAL_ACCEPTED', 'REVIEW_REQUIRED', 'CONTRADICTORY'" in migration
+    assert "provider_home_team_id" in migration and "provider_away_team_id" in migration

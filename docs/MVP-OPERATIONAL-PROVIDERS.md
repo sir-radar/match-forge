@@ -18,12 +18,14 @@ Manual commands:
 ```bash
 uv run python -m football.product.cli fotmob-sync --from-date 2026-10-08 --date 2026-10-09
 uv run python -m football.product.cli pitchapi-sync --from-date 2026-10-08 --date 2026-10-09
+uv run python -m football.product.cli provider-mapping-review --provider fotmob
+uv run python -m football.product.cli provider-mapping-review --provider fotmob --provider-match-id PROVIDER_ID --fixture-id MATCHFORGE_UUID
 ```
 
 The same operations are available on `/admin/data-sync`. Set `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` to a Go duration of at least `1m` to alternate enabled provider jobs. The existing single-active-run database constraint coordinates manual and scheduled work.
 
-Raw responses are checksum-addressed under `FOOTBALL_DATA_ROOT/operational`. Normalized fixture observations are append-only. Canonical fixtures update only through verified provider mappings; unmatched observations remain visible in sync counts and are not converted into new fixtures through name similarity.
+Raw responses are checksum-addressed under `FOOTBALL_DATA_ROOT/operational`. Normalized fixture observations are append-only. Existing verified provider IDs win. Otherwise, automatic reconciliation requires one unique canonical fixture with exact normalized competition, home team, away team, and UTC kickoff within ten minutes. Conflicting scores, zero candidates, and multiple candidates are retained in `product_provider_mapping_decisions` for the review command; they never create canonical entities. The second review command is the explicit operator acceptance path and records `MANUAL_ACCEPTED` evidence.
 
-Detailed match resources are stored with `development_only=true`. `point_in_time_eligibility=UNKNOWN` is the default because acquisition time does not prove historical publication time. These rows are not read by production forecasts or protected evaluation datasets.
+Detailed match resources are stored with `development_only=true`. Their conservative `known_at` is the actual acquisition time, so they are eligible only for later prospective development cutoffs. Production forecasts and protected evaluation datasets never read them. A non-persisting preview is available with `development-provider-preview --fixture-id UUID --knowledge-cutoff ISO_TIMESTAMP`; it rejects cutoffs at or after kickoff and structurally excludes the target fixture.
 
 External predictions settle only from a final score explicitly identified as the regulation-time result. Extra-time, penalty-shootout, and unknown-basis totals remain pending so knockout scores cannot be graded as 90-minute markets.

@@ -70,6 +70,7 @@ def test_date_listing_always_requests_all_and_normalizes_live_state() -> None:
     assert rows[0].status == "LIVE"
     assert rows[0].minute == 72
     assert rows[0].kickoff_at == datetime(2026, 10, 9, 20, tzinfo=UTC)
+    assert rows[0].provider_competition_name == "League"
 
 
 def test_nullable_scores_invalid_content_and_mixed_ids_fail_closed() -> None:

@@ -84,7 +84,7 @@ function FixtureToolbar({ date, count, moveDate, setDate }: { date: string; coun
 
 function StatusFilters({ groups, value, onChange }: { groups: FixtureGroup[]; value: string; onChange: (value: string) => void }) {
   const fixtures = groups.flatMap((group) => group.fixtures);
-  const active = (status: string) => ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(status);
+  const active = (status: string) => ["LIVE", "HALF_TIME"].includes(status);
   const items = [["ALL", "All", fixtures.length], ["UPCOMING", "Upcoming", fixtures.filter((item) => ["SCHEDULED", "TIMED", "UPCOMING"].includes(item.status)).length], ["LIVE", "Live", fixtures.filter((item) => active(item.status)).length], ["FINISHED", "Finished", fixtures.filter((item) => item.status === "FINISHED").length]] as const;
   return <div className="status-filters" aria-label="Fixture status">{items.map(([key, label, count]) => <button key={key} aria-pressed={value === key} onClick={() => onChange(key)}>{label} <b>{count}</b></button>)}</div>;
 }
@@ -109,7 +109,7 @@ function FixtureResults({ state, expanded, setExpanded, teamQuery, statusFilter 
   const query = teamQuery.trim().toLocaleLowerCase();
   const groups = (state.data ?? []).map((group) => ({ ...group, fixtures: group.fixtures.filter((fixture) => {
     const matchesTeam = !query || fixture.home.name.toLocaleLowerCase().includes(query) || fixture.away.name.toLocaleLowerCase().includes(query);
-    const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : statusFilter === "LIVE" ? ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(fixture.status) : fixture.status === statusFilter);
+    const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : statusFilter === "LIVE" ? ["LIVE", "HALF_TIME"].includes(fixture.status) : fixture.status === statusFilter);
     return matchesTeam && matchesStatus;
   }) })).filter((group) => group.fixtures.length);
   if (!groups.length) return <EmptyState title="No fixtures found" detail="No team in the selected fixture set matches this filter." />;
@@ -150,7 +150,7 @@ function useLiveRefresh(groups: FixtureGroup[] | null, retry: () => void) {
 }
 
 function isActive(fixture: Fixture) {
-  return ["LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED"].includes(fixture.status);
+  return ["LIVE", "HALF_TIME"].includes(fixture.status);
 }
 
 function fixtureStateLabel(fixture: Fixture) {
@@ -164,7 +164,7 @@ function fixtureStateLabel(fixture: Fixture) {
 }
 
 function fixtureScore(fixture: Fixture) {
-  if ((!isActive(fixture) && fixture.status !== "FINISHED") || fixture.home_score === null) {
+  if ((!isActive(fixture) && !["FINISHED", "SUSPENDED", "INTERRUPTED"].includes(fixture.status)) || fixture.home_score === null) {
     return "";
   }
   return `${fixture.home_score}–${fixture.away_score}`;

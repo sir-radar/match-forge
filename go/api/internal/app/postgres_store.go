@@ -83,7 +83,13 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			       live.period, live.observed_at, live.stale_after
 			FROM football.product_provider_fixture_observations live
 			WHERE live.canonical_fixture_id = pf.fixture_id
-			ORDER BY (live.stale_after >= clock_timestamp()) DESC,
+			ORDER BY CASE live.canonical_status
+			           WHEN 'FINISHED' THEN 6
+			           WHEN 'AWARDED' THEN 5 WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
+			           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
+			           WHEN 'HALF_TIME' THEN 3 WHEN 'LIVE' THEN 2
+			           WHEN 'POSTPONED' THEN 1 ELSE 0 END DESC,
+			         (live.stale_after >= clock_timestamp()) DESC,
 			         COALESCE(live.source_updated_at, live.observed_at) DESC,
 			         CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
 			         live.observed_at DESC, live.observation_id DESC
@@ -373,7 +379,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		       ep.fixture_id::text, pf.kickoff_at, ep.competition_text, ep.home_team_text,
 		       ep.away_team_text, ep.market, ep.selection, ep.match_status,
 		       forecast.probabilities, COALESCE(result.settlement_state, 'PENDING'),
-		       result.home_score, result.away_score, result.provider_code,
+		       result.home_score, result.away_score, result.score_basis, result.provider_code,
 		       result.provider_updated_at
 		FROM football.external_predictions ep
 		JOIN football.external_prediction_sources eps ON eps.source_code = ep.source_code
@@ -384,7 +390,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 			WHERE fixture_id = ep.fixture_id ORDER BY created_at DESC LIMIT 1
 		) forecast ON true
 		LEFT JOIN LATERAL (
-			SELECT settlement_state, home_score, away_score, provider_code,
+			SELECT settlement_state, home_score, away_score, score_basis, provider_code,
 			       provider_updated_at
 			FROM football.external_prediction_result_revisions revision
 			WHERE revision.prediction_id = ep.prediction_id
@@ -418,7 +424,8 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 			&item.OriginalDateText, &item.CollectedAt, &item.FixtureID, &item.KickoffAt,
 			&item.Competition, &item.HomeTeam, &item.AwayTeam, &item.Market,
 			&item.Selection, &item.MatchStatus, &probabilities, &item.SettlementState,
-			&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultProvider,
+			&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis,
+			&item.ResultProvider,
 			&item.ResultUpdatedAt,
 		); err != nil {
 			return nil, err

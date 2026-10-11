@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 import psycopg
 
 from football.product.api_football import ApiFootballClient, ApiFootballError
+from football.product.development_provider_preview import development_provider_preview
 from football.product.domain import MODEL_ARTIFACT_PATH
 from football.product.external_prediction_sources import SourceCollection, collect_sources
 from football.product.external_predictions import import_predictions, parse_import
@@ -111,6 +112,14 @@ def build_parser() -> argparse.ArgumentParser:
             else None
         ),
     )
+    review = commands.add_parser("provider-mapping-review")
+    review.add_argument("--provider", choices=("fotmob", "pitchapi"))
+    review.add_argument("--limit", type=int, default=100)
+    review.add_argument("--provider-match-id")
+    review.add_argument("--fixture-id", type=UUID)
+    preview = commands.add_parser("development-provider-preview")
+    preview.add_argument("--fixture-id", type=UUID, required=True)
+    preview.add_argument("--knowledge-cutoff", type=datetime.fromisoformat, required=True)
     return parser
 
 
@@ -121,6 +130,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.command == "external-predictions":
         return _run_external_predictions(args)
+    if args.command == "provider-mapping-review":
+        return _run_provider_mapping_review(args)
+    if args.command == "development-provider-preview":
+        return _run_development_provider_preview(args)
     if args.command in {"fotmob-sync", "pitchapi-sync"}:
         return _run_operational_provider_sync(args)
     if args.command in {
@@ -159,6 +172,80 @@ def main(argv: list[str] | None = None) -> int:
                 history_concurrency=args.history_concurrency,
             )
     except (ApiFootballError, FootballDataOrgError, psycopg.Error, OSError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _run_provider_mapping_review(args: argparse.Namespace) -> int:
+    if not 1 <= args.limit <= 1000:
+        print("error: limit must be between 1 and 1000", file=sys.stderr)
+        return 2
+    applying = args.provider_match_id is not None or args.fixture_id is not None
+    if applying and (not args.provider or not args.provider_match_id or not args.fixture_id):
+        print(
+            "error: apply requires --provider, --provider-match-id, and --fixture-id",
+            file=sys.stderr,
+        )
+        return 2
+    with psycopg.connect(args.database_url) as connection, connection.cursor() as cursor:
+        if applying:
+            OperationalProviderSync(
+                connection,
+                Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+                provider_code=args.provider,
+            ).apply_reviewed_mapping(args.provider_match_id, args.fixture_id)
+            connection.commit()
+            print(
+                json.dumps(
+                    {
+                        "status": "MANUAL_ACCEPTED",
+                        "provider": args.provider,
+                        "provider_match_id": args.provider_match_id,
+                        "fixture_id": str(args.fixture_id),
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
+        cursor.execute(
+            """SELECT provider_code, provider_match_id, candidate_fixture_id,
+                      disposition, reason, evidence, observed_at
+                 FROM football.product_provider_mapping_decisions
+                WHERE disposition IN ('REVIEW_REQUIRED', 'CONTRADICTORY')
+                  AND (%s IS NULL OR provider_code = %s)
+                ORDER BY observed_at DESC, decision_id DESC LIMIT %s""",
+            (args.provider, args.provider, args.limit),
+        )
+        rows = cursor.fetchall()
+    print(
+        json.dumps(
+            [
+                {
+                    "provider": row[0],
+                    "provider_match_id": row[1],
+                    "candidate_fixture_id": str(row[2]) if row[2] else None,
+                    "disposition": row[3],
+                    "reason": row[4],
+                    "evidence": row[5],
+                    "observed_at": row[6].isoformat(),
+                }
+                for row in rows
+            ],
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def _run_development_provider_preview(args: argparse.Namespace) -> int:
+    try:
+        with psycopg.connect(args.database_url) as connection:
+            result = development_provider_preview(
+                connection, args.fixture_id, args.knowledge_cutoff, MODEL_ARTIFACT_PATH
+            )
+    except (psycopg.Error, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))

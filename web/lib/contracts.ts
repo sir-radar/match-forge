@@ -181,6 +181,7 @@ export type ExternalPrediction = {
   settlement_state: "WON" | "LOST" | "VOID" | "PENDING";
   actual_home_score: number | null;
   actual_away_score: number | null;
+  result_score_basis: string | null;
   result_provider: string | null;
   result_updated_at: string | null;
 };
@@ -405,6 +406,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       settlement_state: settlement as ExternalPrediction["settlement_state"],
       actual_home_score: item.actual_home_score === undefined ? null : nullableNumber(item.actual_home_score, "actual_home_score"),
       actual_away_score: item.actual_away_score === undefined ? null : nullableNumber(item.actual_away_score, "actual_away_score"),
+      result_score_basis: item.result_score_basis === undefined ? null : nullableText(item.result_score_basis, "result_score_basis"),
       result_provider: item.result_provider === undefined ? null : nullableText(item.result_provider, "result_provider"),
       result_updated_at: item.result_updated_at === undefined ? null : nullableText(item.result_updated_at, "result_updated_at"),
     };

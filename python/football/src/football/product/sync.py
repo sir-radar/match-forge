@@ -38,8 +38,6 @@ from football.product.context_sync import (
 from football.product.domain import (
     MINIMUM_HISTORY_MATCHES,
     FinishedMatch,
-    external_selection_correct,
-    external_settlement_state,
     fixture_identity,
     forecast_from_history,
     forecast_payload,
@@ -47,6 +45,7 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
+from football.product.external_predictions import settle_external_predictions
 from football.product.football_data_org import (
     FootballDataOrgClient,
     FootballDataOrgError,
@@ -932,95 +931,7 @@ class ProductSync:
         raise ValueError("fixture providers unavailable")
 
     def _settle_external_predictions(self, settled_at: datetime) -> int:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT ep.prediction_id, ep.market, ep.selection,
-                       pf.status, pf.home_score, pf.away_score, pf.result_score_basis,
-                       observation.provider_code, observation.observed_at
-                FROM football.external_predictions ep
-                JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
-                LEFT JOIN LATERAL (
-                    SELECT provider_code, observed_at
-                    FROM football.product_provider_fixture_observations
-                    WHERE canonical_fixture_id = pf.fixture_id
-                    ORDER BY COALESCE(source_updated_at, observed_at) DESC,
-                             observed_at DESC, observation_id DESC
-                    LIMIT 1
-                ) observation ON true
-                ORDER BY ep.prediction_id
-                """
-            )
-            pending = cursor.fetchall()
-        count = 0
-        with self.connection.cursor() as cursor:
-            for (
-                prediction_id,
-                market,
-                selection,
-                fixture_status,
-                home_goals,
-                away_goals,
-                score_basis,
-                provider_code,
-                provider_updated_at,
-            ) in pending:
-                state = external_settlement_state(
-                    market, selection, fixture_status, home_goals, away_goals, score_basis
-                )
-                semantic = sha256_json(
-                    {
-                        "prediction_id": str(prediction_id),
-                        "state": state,
-                        "fixture_status": fixture_status,
-                        "score": [home_goals, away_goals],
-                        "score_basis": score_basis,
-                        "provider": provider_code,
-                        "provider_updated_at": (
-                            provider_updated_at.isoformat() if provider_updated_at else None
-                        ),
-                    }
-                )
-                cursor.execute(
-                    """
-                    INSERT INTO football.external_prediction_result_revisions (
-                        prediction_id, semantic_sha256, settlement_state, fixture_status,
-                        home_score, away_score, score_basis, provider_code,
-                        provider_updated_at, evidence, settled_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s)
-                    ON CONFLICT (semantic_sha256) DO NOTHING
-                    """,
-                    (
-                        prediction_id,
-                        semantic,
-                        state,
-                        fixture_status,
-                        home_goals,
-                        away_goals,
-                        score_basis if fixture_status == "FINISHED" else "NOT_SETTLED",
-                        provider_code,
-                        provider_updated_at,
-                        json.dumps({"market": market, "selection": selection}, sort_keys=True),
-                        settled_at,
-                    ),
-                )
-                count += cursor.rowcount
-                correct = (
-                    external_selection_correct(market, selection, home_goals, away_goals)
-                    if state in {"WON", "LOST"}
-                    else None
-                )
-                if correct is not None:
-                    cursor.execute(
-                        """
-                        INSERT INTO football.external_prediction_results (
-                            prediction_id, correct, settled_at
-                        ) VALUES (%s, %s, %s)
-                        ON CONFLICT (prediction_id) DO NOTHING
-                        """,
-                        (prediction_id, correct, settled_at),
-                    )
-        return count
+        return settle_external_predictions(self.connection, settled_at)
 
     def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
         digest = hashlib.sha256(response.raw).hexdigest()

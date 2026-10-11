@@ -6,7 +6,7 @@ import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from time import monotonic, sleep
 from typing import Any, cast
@@ -14,7 +14,8 @@ from uuid import UUID
 
 from psycopg import Connection
 
-from football.product.domain import canonical_json, sha256_json, stable_id
+from football.product.domain import canonical_json, normalize_team_name, sha256_json, stable_id
+from football.product.external_predictions import settle_external_predictions
 from football.providers.fotmob import (
     FotmobClient,
     FotmobLiveScore,
@@ -33,7 +34,10 @@ FixtureObservation = FotmobLiveScore | PitchApiFixture
 
 @dataclass(slots=True)
 class SyncCounts:
+    attempted_requests: int = 0
+    successful_requests: int = 0
     fetched: int = 0
+    matched: int = 0
     inserted: int = 0
     updated: int = 0
     skipped: int = 0
@@ -43,7 +47,10 @@ class SyncCounts:
 
     def to_dict(self) -> dict[str, int]:
         return {
+            "attempted_requests": self.attempted_requests,
+            "successful_requests": self.successful_requests,
             "fetched": self.fetched,
+            "matched": self.matched,
             "inserted": self.inserted,
             "updated": self.updated,
             "skipped": self.skipped,
@@ -51,6 +58,14 @@ class SyncCounts:
             "failed": self.failed,
             "resources": self.resources,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class DetailCounts:
+    attempted_requests: int = 0
+    successful_requests: int = 0
+    failed_requests: int = 0
+    resources: int = 0
 
 
 class RequestPacer:
@@ -88,6 +103,70 @@ class OperationalProviderSync:
         self.stale_after = timedelta(seconds=stale_after_seconds)
         self.kickoff_tolerance = timedelta(minutes=kickoff_tolerance_minutes)
         self.pacer = RequestPacer(minimum_interval_seconds)
+
+    def apply_reviewed_mapping(self, provider_match_id: str, fixture_id: UUID) -> None:
+        """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT provider_competition_id, provider_competition_name,
+                          provider_home_team_id, provider_home_team_name,
+                          provider_away_team_id, provider_away_team_name,
+                          kickoff_at, canonical_status, provider_status,
+                          home_score, away_score, match_minute, added_time, period,
+                          source_updated_at, observed_at, source_snapshot_id
+                     FROM football.product_provider_fixture_observations
+                    WHERE provider_code = %s AND provider_match_id = %s
+                    ORDER BY observed_at DESC, observation_id DESC LIMIT 1""",
+                (self.provider_code, provider_match_id),
+            )
+            source = cursor.fetchone()
+            if source is None or any(source[index] is None for index in (0, 1, 2, 3, 4, 5)):
+                raise ValueError("stored provider identity evidence is incomplete")
+            cursor.execute(
+                """SELECT fixture.fixture_id, fixture.competition_id,
+                          fixture.home_team_id, fixture.away_team_id,
+                          competition.name, home.name, away.name,
+                          fixture.status, fixture.home_score, fixture.away_score
+                     FROM football.product_fixtures fixture
+                     JOIN football.product_competitions competition
+                       ON competition.competition_id = fixture.competition_id
+                     JOIN football.product_teams home ON home.team_id = fixture.home_team_id
+                     JOIN football.product_teams away ON away.team_id = fixture.away_team_id
+                    WHERE fixture.fixture_id = %s""",
+                (fixture_id,),
+            )
+            candidate = cursor.fetchone()
+            if candidate is None:
+                raise ValueError("reviewed canonical fixture does not exist")
+        row = PitchApiFixture(
+            provider_match_id=provider_match_id,
+            provider_competition_id=source[0],
+            provider_home_team_id=source[2],
+            provider_away_team_id=source[4],
+            home_team_name=source[3],
+            away_team_name=source[5],
+            kickoff_at=source[6],
+            status=source[7],
+            provider_status=source[8] or "",
+            home_score=source[9],
+            away_score=source[10],
+            minute=source[11],
+            added_time=source[12],
+            period=source[13],
+            source_updated_at=source[14],
+            observed_at=source[15],
+            provider_competition_name=source[1],
+        )
+        snapshot_id = cast(UUID, source[16])
+        self._persist_deterministic_mapping(row, snapshot_id, candidate, mapping_method="manual")
+        self._record_mapping_decision(
+            row,
+            snapshot_id,
+            fixture_id,
+            "MANUAL_ACCEPTED",
+            "operator explicitly accepted mapping",
+            {"reviewed_fixture_id": str(fixture_id)},
+        )
 
     def sync_fotmob(
         self,
@@ -142,40 +221,88 @@ class OperationalProviderSync:
             raise ValueError("provider sync date range must be ordered and at most 367 days")
         if not 0 <= details_limit <= 100:
             raise ValueError("details limit must be between 0 and 100")
+        sync_started = datetime.now(UTC)
         counts = SyncCounts()
         detailed = 0
         day = from_date
         while day <= through_date:
             self.pacer.wait()
+            counts.attempted_requests += 1
             response = fetch(day)
+            counts.successful_requests += 1
             snapshot_id = self._record_response(f"fixtures-{day.isoformat()}", response)
             rows: Sequence[FixtureObservation] = normalize(response)
             if competition_id is not None:
                 rows = tuple(row for row in rows if row.provider_competition_id == competition_id)
             counts.fetched += len(rows)
             for row in rows:
-                fixture_id = self._resolve_fixture(row)
+                fixture_id = self._resolve_fixture(row, snapshot_id)
                 inserted = self._store_observation(row, snapshot_id, fixture_id)
                 counts.inserted += int(inserted)
                 counts.skipped += int(not inserted)
                 if fixture_id is None:
                     counts.unmatched += 1
                 else:
+                    counts.matched += 1
                     counts.updated += self._update_canonical_fixture(row, fixture_id, snapshot_id)
                 if detailed < details_limit:
-                    try:
-                        detailed += 1
-                        counts.resources += detail(row)
-                    except (OSError, RuntimeError, ValueError):
-                        counts.failed += 1
+                    detailed += 1
+                    detail_counts: DetailCounts = detail(row)
+                    counts.attempted_requests += detail_counts.attempted_requests
+                    counts.successful_requests += detail_counts.successful_requests
+                    counts.failed += detail_counts.failed_requests
+                    counts.resources += detail_counts.resources
             self.connection.commit()
             day += timedelta(days=1)
+        settled = settle_external_predictions(self.connection, datetime.now(UTC))
+        diagnostics = self._sync_diagnostics(sync_started)
+        self.connection.commit()
         return {
             "status": "COMPLETED_WITH_ERRORS" if counts.failed else "COMPLETED",
             "provider": self.provider_code,
             "from_date": from_date.isoformat(),
             "through_date": through_date.isoformat(),
+            "settled_external_predictions": settled,
+            **diagnostics,
             **counts.to_dict(),
+        }
+
+    def _sync_diagnostics(self, sync_started: datetime) -> dict[str, object]:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT reason, count(*)
+                     FROM football.product_provider_mapping_decisions
+                    WHERE provider_code = %s AND observed_at >= %s
+                      AND disposition IN ('REVIEW_REQUIRED', 'CONTRADICTORY')
+                    GROUP BY reason ORDER BY reason""",
+                (self.provider_code, sync_started),
+            )
+            reasons = {reason: count for reason, count in cursor.fetchall()}
+            cursor.execute(
+                """SELECT observed_at, stale_after
+                     FROM football.product_provider_fixture_observations
+                    WHERE provider_code = %s
+                    ORDER BY observed_at DESC, observation_id DESC LIMIT 1""",
+                (self.provider_code,),
+            )
+            freshness = cursor.fetchone()
+        capabilities = [
+            "fixtures",
+            "live_scores",
+            "match_details",
+            "statistics",
+            "shots",
+            "lineups",
+            "player_ratings",
+            "h2h",
+        ]
+        if self.provider_code == "pitchapi":
+            capabilities.extend(("events", "momentum"))
+        return {
+            "unmatched_reasons": reasons,
+            "effective_capabilities": capabilities,
+            "latest_observed_at": freshness[0].isoformat() if freshness else None,
+            "latest_stale_after": freshness[1].isoformat() if freshness else None,
         }
 
     def _record_response(self, resource_name: str, response: Any) -> UUID:
@@ -238,7 +365,9 @@ class OperationalProviderSync:
             )
         return snapshot_id
 
-    def _resolve_fixture(self, row: FixtureObservation) -> UUID | None:
+    def _resolve_fixture(
+        self, row: FixtureObservation, snapshot_id: UUID | None = None
+    ) -> UUID | None:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -246,6 +375,7 @@ class OperationalProviderSync:
                 FROM football.match_provider_mappings mapping
                 JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = %s AND mapping.provider_match_id = %s
+                  AND mapping.valid_to IS NULL
                   AND mapping.mapping_method IN ('explicit_crosswalk', 'manual', 'deterministic')
                   AND mapping.mapping_confidence = 1
                 """,
@@ -269,6 +399,7 @@ class OperationalProviderSync:
                 JOIN football.providers provider
                   ON provider.id = competition_mapping.provider_id AND provider.code = %s
                 WHERE competition_mapping.provider_competition_id = %s
+                  AND competition_mapping.valid_to IS NULL
                   AND competition_mapping.mapping_method IN (
                       'explicit_crosswalk', 'manual', 'deterministic'
                   )
@@ -288,7 +419,237 @@ class OperationalProviderSync:
                 ),
             )
             candidates = cursor.fetchall()
-        return cast(UUID, candidates[0][0]) if len(candidates) == 1 else None
+        if len(candidates) == 1:
+            return cast(UUID, candidates[0][0])
+        if snapshot_id is None:
+            return None
+        return self._reconcile_exact_fixture(row, snapshot_id)
+
+    def _reconcile_exact_fixture(self, row: FixtureObservation, snapshot_id: UUID) -> UUID | None:
+        competition_name = row.provider_competition_name
+        if competition_name is None:
+            self._record_mapping_decision(
+                row, snapshot_id, None, "REVIEW_REQUIRED", "provider competition name missing", {}
+            )
+            return None
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT fixture.fixture_id, fixture.competition_id,
+                       fixture.home_team_id, fixture.away_team_id,
+                       competition.name, home.name, away.name,
+                       fixture.status, fixture.home_score, fixture.away_score
+                FROM football.product_fixtures fixture
+                JOIN football.product_competitions competition
+                  ON competition.competition_id = fixture.competition_id
+                JOIN football.product_teams home ON home.team_id = fixture.home_team_id
+                JOIN football.product_teams away ON away.team_id = fixture.away_team_id
+                WHERE fixture.kickoff_at BETWEEN %s AND %s
+                ORDER BY fixture.fixture_id
+                """,
+                (
+                    row.kickoff_at - self.kickoff_tolerance,
+                    row.kickoff_at + self.kickoff_tolerance,
+                ),
+            )
+            nearby = cursor.fetchall()
+        exact = [
+            candidate
+            for candidate in nearby
+            if normalize_team_name(candidate[4]) == normalize_team_name(competition_name)
+            and normalize_team_name(candidate[5]) == normalize_team_name(row.home_team_name)
+            and normalize_team_name(candidate[6]) == normalize_team_name(row.away_team_name)
+        ]
+        evidence = {
+            "rule": "unique_exact_competition_home_away_utc_kickoff_v1",
+            "kickoff_tolerance_seconds": int(self.kickoff_tolerance.total_seconds()),
+            "provider_competition": competition_name,
+            "provider_home_team": row.home_team_name,
+            "provider_away_team": row.away_team_name,
+            "nearby_candidates": len(nearby),
+            "exact_candidates": [str(item[0]) for item in exact],
+        }
+        if len(exact) != 1:
+            reason = "no exact canonical candidate" if not exact else "ambiguous exact candidates"
+            self._record_mapping_decision(
+                row, snapshot_id, None, "REVIEW_REQUIRED", reason, evidence
+            )
+            return None
+        candidate = exact[0]
+        fixture_id = cast(UUID, candidate[0])
+        if (
+            row.status == "FINISHED"
+            and candidate[7] == "FINISHED"
+            and candidate[8] is not None
+            and (candidate[8], candidate[9]) != (row.home_score, row.away_score)
+        ):
+            self._record_mapping_decision(
+                row,
+                snapshot_id,
+                fixture_id,
+                "CONTRADICTORY",
+                "finished score contradicts canonical result",
+                evidence
+                | {
+                    "canonical_score": [candidate[8], candidate[9]],
+                    "provider_score": [row.home_score, row.away_score],
+                },
+            )
+            return None
+        self._persist_deterministic_mapping(row, snapshot_id, candidate)
+        self._record_mapping_decision(
+            row, snapshot_id, fixture_id, "AUTO_ACCEPTED", "deterministic rule matched", evidence
+        )
+        return fixture_id
+
+    def _persist_deterministic_mapping(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID,
+        candidate: Sequence[Any],
+        *,
+        mapping_method: str = "deterministic",
+    ) -> None:
+        fixture_id, competition_id, home_team_id, away_team_id = candidate[:4]
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id FROM football.providers WHERE code = %s", (self.provider_code,)
+            )
+            provider = cursor.fetchone()
+            if provider is None:
+                raise ValueError("provider registration missing")
+            provider_id = provider[0]
+            for table, identity_column, canonical_column, provider_value, canonical_value in (
+                (
+                    "competition_provider_mappings",
+                    "provider_competition_id",
+                    "competition_id",
+                    row.provider_competition_id,
+                    competition_id,
+                ),
+                (
+                    "team_provider_mappings",
+                    "provider_team_id",
+                    "team_id",
+                    row.provider_home_team_id,
+                    home_team_id,
+                ),
+                (
+                    "team_provider_mappings",
+                    "provider_team_id",
+                    "team_id",
+                    row.provider_away_team_id,
+                    away_team_id,
+                ),
+                (
+                    "match_provider_mappings",
+                    "provider_match_id",
+                    "match_id",
+                    row.provider_match_id,
+                    fixture_id,
+                ),
+            ):
+                cursor.execute(
+                    f"""SELECT {canonical_column} FROM football.{table}
+                         WHERE provider_id = %s AND {identity_column} = %s AND valid_to IS NULL""",
+                    (provider_id, provider_value),
+                )
+                existing = cursor.fetchone()
+                if existing is not None:
+                    if existing[0] != canonical_value:
+                        raise ValueError(f"contradictory existing {table} mapping")
+                    cursor.execute(
+                        f"""UPDATE football.{table} SET last_seen_at = GREATEST(last_seen_at, %s)
+                             WHERE provider_id = %s AND {identity_column} = %s
+                               AND valid_to IS NULL""",
+                        (row.observed_at, provider_id, provider_value),
+                    )
+                    continue
+                cursor.execute(
+                    f"""INSERT INTO football.{table} (
+                            {canonical_column}, provider_id, {identity_column},
+                            first_seen_at, last_seen_at, mapping_method,
+                            mapping_confidence, source_snapshot_id
+                         ) VALUES (%s, %s, %s, %s, %s, %s, 1, %s)""",
+                    (
+                        canonical_value,
+                        provider_id,
+                        provider_value,
+                        row.observed_at,
+                        row.observed_at,
+                        mapping_method,
+                        snapshot_id,
+                    ),
+                )
+            for provider_team_id, team_name, team_id in (
+                (row.provider_home_team_id, row.home_team_name, home_team_id),
+                (row.provider_away_team_id, row.away_team_name, away_team_id),
+            ):
+                cursor.execute(
+                    """INSERT INTO football.product_team_aliases (
+                           provider_code, provider_team_id, normalized_name, team_id
+                       ) VALUES (%s, %s, %s, %s)
+                       ON CONFLICT (provider_code, provider_team_id) DO NOTHING""",
+                    (self.provider_code, provider_team_id, normalize_team_name(team_name), team_id),
+                )
+            cursor.execute(
+                """UPDATE football.product_provider_fixture_observations
+                      SET canonical_fixture_id = %s
+                    WHERE provider_code = %s AND provider_match_id = %s
+                      AND canonical_fixture_id IS NULL""",
+                (fixture_id, self.provider_code, row.provider_match_id),
+            )
+            cursor.execute(
+                """UPDATE football.product_provider_resource_observations
+                      SET canonical_fixture_id = %s,
+                          known_at = COALESCE(known_at, observed_at),
+                          point_in_time_eligibility = CASE
+                              WHEN point_in_time_eligibility = 'UNKNOWN' THEN 'ELIGIBLE'
+                              ELSE point_in_time_eligibility END
+                    WHERE provider_code = %s AND provider_match_id = %s""",
+                (fixture_id, self.provider_code, row.provider_match_id),
+            )
+
+    def _record_mapping_decision(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID,
+        fixture_id: UUID | None,
+        disposition: str,
+        reason: str,
+        evidence: Mapping[str, Any],
+    ) -> None:
+        semantic = sha256_json(
+            {
+                "provider": self.provider_code,
+                "match": row.provider_match_id,
+                "fixture": str(fixture_id) if fixture_id else None,
+                "disposition": disposition,
+                "reason": reason,
+                "evidence": evidence,
+                "snapshot": str(snapshot_id),
+            }
+        )
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO football.product_provider_mapping_decisions (
+                       semantic_sha256, provider_code, provider_match_id,
+                       candidate_fixture_id, disposition, reason, evidence,
+                       source_snapshot_id, observed_at
+                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                   ON CONFLICT (semantic_sha256) DO NOTHING""",
+                (
+                    semantic,
+                    self.provider_code,
+                    row.provider_match_id,
+                    fixture_id,
+                    disposition,
+                    reason,
+                    json.dumps(dict(evidence), sort_keys=True),
+                    snapshot_id,
+                    row.observed_at,
+                ),
+            )
 
     def _store_observation(
         self, row: FixtureObservation, snapshot_id: UUID, fixture_id: UUID | None
@@ -317,12 +678,15 @@ class OperationalProviderSync:
                 """
                 INSERT INTO football.product_provider_fixture_observations (
                     semantic_sha256, provider_code, provider_match_id,
-                    provider_competition_id, canonical_fixture_id, source_snapshot_id,
+                    provider_competition_id, provider_competition_name,
+                    provider_home_team_id, provider_home_team_name,
+                    provider_away_team_id, provider_away_team_name,
+                    canonical_fixture_id, source_snapshot_id,
                     kickoff_at, canonical_status, provider_status, home_score, away_score,
                     match_minute, added_time, period, source_updated_at, observed_at,
                     cache_expires_at, stale_after
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                          %s, %s, %s, %s, %s, %s)
+                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (semantic_sha256) DO NOTHING
                 """,
                 (
@@ -330,6 +694,11 @@ class OperationalProviderSync:
                     self.provider_code,
                     row.provider_match_id,
                     row.provider_competition_id,
+                    row.provider_competition_name,
+                    row.provider_home_team_id,
+                    row.home_team_name,
+                    row.provider_away_team_id,
+                    row.away_team_name,
                     fixture_id,
                     snapshot_id,
                     row.kickoff_at,
@@ -359,6 +728,33 @@ class OperationalProviderSync:
                 UPDATE football.product_fixtures
                    SET status = %s, home_score = %s, away_score = %s, updated_at = %s
                  WHERE fixture_id = %s AND status <> 'FINISHED'
+                   AND CASE status
+                       WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
+                       WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
+                       WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
+                       WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
+                       WHEN 'AWARDED' THEN 5 ELSE 6 END
+                       <= CASE %s
+                       WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
+                       WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
+                       WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
+                       WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
+                       WHEN 'AWARDED' THEN 5 ELSE 6 END
+                   AND (
+                       CASE status
+                           WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
+                           WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
+                           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
+                           WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
+                           WHEN 'AWARDED' THEN 5 ELSE 6 END
+                       < CASE %s
+                           WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
+                           WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
+                           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
+                           WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
+                           WHEN 'AWARDED' THEN 5 ELSE 6 END
+                       OR COALESCE(%s, %s) >= updated_at
+                   )
                    AND (status, home_score, away_score)
                        IS DISTINCT FROM (%s, %s, %s)
                 """,
@@ -368,6 +764,10 @@ class OperationalProviderSync:
                     row.away_score,
                     row.observed_at,
                     fixture_id,
+                    row.status,
+                    row.status,
+                    row.source_updated_at,
+                    row.observed_at,
                     row.status,
                     row.home_score,
                     row.away_score,
@@ -443,21 +843,31 @@ class OperationalProviderSync:
             cursor.execute(
                 """
                 UPDATE football.product_fixtures
-                   SET status = 'FINISHED', home_score = %s, away_score = %s, updated_at = %s
+                   SET status = 'FINISHED', home_score = %s, away_score = %s,
+                       result_score_basis = %s, updated_at = %s
                  WHERE fixture_id = %s
                    AND (status <> 'FINISHED' OR home_score IS NULL OR away_score IS NULL)
                 """,
-                (row.home_score, row.away_score, row.observed_at, fixture_id),
+                (
+                    row.home_score,
+                    row.away_score,
+                    row.result_score_basis,
+                    row.observed_at,
+                    fixture_id,
+                ),
             )
             return cursor.rowcount
 
-    def _fotmob_details(self, client: FotmobClient, row: FotmobLiveScore) -> int:
+    def _fotmob_details(self, client: FotmobClient, row: FotmobLiveScore) -> DetailCounts:
         self.pacer.wait()
-        response = client.match_details(row.provider_match_id)
+        try:
+            response = client.match_details(row.provider_match_id)
+        except (OSError, RuntimeError, ValueError):
+            return DetailCounts(attempted_requests=1, failed_requests=1)
         snapshot = self._record_response(f"match-{row.provider_match_id}-details", response)
         fixture_id = self._resolve_fixture(row)
         resources = _fotmob_resources(response.data)
-        return sum(
+        for resource_type, payload in resources.items():
             self._store_resource(
                 row.provider_match_id,
                 fixture_id,
@@ -465,14 +875,20 @@ class OperationalProviderSync:
                 payload,
                 response,
                 snapshot,
-                eligibility="UNKNOWN",
+                eligibility="ELIGIBLE",
             )
-            for resource_type, payload in resources.items()
+        return DetailCounts(
+            attempted_requests=1,
+            successful_requests=1,
+            resources=len(resources),
         )
 
-    def _pitchapi_details(self, client: PitchApiClient, row: PitchApiFixture) -> int:
+    def _pitchapi_details(self, client: PitchApiClient, row: PitchApiFixture) -> DetailCounts:
         fixture_id = self._resolve_fixture(row)
-        count = 0
+        attempted = 0
+        successful = 0
+        failed = 0
+        resources = 0
         for endpoint, resource_type in (
             ("", "MATCH_DETAILS"),
             ("events", "EVENTS"),
@@ -484,24 +900,31 @@ class OperationalProviderSync:
             ("h2h", "H2H"),
         ):
             self.pacer.wait()
-            response = (
-                client.match(row.provider_match_id)
-                if not endpoint
-                else client.match_resource(row.provider_match_id, endpoint)
-            )
+            attempted += 1
+            try:
+                response = (
+                    client.match(row.provider_match_id)
+                    if not endpoint
+                    else client.match_resource(row.provider_match_id, endpoint)
+                )
+            except (OSError, RuntimeError, ValueError):
+                failed += 1
+                continue
+            successful += 1
+            resources += 1
             snapshot = self._record_response(
                 f"match-{row.provider_match_id}-{endpoint or 'details'}", response
             )
-            count += self._store_resource(
+            self._store_resource(
                 row.provider_match_id,
                 fixture_id,
                 resource_type,
                 response.data,
                 response,
                 snapshot,
-                eligibility="UNKNOWN",
+                eligibility="ELIGIBLE",
             )
-        return count
+        return DetailCounts(attempted, successful, failed, resources)
 
     def _store_resource(
         self,
@@ -533,7 +956,7 @@ class OperationalProviderSync:
                     canonical_fixture_id, resource_type, availability_status,
                     source_snapshot_id, source_checksum, observed_at, known_at,
                     point_in_time_eligibility, development_only, payload
-                ) VALUES (%s, %s, %s, %s, %s, 'AVAILABLE', %s, %s, %s, NULL, %s, true, %s)
+                ) VALUES (%s, %s, %s, %s, %s, 'AVAILABLE', %s, %s, %s, %s, %s, true, %s)
                 ON CONFLICT (semantic_sha256) DO NOTHING
                 """,
                 (
@@ -544,6 +967,7 @@ class OperationalProviderSync:
                     resource_type,
                     snapshot_id,
                     response.sha256,
+                    response.fetched_at,
                     response.fetched_at,
                     eligibility,
                     json.dumps(payload, sort_keys=True),

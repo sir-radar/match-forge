@@ -402,7 +402,7 @@ function Results({ day, items, refreshing }: { day: string; items: ExternalPredi
                 <TD className="text-center text-[#86948a]">{kickoffTime(item.kickoff_at)}</TD>
                 <TD className="text-[#bbcabf]">{market(item.market)}</TD>
                 <TD><span className={`rounded-sm border border-[#353943] bg-[#1c1f29] px-2 py-0.5 font-semibold ${tone(item.agreement)}`}>{item.selection}</span></TD>
-                <TD className="text-center">{item.actual_home_score === null ? "—" : `${item.actual_home_score}–${item.actual_away_score}`}</TD>
+                <TD className="text-center"><span title={item.result_score_basis ? `Score basis: ${item.result_score_basis}` : undefined}>{item.actual_home_score === null ? "—" : `${item.actual_home_score}–${item.actual_away_score}`}</span></TD>
                 <TD className="text-center"><span title={item.result_provider && item.result_updated_at ? `${item.result_provider} · ${item.result_updated_at}` : undefined}>{item.settlement_state}</span></TD>
                 <TD className={`text-right font-bold ${tone(item.agreement)}`}>{probability(item.matchforge_probability)}</TD>
                 <TD className="text-center"><Badge value={item.agreement} /></TD>
