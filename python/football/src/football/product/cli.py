@@ -81,6 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
             type=int,
             default=int(os.environ.get("MATCHFORGE_PROVIDER_DETAILS_LIMIT", "10")),
         )
+        provider_sync.add_argument("--live-details-limit", type=int, default=10)
         provider_sync.add_argument(
             "--data-root",
             type=Path,
@@ -306,6 +307,7 @@ def _run_operational_provider_sync(args: argparse.Namespace) -> int:
                     from_date,
                     args.date,
                     details_limit=args.details_limit,
+                    live_details_limit=args.live_details_limit,
                     competition_id=args.competition,
                 )
             else:
@@ -328,6 +330,7 @@ def _run_operational_provider_sync(args: argparse.Namespace) -> int:
                     from_date,
                     args.date,
                     details_limit=args.details_limit,
+                    live_details_limit=args.live_details_limit,
                     competition_id=args.competition,
                 )
             connection.commit()

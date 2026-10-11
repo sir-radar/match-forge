@@ -53,9 +53,58 @@ export type Fixture = {
   period: string | null;
   last_successful_update: string | null;
   stale: boolean;
+  goal_scorers: LiveEvent[];
 };
 
 export type FixtureGroup = { competition: Competition; fixtures: Fixture[] };
+
+export type LiveEvent = {
+  id: string;
+  type: string;
+  team_id: string | null;
+  team_side: "HOME" | "AWAY" | null;
+  player_id: string | null;
+  player_name: string | null;
+  minute: number | null;
+  added_time: number | null;
+  period: string | null;
+  own_goal: boolean;
+  penalty: boolean;
+  disallowed: boolean;
+  provider: string;
+};
+
+export type LiveStatistic = {
+  metric: string;
+  label: string;
+  period: string;
+  home: number | null;
+  away: number | null;
+  unit: string;
+  original_field: string;
+  available: boolean;
+};
+
+export type LiveSource = { provider: string; provider_match_id: string; observed_at: string; last_fetched_at: string; stale: boolean };
+
+export type LiveMatch = {
+  fixture_id: string;
+  status: string;
+  home: Team;
+  away: Team;
+  home_score: number | null;
+  away_score: number | null;
+  match_minute: number | null;
+  added_time: number | null;
+  period: string | null;
+  events: LiveEvent[];
+  statistics: LiveStatistic[];
+  score_source: LiveSource | null;
+  event_source: LiveSource | null;
+  statistics_source: LiveSource | null;
+  availability: Record<string, boolean>;
+  partial: boolean;
+};
 
 export type Forecast = ForecastSummary & {
   fixture_id: string;
@@ -260,6 +309,24 @@ export function parseFixtureGroups(value: unknown): FixtureGroup[] {
       fixtures: array(group.fixtures, "fixtures").map(parseFixture),
     };
   });
+}
+
+export function parseLiveMatch(value: unknown): LiveMatch {
+  const item = object(value, "live match");
+  return {
+    fixture_id: text(item.fixture_id, "fixture_id"), status: text(item.status, "status"),
+    home: parseTeam(item.home), away: parseTeam(item.away),
+    home_score: nullableNumber(item.home_score, "home_score"), away_score: nullableNumber(item.away_score, "away_score"),
+    match_minute: nullableNumber(item.match_minute, "match_minute"), added_time: nullableNumber(item.added_time, "added_time"),
+    period: nullableText(item.period, "period"),
+    events: array(item.events, "events").map(parseLiveEvent),
+    statistics: array(item.statistics, "statistics").map(parseLiveStatistic),
+    score_source: item.score_source === null ? null : parseLiveSource(item.score_source),
+    event_source: item.event_source === null ? null : parseLiveSource(item.event_source),
+    statistics_source: item.statistics_source === null ? null : parseLiveSource(item.statistics_source),
+    availability: booleanRecord(item.availability, "availability"),
+    partial: boolean(item.partial, "partial"),
+  };
 }
 
 export function parseForecast(value: unknown): Forecast {
@@ -535,7 +602,33 @@ function parseFixture(value: unknown): Fixture {
     period: item.period === undefined ? null : nullableText(item.period, "period"),
     last_successful_update: item.last_successful_update === undefined ? null : nullableText(item.last_successful_update, "last_successful_update"),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
+    goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
   };
+}
+
+function parseLiveEvent(value: unknown): LiveEvent {
+  const item = object(value, "live event");
+  const side = item.team_side === null ? null : text(item.team_side, "team_side");
+  if (side !== null && side !== "HOME" && side !== "AWAY") throw new Error("invalid team_side");
+  return {
+    id: text(item.id, "id"), type: text(item.type, "type"),
+    team_id: nullableText(item.team_id, "team_id"), team_side: side,
+    player_id: nullableText(item.player_id, "player_id"), player_name: nullableText(item.player_name, "player_name"),
+    minute: nullableNumber(item.minute, "minute"), added_time: nullableNumber(item.added_time, "added_time"),
+    period: nullableText(item.period, "period"), own_goal: boolean(item.own_goal, "own_goal"),
+    penalty: boolean(item.penalty, "penalty"), disallowed: boolean(item.disallowed, "disallowed"),
+    provider: text(item.provider, "provider"),
+  };
+}
+
+function parseLiveStatistic(value: unknown): LiveStatistic {
+  const item = object(value, "live statistic");
+  return { metric: text(item.metric, "metric"), label: text(item.label, "label"), period: text(item.period, "period"), home: nullableNumber(item.home, "home"), away: nullableNumber(item.away, "away"), unit: text(item.unit, "unit"), original_field: text(item.original_field, "original_field"), available: boolean(item.available, "available") };
+}
+
+function parseLiveSource(value: unknown): LiveSource {
+  const item = object(value, "live source");
+  return { provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: text(item.observed_at, "observed_at"), last_fetched_at: text(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
 }
 
 function parseTeam(value: unknown): Team {

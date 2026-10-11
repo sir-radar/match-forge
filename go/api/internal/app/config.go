@@ -116,8 +116,8 @@ func optionalDurationFromEnv(name string) (time.Duration, error) {
 		return 0, nil
 	}
 	duration, err := time.ParseDuration(value)
-	if err != nil || duration < time.Minute {
-		return 0, fmt.Errorf("%s must be zero or at least 1m", name)
+	if err != nil || duration < 30*time.Second {
+		return 0, fmt.Errorf("%s must be zero or at least 30s", name)
 	}
 	return duration, nil
 }

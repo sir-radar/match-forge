@@ -16,6 +16,7 @@ from psycopg import Connection
 
 from football.product.domain import canonical_json, normalize_team_name, sha256_json, stable_id
 from football.product.external_predictions import settle_external_predictions
+from football.product.live_resources import normalize_events, normalize_statistics
 from football.providers.fotmob import (
     FotmobClient,
     FotmobLiveScore,
@@ -175,6 +176,7 @@ class OperationalProviderSync:
         through_date: date,
         *,
         details_limit: int = 10,
+        live_details_limit: int = 10,
         competition_id: str | None = None,
     ) -> dict[str, object]:
         return self._sync_dates(
@@ -184,6 +186,7 @@ class OperationalProviderSync:
             normalize=normalize_daily_matches,
             detail=lambda item: self._fotmob_details(client, item),
             details_limit=details_limit,
+            live_details_limit=live_details_limit,
             competition_id=competition_id,
         )
 
@@ -194,6 +197,7 @@ class OperationalProviderSync:
         through_date: date,
         *,
         details_limit: int = 10,
+        live_details_limit: int = 10,
         competition_id: str | None = None,
     ) -> dict[str, object]:
         return self._sync_dates(
@@ -203,6 +207,7 @@ class OperationalProviderSync:
             normalize=normalize_pitchapi_matches,
             detail=lambda item: self._pitchapi_details(client, item),
             details_limit=details_limit,
+            live_details_limit=live_details_limit,
             competition_id=competition_id,
         )
 
@@ -215,15 +220,17 @@ class OperationalProviderSync:
         normalize: Any,
         detail: Any,
         details_limit: int,
+        live_details_limit: int,
         competition_id: str | None,
     ) -> dict[str, object]:
         if through_date < from_date or (through_date - from_date).days > 366:
             raise ValueError("provider sync date range must be ordered and at most 367 days")
-        if not 0 <= details_limit <= 100:
-            raise ValueError("details limit must be between 0 and 100")
+        if not 0 <= details_limit <= 100 or not 0 <= live_details_limit <= 100:
+            raise ValueError("details limits must be between 0 and 100")
         sync_started = datetime.now(UTC)
         counts = SyncCounts()
-        detailed = 0
+        detailed_bulk = 0
+        detailed_live = 0
         day = from_date
         while day <= through_date:
             self.pacer.wait()
@@ -235,8 +242,10 @@ class OperationalProviderSync:
             if competition_id is not None:
                 rows = tuple(row for row in rows if row.provider_competition_id == competition_id)
             counts.fetched += len(rows)
+            resolved: list[tuple[FixtureObservation, UUID | None]] = []
             for row in rows:
                 fixture_id = self._resolve_fixture(row, snapshot_id)
+                resolved.append((row, fixture_id))
                 inserted = self._store_observation(row, snapshot_id, fixture_id)
                 counts.inserted += int(inserted)
                 counts.skipped += int(not inserted)
@@ -245,13 +254,18 @@ class OperationalProviderSync:
                 else:
                     counts.matched += 1
                     counts.updated += self._update_canonical_fixture(row, fixture_id, snapshot_id)
-                if detailed < details_limit:
-                    detailed += 1
-                    detail_counts: DetailCounts = detail(row)
-                    counts.attempted_requests += detail_counts.attempted_requests
-                    counts.successful_requests += detail_counts.successful_requests
-                    counts.failed += detail_counts.failed_requests
-                    counts.resources += detail_counts.resources
+            detail_counts, used_bulk, used_live = self._fetch_prioritized_details(
+                resolved,
+                detail,
+                bulk_limit=details_limit - detailed_bulk,
+                live_limit=live_details_limit - detailed_live,
+            )
+            detailed_bulk += used_bulk
+            detailed_live += used_live
+            counts.attempted_requests += detail_counts.attempted_requests
+            counts.successful_requests += detail_counts.successful_requests
+            counts.failed += detail_counts.failed_requests
+            counts.resources += detail_counts.resources
             self.connection.commit()
             day += timedelta(days=1)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
@@ -267,6 +281,32 @@ class OperationalProviderSync:
             **counts.to_dict(),
         }
 
+    def _fetch_prioritized_details(
+        self,
+        resolved: Sequence[tuple[FixtureObservation, UUID | None]],
+        detail: Any,
+        *,
+        bulk_limit: int,
+        live_limit: int,
+    ) -> tuple[DetailCounts, int, int]:
+        attempted = successful = failed = resources = used_bulk = used_live = 0
+        for row, _fixture_id in sorted(
+            resolved, key=lambda item: _detail_priority(item[0], item[1])
+        ):
+            is_live = row.status in {"LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"}
+            if is_live and used_live >= live_limit:
+                continue
+            if not is_live and used_bulk >= bulk_limit:
+                continue
+            used_live += int(is_live)
+            used_bulk += int(not is_live)
+            item = cast(DetailCounts, detail(row))
+            attempted += item.attempted_requests
+            successful += item.successful_requests
+            failed += item.failed_requests
+            resources += item.resources
+        return DetailCounts(attempted, successful, failed, resources), used_bulk, used_live
+
     def _sync_diagnostics(self, sync_started: datetime) -> dict[str, object]:
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -279,10 +319,10 @@ class OperationalProviderSync:
             )
             reasons = {reason: count for reason, count in cursor.fetchall()}
             cursor.execute(
-                """SELECT observed_at, stale_after
+                """SELECT observed_at, last_fetched_at, stale_after
                      FROM football.product_provider_fixture_observations
                     WHERE provider_code = %s
-                    ORDER BY observed_at DESC, observation_id DESC LIMIT 1""",
+                    ORDER BY last_fetched_at DESC, observation_id DESC LIMIT 1""",
                 (self.provider_code,),
             )
             freshness = cursor.fetchone()
@@ -302,7 +342,8 @@ class OperationalProviderSync:
             "unmatched_reasons": reasons,
             "effective_capabilities": capabilities,
             "latest_observed_at": freshness[0].isoformat() if freshness else None,
-            "latest_stale_after": freshness[1].isoformat() if freshness else None,
+            "latest_fetched_at": freshness[1].isoformat() if freshness else None,
+            "latest_stale_after": freshness[2].isoformat() if freshness else None,
         }
 
     def _record_response(self, resource_name: str, response: Any) -> UUID:
@@ -684,10 +725,17 @@ class OperationalProviderSync:
                     canonical_fixture_id, source_snapshot_id,
                     kickoff_at, canonical_status, provider_status, home_score, away_score,
                     match_minute, added_time, period, source_updated_at, observed_at,
-                    cache_expires_at, stale_after
+                    cache_expires_at, stale_after, last_fetched_at
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (semantic_sha256) DO NOTHING
+                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (semantic_sha256) DO UPDATE SET
+                    last_fetched_at = GREATEST(
+                        football.product_provider_fixture_observations.last_fetched_at,
+                        EXCLUDED.last_fetched_at
+                    ),
+                    cache_expires_at = EXCLUDED.cache_expires_at,
+                    stale_after = EXCLUDED.stale_after
+                RETURNING xmax = 0
                 """,
                 (
                     semantic,
@@ -713,61 +761,44 @@ class OperationalProviderSync:
                     row.observed_at,
                     cache_expires,
                     stale_after,
+                    row.observed_at,
                 ),
             )
-            return cursor.rowcount == 1
+            result = cursor.fetchone()
+            return bool(result and result[0])
 
     def _update_canonical_fixture(
         self, row: FixtureObservation, fixture_id: UUID, snapshot_id: UUID
     ) -> int:
         if row.status == "FINISHED":
             return self._apply_finished_result(row, fixture_id, snapshot_id)
+        incoming_at = row.source_updated_at or row.observed_at
         with self.connection.cursor() as cursor:
+            current = cursor.execute(
+                """SELECT status, updated_at FROM football.product_fixtures
+                    WHERE fixture_id = %s FOR UPDATE""",
+                (fixture_id,),
+            ).fetchone()
+            if (
+                current is None
+                or incoming_at < current[1]
+                or not _valid_transition(current[0], row.status)
+            ):
+                return 0
             cursor.execute(
-                """
-                UPDATE football.product_fixtures
-                   SET status = %s, home_score = %s, away_score = %s, updated_at = %s
-                 WHERE fixture_id = %s AND status <> 'FINISHED'
-                   AND CASE status
-                       WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
-                       WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
-                       WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
-                       WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
-                       WHEN 'AWARDED' THEN 5 ELSE 6 END
-                       <= CASE %s
-                       WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
-                       WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
-                       WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
-                       WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
-                       WHEN 'AWARDED' THEN 5 ELSE 6 END
-                   AND (
-                       CASE status
-                           WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
-                           WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
-                           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
-                           WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
-                           WHEN 'AWARDED' THEN 5 ELSE 6 END
-                       < CASE %s
-                           WHEN 'SCHEDULED' THEN 0 WHEN 'POSTPONED' THEN 1
-                           WHEN 'LIVE' THEN 2 WHEN 'HALF_TIME' THEN 3
-                           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
-                           WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
-                           WHEN 'AWARDED' THEN 5 ELSE 6 END
-                       OR COALESCE(%s, %s) >= updated_at
-                   )
-                   AND (status, home_score, away_score)
-                       IS DISTINCT FROM (%s, %s, %s)
-                """,
+                """UPDATE football.product_fixtures
+                      SET status = %s, home_score = %s, away_score = %s, updated_at = %s
+                    WHERE fixture_id = %s AND status = %s AND updated_at = %s
+                      AND (status, home_score, away_score)
+                          IS DISTINCT FROM (%s, %s, %s)""",
                 (
                     row.status,
                     row.home_score,
                     row.away_score,
-                    row.observed_at,
+                    incoming_at,
                     fixture_id,
-                    row.status,
-                    row.status,
-                    row.source_updated_at,
-                    row.observed_at,
+                    current[0],
+                    current[1],
                     row.status,
                     row.home_score,
                     row.away_score,
@@ -783,7 +814,7 @@ class OperationalProviderSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT status, home_score, away_score
+                SELECT status, home_score, away_score, updated_at
                 FROM football.product_fixtures WHERE fixture_id = %s
                 """,
                 (fixture_id,),
@@ -791,7 +822,10 @@ class OperationalProviderSync:
             existing = cursor.fetchone()
             if existing is None:
                 return 0
-            existing_status, existing_home, existing_away = existing
+            existing_status, existing_home, existing_away, existing_updated_at = existing
+            incoming_at = row.source_updated_at or row.observed_at
+            if incoming_at < existing_updated_at:
+                return 0
             if (
                 existing_status == "FINISHED"
                 and existing_home is not None
@@ -852,7 +886,7 @@ class OperationalProviderSync:
                     row.home_score,
                     row.away_score,
                     row.result_score_basis,
-                    row.observed_at,
+                    incoming_at,
                     fixture_id,
                 ),
             )
@@ -877,6 +911,7 @@ class OperationalProviderSync:
                 snapshot,
                 eligibility="ELIGIBLE",
             )
+            self._store_normalized_resource(row, resource_type, payload, response, snapshot)
         return DetailCounts(
             attempted_requests=1,
             successful_requests=1,
@@ -924,6 +959,7 @@ class OperationalProviderSync:
                 snapshot,
                 eligibility="ELIGIBLE",
             )
+            self._store_normalized_resource(row, resource_type, response.data, response, snapshot)
         return DetailCounts(attempted, successful, failed, resources)
 
     def _store_resource(
@@ -955,9 +991,13 @@ class OperationalProviderSync:
                     semantic_sha256, provider_code, provider_match_id,
                     canonical_fixture_id, resource_type, availability_status,
                     source_snapshot_id, source_checksum, observed_at, known_at,
-                    point_in_time_eligibility, development_only, payload
-                ) VALUES (%s, %s, %s, %s, %s, 'AVAILABLE', %s, %s, %s, %s, %s, true, %s)
-                ON CONFLICT (semantic_sha256) DO NOTHING
+                    point_in_time_eligibility, development_only, payload, last_fetched_at
+                ) VALUES (%s, %s, %s, %s, %s, 'AVAILABLE', %s, %s, %s, %s, %s, true, %s, %s)
+                ON CONFLICT (semantic_sha256) DO UPDATE SET
+                    last_fetched_at = GREATEST(
+                        football.product_provider_resource_observations.last_fetched_at,
+                        EXCLUDED.last_fetched_at
+                    )
                 """,
                 (
                     semantic,
@@ -971,9 +1011,42 @@ class OperationalProviderSync:
                     response.fetched_at,
                     eligibility,
                     json.dumps(payload, sort_keys=True),
+                    response.fetched_at,
                 ),
             )
             return cursor.rowcount
+
+    def _store_normalized_resource(
+        self,
+        row: FixtureObservation,
+        resource_type: str,
+        payload: Mapping[str, Any] | list[Any],
+        response: FotmobResponse | PitchApiResponse,
+        snapshot_id: UUID,
+    ) -> None:
+        if resource_type == "EVENTS":
+            normalized = normalize_events(
+                self.provider_code,
+                row.provider_match_id,
+                payload,
+                home_provider_team_id=row.provider_home_team_id,
+                away_provider_team_id=row.provider_away_team_id,
+            )
+            normalized_type = "NORMALIZED_EVENTS"
+        elif resource_type == "STATISTICS":
+            normalized = normalize_statistics(self.provider_code, payload)
+            normalized_type = "NORMALIZED_STATISTICS"
+        else:
+            return
+        self._store_resource(
+            row.provider_match_id,
+            self._resolve_fixture(row),
+            normalized_type,
+            normalized,
+            response,
+            snapshot_id,
+            eligibility="ELIGIBLE",
+        )
 
 
 def _fotmob_resources(payload: Mapping[str, Any] | list[Any]) -> dict[str, Any]:
@@ -998,4 +1071,39 @@ def _fotmob_resources(payload: Mapping[str, Any] | list[Any]) -> dict[str, Any]:
     }
     if "MATCH_DETAILS" not in resources:
         resources["MATCH_DETAILS"] = payload
+    match_facts = source.get("matchFacts")
+    if isinstance(match_facts, Mapping):
+        events = match_facts.get("events")
+        if isinstance(events, (Mapping, list)):
+            resources["EVENTS"] = events
     return resources
+
+
+def _valid_transition(current: str, incoming: str) -> bool:
+    terminal = {"FINISHED", "CANCELLED", "ABANDONED", "AWARDED"}
+    if current in terminal:
+        return current == incoming
+    allowed = {
+        "SCHEDULED": {"SCHEDULED", "LIVE", "HALF_TIME", "POSTPONED", *terminal},
+        "POSTPONED": {"POSTPONED", "SCHEDULED", "LIVE", *terminal},
+        "LIVE": {"LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED", *terminal},
+        "HALF_TIME": {"HALF_TIME", "LIVE", "SUSPENDED", "INTERRUPTED", *terminal},
+        "SUSPENDED": {"SUSPENDED", "INTERRUPTED", "LIVE", "HALF_TIME", *terminal},
+        "INTERRUPTED": {"INTERRUPTED", "SUSPENDED", "LIVE", "HALF_TIME", *terminal},
+    }
+    return incoming in allowed.get(current, set())
+
+
+def _detail_priority(item: FixtureObservation, fixture_id: UUID | None) -> tuple[int, float, str]:
+    mapped = fixture_id is not None
+    if item.status == "LIVE":
+        rank = 0 if mapped else 1
+    elif item.status in {"HALF_TIME", "INTERRUPTED", "SUSPENDED"}:
+        rank = 2 if mapped else 5
+    elif item.status == "FINISHED" and mapped:
+        rank = 3
+    elif item.status == "SCHEDULED" and mapped:
+        rank = 4
+    else:
+        rank = 5
+    return rank, abs((item.kickoff_at - item.observed_at).total_seconds()), item.provider_match_id

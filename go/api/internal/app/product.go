@@ -5,11 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 )
 
-var errProductUnavailable = errors.New("product data unavailable")
+var (
+	errProductUnavailable = errors.New("product data unavailable")
+	errProductNotFound    = errors.New("product record not found")
+)
 
 type CompetitionFilters struct {
 	Continent         string
@@ -19,7 +23,8 @@ type CompetitionFilters struct {
 }
 
 type FixtureFilters struct {
-	Date                 time.Time
+	Start                time.Time
+	End                  time.Time
 	CompetitionID        string
 	Country              string
 	Continent            string
@@ -52,6 +57,7 @@ type PerformanceFilters struct {
 type ProductStore interface {
 	Competitions(context.Context, CompetitionFilters) ([]Competition, error)
 	Fixtures(context.Context, FixtureFilters) ([]FixtureGroup, error)
+	LiveFixture(context.Context, string) (LiveMatch, error)
 	FixtureContext(context.Context, string) (MatchContext, error)
 	ForecastHistory(context.Context, string) ([]ForecastRevision, error)
 	Forecast(context.Context, string, string) (Forecast, error)
@@ -69,6 +75,9 @@ func (unavailableProductStore) Competitions(context.Context, CompetitionFilters)
 }
 func (unavailableProductStore) Fixtures(context.Context, FixtureFilters) ([]FixtureGroup, error) {
 	return nil, errProductUnavailable
+}
+func (unavailableProductStore) LiveFixture(context.Context, string) (LiveMatch, error) {
+	return LiveMatch{}, errProductUnavailable
 }
 func (unavailableProductStore) FixtureContext(context.Context, string) (MatchContext, error) {
 	return MatchContext{}, errProductUnavailable
@@ -142,6 +151,61 @@ type Fixture struct {
 	Period               *string          `json:"period"`
 	LastSuccessfulUpdate *time.Time       `json:"last_successful_update"`
 	Stale                bool             `json:"stale"`
+	GoalScorers          []LiveEvent      `json:"goal_scorers"`
+}
+
+type LiveEvent struct {
+	ID         string  `json:"id"`
+	Type       string  `json:"type"`
+	TeamID     *string `json:"team_id"`
+	TeamSide   *string `json:"team_side"`
+	PlayerID   *string `json:"player_id"`
+	PlayerName *string `json:"player_name"`
+	Minute     *int    `json:"minute"`
+	AddedTime  *int    `json:"added_time"`
+	Period     *string `json:"period"`
+	OwnGoal    bool    `json:"own_goal"`
+	Penalty    bool    `json:"penalty"`
+	Disallowed bool    `json:"disallowed"`
+	Provider   string  `json:"provider"`
+}
+
+type LiveStatistic struct {
+	Metric        string   `json:"metric"`
+	Label         string   `json:"label"`
+	Period        string   `json:"period"`
+	Home          *float64 `json:"home"`
+	Away          *float64 `json:"away"`
+	Unit          string   `json:"unit"`
+	OriginalField string   `json:"original_field"`
+	Available     bool     `json:"available"`
+}
+
+type LiveSource struct {
+	Provider        string    `json:"provider"`
+	ProviderMatchID string    `json:"provider_match_id"`
+	ObservedAt      time.Time `json:"observed_at"`
+	LastFetchedAt   time.Time `json:"last_fetched_at"`
+	Stale           bool      `json:"stale"`
+}
+
+type LiveMatch struct {
+	FixtureID    string          `json:"fixture_id"`
+	Status       string          `json:"status"`
+	Home         Team            `json:"home"`
+	Away         Team            `json:"away"`
+	HomeScore    *int            `json:"home_score"`
+	AwayScore    *int            `json:"away_score"`
+	MatchMinute  *int            `json:"match_minute"`
+	AddedTime    *int            `json:"added_time"`
+	Period       *string         `json:"period"`
+	Events       []LiveEvent     `json:"events"`
+	Statistics   []LiveStatistic `json:"statistics"`
+	ScoreSource  *LiveSource     `json:"score_source"`
+	EventSource  *LiveSource     `json:"event_source"`
+	StatsSource  *LiveSource     `json:"statistics_source"`
+	Availability map[string]bool `json:"availability"`
+	Partial      bool            `json:"partial"`
 }
 
 type Team struct {
@@ -434,13 +498,34 @@ func (application *App) listFixtures(response http.ResponseWriter, request *http
 		application.publicError(response, http.StatusBadRequest, "date must use YYYY-MM-DD")
 		return
 	}
+	location := time.UTC
+	if timezone := request.URL.Query().Get("timezone"); timezone != "" {
+		location, err = time.LoadLocation(timezone)
+		if err != nil {
+			application.publicError(response, http.StatusBadRequest, "invalid timezone")
+			return
+		}
+	}
+	start := time.Date(requestedDate.Year(), requestedDate.Month(), requestedDate.Day(), 0, 0, 0, 0, location)
 	filters := FixtureFilters{
-		Date: requestedDate, CompetitionID: request.URL.Query().Get("competition"),
+		Start: start.UTC(), End: start.AddDate(0, 0, 1).UTC(), CompetitionID: request.URL.Query().Get("competition"),
 		Country: request.URL.Query().Get("country"), Continent: request.URL.Query().Get("continent"),
 		ForecastAvailability: request.URL.Query().Get("forecast_availability"),
 	}
 	items, err := application.product.Fixtures(request.Context(), filters)
 	application.respondProduct(response, map[string]any{"date": value, "groups": items}, err)
+}
+
+var canonicalIDPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+
+func (application *App) liveFixture(response http.ResponseWriter, request *http.Request) {
+	fixtureID := request.PathValue("fixture_id")
+	if !canonicalIDPattern.MatchString(fixtureID) {
+		application.publicError(response, http.StatusBadRequest, "invalid fixture_id")
+		return
+	}
+	item, err := application.product.LiveFixture(request.Context(), fixtureID)
+	application.respondProduct(response, item, err)
 }
 
 func (application *App) fixtureContext(response http.ResponseWriter, request *http.Request) {
@@ -586,6 +671,10 @@ func (application *App) respondProduct(response http.ResponseWriter, value any, 
 	}
 	if errors.Is(err, errProductUnavailable) {
 		application.publicError(response, http.StatusServiceUnavailable, "product data unavailable")
+		return
+	}
+	if errors.Is(err, errProductNotFound) {
+		application.publicError(response, http.StatusNotFound, "fixture not found")
 		return
 	}
 	application.logger.Error("product API", "error", err)

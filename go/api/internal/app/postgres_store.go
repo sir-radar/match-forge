@@ -67,7 +67,8 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       forecast.expected_away_goals, forecast.probabilities,
 		       observation.provider_code, observation.provider_status,
 		       observation.match_minute, observation.added_time, observation.period,
-		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false)
+		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
+		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code
 		FROM football.product_fixtures pf
 		JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
 		JOIN football.product_teams ht ON ht.team_id = pf.home_team_id
@@ -80,23 +81,27 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		LEFT JOIN LATERAL (
 			SELECT live.provider_code, live.provider_status, live.canonical_status,
 			       live.home_score, live.away_score, live.match_minute, live.added_time,
-			       live.period, live.observed_at, live.stale_after
+			       live.period, live.last_fetched_at AS observed_at, live.stale_after
 			FROM football.product_provider_fixture_observations live
 			WHERE live.canonical_fixture_id = pf.fixture_id
-			ORDER BY CASE live.canonical_status
-			           WHEN 'FINISHED' THEN 6
-			           WHEN 'AWARDED' THEN 5 WHEN 'CANCELLED' THEN 5 WHEN 'ABANDONED' THEN 5
-			           WHEN 'SUSPENDED' THEN 4 WHEN 'INTERRUPTED' THEN 4
-			           WHEN 'HALF_TIME' THEN 3 WHEN 'LIVE' THEN 2
-			           WHEN 'POSTPONED' THEN 1 ELSE 0 END DESC,
+			  AND live.canonical_status = pf.status
+			  AND live.home_score IS NOT DISTINCT FROM pf.home_score
+			  AND live.away_score IS NOT DISTINCT FROM pf.away_score
+			ORDER BY COALESCE(live.source_updated_at, live.observed_at) DESC,
 			         (live.stale_after >= clock_timestamp()) DESC,
-			         COALESCE(live.source_updated_at, live.observed_at) DESC,
 			         CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
 			         live.observed_at DESC, live.observation_id DESC
 			LIMIT 1
 		) observation ON true
-		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $1 + interval '1 day'`
-	args := []any{filters.Date.UTC()}
+		LEFT JOIN LATERAL (
+			SELECT resource.payload, resource.provider_code
+			FROM football.product_provider_resource_observations resource
+			WHERE resource.canonical_fixture_id = pf.fixture_id
+			  AND resource.resource_type = 'NORMALIZED_EVENTS'
+			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
+		) event_resource ON true
+		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2`
+	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "pc.country", filters.Country)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
@@ -123,6 +128,113 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		groups[index].Fixtures = append(groups[index].Fixtures, fixture)
 	}
 	return groups, rows.Err()
+}
+
+func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID string) (LiveMatch, error) {
+	var item LiveMatch
+	var eventsJSON, statisticsJSON []byte
+	var scoreProvider, scoreMatchID, eventProvider, eventMatchID, statsProvider, statsMatchID *string
+	var scoreObserved, scoreFetched, eventObserved, eventFetched, statsObserved, statsFetched *time.Time
+	var scoreStale, eventStale, statsStale *bool
+	err := store.pool.QueryRow(ctx, `
+		SELECT pf.fixture_id::text, pf.status,
+		       home.team_id::text, home.name, home.crest_url,
+		       away.team_id::text, away.name, away.crest_url,
+		       COALESCE(score.home_score, pf.home_score), COALESCE(score.away_score, pf.away_score),
+		       score.match_minute, score.added_time, score.period,
+		       score.provider_code, score.provider_match_id, score.observed_at, score.last_fetched_at,
+		       CASE WHEN score.stale_after IS NULL THEN NULL ELSE score.stale_after < clock_timestamp() END,
+		       COALESCE(events.payload->'events', '[]'::jsonb),
+		       events.provider_code, events.provider_match_id, events.observed_at, events.last_fetched_at,
+		       CASE WHEN events.last_fetched_at IS NULL THEN NULL ELSE events.last_fetched_at < clock_timestamp() - interval '3 minutes' END,
+		       COALESCE(stats.payload->'statistics', '[]'::jsonb),
+		       stats.provider_code, stats.provider_match_id, stats.observed_at, stats.last_fetched_at,
+		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END
+		FROM football.product_fixtures pf
+		JOIN football.product_teams home ON home.team_id = pf.home_team_id
+		JOIN football.product_teams away ON away.team_id = pf.away_team_id
+		LEFT JOIN LATERAL (
+			SELECT live.* FROM football.product_provider_fixture_observations live
+			WHERE live.canonical_fixture_id = pf.fixture_id
+			  AND live.canonical_status = pf.status
+			  AND live.home_score IS NOT DISTINCT FROM pf.home_score
+			  AND live.away_score IS NOT DISTINCT FROM pf.away_score
+			ORDER BY COALESCE(live.source_updated_at, live.observed_at) DESC,
+			         (live.stale_after >= clock_timestamp()) DESC,
+			         CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
+			         live.observed_at DESC, live.observation_id DESC LIMIT 1
+		) score ON true
+		LEFT JOIN LATERAL (
+			SELECT resource.* FROM football.product_provider_resource_observations resource
+			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_EVENTS'
+			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
+		) events ON true
+		LEFT JOIN LATERAL (
+			SELECT resource.* FROM football.product_provider_resource_observations resource
+			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_STATISTICS'
+			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
+		) stats ON true
+		WHERE pf.fixture_id::text = $1`, fixtureID,
+	).Scan(
+		&item.FixtureID, &item.Status,
+		&item.Home.ID, &item.Home.Name, &item.Home.CrestURL,
+		&item.Away.ID, &item.Away.Name, &item.Away.CrestURL,
+		&item.HomeScore, &item.AwayScore, &item.MatchMinute, &item.AddedTime, &item.Period,
+		&scoreProvider, &scoreMatchID, &scoreObserved, &scoreFetched, &scoreStale,
+		&eventsJSON, &eventProvider, &eventMatchID, &eventObserved, &eventFetched, &eventStale,
+		&statisticsJSON, &statsProvider, &statsMatchID, &statsObserved, &statsFetched, &statsStale,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return LiveMatch{}, errProductNotFound
+	}
+	if err != nil {
+		return LiveMatch{}, err
+	}
+	if err := json.Unmarshal(eventsJSON, &item.Events); err != nil {
+		return LiveMatch{}, err
+	}
+	if err := json.Unmarshal(statisticsJSON, &item.Statistics); err != nil {
+		return LiveMatch{}, err
+	}
+	attachEventTeams(item.Events, item.Home.ID, item.Away.ID, valueOrEmpty(eventProvider))
+	item.ScoreSource = liveSource(scoreProvider, scoreMatchID, scoreObserved, scoreFetched, scoreStale)
+	item.EventSource = liveSource(eventProvider, eventMatchID, eventObserved, eventFetched, eventStale)
+	item.StatsSource = liveSource(statsProvider, statsMatchID, statsObserved, statsFetched, statsStale)
+	item.Availability = map[string]bool{
+		"score":      item.HomeScore != nil && item.AwayScore != nil,
+		"events":     len(item.Events) > 0,
+		"statistics": len(item.Statistics) > 0,
+	}
+	item.Partial = !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
+	return item, nil
+}
+
+func liveSource(provider, matchID *string, observed, fetched *time.Time, stale *bool) *LiveSource {
+	if provider == nil || matchID == nil || observed == nil || fetched == nil {
+		return nil
+	}
+	return &LiveSource{Provider: *provider, ProviderMatchID: *matchID, ObservedAt: *observed, LastFetchedAt: *fetched, Stale: stale != nil && *stale}
+}
+
+func valueOrEmpty(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func attachEventTeams(events []LiveEvent, homeID, awayID, provider string) {
+	for index := range events {
+		events[index].Provider = provider
+		if events[index].TeamSide == nil {
+			continue
+		}
+		teamID := awayID
+		if *events[index].TeamSide == "HOME" {
+			teamID = homeID
+		}
+		events[index].TeamID = &teamID
+	}
 }
 
 func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID string) (MatchContext, error) {
@@ -903,7 +1015,8 @@ func scanCompetition(row pgx.CollectableRow) (Competition, error) {
 func scanFixture(row pgx.Row) (Competition, Fixture, error) {
 	var competition Competition
 	var fixture Fixture
-	var sourceJSON, probabilities []byte
+	var sourceJSON, probabilities, eventJSON []byte
+	var eventProvider *string
 	var forecastID *string
 	var homeMean, awayMean *float64
 	err := row.Scan(
@@ -920,6 +1033,7 @@ func scanFixture(row pgx.Row) (Competition, Fixture, error) {
 		&fixture.ForecastAvailability, &forecastID, &homeMean, &awayMean, &probabilities,
 		&fixture.Provider, &fixture.ProviderStatus, &fixture.MatchMinute, &fixture.AddedTime,
 		&fixture.Period, &fixture.LastSuccessfulUpdate, &fixture.Stale,
+		&eventJSON, &eventProvider,
 	)
 	if err != nil {
 		return Competition{}, Fixture{}, err
@@ -934,7 +1048,23 @@ func scanFixture(row pgx.Row) (Competition, Fixture, error) {
 		}
 		fixture.Forecast = forecast
 	}
+	var events []LiveEvent
+	if err := json.Unmarshal(eventJSON, &events); err != nil {
+		return Competition{}, Fixture{}, err
+	}
+	attachEventTeams(events, fixture.Home.ID, fixture.Away.ID, valueOrEmpty(eventProvider))
+	fixture.GoalScorers = verifiedGoals(events)
 	return competition, fixture, nil
+}
+
+func verifiedGoals(events []LiveEvent) []LiveEvent {
+	goals := []LiveEvent{}
+	for _, event := range events {
+		if event.Type == "GOAL" && !event.Disallowed {
+			goals = append(goals, event)
+		}
+	}
+	return goals
 }
 
 type scoreCell struct {

@@ -23,7 +23,7 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   const competitions = useResource("competitions", competitionLoad);
   const fixtureKey = `${date}|${Object.values(filters).join("|")}`;
   const fixtureLoad = useCallback((signal: AbortSignal) => {
-    const query = new URLSearchParams({ date });
+    const query = new URLSearchParams({ date, timezone: DISPLAY_TIME_ZONE });
     if (filters.continent) query.set("continent", filters.continent);
     if (filters.country) query.set("country", filters.country);
     if (filters.competition) query.set("competition", filters.competition);
@@ -38,7 +38,6 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
     const next = new Date(`${date}T12:00:00Z`);
     next.setUTCDate(next.getUTCDate() + days);
     setDate(next.toISOString().slice(0, 10));
-    setExpanded(null);
   };
 
   return (
@@ -47,7 +46,7 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
       <CompetitionRail state={competitions} filters={filters} setFilters={setFilters} />
       <section className="fixture-workbench" aria-label="Football fixtures">
         <div className="environment-strip"><span>Environment: <b>Production pre-match</b></span><i /> <span>Forecasts: immutable published records</span></div>
-        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={(value) => { setDate(value); setExpanded(null); }} />
+        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={setDate} />
         <StatusFilters groups={fixtures.data ?? []} value={statusFilter} onChange={setStatusFilter} />
         <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} teamQuery={teamQuery} setTeamQuery={setTeamQuery} />
         <div className="engine-strip"><Icon name="monitoring" /><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
@@ -130,7 +129,7 @@ function FixtureRow({ fixture, competition, expanded, toggle }: { fixture: Fixtu
   return <article className={`fixture ${expanded ? "expanded" : ""}`}>
     <button className="fixture-summary" aria-expanded={expanded} aria-controls={`fixture-panel-${fixture.id}`} onClick={toggle}>
       <span className="kickoff"><b>{active ? <span className="live-indicator">LIVE</span> : timeLabel(fixture.kickoff_at)}</b><small>{fixtureStateLabel(fixture)}</small></span>
-      <span className="teams"><strong>{fixture.home.name}</strong><i>vs</i><strong>{fixture.away.name}</strong></span>
+      <span className="teams"><strong>{fixture.home.name}<Scorers fixture={fixture} side="HOME" /></strong><i>vs</i><strong>{fixture.away.name}<Scorers fixture={fixture} side="AWAY" /></strong></span>
       <span className="score">{fixtureScore(fixture)}</span>
       <span className="forecast-cell">{forecast ? <ProbabilityBar values={forecast.probabilities} /> : <span className="availability">{availabilityLabel(fixture.forecast_availability)}</span>}</span>
       <span className="xg">{forecast ? `λ ${forecast.expected_home_goals.toFixed(2)} · ${forecast.expected_away_goals.toFixed(2)}` : "—"}</span>
@@ -141,12 +140,18 @@ function FixtureRow({ fixture, competition, expanded, toggle }: { fixture: Fixtu
 }
 
 function useLiveRefresh(groups: FixtureGroup[] | null, retry: () => void) {
-  const hasLiveFixtures = Boolean(groups?.some((group) => group.fixtures.some(isActive)));
+  const shouldPoll = Boolean(groups?.some((group) => group.fixtures.some((fixture) =>
+    ["SCHEDULED", "LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status)
+  )));
   useEffect(() => {
-    if (!hasLiveFixtures) return;
-    const timer = window.setInterval(retry, 20_000);
-    return () => window.clearInterval(timer);
-  }, [hasLiveFixtures, retry]);
+    if (!shouldPoll) return;
+    let timer = 0;
+    const schedule = () => { timer = window.setTimeout(() => { retry(); schedule(); }, document.hidden ? 120_000 : 45_000); };
+    const visible = () => { window.clearTimeout(timer); if (!document.hidden) retry(); schedule(); };
+    schedule();
+    document.addEventListener("visibilitychange", visible);
+    return () => { window.clearTimeout(timer); document.removeEventListener("visibilitychange", visible); };
+  }, [shouldPoll, retry]);
 }
 
 function isActive(fixture: Fixture) {
@@ -164,10 +169,23 @@ function fixtureStateLabel(fixture: Fixture) {
 }
 
 function fixtureScore(fixture: Fixture) {
-  if ((!isActive(fixture) && !["FINISHED", "SUSPENDED", "INTERRUPTED"].includes(fixture.status)) || fixture.home_score === null) {
-    return "";
+  if ((!isActive(fixture) && !["FINISHED", "SUSPENDED", "INTERRUPTED"].includes(fixture.status)) || fixture.home_score === null || fixture.away_score === null) {
+    return isActive(fixture) ? "Score unavailable" : "";
   }
   return `${fixture.home_score}–${fixture.away_score}`;
+}
+
+function Scorers({ fixture, side }: { fixture: Fixture; side: "HOME" | "AWAY" }) {
+  const grouped = new Map<string, string[]>();
+  for (const event of fixture.goal_scorers.filter((item) => item.team_side === side && item.player_name)) {
+    const minute = event.minute === null ? "" : `${event.minute}${event.added_time ? `+${event.added_time}` : ""}′`;
+    const label = `${minute}${event.penalty ? " pen" : ""}${event.own_goal ? " OG" : ""}`.trim();
+    const values = grouped.get(event.player_name!) ?? [];
+    if (label && !values.includes(label)) values.push(label);
+    grouped.set(event.player_name!, values);
+  }
+  if (!grouped.size) return null;
+  return <small className="goal-scorers">{[...grouped].map(([name, minutes]) => `${name} ${minutes.join(", ")}`).join(" · ")}</small>;
 }
 
 function coverageOptions(competitions: Competition[]) {

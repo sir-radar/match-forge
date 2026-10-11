@@ -1,23 +1,35 @@
 "use client";
 
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { api } from "@/lib/api";
-import type { Competition, Fixture, Forecast, MatchContext } from "@/lib/contracts";
+import type { Competition, Fixture, Forecast, LiveMatch, MatchContext } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
 import { Icon } from "@/components/icon";
 
-const tabs = ["Overview", "Markets", "Score matrix", "H2H context", "Team statistics", "Simulation evidence", "Diagnostics", "Forecast history"] as const;
+const tabs = ["Live Match", "Overview", "Markets", "Score matrix", "H2H context", "Team statistics", "Simulation evidence", "Diagnostics", "Forecast history"] as const;
 type Tab = (typeof tabs)[number];
 
 export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; competition: Competition }) {
-  const [tab, setTab] = useState<Tab>("Overview");
+  const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const forecastLoad = useCallback((signal: AbortSignal) => fixture.forecast ? api.forecast(fixture.id, fixture.forecast.id, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, fixture.forecast]);
   const forecast = useResource(`forecast-${fixture.forecast?.id ?? "none"}`, forecastLoad);
-  const resources = { context, forecast };
+  const liveLoad = useCallback((signal: AbortSignal) => api.live(fixture.id, signal), [fixture.id]);
+  const live = useResource(`live-${fixture.id}`, liveLoad);
+  const retryLive = live.retry;
+  useEffect(() => {
+    if (!["SCHEDULED", "LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status)) return;
+    let timer = 0;
+    const schedule = () => { timer = window.setTimeout(() => { retryLive(); schedule(); }, document.hidden ? 120_000 : 45_000); };
+    const visible = () => { window.clearTimeout(timer); if (!document.hidden) retryLive(); schedule(); };
+    schedule();
+    document.addEventListener("visibilitychange", visible);
+    return () => { window.clearTimeout(timer); document.removeEventListener("visibilitychange", visible); };
+  }, [fixture.status, retryLive]);
+  const resources = { context, forecast, live };
 
   return <div className="expanded-panel">
     <div className="match-identity">
@@ -34,6 +46,7 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
     </div>
     <div id={`panel-${fixture.id}`} role="tabpanel" className="tab-panel">
       <TabContent tab={tab} fixture={fixture} resources={resources} />
+      {tab === "Live Match" && live.error && <ResourceError message={live.error} retry={live.retry} />}
       <AnalysisStatus tab={tab} hasForecast={fixture.forecast !== null} context={context} forecast={forecast} />
     </div>
     <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
@@ -44,10 +57,12 @@ type Resource<T> = { data: T | null; loading: boolean; error: string | null; ret
 type AnalysisResources = {
   context: Resource<MatchContext>;
   forecast: Resource<Forecast>;
+  live: Resource<LiveMatch>;
 };
 
 function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; resources: AnalysisResources }) {
   switch (tab) {
+    case "Live Match": return <LiveMatchPanel fixture={fixture} live={resources.live.data} />;
     case "Overview": return <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />;
     case "Markets": return <Markets forecast={resources.forecast.data} />;
     case "Score matrix": return <ScoreMatrix forecast={resources.forecast.data} />;
@@ -60,6 +75,7 @@ function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; r
 }
 
 function AnalysisStatus({ tab, hasForecast, context, forecast }: { tab: Tab; hasForecast: boolean; context: Resource<MatchContext>; forecast: Resource<Forecast> }) {
+  if (tab === "Live Match") return null;
   if (["Simulation evidence", "Diagnostics", "Forecast history"].includes(tab)) return null;
   return <>
     {(context.loading || (hasForecast && forecast.loading)) && <ResourceLoading label="Loading match analysis" />}
@@ -67,6 +83,35 @@ function AnalysisStatus({ tab, hasForecast, context, forecast }: { tab: Tab; has
     {hasForecast && forecast.error && <ResourceError message={forecast.error} retry={forecast.retry} />}
   </>;
 }
+
+function LiveMatchPanel({ fixture, live }: { fixture: Fixture; live: LiveMatch | null }) {
+  if (!live) return <ResourceLoading label="Loading live match" />;
+  const score = live.home_score === null || live.away_score === null ? "Score unavailable" : `${live.home_score}–${live.away_score}`;
+  const clock = live.status === "HALF_TIME" ? "HT" : live.status === "FINISHED" ? "FT" : live.match_minute === null ? live.status : `${live.match_minute}${live.added_time ? `+${live.added_time}` : ""}′`;
+  const homeGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "HOME");
+  const awayGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "AWAY");
+  const fullMatch = live.statistics.filter((stat) => stat.period === "FULL_MATCH");
+  return <div className="live-match-grid">
+    <section className="panel live-score-panel"><header><h4>Live score</h4><span className={`status-badge ${live.status === "LIVE" ? "live" : "muted"}`}>{clock}</span></header><div className="live-score"><span>{live.home.name}</span><b>{score}</b><span>{live.away.name}</span></div><div className="live-scorers"><GoalList name={live.home.name} goals={homeGoals} /><GoalList name={live.away.name} goals={awayGoals} /></div></section>
+    <section className="panel"><header><h4>Match incidents</h4><small>Chronological provider events</small></header>{live.events.length ? <ol className="incident-list">{[...live.events].sort(eventOrder).map((event) => <li key={event.id}><time>{event.minute === null ? "—" : `${event.minute}${event.added_time ? `+${event.added_time}` : ""}′`}</time><b>{eventLabel(event.type)}</b><span>{event.player_name ?? "Player unavailable"}{event.penalty ? " · penalty" : ""}{event.own_goal ? " · own goal" : ""}{event.disallowed ? " · disallowed" : ""}</span></li>)}</ol> : <EmptyState title="Incidents unavailable" detail="The provider has not supplied a verified incident feed for this match." />}</section>
+    <section className="panel live-stats"><header><h4>Current match statistics</h4><small>Provider-reported · not model λ</small></header>{fullMatch.length ? fullMatch.map((stat) => <LiveStat key={`${stat.period}-${stat.metric}`} label={stat.label} home={stat.home} away={stat.away} unit={stat.unit} />) : <EmptyState title="Statistics unavailable" detail="No current match-statistics resource is available. Missing values are not treated as zero." />}</section>
+    <section className="panel provenance"><header><h4>Live data provenance</h4><small>{live.partial ? "Partial coverage" : "Complete available coverage"}</small></header><dl><div><dt>Score</dt><dd>{sourceLabel(live.score_source)}</dd></div><div><dt>Events</dt><dd>{sourceLabel(live.event_source)}</dd></div><div><dt>Statistics</dt><dd>{sourceLabel(live.statistics_source)}</dd></div><div><dt>Fixture</dt><dd>{fixture.id}</dd></div></dl></section>
+  </div>;
+}
+
+function GoalList({ name, goals }: { name: string; goals: LiveMatch["events"] }) {
+  return <div><b>{name}</b>{goals.length ? goals.map((event) => <span key={event.id}>{event.player_name ?? "Scorer unavailable"} {event.minute === null ? "" : `${event.minute}${event.added_time ? `+${event.added_time}` : ""}′`}{event.penalty ? " (pen)" : ""}{event.own_goal ? " (OG)" : ""}</span>) : <small>No verified scorers</small>}</div>;
+}
+
+function LiveStat({ label, home, away, unit }: { label: string; home: number | null; away: number | null; unit: string }) {
+  const total = Math.max((home ?? 0) + (away ?? 0), 1);
+  const suffix = unit === "percent" ? "%" : "";
+  return <div className="live-stat"><div><b>{home === null ? "—" : `${home}${suffix}`}</b><span>{label}</span><b>{away === null ? "—" : `${away}${suffix}`}</b></div><i><span style={{ width: `${home === null ? 0 : home / total * 100}%` }} /><span style={{ width: `${away === null ? 0 : away / total * 100}%` }} /></i></div>;
+}
+
+function eventOrder(left: LiveMatch["events"][number], right: LiveMatch["events"][number]) { return (left.minute ?? 999) - (right.minute ?? 999) || (left.added_time ?? 0) - (right.added_time ?? 0); }
+function eventLabel(value: string) { return value.replaceAll("_", " ").toLocaleLowerCase(); }
+function sourceLabel(source: LiveMatch["score_source"]) { return source ? `${source.provider} · ${source.stale ? "stale" : "fresh"} · fetched ${formatDateTime(source.last_fetched_at)}` : "Unavailable"; }
 
 function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: Forecast | null; context: MatchContext | null }) {
   if (!fixture.forecast) return <EmptyState title={availabilityCopy(fixture.forecast_availability)} detail="Fixture remains visible. MatchForge does not fabricate probabilities when history or source data is insufficient." />;
