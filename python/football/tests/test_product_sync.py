@@ -12,7 +12,13 @@ from football.product.api_football import ApiFootballError, ApiResponse, Capabil
 from football.product.cli import _api_football_max_history_season, build_parser
 from football.product.domain import MINIMUM_HISTORY_MATCHES
 from football.product.football_data_org import FootballDataResponse
-from football.product.sync import ProductSync, _fixture_sync_dates, _history_sync_candidates
+from football.product.sync import (
+    ProductSync,
+    _api_football_score_basis,
+    _fixture_sync_dates,
+    _football_data_score_basis,
+    _history_sync_candidates,
+)
 
 
 class _Connection:
@@ -37,6 +43,32 @@ def test_fixture_sync_dates_limit_explicit_backfill_to_live_provider_window() ->
 def test_fixture_sync_dates_reject_backfill_start_after_end() -> None:
     with pytest.raises(ValueError, match="fixture backfill start date"):
         _fixture_sync_dates(date(2026, 10, 3), date(2026, 10, 4))
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        ("FT", "REGULATION_90"),
+        ("AET", "EXTRA_TIME"),
+        ("PEN", "PENALTY_SHOOTOUT"),
+        ("NS", "UNKNOWN"),
+    ],
+)
+def test_api_football_score_basis(status: str, expected: str) -> None:
+    assert _api_football_score_basis(status) == expected
+
+
+@pytest.mark.parametrize(
+    ("duration", "expected"),
+    [
+        ("REGULAR", "REGULATION_90"),
+        ("EXTRA_TIME", "EXTRA_TIME"),
+        ("PENALTY_SHOOTOUT", "PENALTY_SHOOTOUT"),
+        (None, "UNKNOWN"),
+    ],
+)
+def test_football_data_score_basis(duration: str | None, expected: str) -> None:
+    assert _football_data_score_basis({"score": {"duration": duration}}) == expected
 
 
 def test_history_sync_candidates_prioritize_without_truncating() -> None:

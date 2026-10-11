@@ -86,4 +86,71 @@ def test_sync_all_continues_after_api_football_quota_failure(
         "fixtures_from_history": 2,
         "forecasts_created": 3,
         "external_predictions_exit_code": 0,
+        "operational_providers": {},
     }
+
+
+@pytest.mark.parametrize(
+    ("enabled_provider", "disabled_provider"),
+    (("fotmob", "pitchapi"), ("pitchapi", "fotmob")),
+)
+def test_sync_all_enables_operational_providers_independently(
+    monkeypatch: pytest.MonkeyPatch,
+    enabled_provider: str,
+    disabled_provider: str,
+) -> None:
+    calls: list[str] = []
+
+    class Connection:
+        def commit(self) -> None:
+            pass
+
+        def rollback(self) -> None:
+            pass
+
+    class Sync:
+        def run(self, *_args: object, **_kwargs: object) -> dict[str, int]:
+            return {"fixtures_from_history": 0}
+
+        def backfill_fixtures_from_history(self, *_args: object) -> int:
+            return 0
+
+        def refresh_forecasts(self) -> int:
+            return 0
+
+    class OperationalSync:
+        def __init__(self, *_args: object, provider_code: str, **_kwargs: object) -> None:
+            self.provider_code = provider_code
+
+        def sync_fotmob(self, *_args: object, **_kwargs: object) -> dict[str, str]:
+            calls.append(self.provider_code)
+            return {"provider": self.provider_code}
+
+        def sync_pitchapi(self, *_args: object, **_kwargs: object) -> dict[str, str]:
+            calls.append(self.provider_code)
+            return {"provider": self.provider_code}
+
+    monkeypatch.setenv("MATCHFORGE_FOTMOB_ENABLED", str(enabled_provider == "fotmob").lower())
+    monkeypatch.setenv("MATCHFORGE_PITCHAPI_ENABLED", str(enabled_provider == "pitchapi").lower())
+    monkeypatch.setenv("PITCH_API_TOKEN", "test-token")
+    monkeypatch.setattr(cli, "ProductSync", lambda *_args, **_kwargs: Sync())
+    monkeypatch.setattr(cli, "run_openfootball_backfill", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(cli, "run_football_data_uk_backfill", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(cli, "_run_external_predictions", lambda _args: 0)
+    monkeypatch.setattr(cli, "OperationalProviderSync", OperationalSync)
+    monkeypatch.setattr(cli, "FotmobClient", lambda **_kwargs: object())
+    monkeypatch.setattr(cli, "PitchApiClient", lambda *_args, **_kwargs: object())
+    args = argparse.Namespace(
+        database_url="postgresql://test",
+        data_root=Path("data"),
+        date=date(2026, 10, 9),
+        from_date=None,
+        history_concurrency=1,
+    )
+
+    result = cli._sync_all(cast(Any, Connection()), args)
+    operational = cast(dict[str, object], result["operational_providers"])
+
+    assert calls == [enabled_provider]
+    assert disabled_provider not in operational
+    assert operational == {enabled_provider: {"provider": enabled_provider}}

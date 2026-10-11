@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
@@ -76,6 +76,34 @@ def test_import_parser_rejects_unsupported_market(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="unsupported external selection"):
+        parse_import(path)
+
+
+def test_import_parser_normalizes_kickoff_and_requires_complete_provider_identity(
+    tmp_path: Path,
+) -> None:
+    base = {
+        "source_page": "https://example.test/picks",
+        "prediction_date": "2026-09-30",
+        "original_date_text": "30/09",
+        "competition": "Premier League",
+        "home_team": "Arsenal",
+        "away_team": "Chelsea",
+        "selection": "1",
+        "kickoff_at": "2026-10-01T00:30:00+01:00",
+        "source_timezone": "Africa/Lagos",
+        "provider_code": "pitchapi",
+        "provider_fixture_id": "m_B8x2K9",
+    }
+    path = tmp_path / "predictions.json"
+    path.write_text(json.dumps([base]), encoding="utf-8")
+    row = parse_import(path)[0]
+    assert row.kickoff_at == datetime(2026, 9, 30, 23, 30, tzinfo=UTC)
+    assert row.source_timezone == "Africa/Lagos"
+
+    del base["provider_fixture_id"]
+    path.write_text(json.dumps([base]), encoding="utf-8")
+    with pytest.raises(ValueError, match="supplied together"):
         parse_import(path)
 
 

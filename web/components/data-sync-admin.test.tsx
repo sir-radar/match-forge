@@ -32,9 +32,10 @@ describe("DataSyncAdmin", () => {
     expect(screen.getByText("124,806")).toBeInTheDocument();
     expect(screen.getByLabelText("Backfill fixtures from")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Backfill fixtures from"), { target: { value: "2026-09-29" } });
-    for (const name of ["Run MVP Sync", "Sync OpenFootball", "Sync Football-Data.co.uk", "Run Both Historical Sources", "Refresh Forecasts", "Sync External Predictions", "Run Full Sync"]) {
+    for (const name of ["Run MVP Sync", "Sync OpenFootball", "Sync Football-Data.co.uk", "Run Both Historical Sources", "Refresh Forecasts", "Sync External Predictions", "Sync FotMob", "Sync PitchAPI", "Run Full Sync"]) {
       expect(screen.getByRole("button", { name })).toBeEnabled();
     }
+    expect(screen.getAllByText("Disabled").length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getByRole("button", { name: "Run Full Sync" }));
     expect(await screen.findByText("Queued")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run MVP Sync" })).toBeDisabled();

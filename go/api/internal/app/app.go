@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 // App owns the operational HTTP surface and lifecycle.
@@ -62,6 +63,8 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/sync/history", application.startSync(SyncHistoryBackfill))
 	mux.HandleFunc("POST /v1/admin/sync/forecast-refresh", application.startSync(SyncForecastRefresh))
 	mux.HandleFunc("POST /v1/admin/sync/external-predictions", application.startSync(SyncExternalPredictions))
+	mux.HandleFunc("POST /v1/admin/sync/fotmob", application.startSync(SyncFotMob))
+	mux.HandleFunc("POST /v1/admin/sync/pitchapi", application.startSync(SyncPitchAPI))
 	mux.HandleFunc("POST /v1/admin/sync/all", application.startSync(SyncAllData))
 	application.handler = application.cors(mux)
 	return application
@@ -74,6 +77,9 @@ func (application *App) Handler() http.Handler {
 
 // Run serves until the context is cancelled, then performs bounded graceful shutdown.
 func (application *App) Run(ctx context.Context) error {
+	if application.config.OperationalSyncInterval > 0 {
+		go application.runOperationalSyncSchedule(ctx)
+	}
 	server := &http.Server{
 		Addr:              application.config.Address,
 		Handler:           application.handler,
@@ -95,6 +101,37 @@ func (application *App) Run(ctx context.Context) error {
 		shutdownContext, cancel := context.WithTimeout(context.Background(), application.config.ShutdownTimeout)
 		defer cancel()
 		return server.Shutdown(shutdownContext)
+	}
+}
+
+func (application *App) runOperationalSyncSchedule(ctx context.Context) {
+	ticker := time.NewTicker(application.config.OperationalSyncInterval)
+	defer ticker.Stop()
+	types := []SyncType{}
+	if application.config.PitchAPIEnabled {
+		types = append(types, SyncPitchAPI)
+	}
+	if application.config.FotMobEnabled {
+		types = append(types, SyncFotMob)
+	}
+	if len(types) == 0 {
+		return
+	}
+	index := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			syncType := types[index%len(types)]
+			index++
+			_, err := application.syncRunner.Start(ctx, SyncRequest{
+				Type: syncType, Date: time.Now().UTC().Format("2006-01-02"),
+			})
+			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
+			}
+		}
 	}
 }
 

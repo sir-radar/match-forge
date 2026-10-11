@@ -5,13 +5,115 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
 from psycopg import Connection
 
-from football.product.domain import map_external_market, normalize_team_name, sha256_json, stable_id
+from football.product.domain import (
+    external_selection_correct,
+    external_settlement_state,
+    map_external_market,
+    normalize_team_name,
+    sha256_json,
+    stable_id,
+)
+
+
+def settle_external_predictions(connection: Connection[Any], settled_at: datetime) -> int:
+    """Append settlement revisions from the current canonical result."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT ep.prediction_id, ep.market, ep.selection,
+                   pf.status, pf.home_score, pf.away_score, pf.result_score_basis,
+                   observation.provider_code, observation.provider_updated_at
+            FROM football.external_predictions ep
+            JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
+            LEFT JOIN LATERAL (
+                SELECT provider_code,
+                       COALESCE(source_updated_at, observed_at) AS provider_updated_at
+                FROM football.product_provider_fixture_observations
+                WHERE canonical_fixture_id = pf.fixture_id
+                  AND canonical_status = pf.status
+                  AND home_score IS NOT DISTINCT FROM pf.home_score
+                  AND away_score IS NOT DISTINCT FROM pf.away_score
+                ORDER BY COALESCE(source_updated_at, observed_at) DESC,
+                         observed_at DESC, observation_id DESC
+                LIMIT 1
+            ) observation ON true
+            ORDER BY ep.prediction_id
+            """
+        )
+        pending = cursor.fetchall()
+    count = 0
+    with connection.cursor() as cursor:
+        for (
+            prediction_id,
+            market,
+            selection,
+            fixture_status,
+            home_goals,
+            away_goals,
+            score_basis,
+            provider_code,
+            provider_updated_at,
+        ) in pending:
+            state = external_settlement_state(
+                market, selection, fixture_status, home_goals, away_goals, score_basis
+            )
+            semantic = sha256_json(
+                {
+                    "prediction_id": str(prediction_id),
+                    "state": state,
+                    "fixture_status": fixture_status,
+                    "score": [home_goals, away_goals],
+                    "score_basis": score_basis,
+                    "provider": provider_code,
+                    "provider_updated_at": (
+                        provider_updated_at.isoformat() if provider_updated_at else None
+                    ),
+                }
+            )
+            cursor.execute(
+                """
+                INSERT INTO football.external_prediction_result_revisions (
+                    prediction_id, semantic_sha256, settlement_state, fixture_status,
+                    home_score, away_score, score_basis, provider_code,
+                    provider_updated_at, evidence, settled_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s)
+                ON CONFLICT (semantic_sha256) DO NOTHING
+                """,
+                (
+                    prediction_id,
+                    semantic,
+                    state,
+                    fixture_status,
+                    home_goals,
+                    away_goals,
+                    score_basis if fixture_status == "FINISHED" else "NOT_SETTLED",
+                    provider_code,
+                    provider_updated_at,
+                    json.dumps({"market": market, "selection": selection}, sort_keys=True),
+                    settled_at,
+                ),
+            )
+            count += cursor.rowcount
+            correct = (
+                external_selection_correct(market, selection, home_goals, away_goals)
+                if state in {"WON", "LOST"}
+                else None
+            )
+            if correct is not None:
+                cursor.execute(
+                    """INSERT INTO football.external_prediction_results (
+                           prediction_id, correct, settled_at
+                       ) VALUES (%s, %s, %s)
+                       ON CONFLICT (prediction_id) DO NOTHING""",
+                    (prediction_id, correct, settled_at),
+                )
+    return count
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,6 +126,10 @@ class ImportedPrediction:
     away_team: str
     market: str
     selection: str
+    kickoff_at: datetime | None = None
+    source_timezone: str | None = None
+    provider_code: str | None = None
+    provider_fixture_id: str | None = None
 
 
 def parse_import(path: Path) -> tuple[ImportedPrediction, ...]:
@@ -45,7 +151,7 @@ def import_predictions(
         raise ValueError("collected_at must include a timezone")
     count = 0
     for row in rows:
-        fixture_id = _match_fixture(connection, row)
+        fixture_id, match_status, provenance = _match_fixture(connection, row)
         revision_sha = prediction_revision_sha256(source_code, row)
         prediction_id = stable_id("external-prediction", revision_sha)
         with connection.cursor() as cursor:
@@ -55,9 +161,10 @@ def import_predictions(
                     prediction_id, revision_sha256, source_code, source_page,
                     prediction_date, original_date_text, collected_at, fixture_id,
                     competition_text, home_team_text, away_team_text, market,
-                    selection, match_status
+                    selection, match_status, source_kickoff_at, source_timezone,
+                    provider_code, provider_fixture_id, mapping_provenance
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s, %s)
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
                 ON CONFLICT (revision_sha256) DO NOTHING
                 """,
                 (
@@ -74,7 +181,12 @@ def import_predictions(
                     row.away_team,
                     row.market,
                     row.selection,
-                    "MATCHED" if fixture_id is not None else "UNMATCHED",
+                    match_status,
+                    row.kickoff_at,
+                    row.source_timezone,
+                    row.provider_code,
+                    row.provider_fixture_id,
+                    json.dumps(provenance, sort_keys=True),
                 ),
             )
             count += cursor.rowcount
@@ -94,6 +206,10 @@ def prediction_revision_sha256(source_code: str, row: ImportedPrediction) -> str
             "away_team": row.away_team,
             "market": row.market,
             "selection": row.selection,
+            "kickoff_at": row.kickoff_at.isoformat() if row.kickoff_at else None,
+            "source_timezone": row.source_timezone,
+            "provider_code": row.provider_code,
+            "provider_fixture_id": row.provider_fixture_id,
         }
     )
 
@@ -116,6 +232,12 @@ def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
     if normalized is None:
         raise ValueError(f"unsupported external selection: {row['selection']}")
     market, selection = normalized
+    kickoff_at = _optional_kickoff(row.get("kickoff_at"))
+    source_timezone = _optional_text(row.get("source_timezone"), "source_timezone")
+    provider_code = _optional_text(row.get("provider_code"), "provider_code")
+    provider_fixture_id = _optional_text(row.get("provider_fixture_id"), "provider_fixture_id")
+    if (provider_code is None) != (provider_fixture_id is None):
+        raise ValueError("provider_code and provider_fixture_id must be supplied together")
     return ImportedPrediction(
         source_page=str(row["source_page"]),
         prediction_date=date.fromisoformat(str(row["prediction_date"])),
@@ -125,13 +247,73 @@ def _parse_row(row: Mapping[str, Any]) -> ImportedPrediction:
         away_team=str(row["away_team"]),
         market=market,
         selection=selection,
+        kickoff_at=kickoff_at,
+        source_timezone=source_timezone,
+        provider_code=provider_code,
+        provider_fixture_id=provider_fixture_id,
     )
 
 
-def _match_fixture(connection: Connection[Any], row: ImportedPrediction) -> object | None:
+def _match_fixture(
+    connection: Connection[Any], row: ImportedPrediction
+) -> tuple[object | None, str, dict[str, object]]:
+    if row.provider_code and row.provider_fixture_id:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT mapping.match_id
+                FROM football.match_provider_mappings mapping
+                JOIN football.providers provider ON provider.id = mapping.provider_id
+                JOIN football.product_fixtures fixture ON fixture.fixture_id = mapping.match_id
+                WHERE provider.code = %s AND mapping.provider_match_id = %s
+                  AND mapping.mapping_method IN ('explicit_crosswalk', 'manual', 'deterministic')
+                  AND mapping.mapping_confidence = 1
+                """,
+                (row.provider_code, row.provider_fixture_id),
+            )
+            matches = cursor.fetchall()
+        if len(matches) == 1:
+            return (
+                matches[0][0],
+                "MATCHED",
+                {
+                    "method": "VERIFIED_PROVIDER_ID",
+                    "provider_code": row.provider_code,
+                    "provider_fixture_id": row.provider_fixture_id,
+                },
+            )
+        if len(matches) > 1:
+            return (
+                None,
+                "AMBIGUOUS",
+                {
+                    "method": "VERIFIED_PROVIDER_ID",
+                    "candidate_count": len(matches),
+                },
+            )
     with connection.cursor() as cursor:
-        cursor.execute(
-            """
+        if row.kickoff_at is not None:
+            cursor.execute(
+                """
+                SELECT pf.fixture_id, home.name, away.name
+                FROM football.product_fixtures pf
+                JOIN football.product_teams home ON home.team_id = pf.home_team_id
+                JOIN football.product_teams away ON away.team_id = pf.away_team_id
+                JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
+                WHERE pf.kickoff_at BETWEEN %s AND %s
+                  AND lower(pc.name) = lower(%s)
+                ORDER BY pf.kickoff_at, pf.fixture_id
+                """,
+                (
+                    row.kickoff_at - timedelta(minutes=15),
+                    row.kickoff_at + timedelta(minutes=15),
+                    row.competition,
+                ),
+            )
+            method = "KICKOFF_TEAM_COMPETITION_15_MINUTES"
+        else:
+            cursor.execute(
+                """
             SELECT pf.fixture_id, home.name, away.name
             FROM football.product_fixtures pf
             JOIN football.product_teams home ON home.team_id = pf.home_team_id
@@ -141,10 +323,48 @@ def _match_fixture(connection: Connection[Any], row: ImportedPrediction) -> obje
               AND lower(pc.name) = lower(%s)
             ORDER BY pf.kickoff_at, pf.fixture_id
             """,
-            (row.prediction_date, row.prediction_date, row.competition),
-        )
+                (row.prediction_date, row.prediction_date, row.competition),
+            )
+            method = "DATE_TEAM_COMPETITION_LEGACY"
         candidates = cursor.fetchall()
-    return unique_fixture_id(candidates, row)
+    matching = [
+        candidate
+        for candidate in candidates
+        if normalize_team_name(candidate[1]) == normalize_team_name(row.home_team)
+        and normalize_team_name(candidate[2]) == normalize_team_name(row.away_team)
+    ]
+    if len(matching) == 1:
+        return matching[0][0], "MATCHED", {"method": method, "candidate_count": 1}
+    return (
+        None,
+        "AMBIGUOUS" if len(matching) > 1 else "UNMATCHED",
+        {
+            "method": method,
+            "candidate_count": len(matching),
+        },
+    )
+
+
+def _optional_kickoff(value: object) -> datetime | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("kickoff_at must be an RFC 3339 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("kickoff_at must be an RFC 3339 timestamp") from error
+    if parsed.tzinfo is None:
+        raise ValueError("kickoff_at must include a timezone")
+    return parsed.astimezone(UTC)
+
+
+def _optional_text(value: object, field: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip() or len(value) > 200:
+        raise ValueError(f"{field} must be non-empty text")
+    return value.strip()
 
 
 def unique_fixture_id(

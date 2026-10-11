@@ -17,16 +17,19 @@ const (
 
 // Config contains the operational API settings owned by this process.
 type Config struct {
-	Address           string
-	DatabaseURL       string
-	AllowedOrigin     string
-	PostgresAddress   string
-	RedisAddress      string
-	Version           string
-	RepoRoot          string
-	DependencyTimeout time.Duration
-	ReadHeaderTimeout time.Duration
-	ShutdownTimeout   time.Duration
+	Address                 string
+	DatabaseURL             string
+	AllowedOrigin           string
+	PostgresAddress         string
+	RedisAddress            string
+	Version                 string
+	RepoRoot                string
+	DependencyTimeout       time.Duration
+	ReadHeaderTimeout       time.Duration
+	ShutdownTimeout         time.Duration
+	OperationalSyncInterval time.Duration
+	FotMobEnabled           bool
+	PitchAPIEnabled         bool
 }
 
 // ConfigFromEnv loads and validates process configuration.
@@ -43,15 +46,11 @@ func ConfigFromEnv(version string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	dependencyTimeout, err := durationFromEnv("DEPENDENCY_TIMEOUT", defaultDependencyWait)
+	dependencyTimeout, readHeaderTimeout, shutdownTimeout, err := runtimeDurationsFromEnv()
 	if err != nil {
 		return Config{}, err
 	}
-	readHeaderTimeout, err := durationFromEnv("READ_HEADER_TIMEOUT", defaultReadHeaderWait)
-	if err != nil {
-		return Config{}, err
-	}
-	shutdownTimeout, err := durationFromEnv("SHUTDOWN_TIMEOUT", defaultShutdownDeadline)
+	operationalSyncInterval, fotMobEnabled, pitchAPIEnabled, err := operationalConfigFromEnv()
 	if err != nil {
 		return Config{}, err
 	}
@@ -60,16 +59,19 @@ func ConfigFromEnv(version string) (Config, error) {
 		return Config{}, err
 	}
 	config := Config{
-		Address:           valueFromEnv("API_ADDR", defaultAPIAddress),
-		DatabaseURL:       databaseURL,
-		AllowedOrigin:     valueFromEnv("WEB_ORIGIN", "http://127.0.0.1:3000"),
-		PostgresAddress:   postgresAddress,
-		RedisAddress:      redisAddress,
-		Version:           version,
-		RepoRoot:          repoRoot,
-		DependencyTimeout: dependencyTimeout,
-		ReadHeaderTimeout: readHeaderTimeout,
-		ShutdownTimeout:   shutdownTimeout,
+		Address:                 valueFromEnv("API_ADDR", defaultAPIAddress),
+		DatabaseURL:             databaseURL,
+		AllowedOrigin:           valueFromEnv("WEB_ORIGIN", "http://127.0.0.1:3000"),
+		PostgresAddress:         postgresAddress,
+		RedisAddress:            redisAddress,
+		Version:                 version,
+		RepoRoot:                repoRoot,
+		DependencyTimeout:       dependencyTimeout,
+		ReadHeaderTimeout:       readHeaderTimeout,
+		ShutdownTimeout:         shutdownTimeout,
+		OperationalSyncInterval: operationalSyncInterval,
+		FotMobEnabled:           fotMobEnabled,
+		PitchAPIEnabled:         pitchAPIEnabled,
 	}
 	addresses := []struct {
 		name  string
@@ -85,6 +87,39 @@ func ConfigFromEnv(version string) (Config, error) {
 		}
 	}
 	return config, nil
+}
+
+func runtimeDurationsFromEnv() (time.Duration, time.Duration, time.Duration, error) {
+	dependency, err := durationFromEnv("DEPENDENCY_TIMEOUT", defaultDependencyWait)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	readHeader, err := durationFromEnv("READ_HEADER_TIMEOUT", defaultReadHeaderWait)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	shutdown, err := durationFromEnv("SHUTDOWN_TIMEOUT", defaultShutdownDeadline)
+	return dependency, readHeader, shutdown, err
+}
+
+func operationalConfigFromEnv() (time.Duration, bool, bool, error) {
+	interval, err := optionalDurationFromEnv("MATCHFORGE_OPERATIONAL_SYNC_INTERVAL")
+	return interval,
+		os.Getenv("MATCHFORGE_FOTMOB_ENABLED") == "true",
+		os.Getenv("MATCHFORGE_PITCHAPI_ENABLED") == "true",
+		err
+}
+
+func optionalDurationFromEnv(name string) (time.Duration, error) {
+	value := os.Getenv(name)
+	if value == "" || value == "0" {
+		return 0, nil
+	}
+	duration, err := time.ParseDuration(value)
+	if err != nil || duration < time.Minute {
+		return 0, fmt.Errorf("%s must be zero or at least 1m", name)
+	}
+	return duration, nil
 }
 
 func resolveRepoRoot(configured string) (string, error) {

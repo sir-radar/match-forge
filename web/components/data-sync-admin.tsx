@@ -9,7 +9,7 @@ import {
   type SetStateAction,
 } from "react";
 import { api, ApiError } from "@/lib/api";
-import type { HistoricalCoverage, SyncRun, SyncType } from "@/lib/contracts";
+import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
 
 type Filters = { date: string; from_date: string; season: string; competition: string; country: string };
 type Action = {
@@ -24,12 +24,14 @@ const ACTIONS: Action[] = [
   { type: "HISTORY_BACKFILL", title: "Historical Backfill", kind: "Both bulk sources", description: "Run OpenFootball, then Football-Data.co.uk, across all discoverable history.", button: "Run Both Historical Sources", start: api.startHistoryBackfill },
   { type: "FORECAST_REFRESH", title: "Forecast Refresh", kind: "Stored data only", description: "Generate missing MatchForge forecasts from currently stored historical data.", button: "Refresh Forecasts", start: api.startForecastRefresh },
   { type: "EXTERNAL_PREDICTIONS", title: "External Predictions", kind: "Public source collection", description: "Run the existing private-local external prediction collection.", button: "Sync External Predictions", start: api.startExternalPredictionsSync },
-  { type: "ALL_DATA", title: "Full Data Sync", kind: "Complete owner workflow", description: "Fixture range and scores → both historical sources → forecast refresh → external predictions.", button: "Run Full Sync", start: api.startAllDataSync, prominent: true },
+  { type: "FOTMOB_SYNC", title: "FotMob", kind: "Development-only operational feed", description: "Sync enabled FotMob fixtures, live states, results, and bounded match details without changing frozen forecasts.", button: "Sync FotMob", start: api.startFotMobSync },
+  { type: "PITCHAPI_SYNC", title: "PitchAPI", kind: "Operational provider feed", description: "Sync fixtures with status=all plus bounded match resources, separate from research snapshots.", button: "Sync PitchAPI", start: api.startPitchAPISync },
+  { type: "ALL_DATA", title: "Full Data Sync", kind: "Complete owner workflow", description: "Fixture range and scores → configured operational providers → historical sources → forecast refresh → external predictions.", button: "Run Full Sync", start: api.startAllDataSync, prominent: true },
 ];
 
 export function DataSyncAdmin() {
   const state = useSyncAdminState();
-  const { active, clock, coverage, error, filters, latest, loading, runs, setFilters, start, submitting, reload } = state;
+  const { active, clock, coverage, error, filters, latest, loading, providerConfiguration, runs, setFilters, start, submitting, reload } = state;
 
   return <div className="page sync-admin">
     <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
@@ -37,7 +39,7 @@ export function DataSyncAdmin() {
     <SyncStatus active={active} clock={clock} />
     {error && <div className="sync-error" role="alert"><strong>Sync request failed</strong><span>{error}</span><button onClick={() => void reload()}>Retry status</button></div>}
     <section className="sync-actions" aria-label="Data synchronization actions">
-      {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
+      {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} providerConfiguration={providerConfiguration} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
     </section>
     <CoveragePanel coverage={coverage} loading={loading} />
     <RunHistory runs={runs} loading={loading} clock={clock} />
@@ -48,6 +50,7 @@ function useSyncAdminState() {
   const [filters, setFilters] = useState<Filters>(() => ({ date: localDate(), from_date: "", season: "", competition: "", country: "" }));
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [coverage, setCoverage] = useState<HistoricalCoverage | null>(null);
+  const [providerConfiguration, setProviderConfiguration] = useState<ProviderConfiguration>({ fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<SyncType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +60,7 @@ function useSyncAdminState() {
   const reload = useCallback(async (signal?: AbortSignal) => {
     try {
       const response = await api.syncRuns(signal);
-      setRuns(response.runs); setCoverage(response.coverage); setError(null);
+      setRuns(response.runs); setCoverage(response.coverage); setProviderConfiguration(response.provider_configuration); setError(null);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") return;
       setError(errorMessage(cause));
@@ -82,7 +85,7 @@ function useSyncAdminState() {
     } finally { setSubmitting(null); }
   };
 
-  return { active, clock, coverage, error, filters, latest, loading, runs, setFilters, start, submitting, reload };
+  return { active, clock, coverage, error, filters, latest, loading, providerConfiguration, runs, setFilters, start, submitting, reload };
 }
 
 function useActiveRunPolling(
@@ -125,17 +128,31 @@ function SyncStatus({ active, clock }: { active: SyncRun | null; clock: number }
   </div>;
 }
 
-function SyncAction({ action, latest, disabled, busy, onStart }: { action: Action; latest?: SyncRun; disabled: boolean; busy: boolean; onStart: () => void }) {
+function SyncAction({ action, latest, providerConfiguration, disabled, busy, onStart }: { action: Action; latest?: SyncRun; providerConfiguration: ProviderConfiguration; disabled: boolean; busy: boolean; onStart: () => void }) {
   return <article className={`sync-action${action.prominent ? " prominent" : ""}`}>
     <div><small>{action.kind}</small><h2>{action.title}</h2><p>{action.description}</p></div>
     <dl>
       <Metric term="Last successful sync" value={latest ? formatTime(latest.finished_at) : "Never"} />
-      {action.type === "OPENFOOTBALL" && <><Metric term="Latest source revision" value={shortMetric(latest, "source_revision")} /><Metric term="Resources cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>}
-      {action.type === "FOOTBALL_DATA_UK" && <><Metric term="Files cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>}
-      {(action.type === "MVP_SYNC" || action.type === "ALL_DATA") && latest?.history_queue && <><Metric term="History queue total" value={latest.history_queue.total.toLocaleString()} /><Metric term="History queue succeeded" value={latest.history_queue.succeeded.toLocaleString()} /><Metric term="History queue pending" value={latest.history_queue.pending.toLocaleString()} /><Metric term="History queue failed" value={latest.history_queue.failed.toLocaleString()} /></>}
+      <ProviderConfigurationMetric action={action} configuration={providerConfiguration} />
+      <ActionMetrics action={action} latest={latest} />
     </dl>
     <button type="button" onClick={onStart} disabled={disabled} aria-busy={busy}>{busy ? "Starting…" : action.button}</button>
   </article>;
+}
+
+function ProviderConfigurationMetric({ action, configuration }: { action: Action; configuration: ProviderConfiguration }) {
+  if (action.type === "FOTMOB_SYNC") return <Metric term="Configuration" value={configuration.fotmob_enabled ? "Enabled" : "Disabled"} />;
+  if (action.type === "PITCHAPI_SYNC") return <Metric term="Configuration" value={configuration.pitchapi_enabled ? "Enabled" : "Disabled"} />;
+  if (action.type === "ALL_DATA") return <Metric term="Operational schedule" value={configuration.operational_sync_interval === "0s" ? "Disabled" : configuration.operational_sync_interval} />;
+  return null;
+}
+
+function ActionMetrics({ action, latest }: { action: Action; latest?: SyncRun }) {
+  if (action.type === "OPENFOOTBALL") return <><Metric term="Latest source revision" value={shortMetric(latest, "source_revision")} /><Metric term="Resources cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>;
+  if (action.type === "FOOTBALL_DATA_UK") return <><Metric term="Files cached" value={shortMetric(latest, "resources_cached")} /><Metric term="Matches stored" value={shortMetric(latest, "matches_inserted")} /><Metric term="Competitions mapped" value={shortMetric(latest, "competition_mappings_created")} /></>;
+  if ((action.type === "MVP_SYNC" || action.type === "ALL_DATA") && latest?.history_queue) return <><Metric term="History queue total" value={latest.history_queue.total.toLocaleString()} /><Metric term="History queue succeeded" value={latest.history_queue.succeeded.toLocaleString()} /><Metric term="History queue pending" value={latest.history_queue.pending.toLocaleString()} /><Metric term="History queue failed" value={latest.history_queue.failed.toLocaleString()} /></>;
+  if (action.type === "FOTMOB_SYNC" || action.type === "PITCHAPI_SYNC") return <><Metric term="Requests attempted / successful" value={`${shortMetric(latest, "attempted_requests")} / ${shortMetric(latest, "successful_requests")}`} /><Metric term="Fixtures fetched / matched" value={`${shortMetric(latest, "fetched")} / ${shortMetric(latest, "matched")}`} /><Metric term="Resources fetched" value={shortMetric(latest, "resources")} /><Metric term="Inserted / skipped" value={`${shortMetric(latest, "inserted")} / ${shortMetric(latest, "skipped")}`} /><Metric term="Canonical fixtures updated" value={shortMetric(latest, "updated")} /><Metric term="Unmatched fixtures" value={shortMetric(latest, "unmatched")} /><Metric term="Latest observation" value={shortMetric(latest, "latest_observed_at")} /><Metric term="Provider failures" value={shortMetric(latest, "failed")} /></>;
+  return null;
 }
 
 function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | null; loading: boolean }) {

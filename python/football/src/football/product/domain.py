@@ -243,6 +243,29 @@ def external_selection_correct(
     return outcomes.get((market, selection))
 
 
+def external_settlement_state(
+    market: str,
+    selection: str,
+    fixture_status: str,
+    home_goals: int | None,
+    away_goals: int | None,
+    score_basis: str,
+) -> str:
+    if fixture_status in {"CANCELLED", "ABANDONED", "AWARDED"}:
+        return "VOID"
+    if (
+        fixture_status != "FINISHED"
+        or home_goals is None
+        or away_goals is None
+        or score_basis != "REGULATION_90"
+    ):
+        return "PENDING"
+    correct = external_selection_correct(market, selection, home_goals, away_goals)
+    if correct is None:
+        return "PENDING"
+    return "WON" if correct else "LOST"
+
+
 def league_rating(
     *,
     total_forecasts: int,

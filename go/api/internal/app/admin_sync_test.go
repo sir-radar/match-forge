@@ -63,6 +63,8 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 		{path: "/v1/admin/sync/history", want: SyncHistoryBackfill},
 		{path: "/v1/admin/sync/forecast-refresh", want: SyncForecastRefresh},
 		{path: "/v1/admin/sync/external-predictions", want: SyncExternalPredictions},
+		{path: "/v1/admin/sync/fotmob", want: SyncFotMob},
+		{path: "/v1/admin/sync/pitchapi", want: SyncPitchAPI},
 		{path: "/v1/admin/sync/all", want: SyncAllData},
 	}
 	for _, test := range tests {
@@ -104,6 +106,25 @@ func TestValidateSyncDateRangeRejectsReversedRange(t *testing.T) {
 	_, err := validateSyncDateRange("2026-10-03", "2026-10-04")
 	if err == nil || err.Error() != "from_date must not be after date" {
 		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestOperationalCommandArgsIncludeRangeAndProviderCompetition(t *testing.T) {
+	args, err := syncCommandArgs(SyncRequest{
+		Type: SyncPitchAPI, Date: "2026-10-09", FromDate: "2026-10-01",
+		Competition: "l_0bfbkO",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	joined := strings.Join(args, " ")
+	for _, expected := range []string{
+		"pitchapi-sync", "--date 2026-10-09", "--from-date 2026-10-01",
+		"--competition l_0bfbkO",
+	} {
+		if !strings.Contains(joined, expected) {
+			t.Fatalf("args = %q; missing %q", joined, expected)
+		}
 	}
 }
 
@@ -169,6 +190,9 @@ func TestAdminSyncListGetAndErrors(t *testing.T) {
 	application.Handler().ServeHTTP(list, httptest.NewRequest(http.MethodGet, "/v1/admin/sync-runs", nil))
 	if list.Code != http.StatusOK || !strings.Contains(list.Body.String(), `"historical_matches":123`) {
 		t.Fatalf("list = %d %s", list.Code, list.Body.String())
+	}
+	if !strings.Contains(list.Body.String(), `"provider_configuration"`) {
+		t.Fatalf("list omits provider configuration: %s", list.Body.String())
 	}
 	get := httptest.NewRecorder()
 	application.Handler().ServeHTTP(get, httptest.NewRequest(http.MethodGet, "/v1/admin/sync-runs/one", nil))

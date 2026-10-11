@@ -38,7 +38,6 @@ from football.product.context_sync import (
 from football.product.domain import (
     MINIMUM_HISTORY_MATCHES,
     FinishedMatch,
-    external_selection_correct,
     fixture_identity,
     forecast_from_history,
     forecast_payload,
@@ -46,6 +45,7 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
+from football.product.external_predictions import settle_external_predictions
 from football.product.football_data_org import (
     FootballDataOrgClient,
     FootballDataOrgError,
@@ -865,6 +865,7 @@ class ProductSync:
                 SET status = 'FINISHED',
                     home_score = result.home_goals,
                     away_score = result.away_goals,
+                    result_score_basis = 'UNKNOWN',
                     updated_at = %s
                 FROM matching_results result
                 WHERE fixture.fixture_id = result.fixture_id
@@ -901,6 +902,7 @@ class ProductSync:
                     status = 'FINISHED',
                     home_score = EXCLUDED.home_score,
                     away_score = EXCLUDED.away_score,
+                    result_score_basis = 'UNKNOWN',
                     updated_at = EXCLUDED.updated_at
                 WHERE football.product_fixtures.status <> 'FINISHED'
                    OR football.product_fixtures.home_score IS NULL
@@ -929,37 +931,7 @@ class ProductSync:
         raise ValueError("fixture providers unavailable")
 
     def _settle_external_predictions(self, settled_at: datetime) -> int:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT ep.prediction_id, ep.market, ep.selection,
-                       pf.home_score, pf.away_score
-                FROM football.external_predictions ep
-                JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
-                LEFT JOIN football.external_prediction_results result
-                  ON result.prediction_id = ep.prediction_id
-                WHERE pf.status = 'FINISHED' AND result.prediction_id IS NULL
-                ORDER BY ep.prediction_id
-                """
-            )
-            pending = cursor.fetchall()
-        count = 0
-        with self.connection.cursor() as cursor:
-            for prediction_id, market, selection, home_goals, away_goals in pending:
-                correct = external_selection_correct(market, selection, home_goals, away_goals)
-                if correct is None:
-                    continue
-                cursor.execute(
-                    """
-                    INSERT INTO football.external_prediction_results (
-                        prediction_id, correct, settled_at
-                    ) VALUES (%s, %s, %s)
-                    ON CONFLICT (prediction_id) DO NOTHING
-                    """,
-                    (prediction_id, correct, settled_at),
-                )
-                count += cursor.rowcount
-        return count
+        return settle_external_predictions(self.connection, settled_at)
 
     def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
         digest = hashlib.sha256(response.raw).hexdigest()
@@ -1322,7 +1294,9 @@ class ProductSync:
             match_id = self._mapped_match_id(
                 PROVIDER_CODE, provider_fixture_id
             ) or fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
-            status = fixture_status(str(_mapping(fixture, "status")["short"]))
+            provider_status = str(_mapping(fixture, "status")["short"])
+            status = fixture_status(provider_status)
+            score_basis = _api_football_score_basis(provider_status)
             goals = _mapping(row, "goals")
             home_score = goals.get("home") if status == "FINISHED" else None
             away_score = goals.get("away") if status == "FINISHED" else None
@@ -1342,9 +1316,9 @@ class ProductSync:
                     INSERT INTO football.product_fixtures (
                         fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
                         status, home_score, away_score, venue, round_name,
-                        forecast_availability, updated_at
+                        forecast_availability, updated_at, result_score_basis
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        'NOT_ENOUGH_HISTORY', %s)
+                        'NOT_ENOUGH_HISTORY', %s, %s)
                     ON CONFLICT (fixture_id) DO UPDATE SET
                         competition_id = EXCLUDED.competition_id,
                         home_team_id = EXCLUDED.home_team_id,
@@ -1352,7 +1326,8 @@ class ProductSync:
                         kickoff_at = EXCLUDED.kickoff_at,
                         status = EXCLUDED.status, home_score = EXCLUDED.home_score,
                         away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
-                        round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at
+                        round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at,
+                        result_score_basis = EXCLUDED.result_score_basis
                     """,
                     (
                         match_id,
@@ -1366,6 +1341,7 @@ class ProductSync:
                         _mapping(fixture, "venue").get("name"),
                         league.get("round"),
                         observed_at,
+                        score_basis,
                     ),
                 )
             stored.append(row)
@@ -1412,6 +1388,7 @@ class ProductSync:
                 FALLBACK_PROVIDER_CODE, provider_fixture_id
             ) or fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
             status = _football_data_status(str(row.get("status")))
+            score_basis = _football_data_score_basis(row)
             score = _mapping(_mapping(row, "score"), "fullTime")
             home_score = score.get("home") if status == "FINISHED" else None
             away_score = score.get("away") if status == "FINISHED" else None
@@ -1436,14 +1413,15 @@ class ProductSync:
                     INSERT INTO football.product_fixtures (
                         fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
                         status, home_score, away_score, venue, round_name,
-                        forecast_availability, updated_at
+                        forecast_availability, updated_at, result_score_basis
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        'NOT_ENOUGH_HISTORY', %s)
+                        'NOT_ENOUGH_HISTORY', %s, %s)
                     ON CONFLICT (fixture_id) DO UPDATE SET
                         kickoff_at = EXCLUDED.kickoff_at,
                         status = EXCLUDED.status, home_score = EXCLUDED.home_score,
                         away_score = EXCLUDED.away_score, venue = EXCLUDED.venue,
-                        round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at
+                        round_name = EXCLUDED.round_name, updated_at = EXCLUDED.updated_at,
+                        result_score_basis = EXCLUDED.result_score_basis
                     """,
                     (
                         match_id,
@@ -1457,6 +1435,7 @@ class ProductSync:
                         row.get("venue"),
                         str(row.get("matchday") or row.get("stage") or ""),
                         observed_at,
+                        score_basis,
                     ),
                 )
                 cursor.execute(
@@ -2346,3 +2325,23 @@ def _football_data_status(value: str) -> str:
     if value == "SUSPENDED":
         return "ABANDONED"
     return "SCHEDULED"
+
+
+def _api_football_score_basis(short_status: str) -> str:
+    return {
+        "FT": "REGULATION_90",
+        "AET": "EXTRA_TIME",
+        "PEN": "PENALTY_SHOOTOUT",
+    }.get(short_status, "UNKNOWN")
+
+
+def _football_data_score_basis(row: Mapping[str, Any]) -> str:
+    score = row.get("score")
+    duration = score.get("duration") if isinstance(score, Mapping) else None
+    if not isinstance(duration, str):
+        return "UNKNOWN"
+    return {
+        "REGULAR": "REGULATION_90",
+        "EXTRA_TIME": "EXTRA_TIME",
+        "PENALTY_SHOOTOUT": "PENALTY_SHOOTOUT",
+    }.get(duration, "UNKNOWN")

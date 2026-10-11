@@ -43,6 +43,8 @@ const (
 	SyncHistoryBackfill     SyncType = "HISTORY_BACKFILL"
 	SyncForecastRefresh     SyncType = "FORECAST_REFRESH"
 	SyncExternalPredictions SyncType = "EXTERNAL_PREDICTIONS"
+	SyncFotMob              SyncType = "FOTMOB_SYNC"
+	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
 	SyncAllData             SyncType = "ALL_DATA"
 )
 
@@ -496,20 +498,39 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 		SyncHistoryBackfill:     "backfill-history",
 		SyncForecastRefresh:     "refresh-forecasts",
 		SyncExternalPredictions: "external-predictions",
+		SyncFotMob:              "fotmob-sync",
+		SyncPitchAPI:            "pitchapi-sync",
 		SyncAllData:             "sync-all",
 	}[request.Type]
 	if command == "" {
 		return nil, fmt.Errorf("unsupported sync type %q", request.Type)
 	}
 	args := []string{".tools/bin/uv", "run", "python", "-m", "football.product.cli", command}
+	args = appendSyncDateArgs(args, request)
+	args = appendSyncSelectorArgs(args, request)
+	return args, nil
+}
+
+func appendSyncDateArgs(args []string, request SyncRequest) []string {
 	dateTypes := map[SyncType]bool{
-		SyncMVP: true, SyncExternalPredictions: true, SyncAllData: true,
+		SyncMVP: true, SyncExternalPredictions: true, SyncFotMob: true,
+		SyncPitchAPI: true, SyncAllData: true,
 	}
 	if request.Date != "" && dateTypes[request.Type] {
 		args = append(args, "--date", request.Date)
 	}
-	if request.FromDate != "" && dateTypes[request.Type] {
+	fromDateTypes := map[SyncType]bool{
+		SyncMVP: true, SyncFotMob: true, SyncPitchAPI: true, SyncAllData: true,
+	}
+	if request.FromDate != "" && fromDateTypes[request.Type] {
 		args = append(args, "--from-date", request.FromDate)
+	}
+	return args
+}
+
+func appendSyncSelectorArgs(args []string, request SyncRequest) []string {
+	if request.Competition != "" && (request.Type == SyncFotMob || request.Type == SyncPitchAPI) {
+		args = append(args, "--competition", request.Competition)
 	}
 	selectorTypes := map[SyncType]bool{
 		SyncOpenFootball: true, SyncFootballDataUK: true, SyncHistoryBackfill: true,
@@ -525,7 +546,7 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 			}
 		}
 	}
-	return args, nil
+	return args
 }
 
 func (application *App) listSyncRuns(response http.ResponseWriter, request *http.Request) {
@@ -541,6 +562,11 @@ func (application *App) listSyncRuns(response http.ResponseWriter, request *http
 	}
 	application.writeJSON(response, http.StatusOK, map[string]interface{}{
 		"runs": runs, "coverage": coverage,
+		"provider_configuration": map[string]interface{}{
+			"fotmob_enabled":            application.config.FotMobEnabled,
+			"pitchapi_enabled":          application.config.PitchAPIEnabled,
+			"operational_sync_interval": application.config.OperationalSyncInterval.String(),
+		},
 	})
 }
 

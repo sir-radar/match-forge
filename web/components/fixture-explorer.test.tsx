@@ -58,4 +58,63 @@ describe("FixtureExplorer", () => {
     expect(await screen.findByText("Not enough history", { selector: ".availability" })).toBeInTheDocument();
     expect(screen.getByText("Arsenal")).toBeInTheDocument();
   });
+
+  it("renders live score, clock, stale state, and live-only filter", async () => {
+    const live = {
+      ...fixture,
+      status: "LIVE",
+      home_score: 2,
+      away_score: 1,
+      provider: "pitchapi",
+      provider_status: "live",
+      match_minute: 72,
+      added_time: 2,
+      period: "second_half",
+      last_successful_update: "2026-09-29T16:30:00Z",
+      stale: true,
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const payload = String(input).includes("competitions")
+        ? { competitions: [competition] }
+        : { groups: [{ competition, fixtures: [live] }] };
+      return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+
+    expect(await screen.findByText("LIVE", { selector: ".live-indicator" })).toBeInTheDocument();
+    expect(screen.getByText("72+2′ · stale")).toBeInTheDocument();
+    expect(screen.getByText("2–1")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Live 1/ }));
+    expect(screen.getByText("Arsenal")).toBeInTheDocument();
+  });
+
+  it("shows suspended state and score without treating it as actively live", async () => {
+    const suspended = {
+      ...fixture,
+      status: "SUSPENDED",
+      home_score: 1,
+      away_score: 1,
+      provider: "fotmob",
+      provider_status: "SUSP",
+      match_minute: null,
+      added_time: null,
+      period: null,
+      last_successful_update: "2026-09-29T16:30:00Z",
+      stale: false,
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const payload = String(input).includes("competitions")
+        ? { competitions: [competition] }
+        : { groups: [{ competition, fixtures: [suspended] }] };
+      return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+
+    expect(await screen.findByText("SUSPENDED")).toBeInTheDocument();
+    expect(screen.getByText("1–1")).toBeInTheDocument();
+    expect(screen.queryByText("LIVE", { selector: ".live-indicator" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Live 0/ })).toBeInTheDocument();
+  });
 });

@@ -8,6 +8,8 @@ import { useResource } from "@/hooks/use-resource";
 import { api } from "@/lib/api";
 import type { ExternalPrediction, ExternalSource } from "@/lib/contracts";
 
+const DISPLAY_TIME_ZONE = process.env.NEXT_PUBLIC_TIME_ZONE ?? "Africa/Lagos";
+
 type FacetFilters = {
   source: string;
   continent: string;
@@ -389,7 +391,7 @@ function Results({ day, items, refreshing }: { day: string; items: ExternalPredi
     <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#0a0e17]" aria-busy={refreshing}>
       <div className="overflow-x-auto" tabIndex={0} aria-label="External selection records table">
         <table className={`w-full min-w-[1180px] border-collapse text-left text-[10px] ${mono}`}>
-          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">Date (UTC)<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
+          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">Date (UTC)<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-center">Result</TH><TH className="text-center">Settlement</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
           <tbody>
             {items.map((item, index) => (
               <tr key={item.id} className={`h-11 border-b border-[#262a34]/50 transition-colors hover:bg-[#262a34]/60 ${index % 2 ? "bg-[#181b25]/40" : "bg-[#0a0e17]"}`}>
@@ -400,6 +402,8 @@ function Results({ day, items, refreshing }: { day: string; items: ExternalPredi
                 <TD className="text-center text-[#86948a]">{kickoffTime(item.kickoff_at)}</TD>
                 <TD className="text-[#bbcabf]">{market(item.market)}</TD>
                 <TD><span className={`rounded-sm border border-[#353943] bg-[#1c1f29] px-2 py-0.5 font-semibold ${tone(item.agreement)}`}>{item.selection}</span></TD>
+                <TD className="text-center"><span title={item.result_score_basis ? `Score basis: ${item.result_score_basis}` : undefined}>{item.actual_home_score === null ? "—" : `${item.actual_home_score}–${item.actual_away_score}`}</span></TD>
+                <TD className="text-center"><span title={item.result_provider && item.result_updated_at ? `${item.result_provider} · ${item.result_updated_at}` : undefined}>{item.settlement_state}</span></TD>
                 <TD className={`text-right font-bold ${tone(item.agreement)}`}>{probability(item.matchforge_probability)}</TD>
                 <TD className="text-center"><Badge value={item.agreement} /></TD>
               </tr>
@@ -534,21 +538,21 @@ function probability(value: number | null) {
 function collected(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(date).replace(",", "");
+  return new Intl.DateTimeFormat("en-CA", { timeZone: DISPLAY_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(date).replace(",", "");
 }
 
 function kickoff(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+  return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
 function kickoffTime(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+  return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
 function agreement(value: ExternalPrediction["agreement"]) {
