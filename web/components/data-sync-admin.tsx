@@ -31,18 +31,18 @@ const ACTIONS: Action[] = [
 
 export function DataSyncAdmin() {
   const state = useSyncAdminState();
-  const { active, clock, coverage, error, filters, latest, loading, providerConfiguration, runs, setFilters, start, submitting, reload } = state;
+  const { active, clock, coverage, error, filters, latest, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload } = state;
 
   return <div className="page sync-admin">
     <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
     <SyncControls filters={filters} setFilters={setFilters} />
-    <SyncStatus active={active} clock={clock} />
+    <SyncStatus active={active} clock={clock} stopping={submitting === "STOP"} onStop={() => void stop()} />
     {error && <div className="sync-error" role="alert"><strong>Sync request failed</strong><span>{error}</span><button onClick={() => void reload()}>Retry status</button></div>}
     <section className="sync-actions" aria-label="Data synchronization actions">
       {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} providerConfiguration={providerConfiguration} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
     </section>
     <CoveragePanel coverage={coverage} loading={loading} />
-    <RunHistory runs={runs} loading={loading} clock={clock} />
+    <RunHistory runs={runs} loading={loading} clock={clock} busy={Boolean(submitting)} onRetry={(run) => void retry(run)} />
   </div>;
 }
 
@@ -52,7 +52,7 @@ function useSyncAdminState() {
   const [coverage, setCoverage] = useState<HistoricalCoverage | null>(null);
   const [providerConfiguration, setProviderConfiguration] = useState<ProviderConfiguration>({ fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" });
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<SyncType | null>(null);
+  const [submitting, setSubmitting] = useState<SyncType | "STOP" | "RETRY" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [clock, setClock] = useState(0);
   const active = runs.find((run) => run.status === "QUEUED" || run.status === "RUNNING") ?? null;
@@ -85,7 +85,34 @@ function useSyncAdminState() {
     } finally { setSubmitting(null); }
   };
 
-  return { active, clock, coverage, error, filters, latest, loading, providerConfiguration, runs, setFilters, start, submitting, reload };
+  const stop = async () => {
+    if (!active || submitting) return;
+    setSubmitting("STOP"); setError(null);
+    try {
+      const run = await api.stopSyncRun(active.run_id);
+      setRuns((current) => current.map((item) => item.run_id === run.run_id ? run : item));
+      await reload();
+    } catch (cause) {
+      setError(errorMessage(cause));
+      if (cause instanceof ApiError && cause.status === 409) await reload();
+    }
+    finally { setSubmitting(null); }
+  };
+
+  const retry = async (failed: SyncRun) => {
+    if (active || submitting) return;
+    setSubmitting("RETRY"); setError(null);
+    try {
+      const run = await api.retrySyncRun(failed.run_id);
+      setClock(new Date(run.requested_at).getTime());
+      setRuns((current) => [run, ...current]);
+    } catch (cause) {
+      setError(errorMessage(cause));
+      if (cause instanceof ApiError && cause.status === 409) await reload();
+    } finally { setSubmitting(null); }
+  };
+
+  return { active, clock, coverage, error, filters, latest, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload };
 }
 
 function useActiveRunPolling(
@@ -102,7 +129,7 @@ function useActiveRunPolling(
       try {
         const updated = await api.syncRun(active.run_id);
         setRuns((current) => current.map((run) => run.run_id === updated.run_id ? updated : run));
-        if (updated.status === "SUCCEEDED" || updated.status === "FAILED") await reload();
+        if (["SUCCEEDED", "FAILED", "CANCELLED"].includes(updated.status)) await reload();
       } catch (cause) { setError(errorMessage(cause)); }
     }, 2500);
     return () => { window.clearInterval(timer); window.clearInterval(poll); };
@@ -122,9 +149,9 @@ function SyncControls({ filters, setFilters }: { filters: Filters; setFilters: D
   </section>;
 }
 
-function SyncStatus({ active, clock }: { active: SyncRun | null; clock: number }) {
+function SyncStatus({ active, clock, stopping, onStop }: { active: SyncRun | null; clock: number; stopping: boolean; onStop: () => void }) {
   return <div className="sync-status" role="status" aria-live="polite">
-    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span>{active.history_queue && <span>{queueProgress(active)}</span>}</> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
+    {active ? <><strong>{active.status === "QUEUED" ? "Queued" : "Running"}</strong><span>{label(active.sync_type)}</span><span>{elapsed(active.started_at ?? active.requested_at, clock)}</span><span>{stringMetric(active.summary, "current_phase") ?? "Preparing provider operation"}</span>{active.history_queue && <span>{queueProgress(active)}</span>}<button type="button" onClick={onStop} disabled={stopping}>{stopping ? "Stopping…" : "Stop sync"}</button></> : <><strong>Ready</strong><span>No data synchronization is running.</span></>}
   </div>;
 }
 
@@ -165,9 +192,9 @@ function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | n
   return <section className="coverage-panel" aria-labelledby="coverage-title"><header><div><small>Canonical store</small><h2 id="coverage-title">Historical Coverage</h2></div><span>{loading ? "Loading…" : "Current"}</span></header><dl>{metrics.map(([term, value]) => <Metric key={term} term={String(term)} value={Number(value).toLocaleString()} />)}</dl>{!loading && !coverage && <p>Coverage is unavailable.</p>}</section>;
 }
 
-function RunHistory({ runs, loading, clock }: { runs: SyncRun[]; loading: boolean; clock: number }) {
+function RunHistory({ runs, loading, clock, busy, onRetry }: { runs: SyncRun[]; loading: boolean; clock: number; busy: boolean; onRetry: (run: SyncRun) => void }) {
   return <section className="run-history" aria-labelledby="run-history-title"><header><small>Audit log</small><h2 id="run-history-title">Recent sync runs</h2></header>
-    {loading ? <p>Loading sync history…</p> : runs.length === 0 ? <p>No manual sync runs yet.</p> : <div className="table-scroll"><table><caption className="sr-only">Recent data synchronization runs</caption><thead><tr><th>Started</th><th>Type</th><th>Status</th><th>Duration</th><th>Matches added</th><th>Forecasts created</th><th>Conflicts</th><th>Details</th></tr></thead><tbody>{runs.map((run) => <tr key={run.run_id}><td>{formatTime(run.started_at ?? run.requested_at)}</td><th scope="row">{label(run.sync_type)}</th><td><span className={`run-status ${run.status.toLowerCase()}`}>{run.status}</span></td><td>{duration(run, clock)}</td><td>{shortMetric(run, "matches_inserted")}</td><td>{shortMetric(run, "forecasts_created")}</td><td>{shortMetric(run, "result_conflicts")}</td><td><details><summary>View</summary><pre>{JSON.stringify(run.summary, null, 2)}</pre>{run.error_message && <p>{run.error_message}</p>}</details></td></tr>)}</tbody></table></div>}
+    {loading ? <p>Loading sync history…</p> : runs.length === 0 ? <p>No manual sync runs yet.</p> : <div className="table-scroll"><table><caption className="sr-only">Recent data synchronization runs</caption><thead><tr><th>Started</th><th>Type</th><th>Status</th><th>Duration</th><th>Matches added</th><th>Forecasts created</th><th>Conflicts</th><th>Details</th><th>Actions</th></tr></thead><tbody>{runs.map((run) => <tr key={run.run_id}><td>{formatTime(run.started_at ?? run.requested_at)}</td><th scope="row">{label(run.sync_type)}</th><td><span className={`run-status ${run.status.toLowerCase()}`}>{run.status}</span></td><td>{duration(run, clock)}</td><td>{shortMetric(run, "matches_inserted")}</td><td>{shortMetric(run, "forecasts_created")}</td><td>{shortMetric(run, "result_conflicts")}</td><td><details><summary>View</summary><pre>{JSON.stringify(run.summary, null, 2)}</pre>{run.error_message && <p>{run.error_message}</p>}</details></td><td>{(run.status === "FAILED" || run.status === "CANCELLED") && <button type="button" onClick={() => onRetry(run)} disabled={busy}>Retry</button>}</td></tr>)}</tbody></table></div>}
   </section>;
 }
 
@@ -180,5 +207,5 @@ function formatTime(value: string | null) { return value ? new Intl.DateTimeForm
 function elapsed(value: string, now: number) { return `${Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000))}s elapsed`; }
 function duration(run: SyncRun, clock: number) { if (!run.started_at) return "—"; const end = run.finished_at ? new Date(run.finished_at).getTime() : clock; return `${Math.max(0, Math.round((end - new Date(run.started_at).getTime()) / 1000))}s`; }
 function localDate() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
-function errorMessage(cause: unknown) { if (cause instanceof ApiError) { if (cause.status === 409) return "A data synchronization is already running. Status has been refreshed."; if (cause.status >= 500) return `The API could not start or read the sync. ${cause.message}`; return cause.message; } if (cause instanceof Error) return `Network or response error: ${cause.message}`; return "Unknown synchronization error."; }
+function errorMessage(cause: unknown) { if (cause instanceof ApiError) { if (cause.status === 409) return cause.message; if (cause.status >= 500) return `The API could not start or read the sync. ${cause.message}`; return cause.message; } if (cause instanceof Error) return `Network or response error: ${cause.message}`; return "Unknown synchronization error."; }
 function queueProgress(run: SyncRun) { const queue = run.history_queue; return queue ? `History queue: ${queue.succeeded}/${queue.total} succeeded, ${queue.running} running, ${queue.pending} pending, ${queue.failed} failed` : ""; }

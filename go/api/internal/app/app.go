@@ -57,6 +57,8 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
 	mux.HandleFunc("GET /v1/admin/sync-runs", application.listSyncRuns)
 	mux.HandleFunc("GET /v1/admin/sync-runs/{run_id}", application.getSyncRun)
+	mux.HandleFunc("POST /v1/admin/sync-runs/{run_id}/stop", application.stopSyncRun)
+	mux.HandleFunc("POST /v1/admin/sync-runs/{run_id}/retry", application.retrySyncRun)
 	mux.HandleFunc("POST /v1/admin/sync/mvp", application.startSync(SyncMVP))
 	mux.HandleFunc("POST /v1/admin/sync/openfootball", application.startSync(SyncOpenFootball))
 	mux.HandleFunc("POST /v1/admin/sync/football-data-uk", application.startSync(SyncFootballDataUK))

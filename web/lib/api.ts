@@ -59,6 +59,8 @@ export const api = {
   startAllDataSync: (body: Record<string, string>) => startSync("all", body),
   syncRuns: (signal?: AbortSignal) => request("/v1/admin/sync-runs", parseSyncRuns, { signal }),
   syncRun: (id: string, signal?: AbortSignal) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}`, parseSyncRun, { signal }),
+  stopSyncRun: (id: string) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/stop`, parseSyncRun, { method: "POST" }),
+  retrySyncRun: (id: string) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/retry`, parseSyncRun, { method: "POST" }),
 };
 
 function startSync(action: string, body: Record<string, string>): Promise<SyncRun> {
