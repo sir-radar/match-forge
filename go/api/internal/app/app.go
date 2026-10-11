@@ -46,6 +46,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /version", application.version)
 	mux.HandleFunc("GET /v1/competitions", application.listCompetitions)
 	mux.HandleFunc("GET /v1/fixtures", application.listFixtures)
+	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/live", application.liveFixture)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/context", application.fixtureContext)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts", application.forecastHistory)
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/forecasts/{forecast_id}", application.forecast)
@@ -121,18 +122,19 @@ func (application *App) runOperationalSyncSchedule(ctx context.Context) {
 	}
 	index := 0
 	for {
+		syncType := types[index%len(types)]
+		index++
+		lagos := time.FixedZone("Africa/Lagos", 60*60)
+		_, err := application.syncRunner.Start(ctx, SyncRequest{
+			Type: syncType, Date: time.Now().In(lagos).Format("2006-01-02"),
+		})
+		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+			application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
+		}
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			syncType := types[index%len(types)]
-			index++
-			_, err := application.syncRunner.Start(ctx, SyncRequest{
-				Type: syncType, Date: time.Now().UTC().Format("2006-01-02"),
-			})
-			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
-				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
-			}
 		}
 	}
 }

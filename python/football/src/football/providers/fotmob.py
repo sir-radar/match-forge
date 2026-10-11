@@ -260,14 +260,13 @@ def _normalize_match(
     if kickoff.tzinfo is None or kickoff.utcoffset() is None:
         raise FotmobPayloadError("match kickoff timezone is required")
     live_time = status.get("liveTime")
-    provider_clock = live_time.get("short") if isinstance(live_time, Mapping) else None
+    provider_clock, minute, added_time = _live_clock(live_time)
     reason = status.get("reason")
     provider_status = reason.get("short") if isinstance(reason, Mapping) else None
     if not isinstance(provider_status, str):
         provider_status = provider_clock if isinstance(provider_clock, str) else None
     if isinstance(provider_clock, str) and len(provider_clock) > 20:
         provider_clock = None
-    minute, added_time = _clock_parts(provider_clock)
     source_updated_at = _optional_datetime(status.get("updatedAt"))
     return FotmobLiveScore(
         provider_match_id=_provider_id(row.get("id")),
@@ -345,7 +344,7 @@ def _match_status(status: Mapping[str, Any]) -> str:
 def _clock_parts(value: str | None) -> tuple[int | None, int | None]:
     if value is None:
         return None, None
-    match = re.fullmatch(r"\s*(\d{1,3})(?:\+(\d{1,2}))?'?\s*", value)
+    match = re.fullmatch(r"\s*(\d{1,3})(?:\s*\+\s*(\d{1,2}))?'?\s*", value)
     if match is None:
         return None, None
     minute = int(match.group(1))
@@ -353,6 +352,34 @@ def _clock_parts(value: str | None) -> tuple[int | None, int | None]:
     if minute > 180 or (added is not None and added > 30):
         return None, None
     return minute, added
+
+
+def _live_clock(value: Any) -> tuple[str | None, int | None, int | None]:
+    if not isinstance(value, Mapping):
+        return None, None, None
+    short = value.get("short")
+    provider_clock = short if isinstance(short, str) and len(short) <= 20 else None
+    minute, added_time = _clock_parts(provider_clock)
+    if minute is not None:
+        return provider_clock, minute, added_time
+
+    # FotMob may put a phase label such as HT in ``short`` while retaining the
+    # numeric provider clock in ``long``. Use only that reported clock; never
+    # infer a minute from kickoff time or local elapsed time.
+    long_clock = value.get("long")
+    if not isinstance(long_clock, str):
+        return provider_clock, None, None
+    match = re.fullmatch(
+        r"\s*(\d{1,3})(?::\d{1,2})?(?:\s*\+\s*(\d{1,2})(?::\d{1,2})?)?'?\s*",
+        long_clock,
+    )
+    if match is None:
+        return provider_clock, None, None
+    minute = int(match.group(1))
+    added_time = int(match.group(2)) if match.group(2) is not None else None
+    if minute > 180 or (added_time is not None and added_time > 30):
+        return provider_clock, None, None
+    return provider_clock, minute, added_time
 
 
 def _period(status: Mapping[str, Any], provider_status: str | None) -> str | None:

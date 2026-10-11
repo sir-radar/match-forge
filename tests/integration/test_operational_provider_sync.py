@@ -162,6 +162,16 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         period="HALF_TIME",
     )
     assert sync._update_canonical_fixture(half_time, fixture_id, snapshot_id) == 1
+    second_half = replace(
+        half_time,
+        status="LIVE",
+        provider_status="2nd Half",
+        source_updated_at=kickoff + timedelta(minutes=51),
+        observed_at=kickoff + timedelta(minutes=52),
+        minute=46,
+        period="SECOND_HALF",
+    )
+    assert sync._update_canonical_fixture(second_half, fixture_id, snapshot_id) == 1
     assert (
         sync._update_canonical_fixture(
             replace(
@@ -176,15 +186,25 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         == 0
     )
     suspended = replace(
-        half_time,
+        second_half,
         status="SUSPENDED",
         provider_status="Suspended",
         source_updated_at=kickoff + timedelta(minutes=60),
         observed_at=kickoff + timedelta(minutes=61),
     )
     assert sync._update_canonical_fixture(suspended, fixture_id, snapshot_id) == 1
-    finished = replace(
+    resumed = replace(
         suspended,
+        status="LIVE",
+        provider_status="Resumed",
+        source_updated_at=kickoff + timedelta(minutes=62),
+        observed_at=kickoff + timedelta(minutes=63),
+        minute=55,
+        period="SECOND_HALF",
+    )
+    assert sync._update_canonical_fixture(resumed, fixture_id, snapshot_id) == 1
+    finished = replace(
+        resumed,
         status="FINISHED",
         provider_status="Finished",
         home_score=2,

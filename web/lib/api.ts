@@ -2,6 +2,7 @@ import {
   parseCompetitions,
   parseContext,
   parseFixtureGroups,
+  parseLiveMatch,
   parseForecast,
   parsePerformance,
   parsePerformanceList,
@@ -42,6 +43,7 @@ async function request<T>(path: string, parse: (value: unknown) => T, options: R
 export const api = {
   competitions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/competitions?${query}`, parseCompetitions, { signal }),
   fixtures: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/fixtures?${query}`, parseFixtureGroups, { signal }),
+  live: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/live`, parseLiveMatch, { signal }),
   context: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/context`, parseContext, { signal }),
   forecast: (fixtureId: string, forecastId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/forecasts/${forecastId}`, parseForecast, { signal }),
   performance: (competitionId: string, signal?: AbortSignal) => request(`/v1/competitions/${competitionId}/performance`, parsePerformance, { signal }),

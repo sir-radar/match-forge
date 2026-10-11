@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { parseFixtureGroups, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
+import { parseFixtureGroups, parseLiveMatch, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
 
 describe("API contract boundary", () => {
+  it("parses zero-valued live scores and statistics", () => {
+    const value = parseLiveMatch({
+      fixture_id: "f", status: "LIVE",
+      home: { id: "h", name: "Home", crest_url: null }, away: { id: "a", name: "Away", crest_url: null },
+      home_score: 0, away_score: 0, match_minute: null, added_time: null, period: null,
+      events: [], statistics: [{ metric: "red_cards", label: "Red cards", period: "FULL_MATCH", home: 0, away: null, unit: "number", original_field: "red_cards", available: true }],
+      score_source: null, event_source: null, statistics_source: null,
+      availability: { score: true, events: false, statistics: true }, partial: true,
+    });
+    expect(value.home_score).toBe(0);
+    expect(value.statistics[0]).toMatchObject({ home: 0, away: null });
+  });
   it("rejects invalid forecast probabilities", () => {
     expect(() => parseFixtureGroups({ groups: [{ competition: {
       id: "c", name: "League", country: "Country", continent: "Europe", division: 1, type: "LEAGUE", season: "2026",

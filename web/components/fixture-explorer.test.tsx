@@ -16,6 +16,16 @@ const fixture = {
 
 const forecast = { ...fixture.forecast, probabilities: { ...fixture.forecast.probabilities, total_over_2_5: .51, total_under_2_5: .49, btts_yes: .55, home_clean_sheet: .33, away_clean_sheet: .22 }, fixture_id: fixture.id, model_label: "MVP_FORECAST", model_algorithm_version: "transferable-rolling-goals-poisson-v1", created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix: [{ home_goals: 1, away_goals: 0, probability: .14 }] };
 const context = { fixture_id: fixture.id, home_form: [], away_form: [], h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: { recent_form: false, h2h: false, standings: false, team_stats: false } };
+const liveMatch = {
+  fixture_id: fixture.id, status: "FINISHED", home: fixture.home, away: fixture.away,
+  home_score: 2, away_score: 1, match_minute: null, added_time: null, period: "FULL_TIME",
+  events: [{ id: "pitchapi:1", type: "GOAL", team_id: fixture.home.id, team_side: "HOME", player_id: "p1", player_name: "Saka", minute: 14, added_time: 0, period: "FirstHalf", own_goal: false, penalty: false, disallowed: false, provider: "pitchapi" }],
+  statistics: [{ metric: "possession", label: "Ball possession", period: "FULL_MATCH", home: 55, away: 45, unit: "percent", original_field: "ball_possession", available: true }],
+  score_source: { provider: "pitchapi", provider_match_id: "m_123456", observed_at: "2026-09-29T17:00:00Z", last_fetched_at: "2026-09-29T17:00:00Z", stale: false },
+  event_source: { provider: "pitchapi", provider_match_id: "m_123456", observed_at: "2026-09-29T17:00:00Z", last_fetched_at: "2026-09-29T17:00:00Z", stale: false },
+  statistics_source: { provider: "pitchapi", provider_match_id: "m_123456", observed_at: "2026-09-29T17:00:00Z", last_fetched_at: "2026-09-29T17:00:00Z", stale: false },
+  availability: { score: true, events: true, statistics: true }, partial: false,
+};
 
 describe("FixtureExplorer", () => {
   beforeEach(() => {
@@ -24,6 +34,7 @@ describe("FixtureExplorer", () => {
       const payload = url.includes("/v1/competitions?") ? { competitions: [competition] }
         : url.includes("/v1/fixtures?") ? { date: "2026-09-29", groups: [{ competition, fixtures: [fixture] }] }
         : url.includes("/context") ? context
+        : url.includes("/live") ? liveMatch
         : url.includes("/forecasts/") ? forecast
         : url.includes("external-predictions") ? { predictions: [] }
         : {};
@@ -116,5 +127,38 @@ describe("FixtureExplorer", () => {
     expect(screen.getByText("1–1")).toBeInTheDocument();
     expect(screen.queryByText("LIVE", { selector: ".live-indicator" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Live 0/ })).toBeInTheDocument();
+  });
+
+  it("renders confirmed live 0-0, compact scorers, and provider statistics", async () => {
+    const live = { ...fixture, status: "LIVE", home_score: 0, away_score: 0, goal_scorers: liveMatch.events };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      const payload = url.includes("competitions") ? { competitions: [competition] }
+        : url.includes("/live") ? { ...liveMatch, status: "LIVE", home_score: 0, away_score: 0, match_minute: 14 }
+        : { groups: [{ competition, fixtures: [live] }] };
+      return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    expect(await screen.findByText("0–0")).toBeInTheDocument();
+    expect(screen.getByText("Saka 14′")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Arsenal.*Chelsea/s }));
+    expect(await screen.findByRole("heading", { name: "Current match statistics" })).toBeInTheDocument();
+    expect(screen.getByText("Ball possession")).toBeInTheDocument();
+    expect(screen.getByText("55%")).toBeInTheDocument();
+  });
+
+  it("polls scheduled fixtures and sends the selected display timezone", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<FixtureExplorer initialDate="2026-09-29" />);
+      await vi.waitFor(() => expect(screen.getByText("Arsenal")).toBeInTheDocument());
+      const fixtureCalls = () => vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/v1/fixtures?")).length;
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes("timezone=Africa%2FLagos"))).toBe(true);
+      const before = fixtureCalls();
+      await vi.advanceTimersByTimeAsync(45_000);
+      await vi.waitFor(() => expect(fixtureCalls()).toBeGreaterThan(before));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

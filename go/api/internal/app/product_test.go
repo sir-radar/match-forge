@@ -59,11 +59,57 @@ func TestFixtureListAPI(t *testing.T) {
 	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"groups":[]`) {
 		t.Fatalf("response = %d %s", response.Code, response.Body.String())
 	}
-	if store.filters.Date != time.Date(2026, 9, 30, 0, 0, 0, 0, time.UTC) || store.filters.Continent != "Africa" || store.filters.ForecastAvailability != "NOT_ENOUGH_HISTORY" {
+	if store.filters.Start != time.Date(2026, 9, 30, 0, 0, 0, 0, time.UTC) || store.filters.End != time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC) || store.filters.Continent != "Africa" || store.filters.ForecastAvailability != "NOT_ENOUGH_HISTORY" {
 		t.Fatalf("filters = %+v", store.filters)
 	}
 	if response.Header().Get("Access-Control-Allow-Origin") != "http://127.0.0.1:3000" {
 		t.Fatal("expected exact configured CORS origin")
+	}
+}
+
+func TestFixtureListAPIAppliesSelectedTimezoneDay(t *testing.T) {
+	store := &fixtureStoreStub{}
+	application := New(Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, store)
+	request := httptest.NewRequest(http.MethodGet, "/v1/fixtures?date=2026-09-30&timezone=Africa%2FLagos", nil)
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("response = %d %s", response.Code, response.Body.String())
+	}
+	if store.filters.Start != time.Date(2026, 9, 29, 23, 0, 0, 0, time.UTC) || store.filters.End != time.Date(2026, 9, 30, 23, 0, 0, 0, time.UTC) {
+		t.Fatalf("filters = %+v", store.filters)
+	}
+}
+
+type liveStoreStub struct {
+	unavailableProductStore
+	fixtureID string
+}
+
+func (store *liveStoreStub) LiveFixture(_ context.Context, fixtureID string) (LiveMatch, error) {
+	store.fixtureID = fixtureID
+	zero := 0
+	return LiveMatch{FixtureID: fixtureID, Status: "LIVE", HomeScore: &zero, AwayScore: &zero, Events: []LiveEvent{}, Statistics: []LiveStatistic{}, Availability: map[string]bool{"score": true}}, nil
+}
+
+func TestLiveFixtureAPIKeepsZeroScore(t *testing.T) {
+	store := &liveStoreStub{}
+	application := New(Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, store)
+	request := httptest.NewRequest(http.MethodGet, "/v1/fixtures/ffc284d9-08fe-52b5-bab0-a8fb639daed5/live", nil)
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"home_score":0`) || !strings.Contains(response.Body.String(), `"away_score":0`) {
+		t.Fatalf("response = %d %s", response.Code, response.Body.String())
+	}
+}
+
+func TestLiveFixtureAPIRejectsMalformedID(t *testing.T) {
+	application := New(Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, &liveStoreStub{})
+	request := httptest.NewRequest(http.MethodGet, "/v1/fixtures/not-a-uuid/live", nil)
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("response = %d %s", response.Code, response.Body.String())
 	}
 }
 

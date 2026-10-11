@@ -218,6 +218,32 @@ def test_half_time_suspended_and_added_time_are_preserved() -> None:
     assert (row.status, row.minute, row.added_time, row.period) == ("HALF_TIME", 45, 3, "HT")
 
 
+def test_phase_label_uses_reported_long_clock_without_inventing_elapsed_time() -> None:
+    status = {
+        "utcTime": "2026-10-09T20:00:00Z",
+        "started": True,
+        "finished": False,
+        "cancelled": False,
+        "reason": {"short": "HT"},
+        "liveTime": {"short": "HT", "long": "45:00 + 3:52"},
+    }
+    row = normalize_daily_matches(response([match(status=status)]))[0]
+    assert (row.clock, row.minute, row.added_time, row.period) == ("HT", 45, 3, "HT")
+
+
+def test_phase_label_without_numeric_provider_clock_keeps_minute_missing() -> None:
+    status = {
+        "utcTime": "2026-10-09T20:00:00Z",
+        "started": True,
+        "finished": False,
+        "cancelled": False,
+        "reason": {"short": "HT"},
+        "liveTime": {"short": "HT", "long": "Half time"},
+    }
+    row = normalize_daily_matches(response([match(status=status)]))[0]
+    assert (row.clock, row.minute, row.added_time, row.period) == ("HT", None, None, "HT")
+
+
 def test_finished_score_basis_is_explicit_only_when_provider_proves_it() -> None:
     status = {
         "utcTime": "2026-10-09T20:00:00Z",
