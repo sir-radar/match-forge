@@ -287,6 +287,16 @@ export type HistoricalCoverage = {
   not_enough_history: number;
   mapping_failures: number;
   source_conflicts: number;
+  missing_live_scores: number;
+  fotmob_mapped: number;
+  fotmob_unmapped: number;
+  pitchapi_mapped: number;
+  pitchapi_unmapped: number;
+  fotmob_history: number;
+  pitchapi_history: number;
+  api_football_requests_used: number;
+  api_football_remaining: number;
+  api_football_exhausted: boolean;
 };
 export type ProviderConfiguration = {
   fotmob_enabled: boolean;
@@ -552,6 +562,16 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       not_enough_history: numeric(coverage.not_enough_history, "not_enough_history"),
       mapping_failures: numeric(coverage.mapping_failures, "mapping_failures"),
       source_conflicts: numeric(coverage.source_conflicts, "source_conflicts"),
+      missing_live_scores: numeric(coverage.missing_live_scores, "missing_live_scores"),
+      fotmob_mapped: numeric(coverage.fotmob_mapped, "fotmob_mapped"),
+      fotmob_unmapped: numeric(coverage.fotmob_unmapped, "fotmob_unmapped"),
+      pitchapi_mapped: numeric(coverage.pitchapi_mapped, "pitchapi_mapped"),
+      pitchapi_unmapped: numeric(coverage.pitchapi_unmapped, "pitchapi_unmapped"),
+      fotmob_history: numeric(coverage.fotmob_history, "fotmob_history"),
+      pitchapi_history: numeric(coverage.pitchapi_history, "pitchapi_history"),
+      api_football_requests_used: numeric(coverage.api_football_requests_used, "api_football_requests_used"),
+      api_football_remaining: numeric(coverage.api_football_remaining, "api_football_remaining"),
+      api_football_exhausted: boolean(coverage.api_football_exhausted, "api_football_exhausted"),
     },
   };
 }

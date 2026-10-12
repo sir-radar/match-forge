@@ -12,6 +12,7 @@ import urllib.error
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
+from functools import partial
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -19,7 +20,11 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from football.product.api_football import ApiFootballClient, ApiFootballError
+from football.product.api_football import (
+    ApiFootballClient,
+    ApiFootballError,
+    PostgresApiFootballBudget,
+)
 from football.product.development_provider_preview import development_provider_preview
 from football.product.domain import MODEL_ARTIFACT_PATH
 from football.product.external_prediction_sources import SourceCollection, collect_sources
@@ -147,11 +152,13 @@ def main(argv: list[str] | None = None) -> int:
         return _run_data_operation(args)
     api_key = os.environ.get("API_FOOTBALL_API_KEY", "")
     try:
-        client = ApiFootballClient(api_key)
         fallback_token = os.environ.get("FOOTBALL_DATA_DOT_ORG_API_TOKEN", "")
         history_fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
         sync_run_id = _sync_run_id()
         with psycopg.connect(args.database_url) as connection:
+            client = ApiFootballClient(
+                api_key, request_budget=PostgresApiFootballBudget(args.database_url)
+            )
             result = ProductSync(
                 connection,
                 client,
@@ -375,9 +382,80 @@ def _football_data_uk(
 def _history_backfill(
     connection: psycopg.Connection[Any], args: argparse.Namespace
 ) -> dict[str, object]:
+    errors: dict[str, str] = {}
+    pitch_sync = OperationalProviderSync(
+        connection, args.data_root, provider_code="pitchapi", minimum_interval_seconds=0
+    )
+    pitch_stored = _run_sync_step(
+        connection, "pitchapi-stored", pitch_sync.backfill_stored_history, errors
+    )
+    pitch_acquired: list[dict[str, object]] = []
+    if os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true":
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT mapping.provider_competition_id, competition.season_label
+                     FROM football.competition_provider_mappings mapping
+                     JOIN football.providers provider ON provider.id = mapping.provider_id
+                     JOIN football.product_competitions competition
+                       ON competition.competition_id = mapping.competition_id
+                    WHERE provider.code = 'pitchapi' AND mapping.valid_to IS NULL
+                      AND competition.season_label ~ '^[0-9]{4}(/[0-9]{4})?$'
+                      AND (%s::text IS NULL OR competition.season_label = %s)
+                      AND (%s::text IS NULL OR mapping.provider_competition_id = %s
+                           OR competition.name = %s)
+                    ORDER BY competition.updated_at DESC, mapping.provider_competition_id
+                    LIMIT 10""",
+                (
+                    args.season,
+                    args.season,
+                    args.competition,
+                    args.competition,
+                    args.competition,
+                ),
+            )
+            scopes = cursor.fetchall()
+        client = PitchApiClient(
+            os.environ.get("PITCH_API_TOKEN", ""),
+            connection_timeout_seconds=float(
+                os.environ.get("MATCHFORGE_PROVIDER_CONNECTION_TIMEOUT_SECONDS", "5")
+            ),
+            request_timeout_seconds=float(
+                os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
+            ),
+        )
+        for league_id, season in scopes:
+            acquired = _run_sync_step(
+                connection,
+                f"pitchapi-{league_id}-{season}",
+                partial(pitch_sync.backfill_pitchapi_league, client, league_id, season),
+                errors,
+            )
+            if acquired is not None:
+                pitch_acquired.append(acquired)
+    openfootball = _run_sync_step(
+        connection, "openfootball", lambda: _openfootball(connection, args), errors
+    )
+    football_data_uk = _run_sync_step(
+        connection,
+        "football-data-uk",
+        lambda: _football_data_uk(connection, args),
+        errors,
+    )
+    fotmob = _run_sync_step(
+        connection,
+        "fotmob-stored",
+        lambda: OperationalProviderSync(
+            connection, args.data_root, provider_code="fotmob", minimum_interval_seconds=0
+        ).backfill_stored_history(),
+        errors,
+    )
     return {
-        "openfootball": _openfootball(connection, args),
-        "football_data_uk": _football_data_uk(connection, args),
+        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
+        "errors": errors,
+        "openfootball": openfootball,
+        "football_data_uk": football_data_uk,
+        "fotmob": fotmob,
+        "pitchapi": {"stored": pitch_stored, "acquired": pitch_acquired},
     }
 
 
@@ -391,7 +469,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
         return ProductSync(
             connection,
-            ApiFootballClient(api_key),
+            ApiFootballClient(api_key, request_budget=PostgresApiFootballBudget(args.database_url)),
             args.data_root,
             MODEL_ARTIFACT_PATH,
             fallback,
@@ -548,7 +626,7 @@ def _history_worker_factory(
         with psycopg.connect(database_url) as connection:
             yield ProductSync(
                 connection,
-                ApiFootballClient(api_key),
+                ApiFootballClient(api_key, request_budget=PostgresApiFootballBudget(database_url)),
                 data_root,
                 MODEL_ARTIFACT_PATH,
                 fallback,

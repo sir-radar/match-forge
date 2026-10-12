@@ -10,10 +10,12 @@ from typing import Any
 
 import psycopg
 import pytest
+from football.product.api_football import ApiFootballError, PostgresApiFootballBudget
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
 from psycopg import Connection
+from psycopg.errors import UniqueViolation
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
@@ -259,3 +261,91 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     assert mapping_counts == (1, 1)
     assert accepted_decisions == 1
     assert conflicts == 1
+
+    provisional = replace(
+        live,
+        provider_match_id="m_Provisional01",
+        provider_competition_id="l_Provisional01",
+        provider_home_team_id="t_ProvisionalHome01",
+        provider_away_team_id="t_ProvisionalAway01",
+    )
+    provisional_fixture_id = sync._create_provider_scoped_fixture(provisional, snapshot_id)
+    assert provisional_fixture_id is not None
+    assert sync._store_observation(provisional, snapshot_id, provisional_fixture_id)
+
+    sync.apply_reviewed_mapping(provisional.provider_match_id, fixture_id)
+
+    with connection.cursor() as cursor:
+        active_mapping = cursor.execute(
+            """SELECT mapping.match_id, mapping.mapping_method
+                 FROM football.match_provider_mappings mapping
+                 JOIN football.providers provider ON provider.id = mapping.provider_id
+                WHERE provider.code = 'pitchapi' AND mapping.provider_match_id = %s
+                  AND mapping.valid_to IS NULL""",
+            (provisional.provider_match_id,),
+        ).fetchone()
+        retired_mapping = cursor.execute(
+            """SELECT count(*)
+                 FROM football.match_provider_mappings mapping
+                 JOIN football.providers provider ON provider.id = mapping.provider_id
+                WHERE provider.code = 'pitchapi' AND mapping.provider_match_id = %s
+                  AND mapping.valid_to IS NOT NULL""",
+            (provisional.provider_match_id,),
+        ).fetchone()[0]
+        observation_fixture = cursor.execute(
+            """SELECT canonical_fixture_id
+                 FROM football.product_provider_fixture_observations
+                WHERE provider_code = 'pitchapi' AND provider_match_id = %s""",
+            (provisional.provider_match_id,),
+        ).fetchone()[0]
+    assert active_mapping == (fixture_id, "manual")
+    assert retired_mapping == 1
+    assert observation_fixture == fixture_id
+
+
+def test_live_provider_lanes_do_not_compete_with_history_backfill(
+    connection: Connection[Any],
+) -> None:
+    with connection.cursor() as cursor:
+        for sync_type in ("HISTORY_BACKFILL", "FOTMOB_SYNC", "PITCHAPI_SYNC"):
+            cursor.execute(
+                "INSERT INTO football.product_sync_runs (sync_type, status) VALUES (%s, 'RUNNING')",
+                (sync_type,),
+            )
+
+    with (
+        pytest.raises(UniqueViolation),
+        connection.transaction(),
+        connection.cursor() as cursor,
+    ):
+        cursor.execute(
+            """INSERT INTO football.product_sync_runs (sync_type, status)
+               VALUES ('FOTMOB_SYNC', 'QUEUED')"""
+        )
+
+
+def test_api_football_quota_circuit_persists_across_workers() -> None:
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        connection.execute(
+            """DELETE FROM football.provider_request_budgets
+                WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE"""
+        )
+    try:
+        PostgresApiFootballBudget(DATABASE_URL).before_request()
+        PostgresApiFootballBudget(DATABASE_URL).record_rejection("daily request limit reached")
+
+        with pytest.raises(ApiFootballError, match="request suppressed"):
+            PostgresApiFootballBudget(DATABASE_URL).before_request()
+
+        with psycopg.connect(DATABASE_URL) as connection:
+            assert connection.execute(
+                """SELECT requests_used, remaining_requests, exhausted
+                     FROM football.provider_request_budgets
+                    WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE"""
+            ).fetchone() == (1, 0, True)
+    finally:
+        with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+            connection.execute(
+                """DELETE FROM football.provider_request_budgets
+                    WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE"""
+            )

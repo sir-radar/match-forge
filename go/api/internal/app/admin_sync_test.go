@@ -63,6 +63,24 @@ func newAdminTestApp(runner SyncRunner) *App {
 	)
 }
 
+func TestCommandSyncRunnerShutdownCancelsAndWaitsForWorkers(t *testing.T) {
+	workerContext, cancelWorker := context.WithCancel(context.Background())
+	control := &syncRunControl{cancel: cancelWorker, done: make(chan struct{})}
+	runner := &CommandSyncRunner{active: map[string]*syncRunControl{"run-1": control}}
+	go func() {
+		<-workerContext.Done()
+		close(control.done)
+	}()
+
+	shutdownContext, cancelShutdown := context.WithTimeout(context.Background(), time.Second)
+	defer cancelShutdown()
+	runner.Shutdown(shutdownContext)
+
+	if workerContext.Err() != context.Canceled {
+		t.Fatalf("worker context error = %v, want canceled", workerContext.Err())
+	}
+}
+
 func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 	tests := []struct {
 		path string

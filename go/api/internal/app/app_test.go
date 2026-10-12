@@ -9,7 +9,64 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
+
+type scheduleRunner struct {
+	requests chan SyncRequest
+}
+
+func (runner scheduleRunner) Start(_ context.Context, request SyncRequest) (SyncRun, error) {
+	runner.requests <- request
+	return SyncRun{}, nil
+}
+func (scheduleRunner) Stop(context.Context, string) (SyncRun, error)  { return SyncRun{}, nil }
+func (scheduleRunner) Retry(context.Context, string) (SyncRun, error) { return SyncRun{}, nil }
+func (scheduleRunner) List(context.Context) ([]SyncRun, error)        { return nil, nil }
+func (scheduleRunner) Get(context.Context, string) (SyncRun, error)   { return SyncRun{}, nil }
+func (scheduleRunner) Coverage(context.Context) (Coverage, error)     { return Coverage{}, nil }
+
+func TestOperationalScheduleStartsEveryEnabledProviderWithoutBrowserTraffic(t *testing.T) {
+	requests := make(chan SyncRequest, 2)
+	application := NewWithSyncRunner(
+		Config{OperationalSyncInterval: time.Hour, FotMobEnabled: true, PitchAPIEnabled: true},
+		slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, unavailableProductStore{},
+		scheduleRunner{requests: requests},
+	)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go application.runOperationalSyncSchedule(ctx)
+
+	seen := map[SyncType]bool{}
+	for len(seen) < 2 {
+		select {
+		case request := <-requests:
+			seen[request.Type] = true
+			if request.Date == "" {
+				t.Fatal("scheduled request date is empty")
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("scheduled providers = %v, want FotMob and PitchAPI", seen)
+		}
+	}
+	if !seen[SyncFotMob] || !seen[SyncPitchAPI] {
+		t.Fatalf("scheduled providers = %v, want FotMob and PitchAPI", seen)
+	}
+}
+
+func TestSyncLanesSeparateLiveProvidersFromBulkWork(t *testing.T) {
+	tests := map[SyncType]string{
+		SyncFotMob:          "LIVE_FOTMOB",
+		SyncPitchAPI:        "LIVE_PITCHAPI",
+		SyncHistoryBackfill: "BULK",
+		SyncAllData:         "BULK",
+	}
+	for syncType, expected := range tests {
+		if actual := syncLane(syncType); actual != expected {
+			t.Errorf("syncLane(%q) = %q, want %q", syncType, actual, expected)
+		}
+	}
+}
 
 type readinessStub struct {
 	err error

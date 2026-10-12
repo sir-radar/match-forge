@@ -5,6 +5,10 @@ const coverage = {
   historical_matches: 120430, competitions_with_history: 84, teams_with_10_matches: 930,
   teams_below_10_matches: 23, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 3, source_conflicts: 1,
+  missing_live_scores: 2, fotmob_mapped: 420, fotmob_unmapped: 3,
+  pitchapi_mapped: 215, pitchapi_unmapped: 7, fotmob_history: 310,
+  pitchapi_history: 90, api_football_requests_used: 100,
+  api_football_remaining: 0, api_football_exhausted: true,
 };
 
 test.beforeEach(async ({ page }) => {
@@ -17,7 +21,12 @@ test.beforeEach(async ({ page }) => {
       await route.fulfill({ json: run("new-run", "ALL_DATA", "RUNNING") });
       return;
     }
-    await route.fulfill({ json: { runs: [run("old-run", "OPENFOOTBALL", "SUCCEEDED")], coverage } });
+    await route.fulfill({ json: {
+      runs: [run("old-run", "OPENFOOTBALL", "SUCCEEDED")], coverage,
+      provider_configuration: {
+        fotmob_enabled: true, pitchapi_enabled: true, operational_sync_interval: "45s",
+      },
+    } });
   });
 });
 

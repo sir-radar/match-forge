@@ -10,10 +10,82 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Any, cast
+from typing import Any, Protocol, cast
+
+from psycopg import connect
 
 API_BASE_URL = "https://v3.football.api-sports.io"
 Transport = Callable[[str, Mapping[str, str]], bytes]
+
+
+class RequestBudget(Protocol):
+    def before_request(self) -> None: ...
+
+    def record_response(self, remaining: int | None) -> None: ...
+
+    def record_rejection(self, detail: str) -> None: ...
+
+
+class PostgresApiFootballBudget:
+    """Persistent daily request circuit; reset is date-based, not a guessed timestamp."""
+
+    def __init__(self, database_url: str) -> None:
+        self.database_url = database_url
+
+    def before_request(self) -> None:
+        today = datetime.now(UTC).date()
+        with (
+            connect(self.database_url, autocommit=True) as connection,
+            connection.cursor() as cursor,
+        ):
+            cursor.execute(
+                """SELECT exhausted FROM football.provider_request_budgets
+                    WHERE provider_code = 'api_football' AND window_date = %s""",
+                (today,),
+            )
+            state = cursor.fetchone()
+            if state is not None and state[0]:
+                raise ApiFootballError("API-Football daily quota is exhausted; request suppressed")
+            cursor.execute(
+                """INSERT INTO football.provider_request_budgets (
+                       provider_code, window_date, requests_used
+                   ) VALUES ('api_football', %s, 1)
+                   ON CONFLICT (provider_code, window_date) DO UPDATE SET
+                       requests_used = football.provider_request_budgets.requests_used + 1,
+                       updated_at = clock_timestamp()""",
+                (today,),
+            )
+
+    def record_response(self, remaining: int | None) -> None:
+        if remaining is None:
+            return
+        with (
+            connect(self.database_url, autocommit=True) as connection,
+            connection.cursor() as cursor,
+        ):
+            cursor.execute(
+                """UPDATE football.provider_request_budgets
+                      SET remaining_requests = %s, exhausted = (%s = 0),
+                          last_error = NULL, updated_at = clock_timestamp()
+                    WHERE provider_code = 'api_football' AND window_date = %s""",
+                (remaining, remaining, datetime.now(UTC).date()),
+            )
+
+    def record_rejection(self, detail: str) -> None:
+        lowered = detail.casefold()
+        if not any(marker in lowered for marker in ("request limit", "quota", "rate limit")):
+            return
+        with (
+            connect(self.database_url, autocommit=True) as connection,
+            connection.cursor() as cursor,
+        ):
+            cursor.execute(
+                """UPDATE football.provider_request_budgets
+                      SET remaining_requests = 0, exhausted = true,
+                          last_error = %s, updated_at = clock_timestamp()
+                    WHERE provider_code = 'api_football' AND window_date = %s""",
+                (detail[:1000], datetime.now(UTC).date()),
+            )
 
 
 class ApiFootballError(RuntimeError):
@@ -41,11 +113,18 @@ class ApiResponse:
 
 
 class ApiFootballClient:
-    def __init__(self, api_key: str, *, transport: Transport | None = None) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        *,
+        transport: Transport | None = None,
+        request_budget: RequestBudget | None = None,
+    ) -> None:
         if not api_key:
             raise ApiFootballError("API_FOOTBALL_API_KEY is required")
         self._api_key = api_key
         self._transport = transport or _http_get
+        self._request_budget = request_budget
 
     def competitions(self) -> ApiResponse:
         return self._get("/leagues", {"current": "true"})
@@ -72,10 +151,16 @@ class ApiFootballClient:
         return self._get("/fixtures/lineups", {"fixture": str(fixture_id)})
 
     def _get(self, path: str, query: Mapping[str, str]) -> ApiResponse:
+        if self._request_budget is not None:
+            self._request_budget.before_request()
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"
         fetched_at = datetime.now(UTC)
         try:
             raw = self._transport(url, {"x-apisports-key": self._api_key})
+        except urllib.error.HTTPError as error:
+            if error.code == 429 and self._request_budget is not None:
+                self._request_budget.record_rejection("HTTP 429 rate limit")
+            raise ApiFootballError(f"API-Football request failed for {path}") from error
         except (OSError, urllib.error.URLError) as error:
             raise ApiFootballError(f"API-Football request failed for {path}") from error
         try:
@@ -85,6 +170,8 @@ class ApiFootballClient:
         provider_errors = payload.get("errors")
         if provider_errors not in ({}, []):
             detail = str(provider_errors)
+            if self._request_budget is not None:
+                self._request_budget.record_rejection(detail)
             lowered = detail.casefold()
             capability_status = (
                 CapabilityStatus.PLAN_RESTRICTION
@@ -99,6 +186,8 @@ class ApiFootballClient:
         if not isinstance(response, list):
             raise ApiFootballError("API-Football response must contain a list")
         remaining = _remaining_day(payload)
+        if self._request_budget is not None:
+            self._request_budget.record_response(remaining)
         return ApiResponse(
             path, fetched_at, raw, tuple(cast(list[Mapping[str, Any]], response)), remaining
         )
