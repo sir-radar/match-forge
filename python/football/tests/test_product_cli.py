@@ -8,6 +8,24 @@ from football.product import cli
 from football.product.api_football import ApiFootballError
 
 
+@pytest.mark.parametrize(
+    "result",
+    [
+        {"errors": {"league": "discovery failed"}},
+        {"status": "COMPLETED_WITH_ERRORS", "steps": [{"status": "FAILED"}]},
+        {"resources": [{"errors": {"detail": "unavailable"}}]},
+    ],
+)
+def test_sync_step_preserves_structured_failures(result: dict[str, object]) -> None:
+    class Connection:
+        def commit(self) -> None:
+            pass
+
+    errors: dict[str, str] = {}
+    assert cli._run_sync_step(cast(Any, Connection()), "provider", lambda: result, errors) == result
+    assert "provider" in errors
+
+
 def test_sync_all_continues_after_api_football_quota_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

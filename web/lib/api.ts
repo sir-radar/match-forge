@@ -24,7 +24,7 @@ export class ApiError extends Error {
 async function request<T>(path: string, parse: (value: unknown) => T, options: RequestOptions = {}): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? "GET", signal: options.signal,
-    headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}) },
+    headers: { Accept: "application/json", ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   if (!response.ok) {

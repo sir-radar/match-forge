@@ -69,7 +69,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/sync/fotmob", application.startSync(SyncFotMob))
 	mux.HandleFunc("POST /v1/admin/sync/pitchapi", application.startSync(SyncPitchAPI))
 	mux.HandleFunc("POST /v1/admin/sync/all", application.startSync(SyncAllData))
-	application.handler = application.cors(mux)
+	application.handler = application.cors(application.adminAccess(mux))
 	return application
 }
 

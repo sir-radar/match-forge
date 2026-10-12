@@ -332,7 +332,7 @@ func (runner *CommandSyncRunner) execute(
 	}
 	heartbeatContext, stopHeartbeat := context.WithCancel(ctx)
 	defer stopHeartbeat()
-	go runner.heartbeat(heartbeatContext, runID)
+	go runner.heartbeat(heartbeatContext, runID, control.cancel)
 	absoluteLog := filepath.Join(runner.repoRoot, logPath)
 	if err := os.MkdirAll(filepath.Dir(absoluteLog), 0o750); err != nil {
 		runner.fail(runID, err)
@@ -369,7 +369,8 @@ func (runner *CommandSyncRunner) execute(
 		`UPDATE football.product_sync_runs
 		 SET status = $2, finished_at = clock_timestamp(), summary = $3::jsonb,
 		     error_message = $4
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status = 'RUNNING'
+		   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 		runID,
 		status,
 		encoded,
@@ -380,14 +381,15 @@ func (runner *CommandSyncRunner) execute(
 }
 
 func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) bool {
-	_, err := runner.pool.Exec(
+	result, err := runner.pool.Exec(
 		ctx,
 		`UPDATE football.product_sync_runs
 		 SET status = 'RUNNING', started_at = clock_timestamp(), heartbeat_at = clock_timestamp()
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status = 'QUEUED'
+		   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 		runID,
 	)
-	if err == nil {
+	if err == nil && result.RowsAffected() == 1 {
 		return true
 	}
 	if !runner.cancelIfRequested(ctx, runID) {
@@ -396,7 +398,7 @@ func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) 
 	return false
 }
 
-func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string) {
+func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string, cancel context.CancelFunc) {
 	ticker := time.NewTicker(syncRunHeartbeatInterval)
 	defer ticker.Stop()
 	for {
@@ -404,13 +406,19 @@ func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			if _, err := runner.pool.Exec(
-				ctx,
+			checkContext, stopCheck := context.WithTimeout(ctx, syncRunHeartbeatInterval)
+			result, err := runner.pool.Exec(
+				checkContext,
 				`UPDATE football.product_sync_runs SET heartbeat_at = clock_timestamp()
-				 WHERE run_id = $1 AND status IN ('QUEUED', 'RUNNING')`,
+				 WHERE run_id = $1 AND worker_id = $1::text AND status = 'RUNNING'
+				   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 				runID,
-			); err != nil && !errors.Is(err, context.Canceled) {
-				runner.logger.Warn("heartbeat sync run", "run_id", runID, "error", err)
+			)
+			stopCheck()
+			if err != nil || result.RowsAffected() != 1 {
+				cancel()
+				runner.logger.Warn("sync worker ownership lost", "run_id", runID, "error", err)
+				return
 			}
 		}
 	}
@@ -438,6 +446,8 @@ func (runner *CommandSyncRunner) runCommand(
 	command := exec.CommandContext(ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
 	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
+	command.Env = append(command.Env, "PGOPTIONS="+os.Getenv("PGOPTIONS")+
+		" -c matchforge.sync_run_id="+runID+" -c matchforge.sync_worker_id="+runID)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	command.Cancel = func() error {
 		if command.Process == nil {
@@ -494,11 +504,13 @@ func (runner *CommandSyncRunner) Stop(ctx context.Context, id string) (SyncRun, 
 	if run.Status != "QUEUED" && run.Status != "RUNNING" {
 		return SyncRun{}, errSyncRunNotActive
 	}
+	// Revoke publication before cancelling local execution. Remote execution
+	// observes the same revocation through its heartbeat and database guard.
+	runner.cancelled(id)
 	runner.mu.Lock()
 	control := runner.active[id]
 	runner.mu.Unlock()
 	if control == nil {
-		runner.cancelled(id)
 		return runner.Get(ctx, id)
 	}
 	control.cancel()
@@ -587,7 +599,7 @@ func (runner *CommandSyncRunner) fail(runID string, cause error) {
 		context.WithoutCancel(runner.ctx),
 		`UPDATE football.product_sync_runs
 		 SET status = 'FAILED', finished_at = clock_timestamp(), error_message = $2
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status IN ('QUEUED', 'RUNNING')`,
 		runID,
 		message,
 	); err != nil {

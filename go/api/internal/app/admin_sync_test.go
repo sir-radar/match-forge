@@ -99,7 +99,7 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 	for _, test := range tests {
 		t.Run(string(test.want), func(t *testing.T) {
 			runner := &syncRunnerStub{}
-			request := httptest.NewRequest(http.MethodPost, test.path, strings.NewReader(`{"date":"2026-09-30"}`))
+			request := localAdminTestRequest(http.MethodPost, test.path, strings.NewReader(`{"date":"2026-09-30"}`))
 			request.Header.Set("Content-Type", "application/json")
 			response := httptest.NewRecorder()
 			newAdminTestApp(runner).Handler().ServeHTTP(response, request)
@@ -115,7 +115,7 @@ func TestAdminSyncStartRoutesUseFixedTypes(t *testing.T) {
 
 func TestAdminSyncPassesFixtureBackfillStartDate(t *testing.T) {
 	runner := &syncRunnerStub{}
-	request := httptest.NewRequest(
+	request := localAdminTestRequest(
 		http.MethodPost,
 		"/v1/admin/sync/mvp",
 		strings.NewReader(`{"date":"2026-10-03","from_date":"2026-09-29"}`),
@@ -251,7 +251,7 @@ func TestAdminSyncStopAndRetryRoutes(t *testing.T) {
 		{path: "/v1/admin/sync-runs/run-one/retry", status: http.StatusAccepted},
 	} {
 		response := httptest.NewRecorder()
-		application.Handler().ServeHTTP(response, httptest.NewRequest(http.MethodPost, test.path, nil))
+		application.Handler().ServeHTTP(response, localAdminTestRequest(http.MethodPost, test.path, nil))
 		if response.Code != test.status {
 			t.Fatalf("%s response = %d %s", test.path, response.Code, response.Body.String())
 		}
@@ -282,7 +282,7 @@ func TestAdminSyncListGetAndErrors(t *testing.T) {
 	runner := &syncRunnerStub{runs: []SyncRun{{ID: "one", Type: SyncMVP, Status: "SUCCEEDED"}}}
 	application := newAdminTestApp(runner)
 	list := httptest.NewRecorder()
-	application.Handler().ServeHTTP(list, httptest.NewRequest(http.MethodGet, "/v1/admin/sync-runs", nil))
+	application.Handler().ServeHTTP(list, localAdminTestRequest(http.MethodGet, "/v1/admin/sync-runs", nil))
 	if list.Code != http.StatusOK || !strings.Contains(list.Body.String(), `"historical_matches":123`) {
 		t.Fatalf("list = %d %s", list.Code, list.Body.String())
 	}
@@ -290,14 +290,14 @@ func TestAdminSyncListGetAndErrors(t *testing.T) {
 		t.Fatalf("list omits provider configuration: %s", list.Body.String())
 	}
 	get := httptest.NewRecorder()
-	application.Handler().ServeHTTP(get, httptest.NewRequest(http.MethodGet, "/v1/admin/sync-runs/one", nil))
+	application.Handler().ServeHTTP(get, localAdminTestRequest(http.MethodGet, "/v1/admin/sync-runs/one", nil))
 	if get.Code != http.StatusOK || !strings.Contains(get.Body.String(), `"status":"RUNNING"`) {
 		t.Fatalf("get = %d %s", get.Code, get.Body.String())
 	}
 
 	runner.getErr = errSyncRunNotFound
 	missing := httptest.NewRecorder()
-	application.Handler().ServeHTTP(missing, httptest.NewRequest(http.MethodGet, "/v1/admin/sync-runs/missing", nil))
+	application.Handler().ServeHTTP(missing, localAdminTestRequest(http.MethodGet, "/v1/admin/sync-runs/missing", nil))
 	if missing.Code != http.StatusNotFound {
 		t.Fatalf("missing = %d %s", missing.Code, missing.Body.String())
 	}
@@ -310,24 +310,100 @@ func TestAdminSyncConflictFailureAndCORSPreflight(t *testing.T) {
 	}}}
 	application := newAdminTestApp(runner)
 	conflict := httptest.NewRecorder()
-	application.Handler().ServeHTTP(conflict, httptest.NewRequest(http.MethodPost, "/v1/admin/sync/history", nil))
+	application.Handler().ServeHTTP(conflict, localAdminTestRequest(http.MethodPost, "/v1/admin/sync/history", nil))
 	if conflict.Code != http.StatusConflict || !strings.Contains(conflict.Body.String(), `"active_run"`) {
 		t.Fatalf("conflict = %d %s", conflict.Code, conflict.Body.String())
 	}
 
 	runner.startErr = errors.New("database unavailable")
 	failure := httptest.NewRecorder()
-	application.Handler().ServeHTTP(failure, httptest.NewRequest(http.MethodPost, "/v1/admin/sync/history", nil))
+	application.Handler().ServeHTTP(failure, localAdminTestRequest(http.MethodPost, "/v1/admin/sync/history", nil))
 	if failure.Code != http.StatusInternalServerError {
 		t.Fatalf("failure = %d %s", failure.Code, failure.Body.String())
 	}
 
-	preflightRequest := httptest.NewRequest(http.MethodOptions, "/v1/admin/sync/all", nil)
+	preflightRequest := localAdminTestRequest(http.MethodOptions, "/v1/admin/sync/all", nil)
 	preflightRequest.Header.Set("Origin", "http://127.0.0.1:3000")
 	preflightRequest.Header.Set("Access-Control-Request-Method", http.MethodPost)
 	preflight := httptest.NewRecorder()
 	application.Handler().ServeHTTP(preflight, preflightRequest)
 	if preflight.Code != http.StatusNoContent || preflight.Header().Get("Access-Control-Allow-Methods") != "GET, POST, OPTIONS" {
 		t.Fatalf("preflight = %d headers=%v", preflight.Code, preflight.Header())
+	}
+}
+
+func localAdminTestRequest(method, path string, body io.Reader) *http.Request {
+	request := httptest.NewRequest(method, path, body)
+	request.Host = "127.0.0.1:8080"
+	request.RemoteAddr = "127.0.0.1:50000"
+	request.Header.Set("Origin", "http://127.0.0.1:3000")
+	request.Header.Set("Content-Type", "application/json")
+	return request
+}
+
+func TestAdminAccessRejectsUnauthorizedMutations(t *testing.T) {
+	for _, path := range []string{"/v1/admin/sync/mvp", "/v1/admin/sync-runs/run-one/stop", "/v1/admin/sync-runs/run-one/retry"} {
+		for _, invalid := range []string{"origin", "host", "peer", "content-type", "origin-less"} {
+			t.Run(path+"/"+invalid, func(t *testing.T) {
+				runner := &syncRunnerStub{}
+				request := localAdminTestRequest(http.MethodPost, path, strings.NewReader(`{}`))
+				expected := http.StatusForbidden
+				switch invalid {
+				case "origin":
+					request.Header.Set("Origin", "https://untrusted.example")
+				case "host":
+					request.Host = "untrusted.example:8080"
+				case "peer":
+					request.RemoteAddr = "192.0.2.1:50000"
+				case "origin-less":
+					request.Header.Del("Origin")
+				case "content-type":
+					request.Header.Set("Content-Type", "text/plain")
+					expected = http.StatusUnsupportedMediaType
+				}
+				response := httptest.NewRecorder()
+				newAdminTestApp(runner).Handler().ServeHTTP(response, request)
+				if response.Code != expected {
+					t.Fatalf("status = %d, want %d", response.Code, expected)
+				}
+				if len(runner.started)+len(runner.stopped)+len(runner.retried) != 0 {
+					t.Fatal("unauthorized mutation invoked runner")
+				}
+			})
+		}
+	}
+}
+
+func TestOriginlessAdminRequiresConstantTimeValidatedCredential(t *testing.T) {
+	for _, authorization := range []string{"", "Bearer wrong", "Basic approved-secret", "Bearer approved-secret"} {
+		t.Run(authorization, func(t *testing.T) {
+			runner := &syncRunnerStub{}
+			application := newAdminTestApp(runner)
+			application.config.AdminCLIToken = "approved-secret"
+			request := localAdminTestRequest(http.MethodPost, "/v1/admin/sync/mvp", strings.NewReader(`{}`))
+			request.Header.Del("Origin")
+			request.Header.Set("Authorization", authorization)
+			response := httptest.NewRecorder()
+			application.Handler().ServeHTTP(response, request)
+			if authorization == "Bearer approved-secret" {
+				if response.Code != http.StatusAccepted || len(runner.started) != 1 {
+					t.Fatalf("authorized response: %d", response.Code)
+				}
+			} else if response.Code != http.StatusForbidden || len(runner.started) != 0 {
+				t.Fatal("invalid credential accepted")
+			}
+		})
+	}
+}
+
+func TestNonLoopbackAdminExposureIsAlwaysDenied(t *testing.T) {
+	runner := &syncRunnerStub{}
+	application := newAdminTestApp(runner)
+	application.config.Address = "0.0.0.0:8080"
+	request := localAdminTestRequest(http.MethodPost, "/v1/admin/sync/mvp", strings.NewReader(`{}`))
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusForbidden || len(runner.started) != 0 {
+		t.Fatal("non-loopback admin exposed")
 	}
 }

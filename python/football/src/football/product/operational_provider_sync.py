@@ -1474,6 +1474,7 @@ class OperationalProviderSync:
                 "status": row.status,
                 "provider_status": row.provider_status,
                 "scores": [row.home_score, row.away_score],
+                "result_score_basis": row.result_score_basis,
                 "clock": [row.minute, row.added_time, row.period],
                 "source_updated_at": (
                     row.source_updated_at.isoformat() if row.source_updated_at else None
@@ -1599,7 +1600,7 @@ class OperationalProviderSync:
             cursor.execute(
                 """
                 SELECT status, home_score, away_score, updated_at
-                FROM football.product_fixtures WHERE fixture_id = %s
+                FROM football.product_fixtures WHERE fixture_id = %s FOR UPDATE
                 """,
                 (fixture_id,),
             )
@@ -1664,7 +1665,9 @@ class OperationalProviderSync:
                    SET status = 'FINISHED', home_score = %s, away_score = %s,
                        result_score_basis = %s, updated_at = %s
                  WHERE fixture_id = %s
-                   AND (status <> 'FINISHED' OR home_score IS NULL OR away_score IS NULL)
+                   AND (status <> 'FINISHED' OR home_score IS NULL OR away_score IS NULL
+                        OR (result_score_basis = 'UNKNOWN' AND %s = 'REGULATION_90'
+                            AND home_score = %s AND away_score = %s))
                 """,
                 (
                     row.home_score,
@@ -1672,6 +1675,9 @@ class OperationalProviderSync:
                     row.result_score_basis,
                     incoming_at,
                     fixture_id,
+                    row.result_score_basis,
+                    row.home_score,
+                    row.away_score,
                 ),
             )
             return cursor.rowcount

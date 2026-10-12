@@ -7,6 +7,7 @@ import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
+from uuid import uuid4
 
 from psycopg import Error
 
@@ -286,16 +287,22 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                ) DESC, scope.season_label DESC, scope.provider_competition_id
                FOR UPDATE OF scope SKIP LOCKED LIMIT 1
             ) UPDATE football.product_provider_history_scopes scope
-              SET status = 'RUNNING', attempts = attempts + 1, claimed_at = clock_timestamp()
+              SET status = 'RUNNING', attempts = attempts + 1, claimed_at = clock_timestamp(),
+                  claim_token = %s
               FROM candidate WHERE scope.provider_code = candidate.provider_code
                 AND scope.provider_competition_id = candidate.provider_competition_id
                 AND scope.season_label = candidate.season_label
-              RETURNING scope.provider_competition_id, scope.season_label""",
-            (sync.provider_code, competition, competition, season, season),
+              RETURNING scope.provider_competition_id, scope.season_label, scope.claim_token""",
+            (sync.provider_code, competition, competition, season, season, uuid4()),
         )
         result = cursor.fetchone()
     sync.connection.commit()
-    return result
+    sync.connection.execute(
+        "SELECT set_config('matchforge.history_claim_token', %s, false)",
+        (str(result[2]) if result else "",),
+    )
+    sync.connection.commit()
+    return result[:2] if result else None
 
 
 def run_scopes(
@@ -343,7 +350,9 @@ def run_scopes(
                         """UPDATE football.product_provider_history_scopes
                            SET source_snapshot_id = %s
                            WHERE provider_code = %s AND provider_competition_id = %s
-                             AND season_label = %s""",
+                             AND season_label = %s AND status = 'RUNNING'
+                             AND claim_token = current_setting(
+                                 'matchforge.history_claim_token')::uuid""",
                         (snapshot, sync.provider_code, league_id, selected_season),
                     )
                 sync.connection.commit()
@@ -366,7 +375,9 @@ def run_scopes(
                    SET status = %s, last_error = %s, summary = %s::jsonb,
                        next_attempt_at = %s + interval '1 hour'
                    WHERE provider_code = %s AND provider_competition_id = %s
-                     AND season_label = %s""",
+                     AND season_label = %s AND status = 'RUNNING'
+                     AND claimed_at >= clock_timestamp() - interval '30 minutes'
+                     AND claim_token = current_setting('matchforge.history_claim_token')::uuid""",
                 (
                     "FAILED" if error else "SUCCEEDED",
                     error,
@@ -377,6 +388,10 @@ def run_scopes(
                     selected_season,
                 ),
             )
+            if cursor.rowcount != 1:
+                sync.connection.rollback()
+                raise RuntimeError("history scope ownership lost")
+        sync.connection.execute("SELECT set_config('matchforge.history_claim_token', '', false)")
         sync.connection.commit()
         results.append(result)
     return results

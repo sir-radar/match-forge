@@ -20,6 +20,7 @@ type Config struct {
 	Address                 string
 	DatabaseURL             string
 	AllowedOrigin           string
+	AdminCLIToken           string
 	PostgresAddress         string
 	RedisAddress            string
 	Version                 string
@@ -62,6 +63,7 @@ func ConfigFromEnv(version string) (Config, error) {
 		Address:                 valueFromEnv("API_ADDR", defaultAPIAddress),
 		DatabaseURL:             databaseURL,
 		AllowedOrigin:           valueFromEnv("WEB_ORIGIN", "http://127.0.0.1:3000"),
+		AdminCLIToken:           os.Getenv("MATCHFORGE_ADMIN_CLI_TOKEN"),
 		PostgresAddress:         postgresAddress,
 		RedisAddress:            redisAddress,
 		Version:                 version,

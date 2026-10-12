@@ -252,7 +252,14 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         observed_at=kickoff + timedelta(hours=2, minutes=1),
         result_score_basis="REGULATION_90",
     )
+    unknown = replace(finished, result_score_basis="UNKNOWN")
+    assert sync._store_observation(unknown, snapshot_id, fixture_id)
+    assert sync._update_canonical_fixture(unknown, fixture_id, snapshot_id) == 1
+    extra_time = replace(finished, result_score_basis="EXTRA_TIME")
+    assert sync._update_canonical_fixture(extra_time, fixture_id, snapshot_id) == 0
+    assert sync._store_observation(finished, snapshot_id, fixture_id)
     assert sync._update_canonical_fixture(finished, fixture_id, snapshot_id) == 1
+    assert sync._update_canonical_fixture(finished, fixture_id, snapshot_id) == 0
     assert (
         sync._update_canonical_fixture(
             replace(

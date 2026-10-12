@@ -1020,6 +1020,17 @@
       "forecasts_created": 0,
       "coverage_ref": "docs/MVP-DATA-COVERAGE.md",
       "operations_ref": "docs/MVP-HISTORICAL-BACKFILL.md"
+    },
+    "audit_remediation": {
+      "status": "IN_PROGRESS",
+      "branch": "ft/master-audit-remediation",
+      "audited_sha": "f6e43e32fd7b4f42a8be99f00421d4da41151287",
+      "completed_phases": [
+        "R1"
+      ],
+      "current_phase": "R2",
+      "checkpoint_root": ".local/remediation/matchforge-audit",
+      "research_execution_authorized": false
     }
   },
   "phase_1b": {

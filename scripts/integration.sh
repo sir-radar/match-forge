@@ -32,7 +32,8 @@ postgres_result=$(docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$
 redis_result=$(docker compose exec -T redis redis-cli ping)
 [ "$redis_result" = PONG ] || { printf 'Redis integration check failed\n' >&2; exit 8; }
 
-API_ADDR="$API_ADDRESS" "$FOOTBALL_PROJECT_ROOT/.local/bin/football-api" >"$API_LOG" 2>&1 &
+MATCHFORGE_OPERATIONAL_SYNC_INTERVAL=0 API_ADDR="$API_ADDRESS" \
+    "$FOOTBALL_PROJECT_ROOT/.local/bin/football-api" >"$API_LOG" 2>&1 &
 API_PID=$!
 
 attempt=0

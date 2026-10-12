@@ -611,11 +611,30 @@ def _run_sync_step[T](
     try:
         result = operation()
         connection.commit()
+        failures = _structured_failures(result)
+        if failures:
+            errors[name] = "; ".join(failures)
         return result
     except _DATA_OPERATION_ERRORS as error:
         connection.rollback()
         errors[name] = str(error)
         return None
+
+
+def _structured_failures(value: object) -> list[str]:
+    if isinstance(value, dict):
+        failures = []
+        if value.get("status") in ("FAILED", "CANCELLED", "COMPLETED_WITH_ERRORS"):
+            failures.append(str(value.get("error") or value["status"]))
+        if value.get("errors"):
+            failures.append(str(value["errors"]))
+        for key, child in value.items():
+            if key != "errors":
+                failures.extend(_structured_failures(child))
+        return failures
+    if isinstance(value, list):
+        return [failure for child in value for failure in _structured_failures(child)]
+    return []
 
 
 def _refresh(connection: psycopg.Connection[Any], data_root: Path) -> int:
