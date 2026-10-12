@@ -28,6 +28,20 @@ class StubTransport:
         return self.raw
 
 
+def test_league_score_string_is_preserved_and_conflicts_rejected() -> None:
+    row = match(home_score=None, away_score=None)
+    row["status"].update(finished=True, scoreStr="2 - 1", reason={"short": "FT"})
+    result = normalize_daily_matches(response([row]))[0]
+    assert (result.home_score, result.away_score, result.result_score_basis) == (
+        2,
+        1,
+        "REGULATION_90",
+    )
+    row["home"]["score"] = 3
+    with pytest.raises(FotmobPayloadError, match="contradict"):
+        normalize_daily_matches(response([row]))
+
+
 class ResponseTransport(StubTransport):
     def __init__(self, payload: Any, *, content_type: str = "application/json") -> None:
         super().__init__(payload)

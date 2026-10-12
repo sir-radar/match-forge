@@ -10,14 +10,49 @@ from typing import Any
 
 import psycopg
 import pytest
-from football.product.api_football import ApiFootballError, PostgresApiFootballBudget
+from football.product.api_football import (
+    ApiFootballClient,
+    ApiFootballError,
+    PostgresApiFootballBudget,
+)
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.provider_history_scopes import claim_scope, enqueue_seasons
+from football.product.sync import ProductSync
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
 from psycopg import Connection
 from psycopg.errors import UniqueViolation
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+
+
+def test_provider_history_scopes_are_idempotent_fair_and_resumable(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as database:
+        sync = OperationalProviderSync(database, tmp_path, provider_code="pitchapi")
+        league = "l_Job001"
+        try:
+            enqueue_seasons(sync, league, ["2025/2026", "2024/2025"])
+            enqueue_seasons(sync, league, ["2025/2026", "2024/2025"])
+            database.commit()
+            assert claim_scope(sync, league, None) == (league, "2025/2026")
+            assert claim_scope(sync, league, None) == (league, "2024/2025")
+            assert claim_scope(sync, league, None) is None
+            database.execute(
+                """UPDATE football.product_provider_history_scopes
+                   SET claimed_at = now() - interval '31 minutes'
+                   WHERE provider_code = 'pitchapi' AND provider_competition_id = %s""",
+                (league,),
+            )
+            database.commit()
+            assert claim_scope(sync, league, None) == (league, "2025/2026")
+        finally:
+            database.rollback()
+            database.execute(
+                """DELETE FROM football.product_provider_history_scopes
+                   WHERE provider_code = 'pitchapi' AND provider_competition_id = %s""",
+                (league,),
+            )
+            database.commit()
 
 
 @pytest.fixture
@@ -239,7 +274,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
             (fixture_id,),
         ).fetchone()
         mapping_counts = cursor.execute(
-            """SELECT count(*), count(*) FILTER (WHERE mapping_method = 'deterministic')
+            """SELECT count(*), count(*) FILTER (WHERE mapping_method = 'explicit_crosswalk')
                  FROM football.match_provider_mappings mapping
                  JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = 'pitchapi' AND provider_match_id = 'm_Test01'"""
@@ -272,6 +307,71 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     provisional_fixture_id = sync._create_provider_scoped_fixture(provisional, snapshot_id)
     assert provisional_fixture_id is not None
     assert sync._store_observation(provisional, snapshot_id, provisional_fixture_id)
+
+    provisional_result = replace(provisional, status="FINISHED", result_score_basis="REGULATION_90")
+    assert (
+        sync._insert_qualified_history(provisional_result, provisional_fixture_id, snapshot_id) == 1
+    )
+    with connection.cursor() as cursor:
+        assert cursor.execute(
+            "SELECT identity_status FROM football.product_fixtures WHERE fixture_id = %s",
+            (provisional_fixture_id,),
+        ).fetchone() == ("PROVISIONAL",)
+        assert cursor.execute(
+            "SELECT count(*) FROM football.product_eligible_match_history WHERE fixture_id = %s",
+            (provisional_fixture_id,),
+        ).fetchone() == (0,)
+        assert cursor.execute(
+            """SELECT count(*) FROM football.product_eligible_match_history
+               WHERE fixture_id = %s AND known_at <= %s""",
+            (fixture_id, acquired - timedelta(seconds=1)),
+        ).fetchone() == (0,)
+        assert cursor.execute(
+            """SELECT count(*) FROM football.product_eligible_match_history
+               WHERE fixture_id = %s AND known_at <= %s""",
+            (fixture_id, acquired),
+        ).fetchone() == (1,)
+
+    canonical_home, canonical_away = connection.execute(
+        "SELECT home_team_id, away_team_id FROM football.product_fixtures WHERE fixture_id = %s",
+        (fixture_id,),
+    ).fetchone()
+    product = ProductSync(
+        connection, ApiFootballClient("stored-only"), tmp_path, tmp_path / "unused-artifact.json"
+    )
+    permitted = product._history_before(
+        acquired + timedelta(days=1),
+        canonical_home,
+        canonical_away,
+        knowledge_cutoff=acquired,
+    )
+    assert {match.fixture_id for match in permitted} == {fixture_id}
+    assert (
+        product._history_before(
+            acquired + timedelta(days=1),
+            canonical_home,
+            canonical_away,
+            knowledge_cutoff=acquired - timedelta(seconds=1),
+        )
+        == []
+    )
+
+    no_season = sync._create_provider_scoped_fixture(
+        replace(
+            live,
+            provider_match_id="m_Noseas",
+            kickoff_at=acquired + timedelta(days=2),
+            status="SCHEDULED",
+            provider_status="scheduled",
+            home_score=None,
+            away_score=None,
+        ),
+        snapshot_id,
+    )
+    assert connection.execute(
+        "SELECT identity_status FROM football.product_fixtures WHERE fixture_id = %s",
+        (no_season,),
+    ).fetchone() == ("PROVISIONAL",)
 
     sync.apply_reviewed_mapping(provisional.provider_match_id, fixture_id)
 

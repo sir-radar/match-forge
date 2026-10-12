@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-09T00:00:00Z",
+  "updated_at": "2026-10-12T12:06:17Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -979,6 +979,25 @@
     "external_prediction_collection_status": "ENABLED_4_PUBLIC_SOURCES_FOREBET_TECHNICALLY_UNAVAILABLE",
     "live_settlement_evidence_status": "PENDING_MATCH_COMPLETION",
     "research_resume_ref": "docs/MVP-RESUME-RESEARCH.md",
+    "operational_provider_recovery": {
+      "status": "IMPLEMENTED_WITH_PROVIDER_REVIEW_PENDING",
+      "delivery_branch": "ft/provider-history-live-recovery",
+      "pull_request": 165,
+      "measured_at": "2026-10-12T12:06:17Z",
+      "operations_ref": "docs/MVP-OPERATIONAL-PROVIDERS.md",
+      "raw_history_rows": 333628,
+      "forecast_eligible_history_rows": 319291,
+      "additional_raw_history_rows": 1137,
+      "additional_forecast_eligible_history_rows": 900,
+      "available_forecasts": 242,
+      "pitchapi_unmatched_observations": 220,
+      "pitchapi_unmatched_provider_matches": 82,
+      "discovered_competition_season_scopes": 331,
+      "minimum_history_matches": 10,
+      "champion_changed": false,
+      "experimental_xg_model_weight": 0,
+      "remaining_work": "Review unresolved provider identities and continue checkpointed historical acquisition; no forced merges or research-phase changes."
+    },
     "live_context": {
       "status": "IMPLEMENTED_VERIFIED",
       "contract_ref": "docs/contracts/live-match-context-v1.md",

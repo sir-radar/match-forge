@@ -86,6 +86,11 @@ type HistoryQueueProgress struct {
 }
 
 type Coverage struct {
+	EligibleHistory         int  `json:"eligible_history"`
+	ExcludedHistory         int  `json:"excluded_history"`
+	ProvisionalFixtures     int  `json:"provisional_fixtures"`
+	VerifiedProviderMatches int  `json:"verified_provider_matches"`
+	IdentityConflicts       int  `json:"identity_conflicts"`
 	HistoricalMatches       int  `json:"historical_matches"`
 	CompetitionsWithHistory int  `json:"competitions_with_history"`
 	TeamsWithTenMatches     int  `json:"teams_with_10_matches"`
@@ -634,15 +639,28 @@ func newUUID() (string, error) {
 func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error) {
 	var coverage Coverage
 	err := runner.pool.QueryRow(ctx, `
-		WITH team_counts AS (
+		WITH eligible_history AS MATERIALIZED (
+            SELECT * FROM football.product_eligible_match_history WHERE known_at <= now()
+        ), team_counts AS (
 			SELECT team_id, count(*) AS matches
 			FROM (
-				SELECT home_team_id AS team_id FROM football.product_team_match_history
+				SELECT home_team_id AS team_id FROM eligible_history
 				UNION ALL
-				SELECT away_team_id AS team_id FROM football.product_team_match_history
+				SELECT away_team_id AS team_id FROM eligible_history
 			) appearances GROUP BY team_id
 		)
 		SELECT
+			(SELECT count(*) FROM eligible_history),
+            (SELECT count(*) FROM football.product_team_match_history) -
+				(SELECT count(*) FROM eligible_history),
+            (SELECT count(*) FROM football.product_fixtures WHERE identity_status = 'PROVISIONAL'),
+            (SELECT count(DISTINCT (observation.provider_code, observation.provider_match_id))
+             FROM football.product_provider_fixture_observations observation
+             JOIN football.product_fixtures fixture ON fixture.fixture_id = observation.canonical_fixture_id
+             WHERE fixture.identity_status = 'VERIFIED'),
+            (SELECT count(*) FROM football.fixture_identity_resolutions
+             WHERE active AND resolution_status IN
+                 ('AMBIGUOUS_QUARANTINED', 'IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED')),
 			(SELECT count(*) FROM football.product_team_match_history),
 			(SELECT count(DISTINCT competition_id) FROM football.product_team_match_history),
 			(SELECT count(*) FROM team_counts WHERE matches >= 10),
@@ -682,6 +700,11 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 			COALESCE((SELECT exhausted FROM football.provider_request_budgets
 			 WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE), false)
 	`).Scan(
+		&coverage.EligibleHistory,
+		&coverage.ExcludedHistory,
+		&coverage.ProvisionalFixtures,
+		&coverage.VerifiedProviderMatches,
+		&coverage.IdentityConflicts,
 		&coverage.HistoricalMatches,
 		&coverage.CompetitionsWithHistory,
 		&coverage.TeamsWithTenMatches,

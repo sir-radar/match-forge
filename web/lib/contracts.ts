@@ -14,7 +14,7 @@ export type Competition = {
   country: string;
   continent: string;
   division: number | null;
-  type: "LEAGUE" | "CUP";
+  type: "LEAGUE" | "CUP" | "UNKNOWN";
   season: string;
   availability: Availability;
   availability_status: string;
@@ -278,6 +278,11 @@ export type SyncRun = {
   history_queue?: HistoryQueueProgress;
 };
 export type HistoricalCoverage = {
+  eligible_history: number;
+  excluded_history: number;
+  provisional_fixtures: number;
+  verified_provider_matches: number;
+  identity_conflicts: number;
   historical_matches: number;
   competitions_with_history: number;
   teams_with_10_matches: number;
@@ -569,6 +574,11 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       pitchapi_unmapped: numeric(coverage.pitchapi_unmapped, "pitchapi_unmapped"),
       fotmob_history: numeric(coverage.fotmob_history, "fotmob_history"),
       pitchapi_history: numeric(coverage.pitchapi_history, "pitchapi_history"),
+      eligible_history: numeric(coverage.eligible_history, "eligible_history"),
+      excluded_history: numeric(coverage.excluded_history, "excluded_history"),
+      provisional_fixtures: numeric(coverage.provisional_fixtures, "provisional_fixtures"),
+      verified_provider_matches: numeric(coverage.verified_provider_matches, "verified_provider_matches"),
+      identity_conflicts: numeric(coverage.identity_conflicts, "identity_conflicts"),
       api_football_requests_used: numeric(coverage.api_football_requests_used, "api_football_requests_used"),
       api_football_remaining: numeric(coverage.api_football_remaining, "api_football_remaining"),
       api_football_exhausted: boolean(coverage.api_football_exhausted, "api_football_exhausted"),

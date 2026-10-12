@@ -181,6 +181,10 @@ class PitchApiClient:
             params["season"] = season
         return self._get(f"/v1/leagues/{quote(league_id)}" + "/matches", params)
 
+    def leagues(self) -> PitchApiResponse:
+        """Retrieve the documented catalogue, including available seasons."""
+        return self._get("/v1/leagues", {})
+
     def match(self, match_id: str) -> PitchApiResponse:
         return self._match_resource(match_id, "")
 

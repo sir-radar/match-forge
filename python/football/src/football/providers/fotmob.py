@@ -268,6 +268,7 @@ def _normalize_match(
     if isinstance(provider_clock, str) and len(provider_clock) > 20:
         provider_clock = None
     source_updated_at = _optional_datetime(status.get("updatedAt"))
+    home_score, away_score = _match_scores(home, away, status)
     return FotmobLiveScore(
         provider_match_id=_provider_id(row.get("id")),
         provider_competition_id=league_id,
@@ -278,8 +279,8 @@ def _normalize_match(
         kickoff_at=kickoff.astimezone(UTC),
         status=_match_status(status),
         provider_status=provider_status,
-        home_score=_score(home.get("score")),
-        away_score=_score(away.get("score")),
+        home_score=home_score,
+        away_score=away_score,
         clock=provider_clock if isinstance(provider_clock, str) else None,
         minute=minute,
         added_time=added_time,
@@ -294,6 +295,23 @@ def _normalize_match(
         provider_competition_name=league_name,
         result_score_basis=_result_score_basis(provider_status, status),
     )
+
+
+def _match_scores(
+    home: Mapping[str, Any], away: Mapping[str, Any], status: Mapping[str, Any]
+) -> tuple[int | None, int | None]:
+    """League fixtures carry scoreStr; daily listings also carry team score fields."""
+    scores = (_score(home.get("score")), _score(away.get("score")))
+    text = status.get("scoreStr")
+    parsed = re.fullmatch(r"\s*(\d+)\s*-\s*(\d+)\s*", text) if isinstance(text, str) else None
+    if parsed is None:
+        return scores
+    aggregate = (int(parsed[1]), int(parsed[2]))
+    if any(
+        score is not None and score != value for score, value in zip(scores, aggregate, strict=True)
+    ):
+        raise FotmobPayloadError("FotMob score fields contradict scoreStr")
+    return aggregate
 
 
 def _result_score_basis(provider_status: str | None, status: Mapping[str, Any]) -> str:
@@ -328,6 +346,7 @@ def _match_status(status: Mapping[str, Any]) -> str:
         "ABD": "ABANDONED",
         "ABANDONED": "ABANDONED",
         "AWD": "AWARDED",
+        "AW": "AWARDED",
         "AWARDED": "AWARDED",
     }.get(label)
     if mapped is not None:

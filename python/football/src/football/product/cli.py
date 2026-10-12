@@ -12,7 +12,6 @@ import urllib.error
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
-from functools import partial
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -31,8 +30,10 @@ from football.product.external_prediction_sources import SourceCollection, colle
 from football.product.external_predictions import import_predictions, parse_import
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
+from football.product.history_coverage import history_coverage
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
 from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.fotmob import FotmobClient
 from football.providers.pitchapi import PitchApiClient
@@ -70,12 +71,16 @@ def build_parser() -> argparse.ArgumentParser:
         backfill.add_argument("--country")
         backfill.add_argument("--all", action="store_true")
         backfill.add_argument("--refresh", action="store_true")
+        backfill.add_argument("--provider-scope-budget", type=int, default=8)
+        backfill.add_argument("--provider-discovery-budget", type=int, default=8)
+        backfill.add_argument("--provider-only", choices=("fotmob", "pitchapi"))
         backfill.add_argument(
             "--data-root",
             type=Path,
             default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
         )
     commands.add_parser("refresh-forecasts")
+    commands.add_parser("history-coverage")
     for name in ("fotmob-sync", "pitchapi-sync"):
         provider_sync = commands.add_parser(name)
         provider_sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
@@ -126,6 +131,7 @@ def build_parser() -> argparse.ArgumentParser:
     preview = commands.add_parser("development-provider-preview")
     preview.add_argument("--fixture-id", type=UUID, required=True)
     preview.add_argument("--knowledge-cutoff", type=datetime.fromisoformat, required=True)
+    preview.add_argument("--provider", choices=("pitchapi", "fotmob"), default="pitchapi")
     return parser
 
 
@@ -147,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         "backfill-football-data-uk",
         "backfill-history",
         "refresh-forecasts",
+        "history-coverage",
         "sync-all",
     }:
         return _run_data_operation(args)
@@ -251,7 +258,11 @@ def _run_development_provider_preview(args: argparse.Namespace) -> int:
     try:
         with psycopg.connect(args.database_url) as connection:
             result = development_provider_preview(
-                connection, args.fixture_id, args.knowledge_cutoff, MODEL_ARTIFACT_PATH
+                connection,
+                args.fixture_id,
+                args.knowledge_cutoff,
+                MODEL_ARTIFACT_PATH,
+                provider_code=args.provider,
             )
     except (psycopg.Error, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
@@ -277,6 +288,8 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 result = _openfootball(connection, args)
             elif args.command == "backfill-football-data-uk":
                 result = _football_data_uk(connection, args)
+            elif args.command == "history-coverage":
+                result = history_coverage(connection)
             elif args.command == "backfill-history":
                 result = _history_backfill(connection, args)
             else:
@@ -386,34 +399,16 @@ def _history_backfill(
     pitch_sync = OperationalProviderSync(
         connection, args.data_root, provider_code="pitchapi", minimum_interval_seconds=0
     )
-    pitch_stored = _run_sync_step(
-        connection, "pitchapi-stored", pitch_sync.backfill_stored_history, errors
-    )
+    pitch_stored = None
     pitch_acquired: list[dict[str, object]] = []
-    if os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true":
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """SELECT mapping.provider_competition_id, competition.season_label
-                     FROM football.competition_provider_mappings mapping
-                     JOIN football.providers provider ON provider.id = mapping.provider_id
-                     JOIN football.product_competitions competition
-                       ON competition.competition_id = mapping.competition_id
-                    WHERE provider.code = 'pitchapi' AND mapping.valid_to IS NULL
-                      AND competition.season_label ~ '^[0-9]{4}(/[0-9]{4})?$'
-                      AND (%s::text IS NULL OR competition.season_label = %s)
-                      AND (%s::text IS NULL OR mapping.provider_competition_id = %s
-                           OR competition.name = %s)
-                    ORDER BY competition.updated_at DESC, mapping.provider_competition_id
-                    LIMIT 10""",
-                (
-                    args.season,
-                    args.season,
-                    args.competition,
-                    args.competition,
-                    args.competition,
-                ),
-            )
-            scopes = cursor.fetchall()
+    if args.provider_only != "fotmob":
+        pitch_stored = _run_sync_step(
+            connection, "pitchapi-stored", pitch_sync.backfill_stored_history, errors
+        )
+    if (
+        args.provider_only != "fotmob"
+        and os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true"
+    ):
         client = PitchApiClient(
             os.environ.get("PITCH_API_TOKEN", ""),
             connection_timeout_seconds=float(
@@ -423,38 +418,70 @@ def _history_backfill(
                 os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
             ),
         )
-        for league_id, season in scopes:
-            acquired = _run_sync_step(
+        _run_sync_step(
+            connection,
+            "pitchapi-discovery",
+            lambda: {
+                "scopes": discover_pitchapi(pitch_sync, client, refresh=args.refresh)
+                if args.provider_discovery_budget > 0
+                else 0
+            },
+            errors,
+        )
+        pitch_acquired = run_scopes(
+            pitch_sync,
+            client,
+            budget=args.provider_scope_budget,
+            competition=args.competition,
+            season=args.season,
+            refresh=args.refresh,
+        )
+    openfootball = football_data_uk = None
+    if args.provider_only is None:
+        openfootball = _run_sync_step(
+            connection, "openfootball", lambda: _openfootball(connection, args), errors
+        )
+        football_data_uk = _run_sync_step(
+            connection, "football-data-uk", lambda: _football_data_uk(connection, args), errors
+        )
+    fotmob = None
+    fotmob_acquired: list[dict[str, object]] = []
+    if args.provider_only != "pitchapi":
+        fotmob_sync = OperationalProviderSync(connection, args.data_root, provider_code="fotmob")
+        fotmob = _run_sync_step(
+            connection, "fotmob-stored", fotmob_sync.backfill_stored_history, errors
+        )
+        if os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true":
+            fotmob_client = FotmobClient(access_approved=True)
+            _run_sync_step(
                 connection,
-                f"pitchapi-{league_id}-{season}",
-                partial(pitch_sync.backfill_pitchapi_league, client, league_id, season),
+                "fotmob-discovery",
+                lambda: discover_fotmob(
+                    fotmob_sync,
+                    fotmob_client,
+                    budget=args.provider_discovery_budget,
+                    refresh=args.refresh,
+                    competition=args.competition,
+                ),
                 errors,
             )
-            if acquired is not None:
-                pitch_acquired.append(acquired)
-    openfootball = _run_sync_step(
-        connection, "openfootball", lambda: _openfootball(connection, args), errors
-    )
-    football_data_uk = _run_sync_step(
-        connection,
-        "football-data-uk",
-        lambda: _football_data_uk(connection, args),
-        errors,
-    )
-    fotmob = _run_sync_step(
-        connection,
-        "fotmob-stored",
-        lambda: OperationalProviderSync(
-            connection, args.data_root, provider_code="fotmob", minimum_interval_seconds=0
-        ).backfill_stored_history(),
-        errors,
+            fotmob_acquired = run_scopes(
+                fotmob_sync,
+                fotmob_client,
+                budget=args.provider_scope_budget,
+                competition=args.competition,
+                season=args.season,
+                refresh=args.refresh,
+            )
+    scope_failures = any(
+        scope["status"] != "COMPLETED" for scope in [*pitch_acquired, *fotmob_acquired]
     )
     return {
-        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
+        "status": "COMPLETED_WITH_ERRORS" if errors or scope_failures else "COMPLETED",
         "errors": errors,
         "openfootball": openfootball,
         "football_data_uk": football_data_uk,
-        "fotmob": fotmob,
+        "fotmob": {"stored": fotmob, "acquired": fotmob_acquired},
         "pitchapi": {"stored": pitch_stored, "acquired": pitch_acquired},
     }
 

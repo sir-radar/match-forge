@@ -21,7 +21,7 @@ const ACTIONS: Action[] = [
   { type: "MVP_SYNC", title: "MVP Provider Sync", kind: "Live fixture backfill", description: "Backfill the selected fixture range, update scores, then refresh history and standings. Uses football-data.org when API-Football has no fixtures.", button: "Run MVP Sync", start: api.startMvpSync },
   { type: "OPENFOOTBALL", title: "OpenFootball", kind: "Historical bulk JSON", description: "Discover every usable season and competition in the football.json repository.", button: "Sync OpenFootball", start: api.startOpenFootballSync },
   { type: "FOOTBALL_DATA_UK", title: "Football-Data.co.uk", kind: "Historical CSV/ZIP archive", description: "Discover and import completed results from published download archives.", button: "Sync Football-Data.co.uk", start: api.startFootballDataUKSync },
-  { type: "HISTORY_BACKFILL", title: "Historical Backfill", kind: "All configured sources", description: "Run bulk archives, then reconcile stored FotMob and PitchAPI observations into canonical history.", button: "Run Both Historical Sources", start: api.startHistoryBackfill },
+  { type: "HISTORY_BACKFILL", title: "Historical Backfill", kind: "All configured sources", description: "Run bulk archives and resumable provider league/season jobs; reconcile stored observations without changing live polling.", button: "Run Both Historical Sources", start: api.startHistoryBackfill },
   { type: "FORECAST_REFRESH", title: "Forecast Refresh", kind: "Stored data only", description: "Generate missing MatchForge forecasts from currently stored historical data.", button: "Refresh Forecasts", start: api.startForecastRefresh },
   { type: "EXTERNAL_PREDICTIONS", title: "External Predictions", kind: "Public source collection", description: "Run the existing private-local external prediction collection.", button: "Sync External Predictions", start: api.startExternalPredictionsSync },
   { type: "FOTMOB_SYNC", title: "FotMob", kind: "Development-only operational feed", description: "Sync enabled FotMob fixtures, live states, results, and bounded match details without changing frozen forecasts.", button: "Sync FotMob", start: api.startFotMobSync },
@@ -188,12 +188,16 @@ function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | n
     ["Teams with ≥10 matches", coverage.teams_with_10_matches], ["Teams below 10", coverage.teams_below_10_matches],
     ["Scheduled fixtures", coverage.scheduled_fixtures], ["Forecast available", coverage.forecast_available],
     ["Not enough history", coverage.not_enough_history], ["Mapping failures", coverage.mapping_failures], ["Source conflicts", coverage.source_conflicts],
-    ["Missing live scores", coverage.missing_live_scores], ["FotMob mapped / unmatched", `${coverage.fotmob_mapped.toLocaleString()} / ${coverage.fotmob_unmapped.toLocaleString()}`],
-    ["PitchAPI mapped / unmatched", `${coverage.pitchapi_mapped.toLocaleString()} / ${coverage.pitchapi_unmapped.toLocaleString()}`],
+    ["Eligible / excluded history", `${coverage.eligible_history.toLocaleString()} / ${coverage.excluded_history.toLocaleString()}`],
+    ["Verified provider matches", coverage.verified_provider_matches],
+    ["Provisional fixtures", coverage.provisional_fixtures],
+    ["Quarantined identity rows", coverage.identity_conflicts],
+    ["Missing live scores", coverage.missing_live_scores], ["FotMob linked / unmatched observations", `${coverage.fotmob_mapped.toLocaleString()} / ${coverage.fotmob_unmapped.toLocaleString()}`],
+    ["PitchAPI linked / unmatched observations", `${coverage.pitchapi_mapped.toLocaleString()} / ${coverage.pitchapi_unmapped.toLocaleString()}`],
     ["FotMob / PitchAPI history", `${coverage.fotmob_history.toLocaleString()} / ${coverage.pitchapi_history.toLocaleString()}`],
     ["API-Football quota", coverage.api_football_exhausted ? "Exhausted — requests suppressed" : coverage.api_football_remaining < 0 ? `${coverage.api_football_requests_used.toLocaleString()} requests; remaining unknown` : `${coverage.api_football_remaining.toLocaleString()} remaining`],
   ] : [];
-  return <section className="coverage-panel" aria-labelledby="coverage-title"><header><div><small>Canonical store</small><h2 id="coverage-title">Historical Coverage</h2></div><span>{loading ? "Loading…" : "Current"}</span></header><dl>{metrics.map(([term, value]) => <Metric key={term} term={String(term)} value={typeof value === "number" ? value.toLocaleString() : value} />)}</dl>{!loading && !coverage && <p>Coverage is unavailable.</p>}</section>;
+  return <section className="coverage-panel" aria-labelledby="coverage-title"><header><div><small>Canonical store</small><h2 id="coverage-title">Historical Coverage</h2></div><span>{loading ? "Loading…" : "Current"}</span></header><p>Linked observations are not necessarily verified identities. Provisional, duplicate, quarantined, and not-yet-known history does not satisfy the ten-match forecast requirement.</p><dl>{metrics.map(([term, value]) => <Metric key={term} term={String(term)} value={typeof value === "number" ? value.toLocaleString() : value} />)}</dl>{!loading && !coverage && <p>Coverage is unavailable.</p>}</section>;
 }
 
 function RunHistory({ runs, loading, clock, busy, onRetry }: { runs: SyncRun[]; loading: boolean; clock: number; busy: boolean; onRetry: (run: SyncRun) => void }) {

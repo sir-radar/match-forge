@@ -46,7 +46,9 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
             )
             SELECT DISTINCT source.fixture_id, target.fixture_id,
                    source.competition_id, source.kickoff_at,
-                   source.status, source.updated_at, target.status, target.updated_at
+                   source.status, source.updated_at, target.status, target.updated_at,
+                   EXISTS (SELECT 1 FROM football.product_team_match_history history
+                           WHERE history.fixture_id = target.fixture_id) AS target_has_history
               FROM football.product_fixtures source
               JOIN links home ON home.source_team = source.home_team_id
               JOIN links away ON away.source_team = source.away_team_id
@@ -56,11 +58,14 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                AND target.competition_id = source.competition_id
                AND target.kickoff_at = source.kickoff_at
                AND target.fixture_id <> source.fixture_id
+               AND (home.source_team <> home.target_team
+                    OR away.source_team <> away.target_team
+                    OR source.fixture_id::text < target.fixture_id::text)
               JOIN football.matches sm ON sm.id = source.fixture_id
               JOIN football.matches tm ON tm.id = target.fixture_id AND tm.season_id = sm.season_id
              WHERE NOT EXISTS (
                 SELECT 1 FROM football.product_team_match_history history
-                 WHERE history.fixture_id IN (source.fixture_id, target.fixture_id))
+                 WHERE history.fixture_id = source.fixture_id)
                AND (source.home_score IS NULL OR target.home_score IS NULL
                     OR (source.home_score = target.home_score
                         AND source.away_score = target.away_score))
@@ -70,7 +75,10 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                 SELECT 1 FROM football.fixture_identity_resolutions resolution
                  WHERE resolution.active
                    AND resolution.resolution_version <> 'ProductFixtureCrosswalkV1'
-                   AND resolution.member_fixture_id IN (source.fixture_id, target.fixture_id))
+                   AND resolution.member_fixture_id IN (source.fixture_id, target.fixture_id)
+                   AND (resolution.member_fixture_id = source.fixture_id
+                        OR resolution.resolution_status NOT IN ('UNIQUE', 'DUPLICATE_RESOLVED')
+                        OR resolution.representative_fixture_id <> target.fixture_id))
              ORDER BY source.fixture_id, target.fixture_id""",
             (json.dumps(crosswalks),),
         )
@@ -86,6 +94,7 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
             source_at,
             target_status,
             target_at,
+            target_has_history,
         ) in pairs:
             priority = {
                 "SCHEDULED": 0,
@@ -95,12 +104,16 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                 "CANCELLED": 2,
                 "ABANDONED": 2,
             }
-            representative = max(
-                (
-                    (priority[source_status], source_at, str(source), source),
-                    (priority[target_status], target_at, str(target), target),
-                ),
-            )[3]
+            representative = (
+                target
+                if target_has_history
+                else max(
+                    (
+                        (priority[source_status], source_at, str(source), source),
+                        (priority[target_status], target_at, str(target), target),
+                    ),
+                )[3]
+            )
             evidence = {
                 "source_fixture_id": str(source),
                 "target_fixture_id": str(target),
@@ -108,7 +121,7 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                 "kickoff_at": kickoff.isoformat(),
                 "provider_team_crosswalks": crosswalks,
             }
-            for member in (source, target):
+            for member in (source,) if target_has_history else (source, target):
                 cursor.execute(
                     """INSERT INTO football.fixture_identity_resolutions (
                         canonical_real_fixture_id, member_fixture_id, representative_fixture_id,

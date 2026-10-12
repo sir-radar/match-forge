@@ -76,12 +76,48 @@ TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
 }
 
 OPERATIONAL_TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
+    ("fotmob", "9825"): ("api_football", "42"),  # Arsenal
+    ("fotmob", "10252"): ("api_football", "66"),  # Aston Villa
+    ("fotmob", "8678"): ("api_football", "35"),  # Bournemouth
+    ("fotmob", "9937"): ("api_football", "55"),  # Brentford
+    ("fotmob", "10204"): ("api_football", "51"),  # Brighton
+    ("fotmob", "8455"): ("api_football", "49"),  # Chelsea
+    ("fotmob", "9826"): ("api_football", "52"),  # Crystal Palace
+    ("fotmob", "8668"): ("api_football", "45"),  # Everton
+    ("fotmob", "9879"): ("api_football", "36"),  # Fulham
+    ("fotmob", "8667"): ("api_football", "64"),  # Hull City
+    ("fotmob", "9902"): ("api_football", "57"),  # Ipswich
+    ("fotmob", "8463"): ("api_football", "63"),  # Leeds
+    ("fotmob", "8650"): ("api_football", "40"),  # Liverpool
+    ("fotmob", "8456"): ("api_football", "50"),  # Manchester City
+    ("fotmob", "10260"): ("api_football", "33"),  # Manchester United
+    ("fotmob", "10203"): ("api_football", "65"),  # Nottingham Forest
+    ("fotmob", "8472"): ("api_football", "746"),  # Sunderland
+    ("fotmob", "8586"): ("api_football", "47"),  # Tottenham
     ("football_data_org", "354"): ("api_football", "52"),  # Crystal Palace
     ("football_data_org", "351"): ("api_football", "65"),  # Nottingham Forest
     ("football_data_org", "322"): ("api_football", "64"),  # Hull City
     ("football_data_org", "62"): ("api_football", "45"),  # Everton
     ("football_data_org", "64"): ("api_football", "40"),  # Liverpool
     ("football_data_org", "65"): ("api_football", "50"),  # Manchester City
+    ("football_data_org", "57"): ("api_football", "42"),  # Arsenal
+    ("football_data_org", "58"): ("api_football", "66"),  # Aston Villa
+    ("football_data_org", "1044"): ("api_football", "35"),  # Bournemouth
+    ("football_data_org", "402"): ("api_football", "55"),  # Brentford
+    ("football_data_org", "397"): ("api_football", "51"),  # Brighton
+    ("football_data_org", "61"): ("api_football", "49"),  # Chelsea
+    ("football_data_org", "63"): ("api_football", "36"),  # Fulham
+    ("football_data_org", "349"): ("api_football", "57"),  # Ipswich
+    ("football_data_org", "341"): ("api_football", "63"),  # Leeds
+    ("football_data_org", "66"): ("api_football", "33"),  # Manchester United
+    ("football_data_org", "71"): ("api_football", "746"),  # Sunderland
+    ("football_data_org", "73"): ("api_football", "47"),  # Tottenham
+}
+
+# Operational only: never changes historical training identity construction.
+OPERATIONAL_COMPETITION_CROSSWALKS = {
+    ("fotmob", "47"): ("api_football", "39", "Premier League", "ENG"),
+    ("pitchapi", "l_4WFCIZ"): ("api_football", "39", "Premier League", "ENG"),
 }
 
 

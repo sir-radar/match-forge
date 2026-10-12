@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 const coverage = {
+  eligible_history: 120000, excluded_history: 430, provisional_fixtures: 300,
+  verified_provider_matches: 250, identity_conflicts: 12,
   historical_matches: 120430, competitions_with_history: 84, teams_with_10_matches: 930,
   teams_below_10_matches: 23, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 3, source_conflicts: 1,

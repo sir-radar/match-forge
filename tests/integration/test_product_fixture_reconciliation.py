@@ -7,14 +7,18 @@ from typing import Any
 
 import psycopg
 import pytest
-from football.history.fixture_identity import persist_resolutions
+from football.history.fixture_identity import (
+    audit_canonical_history,
+    load_canonical_history,
+    persist_resolutions,
+)
 from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.football_data_org import FootballDataResponse
 from football.product.sync import ProductSync
 
 
-@pytest.mark.parametrize("mismatch", [None, "kickoff", "score", "team"])
+@pytest.mark.parametrize("mismatch", [None, "kickoff", "score", "team", "history"])
 def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
     tmp_path: Path, mismatch: str | None
 ) -> None:
@@ -74,6 +78,26 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
             now - timedelta(days=1),
         )
         with connection.cursor() as cursor:
+            if mismatch == "history":
+                cursor.execute(
+                    """UPDATE football.product_fixtures SET status = 'FINISHED',
+                       home_score = 0, away_score = 0 WHERE updated_at = %s""",
+                    (now,),
+                )
+                cursor.execute(
+                    """INSERT INTO football.product_team_match_history (
+                       fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+                       home_goals,away_goals,source_provider_code,source_snapshot_id)
+                       SELECT fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+                              0,0,'api_football',%s FROM football.product_fixtures
+                       WHERE updated_at = %s""",
+                    (snapshot, now),
+                )
+                persist_resolutions(
+                    connection,
+                    audit_canonical_history(load_canonical_history(connection)).identities,
+                    now,
+                )
             if mismatch == "kickoff":
                 cursor.execute(
                     """UPDATE football.product_fixtures
@@ -92,14 +116,23 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
                            SET status='LIVE', home_score=2, away_score=0 WHERE updated_at = %s""",
                     (now - timedelta(days=1),),
                 )
-        assert reconcile_product_fixtures(connection) == (1 if mismatch is None else 0)
-        assert reconcile_product_fixtures(connection) == (1 if mismatch is None else 0)
-        persist_resolutions(connection, [], now)
+        expected = 1 if mismatch in (None, "history") else 0
+        assert reconcile_product_fixtures(connection) == expected
+        assert reconcile_product_fixtures(connection) == expected
+        persist_resolutions(
+            connection,
+            audit_canonical_history(load_canonical_history(connection)).identities,
+            now,
+        )
         with connection.cursor() as cursor:
             active = cursor.execute(
                 """SELECT count(*) FROM football.fixture_identity_resolutions
                        WHERE active AND member_fixture_id <> representative_fixture_id"""
             ).fetchone()
             rows = cursor.execute("SELECT count(*) FROM football.product_fixtures").fetchone()
-        assert active == (1 if mismatch is None else 0,)
+            if mismatch == "history":
+                assert cursor.execute(
+                    "SELECT count(*) FROM football.product_eligible_match_history"
+                ).fetchone() == (1,)
+        assert active == (expected,)
         assert rows == (2,)
