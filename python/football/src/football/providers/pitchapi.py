@@ -176,10 +176,14 @@ class PitchApiClient:
         _resource_id(league_id, "l")
         params = {"status": status}
         if season is not None:
-            if not re.fullmatch(r"\d{4}/\d{4}", season):
-                raise ValueError("PitchAPI season must use YYYY/YYYY")
+            if not re.fullmatch(r"\d{4}(?:/\d{4})?", season):
+                raise ValueError("PitchAPI season must use YYYY or YYYY/YYYY")
             params["season"] = season
         return self._get(f"/v1/leagues/{quote(league_id)}" + "/matches", params)
+
+    def leagues(self) -> PitchApiResponse:
+        """Retrieve the documented catalogue, including available seasons."""
+        return self._get("/v1/leagues", {})
 
     def match(self, match_id: str) -> PitchApiResponse:
         return self._match_resource(match_id, "")
@@ -291,6 +295,11 @@ def normalize_pitchapi_matches(response: PitchApiResponse) -> tuple[PitchApiFixt
                     league_name.strip()
                     if isinstance(league_name, str) and league_name.strip()
                     else None
+                ),
+                result_score_basis=(
+                    "REGULATION_90"
+                    if provider_status == "finished" and response.path.startswith("/v1/leagues/")
+                    else "UNKNOWN"
                 ),
             )
         )

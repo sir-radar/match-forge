@@ -505,7 +505,7 @@ class ContextObservationStore:
                 cursor.execute(
                     """
                     SELECT history.fixture_id::text, history.kickoff_at
-                    FROM football.product_team_match_history history
+                    FROM football.product_eligible_match_history history
                     JOIN football.source_snapshots snapshot
                       ON snapshot.id = history.source_snapshot_id
                     WHERE (home_team_id IN (%s, %s) OR away_team_id IN (%s, %s))

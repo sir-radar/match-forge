@@ -18,6 +18,25 @@ from football.product.domain import (
 )
 
 
+def test_identity_name_normalization_preserves_letters_with_diacritics() -> None:
+    assert normalize_team_name("Série C") == normalize_team_name("Serie C")
+    assert normalize_team_name("Ferroviária FC") == "ferroviaria"
+
+
+@pytest.mark.parametrize(
+    ("provider_name", "canonical_name"),
+    [
+        ("Ulsan HD FC", "Ulsan Hyundai FC"),
+        ("Gyeongju H & N", "Gyeongju HNP"),
+        ("FC Mokpo", "Mokpo City"),
+        ("CD Suchitepéquez", "Suchitepéquez"),
+        ("Deportivo Mixco", "Mixco"),
+    ],
+)
+def test_reviewed_club_aliases_are_deterministic(provider_name: str, canonical_name: str) -> None:
+    assert normalize_team_name(provider_name) == normalize_team_name(canonical_name)
+
+
 def test_provider_team_name_normalization_uses_only_deterministic_aliases() -> None:
     assert normalize_team_name("Man United FC") == normalize_team_name("Man Utd")
     assert normalize_team_name("Inter Milan") == normalize_team_name("Internazionale")

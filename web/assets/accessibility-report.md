@@ -20,6 +20,11 @@
   Back-to-top uses a 44px native button, keyboard activation, main-content focus
   transfer, reduced-motion scrolling, forced-colors styling, and mobile-nav
   clearance. axe-core reported zero violations in normal color mode.
+- Reverified `/admin/data-sync` on 12 October 2026 in desktop and mobile
+  Chromium after adding provider coverage and quota diagnostics. The focused
+  Playwright run passed all three applicable assertions and axe-core reported
+  zero violations. Metrics remain native `dl` content and all sync actions use
+  labeled native buttons.
 
 Manual VoiceOver interaction and formal all-criteria WCAG 2.2 conformance were
 not run, so this report claims only the checks above.

@@ -1,5 +1,7 @@
 import json
+import urllib.error
 from datetime import date
+from email.message import Message
 
 import pytest
 from football.product.api_football import (
@@ -34,6 +36,67 @@ def test_client_rejects_provider_error() -> None:
     )
     with pytest.raises(ApiFootballError, match="rejected"):
         client.competitions()
+
+
+def test_client_records_quota_metadata_and_exhaustion() -> None:
+    class Budget:
+        def __init__(self) -> None:
+            self.before = 0
+            self.remaining: list[int | None] = []
+            self.rejections: list[str] = []
+
+        def before_request(self) -> None:
+            self.before += 1
+
+        def record_response(self, remaining: int | None) -> None:
+            self.remaining.append(remaining)
+
+        def record_rejection(self, detail: str) -> None:
+            self.rejections.append(detail)
+
+    budget = Budget()
+    success = ApiFootballClient(
+        "secret",
+        request_budget=budget,
+        transport=lambda _url, _headers: b'{"errors":[],"remaining":4,"response":[]}',
+    )
+    success.competitions()
+    limited = ApiFootballClient(
+        "secret",
+        request_budget=budget,
+        transport=lambda _url, _headers: (
+            b'{"errors":{"requests":"request limit reached"},"response":[]}'
+        ),
+    )
+    with pytest.raises(ApiFootballError, match="rejected"):
+        limited.competitions()
+
+    assert budget.before == 2
+    assert budget.remaining == [4]
+    assert budget.rejections == ["{'requests': 'request limit reached'}"]
+
+
+def test_client_records_http_429_in_persistent_budget() -> None:
+    class Budget:
+        def before_request(self) -> None:
+            pass
+
+        def record_response(self, remaining: int | None) -> None:
+            pass
+
+        def record_rejection(self, detail: str) -> None:
+            self.detail = detail
+
+    budget = Budget()
+
+    def rate_limited(_url: str, _headers: object) -> bytes:
+        raise urllib.error.HTTPError("https://provider.test", 429, "limited", Message(), None)
+
+    client = ApiFootballClient("secret", transport=rate_limited, request_budget=budget)
+    with pytest.raises(ApiFootballError, match="request failed"):
+        client.competitions()
+
+    assert budget.detail == "HTTP 429 rate limit"
 
 
 def test_client_classifies_plan_restriction_without_claiming_unsupported() -> None:

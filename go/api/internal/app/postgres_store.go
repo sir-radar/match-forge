@@ -100,7 +100,18 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			  AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) event_resource ON true
-		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2`
+		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
+          AND (pf.identity_status <> 'PROVISIONAL' OR EXISTS (
+              SELECT 1 FROM football.match_provider_mappings mapping
+              WHERE mapping.match_id = pf.fixture_id AND mapping.valid_to IS NULL
+          ))
+		  AND NOT EXISTS (
+			SELECT 1 FROM football.fixture_identity_resolutions resolution
+			WHERE resolution.member_fixture_id = pf.fixture_id AND resolution.active
+			  AND resolution.resolution_version = 'ProductFixtureCrosswalkV1'
+			  AND resolution.resolution_status = 'DUPLICATE_RESOLVED'
+			  AND resolution.member_fixture_id <> resolution.representative_fixture_id
+		  )`
 	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "pc.country", filters.Country)
@@ -635,7 +646,7 @@ func (store *PostgresProductStore) form(
 		       CASE WHEN history.home_team_id::text = $1 THEN 'HOME' ELSE 'AWAY' END,
 		       CASE WHEN history.home_team_id::text = $1 THEN history.home_goals ELSE history.away_goals END,
 		       CASE WHEN history.home_team_id::text = $1 THEN history.away_goals ELSE history.home_goals END
-		FROM football.product_team_match_history history
+		FROM football.product_eligible_match_history history
 		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
 		JOIN football.product_teams home ON home.team_id = history.home_team_id
 		JOIN football.product_teams away ON away.team_id = history.away_team_id
@@ -674,7 +685,7 @@ func (store *PostgresProductStore) h2h(
 	rows, err := store.pool.Query(ctx, `
 		SELECT history.kickoff_at, home.name, away.name,
 		       history.home_goals, history.away_goals, history.home_xg, history.away_xg
-		FROM football.product_team_match_history history
+		FROM football.product_eligible_match_history history
 		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
 		JOIN football.product_teams home ON home.team_id = history.home_team_id
 		JOIN football.product_teams away ON away.team_id = history.away_team_id
@@ -931,7 +942,7 @@ func (store *PostgresProductStore) restContext(
 			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '7 days' AND kickoff_at < $2),
 			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '14 days' AND kickoff_at < $2),
 			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '30 days' AND kickoff_at < $2)
-			FROM football.product_team_match_history history
+			FROM football.product_eligible_match_history history
 			JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
 			WHERE (home_team_id::text = $1 OR away_team_id::text = $1)
 			  AND ((source_kickoff_precision = 'EXACT' AND kickoff_at < $2)

@@ -63,6 +63,7 @@ class CanonicalHistoryRow:
     source_snapshot_id: UUID
     source_kickoff_precision: str
     provider_evidence: tuple[ProviderFixtureEvidence, ...]
+    identity_status: str = "VERIFIED"
 
     def __post_init__(self) -> None:
         if self.kickoff_at.tzinfo is None or self.kickoff_at.utcoffset() is None:
@@ -345,6 +346,7 @@ def load_canonical_history(connection: Connection[Any]) -> tuple[CanonicalHistor
                    h.home_goals, h.away_goals, h.home_xg, h.away_xg,
                    h.source_provider_code, h.source_snapshot_id,
                    h.source_kickoff_precision,
+                   COALESCE(fixture.identity_status, 'VERIFIED') AS identity_status,
                    COALESCE(
                        jsonb_agg(DISTINCT jsonb_build_object(
                            'provider_code', provider.code,
@@ -363,6 +365,7 @@ def load_canonical_history(connection: Connection[Any]) -> tuple[CanonicalHistor
                 ON competition.competition_id = h.competition_id
               JOIN football.product_teams home ON home.team_id = h.home_team_id
               JOIN football.product_teams away ON away.team_id = h.away_team_id
+              LEFT JOIN football.product_fixtures fixture ON fixture.fixture_id = h.fixture_id
               LEFT JOIN football.match_provider_mappings mapping
                 ON mapping.match_id = h.fixture_id AND mapping.valid_to IS NULL
               LEFT JOIN football.providers provider ON provider.id = mapping.provider_id
@@ -380,7 +383,7 @@ def load_canonical_history(connection: Connection[Any]) -> tuple[CanonicalHistor
                       competition.season_label, h.home_team_id, h.away_team_id,
                       home.name, away.name, h.home_goals, h.away_goals,
                       h.home_xg, h.away_xg, h.source_provider_code,
-                      h.source_snapshot_id, h.source_kickoff_precision
+                      h.source_snapshot_id, h.source_kickoff_precision, fixture.identity_status
              ORDER BY h.kickoff_at, h.fixture_id
             """
         ).fetchall()
@@ -467,7 +470,9 @@ def persist_resolutions(
         raise ValueError("member fixture belongs to multiple real fixtures")
     with connection.cursor() as cursor:
         cursor.execute(
-            "UPDATE football.fixture_identity_resolutions SET active = false WHERE active"
+            """UPDATE football.fixture_identity_resolutions SET active = false
+               WHERE active AND (resolution_version = %s OR member_fixture_id = ANY(%s))""",
+            (RESOLUTION_VERSION, members),
         )
         for item in identities:
             evidence = {
@@ -550,6 +555,16 @@ def _resolve_exact_cluster(cluster: tuple[CanonicalHistoryRow, ...]) -> RealFixt
     )
     competitions = {row.competition_id for row in ordered}
     scores = {(row.home_goals, row.away_goals) for row in ordered}
+    if any(row.identity_status != "VERIFIED" for row in ordered):
+        return _identity(
+            real_id,
+            first,
+            members,
+            evidence,
+            None,
+            ResolutionStatus.AMBIGUOUS_QUARANTINED,
+            "PROVISIONAL_PROVIDER_IDENTITY",
+        )
     if len(ordered) == 1:
         return _identity(
             real_id,
@@ -784,4 +799,5 @@ def _row(value: Mapping[str, object]) -> CanonicalHistoryRow:
         cast(UUID, value["source_snapshot_id"]),
         str(value["source_kickoff_precision"]),
         evidence,
+        str(value.get("identity_status", "VERIFIED")),
     )

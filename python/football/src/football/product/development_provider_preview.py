@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
@@ -19,7 +20,11 @@ def development_provider_preview(
     fixture_id: UUID,
     knowledge_cutoff: datetime,
     artifact_path: Path,
+    *,
+    provider_code: str = "pitchapi",
 ) -> dict[str, object]:
+    if provider_code not in {"pitchapi", "fotmob"}:
+        raise ValueError("feature provider must be pitchapi or fotmob")
     if knowledge_cutoff.tzinfo is None or knowledge_cutoff.utcoffset() is None:
         raise ValueError("knowledge_cutoff must include a timezone")
     with connection.cursor() as cursor:
@@ -37,47 +42,57 @@ def development_provider_preview(
         cursor.execute(
             """SELECT fixture_id, kickoff_at, home_team_id, away_team_id,
                       home_goals, away_goals, home_xg, away_xg
-                 FROM football.product_team_match_history
-                WHERE kickoff_at < %(cutoff)s
+                 FROM football.product_eligible_match_history
+                WHERE ((source_kickoff_precision = 'EXACT' AND kickoff_at < %(cutoff)s)
+                       OR (source_kickoff_precision = 'DATE_ONLY'
+                           AND kickoff_at::date < %(cutoff)s::date))
+                  AND known_at <= %(cutoff)s
                   AND (home_team_id IN (%(home)s, %(away)s)
                        OR away_team_id IN (%(home)s, %(away)s))
-                UNION ALL
-               SELECT fixture.fixture_id, fixture.kickoff_at, fixture.home_team_id,
-                      fixture.away_team_id, fixture.home_score, fixture.away_score,
-                      NULL, NULL
-                 FROM football.product_fixtures fixture
-                 LEFT JOIN football.product_team_match_history history
-                   ON history.fixture_id = fixture.fixture_id
-                WHERE history.fixture_id IS NULL AND fixture.status = 'FINISHED'
-                  AND fixture.kickoff_at < %(cutoff)s
-                  AND (fixture.home_team_id IN (%(home)s, %(away)s)
-                       OR fixture.away_team_id IN (%(home)s, %(away)s))
                 ORDER BY kickoff_at, fixture_id""",
             {"cutoff": knowledge_cutoff, "home": home_team_id, "away": away_team_id},
         )
         history = [FinishedMatch(*row) for row in cursor.fetchall()]
         cursor.execute(
-            """SELECT resource.canonical_fixture_id, resource.provider_code,
+            """SELECT DISTINCT ON (resource.canonical_fixture_id, resource.provider_code,
+                                    resource.resource_type)
+                      resource.canonical_fixture_id, resource.provider_code,
                       resource.provider_match_id, resource.resource_type,
                       resource.observed_at, resource.known_at, resource.payload
                  FROM football.product_provider_resource_observations resource
-                 JOIN football.product_fixtures history
+                 JOIN football.product_eligible_match_history history
                    ON history.fixture_id = resource.canonical_fixture_id
                 WHERE resource.canonical_fixture_id <> %s
                   AND history.kickoff_at < %s
+                  AND history.known_at <= %s
                   AND (history.home_team_id IN (%s, %s)
                        OR history.away_team_id IN (%s, %s))
                   AND resource.development_only
+                  AND resource.provider_code = %s
                   AND resource.point_in_time_eligibility = 'ELIGIBLE'
                   AND resource.known_at IS NOT NULL AND resource.known_at <= %s
-                ORDER BY resource.known_at, resource.resource_observation_id""",
+                  AND EXISTS (
+                      SELECT 1 FROM football.match_provider_mappings mapping
+                      JOIN football.providers provider ON provider.id = mapping.provider_id
+                      WHERE provider.code = resource.provider_code
+                        AND mapping.provider_match_id = resource.provider_match_id
+                        AND mapping.match_id = resource.canonical_fixture_id
+                        AND mapping.valid_to IS NULL
+                        AND COALESCE(mapping.valid_from, mapping.first_seen_at) <= %s
+                  )
+                ORDER BY resource.canonical_fixture_id, resource.provider_code,
+                         resource.resource_type, resource.known_at DESC,
+                         resource.resource_observation_id DESC""",
             (
                 fixture_id,
+                knowledge_cutoff,
                 knowledge_cutoff,
                 home_team_id,
                 away_team_id,
                 home_team_id,
                 away_team_id,
+                provider_code,
+                knowledge_cutoff,
                 knowledge_cutoff,
             ),
         )
@@ -92,7 +107,7 @@ def development_provider_preview(
             item.away_team_id,
             item.home_goals,
             item.away_goals,
-            *(xg_by_fixture.get(item.fixture_id, (item.home_xg, item.away_xg))),
+            *(xg_by_fixture.get(item.fixture_id, (None, None))),
         )
         for item in history
     ]
@@ -113,6 +128,8 @@ def development_provider_preview(
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     return {
         "mode": "DEVELOPMENT_PROVIDER_FEATURE_PREVIEW",
+        "feature_provider": provider_code,
+        "xg_definition": "provider shot expected goals; no cross-provider xG blending",
         "canonical_fixture_id": str(fixture_id),
         "knowledge_cutoff": knowledge_cutoff.isoformat(),
         "target_kickoff": target_kickoff.isoformat(),
@@ -120,6 +137,7 @@ def development_provider_preview(
             "artifact": str(artifact_path),
             "model_family": artifact.get("model_family", "pitchapi-v3-reference"),
             "algorithm_version": artifact.get("algorithm_version", "unknown"),
+            "uses_provider_xg": artifact.get("parameters", {}).get("beta_xg_for", 0) != 0,
         },
         "feature_values": totals | {"xg_matches_supplemented": len(xg_by_fixture)},
         "resource_evidence": evidence,
@@ -145,7 +163,7 @@ def _consume_resources(
     for canonical_id, provider, match_id, kind, observed_at, known_at, payload in resources:
         summary: dict[str, object]
         if kind == "SHOTS":
-            summary = _shot_features(payload)
+            summary = _shot_features(payload, provider_code=provider)
             shot_count = summary["shots"]
             on_target_count = summary["shots_on_target"]
             assert isinstance(shot_count, int) and isinstance(on_target_count, int)
@@ -162,7 +180,7 @@ def _consume_resources(
                 away_xg = sum(
                     v for key, v in by_team.items() if teams.get(key) == match.away_team_id
                 )
-                if home_xg or away_xg:
+                if (home_xg or away_xg) and all(key in teams for key in by_team):
                     xg_by_fixture[canonical_id] = (home_xg, away_xg)
         elif kind == "LINEUPS":
             players = _lineup_players(payload)
@@ -206,9 +224,11 @@ def _team_aliases(connection: Connection[Any]) -> dict[str, dict[str, UUID]]:
         return result
 
 
-def _shot_features(payload: object) -> dict[str, object]:
+def _provider_shots(payload: object, provider_code: str) -> list[Mapping[str, Any]]:
     shots: list[Mapping[str, Any]] = []
-    if isinstance(payload, Mapping):
+    if provider_code == "fotmob" and isinstance(payload, list):
+        shots = [item for item in payload if isinstance(item, Mapping)]
+    elif isinstance(payload, Mapping):
         periods = payload.get("periods")
         if isinstance(periods, list):
             for period in periods:
@@ -216,14 +236,25 @@ def _shot_features(payload: object) -> dict[str, object]:
                     shots.extend(item for item in period["shots"] if isinstance(item, Mapping))
         elif isinstance(payload.get("shots"), list):
             shots.extend(item for item in payload["shots"] if isinstance(item, Mapping))
+    return shots
+
+
+def _shot_features(payload: object, *, provider_code: str = "pitchapi") -> dict[str, object]:
+    shots = _provider_shots(payload, provider_code)
     xg_by_team: dict[str, float] = {}
     on_target = 0
     for shot in shots:
-        team_id = shot.get("team_id")
-        xg = shot.get("expected_goals")
+        team_id = shot.get("teamId" if provider_code == "fotmob" else "team_id")
+        if provider_code == "fotmob" and isinstance(team_id, int):
+            team_id = str(team_id)
+        xg = shot.get("expectedGoals" if provider_code == "fotmob" else "expected_goals")
         if isinstance(team_id, str) and isinstance(xg, (int, float)) and not isinstance(xg, bool):
+            if not math.isfinite(xg) or not 0 <= xg <= 1:
+                raise ValueError("provider shot expected goals must be finite and in [0, 1]")
             xg_by_team[team_id] = xg_by_team.get(team_id, 0.0) + float(xg)
-        on_target += int(shot.get("is_on_target") is True)
+        on_target += int(
+            shot.get("isOnTarget" if provider_code == "fotmob" else "is_on_target") is True
+        )
     total_xg = sum(xg_by_team.values())
     return {
         "shots": len(shots),

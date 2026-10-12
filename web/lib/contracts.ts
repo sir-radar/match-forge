@@ -14,7 +14,7 @@ export type Competition = {
   country: string;
   continent: string;
   division: number | null;
-  type: "LEAGUE" | "CUP";
+  type: "LEAGUE" | "CUP" | "UNKNOWN";
   season: string;
   availability: Availability;
   availability_status: string;
@@ -278,6 +278,11 @@ export type SyncRun = {
   history_queue?: HistoryQueueProgress;
 };
 export type HistoricalCoverage = {
+  eligible_history: number;
+  excluded_history: number;
+  provisional_fixtures: number;
+  verified_provider_matches: number;
+  identity_conflicts: number;
   historical_matches: number;
   competitions_with_history: number;
   teams_with_10_matches: number;
@@ -287,6 +292,16 @@ export type HistoricalCoverage = {
   not_enough_history: number;
   mapping_failures: number;
   source_conflicts: number;
+  missing_live_scores: number;
+  fotmob_mapped: number;
+  fotmob_unmapped: number;
+  pitchapi_mapped: number;
+  pitchapi_unmapped: number;
+  fotmob_history: number;
+  pitchapi_history: number;
+  api_football_requests_used: number;
+  api_football_remaining: number;
+  api_football_exhausted: boolean;
 };
 export type ProviderConfiguration = {
   fotmob_enabled: boolean;
@@ -552,6 +567,21 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       not_enough_history: numeric(coverage.not_enough_history, "not_enough_history"),
       mapping_failures: numeric(coverage.mapping_failures, "mapping_failures"),
       source_conflicts: numeric(coverage.source_conflicts, "source_conflicts"),
+      missing_live_scores: numeric(coverage.missing_live_scores, "missing_live_scores"),
+      fotmob_mapped: numeric(coverage.fotmob_mapped, "fotmob_mapped"),
+      fotmob_unmapped: numeric(coverage.fotmob_unmapped, "fotmob_unmapped"),
+      pitchapi_mapped: numeric(coverage.pitchapi_mapped, "pitchapi_mapped"),
+      pitchapi_unmapped: numeric(coverage.pitchapi_unmapped, "pitchapi_unmapped"),
+      fotmob_history: numeric(coverage.fotmob_history, "fotmob_history"),
+      pitchapi_history: numeric(coverage.pitchapi_history, "pitchapi_history"),
+      eligible_history: numeric(coverage.eligible_history, "eligible_history"),
+      excluded_history: numeric(coverage.excluded_history, "excluded_history"),
+      provisional_fixtures: numeric(coverage.provisional_fixtures, "provisional_fixtures"),
+      verified_provider_matches: numeric(coverage.verified_provider_matches, "verified_provider_matches"),
+      identity_conflicts: numeric(coverage.identity_conflicts, "identity_conflicts"),
+      api_football_requests_used: numeric(coverage.api_football_requests_used, "api_football_requests_used"),
+      api_football_remaining: numeric(coverage.api_football_remaining, "api_football_remaining"),
+      api_football_exhausted: boolean(coverage.api_football_exhausted, "api_football_exhausted"),
     },
   };
 }

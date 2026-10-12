@@ -116,6 +116,23 @@ def test_observed_started_status_maps_to_live() -> None:
     assert row.status == "LIVE"
 
 
+def test_finished_league_result_has_regulation_score_basis() -> None:
+    row = normalize_pitchapi_matches(
+        PitchApiClient(
+            "secret", transport=StubTransport(listing(status="finished"))
+        ).league_matches("l_0bfbkO", season="2025/2026", status="played")
+    )[0]
+    assert row.result_score_basis == "REGULATION_90"
+
+
+def test_calendar_year_is_valid_pitchapi_season() -> None:
+    transport = StubTransport(listing(status="finished"))
+    PitchApiClient("secret", transport=transport).league_matches(
+        "l_0bfbkO", season="2026", status="played"
+    )
+    assert transport.calls[0][0].endswith("/v1/leagues/l_0bfbkO/matches?season=2026&status=played")
+
+
 def test_match_resources_are_bounded_to_documented_operational_paths() -> None:
     transport = StubTransport({"data": {}})
     client = PitchApiClient("secret", transport=transport)

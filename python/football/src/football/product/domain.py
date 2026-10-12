@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import re
+import unicodedata
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -81,13 +82,23 @@ def stable_id(kind: str, *parts: object) -> UUID:
 
 
 def normalize_team_name(value: str) -> str:
-    normalized = re.sub(r"\b(fc|cf|afc|sc|club)\b", " ", value.casefold())
+    ascii_value = "".join(
+        character
+        for character in unicodedata.normalize("NFKD", value.casefold())
+        if not unicodedata.combining(character)
+    )
+    normalized = re.sub(r"\b(fc|cf|afc|sc|club)\b", " ", ascii_value)
     normalized = normalized.replace("utd", "united")
     normalized = " ".join(re.sub(r"[^a-z0-9]+", " ", normalized).split())
     aliases = {
         "inter": "internazionale",
         "inter milan": "internazionale",
         "paris saint germain": "psg",
+        "ulsan hd": "ulsan hyundai",
+        "gyeongju h n": "gyeongju hnp",
+        "mokpo": "mokpo city",
+        "cd suchitepequez": "suchitepequez",
+        "deportivo mixco": "mixco",
     }
     return aliases.get(normalized, normalized)
 

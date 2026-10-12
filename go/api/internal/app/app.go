@@ -103,6 +103,9 @@ func (application *App) Run(ctx context.Context) error {
 	case <-ctx.Done():
 		shutdownContext, cancel := context.WithTimeout(context.Background(), application.config.ShutdownTimeout)
 		defer cancel()
+		if runner, ok := application.syncRunner.(syncRunnerShutdown); ok {
+			runner.Shutdown(shutdownContext)
+		}
 		return server.Shutdown(shutdownContext)
 	}
 }
@@ -120,16 +123,17 @@ func (application *App) runOperationalSyncSchedule(ctx context.Context) {
 	if len(types) == 0 {
 		return
 	}
-	index := 0
 	for {
-		syncType := types[index%len(types)]
-		index++
-		lagos := time.FixedZone("Africa/Lagos", 60*60)
-		_, err := application.syncRunner.Start(ctx, SyncRequest{
-			Type: syncType, Date: time.Now().In(lagos).Format("2006-01-02"),
-		})
-		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
-			application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
+		for _, syncType := range types {
+			lagos := time.FixedZone("Africa/Lagos", 60*60)
+			now := time.Now().In(lagos)
+			_, err := application.syncRunner.Start(ctx, SyncRequest{
+				Type: syncType, Date: now.Format("2006-01-02"),
+				FromDate: now.AddDate(0, 0, -1).Format("2006-01-02"),
+			})
+			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
+			}
 		}
 		select {
 		case <-ctx.Done():

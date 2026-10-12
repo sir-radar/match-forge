@@ -59,3 +59,16 @@ are removed after each run; neither database URLs nor passwords are emitted.
 This is local recovery evidence only. It does not replace the separate
 raw-file, dataset, model-artifact, or forecast/evaluation integrity checks, and
 it is not a production disaster-recovery design.
+
+## Provider fixture recovery
+
+The operational scheduler polls yesterday and today in Africa/Lagos time so
+matches still awaiting a final status continue receiving provider updates after
+midnight. A final status requires provider evidence.
+
+Operational duplicate fixtures are resolved using explicit provider team-ID
+crosswalks plus identical canonical competition, season, and kickoff. Conflicting
+scores, ambiguous candidates, and historical rows remain outside this display
+reconciliation. Source fixtures and mappings are retained; the fixture API shows
+the selected representative from active duplicate resolutions. Historical audits
+preserve operational resolutions outside their own history scope.

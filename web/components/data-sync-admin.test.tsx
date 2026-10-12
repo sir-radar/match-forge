@@ -3,9 +3,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DataSyncAdmin } from "@/components/data-sync-admin";
 
 const coverage = {
+  eligible_history: 1000, excluded_history: 100, provisional_fixtures: 60,
+  verified_provider_matches: 80, identity_conflicts: 2,
   historical_matches: 124806, competitions_with_history: 84, teams_with_10_matches: 934,
   teams_below_10_matches: 19, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 2, source_conflicts: 1,
+  missing_live_scores: 3, fotmob_mapped: 100, fotmob_unmapped: 4,
+  pitchapi_mapped: 80, pitchapi_unmapped: 8, fotmob_history: 60,
+  pitchapi_history: 40, api_football_requests_used: 100,
+  api_football_remaining: 0, api_football_exhausted: true,
 };
 
 describe("DataSyncAdmin", () => {
@@ -50,6 +56,15 @@ describe("DataSyncAdmin", () => {
     render(<DataSyncAdmin />);
     expect(await screen.findByRole("alert")).toHaveTextContent("database unavailable");
     expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
+  });
+
+  it("rejects malformed eligibility metrics instead of showing misleading zeroes", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [], coverage: { ...coverage, eligible_history: null },
+    })));
+    render(<DataSyncAdmin />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("eligible_history");
+    expect(screen.getByText("Coverage is unavailable.")).toBeInTheDocument();
   });
 
   it("shows internal history queue progress without changing top-level status", async () => {

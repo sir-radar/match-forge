@@ -23,6 +23,12 @@ OTHER_COMPETITION = UUID(int=11)
 SNAPSHOT = UUID(int=20)
 
 
+def test_provisional_identity_is_not_admitted_even_with_regulation_score() -> None:
+    audit = audit_canonical_history([_row(identity_status="PROVISIONAL")])
+    assert not audit.resolved_history
+    assert audit.identities[0].resolution_reason == "PROVISIONAL_PROVIDER_IDENTITY"
+
+
 def _row(index: int = 1, **changes: object) -> CanonicalHistoryRow:
     provider = str(changes.pop("source_provider_code", "provider_a"))
     fixture_id = cast(UUID, changes.pop("fixture_id", UUID(int=100 + index)))

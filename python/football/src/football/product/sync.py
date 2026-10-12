@@ -896,7 +896,7 @@ class ProductSync:
                        history.home_team_id, history.away_team_id, history.kickoff_at,
                        'FINISHED', history.home_goals, history.away_goals,
                        'NOT_ENOUGH_HISTORY', %s
-                FROM football.product_team_match_history history
+                FROM football.product_eligible_match_history history
                 WHERE history.kickoff_at::date BETWEEN %s AND %s
                   AND NOT EXISTS (
                       SELECT 1
@@ -1189,12 +1189,13 @@ class ProductSync:
                 """
                 SELECT history.home_team_id, history.away_team_id,
                        history.home_goals, history.away_goals
-                FROM football.product_team_match_history history
+                FROM football.product_eligible_match_history history
                 JOIN football.matches m ON m.id = history.fixture_id
                 WHERE history.competition_id = %s AND m.season_id = %s
+                  AND history.known_at <= %s
                 ORDER BY history.kickoff_at, history.fixture_id
                 """,
-                (competition_id, season_id),
+                (competition_id, season_id, observed_at),
             )
             matches = cursor.fetchall()
         if not matches:
@@ -1756,13 +1757,14 @@ class ProductSync:
                 SELECT fixture_id, home_team_id, away_team_id, kickoff_at
                 FROM football.product_fixtures
                 WHERE status = 'SCHEDULED' AND kickoff_at > %s
+                  AND identity_status = 'VERIFIED'
                 ORDER BY kickoff_at, fixture_id
                 """,
                 (now,),
             )
             targets = cursor.fetchall()
         for fixture_id, home_id, away_id, kickoff_at in targets:
-            history = self._history_before(kickoff_at, home_id, away_id)
+            history = self._history_before(kickoff_at, home_id, away_id, knowledge_cutoff=now)
             forecast = forecast_from_history(
                 artifact_path=self.artifact_path,
                 target_kickoff=kickoff_at,
@@ -1771,6 +1773,13 @@ class ProductSync:
                 history=history,
             )
             if forecast is None:
+                with self.connection.cursor() as cursor:
+                    cursor.execute(
+                        """UPDATE football.product_fixtures
+                              SET forecast_availability = 'NOT_ENOUGH_HISTORY'
+                            WHERE fixture_id = %s""",
+                        (fixture_id,),
+                    )
                 continue
             payload = forecast_payload(forecast)
             payload_sha = sha256_json(payload)
@@ -1911,14 +1920,19 @@ class ProductSync:
         return count
 
     def _history_before(
-        self, cutoff: datetime, home_team_id: UUID, away_team_id: UUID
+        self,
+        cutoff: datetime,
+        home_team_id: UUID,
+        away_team_id: UUID,
+        *,
+        knowledge_cutoff: datetime | None = None,
     ) -> list[FinishedMatch]:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
                 SELECT fixture_id, kickoff_at, home_team_id, away_team_id,
                        home_goals, away_goals, home_xg, away_xg
-                FROM football.product_team_match_history
+                FROM football.product_eligible_match_history
                 WHERE (
                     (source_kickoff_precision = 'EXACT' AND kickoff_at < %s)
                     OR (
@@ -1929,6 +1943,7 @@ class ProductSync:
                 AND (
                     home_team_id IN (%s, %s) OR away_team_id IN (%s, %s)
                 )
+                AND known_at <= %s
                 ORDER BY kickoff_at, fixture_id
                 """,
                 (
@@ -1938,6 +1953,7 @@ class ProductSync:
                     away_team_id,
                     home_team_id,
                     away_team_id,
+                    knowledge_cutoff or cutoff,
                 ),
             )
             return [FinishedMatch(*row) for row in cursor.fetchall()]
