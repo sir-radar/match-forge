@@ -100,7 +100,14 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			  AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) event_resource ON true
-		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2`
+		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
+		  AND NOT EXISTS (
+			SELECT 1 FROM football.fixture_identity_resolutions resolution
+			WHERE resolution.member_fixture_id = pf.fixture_id AND resolution.active
+			  AND resolution.resolution_version = 'ProductFixtureCrosswalkV1'
+			  AND resolution.resolution_status = 'DUPLICATE_RESOLVED'
+			  AND resolution.member_fixture_id <> resolution.representative_fixture_id
+		  )`
 	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "pc.country", filters.Country)

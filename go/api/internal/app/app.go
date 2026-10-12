@@ -126,8 +126,10 @@ func (application *App) runOperationalSyncSchedule(ctx context.Context) {
 	for {
 		for _, syncType := range types {
 			lagos := time.FixedZone("Africa/Lagos", 60*60)
+			now := time.Now().In(lagos)
 			_, err := application.syncRunner.Start(ctx, SyncRequest{
-				Type: syncType, Date: time.Now().In(lagos).Format("2006-01-02"),
+				Type: syncType, Date: now.Format("2006-01-02"),
+				FromDate: now.AddDate(0, 0, -1).Format("2006-01-02"),
 			})
 			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)

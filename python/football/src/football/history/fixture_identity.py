@@ -467,7 +467,9 @@ def persist_resolutions(
         raise ValueError("member fixture belongs to multiple real fixtures")
     with connection.cursor() as cursor:
         cursor.execute(
-            "UPDATE football.fixture_identity_resolutions SET active = false WHERE active"
+            """UPDATE football.fixture_identity_resolutions SET active = false
+               WHERE active AND (resolution_version = %s OR member_fixture_id = ANY(%s))""",
+            (RESOLUTION_VERSION, members),
         )
         for item in identities:
             evidence = {

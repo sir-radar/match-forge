@@ -17,6 +17,7 @@ from psycopg import Connection, Error
 
 from football.product.domain import canonical_json, normalize_team_name, sha256_json, stable_id
 from football.product.external_predictions import settle_external_predictions
+from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.live_resources import normalize_events, normalize_statistics
 from football.providers.fotmob import (
     FotmobClient,
@@ -346,6 +347,8 @@ class OperationalProviderSync:
             counts.failed += detail_counts.failed_requests
             counts.resources += detail_counts.resources
             self.connection.commit()
+            with self.connection.transaction():
+                reconcile_product_fixtures(self.connection)
             day += timedelta(days=1)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
         diagnostics = self._sync_diagnostics(sync_started)

@@ -45,6 +45,10 @@ func TestOperationalScheduleStartsEveryEnabledProviderWithoutBrowserTraffic(t *t
 			if request.Date == "" {
 				t.Fatal("scheduled request date is empty")
 			}
+			lagos := time.FixedZone("Africa/Lagos", 60*60)
+			if request.FromDate != time.Now().In(lagos).AddDate(0, 0, -1).Format("2006-01-02") {
+				t.Fatalf("scheduled range starts at %q, want yesterday", request.FromDate)
+			}
 		case <-time.After(time.Second):
 			t.Fatalf("scheduled providers = %v, want FotMob and PitchAPI", seen)
 		}

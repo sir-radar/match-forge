@@ -75,6 +75,15 @@ TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
     ("football_data_uk", "Ceuta"): ("api_football", "10139"),
 }
 
+OPERATIONAL_TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
+    ("football_data_org", "354"): ("api_football", "52"),  # Crystal Palace
+    ("football_data_org", "351"): ("api_football", "65"),  # Nottingham Forest
+    ("football_data_org", "322"): ("api_football", "64"),  # Hull City
+    ("football_data_org", "62"): ("api_football", "45"),  # Everton
+    ("football_data_org", "64"): ("api_football", "40"),  # Liverpool
+    ("football_data_org", "65"): ("api_football", "50"),  # Manchester City
+}
+
 
 def canonical_team_provider_identity(
     provider_code: str, provider_team_id: str
