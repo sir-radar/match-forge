@@ -20,6 +20,7 @@ from football.product.domain import sha256_json
 from football.product.identity_admission import (
     _objects,
     _retained_payload,
+    classify_mapping,
     verify_source_identifier,
 )
 from football.product.identity_trust import (
@@ -219,7 +220,7 @@ def _support_context(
     context: dict[str, Any],
     request: TeamIdentityCorrection,
     target: dict[str, Any],
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     support, proof, _ = _fixture(
         _registered_payloads(connection, root, original["source_snapshot_id"], "fotmob"),
         "fotmob",
@@ -242,14 +243,26 @@ def _support_context(
     ):
         raise ValueError("supporting home/away provider ID conflicts with the target")
     mapping = connection.execute(
-        """SELECT m.team_id,m.mapping_confidence FROM football.team_provider_mappings m
+        """SELECT m.id,m.team_id,p.code,m.provider_team_id,m.mapping_method,
+                  m.mapping_confidence,t.country,m.source_snapshot_id,s.acquired_at
+           FROM football.team_provider_mappings m
            JOIN football.providers p ON p.id=m.provider_id
+           JOIN football.product_teams t ON t.team_id=m.team_id
+           JOIN football.source_snapshots s ON s.id=m.source_snapshot_id
            WHERE p.code='fotmob' AND m.provider_team_id=%s AND m.valid_to IS NULL""",
         (native,),
     ).fetchall()
-    if mapping != [(UUID(target["team_id"]), 1.0)]:
+    if len(mapping) != 1:
         raise ValueError("supporting active crosswalk conflicts with the target UUID")
-    return proof
+    qualified = classify_mapping(connection, "team", mapping[0], root)
+    if qualified["disposition"] != "CROSSWALK" or qualified["canonical_id"] != target["team_id"]:
+        raise ValueError("supporting mapping fails the shared R2 trust predicate")
+    mapping_proof = {
+        **qualified["evidence"],
+        "source_snapshot_id": qualified["source_snapshot_id"],
+        "mapping_id": qualified["mapping_id"],
+    }
+    return proof, mapping_proof
 
 
 def _target_context(
@@ -305,7 +318,9 @@ def _qualify(
         raise ValueError("source mapping is not the retained incorrect origin projection")
     original, context, fixture_proof, fixture = _source_context(connection, root, request, source)
     target_proof = _target_context(connection, root, target, context)
-    support_proof = _support_context(connection, root, original, context, request, target)
+    support_proof, support_mapping_proof = _support_context(
+        connection, root, original, context, request, target
+    )
     source_proof = verify_source_identifier(
         connection,
         root,
@@ -366,7 +381,7 @@ def _qualify(
         fixture_registration_id=str(request.fixture_registration_id),
         orientation=request.orientation,
         target_evidence={**origin_proof, "source_snapshot_id": target["source_snapshot_id"]},
-        context_resources=[fixture_proof, target_proof, support_proof],
+        context_resources=[fixture_proof, target_proof, support_proof, support_mapping_proof],
         context={**context, "kickoff": context["kickoff"].isoformat()},
         policy_version="ProductIdentityTrustV1",
     )

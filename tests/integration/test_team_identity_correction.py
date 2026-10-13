@@ -362,7 +362,7 @@ def test_linked_corrections_are_independent_prospective_revocable_and_preserve_e
 
 
 @pytest.mark.parametrize(
-    "bad", ["orientation", "target", "missing", "confidence", "extra_conflict"]
+    "bad", ["orientation", "target", "missing", "confidence", "extra_conflict", "support_method"]
 )
 def test_invalid_pair_fails_without_admitting_other_pair(tmp_path: Path, bad: str) -> None:
     with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
@@ -378,6 +378,12 @@ def test_invalid_pair_fails_without_admitting_other_pair(tmp_path: Path, bad: st
             c.execute(
                 "UPDATE football.team_provider_mappings SET mapping_confidence=.9 WHERE id=%s",
                 (brentford.source_mapping_id,),
+            )
+        if bad == "support_method":
+            c.execute(
+                """UPDATE football.team_provider_mappings SET mapping_method='deterministic'
+                   WHERE provider_team_id='9937' AND provider_id=(
+                       SELECT id FROM football.providers WHERE code='fotmob')"""
             )
         if bad == "extra_conflict":
             c.execute(
@@ -397,7 +403,7 @@ def test_invalid_pair_fails_without_admitting_other_pair(tmp_path: Path, bad: st
             c.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
             == count
         )
-        if bad in {"orientation", "target", "confidence"}:
+        if bad in {"orientation", "target", "confidence", "support_method"}:
             assert correct_team_identity(c, tmp_path, liverpool)["disposition"] == "CROSSWALK"
 
 
@@ -529,7 +535,14 @@ def test_transaction_failure_rolls_back_admission_and_history(tmp_path: Path) ->
 
 @pytest.mark.parametrize(
     "change",
-    ["target_mapping", "source_snapshot", "new_conflict", "file_tampering", "target_revocation"],
+    [
+        "target_mapping",
+        "support_mapping",
+        "source_snapshot",
+        "new_conflict",
+        "file_tampering",
+        "target_revocation",
+    ],
 )
 def test_later_invalidations_preserve_earlier_correction(tmp_path: Path, change: str) -> None:
     with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
@@ -542,6 +555,12 @@ def test_later_invalidations_preserve_earlier_correction(tmp_path: Path, change:
             c.execute(
                 "UPDATE football.team_provider_mappings SET mapping_confidence=.5 WHERE id=%s",
                 (request.target_mapping_id,),
+            )
+        elif change == "support_mapping":
+            c.execute(
+                """UPDATE football.team_provider_mappings SET mapping_method='deterministic'
+                   WHERE provider_team_id='9937' AND provider_id=(
+                       SELECT id FROM football.providers WHERE code='fotmob')"""
             )
         elif change == "source_snapshot":
             c.execute(

@@ -187,7 +187,10 @@ BEGIN
     FROM (SELECT DISTINCT ON (entity_type, mapping_id) * FROM football.product_identity_admissions
           ORDER BY entity_type, mapping_id, decided_at DESC, decision_id DESC) a
     WHERE (a.entity_type = kind AND a.mapping_id = OLD.id)
-       OR (kind = 'team' AND a.target_mapping_id = OLD.id AND a.disposition = 'CROSSWALK');
+       OR (kind = 'team' AND a.disposition = 'CROSSWALK' AND (
+           a.target_mapping_id = OLD.id OR EXISTS (
+               SELECT 1 FROM jsonb_array_elements(a.evidence->'context_resources') item
+               WHERE (item->>'mapping_id')::uuid = OLD.id)));
     RETURN COALESCE(NEW, OLD);
 END;
 $$;
