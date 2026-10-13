@@ -15,7 +15,7 @@ from typing import Any, Protocol, cast
 from psycopg import connect
 
 from football.product.history_requests import retry_after_time
-from football.providers.base import HttpResponseV1
+from football.providers.base import HttpResponseV1, ProviderFetchError, open_bounded, read_bounded
 
 API_BASE_URL = "https://v3.football.api-sports.io"
 Transport = Callable[[str, Mapping[str, str]], bytes | HttpResponseV1]
@@ -255,7 +255,7 @@ class ApiFootballClient:
         except urllib.error.HTTPError as error:
             self._record_http_error(reservation, error)
             raise ApiFootballError(f"API-Football request failed for {path}") from error
-        except (OSError, urllib.error.URLError) as error:
+        except (OSError, urllib.error.URLError, ProviderFetchError) as error:
             raise ApiFootballError(f"API-Football request failed for {path}") from error
         fetched_at = datetime.now(UTC)
         raw = result.payload if isinstance(result, HttpResponseV1) else result
@@ -395,9 +395,9 @@ def context_capability(competition: Mapping[str, Any], resource: str) -> Capabil
 
 def _http_get(url: str, headers: Mapping[str, str]) -> HttpResponseV1:
     request = urllib.request.Request(url, headers=dict(headers))
-    with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+    with open_bounded(request, timeout=30) as response:  # noqa: S310
         return HttpResponseV1(
-            payload=response.read(),
+            payload=read_bounded(response, max_bytes=8 * 1024 * 1024, timeout_seconds=30),
             status=response.status,
             content_type=response.headers.get_content_type(),
             etag=response.headers.get("ETag"),

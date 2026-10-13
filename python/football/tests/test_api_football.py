@@ -74,10 +74,16 @@ def test_native_transport_retains_quota_headers(monkeypatch: pytest.MonkeyPatch)
         def __exit__(self, *_args: object) -> None:
             pass
 
-        def read(self) -> bytes:
-            return b'{"errors":[],"response":[]}'
+        payload = b'{"errors":[],"response":[]}'
 
-    monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: Response())
+        def read(self, size: int) -> bytes:
+            result = self.payload[:size]
+            self.payload = self.payload[size:]
+            return result
+
+    monkeypatch.setattr(
+        "football.product.api_football.open_bounded", lambda *_args, **_kwargs: Response()
+    )
     result = ApiFootballClient("secret").competitions()
     assert (result.remaining_day, result.remaining_minute) == (4, 9)
 

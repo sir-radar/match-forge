@@ -155,7 +155,10 @@ def test_indexed_team_history_preserves_admission_and_revocation_cutoffs(tmp_pat
         admit_provider_mappings(connection, tmp_path, "football_data_uk")
         admitted = _cutoff(connection)
         team = connection.execute(
-            "SELECT home_team_id FROM football.product_team_match_history"
+            """SELECT h.home_team_id FROM football.product_team_match_history h
+               JOIN football.source_snapshots s ON s.id=h.source_snapshot_id
+               WHERE h.source_provider_code='football_data_uk'
+                 AND s.source_identity='test/season.csv'"""
         ).fetchone()
         assert team is not None
 

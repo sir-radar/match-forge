@@ -89,3 +89,31 @@ Use `--season YYYY/YYYY` to select a season and `--refresh` to reacquire selecte
 Detailed match resources are stored with `development_only=true`. Their conservative `known_at` is the actual acquisition time, so they are eligible only for later prospective development cutoffs. Production forecasts and protected evaluation datasets never read them. A non-persisting preview is available with `development-provider-preview --provider fotmob --fixture-id UUID --knowledge-cutoff ISO_TIMESTAMP` (also supports PitchAPI); it rejects cutoffs at or after kickoff and structurally excludes the target fixture. It uses verified history and mappings known by the cutoff, keeps each provider's shot/xG definitions separate, and feeds qualified xG through the existing model interface without blending other providers' xG. Lineup, rating, and H2H resources are diagnostic context, not new model weights. The frozen champion has `beta_xg_for=0`; `model.uses_provider_xg` makes that limitation explicit. Published forecasts and champion parameters remain unchanged.
 
 External predictions settle only from a final score explicitly identified as the regulation-time result. Extra-time, penalty-shootout, and unknown-basis totals remain pending so knockout scores cannot be graded as 90-minute markets.
+
+## Serving limits and dependency readiness
+
+Run migrations before startup. `/readyz` checks the actual serving PostgreSQL
+pool and credentials, required schema/migration, and Redis protocol PING within
+`DEPENDENCY_TIMEOUT` (500ms default). `DATABASE_URL` selects the serving database;
+`POSTGRES_ADDR` remains a validated compatibility setting. `/healthz` is independent
+of temporary dependency failures.
+
+HTTP defaults are `READ_TIMEOUT=15s`, `HANDLER_TIMEOUT=30s`, `WRITE_TIMEOUT=35s`
+and `IDLE_TIMEOUT=60s`; the existing shorter header limit remains 5s. Write timeout
+must exceed handler timeout. Admin JSON bodies are limited to 64KiB and trailing
+JSON is rejected. Request cancellation reaches handlers and PostgreSQL; timed-out
+queries release their connection and cancel server work. Timeout responses remain
+JSON when writable. Durable jobs start from process-owned contexts after commit,
+even if response lookup is cancelled; their execution, heartbeat, fencing and stop
+workflow remain independent of HTTP deadlines. Successfully submitted jobs can
+run longer than 30s. Graceful shutdown retains its existing 5s bound.
+
+Dependency checks use `pnpm audit --json` for the full locked inventory and
+`pnpm audit --prod --json` for production dependencies. Next 16.3.8 and the compatible
+source-map-js 1.2.2 patch address the applicable published package ranges. The
+remaining unpatched braces 3.0.3 advisory is in lint tooling, with no HTTP-controlled
+glob pattern found in the current configuration. It remains visible in the full
+audit; no zero-advisory claim or owner risk acceptance is inferred. See the
+[Next security release](https://github.com/vercel/next.js/releases/tag/v16.3.8),
+[source-map advisory](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) and
+[unpatched braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).

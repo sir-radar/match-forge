@@ -36,6 +36,7 @@ func NewWithSyncRunner(
 	product ProductStore,
 	syncRunner SyncRunner,
 ) *App {
+	config = config.servingDefaults()
 	application := &App{
 		config: config, logger: logger, readiness: readiness,
 		product: product, syncRunner: syncRunner,
@@ -69,7 +70,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/sync/fotmob", application.startSync(SyncFotMob))
 	mux.HandleFunc("POST /v1/admin/sync/pitchapi", application.startSync(SyncPitchAPI))
 	mux.HandleFunc("POST /v1/admin/sync/all", application.startSync(SyncAllData))
-	application.handler = application.cors(application.adminAccess(mux))
+	application.handler = application.requestDeadline(application.cors(application.adminAccess(mux)))
 	return application
 }
 
@@ -89,11 +90,8 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
 		go application.runForecastRefreshSchedule(ctx)
 	}
-	server := &http.Server{
-		Addr:              application.config.Address,
-		Handler:           application.handler,
-		ReadHeaderTimeout: application.config.ReadHeaderTimeout,
-	}
+	server := application.httpServer()
+
 	errorsChannel := make(chan error, 1)
 	go func() {
 		application.logger.Info("api listening", "address", application.config.Address)

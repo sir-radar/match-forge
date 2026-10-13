@@ -42,7 +42,7 @@ def test_populated_identity_upgrade_is_forward_only_and_idempotent(tmp_path: Pat
                 snapshots = connection.execute(
                     "SELECT to_jsonb(s) FROM football.source_snapshots s ORDER BY id"
                 ).fetchall()
-            _migrate(upgrade_url, "up")
+            _migrate(upgrade_url, "up-to", "202610121100")
             with psycopg.connect(upgrade_url) as connection:
                 assert (
                     connection.execute(
@@ -62,7 +62,7 @@ def test_populated_identity_upgrade_is_forward_only_and_idempotent(tmp_path: Pat
                     "SELECT decision_id, decided_at FROM football.product_match_history_decisions"
                 ).fetchall()
                 assert len(initial) == 1 and initial[0][1] > before
-            _migrate(upgrade_url, "up")
+            _migrate(upgrade_url, "up-to", "202610121100")
             with psycopg.connect(upgrade_url) as connection:
                 assert (
                     connection.execute(

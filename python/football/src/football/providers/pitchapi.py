@@ -12,9 +12,9 @@ from time import sleep
 from typing import Any, Protocol, cast
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
-from football.providers.base import ProviderFetchError
+from football.providers.base import ProviderFetchError, open_bounded, read_bounded
 
 _BASE_URL = "https://api.pitchapi.dev"
 _ID = re.compile(r"^[mltp]_[A-Za-z0-9]{6}$")
@@ -82,8 +82,8 @@ class UrllibPitchApiTransport:
             if self._request_guard is not None:
                 self._request_guard()
             try:
-                with urlopen(request, timeout=timeout) as response:
-                    payload = cast(bytes, response.read(max_bytes + 1))
+                with open_bounded(request, timeout=timeout) as response:
+                    payload = read_bounded(response, max_bytes=max_bytes, timeout_seconds=timeout)
                     if len(payload) > max_bytes:
                         raise ProviderFetchError(f"PitchAPI response exceeds {max_bytes} bytes")
                     return PitchApiHttpResponse(
@@ -92,9 +92,12 @@ class UrllibPitchApiTransport:
                         retry_after=response.headers.get("Retry-After"),
                     )
             except HTTPError as error:
-                if self._http_error_observer is not None:
-                    self._http_error_observer(error)
-                retry = error.headers.get("Retry-After") if error.headers is not None else None
+                try:
+                    if self._http_error_observer is not None:
+                        self._http_error_observer(error)
+                    retry = error.headers.get("Retry-After") if error.headers is not None else None
+                finally:
+                    error.close()
                 if error.code not in _RETRYABLE or attempt == self._max_attempts:
                     suffix = f"; retry_after={retry}" if error.code == 429 and retry else ""
                     raise ProviderFetchError(f"PitchAPI HTTP {error.code}{suffix}") from error

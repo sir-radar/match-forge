@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Any, cast
 
+from football.providers.base import ProviderFetchError, open_bounded, read_bounded
+
 API_BASE_URL = "https://api.football-data.org/v4"
 Transport = Callable[[str, Mapping[str, str]], bytes]
 
@@ -65,11 +67,11 @@ class FootballDataOrgClient:
         self, path: str, query: Mapping[str, str], collection_key: str
     ) -> FootballDataResponse:
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"
-        fetched_at = datetime.now(UTC)
         try:
             raw = self._transport(url, {"X-Auth-Token": self._token})
-        except (OSError, urllib.error.URLError) as error:
+        except (OSError, urllib.error.URLError, ProviderFetchError) as error:
             raise FootballDataOrgError(f"football-data.org request failed for {path}") from error
+        fetched_at = datetime.now(UTC)
         try:
             payload = cast(dict[str, Any], json.loads(raw))
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -87,8 +89,12 @@ class FootballDataOrgClient:
 
 def _http_get(url: str, headers: Mapping[str, str]) -> bytes:
     request = urllib.request.Request(url, headers=dict(headers))
-    with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
-        value = response.read()
+    try:
+        with open_bounded(request, timeout=30) as response:  # noqa: S310
+            value = read_bounded(response, max_bytes=8 * 1024 * 1024, timeout_seconds=30)
+    except urllib.error.HTTPError as error:
+        error.close()
+        raise
     if not isinstance(value, bytes):
         raise FootballDataOrgError("football-data.org transport returned non-bytes data")
     return value

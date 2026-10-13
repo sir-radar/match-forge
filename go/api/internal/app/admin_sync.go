@@ -230,17 +230,15 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 		}
 		return SyncRun{}, err
 	}
-	run, err := runner.Get(ctx, runID)
-	if err != nil {
-		return SyncRun{}, err
-	}
 	runContext, cancel := context.WithCancel(runner.ctx)
 	control := &syncRunControl{cancel: cancel, done: make(chan struct{})}
 	runner.mu.Lock()
 	runner.active[runID] = control
 	runner.mu.Unlock()
 	go runner.execute(runContext, runID, logPath, args, control)
-	return run, nil
+	// Activate committed work before reading the HTTP response: a disconnect
+	// after enqueue must not leave a successfully submitted job unstarted.
+	return runner.Get(ctx, runID)
 }
 
 func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bool, error) {
@@ -1034,13 +1032,18 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			Competition string `json:"competition"`
 			Country     string `json:"country"`
 		}
-		decoder := json.NewDecoder(io.LimitReader(request.Body, 64*1024))
+		decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
 		decoder.DisallowUnknownFields()
 		if request.ContentLength != 0 {
 			if err := decoder.Decode(&input); err != nil {
 				application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
 				return
 			}
+		}
+		var trailing any
+		if err := decoder.Decode(&trailing); err != io.EOF {
+			application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
+			return
 		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
 			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
@@ -1055,6 +1058,10 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 }
 
 func (application *App) writeSyncError(response http.ResponseWriter, err error) {
+	if errors.Is(err, context.DeadlineExceeded) {
+		application.publicError(response, http.StatusGatewayTimeout, "request timed out")
+		return
+	}
 	status := http.StatusInternalServerError
 	message := "data synchronization failed"
 	if errors.Is(err, errSyncAlreadyRunning) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useId, useRef, type KeyboardEvent, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, useId, useRef, type KeyboardEvent, type CSSProperties, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import type { Competition, Fixture, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
@@ -13,13 +13,31 @@ const tabs = ["Live Match", "Overview", "Markets", "Score matrix", "H2H context"
 type Tab = (typeof tabs)[number];
 
 export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; competition: Competition }) {
-  const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
-  const tabsId = useId();
-  const tabButtons = useRef<(HTMLButtonElement | null)[]>([]);
-  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const target = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
-    if (target === null) return; event.preventDefault(); setTab(tabs[target]); tabButtons.current[target]?.focus();
-  };
+  const resources = useMatchAnalysisResources(fixture);
+
+  return <div className="expanded-panel">
+    <div className="match-identity">
+      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.stale ? "stale" : "fresh"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
+      <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
+    </div>
+    {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">
+      <div className="outcome-cards"><Metric label={`${fixture.home.name} win`} value={percent(fixture.forecast.probabilities.home)} tone="home" /><Metric label="Draw" value={percent(fixture.forecast.probabilities.draw)} /><Metric label={`${fixture.away.name} win`} value={percent(fixture.forecast.probabilities.away)} tone="away" /></div>
+      <ProbabilityBar values={fixture.forecast.probabilities} />
+      <div className="expected-goals"><span><small>{fixture.home.name} expected goals</small><b>{fixture.forecast.expected_home_goals.toFixed(2)}</b></span><span><small>{fixture.away.name} expected goals</small><b>{fixture.forecast.expected_away_goals.toFixed(2)}</b></span></div>
+    </section>}
+    <MatchAnalysisTabs fixture={fixture} resources={resources} />
+    <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
+  </div>;
+}
+
+type Resource<T> = { data: T | null; loading: boolean; error: string | null; retry: () => void };
+type AnalysisResources = {
+  context: Resource<MatchContext>;
+  forecast: Resource<Forecast>;
+  live: Resource<LiveMatch>;
+};
+
+function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const forecastLoad = useCallback((signal: AbortSignal) => fixture.forecast ? api.forecast(fixture.id, fixture.forecast.id, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, fixture.forecast]);
@@ -36,18 +54,20 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
     document.addEventListener("visibilitychange", visible);
     return () => { window.clearTimeout(timer); document.removeEventListener("visibilitychange", visible); };
   }, [fixture.status, retryLive]);
-  const resources = { context, forecast, live };
+  return { context, forecast, live };
 
-  return <div className="expanded-panel">
-    <div className="match-identity">
-      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.stale ? "stale" : "fresh"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
-      <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
-    </div>
-    {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">
-      <div className="outcome-cards"><Metric label={`${fixture.home.name} win`} value={percent(fixture.forecast.probabilities.home)} tone="home" /><Metric label="Draw" value={percent(fixture.forecast.probabilities.draw)} /><Metric label={`${fixture.away.name} win`} value={percent(fixture.forecast.probabilities.away)} tone="away" /></div>
-      <ProbabilityBar values={fixture.forecast.probabilities} />
-      <div className="expected-goals"><span><small>{fixture.home.name} expected goals</small><b>{fixture.forecast.expected_home_goals.toFixed(2)}</b></span><span><small>{fixture.away.name} expected goals</small><b>{fixture.forecast.expected_away_goals.toFixed(2)}</b></span></div>
-    </section>}
+}
+
+function MatchAnalysisTabs({ fixture, resources }: { fixture: Fixture; resources: AnalysisResources }) {
+  const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
+  const tabsId = useId();
+  const tabButtons = useRef<(HTMLButtonElement | null)[]>([]);
+  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const target = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (target === null) return; event.preventDefault(); setTab(tabs[target]); tabButtons.current[target]?.focus();
+  };
+  const { context, forecast, live } = resources;
+  return <>
     <div className="tab-list" role="tablist" aria-label="Match analysis">
       {tabs.map((name, index) => <button key={name} ref={(node) => { tabButtons.current[index] = node; }} id={`${tabsId}-tab-${index}`} role="tab" tabIndex={tab === name ? 0 : -1} aria-selected={tab === name} aria-controls={`${tabsId}-panel-${index}`} onKeyDown={(event) => navigateTabs(event, index)} onClick={() => setTab(name)}>{name}</button>)}
     </div>
@@ -58,29 +78,22 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
       <AnalysisStatus tab={tab} hasForecast={fixture.forecast !== null} context={context} forecast={forecast} />
       </>}
     </div>)}
-    <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
-  </div>;
+  </>;
 }
 
-type Resource<T> = { data: T | null; loading: boolean; error: string | null; retry: () => void };
-type AnalysisResources = {
-  context: Resource<MatchContext>;
-  forecast: Resource<Forecast>;
-  live: Resource<LiveMatch>;
-};
-
 function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; resources: AnalysisResources }) {
-  switch (tab) {
-    case "Live Match": return <LiveMatchPanel fixture={fixture} live={resources.live.data} />;
-    case "Overview": return <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />;
-    case "Markets": return <Markets forecast={resources.forecast.data} />;
-    case "Score matrix": return <ScoreMatrix forecast={resources.forecast.data} />;
-    case "H2H context": return <H2H fixture={fixture} context={resources.context.data} />;
-    case "Team statistics": return <TeamStatistics fixture={fixture} context={resources.context.data} />;
-    case "Simulation evidence": return <UnavailablePanel title="Simulation validation unavailable" detail="The public MVP forecast API does not expose a linked simulation-validation artifact. No validation result is inferred from forecast availability." />;
-    case "Diagnostics": return <UnavailablePanel title="Research diagnostics restricted" detail="Diagnostics remain research-only and are not exposed by the public MVP API." />;
-    case "Forecast history": return <ForecastHistory key={fixture.id} fixtureId={fixture.id} currentId={fixture.forecast?.id ?? null} />;
-  }
+  const content: Record<Tab, ReactNode> = {
+    "Live Match": <LiveMatchPanel fixture={fixture} live={resources.live.data} />,
+    "Overview": <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />,
+    "Markets": <Markets forecast={resources.forecast.data} />,
+    "Score matrix": <ScoreMatrix forecast={resources.forecast.data} />,
+    "H2H context": <H2H fixture={fixture} context={resources.context.data} />,
+    "Team statistics": <TeamStatistics fixture={fixture} context={resources.context.data} />,
+    "Simulation evidence": <UnavailablePanel title="Simulation validation unavailable" detail="The public MVP forecast API does not expose a linked simulation-validation artifact. No validation result is inferred from forecast availability." />,
+    "Diagnostics": <UnavailablePanel title="Research diagnostics restricted" detail="Diagnostics remain research-only and are not exposed by the public MVP API." />,
+    "Forecast history": <ForecastHistory key={fixture.id} fixtureId={fixture.id} currentId={fixture.forecast?.id ?? null} />,
+  };
+  return content[tab];
 }
 
 function AnalysisStatus({ tab, hasForecast, context, forecast }: { tab: Tab; hasForecast: boolean; context: Resource<MatchContext>; forecast: Resource<Forecast> }) {

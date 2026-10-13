@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { parseSyncRun, parseSyncRuns } from "@/lib/contracts";
 import { mergeSyncRuns, useSyncAdminState } from "@/hooks/use-sync-admin";
 
@@ -62,5 +62,39 @@ describe("admin polling", () => {
     await act(async () => { posted.resolve({ ...active, run_id: "fotmob", sync_type: "FOTMOB_SYNC" }); await mutation; });
     expect(state.result.current.active).toHaveLength(2);
     state.unmount();
+  });
+  it("keeps lane failures separate and reloads authoritative status after a conflict", async () => {
+    const status = vi.spyOn(api, "syncRuns").mockResolvedValue({ ...response, runs: [] });
+    const state = renderHook(() => useSyncAdminState("2026-10-13"));
+    await act(async () => { await Promise.resolve(); });
+    const fail = vi.fn(async () => { throw new ApiError("provider unavailable", 503); });
+    await act(async () => { await state.result.current.start("FOTMOB_SYNC", fail); });
+    expect(state.result.current.laneErrors.LIVE_FOTMOB).toContain("provider unavailable");
+    expect(state.result.current.laneErrors.LIVE_PITCHAPI).toBeUndefined();
+    expect(state.result.current.laneBusy("FOTMOB_SYNC")).toBe(false);
+    const conflict = vi.fn(async () => { throw new ApiError("lane is occupied", 409); });
+    const before = status.mock.calls.length;
+    status.mockResolvedValue(response);
+    await act(async () => { await state.result.current.start("MVP_SYNC", conflict); });
+    expect(status).toHaveBeenCalledTimes(before + 1);
+    expect(state.result.current.active).toEqual([active]);
+    expect(state.result.current.laneErrors.BULK).toBe("lane is occupied");
+    expect(state.result.current.laneErrors.LIVE_FOTMOB).toContain("provider unavailable");
+    state.unmount();
+  });
+  it("clears a lane error on retry and ignores a mutation finishing after unmount", async () => {
+    const status = vi.spyOn(api, "syncRuns").mockResolvedValue({ ...response, runs: [] });
+    const state = renderHook(() => useSyncAdminState("2026-10-13"));
+    await act(async () => { await Promise.resolve(); });
+    await act(async () => { await state.result.current.start("FOTMOB_SYNC", async () => { throw new Error("offline"); }); });
+    expect(state.result.current.laneErrors.LIVE_FOTMOB).toContain("offline");
+    const posted = deferred<typeof active>();
+    let mutation!: Promise<void>;
+    act(() => { mutation = state.result.current.start("FOTMOB_SYNC", () => posted.promise); });
+    expect(state.result.current.laneErrors.LIVE_FOTMOB).toBeUndefined();
+    const before = status.mock.calls.length;
+    state.unmount();
+    await act(async () => { posted.resolve({ ...active, sync_type: "FOTMOB_SYNC" }); await mutation; });
+    expect(status).toHaveBeenCalledTimes(before);
   });
 });

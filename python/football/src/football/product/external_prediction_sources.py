@@ -6,11 +6,12 @@ import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from datetime import date
+from email.message import Message
 from html.parser import HTMLParser
-from urllib.request import Request, urlopen
 
 from football.product.domain import map_external_market
 from football.product.external_predictions import ImportedPrediction
+from football.providers.base import UrllibHttpTransport
 
 FetchPage = Callable[[str], str]
 Parser = Callable[[str, date, str], tuple[ImportedPrediction, ...]]
@@ -358,11 +359,13 @@ def _matchoutlook_section(source_page: str) -> tuple[str, str]:
 
 
 def fetch_page(url: str) -> str:
-    request = Request(url, headers={"User-Agent": "MatchForge/1.0 (private-local-analysis)"})
-    with urlopen(request, timeout=30) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        payload: bytes = response.read()
-        return payload.decode(charset, errors="replace")
+    response = UrllibHttpTransport(
+        user_agent="MatchForge/1.0 (private-local-analysis)"
+    ).get_response(url, timeout_seconds=30, max_bytes=8 * 1024 * 1024)
+    content_type = Message()
+    content_type["Content-Type"] = response.headers.get("content-type", response.content_type)
+    charset = content_type.get_content_charset() or "utf-8"
+    return response.payload.decode(charset, errors="replace")
 
 
 def collect_sources(

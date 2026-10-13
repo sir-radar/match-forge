@@ -81,7 +81,9 @@ def test_default_transport_enforces_resource_size_limit(monkeypatch: pytest.Monk
             assert size == 5
             return b"12345"
 
-    monkeypatch.setattr("football.providers.base.urlopen", lambda *_args, **_kwargs: Response())
+    monkeypatch.setattr(
+        "football.providers.base.open_bounded", lambda *_args, **_kwargs: Response()
+    )
 
     with pytest.raises(ProviderFetchError, match="exceeds 4 bytes"):
         UrllibHttpTransport().get("https://example.test/data.json", timeout_seconds=1, max_bytes=4)
@@ -91,7 +93,7 @@ def test_default_transport_wraps_network_failures(monkeypatch: pytest.MonkeyPatc
     def unavailable(*_args: object, **_kwargs: object) -> None:
         raise URLError("offline")
 
-    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.open_bounded", unavailable)
     monkeypatch.setattr("football.providers.base.sleep", lambda _delay: None)
 
     with pytest.raises(ProviderFetchError, match="provider fetch failed"):
@@ -111,7 +113,7 @@ def test_default_transport_retries_a_transient_network_failure_then_succeeds(
             raise URLError("connection reset")
         return response
 
-    monkeypatch.setattr("football.providers.base.urlopen", fetch)
+    monkeypatch.setattr("football.providers.base.open_bounded", fetch)
     monkeypatch.setattr("football.providers.base.sleep", delays.append)
 
     payload = UrllibHttpTransport().get(
@@ -133,7 +135,7 @@ def test_default_transport_fails_closed_after_bounded_transient_retries(
         attempts.append(str(request.full_url))  # type: ignore[attr-defined]
         raise URLError("offline")
 
-    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.open_bounded", unavailable)
     monkeypatch.setattr("football.providers.base.sleep", delays.append)
 
     with pytest.raises(
@@ -157,7 +159,7 @@ def test_default_transport_does_not_retry_a_permanent_http_failure(
         attempts += 1
         raise HTTPError("https://example.test/missing.json", 404, "missing", Message(), None)
 
-    monkeypatch.setattr("football.providers.base.urlopen", unavailable)
+    monkeypatch.setattr("football.providers.base.open_bounded", unavailable)
     monkeypatch.setattr("football.providers.base.sleep", delays.append)
 
     with pytest.raises(ProviderFetchError, match="http_status=404"):
@@ -182,7 +184,7 @@ def test_default_transport_retries_a_transient_http_status_then_succeeds(
             raise HTTPError("https://example.test/data.json", 503, "unavailable", Message(), None)
         return _response(b"[]")
 
-    monkeypatch.setattr("football.providers.base.urlopen", fetch)
+    monkeypatch.setattr("football.providers.base.open_bounded", fetch)
     monkeypatch.setattr("football.providers.base.sleep", delays.append)
 
     assert (
@@ -222,7 +224,9 @@ class _Response:
         return None
 
     def read(self, _size: int) -> bytes:
-        return self._payload
+        result = self._payload[:_size]
+        self._payload = self._payload[_size:]
+        return result
 
 
 def _response(payload: bytes) -> _Response:

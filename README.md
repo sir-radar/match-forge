@@ -29,11 +29,12 @@ See [CLI usage](docs/cli.md) for data-pipeline commands and configuration.
 ## MVP product
 
 Copy `.env.example` to `.env`, set the required PostgreSQL, Redis, and `DATABASE_URL`
-values, then set `API_FOOTBALL_API_KEY`. Start the database, migrations, Go API, and Next.js
-frontend with:
+values and the credentials for the providers you enable. Bootstrap tools, apply
+the serving schema, then start the Go API and Next.js frontend:
 
 ```bash
 make bootstrap
+make migrate
 make dev
 ```
 
@@ -54,7 +55,9 @@ requested date and previous date so completed scores settle on the next schedule
 `FROM_DATE` for an inclusive fixture and score backfill through `DATE`; adjust the timer's `/opt/matchforge`
 user/path settings during installation. No unnecessary realtime scheduler is bundled.
 
-The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. To run it separately after `make up`:
+The Go service also exposes `GET /healthz`, `GET /readyz`, and `GET /version`. Readiness checks the serving PostgreSQL pool, schema through migration
+`202610130600`, and Redis PING; liveness remains independent. Run it separately
+after `make migrate`:
 
 ```bash
 . ./scripts/toolchain.sh

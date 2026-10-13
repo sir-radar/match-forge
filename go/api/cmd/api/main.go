@@ -32,7 +32,7 @@ func main() {
 	application := app.NewWithSyncRunner(
 		config,
 		logger,
-		app.NewTCPReadiness(config),
+		app.NewDependencyReadiness(config, pool),
 		app.NewPostgresProductStore(pool),
 		app.NewCommandSyncRunner(ctx, pool, config.RepoRoot, logger),
 	)

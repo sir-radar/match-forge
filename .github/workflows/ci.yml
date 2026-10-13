@@ -215,6 +215,38 @@ jobs:
       - name: Install locked frontend dependencies
         run: cd web && pnpm install --frozen-lockfile
 
+      - name: Record locked dependency advisory inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .local/dependency-audit
+          set +e
+          (cd web && pnpm audit --json) > .local/dependency-audit/frontend.json
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > .local/dependency-audit/exit-code.txt
+          if [[ "$audit_exit" -gt 1 ]]; then
+            exit "$audit_exit"
+          fi
+          node <<'JS'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('.local/dependency-audit/frontend.json', 'utf8'));
+          if (!report.metadata?.vulnerabilities) throw new Error('Dependency audit did not return an inventory');
+          const advisories = Object.values(report.advisories ?? {});
+          for (const advisory of advisories) {
+            console.log(`::warning title=Dependency advisory::${advisory.github_advisory_id}: ${advisory.module_name} (${advisory.severity}); see retained audit artifact and reviewed operational disposition.`);
+          }
+          console.log(JSON.stringify(report.metadata.vulnerabilities));
+          JS
+
+      - name: Retain dependency advisory inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dependency-audit
+          path: .local/dependency-audit
+          retention-days: 7
+
       - name: Install Playwright browsers
         run: cd web && pnpm exec playwright install --with-deps chromium webkit
 

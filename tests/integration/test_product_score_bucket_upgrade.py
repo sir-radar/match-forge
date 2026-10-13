@@ -27,7 +27,7 @@ def test_score_bucket_upgrade_preserves_legacy_forecast_and_is_idempotent() -> N
                     "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
                     (forecast_id,),
                 ).fetchone()
-            _migrate(upgrade_url, "up")
+            _migrate(upgrade_url, "up-to", "202610130300")
             with psycopg.connect(upgrade_url) as connection:
                 assert (
                     connection.execute(
@@ -51,7 +51,7 @@ def test_score_bucket_upgrade_preserves_legacy_forecast_and_is_idempotent() -> N
                     pending is not None
                     and pending[0]["generation"] > pending[0]["completed_generation"]
                 )
-            _migrate(upgrade_url, "up")
+            _migrate(upgrade_url, "up-to", "202610130300")
             with psycopg.connect(upgrade_url) as connection:
                 assert (
                     connection.execute(

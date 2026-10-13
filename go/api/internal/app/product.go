@@ -697,6 +697,10 @@ func (application *App) respondProduct(response http.ResponseWriter, value any, 
 		application.writeJSON(response, http.StatusOK, value)
 		return
 	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		application.publicError(response, http.StatusGatewayTimeout, "request timed out")
+		return
+	}
 	if errors.Is(err, errProductUnavailable) {
 		application.publicError(response, http.StatusServiceUnavailable, "product data unavailable")
 		return

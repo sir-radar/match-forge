@@ -121,3 +121,30 @@ Football-Data.co.uk discovered 37 resources containing 713 CSV files and 34 ZIP 
 The sources share 5,487 canonical matches. Scores agree for 5,481; six disagreements are preserved as source-result conflicts. Both providers completed with zero mapping failures.
 
 A repeat Football-Data.co.uk run reused all 37 resources, parsed zero CSV files, and inserted zero rows. Closed seasons are skipped before remote artifact download. Current or unknown seasons remain eligible for hash comparison and refresh.
+
+## Download and ZIP bounds
+
+Authenticated legacy API downloads and public pages reuse the existing transport
+utilities with bounded body reads and existing 30s/60s socket timeouts. Redirect
+bodies are closed without reading, standard redirect validation/loop limits remain,
+and credentials are removed across origins. Error bodies are closed. Body elapsed
+checks run between chunks; a pending read retains its socket timeout, so the body
+limit may include one final socket-wait interval. Original acquisition timestamps
+are preserved; new registrations timestamp completed acquisition.
+
+All 38 retained supported ZIP samples were content-hash and CRC verified before
+choosing limits. Maxima were 1,111,382 compressed bytes, 3,957,667 extracted bytes,
+22 entries, 294,390 bytes per file and 10.43x individual expansion. Configurable
+ceilings are `MATCHFORGE_ARCHIVE_COMPRESSED_BYTES=2097152`,
+`MATCHFORGE_ARCHIVE_EXTRACTED_BYTES=16777216`, `MATCHFORGE_ARCHIVE_ENTRIES=128`,
+`MATCHFORGE_ARCHIVE_FILE_BYTES=1048576`, `MATCHFORGE_ARCHIVE_RATIO=32` and
+`MATCHFORGE_ARCHIVE_EXTRACTION_SECONDS=5`. All retained samples remain compatible.
+
+Validate names, duplicate paths, links/types, encryption, compression and declared
+sizes before decoding. Only stored/deflated ZIP members are supported. CSV members
+are decoded into bounded in-memory buffers before ingestion; no archive pathname
+is extracted to disk, and ingestion/database time is not charged as extraction
+work. Memory is bounded by compressed bytes, metadata and at most 16MiB of decoded
+buffers, rather than a claimed process-wide RSS cap. Invalid or excessive archives
+fail explicitly. New unusually large supported resources require measurement and
+review before increasing limits; limits never increase automatically.

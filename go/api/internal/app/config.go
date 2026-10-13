@@ -27,6 +27,10 @@ type Config struct {
 	RepoRoot                string
 	DependencyTimeout       time.Duration
 	ReadHeaderTimeout       time.Duration
+	ReadTimeout             time.Duration
+	HandlerTimeout          time.Duration
+	WriteTimeout            time.Duration
+	IdleTimeout             time.Duration
 	ShutdownTimeout         time.Duration
 	OperationalSyncInterval time.Duration
 	HistorySyncEnabled      bool
@@ -83,6 +87,16 @@ func ConfigFromEnv(version string) (Config, error) {
 		FotMobEnabled:           fotMobEnabled,
 		PitchAPIEnabled:         pitchAPIEnabled,
 	}
+	if err := validateRuntimeConfig(&config); err != nil {
+		return Config{}, err
+	}
+	return config, nil
+}
+
+func validateRuntimeConfig(config *Config) error {
+	if err := loadServingDurations(config); err != nil {
+		return err
+	}
 	addresses := []struct {
 		name  string
 		value string
@@ -93,10 +107,10 @@ func ConfigFromEnv(version string) (Config, error) {
 	}
 	for _, address := range addresses {
 		if _, _, err := net.SplitHostPort(address.value); err != nil {
-			return Config{}, fmt.Errorf("%s must be host:port: %w", address.name, err)
+			return fmt.Errorf("%s must be host:port: %w", address.name, err)
 		}
 	}
-	return config, nil
+	return nil
 }
 
 func historySyncIntervalFromEnv() (time.Duration, error) {
@@ -204,4 +218,28 @@ func durationFromEnv(name string, fallback time.Duration) (time.Duration, error)
 		return 0, fmt.Errorf("%s must be a positive duration", name)
 	}
 	return duration, nil
+}
+
+func loadServingDurations(config *Config) error {
+	settings := []struct {
+		name     string
+		target   *time.Duration
+		fallback time.Duration
+	}{
+		{"READ_TIMEOUT", &config.ReadTimeout, defaultReadTimeout},
+		{"HANDLER_TIMEOUT", &config.HandlerTimeout, defaultHandlerTimeout},
+		{"WRITE_TIMEOUT", &config.WriteTimeout, defaultWriteTimeout},
+		{"IDLE_TIMEOUT", &config.IdleTimeout, defaultIdleTimeout},
+	}
+	for _, setting := range settings {
+		value, err := durationFromEnv(setting.name, setting.fallback)
+		if err != nil {
+			return err
+		}
+		*setting.target = value
+	}
+	if config.WriteTimeout <= config.HandlerTimeout {
+		return fmt.Errorf("WRITE_TIMEOUT must exceed HANDLER_TIMEOUT")
+	}
+	return nil
 }

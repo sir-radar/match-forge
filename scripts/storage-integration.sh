@@ -59,6 +59,13 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_product_identity_admission.py \
 	tests/integration/test_product_identity_upgrade.py \
 	tests/integration/test_history_acquisition.py \
-	tests/integration/test_history_diagnostics_api.py
+	tests/integration/test_history_diagnostics_api.py \
+    tests/integration/test_api_football_budget.py \
+    tests/integration/test_operational_recovery.py \
+    tests/integration/test_operational_refresh.py \
+    tests/integration/test_product_forecast_worklist.py \
+    tests/integration/test_product_score_bucket_upgrade.py \
+    tests/integration/test_product_analytics.py \
+    tests/integration/test_serving_limits.py
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'

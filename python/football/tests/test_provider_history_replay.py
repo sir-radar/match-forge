@@ -67,7 +67,8 @@ def test_live_date_sync_does_not_replay_bulk_history(
     replay = MagicMock(side_effect=AssertionError("live polling must not replay bulk history"))
     monkeypatch.setattr(sync, "reconcile_stored_observations", replay)
     monkeypatch.setattr(sync, "_record_response", MagicMock(return_value=uuid4()))
-    monkeypatch.setattr(sync, "_sync_diagnostics", lambda _started: {})
+    diagnostics = MagicMock(return_value={})
+    monkeypatch.setattr(sync, "_sync_diagnostics", diagnostics)
     monkeypatch.setattr(
         "football.product.operational_provider_sync.settle_external_predictions",
         lambda _connection, _now: 0,
@@ -88,4 +89,5 @@ def test_live_date_sync_does_not_replay_bulk_history(
     )
     assert result["status"] == "COMPLETED"
     assert result["stored_observations_reconciled"] == 0
+    assert diagnostics.call_args.args[1] == date(2026, 10, 12)
     replay.assert_not_called()

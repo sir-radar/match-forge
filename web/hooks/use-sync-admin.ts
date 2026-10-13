@@ -18,19 +18,15 @@ export function mergeSyncRuns(current: SyncRun[], incoming: SyncRun[]): SyncRun[
   return [...current.filter((run) => !received.has(run.run_id) && runActive(run)), ...merged];
 }
 
-export function useSyncAdminState(initialDate: string) {
-  const [filters, setFilters] = useState<SyncFilters>({ date: initialDate, from_date: "", season: "", competition: "", country: "" });
+function useSyncStatus() {
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [coverage, setCoverage] = useState<HistoricalCoverage | null>(null);
   const [providerConfiguration, setProviderConfiguration] = useState<ProviderConfiguration>({ fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" });
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<Record<string, string | undefined>>({});
-  const [laneErrors, setLaneErrors] = useState<Record<string, string | undefined>>({});
   const [error, setError] = useState<string | null>(null);
   const [clock, setClock] = useState(0);
   const mounted = useRef(false);
   const latestRuns = useRef<SyncRun[]>([]);
-  const pending = useRef(new Map<string, string>());
   const request = useRef<{ generation: number; controller: AbortController | null }>({ generation: 0, controller: null });
   const invalidate = useCallback(() => { request.current.generation++; request.current.controller?.abort(); }, []);
   const currentRequest = useCallback((generation: number, signal: AbortSignal) => mounted.current && !signal.aborted && generation === request.current.generation, []);
@@ -74,6 +70,15 @@ export function useSyncAdminState(initialDate: string) {
     return () => { stopped = true; window.clearTimeout(timer); window.clearInterval(clockTimer); invalidate(); };
   }, [hasActive, invalidate, reload]);
 
+  return { active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock };
+}
+
+export function useSyncAdminState(initialDate: string) {
+  const { active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock } = useSyncStatus();
+  const [filters, setFilters] = useState<SyncFilters>({ date: initialDate, from_date: "", season: "", competition: "", country: "" });
+  const [submitting, setSubmitting] = useState<Record<string, string | undefined>>({});
+  const [laneErrors, setLaneErrors] = useState<Record<string, string | undefined>>({});
+  const pending = useRef(new Map<string, string>());
   const laneBusy = (type: SyncType) => active.some((run) => syncLane(run.sync_type) === syncLane(type)) || submitting[syncLane(type)] !== undefined;
   const mutate = async (type: SyncType, action: string, operation: () => Promise<SyncRun>, allowActive = false) => {
     const lane = syncLane(type);
