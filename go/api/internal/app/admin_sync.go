@@ -61,6 +61,7 @@ type SyncRequest struct {
 	Country          string   `json:"country,omitempty"`
 	RetryOf          string   `json:"-"`
 	ScheduledHistory bool     `json:"-"`
+	PendingOnly      bool     `json:"-"`
 }
 
 type SyncRun struct {
@@ -100,6 +101,8 @@ type Coverage struct {
 	ScheduledFixtures       int                       `json:"scheduled_fixtures"`
 	ForecastAvailable       int                       `json:"forecast_available"`
 	NotEnoughHistory        int                       `json:"not_enough_history"`
+	ForecastRefreshPending  int                       `json:"forecast_refresh_pending"`
+	ForecastRefreshComplete int                       `json:"forecast_refresh_complete"`
 	MappingFailures         int                       `json:"mapping_failures"`
 	SourceConflicts         int                       `json:"source_conflicts"`
 	MissingLiveScores       int                       `json:"missing_live_scores"`
@@ -144,6 +147,10 @@ type SyncRunner interface {
 
 type syncRunnerShutdown interface {
 	Shutdown(context.Context)
+}
+
+type pendingForecastRefreshRunner interface {
+	PendingForecastRefresh(context.Context) (bool, error)
 }
 
 type unavailableSyncRunner struct{}
@@ -236,6 +243,15 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	return run, nil
 }
 
+func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bool, error) {
+	var pending bool
+	err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
+		SELECT 1 FROM football.product_forecast_refresh_work
+		WHERE generation > completed_generation
+	)`).Scan(&pending)
+	return pending, err
+}
+
 func (runner *CommandSyncRunner) enqueue(
 	ctx context.Context,
 	request SyncRequest,
@@ -291,6 +307,9 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 	parameters := map[string]interface{}{}
 	if request.ScheduledHistory {
 		parameters["scheduled_history"] = true
+	}
+	if request.PendingOnly {
+		parameters["pending_only"] = true
 	}
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
@@ -584,6 +603,7 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
 	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
+	request.PendingOnly, _ = run.Parameters["pending_only"].(bool)
 	return request
 }
 
@@ -707,6 +727,10 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 			 WHERE status = 'SCHEDULED' AND forecast_availability = 'FORECAST_AVAILABLE'),
 			(SELECT count(*) FROM football.product_fixtures
 			 WHERE status = 'SCHEDULED' AND forecast_availability = 'NOT_ENOUGH_HISTORY'),
+			(SELECT count(*) FROM football.product_forecast_refresh_work
+			 WHERE generation > completed_generation),
+			(SELECT count(*) FROM football.product_forecast_refresh_work
+			 WHERE generation = completed_generation),
 			(SELECT COALESCE(sum((latest.summary->>'mapping_failures')::integer), 0)
 			 FROM (
 				 SELECT DISTINCT ON (sync_type) summary
@@ -749,6 +773,8 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 		&coverage.ScheduledFixtures,
 		&coverage.ForecastAvailable,
 		&coverage.NotEnoughHistory,
+		&coverage.ForecastRefreshPending,
+		&coverage.ForecastRefreshComplete,
 		&coverage.MappingFailures,
 		&coverage.SourceConflicts,
 		&coverage.MissingLiveScores,
@@ -903,6 +929,9 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	args = appendSyncSelectorArgs(args, request)
 	if request.Type == SyncHistoryBackfill && request.ScheduledHistory {
 		args = append(args, "--scheduled")
+	}
+	if request.Type == SyncForecastRefresh && request.PendingOnly {
+		args = append(args, "--pending-only")
 	}
 	return args, nil
 }

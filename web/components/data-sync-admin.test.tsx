@@ -8,6 +8,7 @@ const coverage = {
   historical_matches: 124806, competitions_with_history: 84, teams_with_10_matches: 934,
   teams_below_10_matches: 19, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 2, source_conflicts: 1,
+  forecast_refresh_pending: 3, forecast_refresh_complete: 19,
   missing_live_scores: 3, fotmob_mapped: 100, fotmob_unmapped: 4,
   pitchapi_mapped: 80, pitchapi_unmapped: 8, fotmob_history: 60,
   pitchapi_history: 40, api_football_requests_used: 100,
@@ -32,6 +33,8 @@ describe("DataSyncAdmin", () => {
     expect(await screen.findByText("323 / 0 / 2")).toBeInTheDocument();
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
     expect(screen.getByText("5 / 3")).toBeInTheDocument();
+    expect(screen.getByText("Forecast refresh pending")).toBeInTheDocument();
+    expect(screen.getByText("Forecast refresh complete")).toBeInTheDocument();
     expect(screen.getByText("Unknown")).toBeInTheDocument();
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
   });

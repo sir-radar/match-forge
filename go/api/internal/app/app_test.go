@@ -16,6 +16,15 @@ type scheduleRunner struct {
 	requests chan SyncRequest
 }
 
+type forecastScheduleRunner struct {
+	scheduleRunner
+	pending bool
+}
+
+func (runner forecastScheduleRunner) PendingForecastRefresh(context.Context) (bool, error) {
+	return runner.pending, nil
+}
+
 func (runner scheduleRunner) Start(_ context.Context, request SyncRequest) (SyncRun, error) {
 	runner.requests <- request
 	return SyncRun{}, nil
@@ -104,6 +113,34 @@ func TestHistoryScheduleRequiresEnablementAndSubmitsBoundedDurableWork(t *testin
 		}
 	case <-time.After(time.Second):
 		t.Fatal("enabled history acquisition did not progress without browser traffic")
+	}
+}
+
+func TestPendingForecastScheduleUsesDurableBoundedJob(t *testing.T) {
+	requests := make(chan SyncRequest, 1)
+	application := NewWithSyncRunner(
+		Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)),
+		readinessStub{}, unavailableProductStore{},
+		forecastScheduleRunner{scheduleRunner: scheduleRunner{requests: requests}, pending: true},
+	)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go application.runForecastRefreshSchedule(ctx)
+	select {
+	case request := <-requests:
+		if request.Type != SyncForecastRefresh || !request.PendingOnly {
+			t.Fatalf("scheduled forecast request = %+v", request)
+		}
+		args, err := syncCommandArgs(request)
+		if err != nil || !strings.Contains(strings.Join(args, " "), "--pending-only") {
+			t.Fatalf("scheduled command = %v, error = %v", args, err)
+		}
+		retry := syncRequestFromRun(SyncRun{Type: request.Type, Parameters: syncParameters(request)})
+		if !retry.PendingOnly {
+			t.Fatal("durable retry lost pending-only scope")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("pending forecast work did not progress without browser traffic")
 	}
 }
 

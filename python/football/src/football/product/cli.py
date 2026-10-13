@@ -84,7 +84,8 @@ def build_parser() -> argparse.ArgumentParser:
             type=Path,
             default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
         )
-    commands.add_parser("refresh-forecasts")
+    refresh = commands.add_parser("refresh-forecasts")
+    refresh.add_argument("--pending-only", action="store_true")
     commands.add_parser("history-coverage")
     for name in ("fotmob-sync", "pitchapi-sync"):
         provider_sync = commands.add_parser(name)
@@ -280,14 +281,16 @@ def _run_data_operation(args: argparse.Namespace) -> int:
     try:
         with psycopg.connect(args.database_url) as connection:
             if args.command == "refresh-forecasts":
-                result: dict[str, object] = {
-                    "forecasts_created": ProductSync(
-                        connection,
-                        ApiFootballClient("stored-data-only"),
-                        Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
-                        MODEL_ARTIFACT_PATH,
-                    ).refresh_forecasts()
-                }
+                product = ProductSync(
+                    connection,
+                    ApiFootballClient("stored-data-only"),
+                    Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+                    MODEL_ARTIFACT_PATH,
+                )
+                if args.pending_only:
+                    result: dict[str, object] = product.refresh_pending_forecasts()
+                else:
+                    result = {"forecasts_created": product.refresh_forecasts()}
                 connection.commit()
             elif args.command == "backfill-openfootball":
                 result = _openfootball(connection, args)
@@ -546,6 +549,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
             args.date,
             fixture_from_date=args.from_date,
             history_concurrency=args.history_concurrency,
+            refresh=False,
         )
 
     mvp = _run_sync_step(connection, "mvp", mvp_sync, errors)
@@ -581,21 +585,6 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
     )
     if mvp is not None and fixtures_from_history is not None:
         mvp["fixtures_from_history"] += fixtures_from_history
-    forecasts = _run_sync_step(
-        connection,
-        "forecasts",
-        lambda: _refresh(connection, args.data_root),
-        errors,
-    )
-    external_args = argparse.Namespace(
-        database_url=args.database_url,
-        date=args.date,
-        source=None,
-        import_file=None,
-    )
-    external_status = _run_external_predictions(external_args)
-    if external_status != 0:
-        errors["external_predictions"] = f"exited with status {external_status}"
     operational: dict[str, object | None] = {}
     if os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true":
         operational["pitchapi"] = _run_sync_step(
@@ -623,6 +612,21 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
             ),
             errors,
         )
+    forecasts = _run_sync_step(
+        connection,
+        "forecasts",
+        lambda: _refresh(connection, args.data_root),
+        errors,
+    )
+    external_args = argparse.Namespace(
+        database_url=args.database_url,
+        date=args.date,
+        source=None,
+        import_file=None,
+    )
+    external_status = _run_external_predictions(external_args)
+    if external_status != 0:
+        errors["external_predictions"] = f"exited with status {external_status}"
     return {
         "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
         "errors": errors,

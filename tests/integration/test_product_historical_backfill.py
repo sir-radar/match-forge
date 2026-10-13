@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from collections.abc import Iterator
@@ -14,7 +15,7 @@ from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.domain import MODEL_ARTIFACT_PATH, stable_id
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
-from football.product.sync import ProductSync
+from football.product.sync import PRODUCT_FORECAST_ALGORITHM_VERSION, ProductSync
 from psycopg import Connection
 
 from tests.integration.historical_source_fixture import test_snapshot as _test_snapshot
@@ -307,7 +308,8 @@ def test_backfill_history_unlocks_missing_forecast(
             }
         ).encode(),
     )
-    for index in range(10):
+
+    def import_pair(index: int) -> None:
         kickoff = datetime(2026, 8, 1, 12, tzinfo=UTC) + timedelta(days=index)
         for side in ("home", "away"):
             home_name = "Forecast Home FC" if side == "home" else f"Home Opponent {index}"
@@ -334,6 +336,9 @@ def test_backfill_history_unlocks_missing_forecast(
                 observed_at,
             )
             assert result == "inserted"
+
+    for index in range(9):
+        import_pair(index)
     assert (
         store.import_match(
             HistoricalMatch(
@@ -417,11 +422,76 @@ def test_backfill_history_unlocks_missing_forecast(
         tmp_path,
         PROJECT_ROOT / MODEL_ARTIFACT_PATH,
     )
+    before_tenth = product.refresh_pending_forecasts()
+    assert before_tenth["forecasts_created"] == 0
+    assert connection.execute(
+        "SELECT forecast_availability FROM football.product_fixtures WHERE fixture_id = %s",
+        (fixture_id,),
+    ).fetchone() == ("NOT_ENOUGH_HISTORY",)
+    import_pair(9)
+    admit_provider_mappings(connection, tmp_path, "openfootball")
+    forecast_knowledge_cutoff = _first(connection.execute("SELECT clock_timestamp()").fetchone())
     relevant_history = product._history_before(
-        future_kickoff, home_id, away_id, knowledge_cutoff=datetime.now(UTC)
+        future_kickoff, home_id, away_id, knowledge_cutoff=forecast_knowledge_cutoff
     )
-    forecast_knowledge_cutoff = datetime.now(UTC)
-    created = product.refresh_forecasts(forecast_knowledge_cutoff)
+    batched_history = product._batch_history(
+        [(fixture_id, home_id, away_id, future_kickoff)], forecast_knowledge_cutoff
+    )
+    assert (
+        product._target_history(batched_history, home_id, away_id, future_kickoff)
+        == relevant_history
+    )
+    legacy_id = stable_id("forecast-unlock-legacy", fixture_id)
+    legacy_time = forecast_knowledge_cutoff - timedelta(minutes=1)
+    connection.execute(
+        """INSERT INTO football.product_forecasts (
+               forecast_id, semantic_sha256, fixture_id, model_label,
+               model_algorithm_version, model_artifact_sha256, created_at,
+               football_cutoff, knowledge_cutoff, knowledge_mode,
+               expected_home_goals, expected_away_goals, probabilities,
+               score_matrix, payload_sha256, publication_mode, forecast_horizon,
+               predictive_input_snapshot_sha256, context_snapshot_sha256,
+               revision_reason_codes, new_information_ids)
+           VALUES (%s,%s,%s,'MVP_FORECAST','transferable-rolling-goals-poisson-v1',
+                   %s,%s,%s,%s,'bitemporal',1.2,1.1,'{}','[]',%s,
+                   'MVP_OWNER_AUTHORIZED','24H',%s,%s,'["INITIAL_FORECAST"]','[]')""",
+        (
+            legacy_id,
+            "a" * 64,
+            fixture_id,
+            hashlib.sha256((PROJECT_ROOT / MODEL_ARTIFACT_PATH).read_bytes()).hexdigest(),
+            legacy_time,
+            legacy_time,
+            legacy_time,
+            "b" * 64,
+            "c" * 64,
+            "d" * 64,
+        ),
+    )
+    legacy_row = connection.execute(
+        "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+        (legacy_id,),
+    ).fetchone()
+    pending_before = connection.execute(
+        """SELECT generation, completed_generation
+           FROM football.product_forecast_refresh_work WHERE fixture_id = %s""",
+        (fixture_id,),
+    ).fetchone()
+    assert pending_before is not None and pending_before[0] > pending_before[1]
+    missing_artifact = ProductSync(
+        connection, ApiFootballClient("stored-data-only"), tmp_path, tmp_path / "missing.json"
+    )
+    with pytest.raises(FileNotFoundError), connection.transaction():
+        missing_artifact.refresh_pending_forecasts()
+    assert (
+        connection.execute(
+            """SELECT generation, completed_generation
+           FROM football.product_forecast_refresh_work WHERE fixture_id = %s""",
+            (fixture_id,),
+        ).fetchone()
+        == pending_before
+    )
+    refresh = product.refresh_pending_forecasts()
 
     with connection.cursor() as cursor:
         availability = _first(
@@ -438,12 +508,17 @@ def test_backfill_history_unlocks_missing_forecast(
         )
         probabilities = _first(
             cursor.execute(
-                "SELECT probabilities FROM football.product_forecasts WHERE fixture_id = %s",
-                (fixture_id,),
+                """SELECT probabilities FROM football.product_forecasts
+                   WHERE fixture_id = %s AND model_algorithm_version = %s""",
+                (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
             ).fetchone()
         )
 
-    assert created >= 1
+    assert refresh == {
+        "forecasts_created": 1,
+        "fixtures_processed": 1,
+        "fixtures_pending": 0,
+    }
     assert len(relevant_history) == 20
     assert all(
         home_id in (match.home_team_id, match.away_team_id)
@@ -451,9 +526,33 @@ def test_backfill_history_unlocks_missing_forecast(
         for match in relevant_history
     )
     assert availability == "FORECAST_AVAILABLE"
-    assert forecast_count == 1
+    assert forecast_count == 2
+    assert connection.execute(
+        """SELECT supersedes_forecast_id, revision_reason_codes
+           FROM football.product_forecasts WHERE fixture_id = %s
+             AND model_algorithm_version = %s""",
+        (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
+    ).fetchone() == (legacy_id, ["PREDICTIVE_INPUT_CONTRACT_CHANGED"])
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+            (legacy_id,),
+        ).fetchone()
+        == legacy_row
+    )
     assert probabilities["total_over_1_5"] >= probabilities["total_over_2_5"]
     assert probabilities["total_under_3_5"] >= probabilities["total_under_2_5"]
+    connection.execute(
+        """UPDATE football.product_team_match_history SET home_goals = 3
+           WHERE source_snapshot_id = %s AND home_team_id NOT IN (%s, %s)
+             AND away_team_id NOT IN (%s, %s)""",
+        (snapshot, home_id, away_id, home_id, away_id),
+    )
+    assert product.refresh_pending_forecasts()["fixtures_processed"] == 0
+    assert product.refresh_forecasts() == 0
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+    ).fetchone() == (2,)
     connection.execute("UPDATE football.team_provider_mappings SET mapping_confidence = 0.5")
     assert (
         product._history_before(
@@ -468,8 +567,20 @@ def test_backfill_history_unlocks_missing_forecast(
         == relevant_history
     )
     assert connection.execute(
-        "SELECT probabilities FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+        """SELECT probabilities FROM football.product_forecasts
+           WHERE fixture_id = %s AND model_algorithm_version = %s""",
+        (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
     ).fetchone() == (probabilities,)
+    connection.execute(
+        """UPDATE football.product_fixtures
+           SET kickoff_at = clock_timestamp() - interval '1 millisecond'
+           WHERE fixture_id = %s""",
+        (fixture_id,),
+    )
+    assert product.refresh_forecasts(forecast_knowledge_cutoff) == 0
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+    ).fetchone() == (2,)
 
 
 def test_fixture_sync_does_not_reassign_provider_aliases_by_name(

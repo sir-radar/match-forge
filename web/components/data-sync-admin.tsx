@@ -189,6 +189,8 @@ function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | n
     ["Teams with ≥10 matches", coverage.teams_with_10_matches], ["Teams below 10", coverage.teams_below_10_matches],
     ["Scheduled fixtures", coverage.scheduled_fixtures], ["Forecast available", coverage.forecast_available],
     ["Not enough history", coverage.not_enough_history], ["Mapping failures", coverage.mapping_failures], ["Source conflicts", coverage.source_conflicts],
+    ...(coverage.forecast_refresh_pending === undefined ? [] : [["Forecast refresh pending", coverage.forecast_refresh_pending]]),
+    ...(coverage.forecast_refresh_complete === undefined ? [] : [["Forecast refresh complete", coverage.forecast_refresh_complete]]),
     ["Eligible / excluded history", `${coverage.eligible_history.toLocaleString()} / ${coverage.excluded_history.toLocaleString()}`],
     ["Verified provider matches", coverage.verified_provider_matches],
     ["Provisional fixtures", coverage.provisional_fixtures],

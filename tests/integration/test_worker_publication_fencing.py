@@ -70,6 +70,12 @@ def test_worker_publication_rejects_lost_ownership(state: str) -> None:
                         "UPDATE football.product_fixtures SET status = status WHERE false"
                     )
                 worker.rollback()
+                with pytest.raises(ObjectNotInPrerequisiteState, match="ownership lost"):
+                    worker.execute(
+                        """UPDATE football.product_forecast_refresh_work
+                           SET requested_at = requested_at WHERE false"""
+                    )
+                worker.rollback()
                 if state in ("FAILED", "CANCELLED"):
                     with pytest.raises(ObjectNotInPrerequisiteState, match="terminal sync run"):
                         owner.execute(

@@ -263,6 +263,18 @@ Where applicable:
 
 Detailed retry and recovery behavior belongs in the owning subsystem document.
 
+For product forecasts, a qualifying history decision or a changed future fixture
+adds affected fixture IDs to `football.product_forecast_refresh_work` in the same
+database transaction. The existing sync runner retries pending work in batches of
+at most 32 fixtures. A batch marks its work complete in the same transaction as
+its forecast and availability updates; interrupted batches remain pending. The
+forecast builder still applies each fixture's football and knowledge cutoffs and
+publishes immutable revisions only when its predictive inputs change.
+New product forecasts use the `rolling-ten-v2` predictive-input hash and the
+`transferable-rolling-goals-poisson-v1-rolling10-v2` product algorithm label.
+The fitted model and probabilities are unchanged; older forecast versions remain
+readable and are never rewritten.
+
 ## Artifact Boundary
 
 Canonical fitted model state should use transparent, portable formats where practical.

@@ -291,6 +291,8 @@ export type HistoricalCoverage = {
   scheduled_fixtures: number;
   forecast_available: number;
   not_enough_history: number;
+  forecast_refresh_pending?: number;
+  forecast_refresh_complete?: number;
   mapping_failures: number;
   source_conflicts: number;
   missing_live_scores: number;
@@ -580,6 +582,8 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       scheduled_fixtures: numeric(coverage.scheduled_fixtures, "scheduled_fixtures"),
       forecast_available: numeric(coverage.forecast_available, "forecast_available"),
       not_enough_history: numeric(coverage.not_enough_history, "not_enough_history"),
+      forecast_refresh_pending: coverage.forecast_refresh_pending === undefined ? undefined : integer(coverage.forecast_refresh_pending, "forecast_refresh_pending", 0),
+      forecast_refresh_complete: coverage.forecast_refresh_complete === undefined ? undefined : integer(coverage.forecast_refresh_complete, "forecast_refresh_complete", 0),
       mapping_failures: numeric(coverage.mapping_failures, "mapping_failures"),
       source_conflicts: numeric(coverage.source_conflicts, "source_conflicts"),
       missing_live_scores: numeric(coverage.missing_live_scores, "missing_live_scores"),

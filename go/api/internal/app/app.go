@@ -86,6 +86,9 @@ func (application *App) Run(ctx context.Context) error {
 	if application.config.HistorySyncEnabled {
 		go application.runHistorySyncSchedule(ctx)
 	}
+	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
+		go application.runForecastRefreshSchedule(ctx)
+	}
 	server := &http.Server{
 		Addr:              application.config.Address,
 		Handler:           application.handler,
@@ -159,6 +162,32 @@ func (application *App) runHistorySyncSchedule(ctx context.Context) {
 		})
 		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 			application.logger.Warn("scheduled history failed to start", "error", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runForecastRefreshSchedule(ctx context.Context) {
+	runner := application.syncRunner.(pendingForecastRefreshRunner)
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		pending, err := runner.PendingForecastRefresh(ctx)
+		if err != nil {
+			if ctx.Err() == nil {
+				application.logger.Warn("check pending forecast refresh", "error", err)
+			}
+		} else if pending {
+			_, err = application.syncRunner.Start(ctx, SyncRequest{
+				Type: SyncForecastRefresh, PendingOnly: true,
+			})
+			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+				application.logger.Warn("scheduled forecast refresh failed to start", "error", err)
+			}
 		}
 		select {
 		case <-ctx.Done():
