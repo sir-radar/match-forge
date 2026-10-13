@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { api } from "@/lib/api";
-import type { Competition, Fixture, Forecast, LiveMatch, MatchContext } from "@/lib/contracts";
+import type { Competition, Fixture, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
@@ -119,7 +119,7 @@ function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: 
   const likely = [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 3);
   return <div className="overview-grid">
     <MatchInterpretation fixture={fixture} forecast={forecast} />
-    <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact probabilities</small></header><div className="score-cards">{likely.map((cell, index) => <div key={`${cell.home_goals}-${cell.away_goals}`} className={index === 0 ? "modal" : ""}><b>{cell.home_goals}–{cell.away_goals}</b><strong>{percent(cell.probability)}</strong><small>{index === 0 ? "Modal score" : "Supporting outcome"}</small></div>)}</div></section>
+    <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact scores and aggregate categories</small></header><div className="score-cards">{likely.map((cell, index) => <div key={scoreLabel(cell)} className={index === 0 ? "modal" : ""}><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong><small>{isExactScore(cell) ? index === 0 ? "Modal score" : "Supporting outcome" : "Aggregate score category"}</small></div>)}</div></section>
     <section className="panel"><header><h4>Recent form</h4><small>Qualified completed matches</small></header><TeamForm name={fixture.home.name} values={context?.home_form ?? []} /><TeamForm name={fixture.away.name} values={context?.away_form ?? []} /></section>
     <section className="panel provenance"><header><h4>Forecast record</h4><small>Immutable pre-match snapshot</small></header><dl><div><dt>Model</dt><dd>MatchForge Forecast</dd></div><div><dt>Algorithm</dt><dd>{forecast.model_algorithm_version}</dd></div><div><dt>Knowledge cutoff</dt><dd>{formatDateTime(forecast.knowledge_cutoff)}</dd></div><div><dt>Publication</dt><dd>Owner-authorized MVP</dd></div></dl></section>
   </div>;
@@ -140,11 +140,19 @@ function Markets({ forecast }: { forecast: Forecast | null }) {
 
 function ScoreMatrix({ forecast }: { forecast: Forecast | null }) {
   if (!forecast) return <EmptyState title="Score matrix unavailable" detail="No published score distribution exists for this fixture." />;
-  const cells = forecast.score_matrix.filter((cell) => cell.home_goals <= 3 && cell.away_goals <= 3);
+  const cells = forecast.score_matrix.filter((cell) => isExactScore(cell) && cell.home_goals <= 3 && cell.away_goals <= 3);
   if (!cells.length) return <EmptyState title="Score matrix unavailable" detail="The published forecast contains no displayable 0–3 exact-score cells." />;
   const labels = [0, 1, 2, 3];
   const likely = [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 5);
-  return <div className="matrix-layout"><section className="panel matrix-panel"><header><h4>Exact-score full-time joint probability matrix</h4><small>0–3 goals · fixed intensity scale: 0–20%</small></header><div className="matrix" role="table" aria-label="Exact score probabilities"><div /><div className="matrix-axis" style={{ gridColumn: "2 / span 4" }}>Away goals</div><div className="matrix-axis vertical">Home goals</div>{labels.map((away) => <div key={`head-${away}`} className="matrix-head">{away} {away === 1 ? "goal" : "goals"}</div>)}{labels.map((home) => <div key={`row-${home}`} className="matrix-row"><span className="matrix-head">{home}</span>{labels.map((away) => { const cell = cells.find((item) => item.home_goals === home && item.away_goals === away); return <div key={`${home}-${away}`} className="matrix-cell" style={{ "--heat": cell ? Math.min(cell.probability / 0.2, 1) : 0 } as CSSProperties}><small>{home}–{away}</small><b>{percent(cell?.probability)}</b></div>; })}</div>)}</div></section><section className="panel density-list"><header><h4>Top 5 probability densities</h4><small>Exact scores</small></header>{likely.map((cell, index) => <div key={`${cell.home_goals}-${cell.away_goals}`}><span>{index + 1}</span><b>{cell.home_goals}–{cell.away_goals}</b><strong>{percent(cell.probability)}</strong></div>)}</section></div>;
+  return <div className="matrix-layout"><section className="panel matrix-panel"><header><h4>Exact-score full-time joint probability matrix</h4><small>0–3 goals · fixed intensity scale: 0–20%</small></header><div className="matrix" role="table" aria-label="Exact score probabilities"><div /><div className="matrix-axis" style={{ gridColumn: "2 / span 4" }}>Away goals</div><div className="matrix-axis vertical">Home goals</div>{labels.map((away) => <div key={`head-${away}`} className="matrix-head">{away} {away === 1 ? "goal" : "goals"}</div>)}{labels.map((home) => <div key={`row-${home}`} className="matrix-row"><span className="matrix-head">{home}</span>{labels.map((away) => { const cell = cells.find((item) => item.home_goals === home && item.away_goals === away); return <div key={`${home}-${away}`} className="matrix-cell" style={{ "--heat": cell ? Math.min(cell.probability / 0.2, 1) : 0 } as CSSProperties}><small>{home}–{away}</small><b>{percent(cell?.probability)}</b></div>; })}</div>)}</div></section><section className="panel density-list"><header><h4>Top 5 probability densities</h4><small>Exact scores and aggregate categories</small></header>{likely.map((cell, index) => <div key={scoreLabel(cell)}><span>{index + 1}</span><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong></div>)}</section></div>;
+}
+
+function isExactScore(cell: ScoreCell): boolean {
+  return cell.home_bucket_kind === "EXACT" && cell.away_bucket_kind === "EXACT";
+}
+
+function scoreLabel(cell: ScoreCell): string {
+  return `${cell.home_label}–${cell.away_label}`;
 }
 
 function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast: Forecast }) {
@@ -167,7 +175,7 @@ function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast
     <div className="interpretation-copy">
       <p><b>{favorite.label} is the single most likely result at {percent(favorite.probability)}.</b> It leads {runnerUp.label.toLowerCase()} by {(lead * 100).toFixed(1)} percentage points, a {edge} edge rather than a certain result.</p>
       <p>Combined expected goals are <b>{totalExpectedGoals.toFixed(2)}</b>. {goalReading}{Number.isFinite(btts) ? ` Both teams scoring is ${btts >= 0.5 ? "more" : "less"} likely than not at ${percent(btts)}.` : ""}</p>
-      {modalScore && <p>Most likely exact score is <b>{modalScore.home_goals}–{modalScore.away_goals}</b> at {percent(modalScore.probability)}. Exact scores remain low-probability outcomes even when ranked first.</p>}
+      {modalScore && <p>Most likely {isExactScore(modalScore) ? "exact score" : "score category"} is <b>{scoreLabel(modalScore)}</b> at {percent(modalScore.probability)}. {isExactScore(modalScore) ? "Exact scores remain low-probability outcomes even when ranked first." : "A category with + combines several possible final scores."}</p>}
     </div>
     <dl className="stat-glossary">
       <div><dt>Win %</dt><dd>Share of the model distribution assigned to each full-time result.</dd></div>

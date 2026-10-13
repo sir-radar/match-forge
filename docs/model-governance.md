@@ -133,6 +133,22 @@ Required products may include:
 
 `5+` means five or more, not an exact score.
 
+New product payloads declare `compact-buckets-v2` and carry labels and
+`EXACT`/`AT_LEAST` kinds for both axes. Historical rows retain their original
+bytes; the API declares their `legacy-compact-index-v1` interpretation.
+Serialization corrections create new immutable revisions.
+
+The champion adapter declares `exact-support-with-tail-v2`: its numerical
+matrix contains exact atoms, with unresolved probability and home/away first
+moments recorded separately. Analytic means and markets come from the original
+Poisson distribution, never from compact display bins. Support expansion uses
+the existing `1e-12` tail bound; validation uses the existing absolute `1e-10`
+probability tolerance. Rust receives unresolved mass as `UNRESOLVED_TAIL`.
+Ensembles preserve component means and markets and reject common support that
+leaves material unresolved mass. Legacy numerical payloads remain readable
+under `legacy-score-grid-v1`; corrections do not rewrite historical forecasts,
+artifacts, or evaluation evidence.
+
 Every emitted probability must satisfy:
 
 ```text

@@ -37,6 +37,29 @@ test("fixture expands inline", async ({ page }) => {
   await page.screenshot({ path: `test-results/${test.info().project.name}-expanded.png`, fullPage: true });
 });
 
+for (const version of ["legacy-compact-index-v1", "compact-buckets-v2"]) {
+  test(`${version} renders aggregate tail categories`, async ({ page }) => {
+    await page.route("http://127.0.0.1:8080/v1/fixtures/*/forecasts/*", async (route) => {
+      const cell = { home_goals: 5, away_goals: 5, probability: .14 };
+      await route.fulfill({ json: {
+        ...fixture.forecast, fixture_id: fixture.id, model_label: "MVP_FORECAST",
+        model_algorithm_version: "transferable-rolling-goals-poisson-v1",
+        created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z",
+        knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal",
+        publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix_version: version,
+        score_matrix: [version === "compact-buckets-v2" ? { ...cell,
+          home_label: "5+", away_label: "5+", home_bucket_kind: "AT_LEAST",
+          away_bucket_kind: "AT_LEAST" } : cell],
+      } });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: /Arsenal.*Chelsea/ }).click();
+    await expect(page.getByText("5+–5+", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("5–5", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/Most likely score category is/)).toBeVisible();
+  });
+}
+
 test("mobile uses the designed compact navigation and hides desktop rail", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile", "mobile-only assertion");
   await page.goto("/");

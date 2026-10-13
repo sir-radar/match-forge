@@ -223,15 +223,16 @@ type ForecastSummary struct {
 
 type Forecast struct {
 	ForecastSummary
-	FixtureID       string                   `json:"fixture_id"`
-	ModelLabel      string                   `json:"model_label"`
-	ModelAlgorithm  string                   `json:"model_algorithm_version"`
-	CreatedAt       time.Time                `json:"created_at"`
-	FootballCutoff  time.Time                `json:"football_cutoff"`
-	KnowledgeCutoff time.Time                `json:"knowledge_cutoff"`
-	KnowledgeMode   string                   `json:"knowledge_mode"`
-	PublicationMode string                   `json:"publication_mode"`
-	ScoreMatrix     []map[string]interface{} `json:"score_matrix"`
+	FixtureID          string                   `json:"fixture_id"`
+	ModelLabel         string                   `json:"model_label"`
+	ModelAlgorithm     string                   `json:"model_algorithm_version"`
+	CreatedAt          time.Time                `json:"created_at"`
+	FootballCutoff     time.Time                `json:"football_cutoff"`
+	KnowledgeCutoff    time.Time                `json:"knowledge_cutoff"`
+	KnowledgeMode      string                   `json:"knowledge_mode"`
+	PublicationMode    string                   `json:"publication_mode"`
+	ScoreMatrix        []map[string]interface{} `json:"score_matrix"`
+	ScoreMatrixVersion string                   `json:"score_matrix_version"`
 }
 
 type FormMatch struct {

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, cast
 from uuid import UUID
 
+from football.forecasting.champion_adapter import product_to_champion_forecast
 from football.forecasting.ensemble import (
     EnsembleDevelopmentObservation,
     EnsembleWeights,
@@ -26,9 +27,6 @@ from football.forecasting.model_contracts import (
     ForecastInputSnapshot,
     HistoricalMatch,
     ModelForecast,
-    ModelStatus,
-    derive_markets,
-    distributions,
 )
 from football.forecasting.multi_model_evaluation import (
     ScoredModelForecast,
@@ -458,46 +456,19 @@ def _champion_forecast(
     )
     if product is None:
         return None
-    size = round(math.sqrt(len(product.score_matrix)))
-    matrix = [[0.0] * size for _ in range(size)]
-    for cell in product.score_matrix:
-        matrix[int(cell["home_goals"])][int(cell["away_goals"])] = float(cell["probability"])
-    frozen = tuple(tuple(values) for values in matrix)
-    home, away, total = distributions(frozen)
-    markets = derive_markets(frozen)
-    return ModelForecast(
+    return product_to_champion_forecast(
+        product,
         fixture_id=row.match.fixture_id,
-        model_id=CHAMPION_ID,
-        model_family="MATCHFORGE_TRANSFERABLE_POISSON",
-        model_version=CHAMPION_ID,
-        model_artifact_sha256=hashlib.sha256(artifact_path.read_bytes()).hexdigest(),
+        artifact_sha256=hashlib.sha256(artifact_path.read_bytes()).hexdigest(),
         football_cutoff=row.match.kickoff_at,
         knowledge_cutoff=row.match.kickoff_at,
         created_at=row.match.kickoff_at,
-        expected_home_goals=sum(index * value for index, value in enumerate(home)),
-        expected_away_goals=sum(index * value for index, value in enumerate(away)),
-        score_labels=("0", "1", "2", "3", "4", "5+"),
-        score_matrix=frozen,
-        home_goal_distribution=home,
-        away_goal_distribution=away,
-        total_goal_distribution=total,
-        status=ModelStatus.SUCCESS,
-        warnings=(),
         input_snapshot_sha256=_sha256_json(
             {
                 "fixture_id": str(row.match.fixture_id),
                 "history": [str(item.fixture_id) for item in history],
             }
         ),
-        home_probability=markets["home_probability"],
-        draw_probability=markets["draw_probability"],
-        away_probability=markets["away_probability"],
-        btts_yes=markets["btts_yes"],
-        btts_no=markets["btts_no"],
-        total_over_2_5=markets["total_over_2_5"],
-        total_under_2_5=markets["total_under_2_5"],
-        home_clean_sheet=markets["home_clean_sheet"],
-        away_clean_sheet=markets["away_clean_sheet"],
     )
 
 

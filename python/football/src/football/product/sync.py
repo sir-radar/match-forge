@@ -148,7 +148,7 @@ class ProductSync:
         queue_result = self._process_history_queue(history_concurrency)
         for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
             admit_provider_mappings(self.connection, self.data_root, provider)
-        completed_at = datetime.now(UTC)
+        completed_at = self._database_now()
         history_fixture_count = self.backfill_fixtures_from_history(
             fixture_history_start, requested_date, completed_at
         )
@@ -1748,7 +1748,7 @@ class ProductSync:
         if admit_mappings:
             for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
                 admit_provider_mappings(self.connection, self.data_root, provider)
-        now = now or datetime.now(UTC)
+        now = now or self._database_now()
         artifact_bytes = self.artifact_path.read_bytes()
         artifact_sha = hashlib.sha256(artifact_bytes).hexdigest()
         parameters = TransferableParametersV1(**json.loads(artifact_bytes)["parameters"])
@@ -1806,10 +1806,9 @@ class ProductSync:
                 (fixture_ids,),
             )
             cursor.fetchall()
-        cutoff_row = self.connection.execute("SELECT clock_timestamp()").fetchone()
-        assert cutoff_row is not None
+        knowledge_cutoff = self._database_now()
         created = (
-            self.refresh_forecasts(cutoff_row[0], fixture_ids, admit_mappings=False)
+            self.refresh_forecasts(knowledge_cutoff, fixture_ids, admit_mappings=False)
             if fixture_ids
             else 0
         )
@@ -1832,6 +1831,11 @@ class ProductSync:
             "fixtures_processed": len(fixture_ids),
             "fixtures_pending": remaining[0] if remaining is not None else 0,
         }
+
+    def _database_now(self) -> datetime:
+        row = self.connection.execute("SELECT clock_timestamp()").fetchone()
+        assert row is not None
+        return cast(datetime, row[0])
 
     def _publish_forecast(
         self,
@@ -1880,7 +1884,8 @@ class ProductSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT forecast_id, model_artifact_sha256, model_algorithm_version
+                SELECT forecast_id, model_artifact_sha256, model_algorithm_version,
+                       score_matrix_version
                 FROM football.product_forecasts
                 WHERE fixture_id = %s AND model_algorithm_version IN (
                     'transferable-rolling-goals-poisson-v1',
@@ -1912,6 +1917,8 @@ class ProductSync:
             revision_reasons = [RevisionReason.MODEL_ARTIFACT_CHANGED.value]
         elif previous[2] != PRODUCT_FORECAST_ALGORITHM_VERSION:
             revision_reasons = [RevisionReason.PREDICTIVE_INPUT_CONTRACT_CHANGED.value]
+        elif previous[3] != forecast.score_matrix_version:
+            revision_reasons = [RevisionReason.SERIALIZATION_CONTRACT_CHANGED.value]
         else:
             revision_reasons = [RevisionReason.BASELINE_HISTORY_CHANGED.value]
         semantic_sha = sha256_json(
@@ -1919,6 +1926,7 @@ class ProductSync:
                 "fixture_id": str(fixture_id),
                 "artifact_sha256": artifact_sha,
                 "predictive_input_snapshot_sha256": predictive_input_sha,
+                "score_matrix_version": forecast.score_matrix_version,
             }
         )
         forecast_id = stable_id("product-forecast", semantic_sha)
@@ -1945,11 +1953,11 @@ class ProductSync:
                     score_matrix, payload_sha256, publication_mode
                     , forecast_horizon, supersedes_forecast_id,
                     predictive_input_snapshot_sha256, context_snapshot_sha256,
-                    revision_reason_codes, new_information_ids
+                    revision_reason_codes, new_information_ids, score_matrix_version
                 ) SELECT %s, %s, %s, 'MVP_FORECAST',
                     %s, %s, %s, %s, %s,
                     'bitemporal', %s, %s, %s::jsonb, %s::jsonb, %s,
-                    'MVP_OWNER_AUTHORIZED', %s, %s, %s, %s, %s::jsonb, %s::jsonb
+                    'MVP_OWNER_AUTHORIZED', %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s
                 WHERE %s > clock_timestamp()
                 ON CONFLICT (semantic_sha256) DO NOTHING
                 """,
@@ -1973,6 +1981,7 @@ class ProductSync:
                     context_sha,
                     json.dumps(revision_reasons),
                     json.dumps(new_information_ids),
+                    forecast.score_matrix_version,
                     kickoff_at,
                 ),
             )

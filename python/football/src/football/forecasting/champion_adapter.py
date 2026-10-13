@@ -6,6 +6,9 @@ import math
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
+from uuid import UUID
+
+from scipy.stats import poisson
 
 from football.forecasting.model_contracts import (
     FittedModelArtifact,
@@ -14,18 +17,20 @@ from football.forecasting.model_contracts import (
     ModelForecast,
     ModelRole,
     ModelStatus,
-    derive_markets,
     distributions,
 )
-from football.product.domain import FinishedMatch, forecast_from_history
+from football.forecasting.pitchapi_v3 import _poisson_forecast
+from football.forecasting.pitchapi_v3_evaluation import exact_distribution
+from football.product.domain import FinishedMatch, ProductForecast, forecast_from_history
 
 CHAMPION_MODEL_ID = "transferable-rolling-goals-poisson-v1"
+CHAMPION_ADAPTER_VERSION = "transferable-rolling-goals-poisson-v1-analytic-adapter-v2"
 
 
 class TransferableRollingGoalsChampion:
     model_id = CHAMPION_MODEL_ID
     model_family = "MATCHFORGE_TRANSFERABLE_POISSON"
-    model_version = CHAMPION_MODEL_ID
+    model_version = CHAMPION_ADAPTER_VERSION
     role = ModelRole.CHAMPION
     supports_unseen_teams = True
     requires_xg = False
@@ -61,42 +66,88 @@ class TransferableRollingGoalsChampion:
         )
         if product is None:
             raise ValueError("champion could not forecast eligible fixture")
-        size = round(math.sqrt(len(product.score_matrix)))
-        matrix = [[0.0] * size for _ in range(size)]
-        for cell in product.score_matrix:
-            matrix[int(cell["home_goals"])][int(cell["away_goals"])] = float(cell["probability"])
-        frozen = tuple(tuple(row) for row in matrix)
-        home, away, total = distributions(frozen)
-        markets = derive_markets(frozen)
-        return ModelForecast(
+        return product_to_champion_forecast(
+            product,
             fixture_id=fixture.fixture_id,
-            model_id=self.model_id,
-            model_family=self.model_family,
-            model_version=self.model_version,
-            model_artifact_sha256=artifact.artifact_sha256,
+            artifact_sha256=artifact.artifact_sha256,
             football_cutoff=fixture.football_cutoff,
             knowledge_cutoff=fixture.knowledge_cutoff,
             created_at=datetime.now(UTC),
-            expected_home_goals=sum(i * value for i, value in enumerate(home)),
-            expected_away_goals=sum(i * value for i, value in enumerate(away)),
-            home_probability=markets["home_probability"],
-            draw_probability=markets["draw_probability"],
-            away_probability=markets["away_probability"],
-            score_labels=tuple(str(index) for index in range(size - 1)) + (f"{size - 1}+",),
-            score_matrix=frozen,
-            home_goal_distribution=home,
-            away_goal_distribution=away,
-            total_goal_distribution=total,
-            btts_yes=markets["btts_yes"],
-            btts_no=markets["btts_no"],
-            total_over_2_5=markets["total_over_2_5"],
-            total_under_2_5=markets["total_under_2_5"],
-            home_clean_sheet=markets["home_clean_sheet"],
-            away_clean_sheet=markets["away_clean_sheet"],
-            status=ModelStatus.SUCCESS,
-            warnings=(),
             input_snapshot_sha256=fixture.sha256,
         )
+
+
+def product_to_champion_forecast(
+    product: ProductForecast,
+    *,
+    fixture_id: UUID,
+    artifact_sha256: str,
+    football_cutoff: datetime,
+    knowledge_cutoff: datetime,
+    created_at: datetime,
+    input_snapshot_sha256: str,
+) -> ModelForecast:
+    """Expand the known Poisson control; compact display bins are never exact atoms."""
+    canonical = _poisson_forecast(product.expected_home_goals, product.expected_away_goals)
+    exact = exact_distribution(canonical)
+    size = max(home for home, _, _ in exact.atoms) + 1
+    matrix = [[0.0] * size for _ in range(size)]
+    for home, away, probability in exact.atoms:
+        matrix[home][away] = probability
+    frozen = tuple(tuple(row) for row in matrix)
+    home_distribution, away_distribution, total_distribution = distributions(frozen)
+    home_mean, away_mean = product.expected_home_goals, product.expected_away_goals
+    home_tail = float(poisson.sf(size - 1, home_mean))
+    away_tail = float(poisson.sf(size - 1, away_mean))
+    unresolved = home_tail + float(poisson.cdf(size - 1, home_mean)) * away_tail
+    home_tail_moment = home_mean * (
+        float(poisson.sf(size - 2, home_mean)) + float(poisson.cdf(size - 2, home_mean)) * away_tail
+    )
+    away_tail_moment = away_mean * (
+        float(poisson.sf(size - 2, away_mean)) + float(poisson.cdf(size - 2, away_mean)) * home_tail
+    )
+    display_size = math.isqrt(len(product.score_matrix))
+    if display_size != 6 or display_size * display_size != len(product.score_matrix):
+        raise ValueError("champion compact display support is invalid")
+    display = [[0.0] * display_size for _ in range(display_size)]
+    for cell in product.score_matrix:
+        display[int(cell["home_goals"])][int(cell["away_goals"])] = float(cell["probability"])
+    over = sum(product.total_goal_distribution[3:])
+    return ModelForecast(
+        fixture_id=fixture_id,
+        model_id=CHAMPION_MODEL_ID,
+        model_family="MATCHFORGE_TRANSFERABLE_POISSON",
+        model_version=CHAMPION_ADAPTER_VERSION,
+        model_artifact_sha256=artifact_sha256,
+        football_cutoff=football_cutoff,
+        knowledge_cutoff=knowledge_cutoff,
+        created_at=created_at,
+        expected_home_goals=home_mean,
+        expected_away_goals=away_mean,
+        home_probability=product.home_probability,
+        draw_probability=product.draw_probability,
+        away_probability=product.away_probability,
+        score_labels=tuple(str(index) for index in range(size)),
+        score_matrix=frozen,
+        home_goal_distribution=home_distribution,
+        away_goal_distribution=away_distribution,
+        total_goal_distribution=total_distribution,
+        btts_yes=product.btts_yes,
+        btts_no=1.0 - product.btts_yes,
+        total_over_2_5=over,
+        total_under_2_5=1.0 - over,
+        home_clean_sheet=product.home_clean_sheet,
+        away_clean_sheet=product.away_clean_sheet,
+        status=ModelStatus.SUCCESS,
+        warnings=(),
+        input_snapshot_sha256=input_snapshot_sha256,
+        numerical_contract_version="exact-support-with-tail-v2",
+        unresolved_tail_probability=unresolved,
+        unresolved_tail_home_expectation=home_tail_moment,
+        unresolved_tail_away_expectation=away_tail_moment,
+        display_score_labels=("0", "1", "2", "3", "4", "5+"),
+        display_score_matrix=tuple(tuple(row) for row in display),
+    )
 
 
 def load_champion_artifact(

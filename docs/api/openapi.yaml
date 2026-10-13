@@ -273,7 +273,7 @@ components:
       allOf:
         - { $ref: '#/components/schemas/ForecastSummary' }
         - type: object
-          required: [fixture_id, model_label, model_algorithm_version, created_at, football_cutoff, knowledge_cutoff, knowledge_mode, publication_mode, score_matrix]
+          required: [fixture_id, model_label, model_algorithm_version, created_at, football_cutoff, knowledge_cutoff, knowledge_mode, publication_mode, score_matrix_version, score_matrix]
           properties:
             fixture_id: { type: string, format: uuid }
             model_label: { type: string, const: MVP_FORECAST }
@@ -283,7 +283,22 @@ components:
             knowledge_cutoff: { type: string, format: date-time }
             knowledge_mode: { type: string, const: bitemporal }
             publication_mode: { type: string, const: MVP_OWNER_AUTHORIZED }
-            score_matrix: { type: array, items: { type: object } }
+            score_matrix_version: { type: string, enum: [legacy-compact-index-v1, compact-buckets-v2] }
+            score_matrix:
+              type: array
+              items: { $ref: '#/components/schemas/ScoreBucket' }
+    ScoreBucket:
+      type: object
+      description: Numeric goals are bucket minima. Legacy index 5 means 5+; compact-buckets-v2 requires explicit labels and kinds for both axes.
+      required: [home_goals, away_goals, probability]
+      properties:
+        home_goals: { type: integer, minimum: 0 }
+        away_goals: { type: integer, minimum: 0 }
+        probability: { type: number, minimum: 0, maximum: 1 }
+        home_label: { type: string, pattern: '^(0|[1-9][0-9]*)[+]?$' }
+        away_label: { type: string, pattern: '^(0|[1-9][0-9]*)[+]?$' }
+        home_bucket_kind: { type: string, enum: [EXACT, AT_LEAST] }
+        away_bucket_kind: { type: string, enum: [EXACT, AT_LEAST] }
     Performance:
       type: object
       required: [competition_id, league, country, continent, rating, forecasts]

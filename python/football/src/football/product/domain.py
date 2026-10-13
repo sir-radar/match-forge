@@ -25,6 +25,7 @@ PRODUCT_NAMESPACE = UUID("4944b082-913a-4b04-9c42-76374ff3d840")
 MODEL_ARTIFACT_PATH = Path("docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json")
 MODEL_LABEL = "MVP_FORECAST"
 MINIMUM_HISTORY_MATCHES = 10
+SCORE_MATRIX_VERSION = "compact-buckets-v2"
 
 
 class ForecastAvailability(StrEnum):
@@ -67,13 +68,14 @@ class ProductForecast:
     home_probability: float
     draw_probability: float
     away_probability: float
-    score_matrix: tuple[dict[str, int | float], ...]
+    score_matrix: tuple[dict[str, int | float | str], ...]
     home_goal_distribution: tuple[float, ...]
     away_goal_distribution: tuple[float, ...]
     total_goal_distribution: tuple[float, ...]
     btts_yes: float
     home_clean_sheet: float
     away_clean_sheet: float
+    score_matrix_version: str = SCORE_MATRIX_VERSION
 
 
 def stable_id(kind: str, *parts: object) -> UUID:
@@ -148,6 +150,18 @@ def forecast_from_history(
         {
             "home_goals": home_index,
             "away_goals": away_index,
+            "home_label": goal_forecast.score_matrix.labels[home_index],
+            "away_label": goal_forecast.score_matrix.labels[away_index],
+            "home_bucket_kind": (
+                "AT_LEAST"
+                if goal_forecast.score_matrix.labels[home_index].endswith("+")
+                else "EXACT"
+            ),
+            "away_bucket_kind": (
+                "AT_LEAST"
+                if goal_forecast.score_matrix.labels[away_index].endswith("+")
+                else "EXACT"
+            ),
             "probability": probability,
         }
         for home_index, row in enumerate(goal_forecast.score_matrix.probabilities)

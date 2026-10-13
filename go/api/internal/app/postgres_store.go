@@ -298,7 +298,8 @@ func (store *PostgresProductStore) ForecastHistory(ctx context.Context, fixtureI
 		       model_algorithm_version, model_artifact_sha256,
 		       predictive_input_snapshot_sha256, context_snapshot_sha256,
 		       revision_reason_codes, new_information_ids, expected_home_goals,
-		       expected_away_goals, probabilities, score_matrix, payload_sha256
+               expected_away_goals, probabilities, score_matrix,
+               COALESCE(score_matrix_version, 'legacy-compact-index-v1'), payload_sha256
 		FROM football.product_forecasts
 		WHERE fixture_id::text = $1 AND model_label = 'MVP_FORECAST'
 		ORDER BY created_at, forecast_id`, fixtureID)
@@ -311,12 +312,13 @@ func (store *PostgresProductStore) ForecastHistory(ctx context.Context, fixtureI
 		var item ForecastRevision
 		var reasons, information, probabilities, scoreMatrix []byte
 		var expectedHomeGoals, expectedAwayGoals float64
+		var scoreMatrixVersion string
 		if err := rows.Scan(
 			&item.ForecastID, &item.FixtureID, &item.IssuedAt, &item.FootballCutoff,
 			&item.KnowledgeCutoff, &item.ForecastHorizon, &item.SupersedesForecastID,
 			&item.ModelID, &item.ArtifactSHA256, &item.PredictiveInputSnapshotSHA256,
 			&item.ContextSnapshotSHA256, &reasons, &information, &expectedHomeGoals,
-			&expectedAwayGoals, &probabilities, &scoreMatrix, &item.PayloadSHA256,
+			&expectedAwayGoals, &probabilities, &scoreMatrix, &scoreMatrixVersion, &item.PayloadSHA256,
 		); err != nil {
 			return nil, err
 		}
@@ -335,10 +337,11 @@ func (store *PostgresProductStore) ForecastHistory(ctx context.Context, fixtureI
 			return nil, err
 		}
 		item.ProbabilityPayload = map[string]any{
-			"expected_home_goals": expectedHomeGoals,
-			"expected_away_goals": expectedAwayGoals,
-			"probabilities":       probabilityValues,
-			"score_matrix":        scoreValues,
+			"expected_home_goals":  expectedHomeGoals,
+			"expected_away_goals":  expectedAwayGoals,
+			"probabilities":        probabilityValues,
+			"score_matrix":         scoreValues,
+			"score_matrix_version": scoreMatrixVersion,
 		}
 		items = append(items, item)
 	}
@@ -352,14 +355,14 @@ func (store *PostgresProductStore) Forecast(ctx context.Context, fixtureID, fore
 		SELECT forecast_id::text, fixture_id::text, model_label, model_algorithm_version,
 		       created_at, football_cutoff, knowledge_cutoff, knowledge_mode,
 		       expected_home_goals, expected_away_goals, probabilities, score_matrix,
-		       publication_mode
+		       publication_mode, COALESCE(score_matrix_version, 'legacy-compact-index-v1')
 		FROM football.product_forecasts
 		WHERE fixture_id::text = $1 AND forecast_id::text = $2`, fixtureID, forecastID,
 	).Scan(
 		&item.ID, &item.FixtureID, &item.ModelLabel, &item.ModelAlgorithm,
 		&item.CreatedAt, &item.FootballCutoff, &item.KnowledgeCutoff, &item.KnowledgeMode,
 		&item.ExpectedHomeGoals, &item.ExpectedAwayGoals, &probabilities, &matrix,
-		&item.PublicationMode,
+		&item.PublicationMode, &item.ScoreMatrixVersion,
 	)
 	if err != nil {
 		return Forecast{}, productQueryError(err)

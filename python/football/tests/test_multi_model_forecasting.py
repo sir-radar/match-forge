@@ -360,7 +360,9 @@ def test_migration_and_product_query_preserve_champion_and_allow_multiple_models
         "UNIQUE (fixture_id, model_id, model_artifact_sha256, input_snapshot_sha256)" in migration
     )
     assert "forecast_role IN ('RESEARCH', 'SHADOW', 'CHAMPION')" in migration
-    assert "model_algorithm_version =" in sync
+    assert "model_algorithm_version IN (" in sync
+    assert "'transferable-rolling-goals-poisson-v1'," in sync
+    assert "'transferable-rolling-goals-poisson-v1-rolling10-v2')" in sync
 
 
 def test_model_forecast_persistence_keeps_models_distinct_and_is_idempotent() -> None:

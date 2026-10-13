@@ -13,6 +13,22 @@
   keys and day navigation; fixture list loading/expansion; unavailable-forecast
   visibility; Go query/rating/agreement tests.
 
+## Score bucket serialization
+
+New forecast responses declare `compact-buckets-v2` and include labels and
+`EXACT`/`AT_LEAST` kinds on both score axes. The numeric goal fields remain
+bucket minima for compatibility. Historical responses declare
+`legacy-compact-index-v1`; the frontend recognizes the approved Poisson model
+versions and interprets index 5 as `5+`. Missing version metadata is accepted
+only for those known historical algorithms. Unknown versions, inconsistent
+labels, and non-integer minima fail at the transport boundary.
+
+Exact-score grids use only `EXACT` cells. Category rankings and modals display
+`5+` explicitly. Existing request cancellation, retry, and independent resource
+states remain unchanged. Drift checks cover the JSON serialization schema,
+OpenAPI fields, Go response metadata, and deterministic legacy/new/malformed
+component fixtures in `fixture-explorer.test.tsx`.
+
 ## Provider history admin contract
 
 Authority: Go `HistoricalCoverage` and `syncCoverageSQL` in `go/api/internal/app/admin_sync.go`.

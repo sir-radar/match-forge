@@ -1028,9 +1028,10 @@
       "completed_phases": [
         "R1",
         "R2",
-        "R4"
+        "R4",
+        "R5"
       ],
-      "current_phase": "R5",
+      "current_phase": "R6",
       "checkpoint_root": ".local/remediation/matchforge-audit",
       "research_execution_authorized": false,
       "blocked_findings": [

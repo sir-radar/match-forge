@@ -17,6 +17,16 @@ The predictions table always sends one exact `date`. Source metrics send that
 same value as both `date_from` and `date_to`. A response-side guard excludes any
 record whose `prediction_date` differs from the selected day.
 
+## Forecast score buckets
+
+| State | Treatment | Evidence |
+| --- | --- | --- |
+| New labeled payload | Display exact scores and aggregated `5+` categories distinctly | versioned tail-bucket component test |
+| Historical compact payload | Explicit known-model legacy normalization preserves `5+` meaning | legacy tail-bucket component test |
+| Unknown version or contradictory labels | Reject at transport boundary; existing scoped error and retry | malformed contract tests |
+| Unavailable forecast / partial context | Existing unavailable state; other resources remain independent | fixture and context component tests |
+| Loading, refresh, cancellation, stale response | Existing `useResource` behavior; no new requests or mutations | resource hook tests |
+
 ## Provider history admin states
 
 Scope: additional eligibility metrics on the existing `/v1/admin/sync-runs` response.

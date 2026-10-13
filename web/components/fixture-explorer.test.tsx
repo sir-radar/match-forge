@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FixtureExplorer } from "@/components/fixture-explorer";
+import { parseForecast } from "@/lib/contracts";
 
 const competition = {
   id: "league-1", name: "Premier League", country: "England", continent: "Europe", division: 1,
@@ -57,6 +58,33 @@ describe("FixtureExplorer", () => {
     expect(screen.getByText(/Most likely exact score is/).closest("p")).toHaveTextContent("Most likely exact score is 1–0 at 14.0%");
     fireEvent.click(screen.getByRole("tab", { name: "Score matrix" }));
     expect(screen.getByText("0–3 goals · fixed intensity scale: 0–20%")).toBeInTheDocument();
+  });
+
+  it.each(["legacy", "v2"])("renders %s aggregated tail buckets without claiming an exact score", async (representation) => {
+    const cell = representation === "legacy"
+      ? { home_goals: 5, away_goals: 5, probability: .7 }
+      : { home_goals: 5, away_goals: 5, probability: .7, home_label: "5+", away_label: "5+", home_bucket_kind: "AT_LEAST", away_bucket_kind: "AT_LEAST" };
+    const exactCells = representation === "legacy" ? forecast.score_matrix : forecast.score_matrix.map((score) => ({ ...score, home_label: String(score.home_goals), away_label: String(score.away_goals), home_bucket_kind: "EXACT", away_bucket_kind: "EXACT" }));
+    const tailForecast = { ...forecast, ...(representation === "v2" ? { score_matrix_version: "compact-buckets-v2" } : {}), score_matrix: [...exactCells, cell] };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      const payload = url.includes("/v1/competitions?") ? { competitions: [competition] }
+        : url.includes("/v1/fixtures?") ? { groups: [{ competition, fixtures: [fixture] }] }
+        : url.includes("/context") ? context : tailForecast;
+      return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    fireEvent.click(await screen.findByRole("button", { name: /Arsenal.*Chelsea/s }));
+    await waitFor(() => expect(screen.getByText(/Most likely score category is/).closest("p")).toHaveTextContent("5+–5+ at 70.0%"));
+    expect(screen.queryByText("5–5")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Score matrix" }));
+    expect(screen.getByText("5+–5+")).toBeInTheDocument();
+    expect(screen.queryByText("5–5")).not.toBeInTheDocument();
+  });
+
+  it("rejects contradictory score-bucket metadata and unknown legacy interpretation", () => {
+    expect(() => parseForecast({ ...forecast, score_matrix_version: "compact-buckets-v2", score_matrix: [{ home_goals: 5, away_goals: 5, probability: .1, home_label: "5", away_label: "5+", home_bucket_kind: "AT_LEAST", away_bucket_kind: "AT_LEAST" }] })).toThrow("home_label");
+    expect(() => parseForecast({ ...forecast, model_algorithm_version: "unknown-model" })).toThrow("score_matrix_version");
   });
 
   it("keeps unavailable fixtures visible without invented probabilities", async () => {

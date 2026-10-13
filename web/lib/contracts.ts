@@ -115,6 +115,7 @@ export type Forecast = ForecastSummary & {
   knowledge_cutoff: string;
   knowledge_mode: string;
   publication_mode: string;
+  score_matrix_version: "legacy-compact-index-v1" | "compact-buckets-v2";
   score_matrix: ScoreCell[];
 };
 
@@ -122,6 +123,10 @@ export type ScoreCell = {
   home_goals: number;
   away_goals: number;
   probability: number;
+  home_label: string;
+  away_label: string;
+  home_bucket_kind: "EXACT" | "AT_LEAST";
+  away_bucket_kind: "EXACT" | "AT_LEAST";
 };
 
 export type FormMatch = {
@@ -361,25 +366,52 @@ export function parseLiveMatch(value: unknown): LiveMatch {
 export function parseForecast(value: unknown): Forecast {
   const item = object(value, "forecast");
   const summary = parseForecastSummary(item);
+  const algorithm = text(item.model_algorithm_version, "model_algorithm_version");
+  const version = scoreMatrixVersion(item.score_matrix_version, algorithm);
   return {
     ...summary,
     fixture_id: text(item.fixture_id, "fixture_id"),
     model_label: text(item.model_label, "model_label"),
-    model_algorithm_version: text(item.model_algorithm_version, "model_algorithm_version"),
+    model_algorithm_version: algorithm,
     created_at: text(item.created_at, "created_at"),
     football_cutoff: text(item.football_cutoff, "football_cutoff"),
     knowledge_cutoff: text(item.knowledge_cutoff, "knowledge_cutoff"),
     knowledge_mode: text(item.knowledge_mode, "knowledge_mode"),
     publication_mode: text(item.publication_mode, "publication_mode"),
-    score_matrix: array(item.score_matrix, "score_matrix").map((entry) => {
-      const cell = object(entry, "score cell");
-      return {
-        home_goals: numeric(cell.home_goals, "home_goals"),
-        away_goals: numeric(cell.away_goals, "away_goals"),
-        probability: probability(cell.probability, "probability"),
-      };
-    }),
+    score_matrix_version: version,
+    score_matrix: array(item.score_matrix, "score_matrix").map((entry) => parseScoreCell(entry, version)),
   };
+}
+
+function scoreMatrixVersion(value: unknown, algorithm: string): Forecast["score_matrix_version"] {
+  if (value === "compact-buckets-v2" || value === "legacy-compact-index-v1") return value;
+  if (value === undefined && ["transferable-rolling-goals-poisson-v1", "transferable-rolling-goals-poisson-v1-rolling10-v2"].includes(algorithm)) return "legacy-compact-index-v1";
+  throw new Error("unsupported score_matrix_version");
+}
+
+function parseScoreCell(value: unknown, version: Forecast["score_matrix_version"]): ScoreCell {
+  const cell = object(value, "score cell");
+  const home = parseScoreBucket(cell, "home", version);
+  const away = parseScoreBucket(cell, "away", version);
+  return {
+    home_goals: home.goals, away_goals: away.goals,
+    home_label: home.label, away_label: away.label,
+    home_bucket_kind: home.kind, away_bucket_kind: away.kind,
+    probability: probability(cell.probability, "probability"),
+  };
+}
+
+function parseScoreBucket(cell: Record<string, unknown>, side: "home" | "away", version: Forecast["score_matrix_version"]): { goals: number; label: string; kind: ScoreCell["home_bucket_kind"] } {
+  const goals = integer(cell[`${side}_goals`], `${side}_goals`, 0);
+  if (version === "legacy-compact-index-v1") {
+    if (goals > 5) throw new Error("invalid legacy score bucket");
+    return { goals, label: goals === 5 ? "5+" : String(goals), kind: goals === 5 ? "AT_LEAST" as const : "EXACT" as const };
+  }
+  const kind = text(cell[`${side}_bucket_kind`], `${side}_bucket_kind`);
+  if (kind !== "EXACT" && kind !== "AT_LEAST") throw new Error(`invalid ${side}_bucket_kind`);
+  const label = text(cell[`${side}_label`], `${side}_label`);
+  if (label !== `${goals}${kind === "AT_LEAST" ? "+" : ""}`) throw new Error(`inconsistent ${side}_label`);
+  return { goals, label, kind };
 }
 
 export function parseContext(value: unknown): MatchContext {
