@@ -28,9 +28,18 @@ def history_freshness() -> timedelta:
 
 
 class HistoryRequestBudget:
-    def __init__(self, connection: Connection[Any], provider: str) -> None:
+    def __init__(
+        self,
+        connection: Connection[Any],
+        provider: str,
+        *,
+        historical: bool = True,
+        yield_to_live: bool = False,
+    ) -> None:
         self.connection = connection
         self.provider = provider
+        self.historical = historical
+        self.yield_to_live = yield_to_live or historical
         self.window_date = datetime.now(UTC).date()
 
     def before_request(self) -> None:
@@ -61,13 +70,13 @@ class HistoryRequestBudget:
         until = now + timedelta(hours=1)
         if state[2] and state[2] > now:
             reason, until = "PROVIDER_RETRY_AFTER", state[2]
-        elif state[0]:
+        elif state[0] or state[1] == 0:
             reason = "PROVIDER_BUDGET_EXHAUSTED"
-        elif state[1] is not None:
+        elif self.yield_to_live and state[1] is not None:
             # These providers advertise no daily allowance. Any recorded finite
             # remainder is conserved for live work until its allowance is established.
             reason = "QUOTA_RESERVED_FOR_LIVE"
-        elif live[0]:
+        elif self.yield_to_live and live[0]:
             reason = "LIVE_SYNC_HAS_PRIORITY"
         if reason:
             self.connection.commit()
@@ -75,10 +84,12 @@ class HistoryRequestBudget:
         self.connection.execute(
             """UPDATE football.provider_request_budgets
                SET requests_used = requests_used + 1,
-                   historical_requests_used = historical_requests_used + 1,
+                   historical_requests_used = historical_requests_used + %s,
+                   remaining_requests = remaining_requests - 1,
+                   exhausted = COALESCE(remaining_requests = 1, false),
                    updated_at = clock_timestamp()
                WHERE provider_code = %s AND window_date = %s""",
-            (self.provider, now.date()),
+            (int(self.historical), self.provider, now.date()),
         )
         self.connection.commit()
         self.window_date = now.date()

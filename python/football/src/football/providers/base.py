@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
 from time import sleep
 from typing import Protocol, cast
 from urllib.error import HTTPError, URLError
@@ -34,6 +34,7 @@ class HttpResponseV1:
     etag: str | None
     last_modified: str | None
     cache_control: str | None = None
+    headers: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not 100 <= self.status <= 599 or not self.content_type:

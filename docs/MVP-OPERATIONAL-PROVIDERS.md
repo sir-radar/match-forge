@@ -24,6 +24,40 @@ uv run python -m football.product.cli provider-mapping-review --provider fotmob 
 
 The same operations are available on `/admin/data-sync`. Scheduling is opt-in: an omitted or zero `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` disables it; an enabled interval must be at least `30s`. Provider enablement is also required. FotMob live, PitchAPI live, and bulk work have independent database lanes; browser polling is not required. Worker heartbeats recover abandoned leases. API-Football quota exhaustion stops that provider's requests until the UTC reset without blocking the other providers.
 
+Detail selection combines the requested dates before spending the live budget.
+Persisted attempts rotate fixtures across polls, including failed attempts;
+the existing stale interval (180 seconds by default) and provider cache expiry
+prevent unnecessary refetches. PitchAPI details cost at most eight endpoint
+calls per selected fixture before transport retries; FotMob uses one. Current
+live details run before lower-priority bulk details and lifecycle recovery.
+The existing bulk fixture limit also bounds recovery candidates and their
+shared detail allocation. These are maximums; provider budgets and cooldowns
+can reduce progress.
+
+Recovery replays calendar dates for older unresolved fixtures with verified
+provider mappings, competition and team admissions. The current operational
+eligibility view uses the ingestion trust predicate and excludes resolved
+duplicates; historical forecasting continues to use its separate cutoff-aware
+contracts. Recovery records actual acquisition times, applies cooldowns and
+worker fencing, and never infers completion from elapsed time. Missing provider
+rows remain unresolved with an explicit failure reason. Unknown result score
+bases remain unknown. Run details expose unresolved counts, fixtures without a
+verified supported provider, cooldowns and failed refresh resources.
+
+API-Football uses `x-ratelimit-requests-remaining` for daily quota and
+`X-RateLimit-Remaining` for minute quota, as documented in the
+[provider rate-limit contract](https://www.api-football.com/news/post/how-ratelimit-works).
+Missing or malformed headers remain unknown; JSON `remaining` is not a quota
+contract. Atomic reservations and monotonic updates prevent concurrent spending
+or late responses from reopening exhaustion. Reservations bind their original
+UTC window. Minute exhaustion and `Retry-After` defer requests without guessing
+daily exhaustion. Native FotMob/PitchAPI live transports share the existing
+request accounting and cooldown mechanism; historical requests retain their
+live-work reservation policy, and Full Sync provider work yields to active live
+lanes. Minute accounting conserves recent observations over 60 seconds and does
+not assume a provider reset at a UTC minute boundary. Immutable source bytes and earlier registrations
+remain unchanged.
+
 Administrative routes, including diagnostics, require a loopback API listener, loopback client and approved loopback Host with the configured API port. Mutations require `application/json`. Browser requests must carry the exact configured `WEB_ORIGIN`; this Origin and JSON boundary prevents cross-origin browser mutations. Origin-less CLI and Codex requests additionally require `Authorization: Bearer <MATCHFORGE_ADMIN_CLI_TOKEN>`. An absent token denies origin-less access. Keep this secret in ignored `.env`, never in frontend environment variables or logs. Non-loopback administrative exposure remains disabled.
 
 Before upgrading worker fencing, stop existing synchronization processes and deploy the updated API and Python workers together. New workers carry database ownership credentials; publication transactions lock and check their active run lease and historical claim. Ownership loss terminates the process group, rejects subsequent writes, and cannot revive terminal run state. Old binaries do not carry these credentials and must not remain running during this upgrade. Direct operator CLI execution retains its existing behavior; history scope execution always uses claim tokens.

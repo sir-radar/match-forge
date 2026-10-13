@@ -8,6 +8,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import psycopg
 import pytest
@@ -69,9 +70,9 @@ def connection() -> Iterator[Connection[Any]]:
         yield database_connection
 
 
-def test_reconciliation_and_lifecycle_precedence_are_deterministic(
+def seed_reviewed_operational_fixture(
     connection: Connection[Any], tmp_path: Path
-) -> None:
+) -> tuple[OperationalProviderSync, UUID, UUID, UUID, PitchApiFixture, datetime, datetime]:
     kickoff = datetime(2026, 10, 9, 18, tzinfo=UTC)
     acquired = kickoff + timedelta(hours=3)
     history = HistoricalBackfillStore(
@@ -224,6 +225,15 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         (original_provisional,),
     ).fetchone() == (1,)
     assert sync._resolve_fixture(live, snapshot_id) == fixture_id
+    return sync, fixture_id, original_provisional, snapshot_id, live, kickoff, acquired
+
+
+def test_reconciliation_and_lifecycle_precedence_are_deterministic(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    sync, fixture_id, original_provisional, snapshot_id, live, kickoff, acquired = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
     assert sync._update_canonical_fixture(live, fixture_id, snapshot_id) == 0
     assert (
         sync._update_canonical_fixture(
@@ -504,8 +514,10 @@ def test_api_football_quota_circuit_persists_across_workers() -> None:
                 WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE"""
         )
     try:
-        PostgresApiFootballBudget(DATABASE_URL).before_request()
-        PostgresApiFootballBudget(DATABASE_URL).record_rejection("daily request limit reached")
+        reservation = PostgresApiFootballBudget(DATABASE_URL).before_request()
+        PostgresApiFootballBudget(DATABASE_URL).record_rejection(
+            reservation, "daily request limit reached"
+        )
 
         with pytest.raises(ApiFootballError, match="request suppressed"):
             PostgresApiFootballBudget(DATABASE_URL).before_request()

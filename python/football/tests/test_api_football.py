@@ -1,6 +1,6 @@
 import json
 import urllib.error
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from email.message import Message
 
 import pytest
@@ -8,12 +8,43 @@ from football.product.api_football import (
     ApiFootballClient,
     ApiFootballError,
     CapabilityStatus,
+    RequestReservation,
     context_capability,
     continent_for_country,
     fixture_status,
     inferred_division,
 )
 from football.product.sync import _league_seasons
+from football.providers.base import HttpResponseV1
+
+
+@pytest.mark.parametrize(
+    "header, expected",
+    [
+        ("4", 4),
+        ("0", 0),
+        ("-1", None),
+        ("bad", None),
+        ("1.5", None),
+        ("999999999999999999999", None),
+        ("2147483648", None),
+        (None, None),
+    ],
+)
+def test_quota_comes_from_documented_headers_not_body(
+    header: str | None, expected: int | None
+) -> None:
+    headers = {} if header is None else {"X-RateLimit-Requests-Remaining": header}
+    response = HttpResponseV1(
+        payload=b'{"errors":[],"remaining":999,"response":[]}',
+        status=200,
+        content_type="application/json",
+        etag=None,
+        last_modified=None,
+        headers=headers,
+    )
+    result = ApiFootballClient("secret", transport=lambda _url, _headers: response).competitions()
+    assert result.remaining_day == expected
 
 
 def test_client_preserves_raw_response_and_encodes_date() -> None:
@@ -27,6 +58,45 @@ def test_client_preserves_raw_response_and_encodes_date() -> None:
     assert calls == ["https://v3.football.api-sports.io/fixtures?date=2026-09-29"]
     assert result.rows[0]["fixture"] == {"id": 1}
     assert json.loads(result.raw)["response"]
+
+
+def test_native_transport_retains_quota_headers(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Response:
+        status = 200
+        headers = Message()
+        headers["Content-Type"] = "application/json"
+        headers["x-ratelimit-requests-remaining"] = "4"
+        headers["X-RateLimit-Remaining"] = "9"
+
+        def __enter__(self) -> "Response":
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            pass
+
+        def read(self) -> bytes:
+            return b'{"errors":[],"response":[]}'
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: Response())
+    result = ApiFootballClient("secret").competitions()
+    assert (result.remaining_day, result.remaining_minute) == (4, 9)
+
+
+def test_acquisition_time_is_after_full_response_arrives(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Clock:
+        current = datetime(2026, 10, 13, 12, tzinfo=UTC)
+
+        @classmethod
+        def now(cls, _timezone: object) -> datetime:
+            return cls.current
+
+    def transport(_url: str, _headers: object) -> bytes:
+        Clock.current += timedelta(seconds=10)
+        return b'{"errors":[],"response":[]}'
+
+    monkeypatch.setattr("football.product.api_football.datetime", Clock)
+    response = ApiFootballClient("secret", transport=transport).competitions()
+    assert response.fetched_at == datetime(2026, 10, 13, 12, 0, 10, tzinfo=UTC)
 
 
 def test_client_rejects_provider_error() -> None:
@@ -45,20 +115,36 @@ def test_client_records_quota_metadata_and_exhaustion() -> None:
             self.remaining: list[int | None] = []
             self.rejections: list[str] = []
 
-        def before_request(self) -> None:
+        def before_request(self) -> RequestReservation:
             self.before += 1
+            now = datetime.now(UTC)
+            return RequestReservation(now.date(), self.before, now)
 
-        def record_response(self, remaining: int | None) -> None:
+        def record_response(
+            self,
+            reservation: RequestReservation,
+            remaining: int | None,
+            minute_remaining: int | None,
+        ) -> None:
             self.remaining.append(remaining)
 
-        def record_rejection(self, detail: str) -> None:
+        def record_rejection(
+            self, reservation: RequestReservation, detail: str, retry_after: str | None = None
+        ) -> None:
             self.rejections.append(detail)
 
     budget = Budget()
     success = ApiFootballClient(
         "secret",
         request_budget=budget,
-        transport=lambda _url, _headers: b'{"errors":[],"remaining":4,"response":[]}',
+        transport=lambda _url, _headers: HttpResponseV1(
+            payload=b'{"errors":[],"response":[]}',
+            status=200,
+            content_type="application/json",
+            etag=None,
+            last_modified=None,
+            headers={"x-ratelimit-requests-remaining": "4"},
+        ),
     )
     success.competitions()
     limited = ApiFootballClient(
@@ -72,31 +158,48 @@ def test_client_records_quota_metadata_and_exhaustion() -> None:
         limited.competitions()
 
     assert budget.before == 2
-    assert budget.remaining == [4]
+    assert budget.remaining == [4, None]
     assert budget.rejections == ["{'requests': 'request limit reached'}"]
 
 
 def test_client_records_http_429_in_persistent_budget() -> None:
     class Budget:
-        def before_request(self) -> None:
-            pass
+        quota: tuple[int | None, int | None] | None = None
 
-        def record_response(self, remaining: int | None) -> None:
-            pass
+        def before_request(self) -> RequestReservation:
+            now = datetime.now(UTC)
+            return RequestReservation(now.date(), 1, now)
 
-        def record_rejection(self, detail: str) -> None:
+        def record_response(
+            self,
+            reservation: RequestReservation,
+            remaining: int | None,
+            minute_remaining: int | None,
+        ) -> None:
+            self.quota = (remaining, minute_remaining)
+
+        def record_rejection(
+            self, reservation: RequestReservation, detail: str, retry_after: str | None = None
+        ) -> None:
             self.detail = detail
+            self.retry_after = retry_after
 
     budget = Budget()
 
     def rate_limited(_url: str, _headers: object) -> bytes:
-        raise urllib.error.HTTPError("https://provider.test", 429, "limited", Message(), None)
+        headers = Message()
+        headers["x-ratelimit-requests-remaining"] = "50"
+        headers["X-RateLimit-Remaining"] = "0"
+        headers["Retry-After"] = "120"
+        raise urllib.error.HTTPError("https://provider.test", 429, "limited", headers, None)
 
     client = ApiFootballClient("secret", transport=rate_limited, request_budget=budget)
     with pytest.raises(ApiFootballError, match="request failed"):
         client.competitions()
 
     assert budget.detail == "HTTP 429 rate limit"
+    assert budget.quota == (50, 0)
+    assert budget.retry_after == "120"
 
 
 def test_client_classifies_plan_restriction_without_claiming_unsupported() -> None:

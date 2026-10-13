@@ -309,6 +309,43 @@ def _run_data_operation(args: argparse.Namespace) -> int:
     return 1 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
 
 
+def _live_fotmob_client(
+    connection: psycopg.Connection[Any], *, yield_to_live: bool = False
+) -> FotmobClient:
+    budget = HistoryRequestBudget(
+        connection, "fotmob", historical=False, yield_to_live=yield_to_live
+    )
+    return FotmobClient(
+        access_approved=os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true",
+        timeout_seconds=float(os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")),
+        transport=UrllibHttpTransport(
+            accept="application/json",
+            request_guard=budget.before_request,
+            http_error_observer=budget.record_http_error,
+        ),
+    )
+
+
+def _live_pitchapi_client(
+    connection: psycopg.Connection[Any], *, yield_to_live: bool = False
+) -> PitchApiClient:
+    budget = HistoryRequestBudget(
+        connection, "pitchapi", historical=False, yield_to_live=yield_to_live
+    )
+    return PitchApiClient(
+        os.environ.get("PITCH_API_TOKEN", ""),
+        connection_timeout_seconds=float(
+            os.environ.get("MATCHFORGE_PROVIDER_CONNECTION_TIMEOUT_SECONDS", "5")
+        ),
+        request_timeout_seconds=float(
+            os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
+        ),
+        transport=UrllibPitchApiTransport(
+            request_guard=budget.before_request, http_error_observer=budget.record_http_error
+        ),
+    )
+
+
 def _run_operational_provider_sync(args: argparse.Namespace) -> int:
     from_date = args.from_date or args.date
     try:
@@ -318,7 +355,6 @@ def _run_operational_provider_sync(args: argparse.Namespace) -> int:
                 os.environ.get("MATCHFORGE_PROVIDER_MIN_INTERVAL_SECONDS", "1")
             )
             if args.command == "fotmob-sync":
-                enabled = os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true"
                 result = OperationalProviderSync(
                     connection,
                     args.data_root,
@@ -326,12 +362,7 @@ def _run_operational_provider_sync(args: argparse.Namespace) -> int:
                     stale_after_seconds=stale_after,
                     minimum_interval_seconds=minimum_interval,
                 ).sync_fotmob(
-                    FotmobClient(
-                        access_approved=enabled,
-                        timeout_seconds=float(
-                            os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
-                        ),
-                    ),
+                    _live_fotmob_client(connection),
                     from_date,
                     args.date,
                     details_limit=args.details_limit,
@@ -346,15 +377,7 @@ def _run_operational_provider_sync(args: argparse.Namespace) -> int:
                     stale_after_seconds=stale_after,
                     minimum_interval_seconds=minimum_interval,
                 ).sync_pitchapi(
-                    PitchApiClient(
-                        os.environ.get("PITCH_API_TOKEN", ""),
-                        connection_timeout_seconds=float(
-                            os.environ.get("MATCHFORGE_PROVIDER_CONNECTION_TIMEOUT_SECONDS", "5")
-                        ),
-                        request_timeout_seconds=float(
-                            os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
-                        ),
-                    ),
+                    _live_pitchapi_client(connection),
                     from_date,
                     args.date,
                     details_limit=args.details_limit,
@@ -593,7 +616,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
             lambda: OperationalProviderSync(
                 connection, args.data_root, provider_code="pitchapi"
             ).sync_pitchapi(
-                PitchApiClient(os.environ.get("PITCH_API_TOKEN", "")),
+                _live_pitchapi_client(connection, yield_to_live=True),
                 args.from_date or args.date,
                 args.date,
             ),
@@ -606,7 +629,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
             lambda: OperationalProviderSync(
                 connection, args.data_root, provider_code="fotmob"
             ).sync_fotmob(
-                FotmobClient(access_approved=True),
+                _live_fotmob_client(connection, yield_to_live=True),
                 args.from_date or args.date,
                 args.date,
             ),

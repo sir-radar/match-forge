@@ -86,6 +86,7 @@ class DetailCounts:
     successful_requests: int = 0
     failed_requests: int = 0
     resources: int = 0
+    fresh_until: datetime | None = None
 
 
 class RequestPacer:
@@ -428,10 +429,9 @@ class OperationalProviderSync:
             raise ValueError("details limits must be between 0 and 100")
         sync_started = datetime.now(UTC)
         counts = SyncCounts()
-        detailed_bulk = 0
-        detailed_live = 0
-        day = from_date
-        while day <= through_date:
+        resolved_batch: dict[str, tuple[FixtureObservation, UUID | None]] = {}
+        day = through_date
+        while day >= from_date:
             self.pacer.wait()
             counts.attempted_requests += 1
             response = fetch(day)
@@ -441,59 +441,43 @@ class OperationalProviderSync:
             rows: Sequence[FixtureObservation] = normalize(response)
             if competition_id is not None:
                 rows = tuple(row for row in rows if row.provider_competition_id == competition_id)
+            rows = tuple(row for row in rows if _newer_calendar_row(row, resolved_batch))
             counts.fetched += len(rows)
-            resolved: list[tuple[FixtureObservation, UUID | None]] = []
-            for row in rows:
-                try:
-                    created = inserted = matched = updated = history_inserted = 0
-                    unmatched = skipped = 0
-                    with self.connection.transaction():
-                        fixture_id = self._resolve_fixture(row, snapshot_id)
-                        if fixture_id is None:
-                            fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
-                            created = int(fixture_id is not None)
-                        observation_inserted = self._store_observation(row, snapshot_id, fixture_id)
-                        inserted = int(observation_inserted)
-                        skipped = int(not observation_inserted)
-                        if fixture_id is None:
-                            unmatched = 1
-                        else:
-                            matched = 1
-                            updated = self._update_canonical_fixture(row, fixture_id, snapshot_id)
-                            history_inserted = self._insert_qualified_history(
-                                row, fixture_id, snapshot_id
-                            )
-                    resolved.append((row, fixture_id))
-                    counts.canonical_fixtures_created += created
-                    counts.inserted += inserted
-                    counts.skipped += skipped
-                    counts.unmatched += unmatched
-                    counts.matched += matched
-                    counts.updated += updated
-                    counts.history_inserted += history_inserted
-                except (Error, ValueError) as error:
-                    counts.failed += 1
-                    reason = str(error).splitlines()[0]
-                    counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
-                    self._record_failed_observation(row, snapshot_id, reason)
-            detail_counts, used_bulk, used_live = self._fetch_prioritized_details(
-                resolved,
-                detail,
-                bulk_limit=details_limit - detailed_bulk,
-                live_limit=live_details_limit - detailed_live,
+            resolved = self._ingest_observations(rows, snapshot_id, counts)
+            resolved_batch.update(
+                (row.provider_match_id, (row, fixture)) for row, fixture in resolved
             )
-            detailed_bulk += used_bulk
-            detailed_live += used_live
-            counts.attempted_requests += detail_counts.attempted_requests
-            counts.successful_requests += detail_counts.successful_requests
-            counts.failed += detail_counts.failed_requests
-            counts.resources += detail_counts.resources
             self.connection.commit()
             with self.connection.transaction():
                 reconcile_product_fixtures(self.connection)
-            day += timedelta(days=1)
+            day -= timedelta(days=1)
+        detail_counts, _, _ = self._fetch_prioritized_details(
+            tuple(resolved_batch.values()),
+            detail,
+            bulk_limit=0,
+            live_limit=live_details_limit,
+        )
+        self._add_detail_counts(counts, detail_counts)
+        recovery = self._recover_unresolved(
+            from_date, fetch, normalize, details_limit, counts, competition_id
+        )
+        bulk_batch = {
+            key: value
+            for key, value in resolved_batch.items()
+            if value[0].status not in {"LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"}
+        }
+        recovery = [item for item in recovery if item[0].provider_match_id not in resolved_batch]
+        bulk_batch.update((row.provider_match_id, (row, fixture)) for row, fixture in recovery)
+        bulk_counts, _, _ = self._fetch_prioritized_details(
+            tuple(bulk_batch.values()),
+            detail,
+            bulk_limit=details_limit,
+            live_limit=0,
+            recovery_ids=frozenset(row.provider_match_id for row, _ in recovery),
+        )
+        self._add_detail_counts(counts, bulk_counts)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
-        diagnostics = self._sync_diagnostics(sync_started)
+        diagnostics = self._sync_diagnostics(sync_started, from_date)
         self.connection.commit()
         return {
             "status": "COMPLETED_WITH_ERRORS" if counts.failed else "COMPLETED",
@@ -504,6 +488,144 @@ class OperationalProviderSync:
             **diagnostics,
             **counts.to_dict(),
         }
+
+    def _recover_unresolved(
+        self,
+        from_date: date,
+        fetch: Any,
+        normalize: Any,
+        limit: int,
+        counts: SyncCounts,
+        competition_id: str | None,
+    ) -> list[tuple[FixtureObservation, UUID | None]]:
+        targets = self.connection.execute(
+            """SELECT (f.kickoff_at AT TIME ZONE 'UTC')::date,f.provider_match_id
+               FROM football.product_recoverable_fixtures f
+               LEFT JOIN football.product_provider_refresh_state state
+                 ON state.provider_code=f.provider_code AND state.resource_name=
+                     'fixtures-' || to_char(f.kickoff_at AT TIME ZONE 'UTC','YYYY-MM-DD')
+               WHERE f.provider_code=%s
+                 AND (%s::text IS NULL OR EXISTS (
+                     SELECT 1 FROM football.competition_provider_mappings cm
+                     JOIN football.providers p ON p.id=cm.provider_id AND p.code=f.provider_code
+                     WHERE cm.competition_id=f.competition_id AND cm.provider_competition_id=%s
+                       AND cm.valid_to IS NULL AND cm.mapping_confidence=1
+                       AND football.product_mapping_trusted('competition',cm.id,cm.competition_id)))
+                 AND f.kickoff_at < (%s::date::timestamp AT TIME ZONE 'UTC')
+                 AND NOT EXISTS (SELECT 1 FROM football.product_provider_fixture_observations o
+                                 WHERE o.canonical_fixture_id=f.fixture_id
+                                   AND o.provider_code=f.provider_code
+                                   AND o.last_fetched_at>clock_timestamp()-%s)
+                 AND (state.next_attempt_at IS NULL OR state.next_attempt_at<=clock_timestamp())
+               ORDER BY state.last_attempt_at NULLS FIRST,f.kickoff_at,f.fixture_id
+               LIMIT %s""",
+            (
+                self.provider_code,
+                competition_id,
+                competition_id,
+                from_date,
+                self.stale_after,
+                limit,
+            ),
+        ).fetchall()
+        days: dict[date, set[str]] = {}
+        for day, match_id in targets:
+            days.setdefault(day, set()).add(match_id)
+        resolved: list[tuple[FixtureObservation, UUID | None]] = []
+        for day, ids in days.items():
+            name = f"fixtures-{day.isoformat()}"
+            claimed = self._claim_refresh(name)
+            if claimed is None:
+                continue
+            successful = 0
+            counts.attempted_requests += 1
+            try:
+                self.pacer.wait()
+                response = fetch(day)
+                successful = 1
+                counts.successful_requests += 1
+                snapshot = self._record_response(name, response)
+                self.connection.commit()
+                rows = tuple(
+                    row
+                    for row in normalize(response)
+                    if row.provider_match_id in ids
+                    and (competition_id is None or row.provider_competition_id == competition_id)
+                )
+                counts.fetched += len(rows)
+                resolved.extend(self._ingest_observations(rows, snapshot, counts))
+                missing = ids - {row.provider_match_id for row in rows}
+                self._record_missing_recovery(counts, missing)
+            except (OSError, RuntimeError, ValueError) as error:
+                counts.failed += 1
+                reason = str(error).splitlines()[0]
+                counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
+                self._complete_refresh(name, claimed, DetailCounts(1, successful, 1))
+            else:
+                self._complete_refresh(
+                    name,
+                    claimed,
+                    DetailCounts(
+                        1, 1, int(bool(missing)), fresh_until=_cache_fresh_until(response)
+                    ),
+                    error="RECOVERY_FIXTURES_MISSING" if missing else None,
+                )
+        with self.connection.transaction():
+            reconcile_product_fixtures(self.connection)
+        return resolved
+
+    @staticmethod
+    def _record_missing_recovery(counts: SyncCounts, missing: set[str]) -> None:
+        if missing:
+            reason = "UNRESOLVED_FIXTURE_NOT_IN_PROVIDER_RESPONSE"
+            counts.failed += len(missing)
+            counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + len(missing)
+
+    @staticmethod
+    def _add_detail_counts(counts: SyncCounts, item: DetailCounts) -> None:
+        counts.attempted_requests += item.attempted_requests
+        counts.successful_requests += item.successful_requests
+        counts.failed += item.failed_requests
+        counts.resources += item.resources
+
+    def _ingest_observations(
+        self, rows: Sequence[FixtureObservation], snapshot_id: UUID, counts: SyncCounts
+    ) -> list[tuple[FixtureObservation, UUID | None]]:
+        resolved: list[tuple[FixtureObservation, UUID | None]] = []
+        for row in rows:
+            try:
+                created = inserted = matched = updated = history_inserted = 0
+                unmatched = skipped = 0
+                with self.connection.transaction():
+                    fixture_id = self._resolve_fixture(row, snapshot_id)
+                    if fixture_id is None:
+                        fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
+                        created = int(fixture_id is not None)
+                    observation_inserted = self._store_observation(row, snapshot_id, fixture_id)
+                    inserted = int(observation_inserted)
+                    skipped = int(not observation_inserted)
+                    if fixture_id is None:
+                        unmatched = 1
+                    else:
+                        matched = 1
+                        updated = self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                        history_inserted = self._insert_qualified_history(
+                            row, fixture_id, snapshot_id
+                        )
+                resolved.append((row, fixture_id))
+                counts.canonical_fixtures_created += created
+                counts.inserted += inserted
+                counts.skipped += skipped
+                counts.unmatched += unmatched
+                counts.matched += matched
+                counts.updated += updated
+                counts.history_inserted += history_inserted
+            except (Error, ValueError) as error:
+                counts.failed += 1
+                reason = str(error).splitlines()[0]
+                counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
+                self._record_failed_observation(row, snapshot_id, reason)
+        return resolved
 
     def _record_failed_observation(
         self, row: FixtureObservation, snapshot_id: UUID, reason: str
@@ -675,26 +797,90 @@ class OperationalProviderSync:
         *,
         bulk_limit: int,
         live_limit: int,
+        recovery_ids: frozenset[str] = frozenset(),
     ) -> tuple[DetailCounts, int, int]:
         attempted = successful = failed = resources = used_bulk = used_live = 0
+        names = [f"match-{row.provider_match_id}-details" for row, _ in resolved]
+        states = dict(
+            self.connection.execute(
+                """SELECT resource_name,last_attempt_at FROM football.product_provider_refresh_state
+               WHERE provider_code = %s AND resource_name = ANY(%s)""",
+                (self.provider_code, names),
+            ).fetchall()
+        )
+        oldest = datetime.min.replace(tzinfo=UTC)
         for row, _fixture_id in sorted(
-            resolved, key=lambda item: _detail_priority(item[0], item[1])
+            resolved,
+            key=lambda item: (
+                not (
+                    item[0].status in {"LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"}
+                    and item[0].provider_match_id not in recovery_ids
+                ),
+                states.get(f"match-{item[0].provider_match_id}-details", oldest),
+                _detail_priority(item[0], item[1]),
+            ),
         ):
-            is_live = row.status in {"LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"}
+            is_live = (
+                row.status in {"LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"}
+                and row.provider_match_id not in recovery_ids
+            )
             if is_live and used_live >= live_limit:
                 continue
             if not is_live and used_bulk >= bulk_limit:
                 continue
+            name = f"match-{row.provider_match_id}-details"
+            claimed = self._claim_refresh(name)
+            if claimed is None:
+                continue
             used_live += int(is_live)
             used_bulk += int(not is_live)
             item = cast(DetailCounts, detail(row))
+            self._complete_refresh(name, claimed, item)
             attempted += item.attempted_requests
             successful += item.successful_requests
             failed += item.failed_requests
             resources += item.resources
         return DetailCounts(attempted, successful, failed, resources), used_bulk, used_live
 
-    def _sync_diagnostics(self, sync_started: datetime) -> dict[str, object]:
+    def _claim_refresh(self, name: str) -> datetime | None:
+        row = self.connection.execute(
+            """INSERT INTO football.product_provider_refresh_state (
+                   provider_code,resource_name,last_attempt_at,next_attempt_at)
+               VALUES (%s,%s,clock_timestamp(),clock_timestamp()+%s)
+               ON CONFLICT (provider_code,resource_name) DO UPDATE
+               SET last_attempt_at=EXCLUDED.last_attempt_at,
+                   next_attempt_at=EXCLUDED.next_attempt_at
+               WHERE football.product_provider_refresh_state.next_attempt_at <= clock_timestamp()
+               RETURNING last_attempt_at""",
+            (self.provider_code, name, self.stale_after),
+        ).fetchone()
+        self.connection.commit()
+        return cast(datetime, row[0]) if row is not None else None
+
+    def _complete_refresh(
+        self, name: str, claimed: datetime, item: DetailCounts, *, error: str | None = None
+    ) -> None:
+        self.connection.execute(
+            """UPDATE football.product_provider_refresh_state
+               SET last_success_at=CASE WHEN %s = 0 THEN clock_timestamp() ELSE last_success_at END,
+                   next_attempt_at=GREATEST(clock_timestamp()+%s,%s),
+                   failed_requests=%s,last_error=CASE WHEN %s > 0 THEN %s END
+               WHERE provider_code=%s AND resource_name=%s AND last_attempt_at=%s""",
+            (
+                item.failed_requests,
+                self.stale_after,
+                item.fresh_until if item.failed_requests == 0 else None,
+                item.failed_requests,
+                item.failed_requests,
+                error or "DETAIL_REQUEST_FAILED",
+                self.provider_code,
+                name,
+                claimed,
+            ),
+        )
+        self.connection.commit()
+
+    def _sync_diagnostics(self, sync_started: datetime, from_date: date) -> dict[str, object]:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """SELECT reason, count(*)
@@ -731,7 +917,46 @@ class OperationalProviderSync:
             "latest_observed_at": freshness[0].isoformat() if freshness else None,
             "latest_fetched_at": freshness[1].isoformat() if freshness else None,
             "latest_stale_after": freshness[2].isoformat() if freshness else None,
+            "lifecycle_recovery": self._lifecycle_diagnostics(from_date),
         }
+
+    def _lifecycle_diagnostics(self, from_date: date) -> dict[str, int]:
+        row = self.connection.execute(
+            """WITH unresolved AS (
+                 SELECT fixture_id FROM football.product_fixtures f
+                 WHERE status IN (
+                     'SCHEDULED','LIVE','HALF_TIME','SUSPENDED','INTERRUPTED','POSTPONED')
+                   AND kickoff_at < (%s::date::timestamp AT TIME ZONE 'UTC')
+                   AND NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions resolution
+                                   WHERE resolution.member_fixture_id=f.fixture_id
+                                     AND resolution.active))
+               SELECT (SELECT count(*) FROM unresolved),
+                      (SELECT count(DISTINCT fixture_id) FROM football.product_recoverable_fixtures
+                       WHERE provider_code=%s
+                         AND fixture_id IN (SELECT fixture_id FROM unresolved)),
+                      (SELECT count(*) FROM unresolved u WHERE NOT EXISTS (
+                          SELECT 1 FROM football.product_recoverable_fixtures r
+                          WHERE r.fixture_id=u.fixture_id)),
+                      (SELECT count(*) FROM football.product_provider_refresh_state
+                       WHERE provider_code=%s AND next_attempt_at>clock_timestamp()),
+                      (SELECT count(*) FROM football.product_provider_refresh_state
+                       WHERE provider_code=%s AND failed_requests>0)""",
+            (from_date, self.provider_code, self.provider_code, self.provider_code),
+        ).fetchone()
+        assert row is not None
+        return dict(
+            zip(
+                (
+                    "unresolved_outside_window",
+                    "recoverable_for_provider",
+                    "without_verified_supported_provider",
+                    "cooldown_resources",
+                    "failed_refresh_resources",
+                ),
+                row,
+                strict=True,
+            )
+        )
 
     def _record_response(self, resource_name: str, response: Any) -> UUID:
         digest = response.sha256
@@ -1850,6 +2075,7 @@ class OperationalProviderSync:
             attempted_requests=1,
             successful_requests=1,
             resources=len(resources),
+            fresh_until=_cache_fresh_until(response),
         )
 
     def _pitchapi_details(self, client: PitchApiClient, row: PitchApiFixture) -> DetailCounts:
@@ -2028,6 +2254,27 @@ def _valid_transition(current: str, incoming: str) -> bool:
         "INTERRUPTED": {"INTERRUPTED", "SUSPENDED", "LIVE", "HALF_TIME", *terminal},
     }
     return incoming in allowed.get(current, set())
+
+
+def _cache_fresh_until(response: FotmobResponse | PitchApiResponse) -> datetime | None:
+    if isinstance(response, FotmobResponse) and response.cache_max_age_seconds is not None:
+        return response.fetched_at + timedelta(seconds=response.cache_max_age_seconds)
+    return None
+
+
+def _newer_calendar_row(
+    row: FixtureObservation, selected: Mapping[str, tuple[FixtureObservation, UUID | None]]
+) -> bool:
+    previous = selected.get(row.provider_match_id)
+    if previous is None:
+        return True
+    # Retain the current-day observation when the older calendar cannot prove
+    # newer source information. Both immutable listing snapshots are retained.
+    return (
+        row.source_updated_at is not None
+        and previous[0].source_updated_at is not None
+        and row.source_updated_at > previous[0].source_updated_at
+    )
 
 
 def _detail_priority(item: FixtureObservation, fixture_id: UUID | None) -> tuple[int, float, str]:
