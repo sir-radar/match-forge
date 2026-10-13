@@ -46,3 +46,18 @@ Scope: additional eligibility metrics on the existing `/v1/admin/sync-runs` resp
 Performance policy/horizon metadata is mandatory and validated. Horizon changes
 use the existing cancellation and stale-response handling. Unknown metadata
 produces the scoped error/retry state; empty populations retain nullable metrics.
+
+## R8 date, revision and job states
+
+| State | Treatment | Evidence |
+| --- | --- | --- |
+| Cleared/invalid fixture date | Keep last valid request and show validation alert | component/date tests and production browser test |
+| Initial civil day / hydration | Server prop in configured timezone; deterministic selected-day label | timezone/DST unit tests and SSR/browser comparison |
+| Changed-key slow/reordered response | Hide old-key data immediately; abort and generation guard | hook and delayed-day browser regressions |
+| Same-key refresh | Retain known data with refreshing state | hook regression |
+| Forecast history loading / empty / error | Independent state with scoped retry | revision component tests |
+| Selected/current revisions | Original probabilities and complete lineage; local selection only | component and keyboard/browser history tests |
+| Malformed revision / wrong fixture | Reject at transport boundary | revision contract tests |
+| Bulk and provider lanes active together | Disable only corresponding lane; separate stop/retry | hook and admin component tests |
+| Delayed RUNNING after terminal / slow poll | Terminal precedence; no overlapping polls; cleanup aborts | controlled-request hook regressions |
+| Optimistic rollback | Not applicable: job state is reconciled from durable server responses | admin hook |

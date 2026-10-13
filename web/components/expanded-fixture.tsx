@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, useId, useRef, type KeyboardEvent, type CSSProperties } from "react";
 import { api } from "@/lib/api";
 import type { Competition, Fixture, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
+import { ForecastHistory } from "@/components/forecast-history";
 import { Icon } from "@/components/icon";
 
 const tabs = ["Live Match", "Overview", "Markets", "Score matrix", "H2H context", "Team statistics", "Simulation evidence", "Diagnostics", "Forecast history"] as const;
@@ -13,6 +14,12 @@ type Tab = (typeof tabs)[number];
 
 export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; competition: Competition }) {
   const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
+  const tabsId = useId();
+  const tabButtons = useRef<(HTMLButtonElement | null)[]>([]);
+  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const target = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (target === null) return; event.preventDefault(); setTab(tabs[target]); tabButtons.current[target]?.focus();
+  };
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const forecastLoad = useCallback((signal: AbortSignal) => fixture.forecast ? api.forecast(fixture.id, fixture.forecast.id, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, fixture.forecast]);
@@ -42,13 +49,15 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
       <div className="expected-goals"><span><small>{fixture.home.name} expected goals</small><b>{fixture.forecast.expected_home_goals.toFixed(2)}</b></span><span><small>{fixture.away.name} expected goals</small><b>{fixture.forecast.expected_away_goals.toFixed(2)}</b></span></div>
     </section>}
     <div className="tab-list" role="tablist" aria-label="Match analysis">
-      {tabs.map((name) => <button key={name} role="tab" aria-selected={tab === name} aria-controls={`panel-${fixture.id}`} onClick={() => setTab(name)}>{name}</button>)}
+      {tabs.map((name, index) => <button key={name} ref={(node) => { tabButtons.current[index] = node; }} id={`${tabsId}-tab-${index}`} role="tab" tabIndex={tab === name ? 0 : -1} aria-selected={tab === name} aria-controls={`${tabsId}-panel-${index}`} onKeyDown={(event) => navigateTabs(event, index)} onClick={() => setTab(name)}>{name}</button>)}
     </div>
-    <div id={`panel-${fixture.id}`} role="tabpanel" className="tab-panel">
+    {tabs.map((name, index) => <div key={name} id={`${tabsId}-panel-${index}`} role="tabpanel" aria-labelledby={`${tabsId}-tab-${index}`} tabIndex={0} hidden={tab !== name} className="tab-panel">
+      {tab === name && <>
       <TabContent tab={tab} fixture={fixture} resources={resources} />
       {tab === "Live Match" && live.error && <ResourceError message={live.error} retry={live.retry} />}
       <AnalysisStatus tab={tab} hasForecast={fixture.forecast !== null} context={context} forecast={forecast} />
-    </div>
+      </>}
+    </div>)}
     <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
   </div>;
 }
@@ -70,7 +79,7 @@ function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; r
     case "Team statistics": return <TeamStatistics fixture={fixture} context={resources.context.data} />;
     case "Simulation evidence": return <UnavailablePanel title="Simulation validation unavailable" detail="The public MVP forecast API does not expose a linked simulation-validation artifact. No validation result is inferred from forecast availability." />;
     case "Diagnostics": return <UnavailablePanel title="Research diagnostics restricted" detail="Diagnostics remain research-only and are not exposed by the public MVP API." />;
-    case "Forecast history": return <UnavailablePanel title="Forecast history unavailable" detail="The public MVP API exposes the selected immutable forecast, but does not expose its prior published revisions." />;
+    case "Forecast history": return <ForecastHistory key={fixture.id} fixtureId={fixture.id} currentId={fixture.forecast?.id ?? null} />;
   }
 }
 

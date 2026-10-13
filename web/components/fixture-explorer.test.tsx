@@ -44,6 +44,33 @@ describe("FixtureExplorer", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
+  it("keeps the last valid day when the date input is cleared", async () => {
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    await screen.findByRole("button", { name: /Arsenal.*Chelsea/s });
+    fireEvent.change(screen.getByLabelText("Selected date"), { target: { value: "" } });
+    expect(screen.getByRole("alert")).toHaveTextContent("Choose a valid fixture date");
+    expect(screen.getByLabelText("Selected date")).toHaveValue("2026-09-29");
+    fireEvent.click(screen.getByRole("button", { name: "Next day" }));
+    expect(screen.getByLabelText("Selected date")).toHaveValue("2026-09-30");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(vi.mocked(fetch).mock.calls.some(([input]) => /date=(&|$)/.test(String(input)))).toBe(false);
+  });
+
+  it("uses roving focus and complete tab-panel associations", async () => {
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    fireEvent.click(await screen.findByRole("button", { name: /Arsenal.*Chelsea/s }));
+    const overview = screen.getByRole("tab", { name: "Overview" });
+    overview.focus(); fireEvent.keyDown(overview, { key: "ArrowRight" });
+    const markets = screen.getByRole("tab", { name: "Markets" });
+    expect(markets).toHaveFocus(); expect(markets).toHaveAttribute("aria-selected", "true");
+    expect(overview).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", markets.id);
+    expect(markets.getAttribute("aria-controls")).toBe(screen.getByRole("tabpanel").id);
+    fireEvent.keyDown(markets, { key: "Home" }); expect(screen.getByRole("tab", { name: "Live Match" })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole("tab", { name: "Live Match" }), { key: "ArrowLeft" });
+    expect(screen.getByRole("tab", { name: "Forecast history" })).toHaveFocus();
+  });
+
   it("renders the dense fixture list and expands the match inline", async () => {
     render(<FixtureExplorer initialDate="2026-09-29" />);
     const row = await screen.findByRole("button", { name: /Arsenal.*Chelsea/s });

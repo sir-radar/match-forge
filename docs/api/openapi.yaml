@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.6.0
+  version: 0.7.0
   description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
 servers:
   - url: http://127.0.0.1:8080
@@ -37,6 +37,13 @@ paths:
       parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
       responses:
         '200': { description: Display-only recent form, H2H, standings, and availability, content: { application/json: { schema: { type: object } } } }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/fixtures/{fixture_id}/forecasts:
+    get:
+      operationId: getForecastHistory
+      parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
+      responses:
+        '200': { description: Immutable forecast revisions ordered by issue time and identity, content: { application/json: { schema: { type: object, required: [forecasts], properties: { forecasts: { type: array, items: { $ref: '#/components/schemas/ForecastRevision' } } } } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/forecasts/{forecast_id}:
     get:
@@ -152,8 +159,8 @@ components:
     Unavailable: { description: Product data unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   schemas:
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA] }
-    SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
+    SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object
       additionalProperties: false
@@ -293,6 +300,33 @@ components:
             score_matrix:
               type: array
               items: { $ref: '#/components/schemas/ScoreBucket' }
+    ForecastRevision:
+      type: object
+      required: [forecast_id, fixture_id, issued_at, football_cutoff, knowledge_cutoff, forecast_horizon, supersedes_forecast_id, model_id, artifact_sha256, predictive_input_snapshot_sha256, context_snapshot_sha256, revision_reason_codes, new_information_ids, probability_payload, payload_sha256]
+      properties:
+        forecast_id: { type: string, format: uuid }
+        fixture_id: { type: string, format: uuid }
+        issued_at: { type: string, format: date-time }
+        football_cutoff: { type: string, format: date-time }
+        knowledge_cutoff: { type: string, format: date-time }
+        forecast_horizon: { type: string }
+        supersedes_forecast_id: { type: [string, 'null'], format: uuid }
+        model_id: { type: string }
+        artifact_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        predictive_input_snapshot_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        context_snapshot_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        payload_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        revision_reason_codes: { type: array, items: { type: string } }
+        new_information_ids: { type: array, items: { type: string } }
+        probability_payload:
+          type: object
+          required: [expected_home_goals, expected_away_goals, probabilities, score_matrix, score_matrix_version]
+          properties:
+            expected_home_goals: { type: number, exclusiveMinimum: 0 }
+            expected_away_goals: { type: number, exclusiveMinimum: 0 }
+            probabilities: { type: object, additionalProperties: { type: number, minimum: 0, maximum: 1 } }
+            score_matrix_version: { type: string, enum: [legacy-compact-index-v1, compact-buckets-v2] }
+            score_matrix: { type: array, items: { $ref: '#/components/schemas/ScoreBucket' } }
     ScoreBucket:
       type: object
       description: Numeric goals are bucket minima. Legacy index 5 means 5+; compact-buckets-v2 requires explicit labels and kinds for both axes.

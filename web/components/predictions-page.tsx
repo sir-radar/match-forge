@@ -5,10 +5,11 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Icon } from "@/components/icon";
 import { Logo } from "@/components/logo";
 import { useResource } from "@/hooks/use-resource";
+import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api } from "@/lib/api";
 import type { ExternalPrediction, ExternalSource } from "@/lib/contracts";
 
-const DISPLAY_TIME_ZONE = process.env.NEXT_PUBLIC_TIME_ZONE ?? "Africa/Lagos";
+
 
 type FacetFilters = {
   source: string;
@@ -42,8 +43,8 @@ const FILTER_LABELS: Record<keyof FacetFilters, string> = {
 const mono = "font-mono tabular-nums";
 const control = "h-8 w-full min-w-0 rounded-sm border border-[#262a34] bg-[#1c1f29] px-2 text-[10px] text-[#dfe2ef] outline-none focus:border-[#7bd0ff]";
 
-export function PredictionsPage({ initialDate }: { initialDate?: string }) {
-  const initialDay = initialDate ?? utcToday();
+export function PredictionsPage({ initialDate }: { initialDate: string }) {
+  const initialDay = initialDate;
   const [day, setDay] = useState(initialDay);
   const [filters, setFilters] = useState<FacetFilters>(EMPTY_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>("live");
@@ -94,6 +95,7 @@ export function PredictionsPage({ initialDate }: { initialDate?: string }) {
         <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={predictionItems.length} />
         <FiltersBar
           day={day}
+          today={initialDate}
           filters={filters}
           sources={sourceItems}
           count={predictionItems.length}
@@ -272,8 +274,9 @@ function Metric({ icon, label, value, detail, footerLabel, footerValue, accent =
   );
 }
 
-function FiltersBar({ day, filters, sources, count, refreshing, onDayChange, onFilterChange, onReset, onRefresh }: {
+function FiltersBar({ day, today, filters, sources, count, refreshing, onDayChange, onFilterChange, onReset, onRefresh }: {
   day: string;
+  today: string;
   filters: FacetFilters;
   sources: ExternalSource[];
   count: number;
@@ -284,7 +287,6 @@ function FiltersBar({ day, filters, sources, count, refreshing, onDayChange, onF
   onRefresh: () => void;
 }) {
   const active = Object.entries(filters).filter((entry): entry is [keyof FacetFilters, string] => entry[1] !== "");
-  const today = utcToday();
 
   return (
     <section className="sticky top-14 z-30 w-full border-b border-[#262a34] bg-[#0a0e17]/95 px-4 py-2 backdrop-blur" aria-label="Prediction filters">
@@ -515,10 +517,6 @@ function consensusRows(items: ExternalPrediction[]) {
     const row = group.find((item) => item.selection === selection) ?? group[0];
     return { id: row.fixture_id ?? `${row.prediction_date}|${row.home_team}|${row.away_team}`, fixture: `${row.home_team} vs ${row.away_team}`, kickoff: row.kickoff_at, selection, count, total: group.length, agreement: row.agreement };
   });
-}
-
-function utcToday() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function addDays(value: string, amount: number) {

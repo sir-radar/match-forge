@@ -7,14 +7,16 @@ import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { ProbabilityBar } from "@/components/probability-bar";
 import { ExpandedFixture } from "@/components/expanded-fixture";
+import { DISPLAY_TIME_ZONE, dayLabel, validDay } from "@/lib/display-date";
 import { Icon } from "@/components/icon";
 
 type Filters = { continent: string; country: string; competition: string; forecast: string };
 type CoverageOptions = ReturnType<typeof coverageOptions>;
-const DISPLAY_TIME_ZONE = process.env.NEXT_PUBLIC_TIME_ZONE ?? "Africa/Lagos";
 
 export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   const [date, setDate] = useState(initialDate);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const selectDate = (value: string) => { if (!validDay(value)) { setDateError("Choose a valid fixture date."); return; } setDateError(null); setDate(value); setExpanded(null); };
   const [filters, setFilters] = useState<Filters>({ continent: "", country: "", competition: "", forecast: "" });
   const [teamQuery, setTeamQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -37,7 +39,7 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   const moveDate = (days: number) => {
     const next = new Date(`${date}T12:00:00Z`);
     next.setUTCDate(next.getUTCDate() + days);
-    setDate(next.toISOString().slice(0, 10));
+    selectDate(next.toISOString().slice(0, 10));
   };
 
   return (
@@ -46,7 +48,8 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
       <CompetitionRail state={competitions} filters={filters} setFilters={setFilters} />
       <section className="fixture-workbench" aria-label="Football fixtures">
         <div className="environment-strip"><span>Environment: <b>Production pre-match</b></span><i /> <span>Forecasts: immutable published records</span></div>
-        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={setDate} />
+        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={selectDate} />
+        {dateError && <p role="alert">{dateError}</p>}
         <StatusFilters groups={fixtures.data ?? []} value={statusFilter} onChange={setStatusFilter} />
         <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} teamQuery={teamQuery} setTeamQuery={setTeamQuery} />
         <div className="engine-strip"><Icon name="monitoring" /><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
@@ -72,7 +75,7 @@ function CompetitionRail({ state, filters, setFilters }: { state: ReturnType<typ
 
 function FixtureToolbar({ date, count, moveDate, setDate }: { date: string; count: number | string; moveDate: (days: number) => void; setDate: (value: string) => void }) {
   return <div className="fixture-toolbar">
-    <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{count} matches scoped · {longDate(date)}</small></div></div>
+    <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{count} matches scoped · {dayLabel(date)}</small></div></div>
     <div className="date-bar">
       <button aria-label="Previous day" onClick={() => moveDate(-1)}><Icon name="chevron-left" /><span>Prev Day</span></button>
       <label><span>Selected date</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
@@ -198,4 +201,3 @@ function coverageOptions(competitions: Competition[]) {
 function timeLabel(value: string) { return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: DISPLAY_TIME_ZONE }).format(new Date(value)); }
 function availabilityLabel(value: string) { return value === "NOT_ENOUGH_HISTORY" ? "Not enough history" : value === "SOURCE_DATA_INCOMPLETE" ? "Source incomplete" : value === "TEMPORARILY_UNAVAILABLE" ? "Temporarily unavailable" : "Forecast unavailable"; }
 function fixtureCount(groups: FixtureGroup[] | null) { return groups?.reduce((total, group) => total + group.fixtures.length, 0) ?? "—"; }
-function longDate(value: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: DISPLAY_TIME_ZONE }).format(new Date(`${value}T12:00:00Z`)); }

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { writeFileSync } from "node:fs";
 
 const competition = { id: "31ba91ba-d228-41f7-b5fd-dd9222aa95dc", name: "Premier League", country: "England", continent: "Europe", division: 1, type: "LEAGUE", season: "2026", availability: { fixtures: true, results: true, standings: true, h2h: true, forecast: true, xg: false, team_stats: false }, availability_status: "FORECAST_AVAILABLE", sources: { fixtures: ["api_football"] } };
 const performance = { analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: "LATEST", competition_id: competition.id, league: competition.name, country: competition.country, continent: competition.continent, rating: "GOOD", forecasts: 86, outcome_hit_rate: .53, brier: .58, log_loss: .94, baseline_brier: .63, baseline_log_loss: 1.02, exact_score_rate: .12, top_three_score_rate: .31, top_five_score_rate: .45, total_goals_hit_rate: .54, btts_hit_rate: .51, latest_fifty_brier: .56, latest_fifty_log_loss: .91, latest_fifty_baseline_brier: .62, latest_fifty_baseline_log_loss: 1.01 };
@@ -93,4 +94,34 @@ function performancePayload(url: string) {
     performance: performanceRows.slice(start, start + pageSize),
     pagination: { page, page_size: pageSize, total_items: performanceRows.length, total_pages: Math.ceil(performanceRows.length / pageSize) },
   };
+}
+
+
+test("prediction action computed contrast and forced-colors focus", async ({ page }) => {
+  if (test.info().project.name === "mobile") await page.setViewportSize({ width: 320, height: 800 });
+  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [] } }));
+  await page.goto("/predictions");
+  const action = page.getByRole("button", { name: "Reset All Filters" });
+  await expect(action).toBeVisible();
+  const colors = await action.evaluate((node) => { const style = getComputedStyle(node); return { foreground: style.color, background: style.backgroundColor }; });
+  expect(colors.foreground).toBe("rgb(0, 56, 36)");
+  expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
+  await action.focus(); await expect(action).toBeFocused();
+  await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+  await expect(action).toBeVisible(); await expect(action).toBeFocused();
+  await expect(action).toHaveCSS("outline-style", "solid");
+  await page.emulateMedia({ forcedColors: "none" });
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  const evidence = test.info().outputPath("computed-action-colors.json");
+  writeFileSync(evidence, JSON.stringify({ ...colors, contrast: contrastRatio(colors.foreground, colors.background) }));
+  await test.info().attach("computed-action-colors", { path: evidence, contentType: "application/json" });
+});
+
+function contrastRatio(foreground: string, background: string): number {
+  const luminance = (color: string) => {
+    const channels = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map((channel) => { const value = channel / 255; return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4; });
+    return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+  };
+  const a = luminance(foreground), b = luminance(background);
+  return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
 }

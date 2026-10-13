@@ -8,7 +8,7 @@
   advance by one UTC day, and the renderer rejects off-day rows.
 - Request safety: `useResource` aborts superseded requests, ignores stale completions, preserves previous data while refreshing and exposes retry.
 - Partial failure: fixture, forecast, context and external-selection resources render independently. Missing context cannot hide a fixture or overwrite a forecast.
-- Mutation/optimistic state: none. The MVP API is read-only.
+- Mutation/optimistic state: product endpoints are read-only. Admin submits durable jobs and reconciles server responses; metrics are never changed optimistically.
 - Contract tests: invalid probability and agreement rejection; exact-day request
   keys and day navigation; fixture list loading/expansion; unavailable-forecast
   visibility; Go query/rating/agreement tests.
@@ -45,3 +45,23 @@ fixture contributes its latest eligible immutable pre-kickoff revision once.
 Fixed horizons select by availability at the cutoff, independent of a revision's
 stored horizon label. Query keys include the horizon. Score rankings describe
 categories; aggregate buckets cannot count as exact scores.
+
+## Remediation frontend states
+
+Forecast history consumes the existing revision endpoint. The boundary validates
+issue/cutoff timestamps, SHA-256 lineage, revision reasons and original probability
+payloads through the shared bucket parser; it rejects a fixture mismatch. Current
+and selected revision labels remain distinct, and selection changes only local
+presentation. History has independent loading, empty, error and retry states.
+
+Resources retain data only for the same request key. A changed date or filter
+hides old results synchronously; cancellation and generation checks also reject
+late completions. Date-bearing pages receive their initial configured civil day
+from the server, and fixture day labels use explicit calendar names/punctuation.
+Invalid or cleared selections preserve the last valid fixture request.
+
+Admin controls mirror the existing bulk, FotMob and PitchAPI lanes. Requests
+within one lane cannot overlap mutations; other lanes retain their controls.
+Polling waits for completion before scheduling the next request, aborts superseded
+reads, preserves terminal run states and retrieves active runs omitted from the
+recent-list page. Cancellation/retry and errors remain lane-specific.

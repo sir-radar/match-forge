@@ -825,3 +825,34 @@ function booleanRecord(value: unknown, field: string): Record<string, boolean> {
 function stringArrayRecord(value: unknown, field: string): Record<string, string[]> {
   return Object.fromEntries(Object.entries(object(value, field)).map(([key, entry]) => [key, array(entry, `${field}.${key}`).map((item) => text(item, `${field}.${key}`))]));
 }
+
+export type ForecastRevision = {
+  forecast_id: string; fixture_id: string; issued_at: string; football_cutoff: string; knowledge_cutoff: string;
+  forecast_horizon: string; supersedes_forecast_id: string | null; model_id: string; artifact_sha256: string;
+  predictive_input_snapshot_sha256: string; context_snapshot_sha256: string; payload_sha256: string;
+  revision_reason_codes: string[]; new_information_ids: string[]; probability_payload: Forecast;
+};
+
+export function parseForecastHistory(value: unknown): ForecastRevision[] {
+  const envelope = object(value, "forecast history");
+  return array(envelope.forecasts, "forecasts").map((value) => {
+    const item = object(value, "forecast revision");
+    const model = text(item.model_id, "model_id");
+    const timestamp = (field: string) => { const value = nullableTimestamp(item[field], field); if (value === null) throw new Error(`${field} is required`); return value; };
+    const checksum = (field: string) => { const value = text(item[field], field); if (!/^[0-9a-f]{64}$/.test(value)) throw new Error(`invalid ${field}`); return value; };
+    const id = text(item.forecast_id, "forecast_id");
+    const fixture = text(item.fixture_id, "fixture_id");
+    const issued = timestamp("issued_at"), football = timestamp("football_cutoff"), knowledge = timestamp("knowledge_cutoff");
+    const payload = object(item.probability_payload, "probability_payload");
+    return {
+      forecast_id: id, fixture_id: fixture, issued_at: issued, football_cutoff: football, knowledge_cutoff: knowledge,
+      forecast_horizon: text(item.forecast_horizon, "forecast_horizon"), supersedes_forecast_id: nullableText(item.supersedes_forecast_id, "supersedes_forecast_id"),
+      model_id: model, artifact_sha256: checksum("artifact_sha256"), predictive_input_snapshot_sha256: checksum("predictive_input_snapshot_sha256"),
+      context_snapshot_sha256: checksum("context_snapshot_sha256"), payload_sha256: checksum("payload_sha256"),
+      revision_reason_codes: array(item.revision_reason_codes, "revision_reason_codes").map((value) => text(value, "revision reason")),
+      new_information_ids: array(item.new_information_ids, "new_information_ids").map((value) => text(value, "information ID")),
+      probability_payload: parseForecast({ ...payload, id, fixture_id: fixture, model_label: "MVP_FORECAST", model_algorithm_version: model,
+        created_at: issued, football_cutoff: football, knowledge_cutoff: knowledge, knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED" }),
+    };
+  });
+}
