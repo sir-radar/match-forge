@@ -22,6 +22,8 @@ from football.product.historical_backfill import (
     KickoffPrecision,
     date_only_timestamp,
 )
+from football.product.historical_manifest import publish_manifest
+from football.product.identity_admission import admit_provider_mappings
 
 PROVIDER_CODE = "openfootball"
 REPOSITORY_URL = "https://github.com/openfootball/football.json.git"
@@ -231,26 +233,36 @@ def run_backfill(
         competitions=len({item.source_file.stem for item in selected}),
     )
     observed_at = datetime.now(UTC)
-    store = HistoricalBackfillStore(connection, PROVIDER_CODE, "OpenFootball", PARSER_VERSION)
-    snapshot = store.ensure_snapshot(
-        source_identity=REPOSITORY_URL,
-        source_revision=revision,
-        acquired_at=observed_at,
-        manifest_path=f"openfootball/{revision}/catalog.json",
-        repository=REPOSITORY_URL,
-        git_sha=revision,
+    store = HistoricalBackfillStore(
+        connection,
+        PROVIDER_CODE,
+        "OpenFootball",
+        PARSER_VERSION,
+        data_root=data_root,
     )
     for item in selected:
         payload = item.source_file.read_bytes()
         digest = hashlib.sha256(payload).hexdigest()
         provider_path = f"{item.season}/{item.source_file.name}"
-        cache_path = data_root / PROVIDER_CODE / revision / provider_path
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        if not cache_path.exists():
-            cache_path.write_bytes(payload)
+        manifest_path = publish_manifest(
+            data_root,
+            provider=PROVIDER_CODE,
+            source_identity=REPOSITORY_URL,
+            source_revision=revision,
+            acquired_at=observed_at,
+            resources=[(provider_path, f"{PROVIDER_CODE}/{revision}/{provider_path}", payload)],
+        )
         if store.resource_already_imported(provider_path, digest):
             summary.resources_cached += 1
             continue
+        snapshot = store.ensure_snapshot(
+            source_identity=REPOSITORY_URL,
+            source_revision=revision,
+            acquired_at=observed_at,
+            manifest_path=manifest_path,
+            repository=REPOSITORY_URL,
+            git_sha=revision,
+        )
         store.record_resource(
             snapshot_id=snapshot,
             provider_path=provider_path,
@@ -266,6 +278,7 @@ def run_backfill(
             _count_result(summary, result)
     summary.competition_mappings_created = store.competition_mappings_created
     summary.team_mappings_created = store.team_mappings_created
+    admit_provider_mappings(connection, data_root, PROVIDER_CODE)
     connection.commit()
     return summary.to_dict()
 

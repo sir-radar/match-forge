@@ -51,6 +51,8 @@ from football.product.football_data_org import (
     FootballDataOrgError,
     FootballDataResponse,
 )
+from football.product.identity_admission import admit_provider_mappings
+from football.storage.raw import ImmutableFileStore
 
 PROVIDER_CODE = "api_football"
 FALLBACK_PROVIDER_CODE = "football_data_org"
@@ -154,6 +156,8 @@ class ProductSync:
         self._enqueue_history_jobs(league_seasons)
         self.connection.commit()
         queue_result = self._process_history_queue(history_concurrency)
+        for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
+            admit_provider_mappings(self.connection, self.data_root, provider)
         completed_at = datetime.now(UTC)
         history_fixture_count = self.backfill_fixtures_from_history(
             fixture_history_start, requested_date, completed_at
@@ -952,10 +956,7 @@ class ProductSync:
             / response.fetched_at.strftime("%Y/%m/%d")
             / f"{digest}.json"
         )
-        destination = self.data_root / relative_path
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if not destination.exists():
-            destination.write_bytes(response.raw)
+        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1013,10 +1014,7 @@ class ProductSync:
             / response.fetched_at.strftime("%Y/%m/%d")
             / f"{digest}.json"
         )
-        destination = self.data_root / relative_path
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if not destination.exists():
-            destination.write_bytes(response.raw)
+        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1748,6 +1746,8 @@ class ProductSync:
 
     def refresh_forecasts(self, now: datetime | None = None) -> int:
         """Publish only missing future forecasts from already stored canonical history."""
+        for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
+            admit_provider_mappings(self.connection, self.data_root, provider)
         now = now or datetime.now(UTC)
         artifact_sha = hashlib.sha256(self.artifact_path.read_bytes()).hexdigest()
         count = 0
@@ -1932,7 +1932,7 @@ class ProductSync:
                 """
                 SELECT fixture_id, kickoff_at, home_team_id, away_team_id,
                        home_goals, away_goals, home_xg, away_xg
-                FROM football.product_eligible_match_history
+                FROM football.product_eligible_history_at(%s)
                 WHERE (
                     (source_kickoff_precision = 'EXACT' AND kickoff_at < %s)
                     OR (
@@ -1947,6 +1947,7 @@ class ProductSync:
                 ORDER BY kickoff_at, fixture_id
                 """,
                 (
+                    knowledge_cutoff or cutoff,
                     cutoff,
                     cutoff,
                     home_team_id,

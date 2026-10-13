@@ -1,72 +1,89 @@
-from __future__ import annotations
-
+from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
-from football.product.identity_audit import audit_report
+import pytest
+from football.product import identity_admission, identity_audit
+from football.product.domain import stable_id
 
 
-class _Cursor:
-    def __init__(self, rows: list[tuple[object, ...]]) -> None:
-        self._rows = rows
-
-    def __enter__(self) -> _Cursor:
-        return self
-
-    def __exit__(self, *_args: object) -> None:
-        return None
-
-    def execute(self, query: str, params: object) -> None:
-        assert "bool_or" in query
-        assert params == ("explicit_crosswalk", "manual")
-
-    def fetchall(self) -> list[tuple[object, ...]]:
-        return self._rows
+class _Result:
+    def fetchone(self) -> tuple[str]:
+        return ("England",)
 
 
 class _Connection:
-    def __init__(self, result_sets: list[list[tuple[object, ...]]]) -> None:
-        self._result_sets = iter(result_sets)
-
-    def cursor(self) -> _Cursor:
-        return _Cursor(next(self._result_sets))
+    def execute(self, *_args: object) -> _Result:
+        return _Result()
 
 
-def test_identity_audit_passes_without_unsafe_shared_ids() -> None:
-    report = audit_report(_Connection([[], []]))  # type: ignore[arg-type]
-
-    assert report == {
-        "contract": "ProviderIdentityAuditV1",
-        "status": "PASS",
-        "unsafe_shared_identity_count": 0,
-        "findings": [],
-    }
+@pytest.fixture(autouse=True)
+def no_admissions(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(identity_audit, "_admission_states", lambda _connection: {})
+    monkeypatch.setattr(identity_audit, "_legacy_manifest_counts", lambda _connection: {})
 
 
-def test_identity_audit_reports_unreviewed_cross_provider_mapping() -> None:
-    connection: Any = _Connection(
-        [
-            [],
-            [
-                (
-                    "10000000-0000-4000-8000-000000000001",
-                    ["api_football", "football_data_uk"],
-                    ["deterministic"],
-                    2,
-                )
-            ],
-        ]
+def test_identity_audit_classifies_origin_and_crosswalk_using_shared_policy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical = stable_id("team", "api_football", "42")
+    rows = [
+        (uuid4(), canonical, "api_football", "42", "deterministic", 1, "England", uuid4()),
+        (uuid4(), canonical, "fotmob", "9825", "explicit_crosswalk", 1, "England", uuid4()),
+    ]
+    monkeypatch.setattr(
+        identity_audit, "mapping_rows", lambda _connection, kind: rows if kind == "team" else []
     )
+    monkeypatch.setattr(
+        identity_admission,
+        "verify_source_identifier",
+        lambda *_args: {
+            "source_resource_id": "verified",
+            "acquired_at": "2026-10-01T00:00:00+00:00",
+        },
+    )
+    connection: Any = _Connection()
+    report = identity_audit.audit_report(connection, Path("unused"))
+    assert report["contract"] == "ProviderIdentityAuditV2"
+    assert report["status"] == "PASS"
+    assert report["verified_shared_identity_count"] == 1
+    assert report["mapping_classifications"] == {"CROSSWALK": 1, "ORIGIN_ANCHOR": 1}
+    assert report["findings"] == []
 
-    report = audit_report(connection)
-
+    rows[1] = (*rows[1][:4], "deterministic", *rows[1][5:])
+    report = identity_audit.audit_report(connection, Path("unused"))
     assert report["status"] == "FAIL"
     assert report["unsafe_shared_identity_count"] == 1
-    assert report["findings"] == [
-        {
-            "entity_type": "team",
-            "matchforge_id": "10000000-0000-4000-8000-000000000001",
-            "providers": ["api_football", "football_data_uk"],
-            "mapping_methods": ["deterministic"],
-            "mapping_count": 2,
-        }
+    assert report["mapping_classifications"] == {"ORIGIN_ANCHOR": 1, "UNRESOLVED": 1}
+    findings: Any = report["findings"]
+    assert findings[0]["classification"] == "UNRESOLVED"
+
+
+def test_identity_audit_retains_contradictory_and_missing_source_findings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical = stable_id("team", "api_football", "42")
+    rows = [
+        (uuid4(), canonical, "api_football", "40", "deterministic", 1, "England", uuid4()),
+        (uuid4(), canonical, "fotmob", "9825", "explicit_crosswalk", 1, "England", uuid4()),
     ]
+    monkeypatch.setattr(
+        identity_audit, "mapping_rows", lambda _connection, kind: rows if kind == "team" else []
+    )
+    monkeypatch.setattr(
+        identity_admission,
+        "verify_source_identifier",
+        lambda *_args: {
+            "source_resource_id": "verified",
+            "acquired_at": "2026-10-01T00:00:00+00:00",
+        },
+    )
+    connection: Any = _Connection()
+    report = identity_audit.audit_report(connection)
+    findings: Any = report["findings"]
+    assert findings[0]["classification"] == "CONTRADICTORY"
+    assert report["mapping_classifications"] == {"CONTRADICTORY": 1, "CROSSWALK": 1}
+    monkeypatch.setattr(identity_admission, "verify_source_identifier", lambda *_args: None)
+    report = identity_audit.audit_report(connection)
+    assert report["mapping_classifications"] == {"UNRESOLVED": 2}
+    assert report["unsafe_shared_identity_count"] == 1

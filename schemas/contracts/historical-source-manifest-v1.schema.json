@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "HistoricalSourceManifestV1",
+  "type": "object",
+  "required": [
+    "contract",
+    "provider",
+    "source_identity",
+    "source_revision",
+    "acquired_at",
+    "resources"
+  ],
+  "properties": {
+    "contract": {
+      "const": "HistoricalSourceManifestV1"
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_identity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acquired_at": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "provider_path",
+          "raw_path",
+          "sha256",
+          "size_bytes"
+        ],
+        "properties": {
+          "provider_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "raw_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

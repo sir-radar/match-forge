@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Iterator
 from dataclasses import replace
@@ -12,8 +13,11 @@ import pytest
 from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.domain import MODEL_ARTIFACT_PATH, stable_id
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
+from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import ProductSync
 from psycopg import Connection
+
+from tests.integration.historical_source_fixture import test_snapshot as _test_snapshot
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +38,7 @@ def connection() -> Iterator[Connection[Any]]:
 
 
 def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
@@ -43,13 +48,17 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
     football_data = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-fd-v1"
     )
-    open_snapshot = openfootball.ensure_snapshot(
+    open_snapshot = _test_snapshot(
+        openfootball,
+        tmp_path,
         source_identity="test/openfootball",
         source_revision="a" * 40,
         acquired_at=observed_at,
         manifest_path="openfootball/test/catalog.json",
     )
-    data_snapshot = football_data.ensure_snapshot(
+    data_snapshot = _test_snapshot(
+        football_data,
+        tmp_path,
         source_identity="test/football-data.csv",
         source_revision="b" * 64,
         acquired_at=observed_at,
@@ -142,13 +151,16 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
 
 
 def test_bulk_ingestion_quarantines_team_timestamp_conflict(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 10, 9, tzinfo=UTC)
     store = HistoricalBackfillStore(
         connection, "openfootball", "OpenFootball", "identity-guard-test-v1"
     )
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/identity-guard",
         source_revision="f" * 40,
         acquired_at=observed_at,
@@ -205,11 +217,14 @@ def test_bulk_ingestion_quarantines_team_timestamp_conflict(
 
 
 def test_verified_team_crosswalk_uses_stable_canonical_identity(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 10, 4, tzinfo=UTC)
     store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/explicit-team-crosswalk",
         source_revision="e" * 40,
         acquired_at=observed_at,
@@ -259,14 +274,38 @@ def test_verified_team_crosswalk_uses_stable_canonical_identity(
     assert mapping == (canonical_team_id, "explicit_crosswalk")
 
 
-def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) -> None:
+def test_backfill_history_unlocks_missing_forecast(
+    tmp_path: Path, connection: Connection[Any]
+) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
     store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/forecast-unlock",
         source_revision="c" * 40,
         acquired_at=observed_at,
-        manifest_path="openfootball/test/forecast-unlock.json",
+        manifest_path="2026/en.9.json",
+        payload=json.dumps(
+            {
+                "matches": [
+                    {"date": "2026-08-01", "team1": name, "team2": other, "score": {"ft": [2, 1]}}
+                    for index in range(10)
+                    for name, other in (
+                        ("Forecast Home FC", f"Away Opponent {index}"),
+                        (f"Home Opponent {index}", "Forecast Away FC"),
+                    )
+                ]
+                + [
+                    {
+                        "date": "2026-08-20",
+                        "team1": "Unrelated Home FC",
+                        "team2": "Unrelated Away FC",
+                        "score": {"ft": [1, 0]},
+                    }
+                ]
+            }
+        ).encode(),
     )
     for index in range(10):
         kickoff = datetime(2026, 8, 1, 12, tzinfo=UTC) + timedelta(days=index)
@@ -276,9 +315,9 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
             result = store.import_match(
                 HistoricalMatch(
                     provider_match_id=f"forecast-unlock-{side}-{index}",
-                    provider_competition_id="test.9",
+                    provider_competition_id="en.9",
                     competition_name="Forecast Test League 2026",
-                    country="Testland",
+                    country="England",
                     division=1,
                     season="2026",
                     home_team_id=home_name,
@@ -289,7 +328,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                     kickoff_precision="EXACT",
                     home_goals=2,
                     away_goals=1,
-                    source_path="2026/test.9.json",
+                    source_path="2026/en.9.json",
                 ),
                 snapshot,
                 observed_at,
@@ -299,9 +338,9 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         store.import_match(
             HistoricalMatch(
                 provider_match_id="forecast-unlock-unrelated",
-                provider_competition_id="test.9",
+                provider_competition_id="en.9",
                 competition_name="Forecast Test League 2026",
-                country="Testland",
+                country="England",
                 division=1,
                 season="2026",
                 home_team_id="Unrelated Home FC",
@@ -312,7 +351,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 kickoff_precision="EXACT",
                 home_goals=1,
                 away_goals=0,
-                source_path="2026/test.9.json",
+                source_path="2026/en.9.json",
             ),
             snapshot,
             observed_at,
@@ -320,6 +359,8 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         == "inserted"
     )
 
+    admit_provider_mappings(connection, tmp_path, "openfootball")
+    future_kickoff = datetime.now(UTC) + timedelta(days=2)
     with connection.cursor() as cursor:
         competition_id = _first(
             cursor.execute(
@@ -327,7 +368,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
             SELECT competition_id FROM football.competition_provider_mappings mapping
             JOIN football.providers provider ON provider.id = mapping.provider_id
             WHERE provider.code = 'openfootball'
-              AND mapping.provider_competition_id = 'test.9'
+              AND mapping.provider_competition_id = 'en.9'
             """
             ).fetchone()
         )
@@ -365,7 +406,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 competition_id,
                 home_id,
                 away_id,
-                datetime(2026, 10, 10, 15, tzinfo=UTC),
+                future_kickoff,
                 observed_at,
             ),
         )
@@ -373,13 +414,14 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     product = ProductSync(
         connection,
         ApiFootballClient("stored-data-only"),
-        PROJECT_ROOT / ".local" / "football-data",
+        tmp_path,
         PROJECT_ROOT / MODEL_ARTIFACT_PATH,
     )
     relevant_history = product._history_before(
-        datetime(2026, 10, 10, 15, tzinfo=UTC), home_id, away_id
+        future_kickoff, home_id, away_id, knowledge_cutoff=datetime.now(UTC)
     )
-    created = product.refresh_forecasts(observed_at)
+    forecast_knowledge_cutoff = datetime.now(UTC)
+    created = product.refresh_forecasts(forecast_knowledge_cutoff)
 
     with connection.cursor() as cursor:
         availability = _first(
@@ -412,6 +454,22 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     assert forecast_count == 1
     assert probabilities["total_over_1_5"] >= probabilities["total_over_2_5"]
     assert probabilities["total_under_3_5"] >= probabilities["total_under_2_5"]
+    connection.execute("UPDATE football.team_provider_mappings SET mapping_confidence = 0.5")
+    assert (
+        product._history_before(
+            future_kickoff, home_id, away_id, knowledge_cutoff=datetime.now(UTC)
+        )
+        == []
+    )
+    assert (
+        product._history_before(
+            future_kickoff, home_id, away_id, knowledge_cutoff=forecast_knowledge_cutoff
+        )
+        == relevant_history
+    )
+    assert connection.execute(
+        "SELECT probabilities FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+    ).fetchone() == (probabilities,)
 
 
 def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
@@ -449,7 +507,9 @@ def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
     store = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
     )
-    history_snapshot = store.ensure_snapshot(
+    history_snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/premier-league.csv",
         source_revision="d" * 64,
         acquired_at=observed_at,
@@ -882,11 +942,17 @@ def test_fixture_backfill_uses_provider_neutral_historical_result(
     store = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
     )
-    snapshot_id = store.ensure_snapshot(
+    snapshot_id = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/result.csv",
         source_revision="c" * 64,
         acquired_at=observed_at,
-        manifest_path="football_data_uk/test/result.csv",
+        manifest_path="test/result.csv",
+        payload=(
+            b"Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG\n"
+            b"E0,30/09/2026,20:45,Result Home,Result Away,2,1\n"
+        ),
     )
     result = HistoricalMatch(
         provider_match_id="test-result-1",
@@ -906,6 +972,7 @@ def test_fixture_backfill_uses_provider_neutral_historical_result(
         source_path="test/result.csv",
     )
     assert store.import_match(result, snapshot_id, observed_at) == "inserted"
+    admit_provider_mappings(connection, tmp_path, "football_data_uk")
     with connection.cursor() as cursor:
         history = cursor.execute(
             """

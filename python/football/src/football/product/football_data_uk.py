@@ -26,6 +26,8 @@ from football.product.historical_backfill import (
     KickoffPrecision,
     date_only_timestamp,
 )
+from football.product.historical_manifest import publish_manifest
+from football.product.identity_admission import admit_provider_mappings
 
 PROVIDER_CODE = "football_data_uk"
 INDEX_URL = "https://www.football-data.co.uk/downloadm.php"
@@ -265,7 +267,11 @@ def run_backfill(
     )
     observed_at = datetime.now(UTC)
     store = HistoricalBackfillStore(
-        connection, PROVIDER_CODE, "Football-Data.co.uk", PARSER_VERSION
+        connection,
+        PROVIDER_CODE,
+        "Football-Data.co.uk",
+        PARSER_VERSION,
+        data_root=data_root,
     )
     parsed_competitions: set[str] = set()
     parsed_seasons: set[str] = set()
@@ -282,14 +288,19 @@ def run_backfill(
         cache_path = (
             data_root / PROVIDER_CODE / (resource.season or "unknown") / f"{digest}{extension}"
         )
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        if not cache_path.exists():
-            cache_path.write_bytes(payload)
+        manifest_path = publish_manifest(
+            data_root,
+            provider=PROVIDER_CODE,
+            source_identity=resource.url,
+            source_revision=digest,
+            acquired_at=observed_at,
+            resources=[(provider_path, str(cache_path.relative_to(data_root)), payload)],
+        )
         snapshot = store.ensure_snapshot(
             source_identity=resource.url,
             source_revision=digest,
             acquired_at=observed_at,
-            manifest_path=str(cache_path.relative_to(data_root)),
+            manifest_path=manifest_path,
         )
         if store.resource_already_imported(provider_path, digest):
             summary.resources_cached += 1
@@ -326,6 +337,7 @@ def run_backfill(
     summary.seasons = len(parsed_seasons)
     summary.competition_mappings_created = store.competition_mappings_created
     summary.team_mappings_created = store.team_mappings_created
+    admit_provider_mappings(connection, data_root, PROVIDER_CODE)
     connection.commit()
     return summary.to_dict()
 

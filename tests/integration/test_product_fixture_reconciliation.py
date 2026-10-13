@@ -18,7 +18,20 @@ from football.product.football_data_org import FootballDataResponse
 from football.product.sync import ProductSync
 
 
-@pytest.mark.parametrize("mismatch", [None, "kickoff", "score", "team", "history"])
+@pytest.mark.parametrize(
+    "mismatch",
+    [
+        None,
+        "kickoff",
+        "score",
+        "team",
+        "history",
+        "HALF_TIME",
+        "INTERRUPTED",
+        "SUSPENDED",
+        "AWARDED",
+    ],
+)
 def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
     tmp_path: Path, mismatch: str | None
 ) -> None:
@@ -78,6 +91,11 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
             now - timedelta(days=1),
         )
         with connection.cursor() as cursor:
+            if mismatch in ("HALF_TIME", "INTERRUPTED", "SUSPENDED", "AWARDED"):
+                cursor.execute(
+                    "UPDATE football.product_fixtures SET status = %s WHERE updated_at = %s",
+                    (mismatch, now),
+                )
             if mismatch == "history":
                 cursor.execute(
                     """UPDATE football.product_fixtures SET status = 'FINISHED',
@@ -116,7 +134,7 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
                            SET status='LIVE', home_score=2, away_score=0 WHERE updated_at = %s""",
                     (now - timedelta(days=1),),
                 )
-        expected = 1 if mismatch in (None, "history") else 0
+        expected = 0 if mismatch in ("kickoff", "score", "team") else 1
         assert reconcile_product_fixtures(connection) == expected
         assert reconcile_product_fixtures(connection) == expected
         persist_resolutions(
@@ -133,6 +151,9 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
             if mismatch == "history":
                 assert cursor.execute(
                     "SELECT count(*) FROM football.product_eligible_match_history"
+                ).fetchone() == (0,)
+                assert cursor.execute(
+                    "SELECT count(*) FROM football.product_team_match_history"
                 ).fetchone() == (1,)
         assert active == (expected,)
         assert rows == (2,)

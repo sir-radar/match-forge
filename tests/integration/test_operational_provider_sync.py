@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from collections.abc import Iterator
 from dataclasses import replace
@@ -16,12 +17,15 @@ from football.product.api_football import (
     PostgresApiFootballBudget,
 )
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
+from football.product.identity_admission import admit_provider_mappings
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import claim_scope, enqueue_seasons
 from football.product.sync import ProductSync
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
 from psycopg import Connection
 from psycopg.errors import UniqueViolation
+
+from tests.integration.historical_source_fixture import test_snapshot as _test_snapshot
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
@@ -72,17 +76,23 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     history = HistoricalBackfillStore(
         connection, "openfootball", "OpenFootball", "operational-sync-test-v1"
     )
-    history_snapshot = history.ensure_snapshot(
+    history_snapshot = _test_snapshot(
+        history,
+        tmp_path,
         source_identity="test/operational-sync",
         source_revision="d" * 40,
         acquired_at=acquired,
-        manifest_path="openfootball/test/operational-sync.json",
+        manifest_path="2026/test.operational.json",
+        payload=(
+            b'{"matches":[{"date":"2026-10-09","team1":"Operational Home",'
+            b'"team2":"Operational Away","score":{"ft":[0,0]}}]}'
+        ),
     )
     source_match = HistoricalMatch(
         provider_match_id="2026/test.operational#1",
         provider_competition_id="test.operational",
         competition_name="Operational Test League",
-        country="Testland",
+        country="World",
         division=1,
         season="2026",
         home_team_id="Operational Home",
@@ -96,6 +106,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         source_path="2026/test.operational.json",
     )
     assert history.import_match(source_match, history_snapshot, acquired) == "inserted"
+    admit_provider_mappings(connection, tmp_path, "openfootball")
     with connection.cursor() as cursor:
         fixture_id = cursor.execute(
             """SELECT mapping.match_id
@@ -130,7 +141,31 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         provider_code="pitchapi",
         minimum_interval_seconds=0,
     )
-    raw = b'{"test":"operational-sync"}'
+    raw = json.dumps(
+        {
+            "matches": [
+                {
+                    "id": match,
+                    "league": {"id": league, "name": "Operational Test League"},
+                    "home_team": {"id": home, "name": "Operational Home"},
+                    "away_team": {"id": away, "name": "Operational Away"},
+                    "time_utc": kickoff.isoformat(),
+                    "status": "live",
+                    "score_home": 1,
+                    "score_away": 0,
+                }
+                for match, league, home, away in (
+                    ("m_Test01", "l_Test01", "t_Home01", "t_Away01"),
+                    (
+                        "m_Provisional01",
+                        "l_Provisional01",
+                        "t_ProvisionalHome01",
+                        "t_ProvisionalAway01",
+                    ),
+                )
+            ]
+        }
+    ).encode()
     response = PitchApiResponse(
         path="/v1/date/2026-10-09",
         fetched_at=acquired,
@@ -167,10 +202,12 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
                 WHERE provider_code = 'pitchapi' AND provider_match_id = 'm_Test01'
                 ORDER BY observed_at DESC LIMIT 1"""
         ).fetchone()
-    assert resolved == fixture_id, decision
+    assert resolved is None, decision
+    assert decision[0] == "explicit cross-provider evidence required"
+    assert sync._store_observation(live, snapshot_id, None)
+    sync.apply_reviewed_mapping(live.provider_match_id, fixture_id)
     assert sync._resolve_fixture(live, snapshot_id) == fixture_id
-    assert sync._store_observation(live, snapshot_id, fixture_id)
-    assert sync._update_canonical_fixture(live, fixture_id, snapshot_id) == 1
+    assert sync._update_canonical_fixture(live, fixture_id, snapshot_id) == 0
     assert (
         sync._update_canonical_fixture(
             replace(
@@ -281,7 +318,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
             (fixture_id,),
         ).fetchone()
         mapping_counts = cursor.execute(
-            """SELECT count(*), count(*) FILTER (WHERE mapping_method = 'explicit_crosswalk')
+            """SELECT count(*), count(*) FILTER (WHERE mapping_method = 'manual')
                  FROM football.match_provider_mappings mapping
                  JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = 'pitchapi' AND provider_match_id = 'm_Test01'"""
@@ -290,7 +327,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
             """SELECT count(*)
                  FROM football.product_provider_mapping_decisions
                 WHERE provider_code = 'pitchapi' AND provider_match_id = 'm_Test01'
-                  AND disposition = 'AUTO_ACCEPTED'"""
+                  AND disposition = 'MANUAL_ACCEPTED'"""
         ).fetchone()[0]
         conflicts = cursor.execute(
             """SELECT count(*)
@@ -304,6 +341,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     assert accepted_decisions == 1
     assert conflicts == 1
 
+    admitted_at = connection.execute("SELECT clock_timestamp()").fetchone()[0]
     provisional = replace(
         live,
         provider_match_id="m_Provisional01",
@@ -313,7 +351,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     )
     provisional_fixture_id = sync._create_provider_scoped_fixture(provisional, snapshot_id)
     assert provisional_fixture_id is not None
-    assert sync._store_observation(provisional, snapshot_id, provisional_fixture_id)
+    assert not sync._store_observation(provisional, snapshot_id, provisional_fixture_id)
 
     provisional_result = replace(provisional, status="FINISHED", result_score_basis="REGULATION_90")
     assert (
@@ -337,6 +375,10 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
             """SELECT count(*) FROM football.product_eligible_match_history
                WHERE fixture_id = %s AND known_at <= %s""",
             (fixture_id, acquired),
+        ).fetchone() == (0,)
+        assert cursor.execute(
+            "SELECT count(*) FROM football.product_eligible_history_at(%s) WHERE fixture_id = %s",
+            (admitted_at, fixture_id),
         ).fetchone() == (1,)
 
     canonical_home, canonical_away = connection.execute(
@@ -350,7 +392,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         acquired + timedelta(days=1),
         canonical_home,
         canonical_away,
-        knowledge_cutoff=acquired,
+        knowledge_cutoff=admitted_at,
     )
     assert {match.fixture_id for match in permitted} == {fixture_id}
     assert (
@@ -402,12 +444,19 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         observation_fixture = cursor.execute(
             """SELECT canonical_fixture_id
                  FROM football.product_provider_fixture_observations
-                WHERE provider_code = 'pitchapi' AND provider_match_id = %s""",
+                WHERE provider_code = 'pitchapi' AND provider_match_id = %s
+                ORDER BY observation_id DESC LIMIT 1""",
             (provisional.provider_match_id,),
         ).fetchone()[0]
     assert active_mapping == (fixture_id, "manual")
     assert retired_mapping == 1
     assert observation_fixture == fixture_id
+    assert connection.execute(
+        """SELECT count(*) FROM football.product_provider_fixture_observations
+           WHERE provider_code = 'pitchapi' AND provider_match_id = %s
+             AND canonical_fixture_id = %s""",
+        (provisional.provider_match_id, provisional_fixture_id),
+    ).fetchone() == (1,)
 
 
 def test_live_provider_lanes_do_not_compete_with_history_backfill(

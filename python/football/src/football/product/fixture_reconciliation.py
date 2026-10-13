@@ -99,10 +99,14 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
             priority = {
                 "SCHEDULED": 0,
                 "LIVE": 1,
+                "HALF_TIME": 1,
+                "INTERRUPTED": 1,
+                "SUSPENDED": 1,
                 "FINISHED": 2,
                 "POSTPONED": 2,
                 "CANCELLED": 2,
                 "ABANDONED": 2,
+                "AWARDED": 2,
             }
             representative = (
                 target

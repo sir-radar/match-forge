@@ -24,6 +24,7 @@ from football.product.domain import (
 )
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
+from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
 from football.product.live_resources import normalize_events, normalize_statistics
 from football.providers.fotmob import (
@@ -38,6 +39,7 @@ from football.providers.pitchapi import (
     PitchApiResponse,
     normalize_pitchapi_matches,
 )
+from football.storage.raw import ImmutableFileStore
 
 FixtureObservation = FotmobLiveScore | PitchApiFixture
 
@@ -145,7 +147,7 @@ class OperationalProviderSync:
                 """SELECT fixture.fixture_id, fixture.competition_id,
                           fixture.home_team_id, fixture.away_team_id,
                           competition.name, home.name, away.name,
-                          fixture.status, fixture.home_score, fixture.away_score
+                          fixture.status, fixture.home_score, fixture.away_score, fixture.kickoff_at
                      FROM football.product_fixtures fixture
                      JOIN football.product_competitions competition
                        ON competition.competition_id = fixture.competition_id
@@ -178,9 +180,33 @@ class OperationalProviderSync:
             result_score_basis=source[17],
         )
         snapshot_id = cast(UUID, source[16])
+        if abs(row.kickoff_at - candidate[10]) > self.kickoff_tolerance:
+            raise ValueError("reviewed fixture kickoff contradicts retained provider context")
+        if (
+            row.status == candidate[7] == "FINISHED"
+            and candidate[8] is not None
+            and (candidate[8], candidate[9]) != (row.home_score, row.away_score)
+        ):
+            raise ValueError("reviewed fixture result contradicts retained provider context")
+        for entity_type, identifier in (
+            ("competition", row.provider_competition_id),
+            ("team", row.provider_home_team_id),
+            ("team", row.provider_away_team_id),
+        ):
+            if (
+                verify_source_identifier(
+                    self.connection,
+                    self.data_root,
+                    snapshot_id,
+                    self.provider_code,
+                    entity_type,
+                    identifier,
+                    None,
+                )
+                is None
+            ):
+                raise ValueError("reviewed mapping requires verified retained provider identifiers")
         self._persist_deterministic_mapping(row, snapshot_id, candidate, mapping_method="manual")
-        self._update_canonical_fixture(row, fixture_id, snapshot_id)
-        self._insert_qualified_history(row, fixture_id, snapshot_id)
         self._record_mapping_decision(
             row,
             snapshot_id,
@@ -189,6 +215,9 @@ class OperationalProviderSync:
             "operator explicitly accepted mapping",
             {"reviewed_fixture_id": str(fixture_id)},
         )
+        admit_provider_mappings(self.connection, self.data_root, self.provider_code, snapshot_id)
+        self._update_canonical_fixture(row, fixture_id, snapshot_id)
+        self._insert_qualified_history(row, fixture_id, snapshot_id)
 
     def sync_fotmob(
         self,
@@ -651,10 +680,7 @@ class OperationalProviderSync:
             / response.fetched_at.strftime("%Y/%m/%d")
             / f"{digest}.json"
         )
-        destination = self.data_root / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if not destination.exists():
-            destination.write_bytes(response.raw)
+        ImmutableFileStore(self.data_root).publish(str(relative), response.raw)
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -717,8 +743,11 @@ class OperationalProviderSync:
                 (self.provider_code, row.provider_match_id),
             )
             direct = cursor.fetchall()
-            if len(direct) == 1 and direct[0][0] != stable_id(
-                "provider-scoped-match", self.provider_code, row.provider_match_id
+            if (
+                len(direct) == 1
+                and self._trusted_direct_fixture(direct[0][0], row)
+                and direct[0][0]
+                != stable_id("provider-scoped-match", self.provider_code, row.provider_match_id)
             ):
                 return cast(UUID, direct[0][0])
             cursor.execute(
@@ -754,6 +783,16 @@ class OperationalProviderSync:
                       'explicit_crosswalk', 'manual', 'deterministic'
                   )
                   AND competition_mapping.mapping_confidence = 1
+                  AND football.product_mapping_trusted(
+                      'competition', competition_mapping.id, competition_mapping.competition_id)
+                  AND EXISTS (SELECT 1 FROM football.team_provider_mappings hm
+                      WHERE hm.provider_id = provider.id AND hm.provider_team_id = %s
+                        AND hm.team_id = fixture.home_team_id AND hm.valid_to IS NULL
+                        AND football.product_mapping_trusted('team', hm.id, hm.team_id))
+                  AND EXISTS (SELECT 1 FROM football.team_provider_mappings am
+                      WHERE am.provider_id = provider.id AND am.provider_team_id = %s
+                        AND am.team_id = fixture.away_team_id AND am.valid_to IS NULL
+                        AND football.product_mapping_trusted('team', am.id, am.team_id))
                   AND ((fixture.source_kickoff_precision = 'EXACT'
                         AND fixture.kickoff_at BETWEEN %s AND %s)
                        OR (fixture.source_kickoff_precision = 'DATE_ONLY'
@@ -768,6 +807,8 @@ class OperationalProviderSync:
                     row.provider_away_team_id,
                     self.provider_code,
                     row.provider_competition_id,
+                    row.provider_home_team_id,
+                    row.provider_away_team_id,
                     row.kickoff_at - self.kickoff_tolerance,
                     row.kickoff_at + self.kickoff_tolerance,
                     row.kickoff_at,
@@ -792,11 +833,31 @@ class OperationalProviderSync:
                 )
             return cast(UUID, candidates[0][0])
         if snapshot_id is None:
-            return cast(UUID, direct[0][0]) if len(direct) == 1 else None
+            return None
         reconciled = self._reconcile_exact_fixture(row, snapshot_id)
         if reconciled is None and len(direct) == 1 and self._verified_provider_entities(row):
             return None
-        return reconciled or (cast(UUID, direct[0][0]) if len(direct) == 1 else None)
+        provisional_id = stable_id(
+            "provider-scoped-match", self.provider_code, row.provider_match_id
+        )
+        return reconciled or (
+            provisional_id if any(item[0] == provisional_id for item in direct) else None
+        )
+
+    def _trusted_direct_fixture(self, fixture_id: UUID, row: FixtureObservation) -> bool:
+        if not self._verified_provider_entities(row):
+            return False
+        candidate = self.connection.execute(
+            """SELECT fixture_id, competition_id, home_team_id, away_team_id
+               FROM football.product_fixtures WHERE fixture_id = %s
+                 AND kickoff_at BETWEEN %s AND %s""",
+            (
+                fixture_id,
+                row.kickoff_at - self.kickoff_tolerance,
+                row.kickoff_at + self.kickoff_tolerance,
+            ),
+        ).fetchone()
+        return candidate is not None and self._candidate_mapping_conflict(row, candidate) is None
 
     def _verified_provider_entities(self, row: FixtureObservation) -> bool:
         with self.connection.cursor() as cursor:
@@ -807,8 +868,20 @@ class OperationalProviderSync:
                    JOIN football.product_competitions competition
                      ON competition.competition_id = mapping.competition_id
                    WHERE provider.code = %s AND mapping.provider_competition_id = %s
-                     AND mapping.valid_to IS NULL AND mapping.mapping_confidence = 1""",
-                (self.provider_code, row.provider_competition_id),
+                     AND mapping.valid_to IS NULL AND mapping.mapping_confidence = 1
+                     AND football.product_mapping_trusted(
+                         'competition', mapping.id, mapping.competition_id)
+                     AND (SELECT count(DISTINCT tm.provider_team_id)
+                          FROM football.team_provider_mappings tm
+                          WHERE tm.provider_id = provider.id AND tm.valid_to IS NULL
+                            AND tm.provider_team_id IN (%s, %s)
+                            AND football.product_mapping_trusted('team', tm.id, tm.team_id)) = 2""",
+                (
+                    self.provider_code,
+                    row.provider_competition_id,
+                    row.provider_home_team_id,
+                    row.provider_away_team_id,
+                ),
             )
             competition = cursor.fetchone()
         return (
@@ -920,14 +993,15 @@ class OperationalProviderSync:
                 },
             )
             return None
-        self._materialize_history_fixture(fixture_id, row.observed_at)
-        self._persist_deterministic_mapping(
-            row, snapshot_id, candidate, mapping_method="explicit_crosswalk"
-        )
         self._record_mapping_decision(
-            row, snapshot_id, fixture_id, "AUTO_ACCEPTED", "deterministic rule matched", evidence
+            row,
+            snapshot_id,
+            fixture_id,
+            "REVIEW_REQUIRED",
+            "explicit cross-provider evidence required",
+            evidence,
         )
-        return fixture_id
+        return None
 
     def _materialize_history_fixture(self, fixture_id: UUID, observed_at: datetime) -> None:
         with self.connection.cursor() as cursor:
@@ -1055,11 +1129,12 @@ class OperationalProviderSync:
                 )
                 existing = cursor.fetchone()
                 if existing is not None:
-                    if existing[0] != canonical_value:
+                    if existing[0] != canonical_value or (
+                        mapping_method == "manual" and existing[1] != "manual"
+                    ):
                         provisional_id = self._provider_scoped_identity(table, provider_value)
-                        if (
-                            mapping_method not in {"manual", "explicit_crosswalk"}
-                            or existing[0] != provisional_id
+                        if mapping_method != "manual" and (
+                            mapping_method != "explicit_crosswalk" or existing[0] != provisional_id
                         ):
                             raise ValueError(f"contradictory existing {table} mapping")
                         cursor.execute(
@@ -1117,23 +1192,18 @@ class OperationalProviderSync:
                     ),
                 )
             cursor.execute(
-                """UPDATE football.product_provider_fixture_observations
-                      SET canonical_fixture_id = %s
-                    WHERE provider_code = %s AND provider_match_id = %s
-                      AND (canonical_fixture_id IS NULL
-                           OR %s IN ('manual', 'explicit_crosswalk'))""",
-                (fixture_id, self.provider_code, row.provider_match_id, mapping_method),
-            )
-            cursor.execute(
                 """UPDATE football.product_provider_resource_observations
                       SET canonical_fixture_id = %s,
-                          known_at = COALESCE(known_at, observed_at),
+                          known_at = CASE WHEN point_in_time_eligibility = 'UNKNOWN'
+                              THEN GREATEST(COALESCE(known_at, observed_at), %s)
+                              ELSE known_at END,
                           point_in_time_eligibility = CASE
                               WHEN point_in_time_eligibility = 'UNKNOWN' THEN 'ELIGIBLE'
                               ELSE point_in_time_eligibility END
                     WHERE provider_code = %s AND provider_match_id = %s""",
-                (fixture_id, self.provider_code, row.provider_match_id),
+                (fixture_id, mapping_at, self.provider_code, row.provider_match_id),
             )
+        self._store_observation(row, snapshot_id, fixture_id)
 
     def _provider_scoped_identity(self, table: str, provider_value: str) -> UUID:
         if table == "competition_provider_mappings":
