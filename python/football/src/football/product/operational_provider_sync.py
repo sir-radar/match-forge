@@ -151,7 +151,7 @@ class OperationalProviderSync:
                           fixture.status, fixture.home_score, fixture.away_score,
                           fixture.kickoff_at,
                           fixture.identity_status
-                     FROM football.product_fixtures fixture
+                     FROM football.product_effective_fixtures fixture
                      JOIN football.product_competitions competition
                        ON competition.competition_id = fixture.competition_id
                      JOIN football.product_teams home ON home.team_id = fixture.home_team_id
@@ -660,7 +660,7 @@ class OperationalProviderSync:
                           source_snapshot_id, result_score_basis
                      FROM football.product_provider_fixture_observations
                     WHERE provider_code = %s AND (canonical_fixture_id IS NULL OR EXISTS (
-                        SELECT 1 FROM football.product_fixtures fixture
+                        SELECT 1 FROM football.product_effective_fixtures fixture
                         WHERE fixture.fixture_id = canonical_fixture_id
                           AND fixture.identity_status = 'PROVISIONAL'
                     ))
@@ -1047,7 +1047,7 @@ class OperationalProviderSync:
                     SELECT fixture_id, competition_id, home_team_id, away_team_id,
                            kickoff_at, 'EXACT' AS source_kickoff_precision,
                            home_score, away_score
-                    FROM football.product_fixtures WHERE identity_status = 'VERIFIED'
+                    FROM football.product_effective_fixtures WHERE identity_status = 'VERIFIED'
                     UNION ALL
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at,
@@ -1056,10 +1056,10 @@ class OperationalProviderSync:
                     WHERE NOT EXISTS (SELECT 1 FROM football.product_fixtures existing
                                       WHERE existing.fixture_id = history.fixture_id)
                 ) fixture
-                JOIN football.product_team_aliases home
+                JOIN football.product_effective_team_aliases home
                   ON home.team_id = fixture.home_team_id
                  AND home.provider_code = %s AND home.provider_team_id = %s
-                JOIN football.product_team_aliases away
+                JOIN football.product_effective_team_aliases away
                   ON away.team_id = fixture.away_team_id
                  AND away.provider_code = %s AND away.provider_team_id = %s
                 JOIN football.competition_provider_mappings competition_mapping
@@ -1074,14 +1074,14 @@ class OperationalProviderSync:
                   AND competition_mapping.mapping_confidence = 1
                   AND football.product_mapping_trusted(
                       'competition', competition_mapping.id, competition_mapping.competition_id)
-                  AND EXISTS (SELECT 1 FROM football.team_provider_mappings hm
+                  AND EXISTS (SELECT 1 FROM football.product_effective_team_mappings hm
                       WHERE hm.provider_id = provider.id AND hm.provider_team_id = %s
-                        AND hm.team_id = fixture.home_team_id AND hm.valid_to IS NULL
-                        AND football.product_mapping_trusted('team', hm.id, hm.team_id))
-                  AND EXISTS (SELECT 1 FROM football.team_provider_mappings am
+                        AND hm.effective_team_id = fixture.home_team_id AND hm.valid_to IS NULL
+                        AND football.product_mapping_trusted('team', hm.id, hm.effective_team_id))
+                  AND EXISTS (SELECT 1 FROM football.product_effective_team_mappings am
                       WHERE am.provider_id = provider.id AND am.provider_team_id = %s
-                        AND am.team_id = fixture.away_team_id AND am.valid_to IS NULL
-                        AND football.product_mapping_trusted('team', am.id, am.team_id))
+                        AND am.effective_team_id = fixture.away_team_id AND am.valid_to IS NULL
+                        AND football.product_mapping_trusted('team', am.id, am.effective_team_id))
                   AND ((fixture.source_kickoff_precision = 'EXACT'
                         AND fixture.kickoff_at BETWEEN %s AND %s)
                        OR (fixture.source_kickoff_precision = 'DATE_ONLY'
@@ -1161,10 +1161,11 @@ class OperationalProviderSync:
                      AND football.product_mapping_trusted(
                          'competition', mapping.id, mapping.competition_id)
                      AND (SELECT count(DISTINCT tm.provider_team_id)
-                          FROM football.team_provider_mappings tm
+                          FROM football.product_effective_team_mappings tm
                           WHERE tm.provider_id = provider.id AND tm.valid_to IS NULL
                             AND tm.provider_team_id IN (%s, %s)
-                            AND football.product_mapping_trusted('team', tm.id, tm.team_id)) = 2""",
+                            AND football.product_mapping_trusted(
+                                'team', tm.id, tm.effective_team_id)) = 2""",
                 (
                     self.provider_code,
                     row.provider_competition_id,
@@ -1204,7 +1205,7 @@ class OperationalProviderSync:
                 FROM (
                     SELECT fixture_id, competition_id, home_team_id, away_team_id,
                            kickoff_at, status, home_score, away_score
-                    FROM football.product_fixtures WHERE identity_status = 'VERIFIED'
+                    FROM football.product_effective_fixtures WHERE identity_status = 'VERIFIED'
                     UNION ALL
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at, 'FINISHED',
@@ -1341,9 +1342,17 @@ class OperationalProviderSync:
                 provider_value,
                 candidate_value,
             ) in provider_values:
+                read_table = (
+                    "product_effective_team_mappings"
+                    if table == "team_provider_mappings"
+                    else table
+                )
+                read_column = (
+                    "effective_team_id" if table == "team_provider_mappings" else canonical_column
+                )
                 cursor.execute(
-                    f"""SELECT mapping.{canonical_column}
-                          FROM football.{table} mapping
+                    f"""SELECT mapping.{read_column}
+                          FROM football.{read_table} mapping
                           JOIN football.providers provider ON provider.id = mapping.provider_id
                          WHERE provider.code = %s
                            AND mapping.{provider_column} = %s
@@ -1381,6 +1390,7 @@ class OperationalProviderSync:
             if provider is None:
                 raise ValueError("provider registration missing")
             provider_id = provider[0]
+            preserve_observations = False
             for table, identity_column, canonical_column, provider_value, canonical_value in (
                 (
                     "competition_provider_mappings",
@@ -1411,15 +1421,30 @@ class OperationalProviderSync:
                     fixture_id,
                 ),
             ):
+                read_table = (
+                    "product_effective_team_mappings"
+                    if table == "team_provider_mappings"
+                    else table
+                )
+                read_column = (
+                    "effective_team_id" if table == "team_provider_mappings" else canonical_column
+                )
                 cursor.execute(
-                    f"""SELECT {canonical_column}, mapping_method FROM football.{table}
+                    f"""SELECT {read_column}, mapping_method, {canonical_column}
+                         FROM football.{read_table}
                          WHERE provider_id = %s AND {identity_column} = %s AND valid_to IS NULL""",
                     (provider_id, provider_value),
                 )
                 existing = cursor.fetchone()
                 if existing is not None:
+                    corrected = existing[0] != existing[2]
+                    preserve_observations |= corrected
+                    if corrected and existing[0] != canonical_value:
+                        raise ValueError(
+                            "linked correction conflicts with requested fixture mapping"
+                        )
                     if existing[0] != canonical_value or (
-                        mapping_method == "manual" and existing[1] != "manual"
+                        mapping_method == "manual" and existing[1] != "manual" and not corrected
                     ):
                         provisional_id = self._provider_scoped_identity(table, provider_value)
                         if mapping_method != "manual" and (
@@ -1480,8 +1505,9 @@ class OperationalProviderSync:
                         mapping_method,
                     ),
                 )
-            cursor.execute(
-                """UPDATE football.product_provider_resource_observations
+            if not preserve_observations:
+                cursor.execute(
+                    """UPDATE football.product_provider_resource_observations
                       SET canonical_fixture_id = %s,
                           known_at = CASE WHEN point_in_time_eligibility = 'UNKNOWN'
                               THEN GREATEST(COALESCE(known_at, observed_at), %s)
@@ -1490,8 +1516,8 @@ class OperationalProviderSync:
                               WHEN point_in_time_eligibility = 'UNKNOWN' THEN 'ELIGIBLE'
                               ELSE point_in_time_eligibility END
                     WHERE provider_code = %s AND provider_match_id = %s""",
-                (fixture_id, mapping_at, self.provider_code, row.provider_match_id),
-            )
+                    (fixture_id, mapping_at, self.provider_code, row.provider_match_id),
+                )
         self._store_observation(row, snapshot_id, fixture_id)
 
     def _provider_scoped_identity(self, table: str, provider_value: str) -> UUID:
@@ -1725,8 +1751,8 @@ class OperationalProviderSync:
     def _mapped_or_scoped_team(self, provider_team_id: str) -> UUID:
         with self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT mapping.team_id
-                     FROM football.team_provider_mappings mapping
+                """SELECT mapping.effective_team_id
+                     FROM football.product_effective_team_mappings mapping
                      JOIN football.providers provider ON provider.id = mapping.provider_id
                     WHERE provider.code = %s AND mapping.provider_team_id = %s
                       AND mapping.valid_to IS NULL AND mapping.mapping_confidence = 1""",
@@ -1749,7 +1775,7 @@ class OperationalProviderSync:
                 cursor.execute(
                     """SELECT competition.competition_type,
                               fixture.forecast_availability
-                         FROM football.product_fixtures fixture
+                         FROM football.product_effective_fixtures fixture
                          JOIN football.product_competitions competition
                            ON competition.competition_id = fixture.competition_id
                         WHERE fixture.fixture_id = %s""",

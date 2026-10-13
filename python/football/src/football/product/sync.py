@@ -1756,14 +1756,16 @@ class ProductSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT fixture_id, home_team_id, away_team_id, kickoff_at
+                SELECT fixture_id,
+                       football.product_fixture_team_at(fixture_id, home_team_id, %s),
+                       football.product_fixture_team_at(fixture_id, away_team_id, %s), kickoff_at
                 FROM football.product_fixtures
                 WHERE status = 'SCHEDULED' AND kickoff_at > %s
                   AND identity_status = 'VERIFIED'
                   AND (%s::uuid[] IS NULL OR fixture_id = ANY(%s::uuid[]))
                 ORDER BY kickoff_at, fixture_id
                 """,
-                (now, fixture_ids, fixture_ids),
+                (now, now, now, fixture_ids, fixture_ids),
             )
             targets = cursor.fetchall()
         for start in range(0, len(targets), 32):
@@ -1851,11 +1853,13 @@ class ProductSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """SELECT 1 FROM football.product_fixtures
-                   WHERE fixture_id = %s AND home_team_id = %s AND away_team_id = %s
+                   WHERE fixture_id = %s
+                     AND football.product_fixture_team_at(fixture_id, home_team_id, %s) = %s
+                     AND football.product_fixture_team_at(fixture_id, away_team_id, %s) = %s
                      AND kickoff_at = %s AND kickoff_at > clock_timestamp()
                      AND status = 'SCHEDULED' AND identity_status = 'VERIFIED'
                    FOR UPDATE""",
-                (fixture_id, home_id, away_id, kickoff_at),
+                (fixture_id, now, home_id, now, away_id, kickoff_at),
             )
             if cursor.fetchone() is None:
                 return 0

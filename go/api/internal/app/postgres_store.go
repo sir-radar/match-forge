@@ -69,7 +69,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       observation.match_minute, observation.added_time, observation.period,
 		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
 		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code
-		FROM football.product_fixtures pf
+		FROM football.product_effective_fixtures pf
 		JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
 		JOIN football.product_teams ht ON ht.team_id = pf.home_team_id
 		JOIN football.product_teams at ON at.team_id = pf.away_team_id
@@ -161,7 +161,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		       COALESCE(stats.payload->'statistics', '[]'::jsonb),
 		       stats.provider_code, stats.provider_match_id, stats.observed_at, stats.last_fetched_at,
 		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END
-		FROM football.product_fixtures pf
+		FROM football.product_effective_fixtures pf
 		JOIN football.product_teams home ON home.team_id = pf.home_team_id
 		JOIN football.product_teams away ON away.team_id = pf.away_team_id
 		LEFT JOIN LATERAL (
@@ -252,8 +252,12 @@ func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID
 	var competitionID, homeID, awayID string
 	var kickoffAt, knowledgeCutoff time.Time
 	err := store.pool.QueryRow(ctx, `
-		SELECT competition_id::text, home_team_id::text, away_team_id::text,
-		       kickoff_at, LEAST(kickoff_at, clock_timestamp())
+		SELECT competition_id::text,
+               football.product_fixture_team_at(fixture_id, home_team_id,
+                   LEAST(kickoff_at, statement_timestamp()))::text,
+               football.product_fixture_team_at(fixture_id, away_team_id,
+                   LEAST(kickoff_at, statement_timestamp()))::text,
+               kickoff_at, LEAST(kickoff_at, statement_timestamp())
 		FROM football.product_fixtures WHERE fixture_id = $1::uuid`, fixtureID,
 	).Scan(&competitionID, &homeID, &awayID, &kickoffAt, &knowledgeCutoff)
 	if err != nil {

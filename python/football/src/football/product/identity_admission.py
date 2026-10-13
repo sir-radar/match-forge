@@ -82,6 +82,10 @@ def classify_mapping(
     data_root: Path,
     verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
+    if len(row) > 9 and row[9] is not None:
+        from football.product.identity_correction import revalidate_team_correction
+
+        return revalidate_team_correction(connection, data_root, row[9])
     mapping_id, canonical_id, provider, identifier, method, confidence, country, snapshot_id = row[
         :8
     ]
@@ -134,7 +138,7 @@ def classify_mapping(
         "source_snapshot_id": str(snapshot_id),
         "evidence": proof or {},
         "source_observed_at": (
-            row[8].isoformat() if len(row) == 9 else proof.get("acquired_at") if proof else None
+            row[8].isoformat() if len(row) >= 9 else proof.get("acquired_at") if proof else None
         ),
     }
 
@@ -150,7 +154,15 @@ def admit_provider_mappings(
     for entity_type in ("competition", "team"):
         for row in mapping_rows(connection, entity_type, provider, snapshot_id):
             decision = classify_mapping(connection, entity_type, row, data_root, verifier)
-            _record_decision(connection, decision)
+            if len(row) > 9 and row[9] is not None:
+                if decision["disposition"] not in {"CROSSWALK", "REVOKED"}:
+                    from football.product.identity_correction import revoke_team_correction
+
+                    revoke_team_correction(
+                        connection, UUID(row[9]["decision_id"]), "CORRECTION_EVIDENCE_UNVERIFIED"
+                    )
+            else:
+                _record_decision(connection, decision)
             decisions.append(decision)
     return decisions
 
@@ -195,10 +207,21 @@ def mapping_rows(
     snapshot_id: UUID | None = None,
 ) -> list[tuple[Any, ...]]:
     table, canonical, identifier, product = TABLES[entity_type]
+    corrected = connection.execute(
+        "SELECT to_regprocedure('football.product_team_identity_at(uuid,timestamptz)') IS NOT NULL"
+    ).fetchone()
+    correction = (
+        """, (SELECT to_jsonb(a) FROM (SELECT * FROM football.product_identity_admissions
+             WHERE entity_type='team' AND mapping_id=mapping.id
+             ORDER BY decided_at DESC,decision_id DESC LIMIT 1) a
+             WHERE a.corrects_decision_id IS NOT NULL)"""
+        if entity_type == "team" and corrected and corrected[0]
+        else ""
+    )
     return connection.execute(
         f"""SELECT mapping.id, mapping.{canonical}, provider.code, mapping.{identifier},
                    mapping.mapping_method, mapping.mapping_confidence, product.country,
-                   mapping.source_snapshot_id, snapshot.acquired_at
+                   mapping.source_snapshot_id, snapshot.acquired_at {correction}
             FROM football.{table} mapping
             JOIN football.providers provider ON provider.id = mapping.provider_id
             JOIN football.source_snapshots snapshot ON snapshot.id = mapping.source_snapshot_id

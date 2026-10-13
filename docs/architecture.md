@@ -207,6 +207,25 @@ Do not merge entities solely because their names look similar.
 
 Resolution must be explicit, deterministic, and traceable.
 
+Team corrections extend the R2 `product_identity_admissions` log. A correction
+links one source mapping to a verified target mapping and the original fixture
+contradiction using `corrects_decision_id` and `target_mapping_id`. It preserves
+the original provider mapping, fixture decisions and source observations. Its
+database-stamped `decided_at` makes it eligible prospectively; source acquisition
+is recorded separately and never substituted for an admission time.
+
+`product_team_identity_at(mapping_id, knowledge_cutoff)` resolves immutable
+admissions at the requested cutoff. Current operational views expose effective
+IDs without rewriting physical records. History qualification appends snapshots
+with the eligible IDs; `product_eligible_history_at` keeps earlier snapshots
+unchanged after corrections and revocations. Forecast refresh and historical
+fixture context resolve target teams at the same cutoff as their history reads.
+Team admission does not merge fixtures; fixture reconciliation retains its own
+competition, season, orientation and conflict checks.
+
+The typed correction operation and deployment procedure are documented in
+[MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
+
 ## Point-in-Time Contract
 
 Historical forecast work separates:
