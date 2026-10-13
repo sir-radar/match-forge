@@ -42,3 +42,7 @@ Scope: additional eligibility metrics on the existing `/v1/admin/sync-runs` resp
 | Cancellation / retry | Existing stop and retry workflow | component and browser tests |
 | Optimistic rollback | Not applicable: operations reconcile server responses; no optimistic metric writes | `data-sync-admin.tsx` |
 | Query-choice races / offline cache | Not applicable to this change: fixed status endpoint, no new selectors or cache | `data-sync-admin.tsx` |
+
+Performance policy/horizon metadata is mandatory and validated. Horizon changes
+use the existing cancellation and stale-response handling. Unknown metadata
+produces the scoped error/retry state; empty populations retain nullable metrics.

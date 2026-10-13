@@ -183,6 +183,8 @@ export type MatchContext = {
 };
 
 export type Performance = {
+  analytics_policy_version: "pre-match-revisions-v2";
+  analytics_horizon: "LATEST" | "7D" | "3D" | "24H" | "6H" | "1H" | "15M";
   competition_id: string;
   league: string;
   country: string;
@@ -456,7 +458,12 @@ export function parseContext(value: unknown): MatchContext {
 export function parsePerformance(value: unknown): Performance {
   const item = object(value, "performance");
   const rating = text(item.rating, "rating") as Performance["rating"];
+  if (!["UNRATED", "WATCH", "GOOD", "STRONG"].includes(rating)) throw new Error("invalid rating");
+  if (item.analytics_policy_version !== "pre-match-revisions-v2") throw new Error("unsupported analytics policy");
+  const horizon = text(item.analytics_horizon, "analytics_horizon") as Performance["analytics_horizon"];
+  if (!["LATEST", "7D", "3D", "24H", "6H", "1H", "15M"].includes(horizon)) throw new Error("invalid analytics horizon");
   return {
+    analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: horizon,
     competition_id: text(item.competition_id, "competition_id"),
     league: text(item.league, "league"),
     country: text(item.country, "country"),

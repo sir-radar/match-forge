@@ -36,3 +36,12 @@ Authority: Go `HistoricalCoverage` and `syncCoverageSQL` in `go/api/internal/app
 The response adds required numeric `eligible_history`, `excluded_history`, `provisional_fixtures`, `verified_provider_matches`, and `identity_conflicts`. TypeScript validates all five at the existing transport boundary. Counts are not inferred from linked observations. Component and Playwright fixtures use the same fields; malformed metric coverage rejects null values rather than rendering zero.
 
 No new frontend requests, optimistic mutations, loading policy, or cancellation behavior were introduced. Existing status polling, errors, retry, stop, and duplicate-submit protection remain in place. State coverage is recorded in `api-state-matrix.md`. Contract drift is checked by boundary tests, deterministic admin browser fixtures, Go tests, and the repository's normal type/build checks.
+
+## Performance selection
+
+Responses declare `pre-match-revisions-v2` and a fixed analytics horizon. The
+transport rejects unknown policies and horizons. Each verified regulation-time
+fixture contributes its latest eligible immutable pre-kickoff revision once.
+Fixed horizons select by availability at the cutoff, independent of a revision's
+stored horizon label. Query keys include the horizon. Score rankings describe
+categories; aggregate buckets cannot count as exact scores.

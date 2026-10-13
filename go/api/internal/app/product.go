@@ -50,6 +50,7 @@ type PerformanceFilters struct {
 	CompetitionID    string
 	Rating           string
 	MinimumForecasts int
+	Horizon          string
 	Page             int
 	PageSize         int
 }
@@ -62,7 +63,7 @@ type ProductStore interface {
 	ForecastHistory(context.Context, string) ([]ForecastRevision, error)
 	Forecast(context.Context, string, string) (Forecast, error)
 	Standings(context.Context, string) ([]StandingRow, error)
-	Performance(context.Context, string) (Performance, error)
+	Performance(context.Context, string, string) (Performance, error)
 	Performances(context.Context, PerformanceFilters) (PerformancePage, error)
 	ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error)
 	ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error)
@@ -91,7 +92,7 @@ func (unavailableProductStore) Forecast(context.Context, string, string) (Foreca
 func (unavailableProductStore) Standings(context.Context, string) ([]StandingRow, error) {
 	return nil, errProductUnavailable
 }
-func (unavailableProductStore) Performance(context.Context, string) (Performance, error) {
+func (unavailableProductStore) Performance(context.Context, string, string) (Performance, error) {
 	return Performance{}, errProductUnavailable
 }
 func (unavailableProductStore) Performances(context.Context, PerformanceFilters) (PerformancePage, error) {
@@ -389,26 +390,28 @@ type StandingRow struct {
 }
 
 type Performance struct {
-	CompetitionID    string   `json:"competition_id"`
-	League           string   `json:"league"`
-	Country          string   `json:"country"`
-	Continent        string   `json:"continent"`
-	Rating           string   `json:"rating"`
-	Forecasts        int      `json:"forecasts"`
-	OutcomeHitRate   *float64 `json:"outcome_hit_rate"`
-	Brier            *float64 `json:"brier"`
-	LogLoss          *float64 `json:"log_loss"`
-	BaselineBrier    *float64 `json:"baseline_brier"`
-	BaselineLogLoss  *float64 `json:"baseline_log_loss"`
-	ExactScoreRate   *float64 `json:"exact_score_rate"`
-	TopThreeRate     *float64 `json:"top_three_score_rate"`
-	TopFiveRate      *float64 `json:"top_five_score_rate"`
-	TotalsHitRate    *float64 `json:"total_goals_hit_rate"`
-	BTTSHitRate      *float64 `json:"btts_hit_rate"`
-	LatestFiftyBrier *float64 `json:"latest_fifty_brier"`
-	LatestFiftyLog   *float64 `json:"latest_fifty_log_loss"`
-	LatestBaseBrier  *float64 `json:"latest_fifty_baseline_brier"`
-	LatestBaseLog    *float64 `json:"latest_fifty_baseline_log_loss"`
+	CompetitionID          string   `json:"competition_id"`
+	AnalyticsPolicyVersion string   `json:"analytics_policy_version"`
+	AnalyticsHorizon       string   `json:"analytics_horizon"`
+	League                 string   `json:"league"`
+	Country                string   `json:"country"`
+	Continent              string   `json:"continent"`
+	Rating                 string   `json:"rating"`
+	Forecasts              int      `json:"forecasts"`
+	OutcomeHitRate         *float64 `json:"outcome_hit_rate"`
+	Brier                  *float64 `json:"brier"`
+	LogLoss                *float64 `json:"log_loss"`
+	BaselineBrier          *float64 `json:"baseline_brier"`
+	BaselineLogLoss        *float64 `json:"baseline_log_loss"`
+	ExactScoreRate         *float64 `json:"exact_score_rate"`
+	TopThreeRate           *float64 `json:"top_three_score_rate"`
+	TopFiveRate            *float64 `json:"top_five_score_rate"`
+	TotalsHitRate          *float64 `json:"total_goals_hit_rate"`
+	BTTSHitRate            *float64 `json:"btts_hit_rate"`
+	LatestFiftyBrier       *float64 `json:"latest_fifty_brier"`
+	LatestFiftyLog         *float64 `json:"latest_fifty_log_loss"`
+	LatestBaseBrier        *float64 `json:"latest_fifty_baseline_brier"`
+	LatestBaseLog          *float64 `json:"latest_fifty_baseline_log_loss"`
 }
 
 type Pagination struct {
@@ -530,6 +533,10 @@ func (application *App) liveFixture(response http.ResponseWriter, request *http.
 }
 
 func (application *App) fixtureContext(response http.ResponseWriter, request *http.Request) {
+	if !canonicalIDPattern.MatchString(request.PathValue("fixture_id")) {
+		application.publicError(response, http.StatusBadRequest, "invalid fixture_id")
+		return
+	}
 	item, err := application.product.FixtureContext(request.Context(), request.PathValue("fixture_id"))
 	application.respondProduct(response, item, err)
 }
@@ -554,11 +561,31 @@ func (application *App) standings(response http.ResponseWriter, request *http.Re
 }
 
 func (application *App) performance(response http.ResponseWriter, request *http.Request) {
-	item, err := application.product.Performance(request.Context(), request.PathValue("competition_id"))
+	competitionID := request.PathValue("competition_id")
+	horizon := request.URL.Query().Get("horizon")
+	if !canonicalIDPattern.MatchString(competitionID) {
+		application.publicError(response, http.StatusBadRequest, "invalid competition_id")
+		return
+	}
+	if _, err := performanceHorizonSeconds(horizon); err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
+	item, err := application.product.Performance(request.Context(), competitionID, horizon)
 	application.respondProduct(response, item, err)
 }
 
 func (application *App) listPerformance(response http.ResponseWriter, request *http.Request) {
+	horizon := request.URL.Query().Get("horizon")
+	if _, err := performanceHorizonSeconds(horizon); err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
+	competitionID := request.URL.Query().Get("competition")
+	if competitionID != "" && !canonicalIDPattern.MatchString(competitionID) {
+		application.publicError(response, http.StatusBadRequest, "invalid competition")
+		return
+	}
 	minimum := 0
 	if value := request.URL.Query().Get("minimum_forecasts"); value != "" {
 		parsed, err := strconv.Atoi(value)
@@ -576,8 +603,8 @@ func (application *App) listPerformance(response http.ResponseWriter, request *h
 	items, err := application.product.Performances(request.Context(), PerformanceFilters{
 		Continent:     request.URL.Query().Get("continent"),
 		Country:       request.URL.Query().Get("country"),
-		CompetitionID: request.URL.Query().Get("competition"),
-		Rating:        request.URL.Query().Get("rating"), MinimumForecasts: minimum,
+		CompetitionID: competitionID, Horizon: horizon,
+		Rating: request.URL.Query().Get("rating"), MinimumForecasts: minimum,
 		Page: page, PageSize: pageSize,
 	})
 	application.respondProduct(response, items, err)

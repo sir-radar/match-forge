@@ -6,10 +6,10 @@ import type { Competition, Performance, PerformancePage as PerformancePageData }
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 
-type Filters = { continent: string; country: string; competition: string; rating: string; minimum_forecasts: string };
+type Filters = { continent: string; country: string; competition: string; rating: string; horizon: string; minimum_forecasts: string };
 
 export function PerformancePage() {
-  const [filters, setFilters] = useState<Filters>({ continent: "", country: "", competition: "", rating: "", minimum_forecasts: "0" });
+  const [filters, setFilters] = useState<Filters>({ continent: "", country: "", competition: "", rating: "", horizon: "LATEST", minimum_forecasts: "0" });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20);
   const competitionLoad = useCallback((signal: AbortSignal) => api.competitions(new URLSearchParams(), signal), []);
@@ -38,7 +38,7 @@ export function PerformancePage() {
       setPage={setPage}
       setPageSize={updatePageSize}
     /> : null}
-    <section className="panel performance-note"><header><h2>Rating contract</h2></header><p>UNRATED means fewer than 50 settled forecasts. WATCH, GOOD, and STRONG use the frozen league-comparison rule. Ratings describe forecast performance, not betting advice.</p></section>
+    <section className="panel performance-note"><header><h2>Rating contract</h2></header><p>Policy pre-match-revisions-v2 counts each verified regulation-time fixture once. LATEST uses the latest strictly pre-kickoff revision; fixed horizons use the latest revision available by that cutoff. Prior outcomes must be known by each forecast’s knowledge cutoff. Top-3 and Top-5 count score categories, including 5+. Aggregated categories never count as exact scores. UNRATED means fewer than 50 eligible fixtures. WATCH, GOOD, and STRONG use the frozen league-comparison rule. Ratings describe forecast performance, not betting advice.</p></section>
   </div>;
 }
 
@@ -51,6 +51,7 @@ function PerformanceFilters({ filters, setFilters, competitions }: { filters: Fi
     <label>Continent<select value={filters.continent} onChange={(event) => setFilters({ ...filters, continent: event.target.value, country: "", competition: "" })}><option value="">All</option>{continents.map((item) => <option key={item}>{item}</option>)}</select></label>
     <label>Country<select value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value, competition: "" })}><option value="">All</option>{countries.map((item) => <option key={item}>{item}</option>)}</select></label>
     <label>League<select value={filters.competition} onChange={(event) => update("competition", event.target.value)}><option value="">All</option>{leagues.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+    <label>Forecast horizon<select value={filters.horizon} onChange={(event) => update("horizon", event.target.value)}>{["LATEST", "7D", "3D", "24H", "6H", "1H", "15M"].map((item) => <option key={item}>{item}</option>)}</select></label>
     <label>Rating<select value={filters.rating} onChange={(event) => update("rating", event.target.value)}><option value="">All</option>{["UNRATED", "WATCH", "GOOD", "STRONG"].map((item) => <option key={item}>{item}</option>)}</select></label>
     <label>Minimum forecasts<input type="number" min="0" value={filters.minimum_forecasts} onChange={(event) => update("minimum_forecasts", event.target.value)} /></label>
   </div>;
@@ -69,7 +70,7 @@ function PerformanceTable({ data, pageSize, refreshing, setPage, setPageSize }: 
   const firstItem = (page - 1) * data.pagination.page_size + 1;
   const lastItem = firstItem + data.performance.length - 1;
   return <section className="panel" aria-busy={refreshing}>
-    <div className="table-scroll" tabIndex={0}><table><caption className="sr-only">League performance results</caption><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Score</th><th>Top-5 Score</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{data.performance.map((item: Performance) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div>
+    <div className="table-scroll" tabIndex={0}><table><caption className="sr-only">League performance results</caption><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Categories</th><th>Top-5 Categories</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{data.performance.map((item: Performance) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div>
     <nav className="table-pagination" aria-label="Performance table pagination">
       <label>Rows per page<select disabled={refreshing} value={pageSize} onChange={(event) => setPageSize(Number(event.target.value) as 20 | 50 | 100)}><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></label>
       <p aria-live="polite">Showing {firstItem}–{lastItem} of {totalItems} · Page {page} of {totalPages}</p>

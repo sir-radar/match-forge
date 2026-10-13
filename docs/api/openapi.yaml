@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.5.0
+  version: 0.6.0
   description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
 servers:
   - url: http://127.0.0.1:8080
@@ -57,14 +57,16 @@ paths:
   /v1/competitions/{competition_id}/performance:
     get:
       operationId: getCompetitionPerformance
-      parameters: [ { $ref: '#/components/parameters/CompetitionId' } ]
+      parameters: [ { $ref: '#/components/parameters/CompetitionId' }, { $ref: '#/components/parameters/AnalyticsHorizon' } ]
       responses:
+        '400': { $ref: '#/components/responses/BadRequest' }
         '200': { description: Chronological metrics and prior-results baseline comparison, content: { application/json: { schema: { $ref: '#/components/schemas/Performance' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/performance:
     get:
       operationId: listPerformance
       parameters:
+        - { $ref: '#/components/parameters/AnalyticsHorizon' }
         - { name: continent, in: query, schema: { type: string } }
         - { name: country, in: query, schema: { type: string } }
         - { name: competition, in: query, schema: { type: string, format: uuid } }
@@ -139,6 +141,10 @@ components:
           '409': { description: Another write-heavy sync is active, content: { application/json: { schema: { $ref: '#/components/schemas/SyncConflict' } } } }
           '503': { $ref: '#/components/responses/Unavailable' }
   parameters:
+    AnalyticsHorizon:
+      name: horizon
+      in: query
+      schema: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M], default: LATEST }
     FixtureId: { name: fixture_id, in: path, required: true, schema: { type: string, format: uuid } }
     CompetitionId: { name: competition_id, in: path, required: true, schema: { type: string, format: uuid } }
   responses:
@@ -301,9 +307,11 @@ components:
         away_bucket_kind: { type: string, enum: [EXACT, AT_LEAST] }
     Performance:
       type: object
-      required: [competition_id, league, country, continent, rating, forecasts]
+      required: [competition_id, league, country, continent, rating, forecasts, analytics_policy_version, analytics_horizon]
       properties:
         competition_id: { type: string, format: uuid }
+        analytics_policy_version: { type: string, const: pre-match-revisions-v2 }
+        analytics_horizon: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M] }
         league: { type: string }
         country: { type: string }
         continent: { type: string }
