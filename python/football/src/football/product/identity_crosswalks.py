@@ -2,7 +2,28 @@
 
 from __future__ import annotations
 
+# Explicit cross-provider competition mapping. No fuzzy competition matching is permitted.
+FOOTBALL_DATA_COMPETITIONS = {
+    1: "WC",
+    2: "CL",
+    4: "EC",
+    13: "CLI",
+    39: "PL",
+    40: "ELC",
+    61: "FL1",
+    71: "BSA",
+    78: "BL1",
+    88: "DED",
+    94: "PPL",
+    135: "SA",
+    140: "PD",
+}
+
 COMPETITION_CROSSWALKS: dict[str, dict[str, tuple[str, str]]] = {
+    "football_data_org": {
+        code: ("api_football", str(identifier))
+        for identifier, code in FOOTBALL_DATA_COMPETITIONS.items()
+    },
     "openfootball": {
         "br.1": ("api_football", "71"),
         "ch.1": ("api_football", "207"),

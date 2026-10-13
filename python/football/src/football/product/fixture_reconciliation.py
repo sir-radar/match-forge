@@ -40,9 +40,13 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                   JOIN football.team_provider_mappings source
                     ON source.provider_id = sp.id AND source.provider_team_id = x.source_id
                    AND source.valid_to IS NULL
+                   AND source.mapping_confidence = 1
+                   AND football.product_mapping_trusted('team', source.id, source.team_id)
                   JOIN football.team_provider_mappings target
                     ON target.provider_id = tp.id AND target.provider_team_id = x.target_id
                    AND target.valid_to IS NULL
+                   AND target.mapping_confidence = 1
+                   AND football.product_mapping_trusted('team', target.id, target.team_id)
             )
             SELECT DISTINCT source.fixture_id, target.fixture_id,
                    source.competition_id, source.kickoff_at,

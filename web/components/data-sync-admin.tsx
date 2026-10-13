@@ -42,6 +42,7 @@ export function DataSyncAdmin() {
       {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} providerConfiguration={providerConfiguration} disabled={Boolean(active || submitting)} busy={submitting === action.type} onStart={() => void start(action)} />)}
     </section>
     <CoveragePanel coverage={coverage} loading={loading} />
+    <HistoryAcquisitionPanel coverage={coverage} configuration={providerConfiguration} loading={loading} />
     <RunHistory runs={runs} loading={loading} clock={clock} busy={Boolean(submitting)} onRetry={(run) => void retry(run)} />
   </div>;
 }
@@ -198,6 +199,28 @@ function CoveragePanel({ coverage, loading }: { coverage: HistoricalCoverage | n
     ["API-Football quota", coverage.api_football_exhausted ? "Exhausted — requests suppressed" : coverage.api_football_remaining < 0 ? `${coverage.api_football_requests_used.toLocaleString()} requests; remaining unknown` : `${coverage.api_football_remaining.toLocaleString()} remaining`],
   ] : [];
   return <section className="coverage-panel" aria-labelledby="coverage-title"><header><div><small>Canonical store</small><h2 id="coverage-title">Historical Coverage</h2></div><span>{loading ? "Loading…" : "Current"}</span></header><p>Linked observations are not necessarily verified identities. Provisional, duplicate, quarantined, and not-yet-known history does not satisfy the ten-match forecast requirement.</p><dl>{metrics.map(([term, value]) => <Metric key={term} term={String(term)} value={typeof value === "number" ? value.toLocaleString() : value} />)}</dl>{!loading && !coverage && <p>Coverage is unavailable.</p>}</section>;
+}
+
+function HistoryAcquisitionPanel({ coverage, configuration, loading }: { coverage: HistoricalCoverage | null; configuration: ProviderConfiguration; loading: boolean }) {
+  const schedule = configuration.history_sync_enabled === undefined ? "Unavailable" : configuration.history_sync_enabled ? `Enabled; every ${configuration.history_sync_interval ?? "unknown interval"}` : "Disabled";
+  return <section className="coverage-panel" aria-labelledby="history-acquisition-title">
+    <header><div><small>Background acquisition</small><h2 id="history-acquisition-title">Provider history queue</h2></div></header>
+    <dl><Metric term="Automatic history schedule" value={schedule} /></dl>
+    <p>Requests defer for live synchronization and provider limits. Oldest pending time records when this policy first observed the scope. Drain estimates use observed completions and remain unavailable until a full scheduling interval is measured.</p>
+    {loading ? <p>Loading history acquisition…</p> : !coverage?.provider_history ? <p>History queue diagnostics are unavailable.</p> : coverage.provider_history.map((item) => <div key={item.provider}>
+      <h3>{item.provider === "fotmob" ? "FotMob" : "PitchAPI"}</h3>
+      <dl>
+        <Metric term="Pending / running / completed" value={`${item.pending} / ${item.running} / ${item.completed}`} />
+        <Metric term="Failed / deferred" value={`${item.failed} / ${item.deferred}`} />
+        <Metric term="Requests today / historical" value={`${item.requests_used} / ${item.historical_requests_used}`} />
+        <Metric term="Quota remaining" value={item.exhausted ? "Exhausted" : item.remaining_requests === null ? "Unknown" : String(item.remaining_requests)} />
+        <Metric term="Deferred until" value={formatTime(item.deferred_until)} />
+        <Metric term="Oldest pending observed" value={formatTime(item.oldest_pending_observed_at)} />
+        <Metric term="Completions per hour" value={item.completions_per_hour === null ? "Unavailable" : item.completions_per_hour.toFixed(2)} />
+        <Metric term="Estimated drain" value={item.estimated_drain_hours === null ? "Unavailable" : `About ${item.estimated_drain_hours.toFixed(1)} hours`} />
+      </dl>
+    </div>)}
+  </section>;
 }
 
 function RunHistory({ runs, loading, clock, busy, onRetry }: { runs: SyncRun[]; loading: boolean; clock: number; busy: boolean; onRetry: (run: SyncRun) => void }) {

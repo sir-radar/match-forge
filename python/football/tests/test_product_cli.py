@@ -8,6 +8,27 @@ from football.product import cli
 from football.product.api_football import ApiFootballError
 
 
+def test_scheduled_history_requires_explicit_enablement(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("MATCHFORGE_HISTORY_SYNC_ENABLED", raising=False)
+    args = cli.build_parser().parse_args(["backfill-history", "--scheduled"])
+    with pytest.raises(ValueError, match="disabled"):
+        cli._history_backfill(cast(Any, object()), args)
+
+
+def test_scheduled_history_limits_preserve_manual_budgets(monkeypatch: pytest.MonkeyPatch) -> None:
+    args = cli.build_parser().parse_args(["backfill-history", "--scheduled"])
+    for provider in ("fotmob", "pitchapi"):
+        monkeypatch.delenv(f"MATCHFORGE_{provider.upper()}_HISTORY_SCOPE_LIMIT", raising=False)
+        assert cli._history_limits(args, provider) == (2, 1)
+    monkeypatch.setenv("MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT", "0")
+    assert cli._history_limits(args, "fotmob") == (0, 1)
+    monkeypatch.setenv("MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT", "3")
+    with pytest.raises(ValueError, match="0–2"):
+        cli._history_limits(args, "fotmob")
+    manual = cli.build_parser().parse_args(["backfill-history", "--provider-scope-budget", "8"])
+    assert cli._history_limits(manual, "fotmob") == (8, 8)
+
+
 @pytest.mark.parametrize(
     "result",
     [

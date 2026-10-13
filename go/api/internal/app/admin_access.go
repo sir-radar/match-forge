@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-// Administrative mutations require private-local access and either the trusted
+// Administrative routes require private-local access and either the trusted
 // browser Origin or the owner-approved credential for origin-less automation.
 func (application *App) adminAccess(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if !strings.HasPrefix(request.URL.Path, "/v1/admin/") ||
-			request.Method == http.MethodGet || request.Method == http.MethodOptions {
+			request.Method == http.MethodOptions {
 			next.ServeHTTP(response, request)
 			return
 		}
@@ -22,10 +22,12 @@ func (application *App) adminAccess(next http.Handler) http.Handler {
 			application.writeJSON(response, http.StatusForbidden, map[string]string{"error": "administrative access denied"})
 			return
 		}
-		mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-		if err != nil || mediaType != "application/json" {
-			application.writeJSON(response, http.StatusUnsupportedMediaType, map[string]string{"error": "Content-Type must be application/json"})
-			return
+		if request.Method != http.MethodGet && request.Method != http.MethodHead {
+			mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+			if err != nil || mediaType != "application/json" {
+				application.writeJSON(response, http.StatusUnsupportedMediaType, map[string]string{"error": "Content-Type must be application/json"})
+				return
+			}
 		}
 		next.ServeHTTP(response, request)
 	})

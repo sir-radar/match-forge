@@ -31,12 +31,14 @@ from football.product.external_predictions import import_predictions, parse_impo
 from football.product.football_data_org import FootballDataOrgClient, FootballDataOrgError
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.history_coverage import history_coverage
+from football.product.history_requests import HistoryDeferred, HistoryRequestBudget
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
 from football.product.sync import HistoryWorkerFactory, ProductSync
+from football.providers.base import ProviderFetchError, UrllibHttpTransport
 from football.providers.fotmob import FotmobClient
-from football.providers.pitchapi import PitchApiClient
+from football.providers.pitchapi import PitchApiClient, UrllibPitchApiTransport
 
 _DATA_OPERATION_ERRORS = (
     ApiFootballError,
@@ -46,6 +48,7 @@ _DATA_OPERATION_ERRORS = (
     subprocess.SubprocessError,
     urllib.error.URLError,
     ValueError,
+    ProviderFetchError,
 )
 
 
@@ -74,6 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
         backfill.add_argument("--provider-scope-budget", type=int, default=8)
         backfill.add_argument("--provider-discovery-budget", type=int, default=8)
         backfill.add_argument("--provider-only", choices=("fotmob", "pitchapi"))
+        if name == "backfill-history":
+            backfill.add_argument("--scheduled", action="store_true")
         backfill.add_argument(
             "--data-root",
             type=Path,
@@ -395,22 +400,62 @@ def _football_data_uk(
 def _history_backfill(
     connection: psycopg.Connection[Any], args: argparse.Namespace
 ) -> dict[str, object]:
+    scheduled = getattr(args, "scheduled", False)
+    if scheduled and os.environ.get("MATCHFORGE_HISTORY_SYNC_ENABLED", "false") != "true":
+        raise ValueError("automatic history acquisition is disabled")
     errors: dict[str, str] = {}
-    pitch_sync = OperationalProviderSync(
-        connection, args.data_root, provider_code="pitchapi", minimum_interval_seconds=0
-    )
-    pitch_stored = None
-    pitch_acquired: list[dict[str, object]] = []
-    if args.provider_only != "fotmob":
-        pitch_stored = _run_sync_step(
-            connection, "pitchapi-stored", pitch_sync.backfill_stored_history, errors
+    providers = {
+        provider: _operational_history(connection, args, provider, errors)
+        for provider in ("pitchapi", "fotmob")
+        if args.provider_only in (None, provider)
+    }
+    openfootball = football_data_uk = None
+    if args.provider_only is None and not scheduled:
+        openfootball = _run_sync_step(
+            connection, "openfootball", lambda: _openfootball(connection, args), errors
         )
-    if (
-        args.provider_only != "fotmob"
-        and os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true"
-    ):
-        client = PitchApiClient(
+        football_data_uk = _run_sync_step(
+            connection, "football-data-uk", lambda: _football_data_uk(connection, args), errors
+        )
+    scope_failures = any(
+        scope["status"] == "FAILED"
+        for provider in providers.values()
+        for scope in provider["acquired"]
+    )
+    return {
+        "status": "COMPLETED_WITH_ERRORS" if errors or scope_failures else "COMPLETED",
+        "errors": errors,
+        "openfootball": openfootball,
+        "football_data_uk": football_data_uk,
+        "fotmob": providers.get("fotmob", {"stored": None, "acquired": []}),
+        "pitchapi": providers.get("pitchapi", {"stored": None, "acquired": []}),
+    }
+
+
+def _operational_history(
+    connection: psycopg.Connection[Any],
+    args: argparse.Namespace,
+    provider: str,
+    errors: dict[str, str],
+) -> dict[str, Any]:
+    sync = OperationalProviderSync(connection, args.data_root, provider_code=provider)
+    stored = None
+    if not getattr(args, "scheduled", False):
+        stored = _run_sync_step(
+            connection, f"{provider}-stored", sync.backfill_stored_history, errors
+        )
+    result: dict[str, Any] = {"stored": stored, "acquired": []}
+    if os.environ.get(f"MATCHFORGE_{provider.upper()}_ENABLED", "false") != "true":
+        return result
+    scopes, discovery = _history_limits(args, provider)
+    budget = HistoryRequestBudget(connection, provider)
+    client: PitchApiClient | FotmobClient = (
+        PitchApiClient(
             os.environ.get("PITCH_API_TOKEN", ""),
+            transport=UrllibPitchApiTransport(
+                request_guard=budget.before_request,
+                http_error_observer=budget.record_http_error,
+            ),
             connection_timeout_seconds=float(
                 os.environ.get("MATCHFORGE_PROVIDER_CONNECTION_TIMEOUT_SECONDS", "5")
             ),
@@ -418,72 +463,60 @@ def _history_backfill(
                 os.environ.get("MATCHFORGE_PROVIDER_REQUEST_TIMEOUT_SECONDS", "20")
             ),
         )
+        if provider == "pitchapi"
+        else FotmobClient(
+            access_approved=True,
+            transport=UrllibHttpTransport(
+                user_agent="MatchForge/0.1 approved-provider-adapter",
+                accept="application/json",
+                request_guard=budget.before_request,
+                http_error_observer=budget.record_http_error,
+            ),
+        )
+    )
+    if discovery:
         _run_sync_step(
             connection,
-            "pitchapi-discovery",
-            lambda: {
-                "scopes": discover_pitchapi(pitch_sync, client, refresh=args.refresh)
-                if args.provider_discovery_budget > 0
-                else 0
-            },
+            f"{provider}-discovery",
+            lambda: _discover_history(sync, client, args, discovery),
             errors,
         )
-        pitch_acquired = run_scopes(
-            pitch_sync,
-            client,
-            budget=args.provider_scope_budget,
-            competition=args.competition,
-            season=args.season,
-            refresh=args.refresh,
-        )
-    openfootball = football_data_uk = None
-    if args.provider_only is None:
-        openfootball = _run_sync_step(
-            connection, "openfootball", lambda: _openfootball(connection, args), errors
-        )
-        football_data_uk = _run_sync_step(
-            connection, "football-data-uk", lambda: _football_data_uk(connection, args), errors
-        )
-    fotmob = None
-    fotmob_acquired: list[dict[str, object]] = []
-    if args.provider_only != "pitchapi":
-        fotmob_sync = OperationalProviderSync(connection, args.data_root, provider_code="fotmob")
-        fotmob = _run_sync_step(
-            connection, "fotmob-stored", fotmob_sync.backfill_stored_history, errors
-        )
-        if os.environ.get("MATCHFORGE_FOTMOB_ENABLED", "false") == "true":
-            fotmob_client = FotmobClient(access_approved=True)
-            _run_sync_step(
-                connection,
-                "fotmob-discovery",
-                lambda: discover_fotmob(
-                    fotmob_sync,
-                    fotmob_client,
-                    budget=args.provider_discovery_budget,
-                    refresh=args.refresh,
-                    competition=args.competition,
-                ),
-                errors,
-            )
-            fotmob_acquired = run_scopes(
-                fotmob_sync,
-                fotmob_client,
-                budget=args.provider_scope_budget,
-                competition=args.competition,
-                season=args.season,
-                refresh=args.refresh,
-            )
-    scope_failures = any(
-        scope["status"] != "COMPLETED" for scope in [*pitch_acquired, *fotmob_acquired]
+    result["acquired"] = run_scopes(
+        sync,
+        client,
+        budget=scopes,
+        competition=args.competition,
+        season=args.season,
+        refresh=args.refresh,
     )
-    return {
-        "status": "COMPLETED_WITH_ERRORS" if errors or scope_failures else "COMPLETED",
-        "errors": errors,
-        "openfootball": openfootball,
-        "football_data_uk": football_data_uk,
-        "fotmob": {"stored": fotmob, "acquired": fotmob_acquired},
-        "pitchapi": {"stored": pitch_stored, "acquired": pitch_acquired},
-    }
+    return result
+
+
+def _discover_history(
+    sync: OperationalProviderSync,
+    client: PitchApiClient | FotmobClient,
+    args: argparse.Namespace,
+    budget: int,
+) -> dict[str, object]:
+    try:
+        if isinstance(client, PitchApiClient):
+            return {"scopes": discover_pitchapi(sync, client, refresh=args.refresh)}
+        return discover_fotmob(
+            sync, client, budget=budget, refresh=args.refresh, competition=args.competition
+        )
+    except HistoryDeferred as deferred:
+        sync.connection.rollback()
+        return {"status": "DEFERRED", "reason": str(deferred), "until": deferred.until.isoformat()}
+
+
+def _history_limits(args: argparse.Namespace, provider: str) -> tuple[int, int]:
+    if not getattr(args, "scheduled", False):
+        return args.provider_scope_budget, args.provider_discovery_budget
+    scopes = int(os.environ.get(f"MATCHFORGE_{provider.upper()}_HISTORY_SCOPE_LIMIT", "2"))
+    discovery = int(os.environ.get("MATCHFORGE_HISTORY_DISCOVERY_LIMIT", "1"))
+    if not 0 <= scopes <= 2 or not 0 <= discovery <= 1:
+        raise ValueError("scheduled history limits require 0–2 scopes and 0–1 discovery requests")
+    return scopes, discovery
 
 
 def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> dict[str, object]:

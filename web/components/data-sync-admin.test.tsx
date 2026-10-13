@@ -17,6 +17,35 @@ const coverage = {
 describe("DataSyncAdmin", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it("shows bounded background queue diagnostics without inventing quota or throughput", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [], provider_configuration: { fotmob_enabled: false, pitchapi_enabled: true, operational_sync_interval: "30s", history_sync_enabled: false, history_sync_interval: "1h0m0s" },
+      coverage: { ...coverage, provider_history: [{
+        provider: "pitchapi", pending: 323, running: 0, completed: 2, failed: 1, deferred: 3,
+        oldest_pending_observed_at: "2026-10-13T08:00:00Z", completions_24_hours: 2,
+        observed_seconds: 100, requests_used: 5, historical_requests_used: 3,
+        remaining_requests: null, exhausted: false, deferred_until: null,
+        completions_per_hour: null, estimated_drain_hours: null,
+      }] },
+    })));
+    render(<DataSyncAdmin />);
+    expect(await screen.findByText("323 / 0 / 2")).toBeInTheDocument();
+    expect(screen.getByText("1 / 3")).toBeInTheDocument();
+    expect(screen.getByText("5 / 3")).toBeInTheDocument();
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
+    expect(screen.getAllByText("Unavailable")).toHaveLength(2);
+  });
+
+  it("rejects malformed background diagnostics and offers status retry", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [], coverage: { ...coverage, provider_history: [{ provider: "pitchapi", pending: -1 }] },
+    })));
+    render(<DataSyncAdmin />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("pending");
+    expect(screen.getByText("History queue diagnostics are unavailable.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
+  });
+
   it("renders every fixed action, coverage, history, and prevents duplicate submission", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       if (init?.method === "POST") return json({

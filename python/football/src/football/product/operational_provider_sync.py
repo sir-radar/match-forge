@@ -134,7 +134,7 @@ class OperationalProviderSync:
                           kickoff_at, canonical_status, provider_status,
                           home_score, away_score, match_minute, added_time, period,
                           source_updated_at, observed_at, source_snapshot_id,
-                          result_score_basis
+                          result_score_basis, canonical_fixture_id
                      FROM football.product_provider_fixture_observations
                     WHERE provider_code = %s AND provider_match_id = %s
                     ORDER BY observed_at DESC, observation_id DESC LIMIT 1""",
@@ -147,7 +147,9 @@ class OperationalProviderSync:
                 """SELECT fixture.fixture_id, fixture.competition_id,
                           fixture.home_team_id, fixture.away_team_id,
                           competition.name, home.name, away.name,
-                          fixture.status, fixture.home_score, fixture.away_score, fixture.kickoff_at
+                          fixture.status, fixture.home_score, fixture.away_score,
+                          fixture.kickoff_at,
+                          fixture.identity_status
                      FROM football.product_fixtures fixture
                      JOIN football.product_competitions competition
                        ON competition.competition_id = fixture.competition_id
@@ -159,6 +161,8 @@ class OperationalProviderSync:
             candidate = cursor.fetchone()
             if candidate is None:
                 raise ValueError("reviewed canonical fixture does not exist")
+            if candidate[11] != "VERIFIED":
+                raise ValueError("reviewed target must be a verified canonical fixture")
         row = PitchApiFixture(
             provider_match_id=provider_match_id,
             provider_competition_id=source[0],
@@ -207,17 +211,70 @@ class OperationalProviderSync:
             ):
                 raise ValueError("reviewed mapping requires verified retained provider identifiers")
         self._persist_deterministic_mapping(row, snapshot_id, candidate, mapping_method="manual")
-        self._record_mapping_decision(
+        review = self._record_mapping_decision(
             row,
             snapshot_id,
             fixture_id,
             "MANUAL_ACCEPTED",
             "operator explicitly accepted mapping",
-            {"reviewed_fixture_id": str(fixture_id)},
+            {"reviewed_fixture_id": str(fixture_id), "reviewed_at": datetime.now(UTC).isoformat()},
         )
         admit_provider_mappings(self.connection, self.data_root, self.provider_code, snapshot_id)
         self._update_canonical_fixture(row, fixture_id, snapshot_id)
         self._insert_qualified_history(row, fixture_id, snapshot_id)
+        self._resolve_reviewed_provisional(source[18], candidate, row, snapshot_id, review)
+
+    def _resolve_reviewed_provisional(
+        self,
+        original: UUID | None,
+        target: tuple[Any, ...],
+        row: FixtureObservation,
+        snapshot: UUID,
+        review: UUID,
+    ) -> None:
+        if original is None or original == target[0]:
+            return
+        evidence = {
+            "operator_review_decision_id": str(review),
+            "provider": self.provider_code,
+            "provider_match_id": row.provider_match_id,
+            "source_snapshot_id": str(snapshot),
+            "original_fixture_id": str(original),
+            "reviewed_fixture_id": str(target[0]),
+        }
+        self.connection.execute(
+            "SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))"
+        )
+        provisional = self.connection.execute(
+            "SELECT identity_status FROM football.product_fixtures "
+            "WHERE fixture_id = %s FOR UPDATE",
+            (original,),
+        ).fetchone()
+        if provisional != ("PROVISIONAL",):
+            return
+        self.connection.execute(
+            """UPDATE football.fixture_identity_resolutions SET active = false
+               WHERE member_fixture_id = %s AND active""",
+            (original,),
+        )
+        self.connection.execute(
+            """INSERT INTO football.fixture_identity_resolutions (
+                   canonical_real_fixture_id, member_fixture_id, representative_fixture_id,
+                   resolution_status, selected_competition_id, resolution_reason, evidence_json,
+                   evidence_sha256, resolution_version, active, created_at)
+               VALUES (%s, %s, %s, 'DUPLICATE_RESOLVED', %s,
+                       'Operator reviewed retained provider IDs and fixture context',
+                       %s::jsonb, %s, %s, true, clock_timestamp())""",
+            (
+                target[0],
+                original,
+                target[0],
+                target[1],
+                json.dumps(evidence),
+                sha256_json(evidence),
+                f"operator-review:{review}",
+            ),
+        )
 
     def sync_fotmob(
         self,
@@ -267,15 +324,22 @@ class OperationalProviderSync:
         """Import one bounded PitchAPI played-season scope through the normal path."""
         self.pacer.wait()
         response = client.league_matches(league_id, season=season, status="played")
-        return self.backfill_league_response(league_id, season, response)
+        return self.backfill_league_response(league_id, season, response, network_acquired=True)
 
     def backfill_league_response(
-        self, league_id: str, season: str, response: PitchApiResponse | FotmobResponse
+        self,
+        league_id: str,
+        season: str,
+        response: PitchApiResponse | FotmobResponse,
+        *,
+        network_acquired: bool = False,
     ) -> dict[str, object]:
         """Replay an immutable league snapshot through the existing ingestion path."""
         snapshot_id = self._record_response(f"league-{league_id}-{season}", response)
         self.connection.commit()
-        counts = SyncCounts(attempted_requests=1, successful_requests=1)
+        counts = SyncCounts(
+            attempted_requests=int(network_acquired), successful_requests=int(network_acquired)
+        )
         if isinstance(response, FotmobResponse):
             if not isinstance(response.data, Mapping):
                 raise ValueError("FotMob league response must be an object")
@@ -1500,7 +1564,7 @@ class OperationalProviderSync:
         disposition: str,
         reason: str,
         evidence: Mapping[str, Any],
-    ) -> None:
+    ) -> UUID:
         semantic = sha256_json(
             {
                 "provider": self.provider_code,
@@ -1519,7 +1583,7 @@ class OperationalProviderSync:
                        candidate_fixture_id, disposition, reason, evidence,
                        source_snapshot_id, observed_at
                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                   ON CONFLICT (semantic_sha256) DO NOTHING""",
+                   ON CONFLICT (semantic_sha256) DO NOTHING RETURNING decision_id""",
                 (
                     semantic,
                     self.provider_code,
@@ -1532,6 +1596,15 @@ class OperationalProviderSync:
                     row.observed_at,
                 ),
             )
+            inserted = cursor.fetchone()
+            if inserted is None:
+                inserted = cursor.execute(
+                    """SELECT decision_id FROM football.product_provider_mapping_decisions
+                       WHERE semantic_sha256 = %s""",
+                    (semantic,),
+                ).fetchone()
+            assert inserted is not None
+            return cast(UUID, inserted[0])
 
     def _store_observation(
         self, row: FixtureObservation, snapshot_id: UUID, fixture_id: UUID | None

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -15,6 +16,7 @@ from football.history.fixture_identity import (
 from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.football_data_org import FootballDataResponse
+from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import ProductSync
 
 
@@ -42,7 +44,16 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
     ):
         sync = ProductSync(connection, ApiFootballClient("test"), tmp_path, tmp_path / "model")
         snapshot = sync._record_response(
-            "duplicates-test", ApiResponse("/fixtures", now, b"{}", (), None)
+            "duplicates-test",
+            ApiResponse(
+                "/fixtures",
+                now,
+                json.dumps(
+                    {"league": {"id": 39}, "teams": {"home": {"id": 40}, "away": {"id": 50}}}
+                ).encode(),
+                (),
+                None,
+            ),
         )
         sync._store_competitions(
             [
@@ -70,7 +81,18 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
             "goals": {"home": None, "away": None},
         }
         sync._store_fixtures([fixture], snapshot, now)
-        response = FootballDataResponse("/matches", now, b'{"test":"fallback"}', ())
+        response = FootballDataResponse(
+            "/matches",
+            now,
+            json.dumps(
+                {
+                    "competition": {"code": "PL"},
+                    "homeTeam": {"id": 64},
+                    "awayTeam": {"id": 999 if mismatch == "team" else 65},
+                }
+            ).encode(),
+            (),
+        )
         fallback_snapshot = sync._record_fallback_response("duplicates-fallback-test", response)
         sync._store_fallback_fixtures(
             [
@@ -90,6 +112,8 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
             fallback_snapshot,
             now - timedelta(days=1),
         )
+        admit_provider_mappings(connection, tmp_path, "api_football")
+        admit_provider_mappings(connection, tmp_path, "football_data_org")
         with connection.cursor() as cursor:
             if mismatch in ("HALF_TIME", "INTERRUPTED", "SUSPENDED", "AWARDED"):
                 cursor.execute(
@@ -145,15 +169,32 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
         with connection.cursor() as cursor:
             active = cursor.execute(
                 """SELECT count(*) FROM football.fixture_identity_resolutions
-                       WHERE active AND member_fixture_id <> representative_fixture_id"""
+                           WHERE active AND member_fixture_id <> representative_fixture_id
+                             AND member_fixture_id IN (
+                               SELECT mapping.match_id FROM football.match_provider_mappings mapping
+                               JOIN football.providers provider ON provider.id = mapping.provider_id
+                               WHERE (provider.code, mapping.provider_match_id) IN (
+                                   ('api_football', '1557424'),
+                                   ('football_data_org', '560598')) )"""
             ).fetchone()
-            rows = cursor.execute("SELECT count(*) FROM football.product_fixtures").fetchone()
+            rows = cursor.execute(
+                """SELECT count(DISTINCT mapping.match_id)
+                   FROM football.match_provider_mappings mapping
+                   JOIN football.providers provider ON provider.id = mapping.provider_id
+                   WHERE (provider.code, mapping.provider_match_id) IN (
+                       ('api_football', '1557424'),
+                       ('football_data_org', '560598'))"""
+            ).fetchone()
             if mismatch == "history":
                 assert cursor.execute(
-                    "SELECT count(*) FROM football.product_eligible_match_history"
-                ).fetchone() == (0,)
+                    """SELECT count(*) FROM football.product_eligible_match_history
+                       WHERE source_snapshot_id = %s""",
+                    (snapshot,),
+                ).fetchone() == (1,)
                 assert cursor.execute(
-                    "SELECT count(*) FROM football.product_team_match_history"
+                    """SELECT count(*) FROM football.product_team_match_history
+                       WHERE source_snapshot_id = %s""",
+                    (snapshot,),
                 ).fetchone() == (1,)
         assert active == (expected,)
         assert rows == (2,)

@@ -389,8 +389,8 @@ def _json_identifiers(provider: str, entity_type: str, value: Any, identity: str
     )
     identifiers: set[str] = set()
     for key, item in _objects(value):
-        if key in keys and isinstance(item, dict) and isinstance(item.get("id"), (int, str)):
-            identifiers.add(str(item["id"]))
+        if key in keys and isinstance(item, dict):
+            identifiers.update(_native_object_identifiers(provider, entity_type, item))
         if entity_type == "team" and key == "teams" and isinstance(item, dict):
             identifiers.update(
                 str(team["id"]) for team in item.values() if isinstance(team, dict) and "id" in team
@@ -406,6 +406,17 @@ def _json_identifiers(provider: str, entity_type: str, value: Any, identity: str
             if isinstance(item, dict) and "id" in item
         )
     return identifiers
+
+
+def _native_object_identifiers(provider: str, entity_type: str, item: dict[str, Any]) -> set[str]:
+    values = {str(item["id"])} if isinstance(item.get("id"), (int, str)) else set()
+    if (
+        provider == "football_data_org"
+        and entity_type == "competition"
+        and isinstance(item.get("code"), str)
+    ):
+        values.add(item["code"])
+    return values
 
 
 def _objects(value: Any) -> Iterable[tuple[str, Any]]:

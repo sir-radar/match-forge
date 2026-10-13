@@ -29,6 +29,8 @@ type Config struct {
 	ReadHeaderTimeout       time.Duration
 	ShutdownTimeout         time.Duration
 	OperationalSyncInterval time.Duration
+	HistorySyncEnabled      bool
+	HistorySyncInterval     time.Duration
 	FotMobEnabled           bool
 	PitchAPIEnabled         bool
 }
@@ -55,6 +57,10 @@ func ConfigFromEnv(version string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	historySyncInterval, err := historySyncIntervalFromEnv()
+	if err != nil {
+		return Config{}, err
+	}
 	repoRoot, err := resolveRepoRoot(os.Getenv("MATCHFORGE_REPO_ROOT"))
 	if err != nil {
 		return Config{}, err
@@ -72,6 +78,8 @@ func ConfigFromEnv(version string) (Config, error) {
 		ReadHeaderTimeout:       readHeaderTimeout,
 		ShutdownTimeout:         shutdownTimeout,
 		OperationalSyncInterval: operationalSyncInterval,
+		HistorySyncEnabled:      os.Getenv("MATCHFORGE_HISTORY_SYNC_ENABLED") == "true",
+		HistorySyncInterval:     historySyncInterval,
 		FotMobEnabled:           fotMobEnabled,
 		PitchAPIEnabled:         pitchAPIEnabled,
 	}
@@ -89,6 +97,17 @@ func ConfigFromEnv(version string) (Config, error) {
 		}
 	}
 	return config, nil
+}
+
+func historySyncIntervalFromEnv() (time.Duration, error) {
+	interval, err := durationFromEnv("MATCHFORGE_HISTORY_SYNC_INTERVAL", time.Hour)
+	if err != nil {
+		return 0, err
+	}
+	if interval < time.Hour {
+		return 0, fmt.Errorf("MATCHFORGE_HISTORY_SYNC_INTERVAL must be at least 1h")
+	}
+	return interval, nil
 }
 
 func runtimeDurationsFromEnv() (time.Duration, time.Duration, time.Duration, error) {

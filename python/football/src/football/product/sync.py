@@ -52,27 +52,12 @@ from football.product.football_data_org import (
     FootballDataResponse,
 )
 from football.product.identity_admission import admit_provider_mappings
+from football.product.identity_crosswalks import FOOTBALL_DATA_COMPETITIONS
 from football.storage.raw import ImmutableFileStore
 
 PROVIDER_CODE = "api_football"
 FALLBACK_PROVIDER_CODE = "football_data_org"
 
-# Explicit cross-provider competition mapping. No fuzzy competition matching is permitted.
-FOOTBALL_DATA_COMPETITIONS = {
-    1: "WC",
-    2: "CL",
-    4: "EC",
-    13: "CLI",
-    39: "PL",
-    40: "ELC",
-    61: "FL1",
-    71: "BSA",
-    78: "BL1",
-    88: "DED",
-    94: "PPL",
-    135: "SA",
-    140: "PD",
-}
 
 HISTORY_JOB_LEASE = timedelta(minutes=30)
 HISTORY_RETRY_MAX_SECONDS = 3600
@@ -1369,6 +1354,9 @@ class ProductSync:
             if league_id is None:
                 continue
             competition_id = self._competition_id(str(league_id), snapshot_id)
+            self._fallback_competition_mapping(
+                str(competition["code"]), competition_id, snapshot_id, observed_at
+            )
             with self.connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -1967,6 +1955,7 @@ class ProductSync:
                 FROM football.competition_provider_mappings cpm
                 JOIN football.providers p ON p.id = cpm.provider_id
                 WHERE p.code = %s AND cpm.provider_competition_id = %s
+                  AND cpm.valid_to IS NULL
                 ORDER BY cpm.first_seen_at LIMIT 1
                 """,
                 (PROVIDER_CODE, provider_competition_id),
@@ -2096,6 +2085,30 @@ class ProductSync:
                     provider_team_id,
                 ),
             )
+
+    def _fallback_competition_mapping(
+        self, code: str, competition_id: UUID, snapshot_id: UUID, observed_at: datetime
+    ) -> None:
+        self.connection.execute(
+            """INSERT INTO football.competition_provider_mappings (
+                   competition_id, provider_id, provider_competition_id,
+                   valid_from, first_seen_at, last_seen_at,
+                   mapping_method, mapping_confidence, source_snapshot_id)
+               SELECT %s, p.id, %s, clock_timestamp(), %s, %s, 'explicit_crosswalk', 1, %s
+               FROM football.providers p WHERE p.code = %s AND NOT EXISTS (
+                   SELECT 1 FROM football.competition_provider_mappings m
+                   WHERE m.provider_id = p.id AND m.provider_competition_id = %s
+                     AND m.valid_to IS NULL)""",
+            (
+                competition_id,
+                code,
+                observed_at,
+                observed_at,
+                snapshot_id,
+                FALLBACK_PROVIDER_CODE,
+                code,
+            ),
+        )
 
     def _fallback_team_id(
         self,

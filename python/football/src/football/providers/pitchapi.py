@@ -50,11 +50,15 @@ class UrllibPitchApiTransport:
         *,
         max_attempts: int = 4,
         sleep_fn: Callable[[float], None] = sleep,
+        request_guard: Callable[[], None] | None = None,
+        http_error_observer: Callable[[HTTPError], None] | None = None,
     ) -> None:
         if not 1 <= max_attempts <= 8:
             raise ValueError("PitchAPI max attempts must be between 1 and 8")
         self._max_attempts = max_attempts
         self._sleep = sleep_fn
+        self._request_guard = request_guard
+        self._http_error_observer = http_error_observer
 
     def get(
         self,
@@ -75,6 +79,8 @@ class UrllibPitchApiTransport:
         )
         timeout = min(connection_timeout_seconds, request_timeout_seconds)
         for attempt in range(1, self._max_attempts + 1):
+            if self._request_guard is not None:
+                self._request_guard()
             try:
                 with urlopen(request, timeout=timeout) as response:
                     payload = cast(bytes, response.read(max_bytes + 1))
@@ -86,6 +92,8 @@ class UrllibPitchApiTransport:
                         retry_after=response.headers.get("Retry-After"),
                     )
             except HTTPError as error:
+                if self._http_error_observer is not None:
+                    self._http_error_observer(error)
                 retry = error.headers.get("Retry-After") if error.headers is not None else None
                 if error.code not in _RETRYABLE or attempt == self._max_attempts:
                     suffix = f"; retry_after={retry}" if error.code == 429 and retry else ""

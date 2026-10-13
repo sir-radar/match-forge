@@ -53,13 +53,14 @@ const (
 )
 
 type SyncRequest struct {
-	Type        SyncType `json:"sync_type"`
-	Date        string   `json:"date,omitempty"`
-	FromDate    string   `json:"from_date,omitempty"`
-	Season      string   `json:"season,omitempty"`
-	Competition string   `json:"competition,omitempty"`
-	Country     string   `json:"country,omitempty"`
-	RetryOf     string   `json:"-"`
+	Type             SyncType `json:"sync_type"`
+	Date             string   `json:"date,omitempty"`
+	FromDate         string   `json:"from_date,omitempty"`
+	Season           string   `json:"season,omitempty"`
+	Competition      string   `json:"competition,omitempty"`
+	Country          string   `json:"country,omitempty"`
+	RetryOf          string   `json:"-"`
+	ScheduledHistory bool     `json:"-"`
 }
 
 type SyncRun struct {
@@ -86,30 +87,50 @@ type HistoryQueueProgress struct {
 }
 
 type Coverage struct {
-	EligibleHistory         int  `json:"eligible_history"`
-	ExcludedHistory         int  `json:"excluded_history"`
-	ProvisionalFixtures     int  `json:"provisional_fixtures"`
-	VerifiedProviderMatches int  `json:"verified_provider_matches"`
-	IdentityConflicts       int  `json:"identity_conflicts"`
-	HistoricalMatches       int  `json:"historical_matches"`
-	CompetitionsWithHistory int  `json:"competitions_with_history"`
-	TeamsWithTenMatches     int  `json:"teams_with_10_matches"`
-	TeamsBelowTenMatches    int  `json:"teams_below_10_matches"`
-	ScheduledFixtures       int  `json:"scheduled_fixtures"`
-	ForecastAvailable       int  `json:"forecast_available"`
-	NotEnoughHistory        int  `json:"not_enough_history"`
-	MappingFailures         int  `json:"mapping_failures"`
-	SourceConflicts         int  `json:"source_conflicts"`
-	MissingLiveScores       int  `json:"missing_live_scores"`
-	FotMobMapped            int  `json:"fotmob_mapped"`
-	FotMobUnmapped          int  `json:"fotmob_unmapped"`
-	PitchAPIMapped          int  `json:"pitchapi_mapped"`
-	PitchAPIUnmapped        int  `json:"pitchapi_unmapped"`
-	FotMobHistory           int  `json:"fotmob_history"`
-	PitchAPIHistory         int  `json:"pitchapi_history"`
-	APIQuotaRequestsUsed    int  `json:"api_football_requests_used"`
-	APIQuotaRemaining       int  `json:"api_football_remaining"`
-	APIQuotaExhausted       bool `json:"api_football_exhausted"`
+	ProviderHistory         []ProviderHistoryProgress `json:"provider_history"`
+	EligibleHistory         int                       `json:"eligible_history"`
+	ExcludedHistory         int                       `json:"excluded_history"`
+	ProvisionalFixtures     int                       `json:"provisional_fixtures"`
+	VerifiedProviderMatches int                       `json:"verified_provider_matches"`
+	IdentityConflicts       int                       `json:"identity_conflicts"`
+	HistoricalMatches       int                       `json:"historical_matches"`
+	CompetitionsWithHistory int                       `json:"competitions_with_history"`
+	TeamsWithTenMatches     int                       `json:"teams_with_10_matches"`
+	TeamsBelowTenMatches    int                       `json:"teams_below_10_matches"`
+	ScheduledFixtures       int                       `json:"scheduled_fixtures"`
+	ForecastAvailable       int                       `json:"forecast_available"`
+	NotEnoughHistory        int                       `json:"not_enough_history"`
+	MappingFailures         int                       `json:"mapping_failures"`
+	SourceConflicts         int                       `json:"source_conflicts"`
+	MissingLiveScores       int                       `json:"missing_live_scores"`
+	FotMobMapped            int                       `json:"fotmob_mapped"`
+	FotMobUnmapped          int                       `json:"fotmob_unmapped"`
+	PitchAPIMapped          int                       `json:"pitchapi_mapped"`
+	PitchAPIUnmapped        int                       `json:"pitchapi_unmapped"`
+	FotMobHistory           int                       `json:"fotmob_history"`
+	PitchAPIHistory         int                       `json:"pitchapi_history"`
+	APIQuotaRequestsUsed    int                       `json:"api_football_requests_used"`
+	APIQuotaRemaining       int                       `json:"api_football_remaining"`
+	APIQuotaExhausted       bool                      `json:"api_football_exhausted"`
+}
+
+type ProviderHistoryProgress struct {
+	Provider                string     `json:"provider"`
+	Pending                 int        `json:"pending"`
+	Running                 int        `json:"running"`
+	Completed               int        `json:"completed"`
+	Failed                  int        `json:"failed"`
+	Deferred                int        `json:"deferred"`
+	OldestPendingObservedAt *time.Time `json:"oldest_pending_observed_at"`
+	Completions24Hours      int        `json:"completions_24_hours"`
+	ObservedSeconds         float64    `json:"observed_seconds"`
+	RequestsUsed            int        `json:"requests_used"`
+	HistoricalRequestsUsed  int        `json:"historical_requests_used"`
+	RemainingRequests       *int       `json:"remaining_requests"`
+	Exhausted               bool       `json:"exhausted"`
+	DeferredUntil           *time.Time `json:"deferred_until"`
+	CompletionsPerHour      *float64   `json:"completions_per_hour"`
+	EstimatedDrainHours     *float64   `json:"estimated_drain_hours"`
 }
 
 type SyncRunner interface {
@@ -268,6 +289,9 @@ func syncLane(syncType SyncType) string {
 
 func syncParameters(request SyncRequest) map[string]interface{} {
 	parameters := map[string]interface{}{}
+	if request.ScheduledHistory {
+		parameters["scheduled_history"] = true
+	}
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
@@ -559,6 +583,7 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 	request.Season = stringParameter(run.Parameters, "season")
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
+	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
 	return request
 }
 
@@ -737,7 +762,64 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 		&coverage.APIQuotaRemaining,
 		&coverage.APIQuotaExhausted,
 	)
+	if err != nil {
+		return coverage, err
+	}
+	coverage.ProviderHistory, err = runner.historyProgress(ctx)
 	return coverage, err
+}
+
+func (runner *CommandSyncRunner) historyProgress(ctx context.Context) ([]ProviderHistoryProgress, error) {
+	rows, err := runner.pool.Query(ctx, `
+        WITH scope_stats AS (
+            SELECT provider_code,
+                count(*) FILTER (WHERE status = 'PENDING') AS pending,
+                count(*) FILTER (WHERE status = 'RUNNING') AS running,
+                count(*) FILTER (WHERE status = 'SUCCEEDED') AS completed,
+                count(*) FILTER (WHERE status = 'FAILED') AS failed,
+                count(*) FILTER (WHERE status = 'DEFERRED') AS deferred,
+                min(first_observed_at) FILTER (WHERE status <> 'SUCCEEDED') AS oldest,
+                count(*) FILTER (WHERE completed_at >= now() - interval '24 hours') AS recent,
+                extract(epoch FROM LEAST(now() - min(first_observed_at), interval '24 hours')) AS observed
+            FROM football.product_provider_history_scopes GROUP BY provider_code
+        ) SELECT p.code, COALESCE(s.pending, 0), COALESCE(s.running, 0),
+                 COALESCE(s.completed, 0), COALESCE(s.failed, 0), COALESCE(s.deferred, 0),
+                 s.oldest, COALESCE(s.recent, 0), COALESCE(s.observed, 0)::double precision,
+                 COALESCE(b.requests_used, 0), COALESCE(b.historical_requests_used, 0),
+                 b.remaining_requests, COALESCE(b.exhausted, false), b.deferred_until
+          FROM (VALUES ('fotmob'), ('pitchapi')) p(code)
+          LEFT JOIN scope_stats s ON s.provider_code = p.code
+          LEFT JOIN football.provider_request_budgets b ON b.provider_code = p.code
+             AND b.window_date = (now() AT TIME ZONE 'UTC')::date
+          ORDER BY p.code`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	progress := []ProviderHistoryProgress{}
+	for rows.Next() {
+		var item ProviderHistoryProgress
+		if err = rows.Scan(&item.Provider, &item.Pending, &item.Running, &item.Completed,
+			&item.Failed, &item.Deferred, &item.OldestPendingObservedAt, &item.Completions24Hours,
+			&item.ObservedSeconds, &item.RequestsUsed, &item.HistoricalRequestsUsed,
+			&item.RemainingRequests, &item.Exhausted, &item.DeferredUntil); err != nil {
+			return nil, err
+		}
+		progress = append(progress, item)
+	}
+	return progress, rows.Err()
+}
+
+func calculateHistoryThroughput(progress []ProviderHistoryProgress, interval time.Duration) {
+	for index := range progress {
+		item := &progress[index]
+		if interval <= 0 || item.ObservedSeconds < interval.Seconds() || item.Completions24Hours == 0 {
+			continue
+		}
+		rate := float64(item.Completions24Hours) * 3600 / item.ObservedSeconds
+		drain := float64(item.Pending+item.Running+item.Failed+item.Deferred) / rate
+		item.CompletionsPerHour, item.EstimatedDrainHours = &rate, &drain
+	}
 }
 
 const syncRunSelect = `
@@ -819,6 +901,9 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	args := []string{".tools/bin/uv", "run", "python", "-m", "football.product.cli", command}
 	args = appendSyncDateArgs(args, request)
 	args = appendSyncSelectorArgs(args, request)
+	if request.Type == SyncHistoryBackfill && request.ScheduledHistory {
+		args = append(args, "--scheduled")
+	}
 	return args, nil
 }
 
@@ -871,12 +956,15 @@ func (application *App) listSyncRuns(response http.ResponseWriter, request *http
 		application.writeSyncError(response, err)
 		return
 	}
+	calculateHistoryThroughput(coverage.ProviderHistory, application.config.HistorySyncInterval)
 	application.writeJSON(response, http.StatusOK, map[string]interface{}{
 		"runs": runs, "coverage": coverage,
 		"provider_configuration": map[string]interface{}{
 			"fotmob_enabled":            application.config.FotMobEnabled,
 			"pitchapi_enabled":          application.config.PitchAPIEnabled,
 			"operational_sync_interval": application.config.OperationalSyncInterval.String(),
+			"history_sync_enabled":      application.config.HistorySyncEnabled,
+			"history_sync_interval":     application.config.HistorySyncInterval.String(),
 		},
 	})
 }

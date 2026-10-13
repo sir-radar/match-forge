@@ -16,6 +16,7 @@ from football.product.api_football import (
     ApiFootballError,
     PostgresApiFootballBudget,
 )
+from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
 from football.product.operational_provider_sync import OperationalProviderSync
@@ -205,7 +206,23 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
     assert resolved is None, decision
     assert decision[0] == "explicit cross-provider evidence required"
     assert sync._store_observation(live, snapshot_id, None)
+    original_provisional = sync._create_provider_scoped_fixture(
+        live, snapshot_id, season_label="2026"
+    )
+    assert original_provisional is not None and original_provisional != fixture_id
+    with pytest.raises(ValueError, match="verified canonical fixture"):
+        sync.apply_reviewed_mapping(live.provider_match_id, original_provisional)
     sync.apply_reviewed_mapping(live.provider_match_id, fixture_id)
+    reconcile_product_fixtures(connection)
+    assert connection.execute(
+        """SELECT representative_fixture_id, resolution_status
+           FROM football.fixture_identity_resolutions WHERE member_fixture_id = %s AND active""",
+        (original_provisional,),
+    ).fetchone() == (fixture_id, "DUPLICATE_RESOLVED")
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_fixtures WHERE fixture_id = %s",
+        (original_provisional,),
+    ).fetchone() == (1,)
     assert sync._resolve_fixture(live, snapshot_id) == fixture_id
     assert sync._update_canonical_fixture(live, fixture_id, snapshot_id) == 0
     assert (
@@ -337,7 +354,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         ).fetchone()[0]
 
     assert fixture == ("FINISHED", 2, 1, "REGULATION_90")
-    assert mapping_counts == (1, 1)
+    assert mapping_counts == (2, 1)
     assert accepted_decisions == 1
     assert conflicts == 1
 

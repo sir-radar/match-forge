@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from time import sleep
 from typing import Protocol, cast
@@ -52,9 +53,13 @@ class UrllibHttpTransport:
         self,
         user_agent: str = "football-forecasting/0.1 source-acquisition",
         accept: str = "*/*",
+        request_guard: Callable[[], None] | None = None,
+        http_error_observer: Callable[[HTTPError], None] | None = None,
     ) -> None:
         self._user_agent = user_agent
         self._accept = accept
+        self._request_guard = request_guard
+        self._http_error_observer = http_error_observer
 
     def get(self, url: str, *, timeout_seconds: float, max_bytes: int) -> bytes:
         return self.get_response(url, timeout_seconds=timeout_seconds, max_bytes=max_bytes).payload
@@ -65,11 +70,15 @@ class UrllibHttpTransport:
             headers={"Accept": self._accept, "User-Agent": self._user_agent},
         )
         for attempt in range(1, _MAX_TRANSPORT_ATTEMPTS + 1):
+            if self._request_guard is not None:
+                self._request_guard()
             failure: HTTPError | URLError | OSError
             try:
                 with urlopen(request, timeout=timeout_seconds) as response:
                     payload = cast(bytes, response.read(max_bytes + 1))
             except HTTPError as error:
+                if self._http_error_observer is not None:
+                    self._http_error_observer(error)
                 failure = error
                 retryable = error.code in _RETRYABLE_HTTP_STATUSES
                 status: int | None = error.code

@@ -83,6 +83,9 @@ func (application *App) Run(ctx context.Context) error {
 	if application.config.OperationalSyncInterval > 0 {
 		go application.runOperationalSyncSchedule(ctx)
 	}
+	if application.config.HistorySyncEnabled {
+		go application.runHistorySyncSchedule(ctx)
+	}
 	server := &http.Server{
 		Addr:              application.config.Address,
 		Handler:           application.handler,
@@ -134,6 +137,28 @@ func (application *App) runOperationalSyncSchedule(ctx context.Context) {
 			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
 			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runHistorySyncSchedule(ctx context.Context) {
+	if !application.config.HistorySyncEnabled ||
+		(!application.config.PitchAPIEnabled && !application.config.FotMobEnabled) {
+		return
+	}
+	ticker := time.NewTicker(application.config.HistorySyncInterval)
+	defer ticker.Stop()
+	for {
+		_, err := application.syncRunner.Start(ctx, SyncRequest{
+			Type: SyncHistoryBackfill, ScheduledHistory: true,
+		})
+		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+			application.logger.Warn("scheduled history failed to start", "error", err)
 		}
 		select {
 		case <-ctx.Done():

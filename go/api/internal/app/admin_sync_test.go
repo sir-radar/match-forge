@@ -407,3 +407,31 @@ func TestNonLoopbackAdminExposureIsAlwaysDenied(t *testing.T) {
 		t.Fatal("non-loopback admin exposed")
 	}
 }
+
+func TestAdministrativeReadsRequireApprovedLocalAccess(t *testing.T) {
+	for _, origin := range []string{"", "https://untrusted.example", "http://127.0.0.1:3000"} {
+		request := localAdminTestRequest(http.MethodGet, "/v1/admin/sync-runs", nil)
+		request.Header.Del("Content-Type")
+		request.Header.Set("Origin", origin)
+		response := httptest.NewRecorder()
+		newAdminTestApp(&syncRunnerStub{}).Handler().ServeHTTP(response, request)
+		want := http.StatusForbidden
+		if origin == "http://127.0.0.1:3000" {
+			want = http.StatusOK
+		}
+		if response.Code != want {
+			t.Fatalf("origin %q: status %d, want %d", origin, response.Code, want)
+		}
+	}
+	application := newAdminTestApp(&syncRunnerStub{})
+	application.config.AdminCLIToken = "approved-secret"
+	request := localAdminTestRequest(http.MethodGet, "/v1/admin/sync-runs", nil)
+	request.Header.Del("Origin")
+	request.Header.Del("Content-Type")
+	request.Header.Set("Authorization", "Bearer approved-secret")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("authorized origin-less read: status %d", response.Code)
+	}
+}
