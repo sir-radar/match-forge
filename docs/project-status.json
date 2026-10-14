@@ -1043,6 +1043,13 @@
       ],
       "r3_correction_status": "CORRECTION_INFRASTRUCTURE_IMPLEMENTED_AND_TESTED",
       "r3_live_status": "PAIR_ADMITTED",
+      "competition_geography": {
+        "status": "IMPLEMENTED_VERIFIED",
+        "contract_ref": "docs/MVP-DATA-COVERAGE.md",
+        "source_policy": "VERIFIED_RETAINED_PROVIDER_SCOPED_METADATA_ONLY",
+        "identity_qualification_changed": false,
+        "published_forecasts_changed": false
+      },
       "r3_deployment": {
         "migration": 202610140100,
         "migration_seed_repair": "BULK_DENIED_SEED_VERIFIED_ON_FULL_RESTORED_CORPUS",

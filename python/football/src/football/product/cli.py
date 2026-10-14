@@ -24,6 +24,7 @@ from football.product.api_football import (
     ApiFootballError,
     PostgresApiFootballBudget,
 )
+from football.product.competition_geography import refresh_competition_geography
 from football.product.development_provider_preview import development_provider_preview
 from football.product.domain import MODEL_ARTIFACT_PATH
 from football.product.external_prediction_sources import SourceCollection, collect_sources
@@ -87,6 +88,13 @@ def build_parser() -> argparse.ArgumentParser:
     refresh = commands.add_parser("refresh-forecasts")
     refresh.add_argument("--pending-only", action="store_true")
     commands.add_parser("history-coverage")
+    geography = commands.add_parser("refresh-competition-geography")
+    geography.add_argument("--provider", choices=("fotmob", "pitchapi"), required=True)
+    geography.add_argument(
+        "--data-root",
+        type=Path,
+        default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+    )
     for name in ("fotmob-sync", "pitchapi-sync"):
         provider_sync = commands.add_parser(name)
         provider_sync.add_argument("--date", type=date.fromisoformat, default=_lagos_today())
@@ -148,6 +156,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.command == "external-predictions":
         return _run_external_predictions(args)
+    if args.command == "refresh-competition-geography":
+        return _run_competition_geography(args)
     if args.command == "provider-mapping-review":
         return _run_provider_mapping_review(args)
     if args.command == "development-provider-preview":
@@ -344,6 +354,17 @@ def _live_pitchapi_client(
             request_guard=budget.before_request, http_error_observer=budget.record_http_error
         ),
     )
+
+
+def _run_competition_geography(args: argparse.Namespace) -> int:
+    try:
+        with psycopg.connect(args.database_url) as connection:
+            result = refresh_competition_geography(connection, args.data_root, args.provider)
+    except _DATA_OPERATION_ERRORS as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 1 if result["invalid_snapshots"] else 0
 
 
 def _run_operational_provider_sync(args: argparse.Namespace) -> int:

@@ -8,6 +8,16 @@ from football.product import cli
 from football.product.api_football import ApiFootballError
 
 
+def test_country_refresh_is_explicit_and_does_not_request_acquisition() -> None:
+    args = cli.build_parser().parse_args(
+        ["refresh-competition-geography", "--provider", "pitchapi", "--data-root", "retained"]
+    )
+    assert args.command == "refresh-competition-geography"
+    assert args.provider == "pitchapi"
+    assert args.data_root == Path("retained")
+    assert not hasattr(args, "refresh")
+
+
 def test_scheduled_history_requires_explicit_enablement(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("MATCHFORGE_HISTORY_SYNC_ENABLED", raising=False)
     args = cli.build_parser().parse_args(["backfill-history", "--scheduled"])

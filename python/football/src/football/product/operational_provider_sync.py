@@ -15,6 +15,7 @@ from uuid import UUID
 
 from psycopg import Connection, Error
 
+from football.product.competition_geography import refresh_competition_geography
 from football.product.domain import (
     canonical_json,
     fixture_identity,
@@ -402,12 +403,18 @@ class OperationalProviderSync:
                 reason = str(error).splitlines()[0]
                 counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
                 self._record_failed_observation(row, snapshot_id, reason)
+        geography = refresh_competition_geography(
+            self.connection, self.data_root, self.provider_code
+        )
         self.connection.commit()
         return {
             "provider": self.provider_code,
+            "competition_geography": geography,
             "league_id": league_id,
             "season": season,
-            "status": "COMPLETED_WITH_ERRORS" if counts.failed else "COMPLETED",
+            "status": "COMPLETED_WITH_ERRORS"
+            if counts.failed or geography["invalid_snapshots"]
+            else "COMPLETED",
             **counts.to_dict(),
         }
 
@@ -478,13 +485,19 @@ class OperationalProviderSync:
         self._add_detail_counts(counts, bulk_counts)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
         diagnostics = self._sync_diagnostics(sync_started, from_date)
+        geography = refresh_competition_geography(
+            self.connection, self.data_root, self.provider_code
+        )
         self.connection.commit()
         return {
-            "status": "COMPLETED_WITH_ERRORS" if counts.failed else "COMPLETED",
+            "status": "COMPLETED_WITH_ERRORS"
+            if counts.failed or geography["invalid_snapshots"]
+            else "COMPLETED",
             "provider": self.provider_code,
             "from_date": from_date.isoformat(),
             "through_date": through_date.isoformat(),
             "settled_external_predictions": settled,
+            "competition_geography": geography,
             **diagnostics,
             **counts.to_dict(),
         }

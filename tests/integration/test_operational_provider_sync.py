@@ -17,6 +17,7 @@ from football.product.api_football import (
     ApiFootballError,
     PostgresApiFootballBudget,
 )
+from football.product.competition_geography import refresh_competition_geography
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
@@ -30,6 +31,147 @@ from psycopg.errors import UniqueViolation
 from tests.integration.historical_source_fixture import test_snapshot as _test_snapshot
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+
+
+def geography_fixture(
+    connection: Connection[Any], root: Path, provider: str, country: str
+) -> tuple[UUID, UUID]:
+    sync = OperationalProviderSync(connection, root, provider_code=provider)
+    league_id = "530" if provider == "fotmob" else "l_Geo001"
+    payload = (
+        {"leagues": [{"id": int(league_id), "ccode": country}]}
+        if provider == "fotmob"
+        else {"data": {"leagues": [{"id": league_id, "country_code": country}]}}
+    )
+    raw = json.dumps(payload).encode()
+    now = datetime(2026, 10, 1, tzinfo=UTC)
+    snapshot = sync._record_response(
+        "fixtures-2026-10-14" if provider == "fotmob" else "league-catalogue",
+        PitchApiResponse("test", now, hashlib.sha256(raw).hexdigest(), raw, {}),
+    )
+    row = PitchApiFixture(
+        provider_match_id="m_Geo001",
+        provider_competition_id=league_id,
+        provider_home_team_id="t_Geo001",
+        provider_away_team_id="t_Geo002",
+        home_team_name="Geography Home",
+        away_team_name="Geography Away",
+        kickoff_at=now + timedelta(days=1),
+        status="SCHEDULED",
+        provider_status="scheduled",
+        home_score=None,
+        away_score=None,
+        minute=None,
+        added_time=None,
+        period=None,
+        source_updated_at=None,
+        observed_at=now,
+        provider_competition_name="Geography League",
+    )
+    fixture = sync._create_provider_scoped_fixture(row, snapshot)
+    assert fixture is not None
+    competition = connection.execute(
+        "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
+    ).fetchone()[0]
+    return competition, snapshot
+
+
+@pytest.mark.parametrize(
+    "provider,code,country,continent",
+    [
+        ("fotmob", "MAR", "Morocco", "Africa"),
+        ("fotmob", "IRN", "Iran", "Asia"),
+        ("fotmob", "INT", "International", "World"),
+        ("pitchapi", "USA", "USA", "North/Central America"),
+    ],
+)
+def test_geography_replay_preserves_identity_and_is_idempotent(
+    connection: Connection[Any],
+    tmp_path: Path,
+    provider: str,
+    code: str,
+    country: str,
+    continent: str,
+) -> None:
+    competition, snapshot = geography_fixture(connection, tmp_path, provider, code)
+    before = connection.execute("SELECT to_jsonb(f) FROM football.product_fixtures f").fetchall()
+    admissions = connection.execute(
+        "SELECT count(*) FROM football.product_identity_admissions"
+    ).fetchone()
+    report = refresh_competition_geography(connection, tmp_path, provider)
+    assert report["updated"] == [
+        {
+            "competition_id": str(competition),
+            "country": country,
+            "continent": continent,
+            "source_snapshots": [str(snapshot)],
+        }
+    ]
+    assert connection.execute(
+        "SELECT country,continent,metadata_status,competition_type "
+        "FROM football.product_competitions WHERE competition_id=%s",
+        (competition,),
+    ).fetchone() == (country, continent, "PROVISIONAL", "UNKNOWN")
+    assert (
+        connection.execute("SELECT to_jsonb(f) FROM football.product_fixtures f").fetchall()
+        == before
+    )
+    assert (
+        connection.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
+        == admissions
+    )
+    assert refresh_competition_geography(connection, tmp_path, provider)["updated"] == []
+
+
+@pytest.mark.parametrize(
+    "case", ["unknown", "tampered", "conflicting", "verified", "future", "wrong_id"]
+)
+def test_geography_fails_closed_and_preserves_verified_metadata(
+    connection: Connection[Any], tmp_path: Path, case: str
+) -> None:
+    competition, snapshot = geography_fixture(
+        connection, tmp_path, "fotmob", "XXX" if case == "unknown" else "MAR"
+    )
+    if case == "tampered":
+        path = connection.execute(
+            "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (snapshot,)
+        ).fetchone()[0]
+        (tmp_path / path).write_bytes(b"tampered")
+    elif case == "conflicting":
+        sync = OperationalProviderSync(connection, tmp_path, provider_code="fotmob")
+        raw = b'{"details":{"id":530,"country":"ENG"}}'
+        sync._record_response(
+            "league-catalogue-530",
+            PitchApiResponse(
+                "test", datetime(2026, 10, 2, tzinfo=UTC), hashlib.sha256(raw).hexdigest(), raw, {}
+            ),
+        )
+    elif case == "verified":
+        connection.execute(
+            "UPDATE football.product_competitions SET metadata_status='VERIFIED',"
+            "country='Existing',continent='Existing' WHERE competition_id=%s",
+            (competition,),
+        )
+    elif case == "future":
+        connection.execute(
+            "UPDATE football.source_snapshots SET acquired_at=now()+interval '1 day' WHERE id=%s",
+            (snapshot,),
+        )
+    elif case == "wrong_id":
+        connection.execute(
+            "UPDATE football.competition_provider_mappings SET provider_competition_id='999' "
+            "WHERE competition_id=%s",
+            (competition,),
+        )
+    report = refresh_competition_geography(connection, tmp_path, "fotmob")
+    assert report["updated"] == []
+    assert connection.execute(
+        "SELECT country FROM football.product_competitions WHERE competition_id=%s", (competition,)
+    ).fetchone()[0] == ("Existing" if case == "verified" else "Unknown")
+    if case == "tampered":
+        assert report["invalid_snapshots"] == [str(snapshot)]
+    if case == "conflicting":
+        assert report["conflicting"] == ["530"]
 
 
 def test_provider_history_scopes_are_idempotent_fair_and_resumable(tmp_path: Path) -> None:

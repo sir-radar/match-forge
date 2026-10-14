@@ -44,6 +44,20 @@ describe("FixtureExplorer", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
+  it.each(["Unknown", "UNKNOWN"])("labels missing country %s clearly and keeps the API filter value", async (country) => {
+    const unknown = { ...competition, country, continent: "Unknown", type: "UNKNOWN" };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const payload = String(input).includes("competitions")
+        ? { competitions: [unknown] } : { groups: [{ competition: unknown, fixtures: [fixture] }] };
+      return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    expect(await screen.findByRole("heading", { name: "Country unavailable — Premier League" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Country unavailable" })).toHaveValue(country);
+    fireEvent.change(screen.getByLabelText("Country"), { target: { value: country } });
+    await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`country=${country}`))).toBe(true));
+  });
+
   it("keeps the last valid day when the date input is cleared", async () => {
     render(<FixtureExplorer initialDate="2026-09-29" />);
     await screen.findByRole("button", { name: /Arsenal.*Chelsea/s });
