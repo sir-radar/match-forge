@@ -239,7 +239,16 @@ CREATE TRIGGER revoke_changed_competition_mapping AFTER UPDATE OR DELETE ON foot
 
 -- Missing old admission times are never reconstructed or backdated. Retained rows start denied.
 -- Byte-verified existing mappings are admitted by the migration companion under this same policy.
-SELECT football.record_product_history_decision(fixture_id) FROM football.product_team_match_history;
+-- The new admission table is empty, so seed the same denied state in one insert.
+-- Migration DDL locks history writes; per-fixture advisory locks would exhaust
+-- PostgreSQL's lock memory for a large retained corpus.
+INSERT INTO football.product_match_history_decisions (
+    fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+    home_goals, away_goals, home_xg, away_xg, source_provider_code,
+    source_snapshot_id, source_kickoff_precision, eligible, reason, source_known_at)
+SELECT h.*, false, 'ProductIdentityTrustV1', s.acquired_at
+FROM football.product_team_match_history h
+JOIN football.source_snapshots s ON s.id = h.source_snapshot_id;
 
 DROP VIEW football.product_eligible_match_history;
 -- +goose StatementBegin
