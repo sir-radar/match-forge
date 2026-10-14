@@ -49,6 +49,21 @@ The full bulk import completed on 30 September 2026. OpenFootball mapped all 90,
 
 The required stored-data forecast refresh created zero new forecasts. This is not a history-depth failure: 1,735 canonical teams now have at least ten matches. Of the teams in the current 204-fixture schedule, 384 have no mapped bulk history because that schedule is dominated by youth, women's, international, and lower-tier competitions outside the 55 imported competitions. Forecast mathematics and the 10-match rule were not changed to manufacture coverage.
 
+## Canonical fixture geography
+
+`product_competitions.geographic_scope` classifies fixtures independently of
+venue and team country. Serving uses this classification for country filters and
+labels. Domestic competitions use verified competition geography; continental,
+global and international competitions use `International`. Club friendlies use
+verified tournament geography when available and otherwise `International`.
+Venue fields remain independent. Legacy `country` values remain available where
+provider-origin UUIDs depend on them.
+
+New canonical fixtures require a resolved geographic scope. Missing or
+conflicting provider metadata remains retained for review and cannot create a
+fixture with unknown geography. Native OpenFootball file prefixes resolve the
+legacy domestic `World` classifications without changing identity inputs.
+
 ## Data fields and gap statuses
 
 Each stored competition records country, continent, inferred division, season, fixtures, results, standings, H2H, forecast, xG and team-stat availability plus source roles. Fixture availability is separate from forecast availability. The product exposes `FORECAST_AVAILABLE`, `NOT_ENOUGH_HISTORY`, `SOURCE_DATA_INCOMPLETE`, and `TEMPORARILY_UNAVAILABLE` without inventing probabilities.

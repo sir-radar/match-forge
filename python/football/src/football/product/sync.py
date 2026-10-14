@@ -54,7 +54,7 @@ from football.product.football_data_org import (
     FootballDataOrgError,
     FootballDataResponse,
 )
-from football.product.identity_admission import admit_provider_mappings
+from football.product.identity_admission import admit_provider_mappings, fixture_identity_blockers
 from football.product.identity_crosswalks import FOOTBALL_DATA_COMPETITIONS
 from football.storage.raw import ImmutableFileStore
 
@@ -1768,6 +1768,16 @@ class ProductSync:
                 (now, now, now, fixture_ids, fixture_ids),
             )
             targets = cursor.fetchall()
+        blockers = fixture_identity_blockers(self.connection, [row[0] for row in targets], now)
+        rejected = [identifier for identifier, reason in blockers.items() if reason is not None]
+        if rejected:
+            self.connection.execute(
+                "UPDATE football.product_fixtures "
+                "SET forecast_availability='SOURCE_DATA_INCOMPLETE' "
+                "WHERE fixture_id=ANY(%s::uuid[])",
+                (rejected,),
+            )
+        targets = [row for row in targets if blockers.get(row[0]) is None]
         for start in range(0, len(targets), 32):
             batch = targets[start : start + 32]
             history_by_team = self._batch_history(batch, now)

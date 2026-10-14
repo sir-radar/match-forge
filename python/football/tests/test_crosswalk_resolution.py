@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -14,6 +15,7 @@ from football.product.crosswalk_resolution import (
     classify_competition,
     classify_team,
 )
+from football.product.identity_trust import origin_id
 
 NOW = datetime(2026, 10, 3, tzinfo=UTC)
 ENTITY_ID = UUID("10000000-0000-4000-8000-000000000001")
@@ -63,6 +65,22 @@ def test_competition_crosswalk_is_high_confidence() -> None:
     assert result.decision is Decision.SAME_ENTITY
     assert result.confidence is Confidence.HIGH
     assert "openfootball:en.1->api_football:39" in result.evidence_ref
+
+
+def test_crosswalk_apply_preserves_exact_native_provider_origin() -> None:
+    canonical = origin_id("competition", "api_football", "39", None)
+    assert canonical is not None
+    native = replace(mapping("api_football", "39"), entity_id=canonical)
+    reviewed = replace(
+        mapping("openfootball", "en.1", method="explicit_crosswalk"), entity_id=native.entity_id
+    )
+    resolution = classify_competition(
+        [native, reviewed],
+        CompetitionMetadata("Premier League", "England", 1, "LEAGUE", "2026", 20, 380),
+    )
+    assert resolution.decision is Decision.SAME_ENTITY
+    assert resolution.confidence is Confidence.HIGH
+    assert apply_high_confidence_resolutions(None, [resolution], NOW) == 0  # type: ignore[arg-type]
 
 
 def test_team_exact_alias_country_and_competition_is_high_confidence() -> None:

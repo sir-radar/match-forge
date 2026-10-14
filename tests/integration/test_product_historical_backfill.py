@@ -873,7 +873,7 @@ def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
     assert stored_fixture == (
         duplicate_home_id,
         duplicate_away_id,
-        "NOT_ENOUGH_HISTORY",
+        "SOURCE_DATA_INCOMPLETE",
     )
     assert aliases == [("1001", duplicate_home_id), ("1002", duplicate_away_id)]
     assert active_mappings == [("1001", duplicate_home_id), ("1002", duplicate_away_id)]

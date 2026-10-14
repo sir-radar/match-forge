@@ -15,7 +15,10 @@ from uuid import UUID
 
 from psycopg import Connection, Error
 
-from football.product.competition_geography import refresh_competition_geography
+from football.product.competition_geography import (
+    refresh_competition_geography,
+    verified_geographic_scopes,
+)
 from football.product.domain import (
     canonical_json,
     fixture_identity,
@@ -25,7 +28,11 @@ from football.product.domain import (
 )
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
-from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
+from football.product.identity_admission import (
+    admit_provider_mappings,
+    fixture_identity_blockers,
+    verify_source_identifier,
+)
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
 from football.product.live_resources import normalize_events, normalize_statistics
 from football.providers.fotmob import (
@@ -125,6 +132,7 @@ class OperationalProviderSync:
         self.stale_after = timedelta(seconds=stale_after_seconds)
         self.kickoff_tolerance = timedelta(minutes=kickoff_tolerance_minutes)
         self.pacer = RequestPacer(minimum_interval_seconds)
+        self._geographic_scopes: dict[str, str | None] | None = None
 
     def apply_reviewed_mapping(self, provider_match_id: str, fixture_id: UUID) -> None:
         """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
@@ -342,31 +350,11 @@ class OperationalProviderSync:
         counts = SyncCounts(
             attempted_requests=int(network_acquired), successful_requests=int(network_acquired)
         )
-        if isinstance(response, FotmobResponse):
-            if not isinstance(response.data, Mapping):
-                raise ValueError("FotMob league response must be an object")
-            details = response.data.get("details", {})
-            fixtures = response.data.get("fixtures", {})
-            if not isinstance(details, Mapping) or not isinstance(fixtures, Mapping):
-                raise ValueError("FotMob league metadata or fixtures missing")
-            if not isinstance(fixtures.get("allMatches"), list):
-                raise ValueError("FotMob league fixture list missing")
-            rows: Sequence[FixtureObservation] = normalize_daily_matches(
-                replace(
-                    response,
-                    data={
-                        "leagues": [
-                            {
-                                "id": league_id,
-                                "name": details.get("name"),
-                                "matches": fixtures["allMatches"],
-                            }
-                        ]
-                    },
-                )
-            )
-        else:
-            rows = normalize_pitchapi_matches(response)
+        rows: Sequence[FixtureObservation] = (
+            _fotmob_season_rows(response, league_id, season)
+            if isinstance(response, FotmobResponse)
+            else normalize_pitchapi_matches(response)
+        )
         counts.fetched = len(rows)
         for row in rows:
             try:
@@ -407,6 +395,7 @@ class OperationalProviderSync:
             self.connection, self.data_root, self.provider_code
         )
         self.connection.commit()
+        qualification = self._season_qualification(snapshot_id, rows, counts)
         return {
             "provider": self.provider_code,
             "competition_geography": geography,
@@ -414,9 +403,45 @@ class OperationalProviderSync:
             "season": season,
             "status": "COMPLETED_WITH_ERRORS"
             if counts.failed or geography["invalid_snapshots"]
-            else "COMPLETED",
+            else qualification["status"],
+            "qualification": qualification,
             **counts.to_dict(),
         }
+
+    def _season_qualification(
+        self, snapshot: UUID, rows: Sequence[FixtureObservation], counts: SyncCounts
+    ) -> dict[str, object]:
+        if not rows:
+            return {"status": "ADVERTISED_BUT_UNUSABLE", "qualified_results": 0}
+        results = [row for row in rows if row.status == "FINISHED"]
+        qualified = self.connection.execute(
+            """SELECT count(DISTINCT o.provider_match_id)
+               FROM football.product_provider_fixture_observations o
+               JOIN football.product_eligible_match_history h
+                 ON h.fixture_id=o.canonical_fixture_id
+               WHERE o.source_snapshot_id=%s AND o.provider_code=%s
+                 AND o.canonical_status='FINISHED' AND o.result_score_basis='REGULATION_90'""",
+            (snapshot, self.provider_code),
+        ).fetchone()
+        count = qualified[0] if qualified else 0
+        fixtures = self.connection.execute(
+            """SELECT DISTINCT f.fixture_id,f.identity_status
+               FROM football.product_provider_fixture_observations o
+               JOIN football.product_fixtures f ON f.fixture_id=o.canonical_fixture_id
+               WHERE o.source_snapshot_id=%s AND o.provider_code=%s""",
+            (snapshot, self.provider_code),
+        ).fetchall()
+        blockers = fixture_identity_blockers(
+            self.connection, [f[0] for f in fixtures], datetime.now(UTC)
+        )
+        status = "COMPLETED"
+        if counts.unmatched or any(f[1] != "VERIFIED" for f in fixtures) or any(blockers.values()):
+            status = "BLOCKED_IDENTITY"
+        elif any(row.result_score_basis != "REGULATION_90" for row in results):
+            status = "BLOCKED_SCORE_BASIS"
+        elif count < len(results):
+            status = "BLOCKED_IDENTITY"
+        return {"status": status, "qualified_results": count, "provider_results": len(results)}
 
     def _sync_dates(
         self,
@@ -1026,6 +1051,8 @@ class OperationalProviderSync:
                     response.fetched_at,
                 ),
             )
+            if cursor.rowcount:
+                self._geographic_scopes = None
         return snapshot_id
 
     def _resolve_fixture(
@@ -1065,7 +1092,11 @@ class OperationalProviderSync:
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at,
                            history.source_kickoff_precision, history.home_goals, history.away_goals
-                    FROM football.product_eligible_match_history history
+                    FROM football.product_eligible_fixture_history_at(
+                        statement_timestamp(), ARRAY(
+                            SELECT h.fixture_id FROM football.product_team_match_history h
+                            WHERE h.kickoff_at BETWEEN %s AND %s
+                        )) history
                     WHERE NOT EXISTS (SELECT 1 FROM football.product_fixtures existing
                                       WHERE existing.fixture_id = history.fixture_id)
                 ) fixture
@@ -1103,6 +1134,8 @@ class OperationalProviderSync:
                 ORDER BY fixture.fixture_id
                 """,
                 (
+                    row.kickoff_at - timedelta(days=1),
+                    row.kickoff_at + timedelta(days=1),
                     self.provider_code,
                     row.provider_home_team_id,
                     self.provider_code,
@@ -1223,7 +1256,11 @@ class OperationalProviderSync:
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at, 'FINISHED',
                            history.home_goals, history.away_goals
-                    FROM football.product_eligible_match_history history
+                    FROM football.product_eligible_fixture_history_at(
+                        statement_timestamp(), ARRAY(
+                            SELECT h.fixture_id FROM football.product_team_match_history h
+                            WHERE h.kickoff_at BETWEEN %s AND %s
+                        )) history
                     WHERE NOT EXISTS (SELECT 1 FROM football.product_fixtures existing
                                       WHERE existing.fixture_id = history.fixture_id)
                       AND history.source_kickoff_precision = 'EXACT'
@@ -1236,6 +1273,8 @@ class OperationalProviderSync:
                 ORDER BY fixture.fixture_id
                 """,
                 (
+                    row.kickoff_at - self.kickoff_tolerance,
+                    row.kickoff_at + self.kickoff_tolerance,
                     row.kickoff_at - self.kickoff_tolerance,
                     row.kickoff_at + self.kickoff_tolerance,
                 ),
@@ -1266,6 +1305,7 @@ class OperationalProviderSync:
             return None
         candidate = exact[0]
         fixture_id = cast(UUID, candidate[0])
+        self._materialize_history_fixture(fixture_id, row.observed_at)
         mapping_conflict = self._candidate_mapping_conflict(row, candidate)
         if mapping_conflict is not None:
             self._record_mapping_decision(
@@ -1569,11 +1609,31 @@ class OperationalProviderSync:
         )
         with self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT season_label, metadata_status FROM football.product_competitions
+                """SELECT season_label, metadata_status, geographic_scope
+                   FROM football.product_competitions
                    WHERE competition_id = %s""",
                 (competition_id,),
             )
             metadata = cursor.fetchone()
+        if self._geographic_scopes is None:
+            self._geographic_scopes = verified_geographic_scopes(
+                self.connection, self.data_root, self.provider_code
+            )
+        geographic_scope = self._geographic_scopes.get(row.provider_competition_id)
+        if metadata is not None and metadata[2] is not None:
+            if geographic_scope is not None and geographic_scope != metadata[2]:
+                raise ValueError("CONFLICTING_COMPETITION_GEOGRAPHY")
+            geographic_scope = metadata[2]
+        if geographic_scope is None:
+            self._record_mapping_decision(
+                row,
+                snapshot_id,
+                None,
+                "REVIEW_REQUIRED",
+                "CANONICAL_FIXTURE_GEOGRAPHY_REQUIRED",
+                {},
+            )
+            return None
         season_label = season_label or "Unknown"
         source_season_label = season_label
         crosswalk = OPERATIONAL_COMPETITION_CROSSWALKS.get(
@@ -1623,10 +1683,13 @@ class OperationalProviderSync:
                        competition_id, name, country, continent, division,
                        competition_type, season_label, fixtures_available,
                        results_available, availability_status, source_roles, updated_at,
-                       metadata_status
+                       metadata_status, geographic_scope
                    ) VALUES (%s, %s, 'Unknown', 'Unknown', NULL, 'UNKNOWN', %s, true, %s,
-                       'SOURCE_DATA_INCOMPLETE', %s::jsonb, %s, 'PROVISIONAL')
+                       'SOURCE_DATA_INCOMPLETE', %s::jsonb, %s, 'PROVISIONAL', %s)
                    ON CONFLICT (competition_id) DO UPDATE SET
+                       geographic_scope = COALESCE(
+                           football.product_competitions.geographic_scope,
+                           EXCLUDED.geographic_scope),
                        updated_at = GREATEST(
                            football.product_competitions.updated_at, EXCLUDED.updated_at
                        )""",
@@ -1646,6 +1709,7 @@ class OperationalProviderSync:
                         sort_keys=True,
                     ),
                     row.observed_at,
+                    geographic_scope,
                 ),
             )
             cursor.execute(
@@ -2248,6 +2312,40 @@ class OperationalProviderSync:
             snapshot_id,
             eligibility="ELIGIBLE",
         )
+
+
+def _fotmob_season_rows(
+    response: FotmobResponse, league_id: str, season: str
+) -> tuple[FotmobLiveScore, ...]:
+    if not isinstance(response.data, Mapping):
+        raise ValueError("FotMob league response must be an object")
+    details = response.data.get("details", {})
+    fixtures = response.data.get("fixtures", {})
+    if not isinstance(details, Mapping) or not isinstance(fixtures, Mapping):
+        raise ValueError("FotMob league metadata or fixtures missing")
+    from football.product.provider_history_scopes import normalize_seasons
+
+    selected = details.get("selectedSeason", response.data.get("selectedSeason"))
+    if str(details.get("id")) != league_id:
+        raise ValueError("FotMob fixture competition ID mismatch")
+    if normalize_seasons([selected]) != normalize_seasons([season]):
+        raise ValueError("FotMob selected season does not match requested season")
+    if not isinstance(fixtures.get("allMatches"), list):
+        raise ValueError("FotMob league fixture list missing")
+    return normalize_daily_matches(
+        replace(
+            response,
+            data={
+                "leagues": [
+                    {
+                        "id": league_id,
+                        "name": details.get("name"),
+                        "matches": fixtures["allMatches"],
+                    }
+                ]
+            },
+        )
+    )
 
 
 def _fotmob_resources(payload: Mapping[str, Any] | list[Any]) -> dict[str, Any]:

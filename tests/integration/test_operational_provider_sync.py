@@ -35,7 +35,7 @@ DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 def geography_fixture(
     connection: Connection[Any], root: Path, provider: str, country: str
-) -> tuple[UUID, UUID]:
+) -> tuple[UUID | None, UUID]:
     sync = OperationalProviderSync(connection, root, provider_code=provider)
     league_id = "530" if provider == "fotmob" else "l_Geo001"
     payload = (
@@ -69,7 +69,14 @@ def geography_fixture(
         provider_competition_name="Geography League",
     )
     fixture = sync._create_provider_scoped_fixture(row, snapshot)
-    assert fixture is not None
+    if fixture is None:
+        assert country == "XXX"
+        assert connection.execute(
+            "SELECT reason FROM football.product_provider_mapping_decisions "
+            "WHERE source_snapshot_id=%s ORDER BY created_at DESC LIMIT 1",
+            (snapshot,),
+        ).fetchone() == ("CANONICAL_FIXTURE_GEOGRAPHY_REQUIRED",)
+        return None, snapshot
     competition = connection.execute(
         "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
     ).fetchone()[0]
@@ -94,6 +101,7 @@ def test_geography_replay_preserves_identity_and_is_idempotent(
     continent: str,
 ) -> None:
     competition, snapshot = geography_fixture(connection, tmp_path, provider, code)
+    assert competition is not None
     before = connection.execute("SELECT to_jsonb(f) FROM football.product_fixtures f").fetchall()
     admissions = connection.execute(
         "SELECT count(*) FROM football.product_identity_admissions"
@@ -132,6 +140,13 @@ def test_geography_fails_closed_and_preserves_verified_metadata(
     competition, snapshot = geography_fixture(
         connection, tmp_path, "fotmob", "XXX" if case == "unknown" else "MAR"
     )
+    if case == "unknown":
+        assert competition is None
+        assert connection.execute("SELECT count(*) FROM football.product_fixtures").fetchone() == (
+            0,
+        )
+        return
+    assert competition is not None
     if case == "tampered":
         path = connection.execute(
             "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (snapshot,)
@@ -287,6 +302,12 @@ def seed_reviewed_operational_fixture(
     )
     raw = json.dumps(
         {
+            "data": {
+                "leagues": [
+                    {"id": "l_Test01", "country_code": "INT"},
+                    {"id": "l_Provisional01", "country_code": "INT"},
+                ]
+            },
             "matches": [
                 {
                     "id": match,
@@ -307,7 +328,7 @@ def seed_reviewed_operational_fixture(
                         "t_ProvisionalAway01",
                     ),
                 )
-            ]
+            ],
         }
     ).encode()
     response = PitchApiResponse(

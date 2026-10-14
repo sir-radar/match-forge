@@ -195,6 +195,11 @@ def test_go_performance_batch_scopes_and_cancellation() -> None:
             _migrate(url, "up")
             with psycopg.connect(url) as connection:
                 _seed_fixture(connection)
+                connection.execute(
+                    "UPDATE football.product_competitions "
+                    "SET country='World',geographic_scope='International' WHERE competition_id=%s",
+                    (COMPETITION,),
+                )
                 _insert_forecast(connection, uuid4(), "a" * 64, "b" * 64)
                 _revision(connection, 1)
                 connection.execute(

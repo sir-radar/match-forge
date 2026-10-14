@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from football.product.domain import stable_id
+from football.product.identity_admission import _json_identifiers
 from football.product.identity_trust import MappingEvidence, qualify_mapping
 
 
@@ -63,3 +64,10 @@ def test_bulk_origin_retains_provider_and_country_scope() -> None:
     assert qualify_mapping(origin)[0] == "ORIGIN_ANCHOR"
     assert qualify_mapping(replace(origin, country="Scotland"))[0] == "CONTRADICTORY"
     assert qualify_mapping(replace(origin, country=None))[0] == "UNRESOLVED"
+
+
+def test_fotmob_league_details_prove_competition_id_only_in_league_resources() -> None:
+    payload = {"details": {"id": 47, "name": "Premier League", "country": "ENG"}}
+    assert _json_identifiers("fotmob", "competition", payload, "league-47-2026/2027") == {"47"}
+    assert _json_identifiers("fotmob", "competition", payload, "match-47") == set()
+    assert _json_identifiers("fotmob", "team", payload, "league-47-2026/2027") == set()

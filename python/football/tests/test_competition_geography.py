@@ -1,4 +1,40 @@
-from football.product.competition_geography import country_name, geography_rows
+import pytest
+from football.product.competition_geography import (
+    canonical_geographic_scope,
+    country_name,
+    geography_rows,
+)
+
+
+@pytest.mark.parametrize(
+    "provider,identifier,country,scope",
+    [
+        ("api_football", "39", "England", "England"),  # domestic league
+        ("api_football", "45", "England", "England"),  # domestic cup
+        ("api_football", "40", "England", "England"),  # lower division
+        ("api_football", "850", "World", "International"),  # international qualifier
+        ("api_football", "10", "World", "International"),  # national-team friendly
+        ("api_football", "2", "World", "International"),  # continental clubs
+        ("api_football", "667", "World", "International"),  # club friendly, any venue
+        ("api_football", "friendly-tournament", "France", "France"),
+        ("openfootball", "ar.1", "World", "Argentina"),  # legacy identity country
+        ("openfootball", "uefa.cl", "World", "International"),
+        ("openfootball", "cn.1", "World", "China"),
+        ("football_data_uk", "CZE", "Czech Republic", "Czech-Republic"),
+        ("football_data_uk", "SC1", "World", "Scotland"),
+        ("football_data_uk", "SC2", "World", "Scotland"),
+        ("football_data_uk", "SC3", "World", "Scotland"),
+    ],
+)
+def test_competition_scope_preserves_domestic_and_international_semantics(
+    provider: str, identifier: str, country: str, scope: str
+) -> None:
+    assert canonical_geographic_scope(provider, identifier, country) == scope
+
+
+def test_missing_competition_country_requires_evidence() -> None:
+    assert canonical_geographic_scope("fotmob", "47", None) is None
+    assert canonical_geographic_scope("pitchapi", "l_Unknown", "Unknown") is None
 
 
 def test_provider_country_codes_are_display_metadata_only() -> None:

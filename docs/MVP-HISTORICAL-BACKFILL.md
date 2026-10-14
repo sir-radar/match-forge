@@ -210,3 +210,43 @@ work. Memory is bounded by compressed bytes, metadata and at most 16MiB of decod
 buffers, rather than a claimed process-wide RSS cap. Invalid or excessive archives
 fail explicitly. New unusually large supported resources require measurement and
 review before increasing limits; limits never increase automatically.
+
+## Controlled R3 refill and qualification
+
+FotMob discovers `allAvailableSeasons` separately for each configured competition.
+Season aliases are normalized and deduplicated; multi-year qualification periods
+remain valid. The requested competition and selected season must match retained
+response metadata. There is no global FotMob start year. Fixture/result depth does
+not establish xG, lineup, event, shot-map or other advanced-feature depth.
+
+Empty advertised seasons report `ADVERTISED_BUT_UNUSABLE`. Stored results without
+qualified identities or regulation-score evidence remain blocked; they cannot
+mark a history scope complete. Closed retained responses preserve their original
+acquisition times. New observations and admissions use actual execution times.
+Football-Data.co.uk discovery fails explicitly when its page budget leaves
+unvisited catalogue pages. Fixture reconciliation first selects nearby history
+IDs, then reads their latest dated eligibility decisions; historical registration
+indexes also cover closed mappings.
+
+R3 origin-method repair closes an old mapping revision and appends a new revision
+only when full-confidence, verified retained IDs reproduce the same provider-origin
+UUID. Canonical IDs stay unchanged. Correct provider origins remain deterministic
+when crosswalk review runs; a shared identity does not turn its originating mapping
+into a foreign crosswalk. Existing rejection and revocation decisions require
+separate review. Historical eligibility decisions remain append-only.
+
+Forecast diagnostics distinguish raw H2Hs, qualified H2Hs and each team's general
+history. They use cutoff-qualified history and effective corrected team identities.
+Provider-derived forecast targets must also have qualified provider competition
+and team mappings. The champion's ten-match requirement and artifact remain fixed.
+
+Before live corrections, run the maintenance preflight:
+
+```sh
+uv run python -m football.product.maintenance --output .local/r3-quiescence.json
+```
+
+It checks socket ownership, repository processes, database clients and durable jobs.
+Verified local `pg_isready` probes and PostgreSQL autovacuum are recorded separately.
+Other writers block correction work. The refill is a one-time controlled operation;
+automatic historical acquisition retains its approved disabled default.

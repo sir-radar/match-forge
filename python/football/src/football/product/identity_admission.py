@@ -167,6 +167,72 @@ def admit_provider_mappings(
     return decisions
 
 
+def fixture_identity_blockers(
+    connection: Connection[Any], fixture_ids: list[UUID], cutoff: datetime
+) -> dict[UUID, str | None]:
+    """Require qualified provider mappings before using a provider-derived target."""
+    rows = connection.execute(
+        """WITH admissions AS MATERIALIZED (
+            SELECT DISTINCT ON (entity_type,mapping_id) *
+            FROM football.product_identity_admissions WHERE decided_at<=%s
+            ORDER BY entity_type,mapping_id,decided_at DESC,decision_id DESC
+        ), targets AS MATERIALIZED (
+            SELECT f.*, football.product_fixture_team_at(f.fixture_id,f.home_team_id,%s) home_id,
+                   football.product_fixture_team_at(f.fixture_id,f.away_team_id,%s) away_id
+            FROM football.product_fixtures f WHERE f.fixture_id=ANY(%s::uuid[])
+        ), candidates AS (
+            SELECT t.fixture_id, mm.id source_mapping,
+              COALESCE(home.qualified,false) home_ok, COALESCE(away.qualified,false) away_ok,
+              COALESCE(competition.qualified,false) competition_ok
+            FROM targets t
+            LEFT JOIN football.match_provider_mappings mm ON mm.match_id=t.fixture_id
+              AND mm.valid_to IS NULL
+            LEFT JOIN LATERAL (
+                SELECT bool_and(m.mapping_confidence=1 AND
+                    football.product_mapping_trusted('team',m.id,t.home_id) AND
+                    COALESCE(a.disposition IN ('ORIGIN_ANCHOR','CROSSWALK')
+                             AND a.canonical_id=t.home_id,false)) qualified
+                FROM football.team_provider_mappings m
+                LEFT JOIN admissions a ON a.entity_type='team' AND a.mapping_id=m.id
+                WHERE m.provider_id=mm.provider_id AND m.team_id=t.home_team_id
+                  AND m.valid_to IS NULL
+            ) home ON true
+            LEFT JOIN LATERAL (
+                SELECT bool_and(m.mapping_confidence=1 AND
+                    football.product_mapping_trusted('team',m.id,t.away_id) AND
+                    COALESCE(a.disposition IN ('ORIGIN_ANCHOR','CROSSWALK')
+                             AND a.canonical_id=t.away_id,false)) qualified
+                FROM football.team_provider_mappings m
+                LEFT JOIN admissions a ON a.entity_type='team' AND a.mapping_id=m.id
+                WHERE m.provider_id=mm.provider_id AND m.team_id=t.away_team_id
+                  AND m.valid_to IS NULL
+            ) away ON true
+            LEFT JOIN LATERAL (
+                SELECT bool_and(m.mapping_confidence=1 AND
+                    football.product_mapping_trusted('competition',m.id,t.competition_id) AND
+                    COALESCE(a.disposition IN ('ORIGIN_ANCHOR','CROSSWALK')
+                             AND a.canonical_id=t.competition_id,false)) qualified
+                FROM football.competition_provider_mappings m
+                LEFT JOIN admissions a ON a.entity_type='competition' AND a.mapping_id=m.id
+                WHERE m.provider_id=mm.provider_id AND m.competition_id=t.competition_id
+                  AND m.valid_to IS NULL
+            ) competition ON true
+        ), best AS (
+            SELECT fixture_id,max(CASE
+                WHEN source_mapping IS NULL THEN 3
+                WHEN NOT home_ok THEN 0 WHEN NOT away_ok THEN 1
+                WHEN NOT competition_ok THEN 2 ELSE 3 END) progress
+            FROM candidates GROUP BY fixture_id
+        ) SELECT fixture_id,CASE progress
+            WHEN 0 THEN 'HOME_IDENTITY_NOT_ADMITTED'
+            WHEN 1 THEN 'AWAY_IDENTITY_NOT_ADMITTED'
+            WHEN 2 THEN 'COMPETITION_IDENTITY_NOT_ADMITTED' ELSE NULL END
+          FROM best""",
+        (cutoff, cutoff, cutoff, fixture_ids),
+    ).fetchall()
+    return dict(rows)
+
+
 def _manual_review(
     connection: Connection[Any],
     entity_type: str,
@@ -413,6 +479,14 @@ def _json_identifiers(provider: str, entity_type: str, value: Any, identity: str
     identifiers: set[str] = set()
     for key, item in _objects(value):
         if key in keys and isinstance(item, dict):
+            identifiers.update(_native_object_identifiers(provider, entity_type, item))
+        if (
+            provider == "fotmob"
+            and entity_type == "competition"
+            and key == "details"
+            and identity.startswith("league-")
+            and isinstance(item, dict)
+        ):
             identifiers.update(_native_object_identifiers(provider, entity_type, item))
         if entity_type == "team" and key == "teams" and isinstance(item, dict):
             identifiers.update(

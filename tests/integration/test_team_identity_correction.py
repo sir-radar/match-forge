@@ -622,6 +622,14 @@ def test_populated_upgrade_preserves_prior_r2_decisions_and_does_not_admit(tmp_p
                 "SELECT to_jsonb(h) FROM football.product_match_history_decisions h "
                 "ORDER BY decision_id"
             ).fetchall()
+        _migrate(url, "up-to", "202610140100")
+        down = subprocess.run(
+            ["goose", "-dir", "infrastructure/migrations", "postgres", url, "down"],
+            capture_output=True,
+            text=True,
+        )
+        assert down.returncode != 0
+        assert "team identity corrections are a forward-only migration" in down.stderr
         _migrate(url, "up")
         _migrate(url, "up")
         with psycopg.connect(url) as c:
@@ -646,9 +654,3 @@ def test_populated_upgrade_preserves_prior_r2_decisions_and_does_not_admit(tmp_p
             correct_team_identity(c, tmp_path, other)
             assert len(history(c, c.execute("SELECT clock_timestamp()").fetchone()[0])) == 1
             assert history(c, t0) == []
-        down = subprocess.run(
-            ["goose", "-dir", "infrastructure/migrations", "postgres", url, "down"],
-            capture_output=True,
-            text=True,
-        )
-        assert down.returncode != 0 and "forward-only" in down.stderr

@@ -68,6 +68,17 @@ func TestPerformanceBatchDatabase(t *testing.T) {
 	}
 }
 
+func TestPerformanceBatchDatabaseCanonicalCountry(t *testing.T) {
+	store, _ := performanceDatabaseStore(t)
+	page, err := store.Performances(context.Background(), PerformanceFilters{Page: 1, PageSize: 20, Country: "International"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Performance) != 1 || page.Performance[0].Country != "International" {
+		t.Fatalf("canonical country filter: %+v", page)
+	}
+}
+
 func TestPerformanceBatchDatabaseCancellation(t *testing.T) {
 	store, _ := performanceDatabaseStore(t)
 	ctx, cancel := context.WithCancel(context.Background())

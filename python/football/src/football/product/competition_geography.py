@@ -123,6 +123,30 @@ def country_name(code: Any) -> str | None:
     return _COUNTRIES.get(code.strip().upper()) if isinstance(code, str) else None
 
 
+def canonical_geographic_scope(provider: str, identifier: str, country: str | None) -> str | None:
+    """Classify competition geography without changing legacy identity inputs or venues."""
+    if provider == "football_data_uk" and identifier in {"SC1", "SC2", "SC3"}:
+        return "Scotland"
+    if provider == "openfootball":
+        domestic = {
+            "ar": "Argentina",
+            "au": "Australia",
+            "cn": "China",
+            "co": "Colombia",
+            "dz": "Algeria",
+            "eg": "Egypt",
+            "hu": "Hungary",
+            "ma": "Morocco",
+        }
+        prefix = identifier.split(".", 1)[0]
+        if prefix in domestic:
+            return domestic[prefix]
+    if country is None or country.strip().casefold() in {"", "unknown"}:
+        return None
+    aliases = {"World": "International", "Czech Republic": "Czech-Republic"}
+    return aliases.get(country.strip(), country.strip())
+
+
 def geography_rows(provider: str, payload: Any) -> list[tuple[str, str]]:
     if not isinstance(payload, Mapping):
         return []
@@ -174,6 +198,8 @@ def _retained_geography(
     data_root: Path,
     provider: str,
     evidence: dict[str, dict[str, set[str]]],
+    *,
+    all_identifiers: bool = False,
 ) -> list[str]:
     invalid = []
     snapshots = connection.execute(
@@ -195,9 +221,22 @@ def _retained_geography(
             invalid.append(str(snapshot[0]))
             continue
         for identifier, code in rows:
-            if identifier in evidence:
-                evidence[identifier].setdefault(code, set()).add(str(snapshot[0]))
+            if identifier in evidence or all_identifiers:
+                evidence.setdefault(identifier, {}).setdefault(code, set()).add(str(snapshot[0]))
     return invalid
+
+
+def verified_geographic_scopes(
+    connection: Connection[Any], data_root: Path, provider: str
+) -> dict[str, str | None]:
+    """One retained-byte scan per operation; missing or conflicting evidence stays unresolved."""
+    evidence: dict[str, dict[str, set[str]]] = {}
+    _retained_geography(connection, data_root, provider, evidence, all_identifiers=True)
+    result = {}
+    for identifier, codes in evidence.items():
+        names = {country_name(code) for code in codes}
+        result[identifier] = names.pop() if len(names) == 1 and None not in names else None
+    return result
 
 
 def _fill_country(

@@ -130,6 +130,12 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
             connection.commit()
             first = run_scopes(sync, client, budget=2, competition=league)
             assert len(first) == transport.calls == 2
+            assert {scope["status"] for scope in first} == {"ADVERTISED_BUT_UNUSABLE"}
+            assert connection.execute(
+                "SELECT count(*) FROM football.product_provider_history_scopes "
+                "WHERE provider_competition_id=%s AND status='SUCCEEDED'",
+                (league,),
+            ).fetchone() == (0,)
             assert connection.execute(
                 "SELECT count(*)"
                 " FROM football.product_provider_history_scopes"

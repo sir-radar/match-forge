@@ -1035,7 +1035,7 @@
         "R8",
         "R9"
       ],
-      "current_phase": "R3_POST_DEPLOYMENT_ACCEPTANCE_PENDING",
+      "current_phase": "R3_PARTIAL_REMAINING_BLOCKERS",
       "checkpoint_root": ".local/remediation/matchforge-audit",
       "research_execution_authorized": false,
       "blocked_findings": [
@@ -1085,6 +1085,25 @@
         "remaining_work": "Restore current eligible history through verified prospective R2 admissions and separately review fixture representatives; do not invent old eligibility or force a fixture merge.",
         "implementation_base_sha": "05a28d751565dcc0941dcfcef9d13970af59f3cf",
         "applied_r2_migration_sha256": "53f81265137ed4a10911cb8d732de82a6d540d0aa8284c2729ee4f5a187feca6"
+      },
+      "r3_completion": {
+        "status": "R3_PARTIAL_REMAINING_BLOCKERS",
+        "migration": 202610140600,
+        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z",
+        "historical_admissions": "PROSPECTIVE_VERIFIED_ONLY",
+        "canonical_geography": "NON_NULL; VERIFIED_PROVIDER_GEOGRAPHY",
+        "fixture_pairs_reconciled": 17,
+        "fotmob_season_discovery": "DYNAMIC_PER_COMPETITION",
+        "epl_seasons_attempted": "2010/2011 through 2026/2027; 17 advertised seasons",
+        "automatic_history_acquisition_enabled": false,
+        "remaining_blockers": [
+          "Unqualified or contradictory identity mappings remain excluded.",
+          "Partial historical scopes retain fixture identity conflicts.",
+          "API-Football fixture retrieval and football-data.org availability retrieval failed.",
+          "Mandatory 2020 onward coverage is not fully qualified across authorized scopes."
+        ],
+        "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+        "model_retraining_or_promotion": false
       }
     }
   },

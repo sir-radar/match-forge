@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -22,6 +23,32 @@ from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
 from football.storage.raw import ImmutableFileStore
+
+
+def normalize_seasons(values: Any) -> list[str]:
+    """Normalize provider season aliases without imposing a historical floor."""
+    if not isinstance(values, list) or not values:
+        raise ValueError("provider catalogue missing available seasons")
+    seasons = set()
+    for value in values:
+        if type(value) not in (str, int):
+            raise ValueError("invalid provider season identifier")
+        match = re.fullmatch(r"(\d{4})(?:[/-](\d{2}|\d{4}))?", str(value).strip())
+        if match is None:
+            raise ValueError("invalid provider season identifier")
+        start = int(match[1])
+        if match[2] is None:
+            seasons.add(f"{start:04d}")
+            continue
+        end = int(match[2])
+        if len(match[2]) == 2:
+            end += start // 100 * 100
+            if end < start:
+                end += 100
+        if end <= start:
+            raise ValueError("provider season end must follow its start")
+        seasons.add(f"{start:04d}/{end:04d}")
+    return sorted(seasons, reverse=True)
 
 
 def cached_response(
@@ -111,7 +138,7 @@ def discover_pitchapi(
     for league in data["leagues"]:
         if not isinstance(league, Mapping) or not isinstance(league.get("seasons"), list):
             raise ValueError("PitchAPI league missing seasons")
-        seasons = [str(season) for season in league["seasons"]]
+        seasons = normalize_seasons(league["seasons"])
         snapshot = sync._record_response("league-catalogue", response)
         bind_league_crosswalk(sync, str(league["id"]), league, snapshot)
         enqueue_seasons(sync, str(league["id"]), seasons)
@@ -213,13 +240,13 @@ def _fotmob_seasons(
     if not isinstance(response.data, Mapping):
         raise ValueError("FotMob catalogue must be an object")
     seasons = response.data.get("allAvailableSeasons")
-    if not isinstance(seasons, list):
-        raise ValueError("FotMob catalogue missing available seasons")
+    seasons = normalize_seasons(seasons)
     snapshot = sync._record_response(resource, response)
     details = response.data.get("details", {})
-    if isinstance(details, Mapping):
-        bind_league_crosswalk(sync, league_id, details, snapshot)
-    return [str(season) for season in seasons]
+    if not isinstance(details, Mapping) or str(details.get("id")) != league_id:
+        raise ValueError("FotMob catalogue competition ID mismatch")
+    bind_league_crosswalk(sync, league_id, details, snapshot)
+    return seasons
 
 
 def bind_league_crosswalk(
@@ -392,7 +419,7 @@ def run_scopes(
                 league_id, selected_season, response, network_acquired=acquired
             )
             if result["status"] != "COMPLETED":
-                error = "one or more fixture rows failed; replay stored snapshot"
+                error = str(result["status"])
                 status = "FAILED"
         except HistoryDeferred as deferred:
             sync.connection.rollback()

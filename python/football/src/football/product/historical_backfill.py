@@ -12,6 +12,7 @@ from uuid import UUID
 
 from psycopg import Connection
 
+from football.product.competition_geography import canonical_geographic_scope
 from football.product.domain import normalize_team_name, sha256_json, stable_id
 from football.product.historical_manifest import verify_manifest
 from football.product.identity_admission import verify_source_identifier
@@ -19,6 +20,7 @@ from football.product.identity_crosswalks import (
     COMPETITION_CROSSWALKS,
     canonical_team_provider_identity,
 )
+from football.product.identity_trust import origin_id
 from football.storage.raw import ImmutableFileStore
 
 KickoffPrecision = Literal["EXACT", "DATE_ONLY"]
@@ -95,6 +97,8 @@ class HistoricalBackfillStore:
         self.data_root = data_root
         self.competition_mappings_created = 0
         self.team_mappings_created = 0
+        self._geography_checked: set[UUID] = set()
+        self._geography_schema_available: bool | None = None
 
     def ensure_snapshot(
         self,
@@ -251,6 +255,7 @@ class HistoricalBackfillStore:
         competition_id, competition_created = self._competition_id(match, snapshot_id, observed_at)
         if competition_id is None:
             return "mapping_failure"
+        self._ensure_geography(competition_id, match)
         home_id, _ = self._team_id(
             match.home_team_id,
             match.home_team_name,
@@ -414,6 +419,42 @@ class HistoricalBackfillStore:
             )
             return "conflict"
         return "existing"
+
+    def _ensure_geography(self, competition_id: UUID, match: HistoricalMatch) -> None:
+        if competition_id in self._geography_checked:
+            return
+        if self._geography_schema_available is None:
+            schema = self.connection.execute(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.columns "
+                "WHERE table_schema='football' AND table_name='product_competitions' "
+                "AND column_name='geographic_scope')"
+            ).fetchone()
+            self._geography_schema_available = bool(schema and schema[0])
+        # Populated migration rehearsals seed history using the pre-geography schema.
+        if not self._geography_schema_available:
+            return
+        scope = canonical_geographic_scope(
+            self.provider_code, match.provider_competition_id, match.country
+        )
+        if scope is None:
+            raise ValueError("CANONICAL_FIXTURE_GEOGRAPHY_REQUIRED")
+        existing = self.connection.execute(
+            "SELECT geographic_scope,country FROM football.product_competitions "
+            "WHERE competition_id=%s",
+            (competition_id,),
+        ).fetchone()
+        if existing and existing[0] is not None and existing[0] != scope:
+            native_legacy = existing[1] == "World" and competition_id == origin_id(
+                "competition", self.provider_code, match.provider_competition_id, existing[1]
+            )
+            if not native_legacy:
+                raise ValueError("conflicting canonical competition geography")
+        self.connection.execute(
+            "UPDATE football.product_competitions SET geographic_scope=%s "
+            "WHERE competition_id=%s AND geographic_scope IS DISTINCT FROM %s",
+            (scope, competition_id, scope),
+        )
+        self._geography_checked.add(competition_id)
 
     def _competition_id(
         self, match: HistoricalMatch, snapshot_id: UUID, observed_at: datetime
