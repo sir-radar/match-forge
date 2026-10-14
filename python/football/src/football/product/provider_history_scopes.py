@@ -18,7 +18,7 @@ from football.product.history_requests import (
     record_history_check,
 )
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
-from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_provider_sync import OperationalProviderSync, _fotmob_season_rows
 from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
@@ -147,6 +147,36 @@ def discover_pitchapi(
     return scopes
 
 
+def _fotmob_primary_ids(sync: OperationalProviderSync, identifiers: list[str]) -> list[str]:
+    """Resolve catalogue requests through retained provider-declared group relationships."""
+    resources = sync.connection.execute(
+        """SELECT DISTINCT s.source_identity FROM football.source_snapshots s
+           JOIN football.providers p ON p.id=s.provider_id
+           WHERE p.code='fotmob' AND s.status='validated'
+             AND s.source_identity LIKE 'fixtures-%' ORDER BY s.source_identity"""
+    ).fetchall()
+    relationships: dict[str, set[str]] = {}
+    for (resource,) in resources:
+        response = cached_response(sync, resource)
+        if response is None or not isinstance(response.data, Mapping):
+            continue
+        for league in response.data.get("leagues", []):
+            if not isinstance(league, Mapping):
+                continue
+            group, primary = league.get("id"), league.get("primaryId")
+            if type(group) in (int, str) and type(primary) in (int, str):
+                relationships.setdefault(str(group), set()).add(str(primary))
+    resolved = []
+    for identifier in identifiers:
+        targets = relationships.get(identifier, {identifier})
+        if len(targets) != 1:
+            raise ValueError("conflicting retained FotMob primary competition IDs")
+        primary = next(iter(targets))
+        if primary not in resolved:
+            resolved.append(primary)
+    return resolved
+
+
 def discover_fotmob(
     sync: OperationalProviderSync,
     client: FotmobClient,
@@ -177,11 +207,21 @@ def discover_fotmob(
                    AND fixture.kickoff_at > now()) DESC, mapping.provider_competition_id""",
             (competition, competition),
         )
-        leagues = [row[0] for row in cursor.fetchall()]
+        leagues = _fotmob_primary_ids(sync, [row[0] for row in cursor.fetchall()])
     requests = scopes = 0
     errors: dict[str, str] = {}
     deferred_scopes: dict[str, str] = {}
+    cooling = {
+        row[0]
+        for row in sync.connection.execute(
+            """SELECT provider_competition_id FROM football.product_provider_history_discovery
+               WHERE provider_code='fotmob' AND last_error IS NOT NULL
+                 AND next_attempt_at>now()"""
+        ).fetchall()
+    }
     for league_id in leagues:
+        if league_id in cooling:
+            continue
         resource = f"league-catalogue-{league_id}"
         response = (
             None if refresh else cached_response(sync, resource, freshness=history_freshness())
@@ -488,6 +528,16 @@ def _scope_response(
     resource = f"league-{league_id}-{selected_season}"
     freshness = history_freshness() if int(selected_season[-4:]) >= datetime.now(UTC).year else None
     response = None if refresh else cached_response(sync, resource, freshness=freshness)
+    if response is None and not refresh and sync.provider_code == "fotmob":
+        catalogue = cached_response(sync, f"league-catalogue-{league_id}", freshness=freshness)
+        if catalogue is not None and isinstance(catalogue, FotmobResponse):
+            details = (
+                catalogue.data.get("details", {}) if isinstance(catalogue.data, Mapping) else {}
+            )
+            selected = details.get("selectedSeason") if isinstance(details, Mapping) else None
+            if selected is not None and normalize_seasons([selected]) == [selected_season]:
+                _fotmob_season_rows(catalogue, league_id, selected_season)
+                response = catalogue
     acquired = response is None
     if response is None:
         sync.pacer.wait()

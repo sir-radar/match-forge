@@ -268,3 +268,20 @@ def test_finished_score_basis_is_explicit_only_when_provider_proves_it() -> None
     }
     row = normalize_daily_matches(response([match(status=status)]))[0]
     assert row.result_score_basis == "REGULATION_90"
+
+
+def test_daily_group_uses_explicit_primary_competition_id() -> None:
+    original = response([match()])
+    assert isinstance(original.data, dict)
+    data: dict[str, Any] = {
+        "leagues": [{**original.data["leagues"][0], "id": 943230, "primaryId": 42}]
+    }
+    raw = json.dumps(data).encode()
+    grouped = FotmobResponse(
+        "daily", original.fetched_at, hashlib.sha256(raw).hexdigest(), raw, data
+    )
+    assert normalize_daily_matches(grouped)[0].provider_competition_id == "42"
+    assert data["leagues"][0]["id"] == 943230
+    data["leagues"][0]["primaryId"] = True
+    with pytest.raises(FotmobPayloadError):
+        normalize_daily_matches(grouped)

@@ -15,7 +15,12 @@ from football.product.historical_manifest import publish_manifest
 from football.product.history_coverage import history_coverage
 from football.product.identity_admission import admit_provider_mappings
 from football.product.identity_audit import audit_report
-from football.product.operational_provider_sync import OperationalProviderSync, SyncCounts
+from football.product.operational_provider_sync import (
+    OperationalProviderSync,
+    SyncCounts,
+    _fotmob_season_rows,
+)
+from football.providers.fotmob import FotmobResponse
 from football.providers.pitchapi import (
     PitchApiFixture,
     PitchApiResponse,
@@ -72,6 +77,123 @@ def _eligible(connection: Connection[Any], cutoff: datetime) -> list[tuple[Any, 
         "SELECT fixture_id, home_goals, away_goals FROM football.product_eligible_history_at(%s)",
         (cutoff,),
     ).fetchall()
+
+
+def _review_pair(connection: Connection[Any], root: Path) -> tuple[Any, ...]:
+    _history(connection, root, exact=True)
+    admit_provider_mappings(connection, root, "football_data_uk")
+    fixture, kickoff = connection.execute(
+        "SELECT fixture_id,kickoff_at FROM football.product_team_match_history"
+    ).fetchone()
+    sync = OperationalProviderSync(connection, root, provider_code="fotmob")
+    sync._materialize_history_fixture(fixture, datetime.now(UTC))
+    payload = {
+        "details": {
+            "id": 47,
+            "name": "English Premier League",
+            "selectedSeason": "2026/2027",
+            "country": "ENG",
+        },
+        "fixtures": {
+            "allMatches": [
+                {
+                    "id": "47001",
+                    "home": {"id": "471", "name": "Home"},
+                    "away": {"id": "472", "name": "Away"},
+                    "status": {
+                        "utcTime": kickoff.isoformat(),
+                        "finished": True,
+                        "started": True,
+                        "cancelled": False,
+                        "scoreStr": "2 - 1",
+                        "reason": {"short": "FT"},
+                    },
+                }
+            ]
+        },
+    }
+    raw = json.dumps(payload).encode()
+    response = FotmobResponse(
+        "league", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
+    )
+    snapshot = sync._record_response("league-47-2026/2027", response)
+    row = _fotmob_season_rows(response, "47", "2026/2027")[0]
+    sync._store_observation(row, snapshot, None)
+    return sync, fixture, snapshot, row
+
+
+def test_competition_review_does_not_admit_teams_or_complete_the_source_season(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        before = _cutoff(c)
+        sync.apply_reviewed_mapping(
+            row.provider_match_id, fixture, source_snapshot_id=snapshot, competition_only=True
+        )
+        assert c.execute(
+            "SELECT count(*) FROM football.team_provider_mappings m "
+            "JOIN football.providers p ON p.id=m.provider_id WHERE p.code='fotmob'"
+        ).fetchone() == (0,)
+        assert (
+            sync._season_qualification(snapshot, [row], SyncCounts(matched=1))["status"]
+            == "BLOCKED_IDENTITY"
+        )
+        assert len(_eligible(c, before)) == 1
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        assert (
+            sync._season_qualification(snapshot, [row], SyncCounts(matched=1))["status"]
+            == "COMPLETED"
+        )
+        events = c.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
+        reviews = c.execute(
+            "SELECT count(*) FROM football.product_provider_mapping_decisions"
+        ).fetchone()
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        assert (
+            c.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
+            == events
+        )
+        assert (
+            c.execute("SELECT count(*) FROM football.product_provider_mapping_decisions").fetchone()
+            == reviews
+        )
+        assert len(_eligible(c, before)) == 1
+
+
+def test_qualified_source_replaces_only_unqualified_equal_score_history(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        old_source = c.execute(
+            "SELECT source_snapshot_id FROM football.product_team_match_history"
+        ).fetchone()[0]
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        assert c.execute(
+            "SELECT source_snapshot_id FROM football.product_team_match_history"
+        ).fetchone() == (old_source,)
+        unqualified = OperationalProviderSync(c, tmp_path, provider_code="pitchapi")
+        payload = {"data": {"matches": [{"id": "m_Oldsrc", "home": {"id": "t_Oldsrc"}}]}}
+        raw = json.dumps(payload).encode()
+        prior = unqualified._record_response(
+            "old-result",
+            PitchApiResponse(
+                "test", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
+            ),
+        )
+        c.execute(
+            "UPDATE football.product_team_match_history SET source_provider_code='pitchapi',"
+            "source_snapshot_id=%s",
+            (prior,),
+        )
+        denied = _cutoff(c)
+        assert _eligible(c, denied) == []
+        assert sync._insert_qualified_history(row, fixture, snapshot) == 1
+        assert len(_eligible(c, _cutoff(c))) == 1
+        assert _eligible(c, denied) == []
+        assert sync._insert_qualified_history(row, fixture, snapshot) == 0
+        assert c.execute("SELECT count(*) FROM football.product_team_match_history").fetchone() == (
+            1,
+        )
 
 
 def test_history_qualification_lock_count_is_constant_at_scale() -> None:
@@ -465,4 +587,250 @@ def test_legacy_registration_remains_unverified_and_unchanged(tmp_path: Path) ->
         assert (
             connection.execute("SELECT to_jsonb(s) FROM football.source_snapshots s").fetchall()
             == registration
+        )
+
+
+def test_duplicate_team_aliases_emit_one_conservative_history_decision(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        _history(c, tmp_path)
+        admit_provider_mappings(c, tmp_path, "football_data_uk")
+        admitted = _cutoff(c)
+        fixture = c.execute(
+            "SELECT fixture_id FROM football.product_team_match_history "
+            "WHERE source_provider_code='football_data_uk' "
+            "AND kickoff_at::date='2026-08-01' AND home_goals=2 AND away_goals=1"
+        ).fetchone()[0]
+        c.execute(
+            """INSERT INTO football.team_provider_mappings (
+                 team_id,provider_id,provider_team_id,first_seen_at,last_seen_at,
+                 mapping_method,mapping_confidence,source_snapshot_id)
+               SELECT mapping.team_id,mapping.provider_id,'unproven alias',
+                      mapping.first_seen_at,mapping.last_seen_at,
+                      'explicit_crosswalk',1,mapping.source_snapshot_id
+               FROM football.team_provider_mappings mapping
+               JOIN football.product_team_match_history history
+                 ON history.home_team_id=mapping.team_id
+               JOIN football.providers provider ON provider.id=mapping.provider_id
+               WHERE history.fixture_id=%s AND provider.code='football_data_uk'
+                 AND mapping.valid_to IS NULL""",
+            (fixture,),
+        )
+        before = c.execute(
+            "SELECT count(*) FROM football.product_match_history_decisions"
+        ).fetchone()
+        c.execute("SELECT football.record_product_history_decision(%s)", (fixture,))
+        after = c.execute(
+            "SELECT count(*) FROM football.product_match_history_decisions"
+        ).fetchone()
+        c.execute("SELECT football.record_product_history_decision(%s)", (fixture,))
+        assert (
+            c.execute("SELECT count(*) FROM football.product_match_history_decisions").fetchone()
+            == after
+        )
+        assert after[0] - before[0] <= 1
+        assert _eligible(c, _cutoff(c)) == []
+        assert len(_eligible(c, admitted)) == 1
+
+
+def test_replayed_identical_facts_use_original_observation_lineage(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        # A second immutable acquisition may contain exactly the same facts.
+        payload = json.loads(
+            (
+                sync.data_root
+                / c.execute(
+                    "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (snapshot,)
+                ).fetchone()[0]
+            ).read_text()
+        )
+        raw = json.dumps(payload).encode()
+        response = FotmobResponse(
+            "league", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
+        )
+        newer = sync._record_response("league-catalogue-47", response)
+        assert newer != snapshot
+        before = c.execute(
+            "SELECT count(*) FROM football.product_provider_fixture_observations"
+        ).fetchone()
+        sync._store_observation(row, newer, fixture)
+        assert (
+            c.execute(
+                "SELECT count(*) FROM football.product_provider_fixture_observations"
+            ).fetchone()
+            == before
+        )
+        assert (
+            sync._season_qualification(newer, [row], SyncCounts(matched=1))["status"] == "COMPLETED"
+        )
+        wrong = replace(row, provider_home_team_id="wrong")
+        assert (
+            sync._season_qualification(newer, [wrong], SyncCounts(matched=1))["status"]
+            == "BLOCKED_IDENTITY"
+        )
+
+
+def test_review_reconciles_all_retained_members_before_history_and_retries(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        member = uuid4()
+        c.execute(
+            """INSERT INTO football.matches (id,competition_id,season_id)
+               SELECT %s,competition_id,season_id FROM football.matches WHERE id=%s""",
+            (member, fixture),
+        )
+        c.execute(
+            """INSERT INTO football.product_fixtures (
+                 fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,status,
+                 home_score,away_score,identity_status,forecast_availability,updated_at)
+               SELECT %s,competition_id,home_team_id,away_team_id,kickoff_at,status,
+                      home_score,away_score,'PROVISIONAL','SOURCE_DATA_INCOMPLETE',updated_at
+               FROM football.product_fixtures WHERE fixture_id=%s""",
+            (member, fixture),
+        )
+        # Reproduce a legacy member whose stored history conflicts with its new representative.
+        c.execute(
+            """INSERT INTO football.product_team_match_history (
+                 fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,
+                 away_goals,source_provider_code,source_snapshot_id,source_kickoff_precision)
+               SELECT %s,competition_id,home_team_id,away_team_id,kickoff_at+interval '1 minute',
+                      home_goals,away_goals,'fotmob',%s,source_kickoff_precision
+               FROM football.product_team_match_history WHERE fixture_id=%s""",
+            (member, snapshot, fixture),
+        )
+        c.execute(
+            "UPDATE football.product_team_match_history SET kickoff_at=%s WHERE fixture_id=%s",
+            (row.kickoff_at, member),
+        )
+        sync._store_observation(row, snapshot, member)
+        sync.apply_reviewed_mapping(
+            row.provider_match_id, fixture, source_snapshot_id=snapshot, competition_only=True
+        )
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        resolutions = c.execute(
+            "SELECT count(*) FROM football.fixture_identity_resolutions"
+        ).fetchone()
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        assert (
+            c.execute("SELECT count(*) FROM football.fixture_identity_resolutions").fetchone()
+            == resolutions
+        )
+        assert c.execute(
+            """SELECT representative_fixture_id FROM football.fixture_identity_resolutions
+               WHERE member_fixture_id=%s AND active""",
+            (member,),
+        ).fetchone() == (fixture,)
+        assert c.execute("SELECT count(*) FROM football.product_team_match_history").fetchone() == (
+            2,
+        )
+        assert len(_eligible(c, _cutoff(c))) == 1
+
+
+def test_team_review_uses_qualified_date_only_result_without_changing_history_time(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        midnight = row.kickoff_at.replace(hour=0, minute=0, second=0, microsecond=0)
+        c.execute(
+            """UPDATE football.product_team_match_history SET kickoff_at=%s,
+               source_kickoff_precision='DATE_ONLY' WHERE fixture_id=%s""",
+            (midnight, fixture),
+        )
+        c.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (midnight, fixture),
+        )
+        sync.apply_reviewed_mapping(
+            row.provider_match_id,
+            fixture,
+            source_snapshot_id=snapshot,
+        )
+        assert c.execute(
+            """SELECT kickoff_at,source_kickoff_precision
+               FROM football.product_team_match_history WHERE fixture_id=%s""",
+            (fixture,),
+        ).fetchone() == (midnight, "DATE_ONLY")
+        with pytest.raises(ValueError, match="kickoff"):
+            sync._validate_reviewed_context(
+                replace(row, kickoff_at=row.kickoff_at + timedelta(days=1)),
+                (
+                    fixture,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "FINISHED",
+                    2,
+                    1,
+                    midnight,
+                    "VERIFIED",
+                    "DATE_ONLY",
+                ),
+            )
+
+
+def test_admitted_native_ids_release_only_the_old_single_member_identity_quarantine(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        admitted = _cutoff(c)
+        c.execute(
+            """INSERT INTO football.fixture_identity_resolutions (
+                 canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+                 resolution_status,resolution_reason,evidence_json,evidence_sha256,
+                 resolution_version,active,created_at)
+               VALUES (%s,%s,%s,'AMBIGUOUS_QUARANTINED','PROVISIONAL_PROVIDER_IDENTITY',
+                       jsonb_build_object('member_fixture_ids',jsonb_build_array(%s::text)),
+                       %s,'test-old-quarantine',true,clock_timestamp())""",
+            (fixture, fixture, fixture, fixture, "a" * 64),
+        )
+        blocked = _cutoff(c)
+        assert _eligible(c, blocked) == []
+        sync._reconcile_retained_members(row, fixture, snapshot)
+        assert len(_eligible(c, _cutoff(c))) == 1
+        assert _eligible(c, blocked) == []
+        assert len(_eligible(c, admitted)) == 1
+        events = c.execute("SELECT count(*) FROM football.fixture_identity_resolutions").fetchone()
+        sync._reconcile_retained_members(row, fixture, snapshot)
+        assert (
+            c.execute("SELECT count(*) FROM football.fixture_identity_resolutions").fetchone()
+            == events
+        )
+        c.execute(
+            """UPDATE football.fixture_identity_resolutions SET active=false
+               WHERE member_fixture_id=%s""",
+            (fixture,),
+        )
+        c.execute(
+            """INSERT INTO football.fixture_identity_resolutions (
+                 canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+                 resolution_status,resolution_reason,evidence_json,evidence_sha256,
+                 resolution_version,active,created_at)
+               VALUES (%s,%s,%s,'AMBIGUOUS_QUARANTINED','CONFLICTING_PROVIDER_RESULTS',
+                       jsonb_build_object('member_fixture_ids',jsonb_build_array(%s::text)),
+                       %s,'test-real-conflict',true,clock_timestamp())""",
+            (fixture, fixture, fixture, fixture, "b" * 64),
+        )
+        sync._reconcile_retained_members(row, fixture, snapshot)
+        assert _eligible(c, _cutoff(c)) == []
+
+
+def test_scope_cannot_claim_another_sources_conflicting_result_as_qualified(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        conflict = replace(row, home_score=3)
+        sync._store_observation(conflict, snapshot, fixture)
+        report = sync._season_qualification(snapshot, [conflict], SyncCounts(matched=1))
+        assert report["status"] == "BLOCKED_RESULT_CONFLICT"
+        assert report["qualified_results"] == 0
+        assert (
+            sync._season_qualification(uuid4(), [row], SyncCounts(matched=1))["status"]
+            == "BLOCKED_IDENTITY"
         )

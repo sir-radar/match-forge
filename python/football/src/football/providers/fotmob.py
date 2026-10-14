@@ -219,7 +219,7 @@ def normalize_daily_matches(response: FotmobResponse) -> tuple[FotmobLiveScore, 
     for league in leagues:
         if not isinstance(league, Mapping) or not isinstance(league.get("matches"), list):
             raise FotmobPayloadError("invalid league match list")
-        league_id = _provider_id(league.get("id"))
+        league_id = _provider_id(league.get("primaryId", league.get("id")))
         league_name = league.get("name")
         if not isinstance(league_name, str) or not league_name.strip():
             league_name = None

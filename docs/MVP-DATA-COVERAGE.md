@@ -70,8 +70,11 @@ Each stored competition records country, continent, inferred division, season, f
 
 Provider-scoped provisional competitions can display country metadata from
 checksum- and size-verified retained FotMob daily/league responses or the PitchAPI
-league catalogue. Matching uses the exact provider competition ID, including
-FotMob phase IDs; names and parent league IDs never substitute for that ID.
+league catalogue. FotMob daily normalization uses its explicit `primaryId` when present. The
+original group `id` remains in retained bytes and existing registrations. Catalogue
+requests use checksum-verified group-to-primary relationships; conflicting
+relationships stop discovery. League catalogue `details.id` must still match the
+requested ID. Names and `parentLeagueId` do not establish competition identity.
 Supported country codes use the existing product country names. `INT` and
 `INT-2` display as `International`, with continent `World`. Conflicting,
 unsupported or missing evidence leaves the country unresolved. The landing page
@@ -106,3 +109,26 @@ Current material gaps are:
 Sportmonks, SportDevs, TheSportsDB, OpenLigaDB, Sportradar and Stats Perform/Opta remain candidates only where a measured coverage gap justifies integration. No new paid provider was added. Before integration, MatchForge must record exact competition gain, historical depth, request/storage rights, rate limits, reliability and expected cost for the intended plan.
 
 Current source references: [API-Football pricing](https://www.api-football.com/pricing), [API-Football coverage](https://www.api-football.com/coverage), and [football-data.org pricing](https://www.football-data.org/pricing).
+
+## Identity review and history replay
+
+Competition and team candidates use retained fixture context: country, season,
+known gender and division, opponents, home/away roles, kickoff and compatible
+results. Names locate candidates and cannot admit a mapping. Operator review can
+admit a competition separately, then admit its teams and reconcile fixture
+representatives. Decisions use actual admission time and keep prior decisions.
+A qualified date-only result can support identity review on the same UTC day;
+its stored history time and precision remain unchanged.
+
+Historical qualification emits one decision per fixture. All applicable team
+aliases must agree on identity and trust. Replaying identical facts reuses their
+original observation lineage. A different source cannot replace qualified
+history, and conflicting results cannot make a scope complete. Retained current
+league catalogues can satisfy an exact matching season request without network
+access. Durable scope IDs, attempts and cooldowns remain intact.
+
+`history-coverage` includes `provider_history_depth`. Each provider competition
+reports stored and qualified results, advertised and completed scopes, season
+states and its first blocker. Metadata-only discovery remains distinct from
+qualified fixture/results history. Advanced features are not inferred from basic
+fixture availability.

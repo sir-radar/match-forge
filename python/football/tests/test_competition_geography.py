@@ -49,7 +49,7 @@ def test_provider_country_codes_are_display_metadata_only() -> None:
 
 def test_fotmob_uses_exact_competition_id_and_retained_country_field() -> None:
     payload = {"leagues": [{"id": 943230, "primaryId": 42, "ccode": "INT"}]}
-    assert geography_rows("fotmob", payload) == [("943230", "INT")]
+    assert geography_rows("fotmob", payload) == [("943230", "INT"), ("42", "INT")]
     assert geography_rows("fotmob", {"details": {"id": 530, "country": "MAR"}}) == [("530", "MAR")]
 
 

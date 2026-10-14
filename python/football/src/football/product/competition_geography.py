@@ -174,6 +174,8 @@ def _league_rows(values: Any, country_field: str) -> list[tuple[str, str]]:
         if type(identifier) not in (str, int) or not isinstance(code, str) or not code.strip():
             continue
         result.append((str(identifier), code.strip().upper()))
+        if country_field == "ccode" and type(value.get("primaryId")) in (str, int):
+            result.append((str(value["primaryId"]), code.strip().upper()))
     return result
 
 

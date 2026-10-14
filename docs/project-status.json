@@ -1088,8 +1088,8 @@
       },
       "r3_completion": {
         "status": "R3_PARTIAL_REMAINING_BLOCKERS",
-        "migration": 202610140600,
-        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z",
+        "migration": 202610140700,
+        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z/identity-20261014T101838Z",
         "historical_admissions": "PROSPECTIVE_VERIFIED_ONLY",
         "canonical_geography": "NON_NULL; VERIFIED_PROVIDER_GEOGRAPHY",
         "fixture_pairs_reconciled": 17,
@@ -1097,13 +1097,16 @@
         "epl_seasons_attempted": "2010/2011 through 2026/2027; 17 advertised seasons",
         "automatic_history_acquisition_enabled": false,
         "remaining_blockers": [
-          "Unqualified or contradictory identity mappings remain excluded.",
-          "Partial historical scopes retain fixture identity conflicts.",
-          "API-Football fixture retrieval and football-data.org availability retrieval failed.",
-          "Mandatory 2020 onward coverage is not fully qualified across authorized scopes."
+          "18 competition catalogues lack independent retained fixture correspondence; two have conflicting season labels.",
+          "Unwitnessed team identities and conflicting canonical identity candidates remain excluded.",
+          "433 provider-origin UUID declarations remain contradictory; no qualified linked correction target was established.",
+          "Mandatory 2020 onward scopes remain partial under R2 identity qualification.",
+          "football-data.org metadata request timed out; API-Football date request recovered with HTTP 200; PitchAPI remains identity blocked."
         ],
         "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
-        "model_retraining_or_promotion": false
+        "model_retraining_or_promotion": false,
+        "competition_identity_review": "62 retained matching catalogues reviewed; 40 newly admitted competitions, 42 admitted total",
+        "team_identity_review": "1593 participating team IDs reviewed; 342 evidence-backed proposals applied, 330 native team IDs newly admitted"
       }
     }
   },

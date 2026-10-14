@@ -392,3 +392,76 @@ def test_changing_season_records_new_rows_and_preserves_prior_snapshot(tmp_path:
                 (league,),
             )
             connection.commit()
+
+
+def test_fotmob_catalogue_uses_retained_primary_relationships_and_preserves_cooldown(
+    tmp_path: Path,
+) -> None:
+    from football.product.provider_history_scopes import _fotmob_primary_ids, discover_fotmob
+    from football.providers.fotmob import FotmobClient, FotmobResponse
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync = OperationalProviderSync(c, tmp_path, provider_code="fotmob")
+        payload = {"leagues": [{"id": 943230, "primaryId": 42, "matches": []}]}
+        raw = json.dumps(payload).encode()
+        sync._record_response(
+            "fixtures-primary-test",
+            FotmobResponse(
+                "test", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
+            ),
+        )
+        assert _fotmob_primary_ids(sync, ["943230", "42", "47"]) == ["42", "47"]
+        c.execute(
+            """INSERT INTO football.product_provider_history_discovery (provider_code,
+                   provider_competition_id,resource_name,last_attempt_at,next_attempt_at,last_error)
+               VALUES ('fotmob','42','league-catalogue-42',now(),
+                       now()+interval '1 hour','failed')"""
+        )
+        # No registered catalogue request may bypass an existing parent cooldown.
+        result = discover_fotmob(sync, FotmobClient(), budget=0, refresh=False)
+        assert result["requests"] == 0
+        other = {"leagues": [{"id": 943230, "primaryId": 99, "matches": []}]}
+        raw = json.dumps(other).encode()
+        sync._record_response(
+            "fixtures-primary-other",
+            FotmobResponse("test", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, other),
+        )
+        with pytest.raises(ValueError, match="conflicting retained"):
+            _fotmob_primary_ids(sync, ["943230"])
+
+
+def test_fotmob_scope_reuses_matching_catalogue_bytes_without_a_request(tmp_path: Path) -> None:
+    from football.product.provider_history_scopes import _scope_response
+    from football.providers.fotmob import FotmobAccessError, FotmobClient, FotmobResponse
+
+    with psycopg.connect(DATABASE_URL) as c:
+        sync = OperationalProviderSync(c, tmp_path, provider_code="fotmob")
+        year = str(datetime.now(UTC).year)
+        payload = {
+            "details": {
+                "id": 999999,
+                "selectedSeason": year,
+                "name": "Test league",
+                "country": "ENG",
+            },
+            "fixtures": {"allMatches": []},
+        }
+        raw = json.dumps(payload).encode()
+        acquired = datetime.now(UTC)
+        sync._record_response(
+            "league-catalogue-999999",
+            FotmobResponse("test", acquired, hashlib.sha256(raw).hexdigest(), raw, payload),
+        )
+        c.commit()
+        enqueue_seasons(sync, "999999", [year])
+        c.commit()
+        assert claim_scope(sync, "999999", year) == ("999999", year)
+        # Disabled network access proves the exact retained catalogue satisfies this scope.
+        response, network = _scope_response(sync, FotmobClient(), "999999", year, refresh=False)
+        assert not network and response.raw == raw and response.fetched_at == acquired
+        count = c.execute("SELECT count(*) FROM football.source_resources").fetchone()
+        _, network = _scope_response(sync, FotmobClient(), "999999", year, refresh=False)
+        assert not network
+        assert c.execute("SELECT count(*) FROM football.source_resources").fetchone() == count
+        with pytest.raises(FotmobAccessError, match="disabled"):
+            _scope_response(sync, FotmobClient(), "999999", str(int(year) - 1), refresh=False)

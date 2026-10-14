@@ -148,10 +148,12 @@ def admit_provider_mappings(
     data_root: Path,
     provider: str,
     snapshot_id: UUID | None = None,
+    *,
+    entity_types: tuple[Literal["competition", "team"], ...] = ("competition", "team"),
 ) -> list[dict[str, Any]]:
     decisions = []
     verifier = RetainedIdentityVerifier(data_root)
-    for entity_type in ("competition", "team"):
+    for entity_type in entity_types:
         for row in mapping_rows(connection, entity_type, provider, snapshot_id):
             decision = classify_mapping(connection, entity_type, row, data_root, verifier)
             if len(row) > 9 and row[9] is not None:
@@ -168,7 +170,11 @@ def admit_provider_mappings(
 
 
 def fixture_identity_blockers(
-    connection: Connection[Any], fixture_ids: list[UUID], cutoff: datetime
+    connection: Connection[Any],
+    fixture_ids: list[UUID],
+    cutoff: datetime,
+    *,
+    provider_code: str | None = None,
 ) -> dict[UUID, str | None]:
     """Require qualified provider mappings before using a provider-derived target."""
     rows = connection.execute(
@@ -187,6 +193,8 @@ def fixture_identity_blockers(
             FROM targets t
             LEFT JOIN football.match_provider_mappings mm ON mm.match_id=t.fixture_id
               AND mm.valid_to IS NULL
+              AND (%s::text IS NULL OR mm.provider_id=(
+                  SELECT id FROM football.providers WHERE code=%s))
             LEFT JOIN LATERAL (
                 SELECT bool_and(m.mapping_confidence=1 AND
                     football.product_mapping_trusted('team',m.id,t.home_id) AND
@@ -219,7 +227,7 @@ def fixture_identity_blockers(
             ) competition ON true
         ), best AS (
             SELECT fixture_id,max(CASE
-                WHEN source_mapping IS NULL THEN 3
+                WHEN source_mapping IS NULL THEN CASE WHEN %s::text IS NULL THEN 3 ELSE 0 END
                 WHEN NOT home_ok THEN 0 WHEN NOT away_ok THEN 1
                 WHEN NOT competition_ok THEN 2 ELSE 3 END) progress
             FROM candidates GROUP BY fixture_id
@@ -228,7 +236,7 @@ def fixture_identity_blockers(
             WHEN 1 THEN 'AWAY_IDENTITY_NOT_ADMITTED'
             WHEN 2 THEN 'COMPETITION_IDENTITY_NOT_ADMITTED' ELSE NULL END
           FROM best""",
-        (cutoff, cutoff, cutoff, fixture_ids),
+        (cutoff, cutoff, cutoff, fixture_ids, provider_code, provider_code, provider_code),
     ).fetchall()
     return dict(rows)
 
@@ -494,7 +502,10 @@ def _json_identifiers(provider: str, entity_type: str, value: Any, identity: str
             )
         if entity_type == "competition" and key == "leagues" and isinstance(item, list):
             identifiers.update(
-                str(league["id"]) for league in item if isinstance(league, dict) and "id" in league
+                identifier
+                for league in item
+                if isinstance(league, dict)
+                for identifier in _native_object_identifiers(provider, entity_type, league)
             )
     if entity_type == "competition" and identity.startswith("leagues"):
         identifiers.update(
@@ -507,6 +518,12 @@ def _json_identifiers(provider: str, entity_type: str, value: Any, identity: str
 
 def _native_object_identifiers(provider: str, entity_type: str, item: dict[str, Any]) -> set[str]:
     values = {str(item["id"])} if isinstance(item.get("id"), (int, str)) else set()
+    if (
+        provider == "fotmob"
+        and entity_type == "competition"
+        and isinstance(item.get("primaryId"), (int, str))
+    ):
+        values.add(str(item["primaryId"]))
     if (
         provider == "football_data_org"
         and entity_type == "competition"
