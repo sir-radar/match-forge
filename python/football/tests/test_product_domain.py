@@ -1,8 +1,10 @@
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
 import pytest
+from football.forecasting.pitchapi_v3 import _poisson_forecast
 from football.product.domain import (
     Agreement,
     FinishedMatch,
@@ -12,10 +14,12 @@ from football.product.domain import (
     external_settlement_state,
     fixture_identity,
     forecast_from_history,
+    forecast_payload,
     league_rating,
     map_external_market,
     normalize_team_name,
 )
+from jsonschema import Draft202012Validator
 
 
 def test_identity_name_normalization_preserves_letters_with_diacritics() -> None:
@@ -103,6 +107,38 @@ def test_forecast_uses_only_pre_kickoff_history_and_returns_coherent_probabiliti
     )
     assert forecast.expected_home_goals < 10
     assert forecast.score_matrix
+
+
+def test_product_tail_labels_preserve_analytic_probabilities(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical = _poisson_forecast(2.5, 2.0)
+    monkeypatch.setattr(
+        "football.product.domain.TransferableGoalModelV1.forecast_features",
+        lambda _model, _features: canonical,
+    )
+    target = datetime(2026, 9, 29, 18, tzinfo=UTC)
+    forecast = forecast_from_history(
+        artifact_path=ARTIFACT,
+        target_kickoff=target,
+        home_team_id=HOME,
+        away_team_id=AWAY,
+        history=_history(target, 10),
+    )
+    assert forecast is not None
+    tail = next(
+        cell for cell in forecast.score_matrix if cell["home_goals"] == cell["away_goals"] == 5
+    )
+    assert tail["home_label"] == tail["away_label"] == "5+"
+    assert tail["home_bucket_kind"] == tail["away_bucket_kind"] == "AT_LEAST"
+    assert tail["probability"] == pytest.approx(0.005729805657490205)
+    assert tail["probability"] != pytest.approx(canonical.exact_score_probability(5, 5))
+    assert forecast.expected_home_goals == 2.5
+    assert forecast.expected_away_goals == 2.0
+    assert forecast.draw_probability == canonical.markets.draw
+    assert forecast_payload(forecast)["score_matrix_version"] == "compact-buckets-v2"
+    schema = json.loads(Path("schemas/contracts/product-score-buckets-v2.schema.json").read_text())
+    Draft202012Validator(schema).validate(json.loads(json.dumps(forecast_payload(forecast))))
 
 
 @pytest.mark.parametrize(

@@ -389,6 +389,17 @@ def _forecast_from_dict(row: Mapping[str, Any]) -> ModelForecast:
             ).items()
         ),
         lineage=lineage,
+        numerical_contract_version=str(
+            row.get("numerical_contract_version", "legacy-score-grid-v1")
+        ),
+        unresolved_tail_probability=float(row.get("unresolved_tail_probability", 0.0)),
+        unresolved_tail_home_expectation=float(row.get("unresolved_tail_home_expectation", 0.0)),
+        unresolved_tail_away_expectation=float(row.get("unresolved_tail_away_expectation", 0.0)),
+        display_score_labels=tuple(str(item) for item in row.get("display_score_labels", ())),
+        display_score_matrix=tuple(
+            tuple(float(value) for value in values)
+            for values in row.get("display_score_matrix", ())
+        ),
     )
 
 

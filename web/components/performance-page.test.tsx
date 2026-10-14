@@ -13,7 +13,7 @@ const competition = {
 };
 
 const performance = {
-  competition_id: competition.id, league: competition.name, country: competition.country,
+  analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: "LATEST", competition_id: competition.id, league: competition.name, country: competition.country,
   continent: competition.continent, rating: "GOOD", forecasts: 86, outcome_hit_rate: 0.53,
   brier: 0.58, log_loss: 0.94, baseline_brier: 0.63, baseline_log_loss: 1.02,
   exact_score_rate: 0.12, top_three_score_rate: 0.31, top_five_score_rate: 0.45,
@@ -40,6 +40,8 @@ describe("PerformancePage", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("continent=Europe"), expect.any(Object),
     ));
+    fireEvent.change(screen.getByLabelText("Forecast horizon"), { target: { value: "24H" } });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("horizon=24H"), expect.any(Object)));
     fireEvent.change(screen.getByLabelText("Rating"), { target: { value: "GOOD" } });
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       expect.stringMatching(/continent=Europe.*rating=GOOD/), expect.any(Object),
@@ -58,7 +60,7 @@ describe("PerformancePage", () => {
   it("requests and renders backend-driven pages", async () => {
     const items = Array.from({ length: 45 }, (_, index) => ({
       ...performance,
-      competition_id: `competition-${index + 1}`,
+      analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: "LATEST", competition_id: `competition-${index + 1}`,
       league: `League ${index + 1}`,
     }));
     const requestedUrls: string[] = [];
@@ -96,7 +98,7 @@ describe("PerformancePage", () => {
 
   it("returns to page one when filters change", async () => {
     const items = Array.from({ length: 25 }, (_, index) => ({
-      ...performance, competition_id: `competition-${index + 1}`, league: `League ${index + 1}`,
+      ...performance, analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: "LATEST", competition_id: `competition-${index + 1}`, league: `League ${index + 1}`,
     }));
     const requestedUrls: string[] = [];
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
@@ -120,7 +122,7 @@ describe("PerformancePage", () => {
 
   it("adopts a backend-clamped page after the result set shrinks", async () => {
     const items = Array.from({ length: 25 }, (_, index) => ({
-      ...performance, competition_id: `competition-${index + 1}`, league: `League ${index + 1}`,
+      ...performance, analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: "LATEST", competition_id: `competition-${index + 1}`, league: `League ${index + 1}`,
     }));
     const requestedPages: number[] = [];
     let shrunk = false;

@@ -228,6 +228,27 @@ fn asymmetric_score_cells_are_not_reversed() {
 }
 
 #[test]
+fn unresolved_tail_never_becomes_exact_score_events() {
+    let atoms = vec![
+        ScoreAtomV1 {
+            away_goals: Some(5),
+            home_goals: Some(5),
+            kind: AtomKindV1::ExactScore,
+            probability: 0.0,
+        },
+        ScoreAtomV1 {
+            away_goals: None,
+            home_goals: None,
+            kind: AtomKindV1::UnresolvedTail,
+            probability: 1.0,
+        },
+    ];
+    let (counts, tails) = run_batch_with_draws(&atoms, [0; 32], 16).unwrap();
+    assert_eq!(tails, 16);
+    assert!(counts.iter().all(|count| *count == 0));
+}
+
+#[test]
 fn canonical_round_trip_rejects_hash_and_format_changes() {
     let value = input();
     let bytes = canonical_bytes(&value).unwrap();

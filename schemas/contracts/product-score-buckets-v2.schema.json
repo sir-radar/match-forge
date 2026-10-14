@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "product-score-buckets-v2.schema.json",
+  "type": "object",
+  "required": ["score_matrix_version", "score_matrix"],
+  "properties": {
+    "score_matrix_version": {"const": "compact-buckets-v2"},
+    "score_matrix": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["home_goals", "away_goals", "home_label", "away_label", "home_bucket_kind", "away_bucket_kind", "probability"],
+        "properties": {
+          "home_goals": {"type": "integer", "minimum": 0},
+          "away_goals": {"type": "integer", "minimum": 0},
+          "home_label": {"type": "string", "pattern": "^(0|[1-9][0-9]*)[+]?$"},
+          "away_label": {"type": "string", "pattern": "^(0|[1-9][0-9]*)[+]?$"},
+          "home_bucket_kind": {"enum": ["EXACT", "AT_LEAST"]},
+          "away_bucket_kind": {"enum": ["EXACT", "AT_LEAST"]},
+          "probability": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"home_bucket_kind": {"const": "EXACT"}}},
+            "then": {"properties": {"home_label": {"pattern": "^[0-9]+$"}}},
+            "else": {"properties": {"home_label": {"pattern": "^[0-9]+[+]$"}}}
+          },
+          {
+            "if": {"properties": {"away_bucket_kind": {"const": "EXACT"}}},
+            "then": {"properties": {"away_label": {"pattern": "^[0-9]+$"}}},
+            "else": {"properties": {"away_label": {"pattern": "^[0-9]+[+]$"}}}
+          }
+        ]
+      }
+    }
+  }
+}

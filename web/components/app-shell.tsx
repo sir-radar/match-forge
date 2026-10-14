@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { Logo } from "@/components/logo";
 import { Icon } from "@/components/icon";
 import { BackToTop } from "@/components/back-to-top";
@@ -33,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="shell-tools">
           <label className="global-search" title="Global search is not exposed by the MVP API"><Icon name="search" /><span className="sr-only">Global search unavailable</span><input type="search" placeholder="Search unavailable" disabled /><kbd>Soon</kbd></label>
-          <span className="timezone">UTC+0 <i>/ Local</i></span>
+          <span className="timezone">{DISPLAY_TIME_ZONE}</span>
           <div className="feed-state"><span aria-hidden="true" /> Feed: Live</div>
           <Icon name="person" className="profile-mark" />
         </div>

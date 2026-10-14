@@ -3,13 +3,26 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Protocol, cast
+from typing import Protocol, TypedDict, cast
 from uuid import UUID
 
 PROBABILITY_TOLERANCE = 1e-10
+
+
+class MarketProbabilities(TypedDict):
+    home_probability: float
+    draw_probability: float
+    away_probability: float
+    btts_yes: float
+    btts_no: float
+    total_over_2_5: float
+    total_under_2_5: float
+    home_clean_sheet: float
+    away_clean_sheet: float
 
 
 class ModelStatus(StrEnum):
@@ -297,6 +310,12 @@ class ModelForecast:
     input_snapshot_sha256: str
     component_weights: tuple[tuple[str, float], ...] = ()
     lineage: ForecastLineage | None = None
+    numerical_contract_version: str = "legacy-score-grid-v1"
+    unresolved_tail_probability: float = 0.0
+    unresolved_tail_home_expectation: float = 0.0
+    unresolved_tail_away_expectation: float = 0.0
+    display_score_labels: tuple[str, ...] = ()
+    display_score_matrix: tuple[tuple[float, ...], ...] = ()
 
     def __post_init__(self) -> None:
         if self.status is ModelStatus.SUCCESS:
@@ -352,12 +371,27 @@ def validate_model_forecast(forecast: ModelForecast) -> None:
         raise ValueError("score matrix must be square and match score labels")
     cells = tuple(value for row in forecast.score_matrix for value in row)
     _probabilities(cells, "score matrix")
+    if forecast.numerical_contract_version == "exact-support-with-tail-v2":
+        _validate_exact_support_forecast(forecast, cells)
+        return
+    if forecast.numerical_contract_version != "legacy-score-grid-v1":
+        raise ValueError("unknown forecast numerical contract")
+    if any(
+        (
+            forecast.unresolved_tail_probability,
+            forecast.unresolved_tail_home_expectation,
+            forecast.unresolved_tail_away_expectation,
+            forecast.display_score_labels,
+            forecast.display_score_matrix,
+        )
+    ):
+        raise ValueError("separate tail/display data requires exact-support-with-tail-v2")
     if not math.isclose(sum(cells), 1.0, abs_tol=PROBABILITY_TOLERANCE):
         raise ValueError("score matrix must sum to one")
     derived_home, derived_away, derived_total = distributions(forecast.score_matrix)
     _validate_derived_distributions(forecast, derived_home, derived_away, derived_total)
     _validate_expected_goals(forecast, derived_home, derived_away)
-    derived = derive_markets(forecast.score_matrix)
+    derived = cast(Mapping[str, float], derive_markets(forecast.score_matrix))
     expected = {
         "home_probability": forecast.home_probability,
         "draw_probability": forecast.draw_probability,
@@ -379,6 +413,9 @@ def _validate_derived_distributions(
     derived_home: tuple[float, ...],
     derived_away: tuple[float, ...],
     derived_total: tuple[float, ...],
+    *,
+    expected_mass: float = 1.0,
+    relative_tolerance: float = 1e-9,
 ) -> None:
     for name, provided, calculated in (
         ("home_goal_distribution", forecast.home_goal_distribution, derived_home),
@@ -386,13 +423,127 @@ def _validate_derived_distributions(
         ("total_goal_distribution", forecast.total_goal_distribution, derived_total),
     ):
         _probabilities(provided, name)
-        if not math.isclose(sum(provided), 1.0, abs_tol=PROBABILITY_TOLERANCE):
-            raise ValueError(f"{name} must sum to one")
+        if not math.isclose(
+            sum(provided), expected_mass, abs_tol=PROBABILITY_TOLERANCE, rel_tol=relative_tolerance
+        ):
+            raise ValueError(f"{name} has inconsistent resolved probability mass")
         if len(provided) != len(calculated) or any(
-            not math.isclose(left, right, abs_tol=PROBABILITY_TOLERANCE)
+            not math.isclose(left, right, abs_tol=PROBABILITY_TOLERANCE, rel_tol=relative_tolerance)
             for left, right in zip(provided, calculated, strict=True)
         ):
             raise ValueError(f"{name} is inconsistent with score matrix")
+
+
+def _validate_exact_support_forecast(forecast: ModelForecast, cells: tuple[float, ...]) -> None:
+    """Exact atoms leave unresolved mass separate from analytic markets and moments."""
+    if forecast.score_labels != tuple(str(index) for index in range(len(forecast.score_matrix))):
+        raise ValueError("exact support requires exact integer score labels")
+    tail = forecast.unresolved_tail_probability
+    _probabilities((tail,), "unresolved tail")
+    if tail > PROBABILITY_TOLERANCE:
+        raise ValueError("unresolved tail exceeds numerical probability tolerance")
+    resolved_mass = sum(cells)
+    if not math.isclose(resolved_mass + tail, 1.0, abs_tol=PROBABILITY_TOLERANCE, rel_tol=0):
+        raise ValueError("exact score mass plus unresolved tail must sum to one")
+    home, away, total = distributions(forecast.score_matrix)
+    _validate_derived_distributions(
+        forecast, home, away, total, expected_mass=resolved_mass, relative_tolerance=0.0
+    )
+    _validate_tail_expectations(forecast, home, away)
+    _validate_exact_market_bounds(forecast, resolved_mass)
+    _validate_display_buckets(forecast)
+
+
+def _validate_tail_expectations(
+    forecast: ModelForecast, home: tuple[float, ...], away: tuple[float, ...]
+) -> None:
+    for name, analytic, distribution, tail_moment in (
+        (
+            "expected_home_goals",
+            forecast.expected_home_goals,
+            home,
+            forecast.unresolved_tail_home_expectation,
+        ),
+        (
+            "expected_away_goals",
+            forecast.expected_away_goals,
+            away,
+            forecast.unresolved_tail_away_expectation,
+        ),
+    ):
+        if not math.isfinite(tail_moment) or tail_moment < 0:
+            raise ValueError("unresolved tail first moments must be finite and non-negative")
+        exact_moment = sum(index * probability for index, probability in enumerate(distribution))
+        if not math.isclose(
+            analytic, exact_moment + tail_moment, abs_tol=PROBABILITY_TOLERANCE, rel_tol=0
+        ):
+            raise ValueError(f"{name} is inconsistent with exact support and tail expectation")
+    minimum_tail_moment = len(home) * forecast.unresolved_tail_probability
+    declared = forecast.unresolved_tail_home_expectation + forecast.unresolved_tail_away_expectation
+    if declared + PROBABILITY_TOLERANCE < minimum_tail_moment:
+        raise ValueError("tail first moments contradict unresolved score support")
+
+
+def _validate_exact_market_bounds(forecast: ModelForecast, resolved_mass: float) -> None:
+    derived = derive_markets(forecast.score_matrix)
+    bounds = (
+        ("home_probability", forecast.home_probability, derived["home_probability"]),
+        ("draw_probability", forecast.draw_probability, derived["draw_probability"]),
+        ("away_probability", forecast.away_probability, derived["away_probability"]),
+        ("btts_yes", forecast.btts_yes, derived["btts_yes"]),
+        ("btts_no", forecast.btts_no, resolved_mass - derived["btts_yes"]),
+        ("total_over_2_5", forecast.total_over_2_5, derived["total_over_2_5"]),
+        ("total_under_2_5", forecast.total_under_2_5, resolved_mass - derived["total_over_2_5"]),
+        ("home_clean_sheet", forecast.home_clean_sheet, derived["home_clean_sheet"]),
+        ("away_clean_sheet", forecast.away_clean_sheet, derived["away_clean_sheet"]),
+    )
+    _probabilities(tuple(value for _, value, _ in bounds), "analytic market")
+    for name, value, lower in bounds:
+        if (
+            not lower - PROBABILITY_TOLERANCE
+            <= value
+            <= (lower + forecast.unresolved_tail_probability + PROBABILITY_TOLERANCE)
+        ):
+            raise ValueError(f"{name} is outside exact support and unresolved-tail bounds")
+    for values in (
+        (forecast.home_probability, forecast.draw_probability, forecast.away_probability),
+        (forecast.btts_yes, forecast.btts_no),
+        (forecast.total_over_2_5, forecast.total_under_2_5),
+    ):
+        if not math.isclose(sum(values), 1.0, abs_tol=PROBABILITY_TOLERANCE, rel_tol=0):
+            raise ValueError("analytic market alternatives must sum to one")
+
+
+def _validate_display_buckets(forecast: ModelForecast) -> None:
+    labels, matrix = forecast.display_score_labels, forecast.display_score_matrix
+    if not labels and not matrix:
+        return
+    size = len(labels)
+    expected = tuple(str(index) for index in range(size - 1)) + (f"{size - 1}+",)
+    if (
+        size < 2
+        or labels != expected
+        or len(matrix) != size
+        or any(len(row) != size for row in matrix)
+    ):
+        raise ValueError("compact display labels and matrix are inconsistent")
+    cells = tuple(value for row in matrix for value in row)
+    _probabilities(cells, "display score bucket")
+    if not math.isclose(sum(cells), 1.0, abs_tol=PROBABILITY_TOLERANCE, rel_tol=0):
+        raise ValueError("display score buckets must sum to one")
+    resolved = [[0.0] * size for _ in range(size)]
+    for home, row in enumerate(forecast.score_matrix):
+        for away, probability in enumerate(row):
+            resolved[min(home, size - 1)][min(away, size - 1)] += probability
+    for home, row in enumerate(matrix):
+        for away, probability in enumerate(row):
+            lower = resolved[home][away]
+            if (
+                not lower - PROBABILITY_TOLERANCE
+                <= probability
+                <= (lower + forecast.unresolved_tail_probability + PROBABILITY_TOLERANCE)
+            ):
+                raise ValueError("display bucket contradicts exact score support")
 
 
 def _validate_expected_goals(
@@ -416,7 +567,7 @@ def _validate_expected_goals(
             raise ValueError(f"{name} is inconsistent with score matrix")
 
 
-def derive_markets(matrix: tuple[tuple[float, ...], ...]) -> dict[str, float]:
+def derive_markets(matrix: tuple[tuple[float, ...], ...]) -> MarketProbabilities:
     home = draw = away = btts = over = home_clean = away_clean = 0.0
     for home_goals, row in enumerate(matrix):
         for away_goals, probability in enumerate(row):
@@ -459,7 +610,11 @@ def distributions(
 def rust_score_atoms(forecast: ModelForecast) -> tuple[dict[str, object], ...]:
     """Project one canonical score distribution into the existing Rust atom contract."""
     atoms: list[dict[str, object]] = []
-    unresolved = 0.0
+    unresolved = (
+        forecast.unresolved_tail_probability
+        if forecast.numerical_contract_version == "exact-support-with-tail-v2"
+        else 0.0
+    )
     has_tail = bool(forecast.score_labels and forecast.score_labels[-1].endswith("+"))
     for home, row in enumerate(forecast.score_matrix):
         for away, probability in enumerate(row):

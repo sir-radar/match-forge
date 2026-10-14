@@ -3,7 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from football.product.operational_provider_sync import _detail_priority, _valid_transition
+from football.product.operational_provider_sync import (
+    _detail_priority,
+    _newer_calendar_row,
+    _valid_transition,
+)
 from football.providers.pitchapi import PitchApiFixture
 
 
@@ -59,3 +63,15 @@ def test_detail_priority_puts_active_mapped_before_bulk_history() -> None:
         "SCHEDULED",
     ]
     assert ordered[0][1] == mapped
+
+
+def test_duplicate_calendar_rows_require_proven_newer_source_time() -> None:
+    from dataclasses import replace
+
+    row = fixture("LIVE")
+    assert _newer_calendar_row(row, {})
+    assert not _newer_calendar_row(row, {row.provider_match_id: (row, uuid4())})
+    current = replace(row, source_updated_at=row.observed_at - timedelta(minutes=1))
+    known = {row.provider_match_id: (current, uuid4())}
+    assert not _newer_calendar_row(replace(row, source_updated_at=current.source_updated_at), known)
+    assert _newer_calendar_row(replace(row, source_updated_at=row.observed_at), known)

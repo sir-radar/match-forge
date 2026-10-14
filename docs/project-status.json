@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-12T12:06:17Z",
+  "updated_at": "2026-10-13T23:55:39.607438Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1020,6 +1020,72 @@
       "forecasts_created": 0,
       "coverage_ref": "docs/MVP-DATA-COVERAGE.md",
       "operations_ref": "docs/MVP-HISTORICAL-BACKFILL.md"
+    },
+    "audit_remediation": {
+      "status": "COMPLETE_WITH_OWNER_BLOCKERS",
+      "branch": "ft/master-audit-remediation",
+      "audited_sha": "f6e43e32fd7b4f42a8be99f00421d4da41151287",
+      "completed_phases": [
+        "R1",
+        "R2",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "current_phase": "R3_POST_DEPLOYMENT_ACCEPTANCE_PENDING",
+      "checkpoint_root": ".local/remediation/matchforge-audit",
+      "research_execution_authorized": false,
+      "blocked_findings": [
+        "MF-AUD-0009"
+      ],
+      "r3_correction_status": "CORRECTION_INFRASTRUCTURE_IMPLEMENTED_AND_TESTED",
+      "r3_live_status": "PAIR_ADMITTED",
+      "competition_geography": {
+        "status": "IMPLEMENTED_VERIFIED",
+        "contract_ref": "docs/MVP-DATA-COVERAGE.md",
+        "source_policy": "VERIFIED_RETAINED_PROVIDER_SCOPED_METADATA_ONLY",
+        "identity_qualification_changed": false,
+        "published_forecasts_changed": false
+      },
+      "r3_deployment": {
+        "migration": 202610140100,
+        "migration_seed_repair": "BULK_DENIED_SEED_VERIFIED_ON_FULL_RESTORED_CORPUS",
+        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/deployment-20261013T232810Z",
+        "pairs": [
+          {
+            "club": "Brentford",
+            "provider": "football_data_org",
+            "provider_team_id": "402",
+            "target_team_id": "73f1706b-973b-54a6-aad7-c80ef9d55e73",
+            "decision_id": "01a137a6-c161-7b9b-b7d3-6ff63e330ac7",
+            "admitted_at": "2026-10-13T23:43:57.794258+00:00",
+            "status": "PAIR_ADMITTED"
+          },
+          {
+            "club": "Liverpool",
+            "provider": "football_data_org",
+            "provider_team_id": "64",
+            "target_team_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb",
+            "decision_id": "01a137a7-52ce-76c8-8e2c-4f3a4fa6866b",
+            "admitted_at": "2026-10-13T23:44:35.022824+00:00",
+            "status": "PAIR_ADMITTED"
+          }
+        ],
+        "live_point_in_time_status": "PASS",
+        "forecast_artifact_preservation": "PASS",
+        "published_forecasts": 530,
+        "forecast_eligible_history_rows": 0,
+        "duplicate_pair_fixture_records": 2,
+        "automatic_history_acquisition_enabled": false,
+        "api_scheduler_activity": "PREEXISTING_SCHEDULER_RAN_DURING_DEPLOYMENT_THEN_EXITED",
+        "mf_aud_0009_status": "OPEN_BROADER_ACCEPTANCE_NOT_MET",
+        "remaining_work": "Restore current eligible history through verified prospective R2 admissions and separately review fixture representatives; do not invent old eligibility or force a fixture merge.",
+        "implementation_base_sha": "05a28d751565dcc0941dcfcef9d13970af59f3cf",
+        "applied_r2_migration_sha256": "53f81265137ed4a10911cb8d732de82a6d540d0aa8284c2729ee4f5a187feca6"
+      }
     }
   },
   "phase_1b": {

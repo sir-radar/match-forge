@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.5.0
+  version: 0.7.0
   description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
 servers:
   - url: http://127.0.0.1:8080
@@ -38,6 +38,13 @@ paths:
       responses:
         '200': { description: Display-only recent form, H2H, standings, and availability, content: { application/json: { schema: { type: object } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/fixtures/{fixture_id}/forecasts:
+    get:
+      operationId: getForecastHistory
+      parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
+      responses:
+        '200': { description: Immutable forecast revisions ordered by issue time and identity, content: { application/json: { schema: { type: object, required: [forecasts], properties: { forecasts: { type: array, items: { $ref: '#/components/schemas/ForecastRevision' } } } } } } }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/forecasts/{forecast_id}:
     get:
       operationId: getForecast
@@ -57,14 +64,16 @@ paths:
   /v1/competitions/{competition_id}/performance:
     get:
       operationId: getCompetitionPerformance
-      parameters: [ { $ref: '#/components/parameters/CompetitionId' } ]
+      parameters: [ { $ref: '#/components/parameters/CompetitionId' }, { $ref: '#/components/parameters/AnalyticsHorizon' } ]
       responses:
+        '400': { $ref: '#/components/responses/BadRequest' }
         '200': { description: Chronological metrics and prior-results baseline comparison, content: { application/json: { schema: { $ref: '#/components/schemas/Performance' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/performance:
     get:
       operationId: listPerformance
       parameters:
+        - { $ref: '#/components/parameters/AnalyticsHorizon' }
         - { name: continent, in: query, schema: { type: string } }
         - { name: country, in: query, schema: { type: string } }
         - { name: competition, in: query, schema: { type: string, format: uuid } }
@@ -139,6 +148,10 @@ components:
           '409': { description: Another write-heavy sync is active, content: { application/json: { schema: { $ref: '#/components/schemas/SyncConflict' } } } }
           '503': { $ref: '#/components/responses/Unavailable' }
   parameters:
+    AnalyticsHorizon:
+      name: horizon
+      in: query
+      schema: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M], default: LATEST }
     FixtureId: { name: fixture_id, in: path, required: true, schema: { type: string, format: uuid } }
     CompetitionId: { name: competition_id, in: path, required: true, schema: { type: string, format: uuid } }
   responses:
@@ -146,8 +159,8 @@ components:
     Unavailable: { description: Product data unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   schemas:
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA] }
-    SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
+    SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object
       additionalProperties: false
@@ -273,7 +286,7 @@ components:
       allOf:
         - { $ref: '#/components/schemas/ForecastSummary' }
         - type: object
-          required: [fixture_id, model_label, model_algorithm_version, created_at, football_cutoff, knowledge_cutoff, knowledge_mode, publication_mode, score_matrix]
+          required: [fixture_id, model_label, model_algorithm_version, created_at, football_cutoff, knowledge_cutoff, knowledge_mode, publication_mode, score_matrix_version, score_matrix]
           properties:
             fixture_id: { type: string, format: uuid }
             model_label: { type: string, const: MVP_FORECAST }
@@ -283,12 +296,56 @@ components:
             knowledge_cutoff: { type: string, format: date-time }
             knowledge_mode: { type: string, const: bitemporal }
             publication_mode: { type: string, const: MVP_OWNER_AUTHORIZED }
-            score_matrix: { type: array, items: { type: object } }
+            score_matrix_version: { type: string, enum: [legacy-compact-index-v1, compact-buckets-v2] }
+            score_matrix:
+              type: array
+              items: { $ref: '#/components/schemas/ScoreBucket' }
+    ForecastRevision:
+      type: object
+      required: [forecast_id, fixture_id, issued_at, football_cutoff, knowledge_cutoff, forecast_horizon, supersedes_forecast_id, model_id, artifact_sha256, predictive_input_snapshot_sha256, context_snapshot_sha256, revision_reason_codes, new_information_ids, probability_payload, payload_sha256]
+      properties:
+        forecast_id: { type: string, format: uuid }
+        fixture_id: { type: string, format: uuid }
+        issued_at: { type: string, format: date-time }
+        football_cutoff: { type: string, format: date-time }
+        knowledge_cutoff: { type: string, format: date-time }
+        forecast_horizon: { type: string }
+        supersedes_forecast_id: { type: [string, 'null'], format: uuid }
+        model_id: { type: string }
+        artifact_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        predictive_input_snapshot_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        context_snapshot_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        payload_sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        revision_reason_codes: { type: array, items: { type: string } }
+        new_information_ids: { type: array, items: { type: string } }
+        probability_payload:
+          type: object
+          required: [expected_home_goals, expected_away_goals, probabilities, score_matrix, score_matrix_version]
+          properties:
+            expected_home_goals: { type: number, exclusiveMinimum: 0 }
+            expected_away_goals: { type: number, exclusiveMinimum: 0 }
+            probabilities: { type: object, additionalProperties: { type: number, minimum: 0, maximum: 1 } }
+            score_matrix_version: { type: string, enum: [legacy-compact-index-v1, compact-buckets-v2] }
+            score_matrix: { type: array, items: { $ref: '#/components/schemas/ScoreBucket' } }
+    ScoreBucket:
+      type: object
+      description: Numeric goals are bucket minima. Legacy index 5 means 5+; compact-buckets-v2 requires explicit labels and kinds for both axes.
+      required: [home_goals, away_goals, probability]
+      properties:
+        home_goals: { type: integer, minimum: 0 }
+        away_goals: { type: integer, minimum: 0 }
+        probability: { type: number, minimum: 0, maximum: 1 }
+        home_label: { type: string, pattern: '^(0|[1-9][0-9]*)[+]?$' }
+        away_label: { type: string, pattern: '^(0|[1-9][0-9]*)[+]?$' }
+        home_bucket_kind: { type: string, enum: [EXACT, AT_LEAST] }
+        away_bucket_kind: { type: string, enum: [EXACT, AT_LEAST] }
     Performance:
       type: object
-      required: [competition_id, league, country, continent, rating, forecasts]
+      required: [competition_id, league, country, continent, rating, forecasts, analytics_policy_version, analytics_horizon]
       properties:
         competition_id: { type: string, format: uuid }
+        analytics_policy_version: { type: string, const: pre-match-revisions-v2 }
+        analytics_horizon: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M] }
         league: { type: string }
         country: { type: string }
         continent: { type: string }

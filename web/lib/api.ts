@@ -4,6 +4,7 @@ import {
   parseFixtureGroups,
   parseLiveMatch,
   parseForecast,
+  parseForecastHistory,
   parsePerformance,
   parsePerformanceList,
   parsePredictions,
@@ -24,7 +25,7 @@ export class ApiError extends Error {
 async function request<T>(path: string, parse: (value: unknown) => T, options: RequestOptions = {}): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? "GET", signal: options.signal,
-    headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}) },
+    headers: { Accept: "application/json", ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   if (!response.ok) {
@@ -46,6 +47,7 @@ export const api = {
   live: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/live`, parseLiveMatch, { signal }),
   context: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/context`, parseContext, { signal }),
   forecast: (fixtureId: string, forecastId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/forecasts/${forecastId}`, parseForecast, { signal }),
+  forecastHistory: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/forecasts`, (value) => { const rows = parseForecastHistory(value); if (rows.some((row) => row.fixture_id !== fixtureId)) throw new Error("forecast history fixture mismatch"); return rows; }, { signal }),
   performance: (competitionId: string, signal?: AbortSignal) => request(`/v1/competitions/${competitionId}/performance`, parsePerformance, { signal }),
   performanceList: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/performance?${query}`, parsePerformanceList, { signal }),
   predictions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/external-predictions?${query}`, parsePredictions, { signal }),

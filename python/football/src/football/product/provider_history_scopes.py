@@ -5,39 +5,68 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import uuid4
 
 from psycopg import Error
 
-from football.product.identity_crosswalks import (
-    OPERATIONAL_COMPETITION_CROSSWALKS,
-    OPERATIONAL_TEAM_CROSSWALKS,
+from football.product.history_requests import (
+    HistoryDeferred,
+    history_freshness,
+    record_history_check,
 )
+from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
+from football.storage.raw import ImmutableFileStore
 
 
 def cached_response(
-    sync: OperationalProviderSync, resource: str
+    sync: OperationalProviderSync, resource: str, *, freshness: timedelta | None = None
 ) -> FotmobResponse | PitchApiResponse | None:
     with sync.connection.cursor() as cursor:
         cursor.execute(
-            """SELECT snapshot.manifest_path, snapshot.manifest_sha256, snapshot.acquired_at
+            """SELECT snapshot.manifest_path, snapshot.manifest_sha256, snapshot.acquired_at,
+                      CASE WHEN discovery.last_error IS NULL
+                        THEN COALESCE(discovery.last_attempt_at, snapshot.acquired_at)
+                        ELSE snapshot.acquired_at END,
+                      resource.sha256, resource.size_bytes, resource.parse_status,
+                      resource.validation_status
                FROM football.source_snapshots snapshot
                JOIN football.providers provider ON provider.id = snapshot.provider_id
+               JOIN football.source_resources resource ON resource.source_snapshot_id = snapshot.id
+                 AND resource.provider_path = %s
+               LEFT JOIN football.product_provider_history_discovery discovery
+                 ON discovery.provider_code = provider.code AND discovery.resource_name = %s
                WHERE provider.code = %s AND snapshot.source_identity = %s
                  AND snapshot.status = 'validated'
+                 AND (discovery.source_snapshot_id IS NULL
+                      OR snapshot.id = discovery.source_snapshot_id)
                ORDER BY snapshot.acquired_at DESC LIMIT 1""",
-            (sync.provider_code, resource),
+            (resource, resource, sync.provider_code, resource),
         )
         stored = cursor.fetchone()
     if stored is None:
         return None
-    raw = (sync.data_root / stored[0]).read_bytes()
-    if hashlib.sha256(raw).hexdigest() != stored[1]:
+    now = datetime.now(UTC)
+    if stored[2] > now or stored[3] > now:
+        raise ValueError("cached provider acquisition/check timestamp is in the future")
+    if freshness is not None and now - stored[3] >= freshness:
+        return None
+    path = ImmutableFileStore(sync.data_root).path_for(stored[0])
+    if path.is_symlink():
+        raise ValueError("cached provider snapshot must not be a symlink")
+    raw = path.read_bytes()
+    if (
+        hashlib.sha256(raw).hexdigest() != stored[1]
+        or stored[4] != stored[1]
+        or len(raw) != stored[5]
+        or stored[6] != "parsed"
+        or stored[7] not in {"valid", "warnings"}
+    ):
         raise ValueError("cached provider snapshot checksum mismatch")
     envelope = json.loads(raw)
     data = envelope if sync.provider_code == "fotmob" else envelope["data"]
@@ -62,11 +91,16 @@ def enqueue_seasons(sync: OperationalProviderSync, league_id: str, seasons: list
 def discover_pitchapi(
     sync: OperationalProviderSync, client: PitchApiClient, *, refresh: bool
 ) -> int:
-    response = None if refresh else cached_response(sync, "league-catalogue")
+    response = (
+        None
+        if refresh
+        else cached_response(sync, "league-catalogue", freshness=history_freshness())
+    )
     if response is None:
         sync.pacer.wait()
         response = client.leagues()
-        sync._record_response("league-catalogue", response)
+        snapshot = sync._record_response("league-catalogue", response)
+        record_history_check(sync.connection, sync.provider_code, "league-catalogue", snapshot)
         sync.connection.commit()
     if not isinstance(response.data, Mapping):
         raise ValueError("PitchAPI catalogue must be an object")
@@ -119,9 +153,12 @@ def discover_fotmob(
         leagues = [row[0] for row in cursor.fetchall()]
     requests = scopes = 0
     errors: dict[str, str] = {}
+    deferred_scopes: dict[str, str] = {}
     for league_id in leagues:
         resource = f"league-catalogue-{league_id}"
-        response = None if refresh else cached_response(sync, resource)
+        response = (
+            None if refresh else cached_response(sync, resource, freshness=history_freshness())
+        )
         if response is None:
             if requests >= budget:
                 continue
@@ -130,21 +167,32 @@ def discover_fotmob(
             seasons = _fotmob_seasons(sync, client, league_id, resource, response)
             enqueue_seasons(sync, league_id, seasons)
             scopes += len(seasons)
+        except HistoryDeferred as deferred:
+            sync.connection.rollback()
+            deferred_scopes[league_id] = str(deferred)
+            break
         except (OSError, ValueError, Error, ProviderFetchError) as failure:
             sync.connection.rollback()
             errors[league_id] = str(failure)
+        if response is not None:
+            continue
         sync.connection.execute(
             """INSERT INTO football.product_provider_history_discovery
-               (provider_code, provider_competition_id, last_attempt_at,
+               (provider_code, provider_competition_id, resource_name, last_attempt_at,
                 next_attempt_at, last_error)
-               VALUES ('fotmob', %s, now(), now() + interval '1 hour', %s)
-               ON CONFLICT (provider_code, provider_competition_id) DO UPDATE
-               SET last_attempt_at = EXCLUDED.last_attempt_at,
-                   next_attempt_at = EXCLUDED.next_attempt_at, last_error = EXCLUDED.last_error""",
-            (league_id, errors.get(league_id)),
+               VALUES ('fotmob', %s, %s, now(), now() + interval '1 hour', %s)
+               ON CONFLICT (provider_code, resource_name) DO UPDATE
+               SET last_attempt_at = CASE WHEN EXCLUDED.last_error IS NULL
+                       THEN football.product_provider_history_discovery.last_attempt_at
+                       ELSE EXCLUDED.last_attempt_at END,
+                   next_attempt_at = CASE WHEN EXCLUDED.last_error IS NULL
+                       THEN football.product_provider_history_discovery.next_attempt_at
+                       ELSE EXCLUDED.next_attempt_at END,
+                   last_error = EXCLUDED.last_error""",
+            (league_id, resource, errors.get(league_id)),
         )
         sync.connection.commit()
-    return {"scopes": scopes, "requests": requests, "errors": errors}
+    return {"scopes": scopes, "requests": requests, "errors": errors, "deferred": deferred_scopes}
 
 
 def _fotmob_seasons(
@@ -157,7 +205,10 @@ def _fotmob_seasons(
     if response is None:
         sync.pacer.wait()
         response = client.league(league_id)
-        sync._record_response(resource, response)
+        snapshot = sync._record_response(resource, response)
+        record_history_check(
+            sync.connection, sync.provider_code, resource, snapshot, competition=league_id
+        )
         sync.connection.commit()
     if not isinstance(response.data, Mapping):
         raise ValueError("FotMob catalogue must be an object")
@@ -191,21 +242,6 @@ def bind_league_crosswalk(
         target_id,
         snapshot,
     )
-    for (source_provider, source_id), (
-        team_provider,
-        team_id,
-    ) in OPERATIONAL_TEAM_CROSSWALKS.items():
-        if source_provider == sync.provider_code:
-            bind_scoped_mapping(
-                sync,
-                "team_provider_mappings",
-                "team_id",
-                "provider_team_id",
-                source_id,
-                team_provider,
-                team_id,
-                snapshot,
-            )
 
 
 def bind_scoped_mapping(
@@ -223,8 +259,14 @@ def bind_scoped_mapping(
             f"""SELECT mapping.{canonical_column} FROM football.{table} mapping
                JOIN football.providers provider ON provider.id = mapping.provider_id
                WHERE provider.code = %s AND mapping.{provider_column} = %s
-                 AND mapping.valid_to IS NULL AND mapping.mapping_confidence = 1""",
-            (target_provider, target_id),
+                 AND mapping.valid_to IS NULL AND mapping.mapping_confidence = 1
+                 AND football.product_mapping_trusted(
+                     %s, mapping.id, mapping.{canonical_column})""",
+            (
+                target_provider,
+                target_id,
+                "competition" if table == "competition_provider_mappings" else "team",
+            ),
         ).fetchone()
         if target is None:
             return
@@ -268,13 +310,15 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                SELECT scope.provider_code, scope.provider_competition_id, scope.season_label
                FROM football.product_provider_history_scopes scope
                WHERE scope.provider_code = %s
-                 AND (scope.status IN ('PENDING', 'FAILED')
+                 AND (scope.status IN ('PENDING', 'FAILED', 'DEFERRED')
+                      OR (scope.status = 'SUCCEEDED'
+                          AND right(scope.season_label, 4) >= extract(year FROM now())::text)
                       OR (scope.status = 'RUNNING'
                           AND scope.claimed_at < now() - interval '30 minutes'))
                  AND scope.next_attempt_at <= now()
                  AND (%s::text IS NULL OR scope.provider_competition_id = %s)
                  AND (%s::text IS NULL OR scope.season_label = %s)
-               ORDER BY scope.attempts, EXISTS (
+               ORDER BY EXISTS (
                    SELECT 1 FROM football.competition_provider_mappings mapping
                    JOIN football.providers provider ON provider.id = mapping.provider_id
                    JOIN football.product_fixtures fixture
@@ -282,20 +326,32 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                    WHERE provider.code = scope.provider_code
                      AND mapping.provider_competition_id = scope.provider_competition_id
                      AND mapping.valid_to IS NULL
+                     AND football.product_mapping_trusted(
+                         'competition', mapping.id, mapping.competition_id)
+                     AND fixture.identity_status = 'VERIFIED'
                      AND fixture.status = 'SCHEDULED' AND fixture.kickoff_at > now()
-               ) DESC, scope.season_label DESC, scope.provider_competition_id
+               ) DESC,
+                 (right(scope.season_label, 4) >= extract(year FROM now())::text) DESC,
+                 scope.attempts,
+                 scope.season_label DESC, scope.provider_competition_id
                FOR UPDATE OF scope SKIP LOCKED LIMIT 1
             ) UPDATE football.product_provider_history_scopes scope
-              SET status = 'RUNNING', attempts = attempts + 1, claimed_at = clock_timestamp()
+              SET status = 'RUNNING', attempts = attempts + 1, claimed_at = clock_timestamp(),
+                  claim_token = %s
               FROM candidate WHERE scope.provider_code = candidate.provider_code
                 AND scope.provider_competition_id = candidate.provider_competition_id
                 AND scope.season_label = candidate.season_label
-              RETURNING scope.provider_competition_id, scope.season_label""",
-            (sync.provider_code, competition, competition, season, season),
+              RETURNING scope.provider_competition_id, scope.season_label, scope.claim_token""",
+            (sync.provider_code, competition, competition, season, season, uuid4()),
         )
         result = cursor.fetchone()
     sync.connection.commit()
-    return result
+    sync.connection.execute(
+        "SELECT set_config('matchforge.history_claim_token', %s, false)",
+        (str(result[2]) if result else "",),
+    )
+    sync.connection.commit()
+    return result[:2] if result else None
 
 
 def run_scopes(
@@ -326,33 +382,34 @@ def run_scopes(
             break
         league_id, selected_season = scope
         error = None
+        status = "SUCCEEDED"
+        next_attempt = datetime.now(UTC) + history_freshness()
         try:
-            response = (
-                None if refresh else cached_response(sync, f"league-{league_id}-{selected_season}")
+            response, acquired = _scope_response(
+                sync, client, league_id, selected_season, refresh=refresh
             )
-            if response is None:
-                sync.pacer.wait()
-                response = (
-                    client.league_matches(league_id, season=selected_season, status="played")
-                    if isinstance(client, PitchApiClient)
-                    else client.league(league_id, selected_season)
-                )
-                snapshot = sync._record_response(f"league-{league_id}-{selected_season}", response)
-                with sync.connection.cursor() as cursor:
-                    cursor.execute(
-                        """UPDATE football.product_provider_history_scopes
-                           SET source_snapshot_id = %s
-                           WHERE provider_code = %s AND provider_competition_id = %s
-                             AND season_label = %s""",
-                        (snapshot, sync.provider_code, league_id, selected_season),
-                    )
-                sync.connection.commit()
-            result = sync.backfill_league_response(league_id, selected_season, response)
+            result = sync.backfill_league_response(
+                league_id, selected_season, response, network_acquired=acquired
+            )
             if result["status"] != "COMPLETED":
                 error = "one or more fixture rows failed; replay stored snapshot"
+                status = "FAILED"
+        except HistoryDeferred as deferred:
+            sync.connection.rollback()
+            error, status, next_attempt = str(deferred), "DEFERRED", deferred.until
+            result = {
+                "provider": sync.provider_code,
+                "league_id": league_id,
+                "season": selected_season,
+                "status": "DEFERRED",
+                "reason": error,
+                "until": next_attempt.isoformat(),
+            }
         except (OSError, ValueError, Error, ProviderFetchError) as failure:
             sync.connection.rollback()
             error = str(failure)
+            status = "FAILED"
+            next_attempt = datetime.now(UTC) + timedelta(hours=1)
             result = {
                 "provider": sync.provider_code,
                 "league_id": league_id,
@@ -364,19 +421,65 @@ def run_scopes(
             cursor.execute(
                 """UPDATE football.product_provider_history_scopes
                    SET status = %s, last_error = %s, summary = %s::jsonb,
-                       next_attempt_at = %s + interval '1 hour'
+                       next_attempt_at = %s,
+                       completed_at = CASE WHEN %s = 'SUCCEEDED' THEN clock_timestamp()
+                                           ELSE completed_at END
                    WHERE provider_code = %s AND provider_competition_id = %s
-                     AND season_label = %s""",
+                     AND season_label = %s AND status = 'RUNNING'
+                     AND claimed_at >= clock_timestamp() - interval '30 minutes'
+                     AND claim_token = current_setting('matchforge.history_claim_token')::uuid""",
                 (
-                    "FAILED" if error else "SUCCEEDED",
+                    status,
                     error,
                     json.dumps(result),
-                    datetime.now(UTC),
+                    next_attempt,
+                    status,
                     sync.provider_code,
                     league_id,
                     selected_season,
                 ),
             )
+            if cursor.rowcount != 1:
+                sync.connection.rollback()
+                raise RuntimeError("history scope ownership lost")
+        sync.connection.execute("SELECT set_config('matchforge.history_claim_token', '', false)")
         sync.connection.commit()
         results.append(result)
+        if status == "DEFERRED":
+            break
     return results
+
+
+def _scope_response(
+    sync: OperationalProviderSync,
+    client: PitchApiClient | FotmobClient,
+    league_id: str,
+    selected_season: str,
+    *,
+    refresh: bool,
+) -> tuple[FotmobResponse | PitchApiResponse, bool]:
+    resource = f"league-{league_id}-{selected_season}"
+    freshness = history_freshness() if int(selected_season[-4:]) >= datetime.now(UTC).year else None
+    response = None if refresh else cached_response(sync, resource, freshness=freshness)
+    acquired = response is None
+    if response is None:
+        sync.pacer.wait()
+        response = (
+            client.league_matches(league_id, season=selected_season, status="played")
+            if isinstance(client, PitchApiClient)
+            else client.league(league_id, selected_season)
+        )
+    snapshot = sync._record_response(resource, response)
+    if acquired:
+        record_history_check(
+            sync.connection, sync.provider_code, resource, snapshot, competition=league_id
+        )
+    sync.connection.execute(
+        """UPDATE football.product_provider_history_scopes SET source_snapshot_id = %s
+           WHERE provider_code = %s AND provider_competition_id = %s
+             AND season_label = %s AND status = 'RUNNING'
+             AND claim_token = current_setting('matchforge.history_claim_token')::uuid""",
+        (snapshot, sync.provider_code, league_id, selected_season),
+    )
+    sync.connection.commit()
+    return response, acquired

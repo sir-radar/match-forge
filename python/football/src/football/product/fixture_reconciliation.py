@@ -37,12 +37,16 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                       source_provider text, source_id text, target_provider text, target_id text)
                   JOIN football.providers sp ON sp.code = x.source_provider
                   JOIN football.providers tp ON tp.code = x.target_provider
-                  JOIN football.team_provider_mappings source
+                  JOIN football.product_effective_team_mappings source
                     ON source.provider_id = sp.id AND source.provider_team_id = x.source_id
                    AND source.valid_to IS NULL
-                  JOIN football.team_provider_mappings target
+                   AND source.mapping_confidence = 1
+                   AND football.product_mapping_trusted('team', source.id, source.effective_team_id)
+                  JOIN football.product_effective_team_mappings target
                     ON target.provider_id = tp.id AND target.provider_team_id = x.target_id
                    AND target.valid_to IS NULL
+                   AND target.mapping_confidence = 1
+                   AND football.product_mapping_trusted('team', target.id, target.effective_team_id)
             )
             SELECT DISTINCT source.fixture_id, target.fixture_id,
                    source.competition_id, source.kickoff_at,
@@ -99,10 +103,14 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
             priority = {
                 "SCHEDULED": 0,
                 "LIVE": 1,
+                "HALF_TIME": 1,
+                "INTERRUPTED": 1,
+                "SUSPENDED": 1,
                 "FINISHED": 2,
                 "POSTPONED": 2,
                 "CANCELLED": 2,
                 "ABANDONED": 2,
+                "AWARDED": 2,
             }
             representative = (
                 target

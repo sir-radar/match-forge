@@ -1,18 +1,43 @@
 "use client";
 
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, useId, useRef, type KeyboardEvent, type CSSProperties, type ReactNode } from "react";
 import { api } from "@/lib/api";
-import type { Competition, Fixture, Forecast, LiveMatch, MatchContext } from "@/lib/contracts";
+import type { Competition, Fixture, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
+import { ForecastHistory } from "@/components/forecast-history";
 import { Icon } from "@/components/icon";
 
 const tabs = ["Live Match", "Overview", "Markets", "Score matrix", "H2H context", "Team statistics", "Simulation evidence", "Diagnostics", "Forecast history"] as const;
 type Tab = (typeof tabs)[number];
 
 export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; competition: Competition }) {
-  const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
+  const resources = useMatchAnalysisResources(fixture);
+
+  return <div className="expanded-panel">
+    <div className="match-identity">
+      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.stale ? "stale" : "fresh"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
+      <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
+    </div>
+    {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">
+      <div className="outcome-cards"><Metric label={`${fixture.home.name} win`} value={percent(fixture.forecast.probabilities.home)} tone="home" /><Metric label="Draw" value={percent(fixture.forecast.probabilities.draw)} /><Metric label={`${fixture.away.name} win`} value={percent(fixture.forecast.probabilities.away)} tone="away" /></div>
+      <ProbabilityBar values={fixture.forecast.probabilities} />
+      <div className="expected-goals"><span><small>{fixture.home.name} expected goals</small><b>{fixture.forecast.expected_home_goals.toFixed(2)}</b></span><span><small>{fixture.away.name} expected goals</small><b>{fixture.forecast.expected_away_goals.toFixed(2)}</b></span></div>
+    </section>}
+    <MatchAnalysisTabs fixture={fixture} resources={resources} />
+    <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
+  </div>;
+}
+
+type Resource<T> = { data: T | null; loading: boolean; error: string | null; retry: () => void };
+type AnalysisResources = {
+  context: Resource<MatchContext>;
+  forecast: Resource<Forecast>;
+  live: Resource<LiveMatch>;
+};
+
+function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const forecastLoad = useCallback((signal: AbortSignal) => fixture.forecast ? api.forecast(fixture.id, fixture.forecast.id, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, fixture.forecast]);
@@ -29,49 +54,46 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
     document.addEventListener("visibilitychange", visible);
     return () => { window.clearTimeout(timer); document.removeEventListener("visibilitychange", visible); };
   }, [fixture.status, retryLive]);
-  const resources = { context, forecast, live };
+  return { context, forecast, live };
 
-  return <div className="expanded-panel">
-    <div className="match-identity">
-      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.stale ? "stale" : "fresh"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
-      <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
-    </div>
-    {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">
-      <div className="outcome-cards"><Metric label={`${fixture.home.name} win`} value={percent(fixture.forecast.probabilities.home)} tone="home" /><Metric label="Draw" value={percent(fixture.forecast.probabilities.draw)} /><Metric label={`${fixture.away.name} win`} value={percent(fixture.forecast.probabilities.away)} tone="away" /></div>
-      <ProbabilityBar values={fixture.forecast.probabilities} />
-      <div className="expected-goals"><span><small>{fixture.home.name} expected goals</small><b>{fixture.forecast.expected_home_goals.toFixed(2)}</b></span><span><small>{fixture.away.name} expected goals</small><b>{fixture.forecast.expected_away_goals.toFixed(2)}</b></span></div>
-    </section>}
+}
+
+function MatchAnalysisTabs({ fixture, resources }: { fixture: Fixture; resources: AnalysisResources }) {
+  const [tab, setTab] = useState<Tab>(["LIVE", "HALF_TIME", "INTERRUPTED", "SUSPENDED"].includes(fixture.status) ? "Live Match" : "Overview");
+  const tabsId = useId();
+  const tabButtons = useRef<(HTMLButtonElement | null)[]>([]);
+  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const target = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (target === null) return; event.preventDefault(); setTab(tabs[target]); tabButtons.current[target]?.focus();
+  };
+  const { context, forecast, live } = resources;
+  return <>
     <div className="tab-list" role="tablist" aria-label="Match analysis">
-      {tabs.map((name) => <button key={name} role="tab" aria-selected={tab === name} aria-controls={`panel-${fixture.id}`} onClick={() => setTab(name)}>{name}</button>)}
+      {tabs.map((name, index) => <button key={name} ref={(node) => { tabButtons.current[index] = node; }} id={`${tabsId}-tab-${index}`} role="tab" tabIndex={tab === name ? 0 : -1} aria-selected={tab === name} aria-controls={`${tabsId}-panel-${index}`} onKeyDown={(event) => navigateTabs(event, index)} onClick={() => setTab(name)}>{name}</button>)}
     </div>
-    <div id={`panel-${fixture.id}`} role="tabpanel" className="tab-panel">
+    {tabs.map((name, index) => <div key={name} id={`${tabsId}-panel-${index}`} role="tabpanel" aria-labelledby={`${tabsId}-tab-${index}`} tabIndex={0} hidden={tab !== name} className="tab-panel">
+      {tab === name && <>
       <TabContent tab={tab} fixture={fixture} resources={resources} />
       {tab === "Live Match" && live.error && <ResourceError message={live.error} retry={live.retry} />}
       <AnalysisStatus tab={tab} hasForecast={fixture.forecast !== null} context={context} forecast={forecast} />
-    </div>
-    <div className="integrity-note"><Icon name="verified" /><b>Model boundary</b><span>H2H, form, standings, and external selections are context only. They do not change this stored forecast.</span></div>
-  </div>;
+      </>}
+    </div>)}
+  </>;
 }
 
-type Resource<T> = { data: T | null; loading: boolean; error: string | null; retry: () => void };
-type AnalysisResources = {
-  context: Resource<MatchContext>;
-  forecast: Resource<Forecast>;
-  live: Resource<LiveMatch>;
-};
-
 function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; resources: AnalysisResources }) {
-  switch (tab) {
-    case "Live Match": return <LiveMatchPanel fixture={fixture} live={resources.live.data} />;
-    case "Overview": return <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />;
-    case "Markets": return <Markets forecast={resources.forecast.data} />;
-    case "Score matrix": return <ScoreMatrix forecast={resources.forecast.data} />;
-    case "H2H context": return <H2H fixture={fixture} context={resources.context.data} />;
-    case "Team statistics": return <TeamStatistics fixture={fixture} context={resources.context.data} />;
-    case "Simulation evidence": return <UnavailablePanel title="Simulation validation unavailable" detail="The public MVP forecast API does not expose a linked simulation-validation artifact. No validation result is inferred from forecast availability." />;
-    case "Diagnostics": return <UnavailablePanel title="Research diagnostics restricted" detail="Diagnostics remain research-only and are not exposed by the public MVP API." />;
-    case "Forecast history": return <UnavailablePanel title="Forecast history unavailable" detail="The public MVP API exposes the selected immutable forecast, but does not expose its prior published revisions." />;
-  }
+  const content: Record<Tab, ReactNode> = {
+    "Live Match": <LiveMatchPanel fixture={fixture} live={resources.live.data} />,
+    "Overview": <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />,
+    "Markets": <Markets forecast={resources.forecast.data} />,
+    "Score matrix": <ScoreMatrix forecast={resources.forecast.data} />,
+    "H2H context": <H2H fixture={fixture} context={resources.context.data} />,
+    "Team statistics": <TeamStatistics fixture={fixture} context={resources.context.data} />,
+    "Simulation evidence": <UnavailablePanel title="Simulation validation unavailable" detail="The public MVP forecast API does not expose a linked simulation-validation artifact. No validation result is inferred from forecast availability." />,
+    "Diagnostics": <UnavailablePanel title="Research diagnostics restricted" detail="Diagnostics remain research-only and are not exposed by the public MVP API." />,
+    "Forecast history": <ForecastHistory key={fixture.id} fixtureId={fixture.id} currentId={fixture.forecast?.id ?? null} />,
+  };
+  return content[tab];
 }
 
 function AnalysisStatus({ tab, hasForecast, context, forecast }: { tab: Tab; hasForecast: boolean; context: Resource<MatchContext>; forecast: Resource<Forecast> }) {
@@ -119,7 +141,7 @@ function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: 
   const likely = [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 3);
   return <div className="overview-grid">
     <MatchInterpretation fixture={fixture} forecast={forecast} />
-    <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact probabilities</small></header><div className="score-cards">{likely.map((cell, index) => <div key={`${cell.home_goals}-${cell.away_goals}`} className={index === 0 ? "modal" : ""}><b>{cell.home_goals}–{cell.away_goals}</b><strong>{percent(cell.probability)}</strong><small>{index === 0 ? "Modal score" : "Supporting outcome"}</small></div>)}</div></section>
+    <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact scores and aggregate categories</small></header><div className="score-cards">{likely.map((cell, index) => <div key={scoreLabel(cell)} className={index === 0 ? "modal" : ""}><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong><small>{isExactScore(cell) ? index === 0 ? "Modal score" : "Supporting outcome" : "Aggregate score category"}</small></div>)}</div></section>
     <section className="panel"><header><h4>Recent form</h4><small>Qualified completed matches</small></header><TeamForm name={fixture.home.name} values={context?.home_form ?? []} /><TeamForm name={fixture.away.name} values={context?.away_form ?? []} /></section>
     <section className="panel provenance"><header><h4>Forecast record</h4><small>Immutable pre-match snapshot</small></header><dl><div><dt>Model</dt><dd>MatchForge Forecast</dd></div><div><dt>Algorithm</dt><dd>{forecast.model_algorithm_version}</dd></div><div><dt>Knowledge cutoff</dt><dd>{formatDateTime(forecast.knowledge_cutoff)}</dd></div><div><dt>Publication</dt><dd>Owner-authorized MVP</dd></div></dl></section>
   </div>;
@@ -140,11 +162,19 @@ function Markets({ forecast }: { forecast: Forecast | null }) {
 
 function ScoreMatrix({ forecast }: { forecast: Forecast | null }) {
   if (!forecast) return <EmptyState title="Score matrix unavailable" detail="No published score distribution exists for this fixture." />;
-  const cells = forecast.score_matrix.filter((cell) => cell.home_goals <= 3 && cell.away_goals <= 3);
+  const cells = forecast.score_matrix.filter((cell) => isExactScore(cell) && cell.home_goals <= 3 && cell.away_goals <= 3);
   if (!cells.length) return <EmptyState title="Score matrix unavailable" detail="The published forecast contains no displayable 0–3 exact-score cells." />;
   const labels = [0, 1, 2, 3];
   const likely = [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 5);
-  return <div className="matrix-layout"><section className="panel matrix-panel"><header><h4>Exact-score full-time joint probability matrix</h4><small>0–3 goals · fixed intensity scale: 0–20%</small></header><div className="matrix" role="table" aria-label="Exact score probabilities"><div /><div className="matrix-axis" style={{ gridColumn: "2 / span 4" }}>Away goals</div><div className="matrix-axis vertical">Home goals</div>{labels.map((away) => <div key={`head-${away}`} className="matrix-head">{away} {away === 1 ? "goal" : "goals"}</div>)}{labels.map((home) => <div key={`row-${home}`} className="matrix-row"><span className="matrix-head">{home}</span>{labels.map((away) => { const cell = cells.find((item) => item.home_goals === home && item.away_goals === away); return <div key={`${home}-${away}`} className="matrix-cell" style={{ "--heat": cell ? Math.min(cell.probability / 0.2, 1) : 0 } as CSSProperties}><small>{home}–{away}</small><b>{percent(cell?.probability)}</b></div>; })}</div>)}</div></section><section className="panel density-list"><header><h4>Top 5 probability densities</h4><small>Exact scores</small></header>{likely.map((cell, index) => <div key={`${cell.home_goals}-${cell.away_goals}`}><span>{index + 1}</span><b>{cell.home_goals}–{cell.away_goals}</b><strong>{percent(cell.probability)}</strong></div>)}</section></div>;
+  return <div className="matrix-layout"><section className="panel matrix-panel"><header><h4>Exact-score full-time joint probability matrix</h4><small>0–3 goals · fixed intensity scale: 0–20%</small></header><div className="matrix" role="table" aria-label="Exact score probabilities"><div /><div className="matrix-axis" style={{ gridColumn: "2 / span 4" }}>Away goals</div><div className="matrix-axis vertical">Home goals</div>{labels.map((away) => <div key={`head-${away}`} className="matrix-head">{away} {away === 1 ? "goal" : "goals"}</div>)}{labels.map((home) => <div key={`row-${home}`} className="matrix-row"><span className="matrix-head">{home}</span>{labels.map((away) => { const cell = cells.find((item) => item.home_goals === home && item.away_goals === away); return <div key={`${home}-${away}`} className="matrix-cell" style={{ "--heat": cell ? Math.min(cell.probability / 0.2, 1) : 0 } as CSSProperties}><small>{home}–{away}</small><b>{percent(cell?.probability)}</b></div>; })}</div>)}</div></section><section className="panel density-list"><header><h4>Top 5 probability densities</h4><small>Exact scores and aggregate categories</small></header>{likely.map((cell, index) => <div key={scoreLabel(cell)}><span>{index + 1}</span><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong></div>)}</section></div>;
+}
+
+function isExactScore(cell: ScoreCell): boolean {
+  return cell.home_bucket_kind === "EXACT" && cell.away_bucket_kind === "EXACT";
+}
+
+function scoreLabel(cell: ScoreCell): string {
+  return `${cell.home_label}–${cell.away_label}`;
 }
 
 function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast: Forecast }) {
@@ -167,7 +197,7 @@ function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast
     <div className="interpretation-copy">
       <p><b>{favorite.label} is the single most likely result at {percent(favorite.probability)}.</b> It leads {runnerUp.label.toLowerCase()} by {(lead * 100).toFixed(1)} percentage points, a {edge} edge rather than a certain result.</p>
       <p>Combined expected goals are <b>{totalExpectedGoals.toFixed(2)}</b>. {goalReading}{Number.isFinite(btts) ? ` Both teams scoring is ${btts >= 0.5 ? "more" : "less"} likely than not at ${percent(btts)}.` : ""}</p>
-      {modalScore && <p>Most likely exact score is <b>{modalScore.home_goals}–{modalScore.away_goals}</b> at {percent(modalScore.probability)}. Exact scores remain low-probability outcomes even when ranked first.</p>}
+      {modalScore && <p>Most likely {isExactScore(modalScore) ? "exact score" : "score category"} is <b>{scoreLabel(modalScore)}</b> at {percent(modalScore.probability)}. {isExactScore(modalScore) ? "Exact scores remain low-probability outcomes even when ranked first." : "A category with + combines several possible final scores."}</p>}
     </div>
     <dl className="stat-glossary">
       <div><dt>Win %</dt><dd>Share of the model distribution assigned to each full-time result.</dd></div>

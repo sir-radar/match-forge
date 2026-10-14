@@ -8,6 +8,7 @@ const coverage = {
   historical_matches: 124806, competitions_with_history: 84, teams_with_10_matches: 934,
   teams_below_10_matches: 19, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 2, source_conflicts: 1,
+  forecast_refresh_pending: 3, forecast_refresh_complete: 19,
   missing_live_scores: 3, fotmob_mapped: 100, fotmob_unmapped: 4,
   pitchapi_mapped: 80, pitchapi_unmapped: 8, fotmob_history: 60,
   pitchapi_history: 40, api_football_requests_used: 100,
@@ -16,6 +17,37 @@ const coverage = {
 
 describe("DataSyncAdmin", () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it("shows bounded background queue diagnostics without inventing quota or throughput", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [], provider_configuration: { fotmob_enabled: false, pitchapi_enabled: true, operational_sync_interval: "30s", history_sync_enabled: false, history_sync_interval: "1h0m0s" },
+      coverage: { ...coverage, provider_history: [{
+        provider: "pitchapi", pending: 323, running: 0, completed: 2, failed: 1, deferred: 3,
+        oldest_pending_observed_at: "2026-10-13T08:00:00Z", completions_24_hours: 2,
+        observed_seconds: 100, requests_used: 5, historical_requests_used: 3,
+        remaining_requests: null, exhausted: false, deferred_until: null,
+        completions_per_hour: null, estimated_drain_hours: null,
+      }] },
+    })));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    expect(await screen.findByText("323 / 0 / 2")).toBeInTheDocument();
+    expect(screen.getByText("1 / 3")).toBeInTheDocument();
+    expect(screen.getByText("5 / 3")).toBeInTheDocument();
+    expect(screen.getByText("Forecast refresh pending")).toBeInTheDocument();
+    expect(screen.getByText("Forecast refresh complete")).toBeInTheDocument();
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
+    expect(screen.getAllByText("Unavailable")).toHaveLength(2);
+  });
+
+  it("rejects malformed background diagnostics and offers status retry", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => json({
+      runs: [], coverage: { ...coverage, provider_history: [{ provider: "pitchapi", pending: -1 }] },
+    })));
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("pending");
+    expect(screen.getByText("History queue diagnostics are unavailable.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
+  });
 
   it("renders every fixed action, coverage, history, and prevents duplicate submission", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -33,7 +65,7 @@ describe("DataSyncAdmin", () => {
       }], coverage });
     });
     vi.stubGlobal("fetch", fetchMock);
-    render(<DataSyncAdmin />);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
     expect(await screen.findByRole("heading", { name: "Historical Coverage" })).toBeInTheDocument();
     expect(screen.getByText("124,806")).toBeInTheDocument();
     expect(screen.getByLabelText("Backfill fixtures from")).toBeInTheDocument();
@@ -53,7 +85,7 @@ describe("DataSyncAdmin", () => {
 
   it("shows actionable API errors", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({ error: "database unavailable" }, 503)));
-    render(<DataSyncAdmin />);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
     expect(await screen.findByRole("alert")).toHaveTextContent("database unavailable");
     expect(screen.getByRole("button", { name: "Retry status" })).toBeInTheDocument();
   });
@@ -62,7 +94,7 @@ describe("DataSyncAdmin", () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({
       runs: [], coverage: { ...coverage, eligible_history: null },
     })));
-    render(<DataSyncAdmin />);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
     expect(await screen.findByRole("alert")).toHaveTextContent("eligible_history");
     expect(screen.getByText("Coverage is unavailable.")).toBeInTheDocument();
   });
@@ -83,7 +115,7 @@ describe("DataSyncAdmin", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<DataSyncAdmin />);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
 
     expect(await screen.findByText("Running")).toBeInTheDocument();
     expect(screen.getByText("History queue: 40/227 succeeded, 3 running, 181 pending, 3 failed")).toBeInTheDocument();
@@ -110,7 +142,7 @@ describe("DataSyncAdmin", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<DataSyncAdmin />);
+    render(<DataSyncAdmin initialDate="2026-09-30" />);
     fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
 
     expect(await screen.findByText("Queued")).toBeInTheDocument();
@@ -119,6 +151,25 @@ describe("DataSyncAdmin", () => {
       expect.objectContaining({ method: "POST" }),
     );
   });
+  it("shows independent bulk and provider lanes with lane-specific cancellation", async () => {
+    const base = { requested_at: "2026-10-13T10:00:00Z", started_at: "2026-10-13T10:00:01Z", finished_at: null, requested_date: "2026-10-13", parameters: {}, summary: {}, error_message: null, log_path: null };
+    const bulk = { ...base, run_id: "bulk", sync_type: "HISTORY_BACKFILL", status: "RUNNING" };
+    const fotmob = { ...base, run_id: "fotmob", sync_type: "FOTMOB_SYNC", status: "RUNNING" };
+    let stopped = false;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") { stopped = true; return json({ ...fotmob, status: "CANCELLED", finished_at: "2026-10-13T10:01:00Z" }); }
+      return json({ runs: [bulk, stopped ? { ...fotmob, status: "CANCELLED", finished_at: "2026-10-13T10:01:00Z" } : fotmob], coverage });
+    }));
+    render(<DataSyncAdmin initialDate="2026-10-13" />);
+    await screen.findByRole("button", { name: "Stop FotMob" });
+    expect(screen.getByRole("button", { name: "Sync OpenFootball" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Sync FotMob" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Sync PitchAPI" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Stop FotMob" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Sync FotMob" })).toBeEnabled());
+    expect(screen.getByRole("button", { name: "Sync OpenFootball" })).toBeDisabled();
+  });
+
 });
 
 function json(value: object, status = 200) {

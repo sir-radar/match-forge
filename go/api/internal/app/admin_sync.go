@@ -53,13 +53,15 @@ const (
 )
 
 type SyncRequest struct {
-	Type        SyncType `json:"sync_type"`
-	Date        string   `json:"date,omitempty"`
-	FromDate    string   `json:"from_date,omitempty"`
-	Season      string   `json:"season,omitempty"`
-	Competition string   `json:"competition,omitempty"`
-	Country     string   `json:"country,omitempty"`
-	RetryOf     string   `json:"-"`
+	Type             SyncType `json:"sync_type"`
+	Date             string   `json:"date,omitempty"`
+	FromDate         string   `json:"from_date,omitempty"`
+	Season           string   `json:"season,omitempty"`
+	Competition      string   `json:"competition,omitempty"`
+	Country          string   `json:"country,omitempty"`
+	RetryOf          string   `json:"-"`
+	ScheduledHistory bool     `json:"-"`
+	PendingOnly      bool     `json:"-"`
 }
 
 type SyncRun struct {
@@ -86,30 +88,52 @@ type HistoryQueueProgress struct {
 }
 
 type Coverage struct {
-	EligibleHistory         int  `json:"eligible_history"`
-	ExcludedHistory         int  `json:"excluded_history"`
-	ProvisionalFixtures     int  `json:"provisional_fixtures"`
-	VerifiedProviderMatches int  `json:"verified_provider_matches"`
-	IdentityConflicts       int  `json:"identity_conflicts"`
-	HistoricalMatches       int  `json:"historical_matches"`
-	CompetitionsWithHistory int  `json:"competitions_with_history"`
-	TeamsWithTenMatches     int  `json:"teams_with_10_matches"`
-	TeamsBelowTenMatches    int  `json:"teams_below_10_matches"`
-	ScheduledFixtures       int  `json:"scheduled_fixtures"`
-	ForecastAvailable       int  `json:"forecast_available"`
-	NotEnoughHistory        int  `json:"not_enough_history"`
-	MappingFailures         int  `json:"mapping_failures"`
-	SourceConflicts         int  `json:"source_conflicts"`
-	MissingLiveScores       int  `json:"missing_live_scores"`
-	FotMobMapped            int  `json:"fotmob_mapped"`
-	FotMobUnmapped          int  `json:"fotmob_unmapped"`
-	PitchAPIMapped          int  `json:"pitchapi_mapped"`
-	PitchAPIUnmapped        int  `json:"pitchapi_unmapped"`
-	FotMobHistory           int  `json:"fotmob_history"`
-	PitchAPIHistory         int  `json:"pitchapi_history"`
-	APIQuotaRequestsUsed    int  `json:"api_football_requests_used"`
-	APIQuotaRemaining       int  `json:"api_football_remaining"`
-	APIQuotaExhausted       bool `json:"api_football_exhausted"`
+	ProviderHistory         []ProviderHistoryProgress `json:"provider_history"`
+	EligibleHistory         int                       `json:"eligible_history"`
+	ExcludedHistory         int                       `json:"excluded_history"`
+	ProvisionalFixtures     int                       `json:"provisional_fixtures"`
+	VerifiedProviderMatches int                       `json:"verified_provider_matches"`
+	IdentityConflicts       int                       `json:"identity_conflicts"`
+	HistoricalMatches       int                       `json:"historical_matches"`
+	CompetitionsWithHistory int                       `json:"competitions_with_history"`
+	TeamsWithTenMatches     int                       `json:"teams_with_10_matches"`
+	TeamsBelowTenMatches    int                       `json:"teams_below_10_matches"`
+	ScheduledFixtures       int                       `json:"scheduled_fixtures"`
+	ForecastAvailable       int                       `json:"forecast_available"`
+	NotEnoughHistory        int                       `json:"not_enough_history"`
+	ForecastRefreshPending  int                       `json:"forecast_refresh_pending"`
+	ForecastRefreshComplete int                       `json:"forecast_refresh_complete"`
+	MappingFailures         int                       `json:"mapping_failures"`
+	SourceConflicts         int                       `json:"source_conflicts"`
+	MissingLiveScores       int                       `json:"missing_live_scores"`
+	FotMobMapped            int                       `json:"fotmob_mapped"`
+	FotMobUnmapped          int                       `json:"fotmob_unmapped"`
+	PitchAPIMapped          int                       `json:"pitchapi_mapped"`
+	PitchAPIUnmapped        int                       `json:"pitchapi_unmapped"`
+	FotMobHistory           int                       `json:"fotmob_history"`
+	PitchAPIHistory         int                       `json:"pitchapi_history"`
+	APIQuotaRequestsUsed    int                       `json:"api_football_requests_used"`
+	APIQuotaRemaining       int                       `json:"api_football_remaining"`
+	APIQuotaExhausted       bool                      `json:"api_football_exhausted"`
+}
+
+type ProviderHistoryProgress struct {
+	Provider                string     `json:"provider"`
+	Pending                 int        `json:"pending"`
+	Running                 int        `json:"running"`
+	Completed               int        `json:"completed"`
+	Failed                  int        `json:"failed"`
+	Deferred                int        `json:"deferred"`
+	OldestPendingObservedAt *time.Time `json:"oldest_pending_observed_at"`
+	Completions24Hours      int        `json:"completions_24_hours"`
+	ObservedSeconds         float64    `json:"observed_seconds"`
+	RequestsUsed            int        `json:"requests_used"`
+	HistoricalRequestsUsed  int        `json:"historical_requests_used"`
+	RemainingRequests       *int       `json:"remaining_requests"`
+	Exhausted               bool       `json:"exhausted"`
+	DeferredUntil           *time.Time `json:"deferred_until"`
+	CompletionsPerHour      *float64   `json:"completions_per_hour"`
+	EstimatedDrainHours     *float64   `json:"estimated_drain_hours"`
 }
 
 type SyncRunner interface {
@@ -123,6 +147,10 @@ type SyncRunner interface {
 
 type syncRunnerShutdown interface {
 	Shutdown(context.Context)
+}
+
+type pendingForecastRefreshRunner interface {
+	PendingForecastRefresh(context.Context) (bool, error)
 }
 
 type unavailableSyncRunner struct{}
@@ -202,17 +230,24 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 		}
 		return SyncRun{}, err
 	}
-	run, err := runner.Get(ctx, runID)
-	if err != nil {
-		return SyncRun{}, err
-	}
 	runContext, cancel := context.WithCancel(runner.ctx)
 	control := &syncRunControl{cancel: cancel, done: make(chan struct{})}
 	runner.mu.Lock()
 	runner.active[runID] = control
 	runner.mu.Unlock()
 	go runner.execute(runContext, runID, logPath, args, control)
-	return run, nil
+	// Activate committed work before reading the HTTP response: a disconnect
+	// after enqueue must not leave a successfully submitted job unstarted.
+	return runner.Get(ctx, runID)
+}
+
+func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bool, error) {
+	var pending bool
+	err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
+		SELECT 1 FROM football.product_forecast_refresh_work
+		WHERE generation > completed_generation
+	)`).Scan(&pending)
+	return pending, err
 }
 
 func (runner *CommandSyncRunner) enqueue(
@@ -268,6 +303,12 @@ func syncLane(syncType SyncType) string {
 
 func syncParameters(request SyncRequest) map[string]interface{} {
 	parameters := map[string]interface{}{}
+	if request.ScheduledHistory {
+		parameters["scheduled_history"] = true
+	}
+	if request.PendingOnly {
+		parameters["pending_only"] = true
+	}
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
@@ -332,7 +373,7 @@ func (runner *CommandSyncRunner) execute(
 	}
 	heartbeatContext, stopHeartbeat := context.WithCancel(ctx)
 	defer stopHeartbeat()
-	go runner.heartbeat(heartbeatContext, runID)
+	go runner.heartbeat(heartbeatContext, runID, control.cancel)
 	absoluteLog := filepath.Join(runner.repoRoot, logPath)
 	if err := os.MkdirAll(filepath.Dir(absoluteLog), 0o750); err != nil {
 		runner.fail(runID, err)
@@ -369,7 +410,8 @@ func (runner *CommandSyncRunner) execute(
 		`UPDATE football.product_sync_runs
 		 SET status = $2, finished_at = clock_timestamp(), summary = $3::jsonb,
 		     error_message = $4
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status = 'RUNNING'
+		   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 		runID,
 		status,
 		encoded,
@@ -380,14 +422,15 @@ func (runner *CommandSyncRunner) execute(
 }
 
 func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) bool {
-	_, err := runner.pool.Exec(
+	result, err := runner.pool.Exec(
 		ctx,
 		`UPDATE football.product_sync_runs
 		 SET status = 'RUNNING', started_at = clock_timestamp(), heartbeat_at = clock_timestamp()
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status = 'QUEUED'
+		   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 		runID,
 	)
-	if err == nil {
+	if err == nil && result.RowsAffected() == 1 {
 		return true
 	}
 	if !runner.cancelIfRequested(ctx, runID) {
@@ -396,7 +439,7 @@ func (runner *CommandSyncRunner) markRunning(ctx context.Context, runID string) 
 	return false
 }
 
-func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string) {
+func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string, cancel context.CancelFunc) {
 	ticker := time.NewTicker(syncRunHeartbeatInterval)
 	defer ticker.Stop()
 	for {
@@ -404,13 +447,19 @@ func (runner *CommandSyncRunner) heartbeat(ctx context.Context, runID string) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			if _, err := runner.pool.Exec(
-				ctx,
+			checkContext, stopCheck := context.WithTimeout(ctx, syncRunHeartbeatInterval)
+			result, err := runner.pool.Exec(
+				checkContext,
 				`UPDATE football.product_sync_runs SET heartbeat_at = clock_timestamp()
-				 WHERE run_id = $1 AND status IN ('QUEUED', 'RUNNING')`,
+				 WHERE run_id = $1 AND worker_id = $1::text AND status = 'RUNNING'
+				   AND heartbeat_at >= clock_timestamp() - interval '2 minutes'`,
 				runID,
-			); err != nil && !errors.Is(err, context.Canceled) {
-				runner.logger.Warn("heartbeat sync run", "run_id", runID, "error", err)
+			)
+			stopCheck()
+			if err != nil || result.RowsAffected() != 1 {
+				cancel()
+				runner.logger.Warn("sync worker ownership lost", "run_id", runID, "error", err)
+				return
 			}
 		}
 	}
@@ -438,6 +487,8 @@ func (runner *CommandSyncRunner) runCommand(
 	command := exec.CommandContext(ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
 	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
+	command.Env = append(command.Env, "PGOPTIONS="+os.Getenv("PGOPTIONS")+
+		" -c matchforge.sync_run_id="+runID+" -c matchforge.sync_worker_id="+runID)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	command.Cancel = func() error {
 		if command.Process == nil {
@@ -494,11 +545,13 @@ func (runner *CommandSyncRunner) Stop(ctx context.Context, id string) (SyncRun, 
 	if run.Status != "QUEUED" && run.Status != "RUNNING" {
 		return SyncRun{}, errSyncRunNotActive
 	}
+	// Revoke publication before cancelling local execution. Remote execution
+	// observes the same revocation through its heartbeat and database guard.
+	runner.cancelled(id)
 	runner.mu.Lock()
 	control := runner.active[id]
 	runner.mu.Unlock()
 	if control == nil {
-		runner.cancelled(id)
 		return runner.Get(ctx, id)
 	}
 	control.cancel()
@@ -547,6 +600,8 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 	request.Season = stringParameter(run.Parameters, "season")
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
+	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
+	request.PendingOnly, _ = run.Parameters["pending_only"].(bool)
 	return request
 }
 
@@ -587,7 +642,7 @@ func (runner *CommandSyncRunner) fail(runID string, cause error) {
 		context.WithoutCancel(runner.ctx),
 		`UPDATE football.product_sync_runs
 		 SET status = 'FAILED', finished_at = clock_timestamp(), error_message = $2
-		 WHERE run_id = $1`,
+		 WHERE run_id = $1 AND worker_id = $1::text AND status IN ('QUEUED', 'RUNNING')`,
 		runID,
 		message,
 	); err != nil {
@@ -670,6 +725,10 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 			 WHERE status = 'SCHEDULED' AND forecast_availability = 'FORECAST_AVAILABLE'),
 			(SELECT count(*) FROM football.product_fixtures
 			 WHERE status = 'SCHEDULED' AND forecast_availability = 'NOT_ENOUGH_HISTORY'),
+			(SELECT count(*) FROM football.product_forecast_refresh_work
+			 WHERE generation > completed_generation),
+			(SELECT count(*) FROM football.product_forecast_refresh_work
+			 WHERE generation = completed_generation),
 			(SELECT COALESCE(sum((latest.summary->>'mapping_failures')::integer), 0)
 			 FROM (
 				 SELECT DISTINCT ON (sync_type) summary
@@ -712,6 +771,8 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 		&coverage.ScheduledFixtures,
 		&coverage.ForecastAvailable,
 		&coverage.NotEnoughHistory,
+		&coverage.ForecastRefreshPending,
+		&coverage.ForecastRefreshComplete,
 		&coverage.MappingFailures,
 		&coverage.SourceConflicts,
 		&coverage.MissingLiveScores,
@@ -725,7 +786,64 @@ func (runner *CommandSyncRunner) Coverage(ctx context.Context) (Coverage, error)
 		&coverage.APIQuotaRemaining,
 		&coverage.APIQuotaExhausted,
 	)
+	if err != nil {
+		return coverage, err
+	}
+	coverage.ProviderHistory, err = runner.historyProgress(ctx)
 	return coverage, err
+}
+
+func (runner *CommandSyncRunner) historyProgress(ctx context.Context) ([]ProviderHistoryProgress, error) {
+	rows, err := runner.pool.Query(ctx, `
+        WITH scope_stats AS (
+            SELECT provider_code,
+                count(*) FILTER (WHERE status = 'PENDING') AS pending,
+                count(*) FILTER (WHERE status = 'RUNNING') AS running,
+                count(*) FILTER (WHERE status = 'SUCCEEDED') AS completed,
+                count(*) FILTER (WHERE status = 'FAILED') AS failed,
+                count(*) FILTER (WHERE status = 'DEFERRED') AS deferred,
+                min(first_observed_at) FILTER (WHERE status <> 'SUCCEEDED') AS oldest,
+                count(*) FILTER (WHERE completed_at >= now() - interval '24 hours') AS recent,
+                extract(epoch FROM LEAST(now() - min(first_observed_at), interval '24 hours')) AS observed
+            FROM football.product_provider_history_scopes GROUP BY provider_code
+        ) SELECT p.code, COALESCE(s.pending, 0), COALESCE(s.running, 0),
+                 COALESCE(s.completed, 0), COALESCE(s.failed, 0), COALESCE(s.deferred, 0),
+                 s.oldest, COALESCE(s.recent, 0), COALESCE(s.observed, 0)::double precision,
+                 COALESCE(b.requests_used, 0), COALESCE(b.historical_requests_used, 0),
+                 b.remaining_requests, COALESCE(b.exhausted, false), b.deferred_until
+          FROM (VALUES ('fotmob'), ('pitchapi')) p(code)
+          LEFT JOIN scope_stats s ON s.provider_code = p.code
+          LEFT JOIN football.provider_request_budgets b ON b.provider_code = p.code
+             AND b.window_date = (now() AT TIME ZONE 'UTC')::date
+          ORDER BY p.code`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	progress := []ProviderHistoryProgress{}
+	for rows.Next() {
+		var item ProviderHistoryProgress
+		if err = rows.Scan(&item.Provider, &item.Pending, &item.Running, &item.Completed,
+			&item.Failed, &item.Deferred, &item.OldestPendingObservedAt, &item.Completions24Hours,
+			&item.ObservedSeconds, &item.RequestsUsed, &item.HistoricalRequestsUsed,
+			&item.RemainingRequests, &item.Exhausted, &item.DeferredUntil); err != nil {
+			return nil, err
+		}
+		progress = append(progress, item)
+	}
+	return progress, rows.Err()
+}
+
+func calculateHistoryThroughput(progress []ProviderHistoryProgress, interval time.Duration) {
+	for index := range progress {
+		item := &progress[index]
+		if interval <= 0 || item.ObservedSeconds < interval.Seconds() || item.Completions24Hours == 0 {
+			continue
+		}
+		rate := float64(item.Completions24Hours) * 3600 / item.ObservedSeconds
+		drain := float64(item.Pending+item.Running+item.Failed+item.Deferred) / rate
+		item.CompletionsPerHour, item.EstimatedDrainHours = &rate, &drain
+	}
 }
 
 const syncRunSelect = `
@@ -807,6 +925,12 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	args := []string{".tools/bin/uv", "run", "python", "-m", "football.product.cli", command}
 	args = appendSyncDateArgs(args, request)
 	args = appendSyncSelectorArgs(args, request)
+	if request.Type == SyncHistoryBackfill && request.ScheduledHistory {
+		args = append(args, "--scheduled")
+	}
+	if request.Type == SyncForecastRefresh && request.PendingOnly {
+		args = append(args, "--pending-only")
+	}
 	return args, nil
 }
 
@@ -859,12 +983,15 @@ func (application *App) listSyncRuns(response http.ResponseWriter, request *http
 		application.writeSyncError(response, err)
 		return
 	}
+	calculateHistoryThroughput(coverage.ProviderHistory, application.config.HistorySyncInterval)
 	application.writeJSON(response, http.StatusOK, map[string]interface{}{
 		"runs": runs, "coverage": coverage,
 		"provider_configuration": map[string]interface{}{
 			"fotmob_enabled":            application.config.FotMobEnabled,
 			"pitchapi_enabled":          application.config.PitchAPIEnabled,
 			"operational_sync_interval": application.config.OperationalSyncInterval.String(),
+			"history_sync_enabled":      application.config.HistorySyncEnabled,
+			"history_sync_interval":     application.config.HistorySyncInterval.String(),
 		},
 	})
 }
@@ -905,13 +1032,18 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			Competition string `json:"competition"`
 			Country     string `json:"country"`
 		}
-		decoder := json.NewDecoder(io.LimitReader(request.Body, 64*1024))
+		decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
 		decoder.DisallowUnknownFields()
 		if request.ContentLength != 0 {
 			if err := decoder.Decode(&input); err != nil {
 				application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
 				return
 			}
+		}
+		var trailing any
+		if err := decoder.Decode(&trailing); err != io.EOF {
+			application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
+			return
 		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
 			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
@@ -926,6 +1058,10 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 }
 
 func (application *App) writeSyncError(response http.ResponseWriter, err error) {
+	if errors.Is(err, context.DeadlineExceeded) {
+		application.publicError(response, http.StatusGatewayTimeout, "request timed out")
+		return
+	}
 	status := http.StatusInternalServerError
 	message := "data synchronization failed"
 	if errors.Is(err, errSyncAlreadyRunning) {

@@ -115,6 +115,7 @@ export type Forecast = ForecastSummary & {
   knowledge_cutoff: string;
   knowledge_mode: string;
   publication_mode: string;
+  score_matrix_version: "legacy-compact-index-v1" | "compact-buckets-v2";
   score_matrix: ScoreCell[];
 };
 
@@ -122,6 +123,10 @@ export type ScoreCell = {
   home_goals: number;
   away_goals: number;
   probability: number;
+  home_label: string;
+  away_label: string;
+  home_bucket_kind: "EXACT" | "AT_LEAST";
+  away_bucket_kind: "EXACT" | "AT_LEAST";
 };
 
 export type FormMatch = {
@@ -178,6 +183,8 @@ export type MatchContext = {
 };
 
 export type Performance = {
+  analytics_policy_version: "pre-match-revisions-v2";
+  analytics_horizon: "LATEST" | "7D" | "3D" | "24H" | "6H" | "1H" | "15M";
   competition_id: string;
   league: string;
   country: string;
@@ -278,6 +285,7 @@ export type SyncRun = {
   history_queue?: HistoryQueueProgress;
 };
 export type HistoricalCoverage = {
+  provider_history?: ProviderHistoryProgress[];
   eligible_history: number;
   excluded_history: number;
   provisional_fixtures: number;
@@ -290,6 +298,8 @@ export type HistoricalCoverage = {
   scheduled_fixtures: number;
   forecast_available: number;
   not_enough_history: number;
+  forecast_refresh_pending?: number;
+  forecast_refresh_complete?: number;
   mapping_failures: number;
   source_conflicts: number;
   missing_live_scores: number;
@@ -304,9 +314,20 @@ export type HistoricalCoverage = {
   api_football_exhausted: boolean;
 };
 export type ProviderConfiguration = {
+  history_sync_enabled?: boolean;
+  history_sync_interval?: string;
   fotmob_enabled: boolean;
   pitchapi_enabled: boolean;
   operational_sync_interval: string;
+};
+export type ProviderHistoryProgress = {
+  provider: "fotmob" | "pitchapi";
+  pending: number; running: number; completed: number; failed: number; deferred: number;
+  oldest_pending_observed_at: string | null;
+  completions_24_hours: number; observed_seconds: number;
+  requests_used: number; historical_requests_used: number;
+  remaining_requests: number | null; exhausted: boolean; deferred_until: string | null;
+  completions_per_hour: number | null; estimated_drain_hours: number | null;
 };
 export type SyncRunsResponse = { runs: SyncRun[]; coverage: HistoricalCoverage; provider_configuration: ProviderConfiguration };
 
@@ -347,25 +368,52 @@ export function parseLiveMatch(value: unknown): LiveMatch {
 export function parseForecast(value: unknown): Forecast {
   const item = object(value, "forecast");
   const summary = parseForecastSummary(item);
+  const algorithm = text(item.model_algorithm_version, "model_algorithm_version");
+  const version = scoreMatrixVersion(item.score_matrix_version, algorithm);
   return {
     ...summary,
     fixture_id: text(item.fixture_id, "fixture_id"),
     model_label: text(item.model_label, "model_label"),
-    model_algorithm_version: text(item.model_algorithm_version, "model_algorithm_version"),
+    model_algorithm_version: algorithm,
     created_at: text(item.created_at, "created_at"),
     football_cutoff: text(item.football_cutoff, "football_cutoff"),
     knowledge_cutoff: text(item.knowledge_cutoff, "knowledge_cutoff"),
     knowledge_mode: text(item.knowledge_mode, "knowledge_mode"),
     publication_mode: text(item.publication_mode, "publication_mode"),
-    score_matrix: array(item.score_matrix, "score_matrix").map((entry) => {
-      const cell = object(entry, "score cell");
-      return {
-        home_goals: numeric(cell.home_goals, "home_goals"),
-        away_goals: numeric(cell.away_goals, "away_goals"),
-        probability: probability(cell.probability, "probability"),
-      };
-    }),
+    score_matrix_version: version,
+    score_matrix: array(item.score_matrix, "score_matrix").map((entry) => parseScoreCell(entry, version)),
   };
+}
+
+function scoreMatrixVersion(value: unknown, algorithm: string): Forecast["score_matrix_version"] {
+  if (value === "compact-buckets-v2" || value === "legacy-compact-index-v1") return value;
+  if (value === undefined && ["transferable-rolling-goals-poisson-v1", "transferable-rolling-goals-poisson-v1-rolling10-v2"].includes(algorithm)) return "legacy-compact-index-v1";
+  throw new Error("unsupported score_matrix_version");
+}
+
+function parseScoreCell(value: unknown, version: Forecast["score_matrix_version"]): ScoreCell {
+  const cell = object(value, "score cell");
+  const home = parseScoreBucket(cell, "home", version);
+  const away = parseScoreBucket(cell, "away", version);
+  return {
+    home_goals: home.goals, away_goals: away.goals,
+    home_label: home.label, away_label: away.label,
+    home_bucket_kind: home.kind, away_bucket_kind: away.kind,
+    probability: probability(cell.probability, "probability"),
+  };
+}
+
+function parseScoreBucket(cell: Record<string, unknown>, side: "home" | "away", version: Forecast["score_matrix_version"]): { goals: number; label: string; kind: ScoreCell["home_bucket_kind"] } {
+  const goals = integer(cell[`${side}_goals`], `${side}_goals`, 0);
+  if (version === "legacy-compact-index-v1") {
+    if (goals > 5) throw new Error("invalid legacy score bucket");
+    return { goals, label: goals === 5 ? "5+" : String(goals), kind: goals === 5 ? "AT_LEAST" as const : "EXACT" as const };
+  }
+  const kind = text(cell[`${side}_bucket_kind`], `${side}_bucket_kind`);
+  if (kind !== "EXACT" && kind !== "AT_LEAST") throw new Error(`invalid ${side}_bucket_kind`);
+  const label = text(cell[`${side}_label`], `${side}_label`);
+  if (label !== `${goals}${kind === "AT_LEAST" ? "+" : ""}`) throw new Error(`inconsistent ${side}_label`);
+  return { goals, label, kind };
 }
 
 export function parseContext(value: unknown): MatchContext {
@@ -410,7 +458,12 @@ export function parseContext(value: unknown): MatchContext {
 export function parsePerformance(value: unknown): Performance {
   const item = object(value, "performance");
   const rating = text(item.rating, "rating") as Performance["rating"];
+  if (!["UNRATED", "WATCH", "GOOD", "STRONG"].includes(rating)) throw new Error("invalid rating");
+  if (item.analytics_policy_version !== "pre-match-revisions-v2") throw new Error("unsupported analytics policy");
+  const horizon = text(item.analytics_horizon, "analytics_horizon") as Performance["analytics_horizon"];
+  if (!["LATEST", "7D", "3D", "24H", "6H", "1H", "15M"].includes(horizon)) throw new Error("invalid analytics horizon");
   return {
+    analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: horizon,
     competition_id: text(item.competition_id, "competition_id"),
     league: text(item.league, "league"),
     country: text(item.country, "country"),
@@ -556,8 +609,11 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       fotmob_enabled: boolean(providerConfiguration.fotmob_enabled, "fotmob_enabled"),
       pitchapi_enabled: boolean(providerConfiguration.pitchapi_enabled, "pitchapi_enabled"),
       operational_sync_interval: text(providerConfiguration.operational_sync_interval, "operational_sync_interval"),
+      history_sync_enabled: providerConfiguration.history_sync_enabled === undefined ? undefined : boolean(providerConfiguration.history_sync_enabled, "history_sync_enabled"),
+      history_sync_interval: providerConfiguration.history_sync_interval === undefined ? undefined : text(providerConfiguration.history_sync_interval, "history_sync_interval"),
     } : { fotmob_enabled: false, pitchapi_enabled: false, operational_sync_interval: "0s" },
     coverage: {
+      provider_history: coverage.provider_history == null ? undefined : array(coverage.provider_history, "provider_history").map(parseProviderHistory),
       historical_matches: numeric(coverage.historical_matches, "historical_matches"),
       competitions_with_history: numeric(coverage.competitions_with_history, "competitions_with_history"),
       teams_with_10_matches: numeric(coverage.teams_with_10_matches, "teams_with_10_matches"),
@@ -565,6 +621,8 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       scheduled_fixtures: numeric(coverage.scheduled_fixtures, "scheduled_fixtures"),
       forecast_available: numeric(coverage.forecast_available, "forecast_available"),
       not_enough_history: numeric(coverage.not_enough_history, "not_enough_history"),
+      forecast_refresh_pending: coverage.forecast_refresh_pending === undefined ? undefined : integer(coverage.forecast_refresh_pending, "forecast_refresh_pending", 0),
+      forecast_refresh_complete: coverage.forecast_refresh_complete === undefined ? undefined : integer(coverage.forecast_refresh_complete, "forecast_refresh_complete", 0),
       mapping_failures: numeric(coverage.mapping_failures, "mapping_failures"),
       source_conflicts: numeric(coverage.source_conflicts, "source_conflicts"),
       missing_live_scores: numeric(coverage.missing_live_scores, "missing_live_scores"),
@@ -584,6 +642,40 @@ export function parseSyncRuns(value: unknown): SyncRunsResponse {
       api_football_exhausted: boolean(coverage.api_football_exhausted, "api_football_exhausted"),
     },
   };
+}
+
+function parseProviderHistory(value: unknown): ProviderHistoryProgress {
+  const item = object(value, "provider history");
+  const provider = text(item.provider, "provider");
+  if (provider !== "fotmob" && provider !== "pitchapi") throw new Error("invalid history provider");
+  return {
+    provider,
+    pending: integer(item.pending, "pending", 0), running: integer(item.running, "running", 0),
+    completed: integer(item.completed, "completed", 0), failed: integer(item.failed, "failed", 0),
+    deferred: integer(item.deferred, "deferred", 0),
+    oldest_pending_observed_at: nullableTimestamp(item.oldest_pending_observed_at, "oldest_pending_observed_at"),
+    completions_24_hours: integer(item.completions_24_hours, "completions_24_hours", 0),
+    observed_seconds: nonNegativeNumber(item.observed_seconds, "observed_seconds"),
+    requests_used: integer(item.requests_used, "requests_used", 0),
+    historical_requests_used: integer(item.historical_requests_used, "historical_requests_used", 0),
+    remaining_requests: item.remaining_requests === null ? null : integer(item.remaining_requests, "remaining_requests", 0),
+    exhausted: boolean(item.exhausted, "exhausted"),
+    deferred_until: nullableTimestamp(item.deferred_until, "deferred_until"),
+    completions_per_hour: item.completions_per_hour === null ? null : nonNegativeNumber(item.completions_per_hour, "completions_per_hour"),
+    estimated_drain_hours: item.estimated_drain_hours === null ? null : nonNegativeNumber(item.estimated_drain_hours, "estimated_drain_hours"),
+  };
+}
+
+function nonNegativeNumber(value: unknown, field: string): number {
+  const result = numeric(value, field);
+  if (result < 0) throw new Error(`${field} must be non-negative`);
+  return result;
+}
+
+function nullableTimestamp(value: unknown, field: string): string | null {
+  const result = nullableText(value, field);
+  if (result !== null && (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(result) || !Number.isFinite(Date.parse(result)))) throw new Error(`${field} must be a timestamp with a timezone`);
+  return result;
 }
 
 function parseCompetition(value: unknown): Competition {
@@ -732,4 +824,35 @@ function booleanRecord(value: unknown, field: string): Record<string, boolean> {
 }
 function stringArrayRecord(value: unknown, field: string): Record<string, string[]> {
   return Object.fromEntries(Object.entries(object(value, field)).map(([key, entry]) => [key, array(entry, `${field}.${key}`).map((item) => text(item, `${field}.${key}`))]));
+}
+
+export type ForecastRevision = {
+  forecast_id: string; fixture_id: string; issued_at: string; football_cutoff: string; knowledge_cutoff: string;
+  forecast_horizon: string; supersedes_forecast_id: string | null; model_id: string; artifact_sha256: string;
+  predictive_input_snapshot_sha256: string; context_snapshot_sha256: string; payload_sha256: string;
+  revision_reason_codes: string[]; new_information_ids: string[]; probability_payload: Forecast;
+};
+
+export function parseForecastHistory(value: unknown): ForecastRevision[] {
+  const envelope = object(value, "forecast history");
+  return array(envelope.forecasts, "forecasts").map((value) => {
+    const item = object(value, "forecast revision");
+    const model = text(item.model_id, "model_id");
+    const timestamp = (field: string) => { const value = nullableTimestamp(item[field], field); if (value === null) throw new Error(`${field} is required`); return value; };
+    const checksum = (field: string) => { const value = text(item[field], field); if (!/^[0-9a-f]{64}$/.test(value)) throw new Error(`invalid ${field}`); return value; };
+    const id = text(item.forecast_id, "forecast_id");
+    const fixture = text(item.fixture_id, "fixture_id");
+    const issued = timestamp("issued_at"), football = timestamp("football_cutoff"), knowledge = timestamp("knowledge_cutoff");
+    const payload = object(item.probability_payload, "probability_payload");
+    return {
+      forecast_id: id, fixture_id: fixture, issued_at: issued, football_cutoff: football, knowledge_cutoff: knowledge,
+      forecast_horizon: text(item.forecast_horizon, "forecast_horizon"), supersedes_forecast_id: nullableText(item.supersedes_forecast_id, "supersedes_forecast_id"),
+      model_id: model, artifact_sha256: checksum("artifact_sha256"), predictive_input_snapshot_sha256: checksum("predictive_input_snapshot_sha256"),
+      context_snapshot_sha256: checksum("context_snapshot_sha256"), payload_sha256: checksum("payload_sha256"),
+      revision_reason_codes: array(item.revision_reason_codes, "revision_reason_codes").map((value) => text(value, "revision reason")),
+      new_information_ids: array(item.new_information_ids, "new_information_ids").map((value) => text(value, "information ID")),
+      probability_payload: parseForecast({ ...payload, id, fixture_id: fixture, model_label: "MVP_FORECAST", model_algorithm_version: model,
+        created_at: issued, football_cutoff: football, knowledge_cutoff: knowledge, knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED" }),
+    };
+  });
 }

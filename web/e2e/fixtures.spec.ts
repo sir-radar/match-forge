@@ -37,6 +37,29 @@ test("fixture expands inline", async ({ page }) => {
   await page.screenshot({ path: `test-results/${test.info().project.name}-expanded.png`, fullPage: true });
 });
 
+for (const version of ["legacy-compact-index-v1", "compact-buckets-v2"]) {
+  test(`${version} renders aggregate tail categories`, async ({ page }) => {
+    await page.route("http://127.0.0.1:8080/v1/fixtures/*/forecasts/*", async (route) => {
+      const cell = { home_goals: 5, away_goals: 5, probability: .14 };
+      await route.fulfill({ json: {
+        ...fixture.forecast, fixture_id: fixture.id, model_label: "MVP_FORECAST",
+        model_algorithm_version: "transferable-rolling-goals-poisson-v1",
+        created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z",
+        knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal",
+        publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix_version: version,
+        score_matrix: [version === "compact-buckets-v2" ? { ...cell,
+          home_label: "5+", away_label: "5+", home_bucket_kind: "AT_LEAST",
+          away_bucket_kind: "AT_LEAST" } : cell],
+      } });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: /Arsenal.*Chelsea/ }).click();
+    await expect(page.getByText("5+–5+", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("5–5", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/Most likely score category is/)).toBeVisible();
+  });
+}
+
 test("mobile uses the designed compact navigation and hides desktop rail", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile", "mobile-only assertion");
   await page.goto("/");
@@ -44,4 +67,51 @@ test("mobile uses the designed compact navigation and hides desktop rail", async
   await expect(page.getByRole("complementary", { name: "Competition coverage" })).toBeHidden();
   await expect(page.getByRole("button", { name: /Arsenal.*Chelsea/ })).toBeVisible();
   await page.screenshot({ path: "test-results/mobile-collapsed.png", fullPage: true });
+});
+
+
+test("production SSR date is stable and cleared or delayed dates cannot relabel old fixtures", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  let blockedDay = ""; let release!: () => void;
+  const delayed = new Promise<void>((done) => { release = done; });
+  await page.route("http://127.0.0.1:8080/v1/fixtures?**", async (route) => {
+    const day = new URL(route.request().url()).searchParams.get("date")!;
+    if (day === blockedDay) await delayed;
+    await route.fulfill({ json: { date: day, groups: [{ competition, fixtures: [{ ...fixture, id: `fixture-${day}`, home: { ...fixture.home, name: `Home ${day}` }, kickoff_at: `${day}T15:00:00Z` }] }] } });
+  });
+  const document = await page.goto("/");
+  const html = await document!.text();
+  const serverDay = html.match(/type="date"[^>]*value="([0-9-]+)"/)![1];
+  const input = page.getByLabel("Selected date");
+  await expect(input).toHaveValue(serverDay);
+  await expect(page.getByRole("button", { name: new RegExp(`Home ${serverDay}.*Chelsea`) })).toBeVisible();
+  await input.fill(""); await expect(page.locator(".fixture-workbench").getByRole("alert")).toContainText("Choose a valid fixture date");
+  await expect(input).toHaveValue(serverDay);
+  const next = new Date(`${serverDay}T00:00:00Z`); next.setUTCDate(next.getUTCDate() + 1); blockedDay = next.toISOString().slice(0, 10);
+  await input.fill(blockedDay);
+  await expect(page.getByRole("button", { name: new RegExp(`Home ${serverDay}.*Chelsea`) })).toHaveCount(0);
+  await expect(page.getByText("Loading fixtures", { exact: true })).toBeVisible();
+  await input.fill(serverDay);
+  await expect(page.getByRole("button", { name: new RegExp(`Home ${serverDay}.*Chelsea`) })).toBeVisible();
+  release();
+  await expect(page.getByRole("button", { name: new RegExp(`Home ${blockedDay}.*Chelsea`) })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("tab keys wrap, expose one active panel, and retrieve immutable forecast history", async ({ page }) => {
+  const history = { forecasts: [{ forecast_id: fixture.forecast.id, fixture_id: fixture.id, issued_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", forecast_horizon: "24H", supersedes_forecast_id: null, model_id: "transferable-rolling-goals-poisson-v1", artifact_sha256: "a".repeat(64), predictive_input_snapshot_sha256: "b".repeat(64), context_snapshot_sha256: "c".repeat(64), payload_sha256: "d".repeat(64), revision_reason_codes: ["INITIAL_FORECAST"], new_information_ids: [], probability_payload: { expected_home_goals: 1.5, expected_away_goals: 1.1, probabilities: fixture.forecast.probabilities, score_matrix_version: "legacy-compact-index-v1", score_matrix: [{ home_goals: 5, away_goals: 0, probability: .1 }] } }] };
+  await page.route(`http://127.0.0.1:8080/v1/fixtures/${fixture.id}/forecasts`, (route) => route.fulfill({ json: history }));
+  await page.goto("/"); await page.getByRole("button", { name: /Arsenal.*Chelsea/ }).click();
+  const overview = page.getByRole("tab", { name: "Overview" }); await overview.focus();
+  await page.keyboard.press("ArrowRight"); await expect(page.getByRole("tab", { name: "Markets" })).toBeFocused();
+  await page.keyboard.press("End"); await expect(page.getByRole("tab", { name: "Forecast history" })).toBeFocused();
+  await expect(page.getByRole("heading", { name: "Selected published revision" })).toBeVisible();
+  await expect(page.getByRole("tabpanel")).toHaveCount(1);
+  const selected = page.getByRole("tab", { selected: true });
+  expect(await selected.getAttribute("aria-controls")).toBe(await page.getByRole("tabpanel").getAttribute("id"));
+  await expect(page.getByRole("button", { name: `View revision ${fixture.forecast.id}` })).toHaveAttribute("aria-pressed", "true");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.keyboard.press("Home"); await expect(page.getByRole("tab", { name: "Live Match" })).toBeFocused();
+  await page.keyboard.press("ArrowLeft"); await expect(page.getByRole("tab", { name: "Forecast history" })).toBeFocused();
 });

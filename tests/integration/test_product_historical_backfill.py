@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 from collections.abc import Iterator
 from dataclasses import replace
@@ -10,10 +12,19 @@ from typing import Any
 import psycopg
 import pytest
 from football.product.api_football import ApiFootballClient, ApiResponse
-from football.product.domain import MODEL_ARTIFACT_PATH, stable_id
+from football.product.domain import (
+    MODEL_ARTIFACT_PATH,
+    forecast_history_window,
+    forecast_input_sha,
+    sha256_json,
+    stable_id,
+)
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
-from football.product.sync import ProductSync
+from football.product.identity_admission import admit_provider_mappings
+from football.product.sync import PRODUCT_FORECAST_ALGORITHM_VERSION, ProductSync
 from psycopg import Connection
+
+from tests.integration.historical_source_fixture import test_snapshot as _test_snapshot
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +45,7 @@ def connection() -> Iterator[Connection[Any]]:
 
 
 def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
@@ -43,13 +55,17 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
     football_data = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-fd-v1"
     )
-    open_snapshot = openfootball.ensure_snapshot(
+    open_snapshot = _test_snapshot(
+        openfootball,
+        tmp_path,
         source_identity="test/openfootball",
         source_revision="a" * 40,
         acquired_at=observed_at,
         manifest_path="openfootball/test/catalog.json",
     )
-    data_snapshot = football_data.ensure_snapshot(
+    data_snapshot = _test_snapshot(
+        football_data,
+        tmp_path,
         source_identity="test/football-data.csv",
         source_revision="b" * 64,
         acquired_at=observed_at,
@@ -142,13 +158,16 @@ def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
 
 
 def test_bulk_ingestion_quarantines_team_timestamp_conflict(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 10, 9, tzinfo=UTC)
     store = HistoricalBackfillStore(
         connection, "openfootball", "OpenFootball", "identity-guard-test-v1"
     )
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/identity-guard",
         source_revision="f" * 40,
         acquired_at=observed_at,
@@ -205,11 +224,14 @@ def test_bulk_ingestion_quarantines_team_timestamp_conflict(
 
 
 def test_verified_team_crosswalk_uses_stable_canonical_identity(
+    tmp_path: Path,
     connection: Connection[Any],
 ) -> None:
     observed_at = datetime(2026, 10, 4, tzinfo=UTC)
     store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/explicit-team-crosswalk",
         source_revision="e" * 40,
         acquired_at=observed_at,
@@ -259,16 +281,41 @@ def test_verified_team_crosswalk_uses_stable_canonical_identity(
     assert mapping == (canonical_team_id, "explicit_crosswalk")
 
 
-def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) -> None:
+def test_backfill_history_unlocks_missing_forecast(
+    tmp_path: Path, connection: Connection[Any]
+) -> None:
     observed_at = datetime(2026, 9, 30, tzinfo=UTC)
     store = HistoricalBackfillStore(connection, "openfootball", "OpenFootball", "test-open-v1")
-    snapshot = store.ensure_snapshot(
+    snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/forecast-unlock",
         source_revision="c" * 40,
         acquired_at=observed_at,
-        manifest_path="openfootball/test/forecast-unlock.json",
+        manifest_path="2026/en.9.json",
+        payload=json.dumps(
+            {
+                "matches": [
+                    {"date": "2026-08-01", "team1": name, "team2": other, "score": {"ft": [2, 1]}}
+                    for index in range(10)
+                    for name, other in (
+                        ("Forecast Home FC", f"Away Opponent {index}"),
+                        (f"Home Opponent {index}", "Forecast Away FC"),
+                    )
+                ]
+                + [
+                    {
+                        "date": "2026-08-20",
+                        "team1": "Unrelated Home FC",
+                        "team2": "Unrelated Away FC",
+                        "score": {"ft": [1, 0]},
+                    }
+                ]
+            }
+        ).encode(),
     )
-    for index in range(10):
+
+    def import_pair(index: int) -> None:
         kickoff = datetime(2026, 8, 1, 12, tzinfo=UTC) + timedelta(days=index)
         for side in ("home", "away"):
             home_name = "Forecast Home FC" if side == "home" else f"Home Opponent {index}"
@@ -276,9 +323,9 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
             result = store.import_match(
                 HistoricalMatch(
                     provider_match_id=f"forecast-unlock-{side}-{index}",
-                    provider_competition_id="test.9",
+                    provider_competition_id="en.9",
                     competition_name="Forecast Test League 2026",
-                    country="Testland",
+                    country="England",
                     division=1,
                     season="2026",
                     home_team_id=home_name,
@@ -289,19 +336,22 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                     kickoff_precision="EXACT",
                     home_goals=2,
                     away_goals=1,
-                    source_path="2026/test.9.json",
+                    source_path="2026/en.9.json",
                 ),
                 snapshot,
                 observed_at,
             )
             assert result == "inserted"
+
+    for index in range(9):
+        import_pair(index)
     assert (
         store.import_match(
             HistoricalMatch(
                 provider_match_id="forecast-unlock-unrelated",
-                provider_competition_id="test.9",
+                provider_competition_id="en.9",
                 competition_name="Forecast Test League 2026",
-                country="Testland",
+                country="England",
                 division=1,
                 season="2026",
                 home_team_id="Unrelated Home FC",
@@ -312,7 +362,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 kickoff_precision="EXACT",
                 home_goals=1,
                 away_goals=0,
-                source_path="2026/test.9.json",
+                source_path="2026/en.9.json",
             ),
             snapshot,
             observed_at,
@@ -320,6 +370,8 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         == "inserted"
     )
 
+    admit_provider_mappings(connection, tmp_path, "openfootball")
+    future_kickoff = datetime.now(UTC) + timedelta(days=2)
     with connection.cursor() as cursor:
         competition_id = _first(
             cursor.execute(
@@ -327,7 +379,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
             SELECT competition_id FROM football.competition_provider_mappings mapping
             JOIN football.providers provider ON provider.id = mapping.provider_id
             WHERE provider.code = 'openfootball'
-              AND mapping.provider_competition_id = 'test.9'
+              AND mapping.provider_competition_id = 'en.9'
             """
             ).fetchone()
         )
@@ -365,7 +417,7 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
                 competition_id,
                 home_id,
                 away_id,
-                datetime(2026, 10, 10, 15, tzinfo=UTC),
+                future_kickoff,
                 observed_at,
             ),
         )
@@ -373,13 +425,120 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
     product = ProductSync(
         connection,
         ApiFootballClient("stored-data-only"),
-        PROJECT_ROOT / ".local" / "football-data",
+        tmp_path,
         PROJECT_ROOT / MODEL_ARTIFACT_PATH,
     )
+    before_tenth = product.refresh_pending_forecasts()
+    assert before_tenth["forecasts_created"] == 0
+    assert connection.execute(
+        "SELECT forecast_availability FROM football.product_fixtures WHERE fixture_id = %s",
+        (fixture_id,),
+    ).fetchone() == ("NOT_ENOUGH_HISTORY",)
+    import_pair(9)
+    admit_provider_mappings(connection, tmp_path, "openfootball")
+    forecast_knowledge_cutoff = _first(connection.execute("SELECT clock_timestamp()").fetchone())
     relevant_history = product._history_before(
-        datetime(2026, 10, 10, 15, tzinfo=UTC), home_id, away_id
+        future_kickoff, home_id, away_id, knowledge_cutoff=forecast_knowledge_cutoff
     )
-    created = product.refresh_forecasts(observed_at)
+    batched_history = product._batch_history(
+        [(fixture_id, home_id, away_id, future_kickoff)], forecast_knowledge_cutoff
+    )
+    assert (
+        product._target_history(batched_history, home_id, away_id, future_kickoff)
+        == relevant_history
+    )
+    legacy_id = stable_id("forecast-unlock-legacy", fixture_id)
+    legacy_time = forecast_knowledge_cutoff - timedelta(minutes=1)
+    connection.execute(
+        """INSERT INTO football.product_forecasts (
+               forecast_id, semantic_sha256, fixture_id, model_label,
+               model_algorithm_version, model_artifact_sha256, created_at,
+               football_cutoff, knowledge_cutoff, knowledge_mode,
+               expected_home_goals, expected_away_goals, probabilities,
+               score_matrix, payload_sha256, publication_mode, forecast_horizon,
+               predictive_input_snapshot_sha256, context_snapshot_sha256,
+               revision_reason_codes, new_information_ids)
+           VALUES (%s,%s,%s,'MVP_FORECAST','transferable-rolling-goals-poisson-v1',
+                   %s,%s,%s,%s,'bitemporal',1.2,1.1,'{}','[]',%s,
+                   'MVP_OWNER_AUTHORIZED','24H',%s,%s,'["INITIAL_FORECAST"]','[]')""",
+        (
+            legacy_id,
+            "a" * 64,
+            fixture_id,
+            hashlib.sha256((PROJECT_ROOT / MODEL_ARTIFACT_PATH).read_bytes()).hexdigest(),
+            legacy_time,
+            legacy_time,
+            legacy_time,
+            "b" * 64,
+            "c" * 64,
+            "d" * 64,
+        ),
+    )
+    legacy_row = connection.execute(
+        "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+        (legacy_id,),
+    ).fetchone()
+    prior_input_id = stable_id("forecast-unlock-rolling-input", fixture_id)
+    prior_window = forecast_history_window(relevant_history, future_kickoff, home_id, away_id)
+    assert prior_window is not None
+    prior_input_sha = forecast_input_sha(fixture_id, future_kickoff, home_id, away_id, prior_window)
+    prior_semantic_sha = sha256_json(
+        {
+            "fixture_id": str(fixture_id),
+            "artifact_sha256": hashlib.sha256(
+                (PROJECT_ROOT / MODEL_ARTIFACT_PATH).read_bytes()
+            ).hexdigest(),
+            "predictive_input_snapshot_sha256": prior_input_sha,
+        }
+    )
+    connection.execute(
+        """INSERT INTO football.product_forecasts (
+               forecast_id,semantic_sha256,fixture_id,model_label,model_algorithm_version,
+               model_artifact_sha256,created_at,football_cutoff,knowledge_cutoff,knowledge_mode,
+               expected_home_goals,expected_away_goals,probabilities,score_matrix,payload_sha256,
+               publication_mode,forecast_horizon,supersedes_forecast_id,
+               predictive_input_snapshot_sha256,context_snapshot_sha256,revision_reason_codes,
+               new_information_ids,score_matrix_version)
+           SELECT %s,%s,fixture_id,model_label,%s,model_artifact_sha256,
+                  created_at + interval '1 second',football_cutoff + interval '1 second',
+                  knowledge_cutoff + interval '1 second',
+                  knowledge_mode,expected_home_goals,expected_away_goals,probabilities,
+                  score_matrix,payload_sha256,publication_mode,forecast_horizon,
+                  %s,%s,context_snapshot_sha256,revision_reason_codes,new_information_ids,NULL
+           FROM football.product_forecasts WHERE forecast_id = %s""",
+        (
+            prior_input_id,
+            prior_semantic_sha,
+            PRODUCT_FORECAST_ALGORITHM_VERSION,
+            legacy_id,
+            prior_input_sha,
+            legacy_id,
+        ),
+    )
+    prior_input_row = connection.execute(
+        "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+        (prior_input_id,),
+    ).fetchone()
+    pending_before = connection.execute(
+        """SELECT generation, completed_generation
+           FROM football.product_forecast_refresh_work WHERE fixture_id = %s""",
+        (fixture_id,),
+    ).fetchone()
+    assert pending_before is not None and pending_before[0] > pending_before[1]
+    missing_artifact = ProductSync(
+        connection, ApiFootballClient("stored-data-only"), tmp_path, tmp_path / "missing.json"
+    )
+    with pytest.raises(FileNotFoundError), connection.transaction():
+        missing_artifact.refresh_pending_forecasts()
+    assert (
+        connection.execute(
+            """SELECT generation, completed_generation
+           FROM football.product_forecast_refresh_work WHERE fixture_id = %s""",
+            (fixture_id,),
+        ).fetchone()
+        == pending_before
+    )
+    refresh = product.refresh_pending_forecasts()
 
     with connection.cursor() as cursor:
         availability = _first(
@@ -396,12 +555,18 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         )
         probabilities = _first(
             cursor.execute(
-                "SELECT probabilities FROM football.product_forecasts WHERE fixture_id = %s",
-                (fixture_id,),
+                """SELECT probabilities FROM football.product_forecasts
+                   WHERE fixture_id = %s AND model_algorithm_version = %s
+                     AND score_matrix_version = 'compact-buckets-v2'""",
+                (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
             ).fetchone()
         )
 
-    assert created >= 1
+    assert refresh == {
+        "forecasts_created": 1,
+        "fixtures_processed": 1,
+        "fixtures_pending": 0,
+    }
     assert len(relevant_history) == 20
     assert all(
         home_id in (match.home_team_id, match.away_team_id)
@@ -409,9 +574,73 @@ def test_backfill_history_unlocks_missing_forecast(connection: Connection[Any]) 
         for match in relevant_history
     )
     assert availability == "FORECAST_AVAILABLE"
-    assert forecast_count == 1
+    assert forecast_count == 3
+    assert connection.execute(
+        """SELECT supersedes_forecast_id, revision_reason_codes
+           FROM football.product_forecasts WHERE fixture_id = %s
+             AND model_algorithm_version = %s
+                     AND score_matrix_version = 'compact-buckets-v2'""",
+        (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
+    ).fetchone() == (prior_input_id, ["SERIALIZATION_CONTRACT_CHANGED"])
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+            (legacy_id,),
+        ).fetchone()
+        == legacy_row
+    )
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(f) FROM football.product_forecasts f WHERE forecast_id = %s",
+            (prior_input_id,),
+        ).fetchone()
+        == prior_input_row
+    )
     assert probabilities["total_over_1_5"] >= probabilities["total_over_2_5"]
     assert probabilities["total_under_3_5"] >= probabilities["total_under_2_5"]
+    connection.execute(
+        """UPDATE football.product_team_match_history SET home_goals = 3
+           WHERE source_snapshot_id = %s AND home_team_id NOT IN (%s, %s)
+             AND away_team_id NOT IN (%s, %s)""",
+        (snapshot, home_id, away_id, home_id, away_id),
+    )
+    assert product.refresh_pending_forecasts()["fixtures_processed"] == 0
+    assert product.refresh_forecasts() == 0
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+    ).fetchone() == (3,)
+    connection.execute("UPDATE football.team_provider_mappings SET mapping_confidence = 0.5")
+    assert (
+        product._history_before(
+            future_kickoff,
+            home_id,
+            away_id,
+            knowledge_cutoff=_first(connection.execute("SELECT clock_timestamp()").fetchone()),
+        )
+        == []
+    )
+    assert (
+        product._history_before(
+            future_kickoff, home_id, away_id, knowledge_cutoff=forecast_knowledge_cutoff
+        )
+        == relevant_history
+    )
+    assert connection.execute(
+        """SELECT probabilities FROM football.product_forecasts
+           WHERE fixture_id = %s AND model_algorithm_version = %s
+                     AND score_matrix_version = 'compact-buckets-v2'""",
+        (fixture_id, PRODUCT_FORECAST_ALGORITHM_VERSION),
+    ).fetchone() == (probabilities,)
+    connection.execute(
+        """UPDATE football.product_fixtures
+           SET kickoff_at = clock_timestamp() - interval '1 millisecond'
+           WHERE fixture_id = %s""",
+        (fixture_id,),
+    )
+    assert product.refresh_forecasts(forecast_knowledge_cutoff) == 0
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_forecasts WHERE fixture_id = %s", (fixture_id,)
+    ).fetchone() == (3,)
 
 
 def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
@@ -449,7 +678,9 @@ def test_fixture_sync_does_not_reassign_provider_aliases_by_name(
     store = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
     )
-    history_snapshot = store.ensure_snapshot(
+    history_snapshot = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/premier-league.csv",
         source_revision="d" * 64,
         acquired_at=observed_at,
@@ -882,11 +1113,17 @@ def test_fixture_backfill_uses_provider_neutral_historical_result(
     store = HistoricalBackfillStore(
         connection, "football_data_uk", "Football-Data.co.uk", "test-v1"
     )
-    snapshot_id = store.ensure_snapshot(
+    snapshot_id = _test_snapshot(
+        store,
+        tmp_path,
         source_identity="test/result.csv",
         source_revision="c" * 64,
         acquired_at=observed_at,
-        manifest_path="football_data_uk/test/result.csv",
+        manifest_path="test/result.csv",
+        payload=(
+            b"Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG\n"
+            b"E0,30/09/2026,20:45,Result Home,Result Away,2,1\n"
+        ),
     )
     result = HistoricalMatch(
         provider_match_id="test-result-1",
@@ -906,6 +1143,7 @@ def test_fixture_backfill_uses_provider_neutral_historical_result(
         source_path="test/result.csv",
     )
     assert store.import_match(result, snapshot_id, observed_at) == "inserted"
+    admit_provider_mappings(connection, tmp_path, "football_data_uk")
     with connection.cursor() as cursor:
         history = cursor.execute(
             """

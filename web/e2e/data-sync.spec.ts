@@ -7,6 +7,7 @@ const coverage = {
   historical_matches: 120430, competitions_with_history: 84, teams_with_10_matches: 930,
   teams_below_10_matches: 23, scheduled_fixtures: 22, forecast_available: 14,
   not_enough_history: 8, mapping_failures: 3, source_conflicts: 1,
+  forecast_refresh_pending: 3, forecast_refresh_complete: 19,
   missing_live_scores: 2, fotmob_mapped: 420, fotmob_unmapped: 3,
   pitchapi_mapped: 215, pitchapi_unmapped: 7, fotmob_history: 310,
   pitchapi_history: 90, api_football_requests_used: 100,
@@ -41,16 +42,23 @@ test("admin data sync exposes fixed actions, coverage, history, and accessible c
   const accessibility = await new AxeBuilder({ page }).analyze();
   expect(accessibility.violations).toEqual([]);
   await page.getByRole("button", { name: "Run Full Sync" }).click();
-  await expect(page.getByText("Queued", { exact: true })).toBeVisible();
+  await expect(page.getByText("Running", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sync OpenFootball" })).toBeDisabled();
 });
 
 test("admin remains usable at mobile width", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile", "mobile-only assertion");
+  await page.setViewportSize({ width: 320, height: 800 });
   await page.goto("/admin/data-sync");
   await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByText("Admin")).toBeVisible();
   await expect(page.getByRole("button", { name: "Run Full Sync" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Recent sync runs" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  const table = page.getByRole("region", { name: "Recent sync runs table" });
+  await table.focus();
+  expect(await table.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => table.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
 });
 
 function run(id: string, type: string, status: string) {

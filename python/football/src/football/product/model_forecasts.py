@@ -147,7 +147,7 @@ def model_forecast_payload(forecast: ModelForecast | None) -> dict[str, object] 
         for home, row in enumerate(forecast.score_matrix)
         for away, probability in enumerate(row)
     ]
-    return {
+    payload: dict[str, object] = {
         "expected_home_goals": forecast.expected_home_goals,
         "expected_away_goals": forecast.expected_away_goals,
         "probabilities": {
@@ -189,3 +189,15 @@ def model_forecast_payload(forecast: ModelForecast | None) -> dict[str, object] 
             else None
         ),
     }
+    if forecast.numerical_contract_version == "exact-support-with-tail-v2":
+        payload.update(
+            {
+                "numerical_contract_version": forecast.numerical_contract_version,
+                "unresolved_tail_probability": forecast.unresolved_tail_probability,
+                "unresolved_tail_home_expectation": forecast.unresolved_tail_home_expectation,
+                "unresolved_tail_away_expectation": forecast.unresolved_tail_away_expectation,
+                "display_score_labels": list(forecast.display_score_labels),
+                "display_score_matrix": [list(row) for row in forecast.display_score_matrix],
+            }
+        )
+    return payload

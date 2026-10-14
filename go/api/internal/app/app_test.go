@@ -16,6 +16,15 @@ type scheduleRunner struct {
 	requests chan SyncRequest
 }
 
+type forecastScheduleRunner struct {
+	scheduleRunner
+	pending bool
+}
+
+func (runner forecastScheduleRunner) PendingForecastRefresh(context.Context) (bool, error) {
+	return runner.pending, nil
+}
+
 func (runner scheduleRunner) Start(_ context.Context, request SyncRequest) (SyncRun, error) {
 	runner.requests <- request
 	return SyncRun{}, nil
@@ -69,6 +78,85 @@ func TestSyncLanesSeparateLiveProvidersFromBulkWork(t *testing.T) {
 		if actual := syncLane(syncType); actual != expected {
 			t.Errorf("syncLane(%q) = %q, want %q", syncType, actual, expected)
 		}
+	}
+}
+
+func TestHistoryScheduleRequiresEnablementAndSubmitsBoundedDurableWork(t *testing.T) {
+	requests := make(chan SyncRequest, 2)
+	application := NewWithSyncRunner(
+		Config{HistorySyncInterval: time.Hour, PitchAPIEnabled: true},
+		slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, unavailableProductStore{},
+		scheduleRunner{requests: requests},
+	)
+	application.runHistorySyncSchedule(context.Background())
+	select {
+	case <-requests:
+		t.Fatal("disabled history acquisition submitted work")
+	default:
+	}
+	application.config.HistorySyncEnabled = true
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go application.runHistorySyncSchedule(ctx)
+	select {
+	case request := <-requests:
+		if request.Type != SyncHistoryBackfill || !request.ScheduledHistory {
+			t.Fatalf("scheduled history request = %+v", request)
+		}
+		args, err := syncCommandArgs(request)
+		if err != nil || !strings.Contains(strings.Join(args, " "), "--scheduled") {
+			t.Fatalf("scheduled command = %v, error = %v", args, err)
+		}
+		retry := syncRequestFromRun(SyncRun{Type: request.Type, Parameters: syncParameters(request)})
+		if !retry.ScheduledHistory {
+			t.Fatal("durable retry lost scheduled acquisition limits")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("enabled history acquisition did not progress without browser traffic")
+	}
+}
+
+func TestPendingForecastScheduleUsesDurableBoundedJob(t *testing.T) {
+	requests := make(chan SyncRequest, 1)
+	application := NewWithSyncRunner(
+		Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)),
+		readinessStub{}, unavailableProductStore{},
+		forecastScheduleRunner{scheduleRunner: scheduleRunner{requests: requests}, pending: true},
+	)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go application.runForecastRefreshSchedule(ctx)
+	select {
+	case request := <-requests:
+		if request.Type != SyncForecastRefresh || !request.PendingOnly {
+			t.Fatalf("scheduled forecast request = %+v", request)
+		}
+		args, err := syncCommandArgs(request)
+		if err != nil || !strings.Contains(strings.Join(args, " "), "--pending-only") {
+			t.Fatalf("scheduled command = %v, error = %v", args, err)
+		}
+		retry := syncRequestFromRun(SyncRun{Type: request.Type, Parameters: syncParameters(request)})
+		if !retry.PendingOnly {
+			t.Fatal("durable retry lost pending-only scope")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("pending forecast work did not progress without browser traffic")
+	}
+}
+
+func TestHistoryThroughputRequiresAnObservedSchedulingInterval(t *testing.T) {
+	progress := []ProviderHistoryProgress{
+		{Pending: 4, Completions24Hours: 2, ObservedSeconds: 3599},
+		{Pending: 4, Completions24Hours: 2, ObservedSeconds: 3600},
+		{Pending: 4, ObservedSeconds: 3600},
+	}
+	calculateHistoryThroughput(progress, time.Hour)
+	if progress[0].EstimatedDrainHours != nil || progress[2].CompletionsPerHour != nil {
+		t.Fatal("unmeasured throughput was estimated")
+	}
+	if progress[1].CompletionsPerHour == nil || *progress[1].CompletionsPerHour != 2 ||
+		progress[1].EstimatedDrainHours == nil || *progress[1].EstimatedDrainHours != 2 {
+		t.Fatalf("measured throughput = %+v", progress[1])
 	}
 }
 
@@ -142,6 +230,20 @@ func TestConfigFromEnvRejectsNonPositiveDuration(t *testing.T) {
 
 	if err == nil || err.Error() != "DEPENDENCY_TIMEOUT must be a positive duration" {
 		t.Fatalf("error = %v, want positive duration validation error", err)
+	}
+}
+
+func TestHistorySyncIntervalCannotExceedApprovedCadence(t *testing.T) {
+	for _, value := range []string{"30m", "invalid"} {
+		t.Setenv("MATCHFORGE_HISTORY_SYNC_INTERVAL", value)
+		if _, err := historySyncIntervalFromEnv(); err == nil {
+			t.Fatalf("interval %q was accepted", value)
+		}
+	}
+	t.Setenv("MATCHFORGE_HISTORY_SYNC_INTERVAL", "1h")
+	interval, err := historySyncIntervalFromEnv()
+	if err != nil || interval != time.Hour {
+		t.Fatalf("approved interval = %s, error = %v", interval, err)
 	}
 }
 

@@ -157,8 +157,12 @@ def test_transport_retries_rate_limit_and_honors_retry_after(
         def __exit__(self, *_args: object) -> None:
             return None
 
-        def read(self, _limit: int) -> bytes:
-            return json.dumps({"data": {}}).encode()
+        payload = json.dumps({"data": {}}).encode()
+
+        def read(self, limit: int) -> bytes:
+            result = self.payload[:limit]
+            self.payload = self.payload[limit:]
+            return result
 
         @property
         def headers(self) -> Message:
@@ -172,7 +176,7 @@ def test_transport_retries_rate_limit_and_honors_retry_after(
         return Response()
 
     delays: list[float] = []
-    monkeypatch.setattr("football.providers.pitchapi.urlopen", open_once_limited)
+    monkeypatch.setattr("football.providers.pitchapi.open_bounded", open_once_limited)
     transport = UrllibPitchApiTransport(sleep_fn=delays.append)
     result = transport.get(
         "https://api.pitchapi.dev/v1/date/2026-10-09?status=all",

@@ -53,6 +53,30 @@ The required stored-data forecast refresh created zero new forecasts. This is no
 
 Each stored competition records country, continent, inferred division, season, fixtures, results, standings, H2H, forecast, xG and team-stat availability plus source roles. Fixture availability is separate from forecast availability. The product exposes `FORECAST_AVAILABLE`, `NOT_ENOUGH_HISTORY`, `SOURCE_DATA_INCOMPLETE`, and `TEMPORARILY_UNAVAILABLE` without inventing probabilities.
 
+Provider-scoped provisional competitions can display country metadata from
+checksum- and size-verified retained FotMob daily/league responses or the PitchAPI
+league catalogue. Matching uses the exact provider competition ID, including
+FotMob phase IDs; names and parent league IDs never substitute for that ID.
+Supported country codes use the existing product country names. `INT` and
+`INT-2` display as `International`, with continent `World`. Conflicting,
+unsupported or missing evidence leaves the country unresolved. The landing page
+labels unresolved fields as `Country unavailable` or `Continent unavailable`.
+Known geography and verified competition metadata are preserved.
+
+This display repair leaves `metadata_status=PROVISIONAL`, identity decisions,
+history eligibility and published forecasts unchanged. Acquisition timestamps
+remain intact; the current display row records the actual repair time. Date and
+league synchronization replay retained geography automatically. Operators can
+repair existing display rows without fetching providers or refreshing forecasts:
+
+```sh
+uv run python -m football.product.cli refresh-competition-geography --provider fotmob
+uv run python -m football.product.cli refresh-competition-geography --provider pitchapi
+```
+
+The JSON report links each update to its source snapshots and lists unresolved
+competitions, conflicting provider IDs, unsupported codes and invalid snapshots.
+
 Current material gaps are:
 
 - `NOT_ENOUGH_HISTORY` for teams without ten eligible pre-kickoff matches;

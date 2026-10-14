@@ -36,6 +36,7 @@ func NewWithSyncRunner(
 	product ProductStore,
 	syncRunner SyncRunner,
 ) *App {
+	config = config.servingDefaults()
 	application := &App{
 		config: config, logger: logger, readiness: readiness,
 		product: product, syncRunner: syncRunner,
@@ -69,7 +70,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("POST /v1/admin/sync/fotmob", application.startSync(SyncFotMob))
 	mux.HandleFunc("POST /v1/admin/sync/pitchapi", application.startSync(SyncPitchAPI))
 	mux.HandleFunc("POST /v1/admin/sync/all", application.startSync(SyncAllData))
-	application.handler = application.cors(mux)
+	application.handler = application.requestDeadline(application.cors(application.adminAccess(mux)))
 	return application
 }
 
@@ -83,11 +84,14 @@ func (application *App) Run(ctx context.Context) error {
 	if application.config.OperationalSyncInterval > 0 {
 		go application.runOperationalSyncSchedule(ctx)
 	}
-	server := &http.Server{
-		Addr:              application.config.Address,
-		Handler:           application.handler,
-		ReadHeaderTimeout: application.config.ReadHeaderTimeout,
+	if application.config.HistorySyncEnabled {
+		go application.runHistorySyncSchedule(ctx)
 	}
+	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
+		go application.runForecastRefreshSchedule(ctx)
+	}
+	server := application.httpServer()
+
 	errorsChannel := make(chan error, 1)
 	go func() {
 		application.logger.Info("api listening", "address", application.config.Address)
@@ -133,6 +137,54 @@ func (application *App) runOperationalSyncSchedule(ctx context.Context) {
 			})
 			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 				application.logger.Warn("scheduled provider sync failed to start", "sync_type", syncType, "error", err)
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runHistorySyncSchedule(ctx context.Context) {
+	if !application.config.HistorySyncEnabled ||
+		(!application.config.PitchAPIEnabled && !application.config.FotMobEnabled) {
+		return
+	}
+	ticker := time.NewTicker(application.config.HistorySyncInterval)
+	defer ticker.Stop()
+	for {
+		_, err := application.syncRunner.Start(ctx, SyncRequest{
+			Type: SyncHistoryBackfill, ScheduledHistory: true,
+		})
+		if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+			application.logger.Warn("scheduled history failed to start", "error", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runForecastRefreshSchedule(ctx context.Context) {
+	runner := application.syncRunner.(pendingForecastRefreshRunner)
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		pending, err := runner.PendingForecastRefresh(ctx)
+		if err != nil {
+			if ctx.Err() == nil {
+				application.logger.Warn("check pending forecast refresh", "error", err)
+			}
+		} else if pending {
+			_, err = application.syncRunner.Start(ctx, SyncRequest{
+				Type: SyncForecastRefresh, PendingOnly: true,
+			})
+			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+				application.logger.Warn("scheduled forecast refresh failed to start", "error", err)
 			}
 		}
 		select {

@@ -207,6 +207,25 @@ Do not merge entities solely because their names look similar.
 
 Resolution must be explicit, deterministic, and traceable.
 
+Team corrections extend the R2 `product_identity_admissions` log. A correction
+links one source mapping to a verified target mapping and the original fixture
+contradiction using `corrects_decision_id` and `target_mapping_id`. It preserves
+the original provider mapping, fixture decisions and source observations. Its
+database-stamped `decided_at` makes it eligible prospectively; source acquisition
+is recorded separately and never substituted for an admission time.
+
+`product_team_identity_at(mapping_id, knowledge_cutoff)` resolves immutable
+admissions at the requested cutoff. Current operational views expose effective
+IDs without rewriting physical records. History qualification appends snapshots
+with the eligible IDs; `product_eligible_history_at` keeps earlier snapshots
+unchanged after corrections and revocations. Forecast refresh and historical
+fixture context resolve target teams at the same cutoff as their history reads.
+Team admission does not merge fixtures; fixture reconciliation retains its own
+competition, season, orientation and conflict checks.
+
+The typed correction operation and deployment procedure are documented in
+[MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
+
 ## Point-in-Time Contract
 
 Historical forecast work separates:
@@ -262,6 +281,18 @@ Where applicable:
 - concurrency must not create multiple logical artifacts for one semantic identity.
 
 Detailed retry and recovery behavior belongs in the owning subsystem document.
+
+For product forecasts, a qualifying history decision or a changed future fixture
+adds affected fixture IDs to `football.product_forecast_refresh_work` in the same
+database transaction. The existing sync runner retries pending work in batches of
+at most 32 fixtures. A batch marks its work complete in the same transaction as
+its forecast and availability updates; interrupted batches remain pending. The
+forecast builder still applies each fixture's football and knowledge cutoffs and
+publishes immutable revisions only when its predictive inputs change.
+New product forecasts use the `rolling-ten-v2` predictive-input hash and the
+`transferable-rolling-goals-poisson-v1-rolling10-v2` product algorithm label.
+The fitted model and probabilities are unchanged; older forecast versions remain
+readable and are never rewritten.
 
 ## Artifact Boundary
 

@@ -172,6 +172,17 @@ func TestCalculatePerformanceRatings(t *testing.T) {
 	}
 }
 
+func TestPerformancePriorDoesNotAssumeUnknownOutcomeAvailability(t *testing.T) {
+	records := []performanceRecord{
+		{probabilities: map[string]float64{"home": .6, "draw": .2, "away": .2}, homeScore: 1, awayScore: 0},
+		{probabilities: map[string]float64{"home": .2, "draw": .2, "away": .6}, homeScore: 0, awayScore: 1},
+	}
+	result := calculatePerformance("competition", records)
+	if result.BaselineBrier == nil || math.Abs(*result.BaselineBrier-2.0/3.0) > 1e-12 {
+		t.Fatalf("unknown prior outcome times must not influence the baseline: %+v", result.BaselineBrier)
+	}
+}
+
 func TestPerformanceListAPIParsesBrowseFilters(t *testing.T) {
 	store := &performanceStoreStub{}
 	application := New(

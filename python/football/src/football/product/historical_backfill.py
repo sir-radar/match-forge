@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, time, timedelta
 from pathlib import Path
@@ -14,10 +13,13 @@ from uuid import UUID
 from psycopg import Connection
 
 from football.product.domain import normalize_team_name, sha256_json, stable_id
+from football.product.historical_manifest import verify_manifest
+from football.product.identity_admission import verify_source_identifier
 from football.product.identity_crosswalks import (
     COMPETITION_CROSSWALKS,
     canonical_team_provider_identity,
 )
+from football.storage.raw import ImmutableFileStore
 
 KickoffPrecision = Literal["EXACT", "DATE_ONLY"]
 
@@ -70,9 +72,7 @@ def cache_resource(source: Path, cache_root: Path, provider: str, revision: str)
     digest = hashlib.sha256(payload).hexdigest()
     suffix = source.suffix.casefold() or ".bin"
     destination = cache_root / provider / revision / f"{digest}{suffix}"
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    if not destination.exists():
-        shutil.copyfile(source, destination)
+    ImmutableFileStore(cache_root).publish(str(destination.relative_to(cache_root)), payload)
     return destination
 
 
@@ -85,11 +85,14 @@ class HistoricalBackfillStore:
         provider_code: str,
         provider_name: str,
         parser_version: str,
+        *,
+        data_root: Path = Path(".local/football-data"),
     ) -> None:
         self.connection = connection
         self.provider_code = provider_code
         self.provider_name = provider_name
         self.parser_version = parser_version
+        self.data_root = data_root
         self.competition_mappings_created = 0
         self.team_mappings_created = 0
 
@@ -103,11 +106,16 @@ class HistoricalBackfillStore:
         repository: str | None = None,
         git_sha: str | None = None,
     ) -> UUID:
+        manifest, manifest_sha = verify_manifest(
+            self.data_root, manifest_path, self.provider_code, source_identity, source_revision
+        )
+        acquired_at = datetime.fromisoformat(manifest["acquired_at"])
+        # Version new registrations rather than replacing pathname-hashed legacy evidence.
+        registered_revision = f"manifest-v1:{source_revision}:{manifest_sha}"
         provider_id = self._ensure_provider()
         snapshot_id = stable_id(
-            "source-snapshot", self.provider_code, source_identity, source_revision
+            "source-snapshot", self.provider_code, source_identity, registered_revision
         )
-        manifest_sha = hashlib.sha256(manifest_path.encode()).hexdigest()
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -121,7 +129,7 @@ class HistoricalBackfillStore:
                     snapshot_id,
                     provider_id,
                     source_identity,
-                    source_revision,
+                    registered_revision,
                     repository,
                     git_sha,
                     acquired_at,
@@ -129,6 +137,13 @@ class HistoricalBackfillStore:
                     manifest_sha,
                 ),
             )
+            cursor.execute(
+                """SELECT manifest_path, manifest_sha256, acquired_at
+                   FROM football.source_snapshots WHERE id = %s""",
+                (snapshot_id,),
+            )
+            if cursor.fetchone() != (manifest_path, manifest_sha, acquired_at):
+                raise ValueError("immutable historical snapshot registration conflict")
         return snapshot_id
 
     def resource_already_imported(self, provider_path: str, sha256: str) -> bool:
@@ -178,6 +193,27 @@ class HistoricalBackfillStore:
         warnings: bool = False,
     ) -> UUID:
         digest = hashlib.sha256(payload).hexdigest()
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT source_identity, source_revision, manifest_path, manifest_sha256
+                   FROM football.source_snapshots WHERE id = %s""",
+                (snapshot_id,),
+            )
+            snapshot = cursor.fetchone()
+        if snapshot is None or not snapshot[1].startswith("manifest-v1:"):
+            raise ValueError("historical resource requires a byte-verifiable manifest")
+        revision = snapshot[1].removeprefix("manifest-v1:").rsplit(":", 1)[0]
+        manifest, actual_sha = verify_manifest(
+            self.data_root, snapshot[2], self.provider_code, snapshot[0], revision
+        )
+        if actual_sha != snapshot[3] or not any(
+            item["provider_path"] == provider_path
+            and item["sha256"] == digest
+            and item["size_bytes"] == len(payload)
+            for item in manifest["resources"]
+        ):
+            raise ValueError("historical resource is absent from its registered manifest")
+        acquired_at = datetime.fromisoformat(manifest["acquired_at"])
         resource_id = stable_id("source-resource", snapshot_id, provider_path, digest)
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -186,14 +222,7 @@ class HistoricalBackfillStore:
                     id, source_snapshot_id, provider_path, sha256, size_bytes, media_type,
                     parse_status, validation_status, acquired_at, parser_version
                 ) VALUES (%s, %s, %s, %s, %s, %s, 'parsed', %s, %s, %s)
-                ON CONFLICT (source_snapshot_id, provider_path) DO UPDATE SET
-                    sha256 = EXCLUDED.sha256,
-                    size_bytes = EXCLUDED.size_bytes,
-                    media_type = EXCLUDED.media_type,
-                    parse_status = EXCLUDED.parse_status,
-                    validation_status = EXCLUDED.validation_status,
-                    acquired_at = EXCLUDED.acquired_at,
-                    parser_version = EXCLUDED.parser_version
+                ON CONFLICT (source_snapshot_id, provider_path) DO NOTHING
                 """,
                 (
                     resource_id,
@@ -207,6 +236,13 @@ class HistoricalBackfillStore:
                     self.parser_version,
                 ),
             )
+            cursor.execute(
+                """SELECT sha256, size_bytes, media_type FROM football.source_resources
+                   WHERE source_snapshot_id = %s AND provider_path = %s""",
+                (snapshot_id, provider_path),
+            )
+            if cursor.fetchone() != (digest, len(payload), media_type):
+                raise ValueError("immutable historical resource registration conflict")
         return resource_id
 
     def import_match(
@@ -260,22 +296,7 @@ class HistoricalBackfillStore:
             )
         existing = self._existing_match(match, competition_id, home_id, away_id)
         if existing is not None:
-            fixture_id, home_goals, away_goals, provider_code, existing_snapshot = existing
-            self._ensure_match_mapping(
-                fixture_id, match.provider_match_id, snapshot_id, observed_at
-            )
-            if (home_goals, away_goals) != (match.home_goals, match.away_goals):
-                self._record_conflict(
-                    fixture_id,
-                    str(provider_code),
-                    home_goals,
-                    away_goals,
-                    existing_snapshot,
-                    match,
-                    snapshot_id,
-                )
-                return "conflict"
-            return "existing"
+            return self._reuse_history_match(match, snapshot_id, observed_at, existing)
         collisions = self._team_timestamp_collisions(match.kickoff_at, home_id, away_id)
         if collisions:
             safe_alias = [
@@ -367,6 +388,33 @@ class HistoricalBackfillStore:
         _ = competition_created
         return "inserted" if inserted else "existing"
 
+    def _reuse_history_match(
+        self,
+        match: HistoricalMatch,
+        snapshot_id: UUID,
+        observed_at: datetime,
+        existing: tuple[UUID, int, int, str, UUID],
+    ) -> Literal["existing", "conflict", "identity_conflict"]:
+        fixture_id, home_goals, away_goals, provider_code, existing_snapshot = existing
+        if provider_code != self.provider_code:
+            self._record_identity_conflict(
+                match, snapshot_id, observed_at, (fixture_id,), "UNREVIEWED_CROSS_PROVIDER_FIXTURE"
+            )
+            return "identity_conflict"
+        self._ensure_match_mapping(fixture_id, match.provider_match_id, snapshot_id, observed_at)
+        if (home_goals, away_goals) != (match.home_goals, match.away_goals):
+            self._record_conflict(
+                fixture_id,
+                provider_code,
+                home_goals,
+                away_goals,
+                existing_snapshot,
+                match,
+                snapshot_id,
+            )
+            return "conflict"
+        return "existing"
+
     def _competition_id(
         self, match: HistoricalMatch, snapshot_id: UUID, observed_at: datetime
     ) -> tuple[UUID | None, bool]:
@@ -377,6 +425,7 @@ class HistoricalBackfillStore:
                 FROM football.competition_provider_mappings mapping
                 JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = %s AND mapping.provider_competition_id = %s
+                  AND mapping.valid_to IS NULL
                 ORDER BY mapping.first_seen_at LIMIT 1
                 """,
                 (self.provider_code, match.provider_competition_id),
@@ -394,6 +443,7 @@ class HistoricalBackfillStore:
                     FROM football.competition_provider_mappings mapping
                     JOIN football.providers provider ON provider.id = mapping.provider_id
                     WHERE provider.code = %s AND mapping.provider_competition_id = %s
+                      AND mapping.valid_to IS NULL
                     ORDER BY mapping.first_seen_at LIMIT 1
                     """,
                     crosswalk,
@@ -513,6 +563,21 @@ class HistoricalBackfillStore:
         mapping_method = (
             "explicit_crosswalk" if canonical_provider_identity is not None else "deterministic"
         )
+        if (
+            found is not None
+            and found[0] != team_id
+            and verify_source_identifier(
+                self.connection,
+                self.data_root,
+                snapshot_id,
+                self.provider_code,
+                "team",
+                provider_team_id,
+                country,
+            )
+            is None
+        ):
+            return None, False
         provider_id = self._provider_id()
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -567,15 +632,37 @@ class HistoricalBackfillStore:
             )
             self.team_mappings_created += cursor.rowcount
             if canonical_provider_identity is not None:
+                decision_at = datetime.now(UTC)
                 cursor.execute(
                     """
                     UPDATE football.team_provider_mappings
-                    SET team_id = %s, mapping_method = 'explicit_crosswalk',
+                    SET valid_to = %s,
                         last_seen_at = GREATEST(last_seen_at, %s)
                     WHERE provider_id = %s AND provider_team_id = %s
                       AND valid_to IS NULL
+                      AND (team_id <> %s OR mapping_method <> 'explicit_crosswalk')
                     """,
-                    (team_id, observed_at, provider_id, provider_team_id),
+                    (decision_at, decision_at, provider_id, provider_team_id, team_id),
+                )
+                cursor.execute(
+                    """INSERT INTO football.team_provider_mappings (
+                       team_id, provider_id, provider_team_id, valid_from, first_seen_at,
+                       last_seen_at, mapping_method, mapping_confidence, source_snapshot_id)
+                       SELECT %s, %s, %s, %s, %s, %s, 'explicit_crosswalk', 1, %s
+                       WHERE NOT EXISTS (SELECT 1 FROM football.team_provider_mappings
+                           WHERE provider_id = %s AND provider_team_id = %s
+                             AND valid_to IS NULL)""",
+                    (
+                        team_id,
+                        provider_id,
+                        provider_team_id,
+                        decision_at,
+                        decision_at,
+                        decision_at,
+                        snapshot_id,
+                        provider_id,
+                        provider_team_id,
+                    ),
                 )
         return team_id, found is None
 

@@ -5,15 +5,18 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import os
 import re
+import stat
 import urllib.parse
-import urllib.request
 import zipfile
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from html.parser import HTMLParser
-from pathlib import Path
+from math import isfinite
+from pathlib import Path, PurePosixPath
+from time import monotonic
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -26,6 +29,9 @@ from football.product.historical_backfill import (
     KickoffPrecision,
     date_only_timestamp,
 )
+from football.product.historical_manifest import publish_manifest
+from football.product.identity_admission import admit_provider_mappings
+from football.providers.base import UrllibHttpTransport, read_bounded
 
 PROVIDER_CODE = "football_data_uk"
 INDEX_URL = "https://www.football-data.co.uk/downloadm.php"
@@ -227,11 +233,92 @@ def parse_csv_resource(
     return parsed
 
 
-def csv_members(payload: bytes) -> Iterable[tuple[str, bytes]]:
+@dataclass(frozen=True, slots=True)
+class ArchiveLimits:
+    compressed_bytes: int = 2 * 1024 * 1024
+    extracted_bytes: int = 16 * 1024 * 1024
+    entries: int = 128
+    file_bytes: int = 1024 * 1024
+    ratio: float = 32
+    extraction_seconds: float = 5
+
+    def __post_init__(self) -> None:
+        sizes = (self.compressed_bytes, self.extracted_bytes, self.entries, self.file_bytes)
+        if any(not isinstance(value, int) or value <= 0 for value in sizes):
+            raise ValueError("archive size/count limits must be positive integers")
+        if any(
+            not isfinite(value) or value <= 0 for value in (self.ratio, self.extraction_seconds)
+        ):
+            raise ValueError("archive ratio/duration limits must be positive and finite")
+
+    @classmethod
+    def from_env(cls) -> ArchiveLimits:
+        return cls(
+            compressed_bytes=int(os.getenv("MATCHFORGE_ARCHIVE_COMPRESSED_BYTES", "2097152")),
+            extracted_bytes=int(os.getenv("MATCHFORGE_ARCHIVE_EXTRACTED_BYTES", "16777216")),
+            entries=int(os.getenv("MATCHFORGE_ARCHIVE_ENTRIES", "128")),
+            file_bytes=int(os.getenv("MATCHFORGE_ARCHIVE_FILE_BYTES", "1048576")),
+            ratio=float(os.getenv("MATCHFORGE_ARCHIVE_RATIO", "32")),
+            extraction_seconds=float(os.getenv("MATCHFORGE_ARCHIVE_EXTRACTION_SECONDS", "5")),
+        )
+
+
+def _check_archive_member(member: zipfile.ZipInfo, limits: ArchiveLimits) -> None:
+    name = member.orig_filename
+    path = PurePosixPath(name.replace("\\", "/"))
+    if "\x00" in name or path.is_absolute() or ".." in path.parts or ":" in name:
+        raise ValueError("unsafe archive member path")
+    mode = stat.S_IFMT(member.external_attr >> 16)
+    if mode not in (0, stat.S_IFREG, stat.S_IFDIR):
+        raise ValueError("unsafe archive member link/type")
+    if member.flag_bits & 1 or member.compress_type not in (
+        zipfile.ZIP_STORED,
+        zipfile.ZIP_DEFLATED,
+    ):
+        raise ValueError("unsupported encrypted/compressed archive member")
+    if member.file_size > limits.file_bytes:
+        raise ValueError("archive member size limit exceeded")
+    if member.file_size > limits.ratio * member.compress_size:
+        raise ValueError("archive decompression ratio limit exceeded")
+
+
+def _check_archive(archive: zipfile.ZipFile, payload_size: int, limits: ArchiveLimits) -> None:
+    members = archive.infolist()
+    if len(members) > limits.entries:
+        raise ValueError("archive entry limit exceeded")
+    names = [member.filename.casefold() for member in members]
+    if len(set(names)) != len(names):
+        raise ValueError("duplicate archive member path")
+    total = sum(member.file_size for member in members)
+    if total > limits.extracted_bytes or total > limits.ratio * payload_size:
+        raise ValueError("archive total expansion limit exceeded")
+    for member in members:
+        _check_archive_member(member, limits)
+
+
+def csv_members(
+    payload: bytes, *, limits: ArchiveLimits | None = None
+) -> Iterable[tuple[str, bytes]]:
+    bounds = limits or ArchiveLimits.from_env()
+    if len(payload) > bounds.compressed_bytes:
+        raise ValueError("archive compressed size limit exceeded")
+    deadline = monotonic() + bounds.extraction_seconds
+    members: list[tuple[str, bytes]] = []
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
-        for name in sorted(archive.namelist()):
-            if name.casefold().endswith(".csv") and not name.endswith("/"):
-                yield name, archive.read(name)
+        _check_archive(archive, len(payload), bounds)
+        for member in sorted(archive.infolist(), key=lambda item: item.filename):
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                raise ValueError("archive extraction deadline exceeded")
+            if member.filename.casefold().endswith(".csv") and not member.is_dir():
+                with archive.open(member) as resource:
+                    decoded = read_bounded(
+                        resource, max_bytes=bounds.file_bytes, timeout_seconds=remaining
+                    )
+                members.append((member.filename, decoded))
+        if monotonic() >= deadline:
+            raise ValueError("archive extraction deadline exceeded")
+    return members
 
 
 def run_backfill(
@@ -265,7 +352,11 @@ def run_backfill(
     )
     observed_at = datetime.now(UTC)
     store = HistoricalBackfillStore(
-        connection, PROVIDER_CODE, "Football-Data.co.uk", PARSER_VERSION
+        connection,
+        PROVIDER_CODE,
+        "Football-Data.co.uk",
+        PARSER_VERSION,
+        data_root=data_root,
     )
     parsed_competitions: set[str] = set()
     parsed_seasons: set[str] = set()
@@ -277,19 +368,25 @@ def run_backfill(
             summary.resources_cached += 1
             continue
         payload = _download(resource.url)
+        observed_at = datetime.now(UTC)
         digest = hashlib.sha256(payload).hexdigest()
         extension = ".zip" if resource.archive else ".csv"
         cache_path = (
             data_root / PROVIDER_CODE / (resource.season or "unknown") / f"{digest}{extension}"
         )
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        if not cache_path.exists():
-            cache_path.write_bytes(payload)
+        manifest_path = publish_manifest(
+            data_root,
+            provider=PROVIDER_CODE,
+            source_identity=resource.url,
+            source_revision=digest,
+            acquired_at=observed_at,
+            resources=[(provider_path, str(cache_path.relative_to(data_root)), payload)],
+        )
         snapshot = store.ensure_snapshot(
             source_identity=resource.url,
             source_revision=digest,
             acquired_at=observed_at,
-            manifest_path=str(cache_path.relative_to(data_root)),
+            manifest_path=manifest_path,
         )
         if store.resource_already_imported(provider_path, digest):
             summary.resources_cached += 1
@@ -326,17 +423,15 @@ def run_backfill(
     summary.seasons = len(parsed_seasons)
     summary.competition_mappings_created = store.competition_mappings_created
     summary.team_mappings_created = store.team_mappings_created
+    admit_provider_mappings(connection, data_root, PROVIDER_CODE)
     connection.commit()
     return summary.to_dict()
 
 
 def _download(url: str) -> bytes:
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "MatchForge/1.0 historical-backfill"},
+    return UrllibHttpTransport(user_agent="MatchForge/1.0 historical-backfill").get(
+        url, timeout_seconds=60, max_bytes=8 * 1024 * 1024
     )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return bytes(response.read())
 
 
 def _parse_date(value: str) -> datetime:

@@ -25,6 +25,7 @@ PRODUCT_NAMESPACE = UUID("4944b082-913a-4b04-9c42-76374ff3d840")
 MODEL_ARTIFACT_PATH = Path("docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json")
 MODEL_LABEL = "MVP_FORECAST"
 MINIMUM_HISTORY_MATCHES = 10
+SCORE_MATRIX_VERSION = "compact-buckets-v2"
 
 
 class ForecastAvailability(StrEnum):
@@ -67,13 +68,14 @@ class ProductForecast:
     home_probability: float
     draw_probability: float
     away_probability: float
-    score_matrix: tuple[dict[str, int | float], ...]
+    score_matrix: tuple[dict[str, int | float | str], ...]
     home_goal_distribution: tuple[float, ...]
     away_goal_distribution: tuple[float, ...]
     total_goal_distribution: tuple[float, ...]
     btts_yes: float
     home_clean_sheet: float
     away_clean_sheet: float
+    score_matrix_version: str = SCORE_MATRIX_VERSION
 
 
 def stable_id(kind: str, *parts: object) -> UUID:
@@ -128,18 +130,17 @@ def forecast_from_history(
     home_team_id: UUID,
     away_team_id: UUID,
     history: Iterable[FinishedMatch],
+    parameters: TransferableParametersV1 | None = None,
 ) -> ProductForecast | None:
     _aware(target_kickoff)
-    eligible = sorted(
-        (match for match in history if match.kickoff_at < target_kickoff),
-        key=lambda match: (match.kickoff_at, str(match.fixture_id)),
-    )
-    home_history = _team_history(eligible, home_team_id)
-    away_history = _team_history(eligible, away_team_id)
-    if len(home_history) < MINIMUM_HISTORY_MATCHES or len(away_history) < MINIMUM_HISTORY_MATCHES:
+    window = forecast_history_window(history, target_kickoff, home_team_id, away_team_id)
+    if window is None:
         return None
-    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
-    parameters = TransferableParametersV1(**artifact["parameters"])
+    home_history = _team_history(window, home_team_id)
+    away_history = _team_history(window, away_team_id)
+    if parameters is None:
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        parameters = TransferableParametersV1(**artifact["parameters"])
     features = MatchHistoryFeaturesV1(
         home=_team_features(home_history[-MINIMUM_HISTORY_MATCHES:]),
         away=_team_features(away_history[-MINIMUM_HISTORY_MATCHES:]),
@@ -149,6 +150,18 @@ def forecast_from_history(
         {
             "home_goals": home_index,
             "away_goals": away_index,
+            "home_label": goal_forecast.score_matrix.labels[home_index],
+            "away_label": goal_forecast.score_matrix.labels[away_index],
+            "home_bucket_kind": (
+                "AT_LEAST"
+                if goal_forecast.score_matrix.labels[home_index].endswith("+")
+                else "EXACT"
+            ),
+            "away_bucket_kind": (
+                "AT_LEAST"
+                if goal_forecast.score_matrix.labels[away_index].endswith("+")
+                else "EXACT"
+            ),
             "probability": probability,
         }
         for home_index, row in enumerate(goal_forecast.score_matrix.probabilities)
@@ -176,6 +189,30 @@ def forecast_from_history(
     )
 
 
+def forecast_history_window(
+    history: Iterable[FinishedMatch],
+    target_kickoff: datetime,
+    home_team_id: UUID,
+    away_team_id: UUID,
+) -> tuple[FinishedMatch, ...] | None:
+    """Return the qualified match records used by either team's rolling features."""
+    eligible = sorted(
+        (match for match in history if match.kickoff_at < target_kickoff),
+        key=lambda match: (match.kickoff_at, str(match.fixture_id)),
+    )
+    if len({match.fixture_id for match in eligible}) != len(eligible):
+        raise ValueError("forecast history contains duplicate fixture IDs")
+    home = [match for match in eligible if home_team_id in (match.home_team_id, match.away_team_id)]
+    away = [match for match in eligible if away_team_id in (match.home_team_id, match.away_team_id)]
+    if len(home) < MINIMUM_HISTORY_MATCHES or len(away) < MINIMUM_HISTORY_MATCHES:
+        return None
+    selected = {match.fixture_id: match for match in home[-MINIMUM_HISTORY_MATCHES:]}
+    selected.update((match.fixture_id, match) for match in away[-MINIMUM_HISTORY_MATCHES:])
+    return tuple(
+        sorted(selected.values(), key=lambda match: (match.kickoff_at, str(match.fixture_id)))
+    )
+
+
 def canonical_json(value: object) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
 
@@ -186,6 +223,37 @@ def forecast_payload(forecast: ProductForecast) -> dict[str, object]:
 
 def sha256_json(value: object) -> str:
     return hashlib.sha256(canonical_json(value)).hexdigest()
+
+
+def forecast_input_sha(
+    fixture_id: UUID,
+    kickoff_at: datetime,
+    home_team_id: UUID,
+    away_team_id: UUID,
+    window: Sequence[FinishedMatch],
+) -> str:
+    return sha256_json(
+        {
+            "input_version": "rolling-ten-v2",
+            "fixture_id": str(fixture_id),
+            "kickoff_at": kickoff_at.isoformat(),
+            "home_team_id": str(home_team_id),
+            "away_team_id": str(away_team_id),
+            "qualified_history": [
+                {
+                    "fixture_id": str(match.fixture_id),
+                    "kickoff_at": match.kickoff_at.isoformat(),
+                    "home_team_id": str(match.home_team_id),
+                    "away_team_id": str(match.away_team_id),
+                    "home_goals": match.home_goals,
+                    "away_goals": match.away_goals,
+                    "home_xg": match.home_xg,
+                    "away_xg": match.away_xg,
+                }
+                for match in window
+            ],
+        }
+    )
 
 
 def map_external_market(value: str) -> tuple[str, str] | None:

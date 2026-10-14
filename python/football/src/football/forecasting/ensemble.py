@@ -10,9 +10,11 @@ import numpy as np
 from scipy.optimize import minimize
 
 from football.forecasting.model_contracts import (
+    PROBABILITY_TOLERANCE,
     ForecastFallbackReason,
     ForecastLineage,
     ForecastMode,
+    MarketProbabilities,
     ModelForecast,
     ModelStatus,
     derive_markets,
@@ -119,6 +121,10 @@ def build_ensemble_forecast(
     effective = tuple(
         (forecast.model_id, configured[forecast.model_id] / trained_mass) for forecast in available
     )
+    if any(item.numerical_contract_version == "exact-support-with-tail-v2" for item in available):
+        return _exact_ensemble_forecast(
+            available, effective, model_artifact_sha256, model_id, lineage
+        )
     # Align at the smallest exact support. Expanding an existing tail bucket would
     # invent a distribution inside that bucket; collapsing larger grids preserves
     # every component's declared probability mass without that assumption.
@@ -155,6 +161,100 @@ def build_ensemble_forecast(
         lineage=lineage,
         **markets,
     )
+
+
+def _exact_ensemble_forecast(
+    forecasts: tuple[ModelForecast, ...],
+    effective: tuple[tuple[str, float], ...],
+    artifact_sha256: str,
+    model_id: str,
+    lineage: ForecastLineage | None,
+) -> ModelForecast:
+    """Pool known exact atoms and keep all unexpanded tail mass unresolved."""
+    support = min(_exact_support(item) for item in forecasts)
+    combined = np.zeros((support, support), dtype=float)
+    weights = dict(effective)
+    unresolved = home_tail_moment = away_tail_moment = 0.0
+    for forecast in forecasts:
+        weight = weights[forecast.model_id]
+        exact = np.asarray(forecast.score_matrix, dtype=float)[:support, :support]
+        combined += weight * exact
+        outside = math.fsum(
+            probability
+            for home, row in enumerate(forecast.score_matrix)
+            for away, probability in enumerate(row)
+            if home >= support or away >= support
+        )
+        unresolved += weight * (outside + forecast.unresolved_tail_probability)
+        home_moment = math.fsum(
+            home * float(value) for home, row in enumerate(exact) for value in row
+        )
+        away_moment = math.fsum(
+            away * float(value) for row in exact for away, value in enumerate(row)
+        )
+        home_tail_moment += weight * _remaining_first_moment(
+            forecast.expected_home_goals, home_moment
+        )
+        away_tail_moment += weight * _remaining_first_moment(
+            forecast.expected_away_goals, away_moment
+        )
+    matrix = tuple(tuple(float(value) for value in row) for row in combined)
+    home, away, total = distributions(matrix)
+
+    def weighted(name: str) -> float:
+        return math.fsum(weights[item.model_id] * getattr(item, name) for item in forecasts)
+
+    markets: MarketProbabilities = {
+        "home_probability": weighted("home_probability"),
+        "draw_probability": weighted("draw_probability"),
+        "away_probability": weighted("away_probability"),
+        "btts_yes": weighted("btts_yes"),
+        "btts_no": weighted("btts_no"),
+        "total_over_2_5": weighted("total_over_2_5"),
+        "total_under_2_5": weighted("total_under_2_5"),
+        "home_clean_sheet": weighted("home_clean_sheet"),
+        "away_clean_sheet": weighted("away_clean_sheet"),
+    }
+    first = forecasts[0]
+    return ModelForecast(
+        fixture_id=first.fixture_id,
+        model_id=model_id,
+        model_family="LINEAR_SCORE_DISTRIBUTION_POOL",
+        model_version=model_id + "-exact-support-v2",
+        model_artifact_sha256=artifact_sha256,
+        football_cutoff=first.football_cutoff,
+        knowledge_cutoff=first.knowledge_cutoff,
+        created_at=datetime.now(UTC),
+        expected_home_goals=math.fsum(
+            weights[item.model_id] * item.expected_home_goals for item in forecasts
+        ),
+        expected_away_goals=math.fsum(
+            weights[item.model_id] * item.expected_away_goals for item in forecasts
+        ),
+        score_labels=tuple(str(index) for index in range(support)),
+        score_matrix=matrix,
+        home_goal_distribution=home,
+        away_goal_distribution=away,
+        total_goal_distribution=total,
+        status=ModelStatus.SUCCESS,
+        warnings=(),
+        input_snapshot_sha256=first.input_snapshot_sha256,
+        component_weights=effective,
+        lineage=lineage,
+        numerical_contract_version="exact-support-with-tail-v2",
+        unresolved_tail_probability=unresolved,
+        unresolved_tail_home_expectation=home_tail_moment,
+        unresolved_tail_away_expectation=away_tail_moment,
+        **markets,
+    )
+
+
+def _remaining_first_moment(analytic: float, resolved: float) -> float:
+    remaining = analytic - resolved
+    if remaining < -PROBABILITY_TOLERANCE:
+        raise ValueError("component analytic mean contradicts its exact first moment")
+    # A negative residual within the existing tolerance is floating-point roundoff.
+    return max(0.0, remaining)
 
 
 def build_full_coverage_ensemble_forecast(
