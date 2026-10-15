@@ -90,6 +90,14 @@ def review_competition(metadata: dict[str, Any], pairs: Sequence[dict[str, Any]]
     if str(metadata["requested_id"]) != str(metadata["fotmob_competition_id"]):
         result.update(classification="WRONG_PROVIDER_REGISTRATION", blocker="PROVIDER_ID_MISMATCH")
         return result
+    if any(
+        set(candidate_name(component).split())
+        <= set(candidate_name(metadata.get("target_competition_name", "")).split())
+        for component in metadata.get("component_names", [])
+        if candidate_name(component)
+    ):
+        result["blocker"] = "COMPOSITE_COMPETITION_TARGET_IS_A_COMPONENT"
+        return result
     if not pairs:
         return result
     blockers = {reason for pair in pairs if (reason := correspondence_blocker(pair))}

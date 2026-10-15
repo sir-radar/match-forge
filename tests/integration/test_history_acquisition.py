@@ -407,7 +407,11 @@ def test_fotmob_catalogue_uses_retained_primary_relationships_and_preserves_cool
         sync._record_response(
             "fixtures-primary-test",
             FotmobResponse(
-                "test", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
+                "test",
+                c.execute("SELECT clock_timestamp()").fetchone()[0],
+                hashlib.sha256(raw).hexdigest(),
+                raw,
+                payload,
             ),
         )
         assert _fotmob_primary_ids(sync, ["943230", "42", "47"]) == ["42", "47"]
@@ -424,7 +428,13 @@ def test_fotmob_catalogue_uses_retained_primary_relationships_and_preserves_cool
         raw = json.dumps(other).encode()
         sync._record_response(
             "fixtures-primary-other",
-            FotmobResponse("test", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, other),
+            FotmobResponse(
+                "test",
+                c.execute("SELECT clock_timestamp()").fetchone()[0],
+                hashlib.sha256(raw).hexdigest(),
+                raw,
+                other,
+            ),
         )
         with pytest.raises(ValueError, match="conflicting retained"):
             _fotmob_primary_ids(sync, ["943230"])
@@ -447,7 +457,7 @@ def test_fotmob_scope_reuses_matching_catalogue_bytes_without_a_request(tmp_path
             "fixtures": {"allMatches": []},
         }
         raw = json.dumps(payload).encode()
-        acquired = datetime.now(UTC)
+        acquired = c.execute("SELECT clock_timestamp()").fetchone()[0]
         sync._record_response(
             "league-catalogue-999999",
             FotmobResponse("test", acquired, hashlib.sha256(raw).hexdigest(), raw, payload),

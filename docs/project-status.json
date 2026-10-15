@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-13T23:55:39.607438Z",
+  "updated_at": "2026-10-15T09:42:07.051233Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1089,24 +1089,29 @@
       "r3_completion": {
         "status": "R3_PARTIAL_REMAINING_BLOCKERS",
         "migration": 202610150100,
-        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z/identity-20261014T101838Z",
+        "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z/coverage-20261015T083057Z",
         "historical_admissions": "PROSPECTIVE_VERIFIED_ONLY",
         "canonical_geography": "NON_NULL; VERIFIED_PROVIDER_GEOGRAPHY",
-        "fixture_pairs_reconciled": 17,
         "fotmob_season_discovery": "DYNAMIC_PER_COMPETITION",
         "epl_seasons_attempted": "2010/2011 through 2026/2027; 17 advertised seasons",
         "automatic_history_acquisition_enabled": false,
         "remaining_blockers": [
-          "18 competition catalogues lack independent retained fixture correspondence; two have conflicting season labels.",
-          "Unwitnessed team identities and conflicting canonical identity candidates remain excluded.",
-          "433 provider-origin UUID declarations remain contradictory; no qualified linked correction target was established.",
-          "Mandatory 2020 onward scopes remain partial under R2 identity qualification.",
-          "football-data.org metadata request timed out; API-Football date request recovered with HTTP 200; PitchAPI remains identity blocked."
+          "15 of 62 retained competition catalogues remain held; composite U18 North/South cannot be mapped to API-Football South alone.",
+          "The original 1593-team review cohort still has 1122 unadmitted IDs; incompatible canonical candidates remain held.",
+          "416 of 433 origin declarations remain held; 17 independently proven declarations were replaced prospectively without changing original decisions.",
+          "No resumed mandatory historical scope passed full-season acceptance; existing keys, attempts and cooldowns remain intact.",
+          "API-Football rejected 2020 under the configured plan; football-data.org returned HTTP 403; PitchAPI remains identity blocked."
         ],
         "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
         "model_retraining_or_promotion": false,
-        "competition_identity_review": "62 retained matching catalogues reviewed; 40 newly admitted competitions, 42 admitted total",
-        "team_identity_review": "1593 participating team IDs reviewed; 342 evidence-backed proposals applied, 330 native team IDs newly admitted"
+        "competition_identity_review": "62 retained catalogues reviewed; 5 additional competitions admitted, 47 admitted total; exact 2026/2027 to 2027 season correspondences recorded for 9088 and 10443 only",
+        "team_identity_review": "121 additional FotMob native IDs admitted, 471 admitted in the original 1593-team cohort; 17 OpenFootball origin declarations replaced through prospective R2 manual mappings",
+        "fixture_review": "130 additional retained source members reconciled; original seven LaLiga relationships and Brentford/Liverpool correction continuations preserved",
+        "eligible_history": 225050,
+        "retained_history": 406101,
+        "forecastable_upcoming": 2271,
+        "champion_minimum_team_history": 10,
+        "additional_source_members_reconciled": 130
       }
     }
   },

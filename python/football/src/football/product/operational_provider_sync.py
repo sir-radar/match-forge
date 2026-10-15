@@ -2023,7 +2023,11 @@ class OperationalProviderSync:
             ).fetchone()
             if fixture is None:
                 return
-            season_id = stable_id("season", fixture[0], start)
+            season_id = self._reviewed_league_season(
+                row.provider_competition_id, season_label, fixture[0]
+            )
+            if season_id is None:
+                season_id = stable_id("season", fixture[0], start)
             cursor.execute(
                 "INSERT INTO football.seasons (id, competition_id) VALUES (%s, %s) "
                 "ON CONFLICT DO NOTHING",
@@ -2033,6 +2037,38 @@ class OperationalProviderSync:
                 "UPDATE football.matches SET season_id = %s WHERE id = %s",
                 (season_id, fixture_id),
             )
+
+    def _reviewed_league_season(
+        self, competition: str, label: str, canonical_competition: UUID
+    ) -> UUID | None:
+        """Use only the exact prospectively reviewed native label; never extrapolate years."""
+        mappings = self.connection.execute(
+            """SELECT mapping.provider_season_id, mapping.season_id,
+                      season.competition_id, mapping.mapping_confidence,
+                      mapping.mapping_method, snapshot.status
+               FROM football.season_provider_mappings mapping
+               JOIN football.providers provider ON provider.id = mapping.provider_id
+               JOIN football.seasons season ON season.id = mapping.season_id
+               JOIN football.source_snapshots snapshot ON snapshot.id = mapping.source_snapshot_id
+               WHERE provider.code = %s AND mapping.provider_competition_id = %s
+                 AND mapping.valid_to IS NULL AND mapping.created_at <= clock_timestamp()
+                 AND (mapping.valid_from IS NULL OR mapping.valid_from <= clock_timestamp())""",
+            (self.provider_code, competition),
+        ).fetchall()
+        if not mappings:
+            return None
+        for native_label, season, target, confidence, method, status in mappings:
+            if native_label != label:
+                continue
+            if (
+                target != canonical_competition
+                or confidence != 1
+                or method != "manual"
+                or status != "validated"
+            ):
+                raise ValueError("provider season correspondence is not independently reviewed")
+            return cast(UUID, season)
+        raise ValueError("explicit provider season correspondence required for this label")
 
     def _mapped_or_scoped_team(self, provider_team_id: str) -> UUID:
         with self.connection.cursor() as cursor:

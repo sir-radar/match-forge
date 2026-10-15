@@ -125,6 +125,11 @@ not authorize renewed admission. The new decision preserves the prior correction
 and revocation events and applies only from its actual decision time.
 A qualified date-only result can support identity review on the same UTC day;
 its stored history time and precision remain unchanged.
+A composite catalogue cannot establish a crosswalk to one constituent division.
+Proven native season-label correspondences use the existing season mapping table
+with a validated source snapshot and a fully confident manual mapping to the same
+canonical competition. Replay uses the exact reviewed label and holds other
+labels for that competition; it never extrapolates a start-year or end-year rule.
 
 Historical qualification emits one decision per fixture. All applicable team
 aliases must agree on identity and trust. Replaying identical facts reuses their

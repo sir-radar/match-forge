@@ -342,7 +342,7 @@ def test_review_candidate_materializes_qualified_history_without_admitting_sourc
 
 def test_season_with_only_unqualified_future_fixtures_cannot_complete(tmp_path: Path) -> None:
     with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
-        now = datetime.now(UTC)
+        now = connection.execute("SELECT clock_timestamp()").fetchone()[0]
         payload = {
             "data": {
                 "leagues": [{"id": "l_Futu01", "country_code": "ENG"}],

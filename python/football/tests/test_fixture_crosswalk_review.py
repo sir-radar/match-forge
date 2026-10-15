@@ -116,3 +116,28 @@ def test_historical_name_change_needs_fixture_evidence_and_reserve_variant_stays
     assert review_teams([witness])[0]["classification"] == "CONTRADICTORY"
     witness["target"].update(home_name="Home FC", team_variant="reserve")
     assert review_teams([witness])[0]["classification"] == "CONTRADICTORY"
+
+
+def test_composite_catalogue_cannot_prove_a_crosswalk_to_one_division() -> None:
+    result = review_competition(
+        {
+            **metadata(),
+            "component_names": ["North", "South"],
+            "target_competition_name": "U18 Premier League - South",
+        },
+        [pair()],
+    )
+    assert result["classification"] == "INSUFFICIENT_EVIDENCE"
+    assert result["blocker"] == "COMPOSITE_COMPETITION_TARGET_IS_A_COMPONENT"
+
+
+def test_group_catalogue_can_correspond_to_the_same_parent_competition() -> None:
+    result = review_competition(
+        {
+            **metadata(),
+            "component_names": ["Group A", "Group B"],
+            "target_competition_name": "Premier League",
+        },
+        [pair()],
+    )
+    assert result["classification"] == "QUALIFIED_EXPLICIT_CROSSWALK"

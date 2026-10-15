@@ -697,3 +697,64 @@ def test_api_football_quota_circuit_persists_across_workers() -> None:
                 """DELETE FROM football.provider_request_budgets
                     WHERE provider_code = 'api_football' AND window_date = CURRENT_DATE"""
             )
+
+
+def test_reviewed_native_season_label_is_exact_and_replay_is_idempotent(
+    connection: Connection[Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from football.product.domain import stable_id
+    from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
+
+    sync, fixture, _, snapshot, row, _, _ = seed_reviewed_operational_fixture(connection, tmp_path)
+    competition = connection.execute(
+        "SELECT competition_id FROM football.matches WHERE id=%s", (fixture,)
+    ).fetchone()[0]
+    season = stable_id("season", competition, 2027)
+    connection.execute(
+        "INSERT INTO football.seasons(id,competition_id) VALUES(%s,%s)", (season, competition)
+    )
+    connection.execute(
+        """INSERT INTO football.season_provider_mappings (
+            season_id,provider_id,provider_competition_id,provider_season_id,
+            valid_from,first_seen_at,last_seen_at,mapping_method,mapping_confidence,source_snapshot_id
+        ) SELECT %s,id,%s,'2026/2027',clock_timestamp(),clock_timestamp(),clock_timestamp(),
+            'manual',1,%s FROM football.providers WHERE code='pitchapi'""",
+        (season, row.provider_competition_id, snapshot),
+    )
+    monkeypatch.setitem(
+        OPERATIONAL_COMPETITION_CROSSWALKS,
+        ("pitchapi", row.provider_competition_id),
+        ("api_football", "test", "Test", "INT"),
+    )
+    before = connection.execute("SELECT count(*) FROM football.seasons").fetchone()
+    for _ in range(2):
+        sync._set_verified_league_season(row, fixture, "2026/2027")
+    assert connection.execute(
+        "SELECT season_id FROM football.matches WHERE id=%s", (fixture,)
+    ).fetchone() == (season,)
+    assert connection.execute("SELECT count(*) FROM football.seasons").fetchone() == before
+    with pytest.raises(ValueError, match="explicit provider season correspondence required"):
+        sync._set_verified_league_season(row, fixture, "2025/2026")
+    assert sync._reviewed_league_season("unreviewed", "2026/2027", competition) is None
+    with pytest.raises(ValueError, match="not independently reviewed"):
+        sync._reviewed_league_season(row.provider_competition_id, "2026/2027", UUID(int=1))
+
+    for column, value, restored in (
+        ("mapping_confidence", 0.5, 1),
+        ("mapping_method", "deterministic", "manual"),
+    ):
+        connection.execute(
+            f"UPDATE football.season_provider_mappings SET {column}=%s WHERE season_id=%s",
+            (value, season),
+        )
+        with pytest.raises(ValueError, match="not independently reviewed"):
+            sync._set_verified_league_season(row, fixture, "2026/2027")
+        connection.execute(
+            f"UPDATE football.season_provider_mappings SET {column}=%s WHERE season_id=%s",
+            (restored, season),
+        )
+    connection.execute(
+        "UPDATE football.source_snapshots SET status='quarantined' WHERE id=%s", (snapshot,)
+    )
+    with pytest.raises(ValueError, match="not independently reviewed"):
+        sync._set_verified_league_season(row, fixture, "2026/2027")
