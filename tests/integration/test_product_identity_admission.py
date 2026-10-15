@@ -1044,3 +1044,171 @@ def test_non_played_terminal_status_excludes_history_prospectively(
             ).fetchone()
             == original
         )
+
+
+def test_retained_replay_reconciles_admitted_members_and_retries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        member = uuid4()
+        c.execute(
+            """INSERT INTO football.matches(id,competition_id,season_id)
+               SELECT %s,competition_id,season_id FROM football.matches WHERE id=%s""",
+            (member, fixture),
+        )
+        c.execute(
+            """INSERT INTO football.product_fixtures(
+                 fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,status,
+                 home_score,away_score,identity_status,forecast_availability,updated_at)
+               SELECT %s,competition_id,home_team_id,away_team_id,kickoff_at,status,
+                      home_score,away_score,'PROVISIONAL','SOURCE_DATA_INCOMPLETE',updated_at
+               FROM football.product_fixtures WHERE fixture_id=%s""",
+            (member, fixture),
+        )
+        sync._store_observation(row, snapshot, member)
+        before = _cutoff(c)
+        history = _eligible(c, before)
+        # Keep the production replay's transaction boundaries inside this test's rollback.
+        monkeypatch.setattr(c, "commit", lambda: None)
+        assert sync.reconcile_stored_observations(create_missing=True) > 0
+        assert c.execute(
+            """SELECT representative_fixture_id FROM football.fixture_identity_resolutions
+               WHERE member_fixture_id=%s AND active AND resolution_status='DUPLICATE_RESOLVED'""",
+            (member,),
+        ).fetchone() == (fixture,)
+        decisions = c.execute(
+            "SELECT count(*) FROM football.fixture_identity_resolutions"
+        ).fetchone()
+        observations = c.execute(
+            "SELECT count(*) FROM football.product_provider_fixture_observations"
+        ).fetchone()
+        sync.reconcile_stored_observations(create_missing=True)
+        assert (
+            c.execute("SELECT count(*) FROM football.fixture_identity_resolutions").fetchone()
+            == decisions
+        )
+        assert (
+            c.execute(
+                "SELECT count(*) FROM football.product_provider_fixture_observations"
+            ).fetchone()
+            == observations
+        )
+        assert _eligible(c, before) == history
+        assert c.execute(
+            "SELECT count(*) FROM football.product_fixtures WHERE fixture_id=ANY(%s::uuid[])",
+            ([member, fixture],),
+        ).fetchone() == (2,)
+
+
+def test_serving_competition_alias_requires_admission_and_keeps_provisional_identity(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        member = sync._create_provider_scoped_fixture(row, snapshot, season_label="2026/2027")
+        assert member is not None and member != fixture
+        sync._store_observation(row, snapshot, member)
+        original = c.execute(
+            "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s",
+            (member,),
+        ).fetchone()
+        assert (
+            c.execute(
+                "SELECT competition_id FROM football.product_serving_fixtures WHERE fixture_id=%s",
+                (member,),
+            ).fetchone()
+            == original
+        )
+        sync.apply_reviewed_mapping(
+            row.provider_match_id, fixture, source_snapshot_id=snapshot, competition_only=True
+        )
+        canonical = c.execute(
+            "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s",
+            (fixture,),
+        ).fetchone()
+        # More provider observations cannot multiply the serving population.
+        sync._store_observation(replace(row, minute=91), snapshot, member)
+        assert c.execute(
+            "SELECT competition_id,identity_status FROM football.product_serving_fixtures "
+            "WHERE fixture_id=%s",
+            (member,),
+        ).fetchall() == [(canonical[0], "PROVISIONAL")]
+        assert (
+            c.execute(
+                "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s",
+                (member,),
+            ).fetchone()
+            == original
+        )
+        assert c.execute(
+            "SELECT count(*) FROM football.product_identity_admissions "
+            "WHERE provider_code='fotmob' AND entity_type='team'"
+        ).fetchone() == (0,)
+        # A competition admission alone does not prove match equivalence.
+        assert c.execute(
+            "SELECT count(*) FROM football.product_serving_fixtures "
+            "WHERE fixture_id=ANY(%s::uuid[])",
+            ([fixture, member],),
+        ).fetchone() == (2,)
+
+
+@pytest.mark.parametrize(
+    ("status", "active", "self_reference", "future", "visible"),
+    [
+        ("DUPLICATE_RESOLVED", True, False, False, False),
+        ("DUPLICATE_RESOLVED", False, False, False, True),
+        ("DUPLICATE_RESOLVED", True, True, False, True),
+        ("DUPLICATE_RESOLVED", True, False, True, True),
+        ("UNIQUE", True, False, False, True),
+        ("AMBIGUOUS_QUARANTINED", True, False, False, True),
+        ("IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED", True, False, False, True),
+    ],
+)
+def test_serving_suppresses_only_current_proven_duplicate_members(
+    tmp_path: Path,
+    status: str,
+    active: bool,
+    self_reference: bool,
+    future: bool,
+    visible: bool,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        member = sync._create_provider_scoped_fixture(row, snapshot, season_label="2026/2027")
+        assert member is not None and member != fixture
+        sync._store_observation(row, snapshot, member)
+        c.execute(
+            """INSERT INTO football.fixture_identity_resolutions(
+                 canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+                 resolution_status,resolution_reason,evidence_json,evidence_sha256,
+                 resolution_version,active,created_at)
+               VALUES(%s,%s,%s,%s,'Reviewed fixture-only evidence','{}',%s,
+                      'reviewed-fixture:test',%s,clock_timestamp()+%s::interval)""",
+            (
+                fixture,
+                member,
+                member if self_reference else fixture,
+                status,
+                "a" * 64,
+                active,
+                "1 day" if future else "0 seconds",
+            ),
+        )
+        assert (
+            bool(
+                c.execute(
+                    "SELECT 1 FROM football.product_serving_fixtures WHERE fixture_id=%s", (member,)
+                ).fetchone()
+            )
+            is visible
+        )
+        assert c.execute(
+            "SELECT count(*) FROM football.product_fixtures WHERE fixture_id=ANY(%s::uuid[])",
+            ([fixture, member],),
+        ).fetchone() == (2,)
+        assert c.execute(
+            "SELECT count(*) FROM football.product_identity_admissions "
+            "WHERE provider_code='fotmob' AND disposition IN ('CROSSWALK','ORIGIN_ANCHOR')"
+        ).fetchone() == (0,)

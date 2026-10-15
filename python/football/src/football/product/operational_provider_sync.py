@@ -940,7 +940,9 @@ class OperationalProviderSync:
                     if fixture_id is None:
                         continue
                     reconciled += 1
+                    self._store_observation(row, snapshot_id, fixture_id)
                     self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                    self._reconcile_retained_members(row, fixture_id, snapshot_id)
                     self._insert_qualified_history(row, fixture_id, snapshot_id)
             except (Error, ValueError) as failure:
                 self._record_failed_observation(row, snapshot_id, str(failure).splitlines()[0])

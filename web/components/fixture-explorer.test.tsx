@@ -230,4 +230,37 @@ describe("FixtureExplorer", () => {
       vi.useRealTimers();
     }
   });
+
+  it.each([
+    ["Europa League", "2026-10-15"],
+    ["Conference League", "2026-10-15"],
+    ["Botola Pro", "2026-10-14"],
+  ])("replaces %s representatives across polling and date navigation", async (name, date) => {
+    const league = { ...competition, name };
+    let current = { ...fixture, id: "provisional", forecast: null, home_score: null as number | null, away_score: null as number | null };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(
+      String(input).includes("/competitions?") ? { competitions: [league] }
+        : { groups: [{ competition: league, fixtures: [current, { ...fixture, id: "separate-cup-leg" }] }] },
+    ))));
+    vi.useFakeTimers();
+    try {
+      const view = render(<FixtureExplorer initialDate={date} />);
+      await vi.waitFor(() => expect(screen.getAllByRole("button", { name: /Arsenal.*Chelsea/s })).toHaveLength(2));
+      current = { ...current, id: "admitted-representative", status: "LIVE", home_score: 1, away_score: 0 };
+      await vi.advanceTimersByTimeAsync(45_000);
+      await vi.waitFor(() => expect(screen.getByText("1–0")).toBeInTheDocument());
+      view.rerender(<FixtureExplorer initialDate={date} />);
+      expect(screen.getAllByRole("button", { name: /Arsenal.*Chelsea/s })).toHaveLength(2);
+      expect(screen.getAllByRole("heading", { name: `England — ${name}` })).toHaveLength(1);
+      expect(screen.getByRole("button", { name: "All 2" })).toBeInTheDocument();
+      expect(document.querySelector('[aria-controls="fixture-panel-provisional"]')).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Next day" }));
+      await vi.waitFor(() => expect(screen.getAllByRole("button", { name: /Arsenal.*Chelsea/s })).toHaveLength(2));
+      fireEvent.click(screen.getByRole("button", { name: "Previous day" }));
+      await vi.waitFor(() => expect(screen.getAllByRole("button", { name: /Arsenal.*Chelsea/s })).toHaveLength(2));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });

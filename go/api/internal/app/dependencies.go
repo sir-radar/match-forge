@@ -35,17 +35,18 @@ func (readiness DependencyReadiness) Ready(ctx context.Context) error {
 	var ready bool
 	err := readiness.pool.QueryRow(ctx, `SELECT
    to_regclass('football.product_forecasts') IS NOT NULL
+   AND to_regclass('football.product_serving_fixtures') IS NOT NULL
    AND to_regclass('football.product_sync_runs') IS NOT NULL
    AND to_regprocedure('football.product_performance_forecasts(uuid[],integer)') IS NOT NULL
    AND to_regprocedure('football.product_eligible_team_history_at(timestamptz,uuid[])') IS NOT NULL
    AND EXISTS (SELECT 1 FROM (SELECT DISTINCT ON (version_id) version_id,is_applied
                FROM public.goose_db_version ORDER BY version_id,id DESC) migration
-               WHERE version_id=202610130600 AND is_applied)`).Scan(&ready)
+               WHERE version_id=202610150300 AND is_applied)`).Scan(&ready)
 	if err != nil {
 		return fmt.Errorf("serving schema unavailable: %w", err)
 	}
 	if !ready {
-		return errors.New("serving schema migration 202610130600 required")
+		return errors.New("serving schema migration 202610150300 required")
 	}
 	return redisReady(ctx, readiness.redisAddress)
 }
