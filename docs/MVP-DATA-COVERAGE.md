@@ -130,6 +130,24 @@ Proven native season-label correspondences use the existing season mapping table
 with a validated source snapshot and a fully confident manual mapping to the same
 canonical competition. Replay uses the exact reviewed label and holds other
 labels for that competition; it never extrapolates a start-year or end-year rule.
+New competition crosswalks use exact fixture correspondence in retained independent
+responses. FotMob 193 includes the Russian Cup groups, and 336 includes both
+Guatemalan Apertura and Clausura stages; neither correspondence proves a complete
+season. Combined U18 coverage remains separate from its regional divisions. A
+requested historical season that returns another selected season remains unusable
+for that scope.
+
+OpenFootball parser v2 reads `uefa.cl` clocks as CET/CEST, including summer time;
+competition geography remains `World`. Manual R2 reviews verify OpenFootball IDs
+against the retained competition namespace, independently of the canonical
+club country. The source competition ID must also occur in the verified snapshot.
+Existing retained history is not rewritten
+by the parser change. football-data.org history requires an explicit regulation
+score duration; extra-time, shootout and unknown totals remain outside regulation
+history. A confirmed awarded, abandoned or cancelled canonical status excludes
+previously retained played results through a new dated history decision. Earlier
+cutoffs and raw scores remain unchanged. HTTP failures retain their status code
+for scoped access diagnostics.
 
 Historical qualification emits one decision per fixture. All applicable team
 aliases must agree on identity and trust. Replaying identical facts reuses their

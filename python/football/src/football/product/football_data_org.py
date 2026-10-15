@@ -69,6 +69,11 @@ class FootballDataOrgClient:
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"
         try:
             raw = self._transport(url, {"X-Auth-Token": self._token})
+        except urllib.error.HTTPError as error:
+            error.close()
+            raise FootballDataOrgError(
+                f"football-data.org request failed for {path}: HTTP {error.code}"
+            ) from error
         except (OSError, urllib.error.URLError, ProviderFetchError) as error:
             raise FootballDataOrgError(f"football-data.org request failed for {path}") from error
         fetched_at = datetime.now(UTC)

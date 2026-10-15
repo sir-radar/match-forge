@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import psycopg
 import pytest
+from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.crosswalk_resolution import MappingRecord, _revise_mapping
 from football.product.football_data_uk import parse_csv_resource
 from football.product.historical_backfill import HistoricalBackfillStore
@@ -20,6 +21,7 @@ from football.product.operational_provider_sync import (
     SyncCounts,
     _fotmob_season_rows,
 )
+from football.product.sync import ProductSync
 from football.providers.fotmob import FotmobResponse
 from football.providers.pitchapi import (
     PitchApiFixture,
@@ -29,6 +31,137 @@ from football.providers.pitchapi import (
 from psycopg import Connection
 
 from tests.integration.test_product_historical_backfill import DATABASE_URL
+
+
+@pytest.mark.parametrize(
+    ("native_competition", "league", "country", "club_country", "clock"),
+    [
+        ("en.1", 39, "England", "Wales", "20:00"),
+        ("uefa.cl", 2, "World", "Italy", "21:00"),
+    ],
+)
+def test_manual_openfootball_review_verifies_source_country_namespace(
+    tmp_path: Path,
+    native_competition: str,
+    league: int,
+    country: str,
+    club_country: str,
+    clock: str,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        acquired = _cutoff(c)
+        fixture = {
+            "fixture": {
+                "id": 1880010001,
+                "date": "2024-09-17T19:00:00+00:00",
+                "status": {"short": "FT"},
+                "venue": {},
+            },
+            "league": {"id": league, "name": "Namespace cup", "country": country, "season": 2024},
+            "teams": {
+                "home": {"id": 1880010002, "name": "Namespace home"},
+                "away": {"id": 1880010003, "name": "Namespace away"},
+            },
+            "goals": {"home": 2, "away": 1},
+        }
+        raw = json.dumps({"response": [fixture]}).encode()
+        target_sync = ProductSync(
+            c, ApiFootballClient("retained-only"), tmp_path, tmp_path / "unused"
+        )
+        target_snapshot = target_sync._record_response(
+            "test-namespace-target", ApiResponse("/fixtures", acquired, raw, (fixture,), None)
+        )
+        target_sync._store_history([fixture], target_snapshot, acquired)
+        target, home, away = c.execute(
+            "SELECT fixture_id,home_team_id,away_team_id "
+            "FROM football.product_team_match_history WHERE source_snapshot_id=%s",
+            (target_snapshot,),
+        ).fetchone()
+        c.execute(
+            "UPDATE football.product_teams SET country=%s WHERE team_id=ANY(%s::uuid[])",
+            (club_country, [home, away]),
+        )
+        admit_provider_mappings(c, tmp_path, "api_football", target_snapshot)
+        source_path = f"2024-25/{native_competition}.json"
+        payload = {
+            "matches": [
+                {
+                    "date": "2024-09-17",
+                    "time": clock,
+                    "team1": "Namespace home",
+                    "team2": "Namespace away",
+                    "score": {"ft": [2, 1]},
+                }
+            ]
+        }
+        source_raw = json.dumps(payload).encode()
+        manifest = publish_manifest(
+            tmp_path,
+            provider="openfootball",
+            source_identity="test-namespace-source",
+            source_revision="d" * 40,
+            acquired_at=acquired,
+            resources=[(source_path, "raw/namespace.json", source_raw)],
+        )
+        store = HistoricalBackfillStore(
+            c, "openfootball", "OpenFootball", "test-v2", data_root=tmp_path
+        )
+        snapshot = store.ensure_snapshot(
+            source_identity="test-namespace-source",
+            source_revision="d" * 40,
+            acquired_at=acquired,
+            manifest_path=manifest,
+        )
+        store.record_resource(
+            snapshot_id=snapshot,
+            provider_path=source_path,
+            payload=source_raw,
+            media_type="application/json",
+            acquired_at=acquired,
+        )
+        row = PitchApiFixture(
+            provider_match_id=source_path + "#1",
+            provider_competition_id=native_competition,
+            provider_home_team_id="Namespace home",
+            provider_away_team_id="Namespace away",
+            home_team_name="Namespace home",
+            away_team_name="Namespace away",
+            kickoff_at=datetime(2024, 9, 17, 19, tzinfo=UTC),
+            status="FINISHED",
+            provider_status="FT",
+            home_score=2,
+            away_score=1,
+            minute=None,
+            added_time=None,
+            period=None,
+            source_updated_at=None,
+            observed_at=acquired,
+            provider_competition_name="Namespace cup",
+            result_score_basis="REGULATION_90",
+        )
+        sync = OperationalProviderSync(c, tmp_path, provider_code="openfootball")
+        sync._store_observation(row, snapshot, None)
+        before = _cutoff(c)
+        sync.apply_reviewed_mapping(row.provider_match_id, target, source_snapshot_id=snapshot)
+
+        decisions = c.execute(
+            "SELECT disposition,evidence->>'country' FROM football.product_identity_admissions "
+            "WHERE provider_code='openfootball' AND entity_type='team' AND source_snapshot_id=%s",
+            (snapshot,),
+        ).fetchall()
+        assert decisions == [("CROSSWALK", country)] * 2
+        assert c.execute(
+            "SELECT DISTINCT country FROM football.product_teams WHERE team_id=ANY(%s::uuid[])",
+            ([home, away],),
+        ).fetchall() == [(club_country,)]
+        assert c.execute(
+            "SELECT count(*) FROM football.product_identity_admissions "
+            "WHERE provider_code='openfootball' AND source_snapshot_id=%s AND decided_at<=%s",
+            (snapshot, before),
+        ).fetchone() == (0,)
+        (tmp_path / "raw/namespace.json").write_bytes(source_raw + b" ")
+        rejected = admit_provider_mappings(c, tmp_path, "openfootball", snapshot)
+        assert rejected and all(d["disposition"] == "UNRESOLVED" for d in rejected)
 
 
 def _history(connection: Connection[Any], root: Path, *, exact: bool = False) -> None:
@@ -853,3 +986,61 @@ def test_season_qualification_uses_database_knowledge_clock(
         monkeypatch.setattr(operational, "datetime", BehindClock)
         report = sync._season_qualification(snapshot, [row], SyncCounts(matched=1))
         assert report["status"] == "COMPLETED" and report["qualified_results"] == 1
+
+
+@pytest.mark.parametrize("status", ["AWARDED", "ABANDONED", "CANCELLED"])
+def test_non_played_terminal_status_excludes_history_prospectively(
+    tmp_path: Path, status: str
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        _history(c, tmp_path)
+        admit_provider_mappings(c, tmp_path, "football_data_uk")
+        fixture = c.execute(
+            "SELECT fixture_id FROM football.product_team_match_history "
+            "WHERE source_provider_code='football_data_uk' AND kickoff_at::date='2026-08-01' "
+            "AND home_goals=2 AND away_goals=1"
+        ).fetchone()[0]
+        sync = OperationalProviderSync(c, tmp_path, provider_code="fotmob")
+        sync._materialize_history_fixture(fixture, _cutoff(c))
+        original = c.execute(
+            "SELECT to_jsonb(h) FROM football.product_team_match_history h WHERE fixture_id=%s",
+            (fixture,),
+        ).fetchone()
+        before = _cutoff(c)
+        assert c.execute(
+            "SELECT count(*) FROM football.product_eligible_fixture_history_at(%s,%s::uuid[])",
+            (before, [fixture]),
+        ).fetchone() == (1,)
+
+        c.execute(
+            "UPDATE football.product_fixtures SET status=%s WHERE fixture_id=%s", (status, fixture)
+        )
+        after = _cutoff(c)
+
+        assert c.execute(
+            "SELECT count(*) FROM football.product_eligible_fixture_history_at(%s,%s::uuid[])",
+            (after, [fixture]),
+        ).fetchone() == (0,)
+        assert c.execute(
+            "SELECT count(*) FROM football.product_eligible_fixture_history_at(%s,%s::uuid[])",
+            (before, [fixture]),
+        ).fetchone() == (1,)
+        decisions = c.execute(
+            "SELECT count(*) FROM football.product_match_history_decisions WHERE fixture_id=%s",
+            (fixture,),
+        ).fetchone()
+        c.execute("SELECT football.record_product_history_decision(%s)", (fixture,))
+        assert (
+            c.execute(
+                "SELECT count(*) FROM football.product_match_history_decisions WHERE fixture_id=%s",
+                (fixture,),
+            ).fetchone()
+            == decisions
+        )
+        assert (
+            c.execute(
+                "SELECT to_jsonb(h) FROM football.product_team_match_history h WHERE fixture_id=%s",
+                (fixture,),
+            ).fetchone()
+            == original
+        )

@@ -1513,7 +1513,10 @@ class ProductSync:
             )
         count = 0
         for row in rows:
-            if row.get("status") != "FINISHED":
+            if (
+                row.get("status") != "FINISHED"
+                or _football_data_score_basis(row) != "REGULATION_90"
+            ):
                 continue
             home = _mapping(row, "homeTeam")
             away = _mapping(row, "awayTeam")

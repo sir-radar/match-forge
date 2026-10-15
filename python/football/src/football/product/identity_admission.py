@@ -89,8 +89,42 @@ def classify_mapping(
     mapping_id, canonical_id, provider, identifier, method, confidence, country, snapshot_id = row[
         :8
     ]
-    proof = verify_source_identifier(
-        connection, data_root, snapshot_id, provider, entity_type, identifier, country, verifier
+    manual_review = _manual_review(connection, entity_type, row) if method == "manual" else None
+    source_competition = (
+        manual_review.pop("provider_competition_id", None) if manual_review else None
+    )
+    source_country = country
+    namespace_verified = True
+    if provider == "openfootball" and source_competition:
+        from football.product.openfootball import _COUNTRIES
+
+        source_country = _COUNTRIES.get(source_competition.split(".", 1)[0], "World")
+        namespace_verified = (
+            verify_source_identifier(
+                connection,
+                data_root,
+                snapshot_id,
+                provider,
+                "competition",
+                source_competition,
+                source_country,
+                verifier,
+            )
+            is not None
+        )
+    proof = (
+        verify_source_identifier(
+            connection,
+            data_root,
+            snapshot_id,
+            provider,
+            entity_type,
+            identifier,
+            source_country,
+            verifier,
+        )
+        if namespace_verified
+        else None
     )
     target = explicit_target(entity_type, provider, identifier)
     target_id = origin_id(entity_type, *target, country) if target else None
@@ -104,7 +138,6 @@ def classify_mapping(
         context_verified = bool(
             context and country and context[0] and country.casefold() == context[0].casefold()
         )
-    manual_review = _manual_review(connection, entity_type, row) if method == "manual" else None
     if proof is not None:
         proof["policy_version"] = "ProductIdentityTrustV1"
         if target is not None:
@@ -259,7 +292,8 @@ def _manual_review(
         else (canonical_id, identifier) * 2
     )
     review = connection.execute(
-        f"""SELECT d.decision_id, d.created_at FROM football.product_provider_mapping_decisions d
+        f"""SELECT d.decision_id, d.created_at, o.provider_competition_id
+            FROM football.product_provider_mapping_decisions d
             JOIN football.product_fixtures f ON f.fixture_id = d.candidate_fixture_id
             JOIN football.product_provider_fixture_observations o
               ON o.provider_code = d.provider_code AND o.provider_match_id = d.provider_match_id
@@ -271,7 +305,12 @@ def _manual_review(
             LIMIT 1""",
         (provider, snapshot_id, *values),
     ).fetchone()
-    return {"decision_id": str(review[0]), "decided_at": review[1].isoformat()} if review else None
+    if review is None:
+        return None
+    result = {"decision_id": str(review[0]), "decided_at": review[1].isoformat()}
+    if review[2] is not None:
+        result["provider_competition_id"] = review[2]
+    return result
 
 
 def mapping_rows(

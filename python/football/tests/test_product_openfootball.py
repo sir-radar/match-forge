@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -123,3 +124,40 @@ def test_parses_calendar_season_date_only_and_team_objects(tmp_path: Path) -> No
     assert match.country == "Brazil"
     assert match.kickoff_precision == "DATE_ONLY"
     assert match.kickoff_at.hour == 23
+
+
+@pytest.mark.parametrize(
+    ("day", "clock", "expected"),
+    [
+        ("2024-09-17", "18:45", datetime(2024, 9, 17, 16, 45, tzinfo=UTC)),
+        ("2025-01-21", "21:00", datetime(2025, 1, 21, 20, 0, tzinfo=UTC)),
+    ],
+)
+def test_champions_league_uses_competition_clock(
+    tmp_path: Path, day: str, clock: str, expected: datetime
+) -> None:
+    season = tmp_path / "2024-25"
+    season.mkdir()
+    (season / "uefa.cl.json").write_text(
+        json.dumps(
+            {
+                "name": "UEFA Champions League 2024/25",
+                "matches": [
+                    {
+                        "date": day,
+                        "time": clock,
+                        "team1": "Juventus FC (ITA)",
+                        "team2": "PSV (NED)",
+                        "score": {"ft": [3, 1]},
+                    }
+                ],
+            }
+        )
+    )
+
+    match = parse_competition(discover_catalog(tmp_path, "c" * 40)[0])[0]
+
+    assert match.kickoff_at == expected
+    assert match.kickoff_precision == "EXACT"
+    assert match.country == "World"
+    assert match.provider_match_id == "2024-25/uefa.cl.json#1"

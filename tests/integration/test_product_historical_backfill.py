@@ -8,6 +8,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -19,6 +20,7 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
+from football.product.football_data_org import FootballDataResponse
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import PRODUCT_FORECAST_ALGORITHM_VERSION, ProductSync
@@ -42,6 +44,60 @@ def connection() -> Iterator[Connection[Any]]:
         database_connection.transaction(force_rollback=True),
     ):
         yield database_connection
+
+
+@pytest.mark.parametrize("duration", ["REGULAR", "EXTRA_TIME", "PENALTY_SHOOTOUT", None])
+def test_fallback_history_requires_regulation_score(
+    tmp_path: Path, connection: Connection[Any], duration: str | None
+) -> None:
+    competition = uuid4()
+    connection.execute("INSERT INTO football.competitions(id) VALUES (%s)", (competition,))
+    acquired = _first(connection.execute("SELECT clock_timestamp()").fetchone())
+    connection.execute(
+        """INSERT INTO football.product_competitions (
+            competition_id,name,country,continent,competition_type,season_label,
+            availability_status,source_roles,updated_at)
+           VALUES (%s,'Regulation cup','England','Europe','CUP','2024',
+                   'NOT_ENOUGH_HISTORY','{}'::jsonb,%s)""",
+        (competition, acquired),
+    )
+    row = {
+        "id": 1880000001,
+        "status": "FINISHED",
+        "utcDate": "2024-09-17T19:00:00Z",
+        "homeTeam": {"id": 1880000002, "name": "Regulation home"},
+        "awayTeam": {"id": 1880000003, "name": "Regulation away"},
+        "score": {"duration": duration, "fullTime": {"home": 2, "away": 1}},
+    }
+    raw = json.dumps({"matches": [row]}).encode()
+    response = FootballDataResponse("/competitions/CL/matches", acquired, raw, (row,))
+    sync = ProductSync(
+        connection, ApiFootballClient("retained-only"), tmp_path, MODEL_ARTIFACT_PATH
+    )
+    snapshot = sync._record_fallback_response(f"test-regulation-{duration}", response)
+
+    stored = sync._store_fallback_history([row], competition, 2024, snapshot, acquired)
+
+    assert stored == int(duration == "REGULAR")
+    assert (
+        _first(
+            connection.execute(
+                "SELECT count(*) FROM football.product_team_match_history "
+                "WHERE source_snapshot_id=%s",
+                (snapshot,),
+            ).fetchone()
+        )
+        == stored
+    )
+    assert (
+        tmp_path
+        / _first(
+            connection.execute(
+                "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (snapshot,)
+            ).fetchone()
+        )
+    ).read_bytes() == raw
+    assert sync._store_fallback_history([row], competition, 2024, snapshot, acquired) == 0
 
 
 def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(
