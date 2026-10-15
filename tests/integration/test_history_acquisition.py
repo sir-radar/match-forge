@@ -465,3 +465,37 @@ def test_fotmob_scope_reuses_matching_catalogue_bytes_without_a_request(tmp_path
         assert c.execute("SELECT count(*) FROM football.source_resources").fetchone() == count
         with pytest.raises(FotmobAccessError, match="disabled"):
             _scope_response(sync, FotmobClient(), "999999", str(int(year) - 1), refresh=False)
+
+
+def test_cached_response_uses_database_clock_without_relaxing_future_rejection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import football.product.provider_history_scopes as scopes
+
+    class BehindClock(datetime):
+        @classmethod
+        def now(cls, tz: object = None) -> datetime:
+            return datetime.now(UTC) - timedelta(days=1)
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        acquired = datetime.now(UTC) - timedelta(hours=1)
+        raw = b'{"data":{"matches":[]}}'
+        sync = OperationalProviderSync(c, tmp_path, provider_code="pitchapi")
+        snapshot = sync._record_response(
+            "clock-cache",
+            PitchApiResponse(
+                "test", acquired, hashlib.sha256(raw).hexdigest(), raw, {"data": {"matches": []}}
+            ),
+        )
+        record_history_check(c, "pitchapi", "clock-cache", snapshot)
+        monkeypatch.setattr(scopes, "datetime", BehindClock)
+        cached = cached_response(sync, "clock-cache", freshness=timedelta(days=1))
+        assert cached is not None and cached.fetched_at == acquired
+        c.execute(
+            "UPDATE football.product_provider_history_discovery "
+            "SET last_attempt_at=clock_timestamp()+interval '1 day' "
+            "WHERE provider_code='pitchapi' AND resource_name='clock-cache'"
+        )
+        with pytest.raises(ValueError, match="in the future"):
+            cached_response(sync, "clock-cache")

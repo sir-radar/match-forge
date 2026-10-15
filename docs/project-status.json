@@ -1088,7 +1088,7 @@
       },
       "r3_completion": {
         "status": "R3_PARTIAL_REMAINING_BLOCKERS",
-        "migration": 202610140700,
+        "migration": 202610150100,
         "checkpoint_root": ".local/remediation/matchforge-audit/phases/R3/completion-20261014T031009Z/identity-20261014T101838Z",
         "historical_admissions": "PROSPECTIVE_VERIFIED_ONLY",
         "canonical_geography": "NON_NULL; VERIFIED_PROVIDER_GEOGRAPHY",

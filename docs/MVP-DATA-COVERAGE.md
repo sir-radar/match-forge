@@ -117,6 +117,12 @@ known gender and division, opponents, home/away roles, kickoff and compatible
 results. Names locate candidates and cannot admit a mapping. Operator review can
 admit a competition separately, then admit its teams and reconcile fixture
 representatives. Decisions use actual admission time and keep prior decisions.
+A review preserves an already-admitted mapping with the same canonical identity,
+including its version and source evidence. Explicit `reviewed_revalidation` can
+renew a linked correction revoked by a supporting mapping change only after full
+retained-evidence qualification. Automatic retries and operator revocations do
+not authorize renewed admission. The new decision preserves the prior correction
+and revocation events and applies only from its actual decision time.
 A qualified date-only result can support identity review on the same UTC day;
 its stored history time and precision remain unchanged.
 
@@ -126,6 +132,9 @@ original observation lineage. A different source cannot replace qualified
 history, and conflicting results cannot make a scope complete. Retained current
 league catalogues can satisfy an exact matching season request without network
 access. Durable scope IDs, attempts and cooldowns remain intact.
+Cache freshness and current season qualification compare database timestamps
+against the database clock. Original acquisition times and strict future-time
+rejection remain intact; host clock differences do not change admission time.
 
 `history-coverage` includes `provider_history_depth`. Each provider competition
 reports stored and qualified results, advertised and completed scopes, season

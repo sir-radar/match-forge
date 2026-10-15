@@ -555,7 +555,7 @@ class OperationalProviderSync:
         if not rows:
             return {"status": "ADVERTISED_BUT_UNUSABLE", "qualified_results": 0}
         registered = self.connection.execute(
-            """SELECT 1 FROM football.source_snapshots s
+            """SELECT clock_timestamp() FROM football.source_snapshots s
                JOIN football.providers p ON p.id=s.provider_id
                WHERE s.id=%s AND s.status='validated' AND p.code=%s""",
             (snapshot, self.provider_code),
@@ -590,7 +590,7 @@ class OperationalProviderSync:
                SELECT DISTINCT o.provider_match_id,f.fixture_id,f.identity_status,
                    c.status='FINISHED' AND c.basis='REGULATION_90' AND EXISTS (
                        SELECT 1 FROM football.product_eligible_fixture_history_at(
-                           statement_timestamp(),ARRAY[f.fixture_id]) h
+                           %s,ARRAY[f.fixture_id]) h
                        WHERE (h.home_goals,h.away_goals)=(o.home_score,o.away_score)) qualified,
                    EXISTS (SELECT 1 FROM football.product_team_match_history h
                        WHERE h.fixture_id=f.fixture_id AND c.status='FINISHED'
@@ -609,14 +609,14 @@ class OperationalProviderSync:
                WHERE NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions r
                    WHERE r.member_fixture_id=f.fixture_id AND r.active
                      AND r.representative_fixture_id<>r.member_fixture_id)""",
-            (json.dumps(contexts), self.provider_code),
+            (json.dumps(contexts), registered[0], self.provider_code),
         ).fetchall()
         count = len({o[0] for o in observed if o[3]})
         fixtures = [(o[1], o[2]) for o in observed]
         blockers = fixture_identity_blockers(
             self.connection,
             [f[0] for f in fixtures],
-            datetime.now(UTC),
+            registered[0],
             provider_code=self.provider_code,
         )
         status = "COMPLETED"
@@ -1678,8 +1678,15 @@ class OperationalProviderSync:
                 read_column = (
                     "effective_team_id" if table == "team_provider_mappings" else canonical_column
                 )
+                trust = (
+                    f"football.product_mapping_trusted('team',id,{read_column})"
+                    if table == "team_provider_mappings"
+                    else f"football.product_mapping_trusted('competition',id,{read_column})"
+                    if table == "competition_provider_mappings"
+                    else "false"
+                )
                 cursor.execute(
-                    f"""SELECT {read_column}, mapping_method, {canonical_column}
+                    f"""SELECT {read_column}, mapping_method, {canonical_column}, {trust}
                          FROM football.{read_table}
                          WHERE provider_id = %s AND {identity_column} = %s AND valid_to IS NULL""",
                     (provider_id, provider_value),
@@ -1688,12 +1695,16 @@ class OperationalProviderSync:
                 if existing is not None:
                     corrected = existing[0] != existing[2]
                     preserve_observations |= corrected
+                    admitted = existing[3]
                     if corrected and existing[0] != canonical_value:
                         raise ValueError(
                             "linked correction conflicts with requested fixture mapping"
                         )
                     if existing[0] != canonical_value or (
-                        mapping_method == "manual" and existing[1] != "manual" and not corrected
+                        mapping_method == "manual"
+                        and existing[1] != "manual"
+                        and not corrected
+                        and not admitted
                     ):
                         provisional_id = self._provider_scoped_identity(table, provider_value)
                         if mapping_method != "manual" and (

@@ -654,3 +654,138 @@ def test_populated_upgrade_preserves_prior_r2_decisions_and_does_not_admit(tmp_p
             correct_team_identity(c, tmp_path, other)
             assert len(history(c, c.execute("SELECT clock_timestamp()").fetchone()[0])) == 1
             assert history(c, t0) == []
+
+
+def test_review_preserves_admitted_support_versions_and_linked_corrections(tmp_path: Path) -> None:
+    from football.providers.pitchapi import PitchApiFixture
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        home, away = seed(c, tmp_path)
+        admit_provider_mappings(c, tmp_path, "fotmob")
+        correct_team_identity(c, tmp_path, home)
+        correct_team_identity(c, tmp_path, away)
+        before = c.execute(
+            "SELECT to_jsonb(a) FROM football.product_identity_admissions a "
+            "WHERE corrects_decision_id IS NOT NULL ORDER BY decision_id"
+        ).fetchall()
+        support_versions = c.execute(
+            "SELECT to_jsonb(m)-'last_seen_at' FROM football.team_provider_mappings m "
+            "JOIN football.providers p ON p.id=m.provider_id "
+            "WHERE p.code='fotmob' ORDER BY m.id"
+        ).fetchall()
+        source = c.execute(
+            "SELECT source_snapshot_id FROM football.team_provider_mappings "
+            "WHERE provider_team_id='9937' AND valid_to IS NULL"
+        ).fetchone()[0]
+        fixture, competition = c.execute(
+            "SELECT match_id,competition_id FROM football.match_provider_mappings m "
+            "JOIN football.matches f ON f.id=m.match_id WHERE m.id=%s",
+            (home.fixture_registration_id,),
+        ).fetchone()
+        row = PitchApiFixture(
+            provider_match_id="5795476",
+            provider_competition_id="47",
+            provider_home_team_id="9937",
+            provider_away_team_id="8650",
+            home_team_name="Brentford",
+            away_team_name="Liverpool",
+            kickoff_at=KICKOFF,
+            status="SCHEDULED",
+            provider_status="scheduled",
+            home_score=None,
+            away_score=None,
+            minute=None,
+            added_time=None,
+            period=None,
+            source_updated_at=None,
+            observed_at=ACQUIRED,
+        )
+        OperationalProviderSync(c, tmp_path, provider_code="fotmob")._persist_deterministic_mapping(
+            row,
+            source,
+            (
+                fixture,
+                competition,
+                stable_id("team", "api_football", "55"),
+                stable_id("team", "api_football", "40"),
+            ),
+            mapping_method="manual",
+        )
+        assert (
+            c.execute(
+                "SELECT to_jsonb(a) FROM football.product_identity_admissions a "
+                "WHERE corrects_decision_id IS NOT NULL ORDER BY decision_id"
+            ).fetchall()
+            == before
+        )
+        assert (
+            c.execute(
+                "SELECT to_jsonb(m)-'last_seen_at' FROM football.team_provider_mappings m "
+                "JOIN football.providers p ON p.id=m.provider_id "
+                "WHERE p.code='fotmob' ORDER BY m.id"
+            ).fetchall()
+            == support_versions
+        )
+        assert identity(c, home, c.execute("SELECT clock_timestamp()").fetchone()[0]) == stable_id(
+            "team", "api_football", "55"
+        )
+
+
+def test_reviewed_mapping_revalidation_is_prospective_and_cannot_override_operator_revocation(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request, _ = seed(c, tmp_path)
+        original = correct_team_identity(c, tmp_path, request)
+        admitted_at = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        support = c.execute(
+            "SELECT id FROM football.team_provider_mappings WHERE provider_team_id='9937' "
+            "AND valid_to IS NULL"
+        ).fetchone()[0]
+        c.execute(
+            "UPDATE football.team_provider_mappings SET valid_to=clock_timestamp() WHERE id=%s",
+            (support,),
+        )
+        c.execute(
+            """INSERT INTO football.team_provider_mappings (
+                 team_id,provider_id,provider_team_id,valid_from,first_seen_at,last_seen_at,
+                 mapping_method,mapping_confidence,source_snapshot_id)
+               SELECT team_id,provider_id,provider_team_id,clock_timestamp(),
+                      first_seen_at,last_seen_at,mapping_method,mapping_confidence,source_snapshot_id
+               FROM football.team_provider_mappings WHERE id=%s""",
+            (support,),
+        )
+        admit_provider_mappings(c, tmp_path, "fotmob")
+        blocked_at = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        assert identity(c, request, blocked_at) is None
+        assert correct_team_identity(c, tmp_path, request)["disposition"] == "REVOKED"
+        with (
+            pytest.raises(psycopg.errors.RaiseException, match="existing linked correction"),
+            c.transaction(),
+        ):
+            c.execute(
+                """INSERT INTO football.product_identity_admissions (
+                         entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                         disposition,reason,source_snapshot_id,source_observed_at,evidence,
+                         evidence_sha256,corrects_decision_id,target_mapping_id)
+                       SELECT entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                         disposition,reason,source_snapshot_id,source_observed_at,evidence,
+                         %s,corrects_decision_id,target_mapping_id
+                       FROM football.product_identity_admissions WHERE decision_id=%s""",
+                ("9" * 64, original["decision_id"]),
+            )
+        restored = correct_team_identity(c, tmp_path, request, reviewed_revalidation=True)
+        assert restored["decision_id"] != original["decision_id"]
+        assert restored["corrects_decision_id"] == original["corrects_decision_id"]
+        assert identity(c, request, restored["decided_at"]) == stable_id(
+            "team", "api_football", "55"
+        )
+        assert identity(c, request, blocked_at) is None
+        assert identity(c, request, admitted_at) == stable_id("team", "api_football", "55")
+        assert (
+            correct_team_identity(c, tmp_path, request, reviewed_revalidation=True)["decision_id"]
+            == restored["decision_id"]
+        )
+        revoke_team_correction(c, UUID(restored["decision_id"]), "OPERATOR_REVOKED")
+        with pytest.raises(ValueError, match="only a mapping-change revocation"):
+            correct_team_identity(c, tmp_path, request, reviewed_revalidation=True)

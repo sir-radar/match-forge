@@ -61,7 +61,7 @@ def cached_response(
                         THEN COALESCE(discovery.last_attempt_at, snapshot.acquired_at)
                         ELSE snapshot.acquired_at END,
                       resource.sha256, resource.size_bytes, resource.parse_status,
-                      resource.validation_status
+                      resource.validation_status, clock_timestamp()
                FROM football.source_snapshots snapshot
                JOIN football.providers provider ON provider.id = snapshot.provider_id
                JOIN football.source_resources resource ON resource.source_snapshot_id = snapshot.id
@@ -78,7 +78,7 @@ def cached_response(
         stored = cursor.fetchone()
     if stored is None:
         return None
-    now = datetime.now(UTC)
+    now = stored[8]
     if stored[2] > now or stored[3] > now:
         raise ValueError("cached provider acquisition/check timestamp is in the future")
     if freshness is not None and now - stored[3] >= freshness:

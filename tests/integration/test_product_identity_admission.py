@@ -834,3 +834,22 @@ def test_scope_cannot_claim_another_sources_conflicting_result_as_qualified(tmp_
             sync._season_qualification(uuid4(), [row], SyncCounts(matched=1))["status"]
             == "BLOCKED_IDENTITY"
         )
+
+
+def test_season_qualification_uses_database_knowledge_clock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import football.product.operational_provider_sync as operational
+
+    class BehindClock(datetime):
+        @classmethod
+        def now(cls, tz: object = None) -> datetime:
+            return datetime.now(UTC) - timedelta(days=1)
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(c, tmp_path)
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
+        monkeypatch.setattr(operational, "datetime", BehindClock)
+        report = sync._season_qualification(snapshot, [row], SyncCounts(matched=1))
+        assert report["status"] == "COMPLETED" and report["qualified_results"] == 1
