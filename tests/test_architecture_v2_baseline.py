@@ -131,6 +131,7 @@ def test_failed_capture_cannot_leave_a_passing_manifest(
     with pytest.raises(RuntimeError, match="snapshot export failed"):
         baseline.main(["--output", str(output), "--fixture-date", "2026-10-16"])
     assert json.loads((output / "manifest.json").read_text())["status"] == "INCOMPLETE"
+    assert output.stat().st_mode & 0o077 == 0
 
 
 def test_failed_baseline_cannot_be_used_as_restore_evidence(tmp_path: Path) -> None:

@@ -404,7 +404,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not args.verify_restored_baseline and not args.fixture_date:
         parser.error("capture requires at least one --fixture-date")
-    args.output.mkdir(parents=True, exist_ok=False)
+    args.output.mkdir(parents=True, exist_ok=False, mode=0o700)
     report: dict[str, Any] = {"phase": 0, "status": "INCOMPLETE", "repository": repository_state()}
     manifest = args.output / "manifest.json"
     write_json(manifest, report)
