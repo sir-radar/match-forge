@@ -30,7 +30,7 @@ def registered_resource(
 ) -> tuple[NormalizationContext, bytes]:
     row = connection.execute(
         """SELECT s.manifest_path,s.manifest_sha256,s.source_identity,s.source_revision,
-           s.id,r.id,r.provider_path,r.sha256,r.size_bytes,p.code,r.acquired_at,s.acquired_at
+           s.id,r.id,r.provider_path,r.sha256,r.size_bytes,p.code,r.acquired_at,s.acquired_at,s.git_sha
            FROM football.source_resources r
            JOIN football.source_snapshots s ON s.id=r.source_snapshot_id
            JOIN football.providers p ON p.id=s.provider_id WHERE r.id=%s""",
@@ -38,10 +38,13 @@ def registered_resource(
     ).fetchone()
     if row is None:
         raise ValueError("source resource is not registered")
+    # The legacy reader's fifth value is the pinned Git SHA used in file paths.
+    # Keep the snapshot UUID at row[4] for observation provenance.
+    legacy_row = (*row[:4], row[12], *row[5:9])
     raw = (
         _statsbomb_payload(root, row[:9])
         if row[9] == "statsbomb_open_data"
-        else _retained_payload(root, row[9], row[:9])
+        else _retained_payload(root, row[9], legacy_row)
     )
     if raw is None:
         raise ValueError("source bytes are missing or fail registered checksum verification")

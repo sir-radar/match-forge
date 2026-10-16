@@ -337,3 +337,44 @@ def test_registered_normalization_rejects_unregistered_or_corrupt_sources(
     (tmp_path / str(row[0])).write_bytes(b"tampered")
     with pytest.raises(ValueError, match="checksum"):
         registered_resource(connection, tmp_path, source)
+
+
+def test_legacy_openfootball_reader_uses_git_revision_without_changing_snapshot_identity(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.providers.normalization.cli import registered_resource
+    from football.storage.raw import ImmutableFileStore
+
+    files = ImmutableFileStore(tmp_path)
+    revision = "b" * 40
+    native_path = "2025-26/en.1.json"
+    raw = b'{"matches":[]}'
+    written = files.publish(f"openfootball/{revision}/{native_path}", raw)
+    manifest = files.publish(f"openfootball/{revision}/catalog.json", b"[]")
+    connection.execute(
+        "INSERT INTO football.providers(code,name,source_type) "
+        "VALUES ('openfootball','OpenFootball','git_repository') ON CONFLICT (code) DO NOTHING"
+    )
+    provider = connection.execute(
+        "SELECT id FROM football.providers WHERE code='openfootball'"
+    ).fetchone()
+    assert provider is not None
+    snapshot = connection.execute(
+        """INSERT INTO football.source_snapshots(
+        provider_id,source_identity,source_revision,git_sha,
+        acquired_at,manifest_path,manifest_sha256,status)
+        VALUES (%s,'legacy-normalization-regression',%s,%s,%s,%s,%s,'validated') RETURNING id""",
+        (provider[0], revision, revision, NOW, manifest.relative_path, manifest.sha256),
+    ).fetchone()
+    assert snapshot is not None
+    resource = connection.execute(
+        """INSERT INTO football.source_resources(source_snapshot_id,provider_path,sha256,size_bytes,
+        media_type,parse_status,validation_status,acquired_at)
+        VALUES (%s,%s,%s,%s,'application/json','parsed','valid',%s) RETURNING id""",
+        (snapshot[0], native_path, written.sha256, len(raw), NOW),
+    ).fetchone()
+    assert resource is not None
+    context, loaded = registered_resource(connection, tmp_path, resource[0])
+    assert loaded == raw
+    assert context.provenance.source_snapshot_id == snapshot[0]
+    assert str(snapshot[0]) != revision

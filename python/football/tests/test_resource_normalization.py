@@ -826,3 +826,17 @@ def test_openfootball_unknown_local_timezone_is_quarantined() -> None:
     )
     assert not any(o.CONTRACT == "FixtureObservationV2" for o in result.observations)
     assert any("timezone" in f.message for f in result.findings)
+
+
+def test_repeated_catalog_facts_keep_unique_identities_and_distinct_rows() -> None:
+    row = {"date": "2026-10-15", "team1": "Home", "team2": "Away", "score": {"ft": [0, 0]}}
+    result = normalize(
+        "openfootball",
+        "results",
+        {"name": "League", "matches": [row, row]},
+        competition_native_id="en.1",
+    )
+    assert len({o.observation_id for o in result.observations}) == len(result.observations)
+    assert len([o for o in result.observations if o.CONTRACT == "CompetitionObservationV2"]) == 1
+    assert len([o for o in result.observations if o.CONTRACT == "ResultObservationV2"]) == 2
+    assert result.records_seen == 2

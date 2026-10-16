@@ -122,7 +122,9 @@ class ObservationCollector:
 
     def result(self) -> NormalizationResult:
         return NormalizationResult(
-            tuple(self.observations), tuple(self.findings), self.records_seen
+            tuple({item.observation_id: item for item in self.observations}.values()),
+            tuple(self.findings),
+            self.records_seen,
         )
 
 
