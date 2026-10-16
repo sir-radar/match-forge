@@ -1,0 +1,1564 @@
+{
+  "$defs": {
+    "AvailabilityObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_state": {
+          "enum": [
+            "AVAILABLE_CONFIRMED",
+            "UNAVAILABLE_INJURY",
+            "UNAVAILABLE_SUSPENSION",
+            "UNAVAILABLE_OTHER",
+            "ASSUMED_AVAILABLE_NO_REPORTED_ISSUE",
+            "AVAILABILITY_UNVERIFIED",
+            "UNKNOWN"
+          ]
+        },
+        "availability_type": {
+          "enum": [
+            "INJURY",
+            "SUSPENSION",
+            "OTHER"
+          ]
+        },
+        "contract": {
+          "const": "AvailabilityObservationV1"
+        },
+        "fixture": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "team",
+        "player",
+        "availability_type",
+        "availability_state",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "CoachObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "coach": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "contract": {
+          "const": "CoachObservationV1"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "coach",
+        "team",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "CompetitionObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "competition": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "competition_type": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "CompetitionObservationV1"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "season_label": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "competition",
+        "name",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "EntityReference": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_native_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider_native_id"
+      ],
+      "type": "object"
+    },
+    "EventObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "added_time": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "EventObservationV1"
+        },
+        "event_type": {
+          "enum": [
+            "GOAL",
+            "DISALLOWED_GOAL",
+            "YELLOW_CARD",
+            "RED_CARD",
+            "SUBSTITUTION",
+            "CORNER"
+          ]
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "minute": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "own_goal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "penalty": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "period": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "event_type",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "ExpectedGoalsObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "ExpectedGoalsObservationV1"
+        },
+        "expected_goals": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "includes_penalties": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "scope": {
+          "enum": [
+            "MATCH_TOTAL",
+            "SHOT"
+          ]
+        },
+        "shot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "expected_goals",
+        "scope",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "FixtureObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "away_team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "competition": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "contract": {
+          "const": "FixtureObservationV1"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "home_team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "kickoff_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "kickoff_precision": {
+          "enum": [
+            "EXACT",
+            "DATE_ONLY"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "round": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "season_label": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "SCHEDULED",
+            "LIVE",
+            "HALF_TIME",
+            "FINISHED",
+            "POSTPONED",
+            "CANCELLED",
+            "ABANDONED",
+            "AWARDED",
+            "INTERRUPTED",
+            "SUSPENDED",
+            "UNKNOWN"
+          ]
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "venue": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "competition",
+        "home_team",
+        "away_team",
+        "kickoff_at",
+        "status",
+        "kickoff_precision",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "FormationObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "FormationObservationV1"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "formation": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "CONFIRMED",
+            "PREDICTED_REPEAT_XI"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "formation",
+        "mode",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "LineupMember": {
+      "additionalProperties": false,
+      "properties": {
+        "grid_position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role": {
+          "enum": [
+            "STARTER",
+            "BENCH"
+          ]
+        }
+      },
+      "required": [
+        "player",
+        "role"
+      ],
+      "type": "object"
+    },
+    "LineupObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "coach": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "LineupObservationV1"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "formation": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lineup_mode": {
+          "enum": [
+            "CONFIRMED",
+            "PREDICTED_REPEAT_XI",
+            "UNKNOWN"
+          ]
+        },
+        "players": {
+          "items": {
+            "$ref": "#/$defs/LineupMember"
+          },
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "lineup_mode",
+        "players",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "ObservationProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "provider_native_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_record_key": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_resource_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "source_sha256": {
+          "minLength": 1,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_snapshot_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "provider_native_id",
+        "source_snapshot_id",
+        "source_resource_id",
+        "source_sha256"
+      ],
+      "type": "object"
+    },
+    "ObservationTime": {
+      "additionalProperties": false,
+      "properties": {
+        "acquired_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "event_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "known_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "provider_updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "observed_at",
+        "acquired_at",
+        "known_at"
+      ],
+      "type": "object"
+    },
+    "ObservationVersions": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "normalizer_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "observation_contract_version": {
+          "enum": [
+            "1"
+          ]
+        },
+        "provider_schema_version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution_version": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "adapter_version",
+        "normalizer_version"
+      ],
+      "type": "object"
+    },
+    "OddsObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "away_decimal": {
+          "minimum": 1,
+          "type": "number"
+        },
+        "bookmaker": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "contract": {
+          "const": "OddsObservationV1"
+        },
+        "draw_decimal": {
+          "minimum": 1,
+          "type": "number"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "home_decimal": {
+          "minimum": 1,
+          "type": "number"
+        },
+        "market": {
+          "enum": [
+            "1X2"
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "bookmaker",
+        "market",
+        "home_decimal",
+        "draw_decimal",
+        "away_decimal",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "PlayerObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "PlayerObservationV1"
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "player": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "player",
+        "name",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "PlayerStatisticObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "assists": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "PlayerStatisticObservationV1"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "goals": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minutes_played": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "red_cards": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shots": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        },
+        "yellow_cards": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "player",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "ResultObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "away_goals": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "ResultObservationV1"
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "home_goals": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "score_basis": {
+          "enum": [
+            "REGULATION_90",
+            "EXTRA_TIME",
+            "PENALTY_SHOOTOUT",
+            "UNKNOWN"
+          ]
+        },
+        "status": {
+          "enum": [
+            "SCHEDULED",
+            "LIVE",
+            "HALF_TIME",
+            "FINISHED",
+            "POSTPONED",
+            "CANCELLED",
+            "ABANDONED",
+            "AWARDED",
+            "INTERRUPTED",
+            "SUSPENDED",
+            "UNKNOWN"
+          ]
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "status",
+        "score_basis",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "ShotObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "ShotObservationV1"
+        },
+        "expected_goals": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "is_own_goal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "is_penalty": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minute": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "enum": [
+                "GOAL",
+                "SAVED",
+                "BLOCKED",
+                "OFF_TARGET",
+                "POST"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "period": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntityReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "second": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        },
+        "x_norm": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "y_norm": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "StandingObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "competition": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "contract": {
+          "const": "StandingObservationV1"
+        },
+        "drawn": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "goals_against": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "goals_for": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "lost": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "played": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "points": {
+          "type": "integer"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "rank": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "season_label": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        },
+        "won": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "competition",
+        "team",
+        "season_label",
+        "rank",
+        "played",
+        "won",
+        "drawn",
+        "lost",
+        "goals_for",
+        "goals_against",
+        "points",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "TeamObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "TeamObservationV1"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "team",
+        "name",
+        "contract"
+      ],
+      "type": "object"
+    },
+    "TeamStatisticObservationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "big_chances": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "const": "TeamStatisticObservationV1"
+        },
+        "corners": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fixture": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "fouls": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "period": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "possession": {
+          "anyOf": [
+            {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/ObservationProvenance"
+        },
+        "red_cards": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "saves": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shots_on_target": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team": {
+          "$ref": "#/$defs/EntityReference"
+        },
+        "time": {
+          "$ref": "#/$defs/ObservationTime"
+        },
+        "total_shots": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "versions": {
+          "$ref": "#/$defs/ObservationVersions"
+        },
+        "yellow_cards": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provenance",
+        "time",
+        "versions",
+        "fixture",
+        "team",
+        "period",
+        "contract"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:matchforge:resource-observations:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/FixtureObservationV1"
+    },
+    {
+      "$ref": "#/$defs/ResultObservationV1"
+    },
+    {
+      "$ref": "#/$defs/CompetitionObservationV1"
+    },
+    {
+      "$ref": "#/$defs/TeamObservationV1"
+    },
+    {
+      "$ref": "#/$defs/PlayerObservationV1"
+    },
+    {
+      "$ref": "#/$defs/CoachObservationV1"
+    },
+    {
+      "$ref": "#/$defs/LineupObservationV1"
+    },
+    {
+      "$ref": "#/$defs/AvailabilityObservationV1"
+    },
+    {
+      "$ref": "#/$defs/FormationObservationV1"
+    },
+    {
+      "$ref": "#/$defs/EventObservationV1"
+    },
+    {
+      "$ref": "#/$defs/ShotObservationV1"
+    },
+    {
+      "$ref": "#/$defs/ExpectedGoalsObservationV1"
+    },
+    {
+      "$ref": "#/$defs/TeamStatisticObservationV1"
+    },
+    {
+      "$ref": "#/$defs/PlayerStatisticObservationV1"
+    },
+    {
+      "$ref": "#/$defs/StandingObservationV1"
+    },
+    {
+      "$ref": "#/$defs/OddsObservationV1"
+    }
+  ],
+  "title": "MatchForge resource observations version 1"
+}

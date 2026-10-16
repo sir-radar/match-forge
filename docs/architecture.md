@@ -41,6 +41,20 @@ uv run --locked python -m scripts.capture_architecture_v2_baseline \
 
 Verification requires exact table and historical-cutoff hashes, the original dump checksum, and intact archived source bytes. Current-time views are captured for reference rather than compared at a later wall-clock time. A successful capture alone does not prove a successful restore or completion of Architecture V2.
 
+### Versioned resource observations
+
+The typed contracts in `football.contracts.observations` have a checked-in JSON Schema at `schemas/contracts/resource-observations-v1.schema.json`. Each resource has its own fields. Fixture scheduling excludes scores; results, lineups, availability, events, shots, xG, named statistics, standings and odds remain separate. An absent resource produces no observation. Within an observed resource, `null` means unreported or unknown; zero and false remain observed values. Unknown source values require an explicit mapping or quarantine before construction.
+
+Native identifiers remain scoped to the named provider. A missing native ID requires a source-record locator, such as a CSV row; names never create canonical IDs. Canonical references remain null until independently resolved. Every observation binds a registered source snapshot, resource and byte checksum, and records separate provider-schema, adapter, normalizer, observation-contract and optional resolution versions. An unknown provider schema or unresolved identity stays explicit rather than acquiring a fabricated version.
+
+`observed_at` records when the source was observed, `acquired_at` matches the registered raw resource, and `known_at` records when MatchForge could know the observation. Knowledge cannot precede observation or acquisition. Optional `event_time`, `provider_updated_at` and the half-open `[valid_from, valid_to)` interval describe football/provider time independently. None of these fields alone establishes eligibility for a historical forecast; the existing point-in-time contracts continue to govern it.
+
+Canonical UTF-8 JSON sorts object keys, normalizes timestamps to UTC and integral numbers to integers, rejects nonfinite values and duplicate fields, and ends with a newline. Its SHA256 determines immutable observation identity. A correction, changed knowledge time or changed processing version creates a new observation. The schema fingerprint is immutable for each contract version.
+
+`football.observations.storage.ObservationArtifactStore` writes immutable typed JSON files and registers only provenance, time, version and file metadata in PostgreSQL. This shared registry contains no EAV domain values. Source provenance is checked against raw registrations, and SQL rejects updates/deletes to artifacts and contract versions. File publication precedes registration; rollback can leave an unregistered immutable file, and an identical retry converges. The caller owns the transaction. These shadow artifacts do not admit identity, replace existing serving/history tables, or alter forecasts.
+
+With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
+
 ## System Flow
 
 ```text

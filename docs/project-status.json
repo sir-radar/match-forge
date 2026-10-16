@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-16T11:20:50.174891Z",
+  "updated_at": "2026-10-16T12:02:36.154637Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1204,19 +1204,22 @@
     }
   },
   "architecture_v2": {
-    "status": "PHASE_0_PASSED_OWNER_HANDOFF",
-    "current_phase": 0,
+    "status": "IN_PROGRESS",
+    "current_phase": 1,
     "completed_phases": [
-      0
+      0,
+      1
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
     "baseline_ref": ".local/remediation/matchforge-architecture-v2/phase-0/manifest.json",
     "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
     "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
-    "schema_changes": [],
+    "schema_changes": [
+      "202610160200_observation_contract_foundation.sql"
+    ],
     "runtime_cutover": false,
-    "remaining_work": "Phases 1-48 have not started. Return control to the owner at the Phase 0 gate under AGENTS.md section 5.",
+    "remaining_work": "Implement phases 2-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS_WITH_WARNINGS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1225,6 +1228,34 @@
       "focused_baseline_tests_passed": 13,
       "make_check_integration": "PASS",
       "log_ref": ".local/remediation/matchforge-architecture-v2/validation/review-check-integration.log"
+    },
+    "execution_policy": "Owner authorized continuous phase execution on 2026-10-16; commit completed work before starting each new phase.",
+    "phase_1": {
+      "status": "PASS_WITH_WARNINGS",
+      "resource_contracts": 16,
+      "schema_ref": "schemas/contracts/resource-observations-v1.schema.json",
+      "schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+      "migration_applied_to": "ISOLATED_SHADOW_AND_DISPOSABLE_TEST_DATABASES_ONLY",
+      "upgrade_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-1/upgrade-verification.json",
+      "original_football_tables_preserved": 100,
+      "original_migrations_preserved": 70,
+      "historical_cutoff_hashes_preserved": 2,
+      "champion_changed": false,
+      "focused_contract_tests_passed": 43,
+      "focused_postgres_tests_passed": 11,
+      "repository_validation": {
+        "status": "PASS_WITH_ISOLATED_RETRY",
+        "python_unit_tests_passed": 1113,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_and_project_status": "PASS",
+        "fresh_database_storage_integration": "251_PASSED_INITIAL_RUN; 1_PASSED_UNCHANGED_ISOLATED_RETRY",
+        "api_integration": "PASS_POSTGRES_18_6_REDIS_8_10_GO_OPERATIONAL_API",
+        "initial_failure": "Existing TestServingDatabaseCommittedJobSurvivesResponseLookupCancellation exceeded its two-second deadline during the comprehensive run. It passed unchanged in isolation; no timeout or assertion was weakened.",
+        "initial_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-1-check-integration.log",
+        "retry_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-1-serving-retry.log",
+        "api_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-1-api-integration.log"
+      }
     }
   },
   "phase_1b": {
