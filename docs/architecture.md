@@ -14,6 +14,63 @@ Current implementation, gate, and authorization state must be read from the repo
 
 Where these sources disagree, the newer explicit owner/Wayfinder decision takes precedence over a stale architectural or planning checkpoint.
 
+### Architecture V2 baseline
+
+Architecture V2 starts from the final R3 head, `c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365`, merged through PR #167. Phase 0 preserves the existing runtime before any schema or worker cutover. The remaining phases require implementation and acceptance evidence.
+
+Run the capture from the repository root with the existing `.env` exported and `scripts/toolchain.sh` loaded:
+
+```sh
+uv run --locked python -m scripts.capture_architecture_v2_baseline \
+  --output .local/remediation/matchforge-architecture-v2/new-baseline \
+  --fixture-date 2026-10-14 --fixture-date 2026-10-15 --fixture-date 2026-10-16 \
+  --cutoff 2026-10-15T23:29:06.806401Z
+```
+
+The output directory must not exist. The tool shares an exported PostgreSQL snapshot between a read-only repeatable-read transaction and the Compose PostgreSQL container's `pg_dump`. It retains a restorable database archive, schema, migration checksums, primary-key and row-hash inventories, current projections, historical cutoff hashes, source registrations and verified source bytes, champion checksum, history coverage, queue state and observable locks. Database row contents stay in the local backup; row inventories contain keys and hashes. API captures are separately timed observations because live sync remains enabled.
+
+Missing or unverifiable legacy source bytes are reported individually and produce `PASS_WITH_WARNINGS`; they are never silently repaired. The dump preserves their registrations. An interrupted capture remains `INCOMPLETE`. Keep all output under ignored `.local/` storage, with the same access restrictions as the original data, and leave old R3 evidence untouched.
+
+Restore `database.dump` using PostgreSQL 18's `pg_restore --exit-on-error --no-owner --no-acl` into a new, empty database. Never restore over the operating database. Then select the restored database through `DATABASE_URL` and run:
+
+```sh
+uv run --locked python -m scripts.capture_architecture_v2_baseline \
+  --output .local/remediation/matchforge-architecture-v2/new-restore-verification \
+  --verify-restored-baseline .local/remediation/matchforge-architecture-v2/phase-0
+```
+
+Verification requires exact table and historical-cutoff hashes, the original dump checksum, and intact archived source bytes. Current-time views are captured for reference rather than compared at a later wall-clock time. A successful capture alone does not prove a successful restore or completion of Architecture V2.
+
+### Versioned resource observations
+
+The typed contracts in `football.contracts.observations` have a checked-in JSON Schema at `schemas/contracts/resource-observations-v1.schema.json`. Each resource has its own fields. Fixture scheduling excludes scores; results, lineups, availability, events, shots, xG, named statistics, standings and odds remain separate. An absent resource produces no observation. Within an observed resource, `null` means unreported or unknown; zero and false remain observed values. Unknown source values require an explicit mapping or quarantine before construction.
+
+Native identifiers remain scoped to the named provider. A missing native ID requires a source-record locator, such as a CSV row; names never create canonical IDs. Canonical references remain null until independently resolved. Every observation binds a registered source snapshot, resource and byte checksum, and records separate provider-schema, adapter, normalizer, observation-contract and optional resolution versions. An unknown provider schema or unresolved identity stays explicit rather than acquiring a fabricated version.
+
+`observed_at` records when the source was observed, `acquired_at` matches the registered raw resource, and `known_at` records when MatchForge could know the observation. Knowledge cannot precede observation or acquisition. Optional `event_time`, `provider_updated_at` and the half-open `[valid_from, valid_to)` interval describe football/provider time independently. None of these fields alone establishes eligibility for a historical forecast; the existing point-in-time contracts continue to govern it.
+
+Canonical UTF-8 JSON sorts object keys, normalizes timestamps to UTC and integral numbers to integers, rejects nonfinite values and duplicate fields, and ends with a newline. Its SHA256 determines immutable observation identity. A correction, changed knowledge time or changed processing version creates a new observation. The schema fingerprint is immutable for each contract version.
+
+`football.observations.storage.ObservationArtifactStore` writes immutable typed JSON files and registers only provenance, time, version and file metadata in PostgreSQL. This shared registry contains no EAV domain values. Source provenance is checked against raw registrations, and SQL rejects updates/deletes to artifacts and contract versions. File publication precedes registration; rollback can leave an unregistered immutable file, and an identical retry converges. The caller owns the transaction. These shadow artifacts do not admit identity, replace existing serving/history tables, or alter forecasts.
+
+With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
+
+### Provider-native records
+
+`football.providers.native` describes each provider's JSON records independently. FotMob keeps numeric/string IDs and camel-case fields; PitchAPI keeps its own string IDs, status vocabulary and snake-case fields. API-Football models its own fixtures, teams, lineups, injuries, statistics and standings. football-data.org retains its v4 fixture, score and standing structures. OpenFootball retains source names and file/row identity rather than inventing team IDs. Football-Data.co.uk continues to use `FootballDataUkCsvRecordV1` and its receipt-verified CSV parser, preserving string values and empty cells.
+
+`native_record(Model, payload)` checks required fields and native types, rejects nonfinite/non-JSON values, and returns an independent typed copy. It preserves additive fields, unknown status values, string spelling, timezone text, numeric representation, omitted fields and explicit nulls. Football meaning and canonical identity belong to subsequent normalization/resolution. These are field-shape readers, not assertions that an API resource is enabled, complete or historically eligible. Existing acquisition and serving paths remain active during shadow migration.
+
+For offline inspection, `uv run --locked python -m football.providers.native.cli --model FotmobFixture INPUT` returns the parsed native record with the exact input-byte SHA256. Duplicate JSON keys are rejected. The static model list selects a decoder; runtime provider availability belongs to the later capability registry.
+
+### Provider acquisition capabilities
+
+`football.providers.sources.contracts` defines narrow fixture, result, competition, team, player, coach, lineup, availability, event, shot, xG, statistic, standing and odds ports. Implementations expose only acquisition methods backed by their existing clients. They return `ProviderPayload`: original immutable bytes, provider/resource identity, acquisition time, media type and available revision/cache/quota metadata. Football fields stay in the native payload until resource-specific normalization. A method's presence does not prove scoped coverage, access approval or historical eligibility.
+
+HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football and football-data.org clients. Queries and native season labels stay inside this boundary; football-data.org requires an explicit competition scope, and API-Football's current-only catalog filter remains in the resource key. FotMob's detailed capabilities share its physical match-details response; PitchAPI's xG capability uses its shot resource. Preserve those original bytes rather than creating synthetic provider responses. Coach and odds ports have no standalone acquisition implementation at this stage.
+
+File implementations read existing Football-Data.co.uk receipts and pinned OpenFootball Git objects; they neither reacquire historical sources nor trust mutable working files or file modification times as knowledge evidence. StatsBomb retains its existing commit pin. These ports are for shadow ingestion; current production entry points remain active until the parity and cutover phases. Network work must finish before the later normalization/persistence transaction begins.
+
 ## System Flow
 
 ```text

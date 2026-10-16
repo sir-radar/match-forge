@@ -23,6 +23,8 @@ from football.providers.base import (
     ProviderFetchError,
     UrllibHttpTransport,
 )
+from football.providers.native.fotmob import FotmobFixture
+from football.providers.native.reader import NativeRecordError, native_record
 
 _BASE_URL = "https://www.fotmob.com/api/data"
 _ID_PATTERN = re.compile(r"^[0-9]{1,20}$")
@@ -238,6 +240,24 @@ def normalize_daily_matches(response: FotmobResponse) -> tuple[FotmobLiveScore, 
             seen.add(observation.provider_match_id)
             observations.append(observation)
     return tuple(observations)
+
+
+def parse_fotmob_fixture(row: Mapping[str, Any]) -> FotmobFixture:
+    """Read native fields before status, clock or score-basis normalization."""
+    home = _object(row.get("home"), "home team")
+    away = _object(row.get("away"), "away team")
+    status = _object(row.get("status"), "status")
+    for key in ("started", "finished", "cancelled"):
+        if not isinstance(status.get(key), bool):
+            raise FotmobPayloadError(f"FotMob match status missing boolean {key}")
+    _provider_id(row.get("id"))
+    for team in (home, away):
+        _provider_id(team.get("id"))
+        _score(team.get("score"))
+    try:
+        return native_record(FotmobFixture, row)
+    except NativeRecordError as error:
+        raise FotmobPayloadError(str(error)) from error
 
 
 def _normalize_match(
