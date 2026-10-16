@@ -13,9 +13,8 @@ from uuid import UUID
 
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 
-from football.contracts.observation_schema import observation_schema
+from football.contracts.observation_schema import observation_schema, observation_types
 from football.contracts.observations import (
-    OBSERVATION_TYPES,
     ExpectedGoalsObservationV1,
     FixtureObservationV1,
     LineupObservationV1,
@@ -26,6 +25,7 @@ from football.contracts.observations import (
     ShotObservationV1,
     TeamStatisticObservationV1,
 )
+from football.contracts.observations_v2 import EntityReferenceV2
 
 
 def _encode(value: Any) -> Any:
@@ -66,18 +66,32 @@ def observation_bytes(value: Observation) -> bytes:
         raise ObservationError("observation must contain finite JSON values") from error
 
 
-@lru_cache(maxsize=1)
-def _validator() -> Draft202012Validator:
-    schema = observation_schema()
+@lru_cache(maxsize=2)
+def _validator(version: str) -> Draft202012Validator:
+    schema = observation_schema(version)
     Draft202012Validator.check_schema(schema)
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
 def _validate_payload(payload: object) -> None:
+    model = _observation_model(payload)
     try:
-        _validator().validate(payload)
+        _validator(model.VERSIONS_TYPE.VERSION).validate(payload)
     except ValidationError as error:
         raise ObservationError(f"invalid resource observation: {error.message}") from error
+
+
+@lru_cache(maxsize=1)
+def _models() -> dict[str, type[Observation]]:
+    return {model.CONTRACT: model for version in ("1", "2") for model in observation_types(version)}
+
+
+def _observation_model(payload: object) -> type[Observation]:
+    if isinstance(payload, dict) and isinstance(payload.get("contract"), str):
+        model = _models().get(payload["contract"])
+        if model is not None:
+            return model
+    raise ObservationError("unknown resource observation contract")
 
 
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -105,6 +119,8 @@ def _decode(annotation: Any, value: Any) -> Any:
         return tuple(_decode(args[0], item) for item in value)
     if isinstance(annotation, type) and is_dataclass(annotation):
         hints = get_type_hints(annotation, include_extras=True)
+        if issubclass(annotation, Observation):
+            hints["versions"] = annotation.VERSIONS_TYPE
         return annotation(
             **{
                 item.name: _decode(hints[item.name], value[item.name])
@@ -129,8 +145,7 @@ def decode_observation(payload: bytes) -> Observation:
     except (UnicodeDecodeError, ValueError) as error:
         raise ObservationError("observation must be valid finite UTF-8 JSON") from error
     _validate_payload(value)
-    models = {model.CONTRACT: model for model in OBSERVATION_TYPES}
-    return cast(Observation, _decode(models[value["contract"]], value))
+    return cast(Observation, _decode(_observation_model(value), value))
 
 
 def validate_observation(item: Observation) -> None:
@@ -147,6 +162,13 @@ def validate_observation(item: Observation) -> None:
             raise ObservationError("fixture participants must be distinct")
         if home.canonical_id is not None and home.canonical_id == away.canonical_id:
             raise ObservationError("fixture canonical participants must be distinct")
+        if (
+            isinstance(home, EntityReferenceV2)
+            and isinstance(away, EntityReferenceV2)
+            and home.source_record_key is not None
+            and home.source_record_key == away.source_record_key
+        ):
+            raise ObservationError("fixture participants must reference distinct source fields")
     _validate_resource(item)
 
 
@@ -189,8 +211,16 @@ def _validate_lineup(item: LineupObservationV1) -> None:
         for member in item.players
         if member.player.canonical_id is not None
     ]
+    source_fields = [
+        member.player.source_record_key
+        for member in item.players
+        if isinstance(member.player, EntityReferenceV2)
+        and member.player.source_record_key is not None
+    ]
     if not item.players or len(native) != len(set(native)) or len(canonical) != len(set(canonical)):
         raise ObservationError("lineup requires players with no duplicate identities")
+    if len(source_fields) != len(set(source_fields)):
+        raise ObservationError("lineup contains duplicate source fields")
 
 
 def _validate_statistics(item: TeamStatisticObservationV1 | PlayerStatisticObservationV1) -> None:

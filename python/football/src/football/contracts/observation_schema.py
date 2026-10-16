@@ -52,6 +52,8 @@ def _field_schema(annotation: Any, definitions: dict[str, Any]) -> dict[str, Any
 
 def _class_schema(model: type[Any], definitions: dict[str, Any]) -> dict[str, Any]:
     hints = get_type_hints(model, include_extras=True)
+    if issubclass(model, Observation):
+        hints["versions"] = model.VERSIONS_TYPE
     properties = {item.name: _field_schema(hints[item.name], definitions) for item in fields(model)}
     required = [
         item.name
@@ -69,19 +71,30 @@ def _class_schema(model: type[Any], definitions: dict[str, Any]) -> dict[str, An
     }
 
 
-@lru_cache(maxsize=1)
-def observation_schema() -> dict[str, Any]:
+@lru_cache(maxsize=2)
+def observation_schema(version: str = "1") -> dict[str, Any]:
+    models = observation_types(version)
     definitions: dict[str, Any] = {}
-    for model in OBSERVATION_TYPES:
+    for model in models:
         definitions[model.CONTRACT] = _class_schema(model, definitions)
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "urn:matchforge:resource-observations:v1",
-        "title": "MatchForge resource observations version 1",
-        "oneOf": [{"$ref": f"#/$defs/{model.CONTRACT}"} for model in OBSERVATION_TYPES],
+        "$id": f"urn:matchforge:resource-observations:v{version}",
+        "title": f"MatchForge resource observations version {version}",
+        "oneOf": [{"$ref": f"#/$defs/{model.CONTRACT}"} for model in models],
         "$defs": definitions,
     }
 
 
-def observation_schema_sha256() -> str:
-    return hashlib.sha256(canonical_json_bytes(observation_schema())).hexdigest()
+def observation_schema_sha256(version: str = "1") -> str:
+    return hashlib.sha256(canonical_json_bytes(observation_schema(version))).hexdigest()
+
+
+def observation_types(version: str) -> tuple[type[Observation], ...]:
+    if version == "1":
+        return OBSERVATION_TYPES
+    if version == "2":
+        from football.contracts.observations_v2 import OBSERVATION_V2_TYPES
+
+        return OBSERVATION_V2_TYPES
+    raise ValueError(f"unsupported resource observation version: {version}")

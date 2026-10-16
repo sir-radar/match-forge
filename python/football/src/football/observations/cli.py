@@ -18,7 +18,8 @@ from football.observations.storage import ObservationArtifactStore
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("schema")
+    schema = sub.add_parser("schema")
+    schema.add_argument("--version", choices=("1", "2"), default="1")
     for command in ("validate", "store"):
         action = sub.add_parser(command)
         action.add_argument("input", type=Path)
@@ -26,7 +27,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             action.add_argument("--data-root", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "schema":
-        print(json.dumps(observation_schema(), indent=2, sort_keys=True))
+        print(json.dumps(observation_schema(args.version), indent=2, sort_keys=True))
         return 0
     observation = observation_from_bytes(args.input.read_bytes())
     if args.command == "store":

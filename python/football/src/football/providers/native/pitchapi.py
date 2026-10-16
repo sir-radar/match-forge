@@ -48,3 +48,23 @@ class PitchApiStatistic(TypedDict):
     home: float | str | None
     away: float | str | None
     title: NotRequired[str | None]
+
+
+class PitchApiCoach(TypedDict, total=False):
+    id: str | None
+    name: str | None
+
+
+class PitchApiLineupPlayer(TypedDict):
+    player_id: str
+    name: NotRequired[str | None]
+    position_id: NotRequired[int | None]
+    shirt_number: NotRequired[str | None]
+
+
+class PitchApiLineupSide(TypedDict, total=False):
+    confirmed: bool
+    formation: str | None
+    coach: PitchApiCoach | None
+    starters: list[PitchApiLineupPlayer]
+    subs: list[PitchApiLineupPlayer]

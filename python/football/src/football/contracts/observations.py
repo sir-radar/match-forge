@@ -59,12 +59,19 @@ class ObservationProvenance:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ObservationVersions:
+class ObservationVersionInfo:
+    VERSION: ClassVar[str]
     adapter_version: str
     normalizer_version: str
     provider_schema_version: str | None = None
-    observation_contract_version: Literal["1"] = "1"
+    observation_contract_version: str
     resolution_version: str | None = None
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ObservationVersions(ObservationVersionInfo):
+    VERSION: ClassVar[str] = "1"
+    observation_contract_version: Literal["1"] = "1"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -84,8 +91,9 @@ class ObservationTime:
 class Observation:
     provenance: ObservationProvenance
     time: ObservationTime
-    versions: ObservationVersions
+    versions: ObservationVersionInfo
     CONTRACT: ClassVar[str]
+    VERSIONS_TYPE: ClassVar[type[ObservationVersionInfo]] = ObservationVersions
 
     def __post_init__(self) -> None:
         from football.contracts.observation_codec import validate_observation

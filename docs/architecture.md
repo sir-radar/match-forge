@@ -71,6 +71,22 @@ HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football a
 
 File implementations read existing Football-Data.co.uk receipts and pinned OpenFootball Git objects; they neither reacquire historical sources nor trust mutable working files or file modification times as knowledge evidence. StatsBomb retains its existing commit pin. These ports are for shadow ingestion; current production entry points remain active until the parity and cutover phases. Network work must finish before the later normalization/persistence transaction begins.
 
+### Resource normalization
+
+`football.providers.normalization.pipeline.normalize_resource` verifies the registered source checksum and dispatches an explicit provider/resource pair. Fixtures and results, participants, lineups, availability, events, shots, xG, named statistics, standings and retained CSV odds produce separate observations. Missing resources produce no measurements. Unknown values and unsupported fields produce structured findings; a bad record does not replace valid sibling records. Repeated statistics may corroborate each other, while contradictory duplicates quarantine the affected measurement. This decoder registry does not establish runtime provider availability.
+
+V2 contracts in `football.contracts.observations_v2` add `EntityReferenceV2.source_record_key`. This identifies an exact field within the observation's source resource when a provider supplies no ID. JSON pointers, CSV record/column locations and ZIP member locations preserve anonymous participants without treating names or generated IDs as provider identity. V1 schema fingerprints and serialized bytes remain unchanged; both versions use the existing immutable artifact registry. Match-specific inputs must agree with native fixture IDs or registered request scope. A lineup coach does not establish a global manager tenure.
+
+Provider update timestamps retain their declared timezone. A local timestamp without a verified timezone stays in raw evidence and a finding; normalization does not assume UTC. FotMob/PitchAPI coordinates remain unnormalized until their coordinate frame is verified. StatsBomb shots reuse the existing 120×80 coordinate contract. Third-party predicted lineups remain `UNKNOWN`, rather than acquiring MatchForge's `PREDICTED_REPEAT_XI` label. Football-Data.co.uk statistics remain aggregates, and odds remain separate from model features.
+
+The offline command below reads registered retained bytes and writes an immutable report containing source lineage, processing versions, output identities and findings. It performs no provider requests. With `--persist`, all output registrations share one transaction; identical retries use the original registered acquisition/observation clocks. File publication may leave safe orphan files after rollback. Reports describe normalization outputs, not canonical admission or historical eligibility. Use the isolated shadow database until the cutover gate passes.
+
+```sh
+uv run --locked python -m football.providers.normalization.cli \
+  --source-resource-id RESOURCE_UUID --resource shots --fixture-native-id NATIVE_MATCH_ID \
+  --data-root .local/football-data --artifact-root .local/shadow-observations --persist
+```
+
 ## System Flow
 
 ```text

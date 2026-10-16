@@ -26,6 +26,7 @@ class FotmobStatus(TypedDict):
     started: bool
     finished: bool
     cancelled: bool
+    awarded: NotRequired[bool]
     reason: NotRequired[FotmobReason | None]
     liveTime: NotRequired[FotmobLiveTime | None]
     scoreStr: NotRequired[str | None]
@@ -49,16 +50,29 @@ class FotmobCompetition(TypedDict, total=False):
 class FotmobPlayer(TypedDict):
     id: int | str
     name: NotRequired[str | None]
+    positionId: NotRequired[int | None]
 
 
 class FotmobLineupSide(TypedDict, total=False):
+    id: int | str
+    name: str | None
     starters: list[FotmobPlayer]
+    subs: list[FotmobPlayer]
+    coach: FotmobPlayer | None
     formation: str | None
 
 
 class FotmobLineup(TypedDict, total=False):
     home: FotmobLineupSide
     away: FotmobLineupSide
+    homeTeam: FotmobLineupSide
+    awayTeam: FotmobLineupSide
+    lineupType: str
+
+
+class FotmobEventPlayer(TypedDict):
+    id: int | str | None
+    name: NotRequired[str | None]
 
 
 class FotmobEvent(TypedDict):
@@ -67,7 +81,7 @@ class FotmobEvent(TypedDict):
     time: NotRequired[int | None]
     overloadTime: NotRequired[int | None]
     isHome: NotRequired[bool | None]
-    player: NotRequired[FotmobPlayer | None]
+    player: NotRequired[FotmobEventPlayer | None]
     card: NotRequired[str | None]
     isPenaltyShootoutEvent: NotRequired[bool | None]
 

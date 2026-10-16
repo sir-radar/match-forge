@@ -23,9 +23,10 @@ class ObservationArtifactStore:
     def publish(self, observation: Observation) -> UUID:
         """Identical retries converge; failed DB writes can leave safe orphan files."""
         digest = observation.sha256
-        relative = f"observations/v1/{observation.CONTRACT}/{digest}.json"
+        version = observation.versions.observation_contract_version
+        relative = f"observations/v{version}/{observation.CONTRACT}/{digest}.json"
         self.files.publish(relative, observation.to_bytes())
-        schema_hash = observation_schema_sha256()
+        schema_hash = observation_schema_sha256(version)
         self._register_contract(observation, schema_hash)
         provenance, versions, time = observation.provenance, observation.versions, observation.time
         provider = self.connection.execute(
@@ -77,7 +78,7 @@ class ObservationArtifactStore:
             """INSERT INTO football.observation_contract_schemas (
                 contract_name,observation_contract_version,schema_sha256,schema_document)
                VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING""",
-            (*key, schema_hash, Jsonb(observation_schema())),
+            (*key, schema_hash, Jsonb(observation_schema(key[1]))),
         )
         row = self.connection.execute(
             """SELECT schema_sha256 FROM football.observation_contract_schemas

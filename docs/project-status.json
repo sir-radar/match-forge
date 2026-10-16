@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-16T13:00:53.250250Z",
+  "updated_at": "2026-10-16T16:08:45.801973Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 3,
+    "current_phase": 4,
     "completed_phases": [
       0,
       1,
@@ -1303,6 +1303,34 @@
       },
       "additional_live_provider_requests": 0,
       "runtime_cutover": false
+    },
+    "phase_4": {
+      "status": "IMPLEMENTED_PENDING_RETAINED_SOURCE_ACCEPTANCE",
+      "providers": [
+        "api_football",
+        "football_data_org",
+        "football_data_uk",
+        "fotmob",
+        "openfootball",
+        "pitchapi",
+        "statsbomb_open_data"
+      ],
+      "provider_resource_decoders": 33,
+      "observation_contract_version": "2",
+      "v1_schema_unchanged": true,
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "focused_unit_tests_passed": 148,
+      "focused_postgres_tests_passed": 15,
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1255,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-check-integration.log"
+      },
+      "retained_source_acceptance": "PENDING_COMMITTED_CODE_REPLAY"
     }
   },
   "phase_1b": {

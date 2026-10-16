@@ -33,6 +33,7 @@ class FootballDataOrgFixture(TypedDict):
     awayTeam: FootballDataOrgTeam
     score: FootballDataOrgScore
     season: NotRequired[dict[str, object]]
+    lastUpdated: NotRequired[str | None]
 
 
 class FootballDataOrgStanding(TypedDict):

@@ -193,3 +193,147 @@ def test_orphan_file_retry_converges_and_corruption_is_detected(
         store.load(identifier)
     with pytest.raises(ImmutableFileConflict):
         store.publish(item)
+
+
+def test_v1_and_v2_artifacts_coexist_without_schema_or_byte_changes(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.contracts.observations_v2 import (
+        EntityReferenceV2,
+        FixtureObservationV2,
+        ObservationVersionsV2,
+    )
+
+    old = _observation(connection, tmp_path)
+    item = FixtureObservationV2(
+        provenance=old.provenance,
+        time=old.time,
+        versions=ObservationVersionsV2(
+            adapter_version="source-v2", normalizer_version="fixture-v2"
+        ),
+        fixture=EntityReferenceV2("42"),
+        competition=EntityReferenceV2("47"),
+        home_team=EntityReferenceV2(None, source_record_key="json:/home"),
+        away_team=EntityReferenceV2(None, source_record_key="json:/away"),
+        kickoff_at=old.kickoff_at,
+        status="SCHEDULED",
+        kickoff_precision="EXACT",
+    )
+    store = ObservationArtifactStore(connection, tmp_path)
+    store.publish(old)
+    store.publish(item)
+    assert store.load(old.observation_id).to_bytes() == old.to_bytes()
+    assert store.load(item.observation_id).to_bytes() == item.to_bytes()
+    assert store.publish(item) == item.observation_id
+    assert connection.execute(
+        "SELECT observation_contract_version, schema_sha256 "
+        "FROM football.resource_observation_artifacts WHERE observation_id IN (%s,%s) "
+        "ORDER BY observation_contract_version",
+        (old.observation_id, item.observation_id),
+    ).fetchall() == [("1", observation_schema_sha256("1")), ("2", observation_schema_sha256("2"))]
+
+
+def _normalization_source(connection: psycopg.Connection[object], root: Path) -> UUID:
+    import json
+
+    row = {
+        "fixture": {"id": 42, "date": "2026-10-17T12:00:00Z", "status": {"short": "NS"}},
+        "league": {"id": 7, "season": 2026},
+        "teams": {"home": {"id": 1, "name": "Home"}, "away": {"id": 2, "name": "Away"}},
+        "goals": {"home": None, "away": None},
+    }
+    raw = json.dumps({"response": [row]}).encode()
+    sync = ProductSync(connection, ApiFootballClient("test"), root, root / "unused-model")
+    snapshot = sync._record_response(
+        "normalization-test", ApiResponse("/fixtures", NOW, raw, (), None)
+    )
+    result = connection.execute(
+        "SELECT id FROM football.source_resources WHERE source_snapshot_id=%s", (snapshot,)
+    ).fetchone()
+    assert result is not None
+    return UUID(str(result[0]))
+
+
+def test_registered_resource_normalizes_reproducibly_with_durable_source_times(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.providers.normalization.cli import registered_resource, report_bytes
+    from football.providers.normalization.pipeline import normalize_resource
+
+    source = _normalization_source(connection, tmp_path)
+    context, raw = registered_resource(connection, tmp_path, source)
+    first = normalize_resource(context, "fixtures", raw)
+    assert len(first.observations) == 3 and not first.findings
+    before = connection.execute(
+        "SELECT (SELECT count(*) FROM football.product_fixtures), "
+        "(SELECT count(*) FROM football.product_forecasts)"
+    ).fetchone()
+    store = ObservationArtifactStore(connection, tmp_path)
+    identifiers = [store.publish(o) for o in first.observations]
+    later_context, later_raw = registered_resource(connection, tmp_path, source)
+    second = normalize_resource(later_context, "fixtures", later_raw)
+    assert report_bytes(context, "fixtures", first) == report_bytes(
+        later_context, "fixtures", second
+    )
+    assert [store.publish(o) for o in second.observations] == identifiers
+    assert all(store.load(o.observation_id) == o for o in first.observations)
+    assert (
+        context.time.acquired_at
+        == connection.execute(
+            "SELECT acquired_at FROM football.source_resources WHERE id=%s", (source,)
+        ).fetchone()[0]
+    )
+    assert (
+        connection.execute(
+            "SELECT (SELECT count(*) FROM football.product_fixtures), "
+            "(SELECT count(*) FROM football.product_forecasts)"
+        ).fetchone()
+        == before
+    )
+
+
+def test_normalization_rollback_retry_converges_and_retains_reports(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.providers.normalization.cli import registered_resource, report_bytes
+    from football.providers.normalization.pipeline import normalize_resource
+
+    context, raw = registered_resource(
+        connection, tmp_path, _normalization_source(connection, tmp_path)
+    )
+    result = normalize_resource(context, "fixtures", raw)
+    report = report_bytes(context, "fixtures", result)
+    store = ObservationArtifactStore(connection, tmp_path)
+    with connection.transaction(force_rollback=True):
+        for o in result.observations:
+            store.publish(o)
+    assert connection.execute(
+        "SELECT count(*) FROM football.resource_observation_artifacts WHERE source_resource_id=%s",
+        (context.provenance.source_resource_id,),
+    ).fetchone() == (0,)
+    for observation in result.observations:
+        store.publish(observation)
+    assert report == report_bytes(context, "fixtures", normalize_resource(context, "fixtures", raw))
+    assert connection.execute(
+        "SELECT count(*) FROM football.resource_observation_artifacts WHERE source_resource_id=%s",
+        (context.provenance.source_resource_id,),
+    ).fetchone() == (3,)
+
+
+def test_registered_normalization_rejects_unregistered_or_corrupt_sources(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.providers.normalization.cli import registered_resource
+
+    with pytest.raises(ValueError, match="not registered"):
+        registered_resource(connection, tmp_path, UUID(int=0))
+    source = _normalization_source(connection, tmp_path)
+    row = connection.execute(
+        "SELECT s.manifest_path FROM football.source_resources r "
+        "JOIN football.source_snapshots s ON s.id=r.source_snapshot_id WHERE r.id=%s",
+        (source,),
+    ).fetchone()
+    assert row is not None
+    (tmp_path / str(row[0])).write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="checksum"):
+        registered_resource(connection, tmp_path, source)
