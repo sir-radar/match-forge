@@ -63,6 +63,14 @@ With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observat
 
 For offline inspection, `uv run --locked python -m football.providers.native.cli --model FotmobFixture INPUT` returns the parsed native record with the exact input-byte SHA256. Duplicate JSON keys are rejected. The static model list selects a decoder; runtime provider availability belongs to the later capability registry.
 
+### Provider acquisition capabilities
+
+`football.providers.sources.contracts` defines narrow fixture, result, competition, team, player, coach, lineup, availability, event, shot, xG, statistic, standing and odds ports. Implementations expose only acquisition methods backed by their existing clients. They return `ProviderPayload`: original immutable bytes, provider/resource identity, acquisition time, media type and available revision/cache/quota metadata. Football fields stay in the native payload until resource-specific normalization. A method's presence does not prove scoped coverage, access approval or historical eligibility.
+
+HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football and football-data.org clients. Queries and native season labels stay inside this boundary; football-data.org requires an explicit competition scope, and API-Football's current-only catalog filter remains in the resource key. FotMob's detailed capabilities share its physical match-details response; PitchAPI's xG capability uses its shot resource. Preserve those original bytes rather than creating synthetic provider responses. Coach and odds ports have no standalone acquisition implementation at this stage.
+
+File implementations read existing Football-Data.co.uk receipts and pinned OpenFootball Git objects; they neither reacquire historical sources nor trust mutable working files or file modification times as knowledge evidence. StatsBomb retains its existing commit pin. These ports are for shadow ingestion; current production entry points remain active until the parity and cutover phases. Network work must finish before the later normalization/persistence transaction begins.
+
 ## System Flow
 
 ```text
