@@ -55,6 +55,14 @@ Canonical UTF-8 JSON sorts object keys, normalizes timestamps to UTC and integra
 
 With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
 
+### Provider-native records
+
+`football.providers.native` describes each provider's JSON records independently. FotMob keeps numeric/string IDs and camel-case fields; PitchAPI keeps its own string IDs, status vocabulary and snake-case fields. API-Football models its own fixtures, teams, lineups, injuries, statistics and standings. football-data.org retains its v4 fixture, score and standing structures. OpenFootball retains source names and file/row identity rather than inventing team IDs. Football-Data.co.uk continues to use `FootballDataUkCsvRecordV1` and its receipt-verified CSV parser, preserving string values and empty cells.
+
+`native_record(Model, payload)` checks required fields and native types, rejects nonfinite/non-JSON values, and returns an independent typed copy. It preserves additive fields, unknown status values, string spelling, timezone text, numeric representation, omitted fields and explicit nulls. Football meaning and canonical identity belong to subsequent normalization/resolution. These are field-shape readers, not assertions that an API resource is enabled, complete or historically eligible. Existing acquisition and serving paths remain active during shadow migration.
+
+For offline inspection, `uv run --locked python -m football.providers.native.cli --model FotmobFixture INPUT` returns the parsed native record with the exact input-byte SHA256. Duplicate JSON keys are rejected. The static model list selects a decoder; runtime provider availability belongs to the later capability registry.
+
 ## System Flow
 
 ```text
