@@ -25,6 +25,11 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
         for source, target in OPERATIONAL_TEAM_CROSSWALKS.items()
     ]
     with connection.cursor() as cursor:
+        # Mapping and history-decision triggers use this lock. Acquire it before
+        # the fixture crosswalk lock, including when no mapping is being changed.
+        cursor.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
+        )
         cursor.execute("SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))")
         cursor.execute(
             """UPDATE football.fixture_identity_resolutions SET active = false

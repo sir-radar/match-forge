@@ -48,3 +48,24 @@ def test_fotmob_rejects_competition_or_season_substitution(league: int, season: 
     )
     with pytest.raises(ValueError):
         _fotmob_season_rows(response, "47", "2020/2021")
+
+
+def test_native_split_seasons_keep_apertura_and_clausura_distinct() -> None:
+    assert normalize_seasons(
+        ["2024/25 - Apertura", "2024/2025 - Clausura", "2024/2025 - Apertura"]
+    ) == ["2024/2025 - Clausura", "2024/2025 - Apertura"]
+    response = FotmobResponse(
+        "league",
+        datetime.now(UTC),
+        "0" * 64,
+        b"{}",
+        {
+            "details": {"id": 337, "selectedSeason": "2024/2025 - Apertura"},
+            "fixtures": {"allMatches": []},
+        },
+    )
+    assert _fotmob_season_rows(response, "337", "2024/2025 - Apertura") == ()
+    with pytest.raises(ValueError, match="selected season"):
+        _fotmob_season_rows(response, "337", "2024/2025 - Clausura")
+    with pytest.raises(ValueError, match="selected season"):
+        _fotmob_season_rows(response, "337", "2024/2025")

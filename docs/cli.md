@@ -105,3 +105,17 @@ and cursor mutation commands remain gated on the durable worker contracts.
 6  ingestion or validation completed with failed status
 7  Sprint 2 evaluation completed with FAIL status; retained reports contain blockers
 ```
+
+## Operational history replay
+
+The product CLI (`python -m football.product.cli backfill-history`) maintains
+separate provider, native competition, and native season scopes. `--refresh`
+requeues only due scopes; it preserves attempts, retry deadlines, and active
+worker claims. Native labels such as `2024/2025 - Apertura` and
+`2024/2025 - Clausura` remain separate, including in retained response lookup.
+An absent fixture list or an empty advertised season cannot complete a scope.
+
+Forecast refresh claims competition rows before fixture rows and skips busy rows.
+Deferred work remains pending for a later worker. Identity admission and fixture
+reconciliation acquire the identity admission advisory lock before the fixture
+crosswalk advisory lock. Maintenance can run alongside operational polling.

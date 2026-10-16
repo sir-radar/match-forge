@@ -1470,6 +1470,8 @@ class ProductSync:
                     JOIN football.match_provider_mappings mpm ON mpm.match_id = pf.fixture_id
                     JOIN football.providers p ON p.id = mpm.provider_id
                     WHERE p.code = %s AND mpm.provider_match_id = %s
+                      AND mpm.valid_to IS NULL
+                      AND (mpm.valid_from IS NULL OR mpm.valid_from <= clock_timestamp())
                     """,
                     (PROVIDER_CODE, provider_fixture_id),
                 )
@@ -1747,7 +1749,7 @@ class ProductSync:
         *,
         admit_mappings: bool = True,
     ) -> int:
-        """Publish only missing future forecasts from already stored canonical history."""
+        """Publish missing future forecasts; busy competition/fixture rows remain queued."""
         if admit_mappings:
             for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
                 admit_provider_mappings(self.connection, self.data_root, provider)
@@ -1805,16 +1807,18 @@ class ProductSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT fixture.fixture_id FROM football.product_forecast_refresh_work work
-                JOIN football.product_fixtures fixture USING (fixture_id)
+                SELECT fixture.fixture_id FROM football.product_competitions competition
+                JOIN football.product_fixtures fixture USING (competition_id)
+                JOIN football.product_forecast_refresh_work work USING (fixture_id)
                 WHERE work.generation > work.completed_generation
                 ORDER BY work.requested_at, fixture.fixture_id
-                FOR UPDATE OF fixture SKIP LOCKED LIMIT %s
+                FOR UPDATE OF competition, fixture SKIP LOCKED LIMIT %s
                 """,
                 (limit,),
             )
             fixture_ids = [row[0] for row in cursor.fetchall()]
-            # Ingestion locks a fixture before enqueueing its work. Use the same order.
+            # Claim the competition before its fixtures; ingestion locks fixtures before work.
+            # Busy competitions are deferred without holding their fixture/work rows.
             cursor.execute(
                 """SELECT fixture_id FROM football.product_forecast_refresh_work
                    WHERE fixture_id = ANY(%s::uuid[]) ORDER BY fixture_id FOR UPDATE""",
@@ -1865,13 +1869,14 @@ class ProductSync:
     ) -> int:
         with self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT 1 FROM football.product_fixtures
+                """SELECT 1 FROM football.product_competitions competition
+                   JOIN football.product_fixtures fixture USING (competition_id)
                    WHERE fixture_id = %s
                      AND football.product_fixture_team_at(fixture_id, home_team_id, %s) = %s
                      AND football.product_fixture_team_at(fixture_id, away_team_id, %s) = %s
                      AND kickoff_at = %s AND kickoff_at > clock_timestamp()
                      AND status = 'SCHEDULED' AND identity_status = 'VERIFIED'
-                   FOR UPDATE""",
+                   FOR UPDATE OF competition, fixture SKIP LOCKED""",
                 (fixture_id, now, home_id, now, away_id, kickoff_at),
             )
             if cursor.fetchone() is None:
@@ -2386,6 +2391,8 @@ class ProductSync:
                 FROM football.match_provider_mappings mapping
                 JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = %s AND mapping.provider_match_id = %s
+                  AND mapping.valid_to IS NULL
+                  AND (mapping.valid_from IS NULL OR mapping.valid_from <= clock_timestamp())
                 """,
                 (provider_code, provider_match_id),
             )

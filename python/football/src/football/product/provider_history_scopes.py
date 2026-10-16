@@ -33,12 +33,14 @@ def normalize_seasons(values: Any) -> list[str]:
     for value in values:
         if type(value) not in (str, int):
             raise ValueError("invalid provider season identifier")
-        match = re.fullmatch(r"(\d{4})(?:[/-](\d{2}|\d{4}))?", str(value).strip())
+        match = re.fullmatch(
+            r"(\d{4})(?:[/-](\d{2}|\d{4}))?( - (?:Apertura|Clausura))?", str(value).strip()
+        )
         if match is None:
             raise ValueError("invalid provider season identifier")
         start = int(match[1])
         if match[2] is None:
-            seasons.add(f"{start:04d}")
+            seasons.add(f"{start:04d}{match[3] or ''}")
             continue
         end = int(match[2])
         if len(match[2]) == 2:
@@ -47,7 +49,7 @@ def normalize_seasons(values: Any) -> list[str]:
                 end += 100
         if end <= start:
             raise ValueError("provider season end must follow its start")
-        seasons.add(f"{start:04d}/{end:04d}")
+        seasons.add(f"{start:04d}/{end:04d}{match[3] or ''}")
     return sorted(seasons, reverse=True)
 
 
@@ -379,7 +381,8 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                WHERE scope.provider_code = %s
                  AND (scope.status IN ('PENDING', 'FAILED', 'DEFERRED')
                       OR (scope.status = 'SUCCEEDED'
-                          AND right(scope.season_label, 4) >= extract(year FROM now())::text)
+                          AND right(split_part(scope.season_label, ' - ', 1), 4)
+                              >= extract(year FROM now())::text)
                       OR (scope.status = 'RUNNING'
                           AND scope.claimed_at < now() - interval '30 minutes'))
                  AND scope.next_attempt_at <= now()
@@ -398,7 +401,8 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                      AND fixture.identity_status = 'VERIFIED'
                      AND fixture.status = 'SCHEDULED' AND fixture.kickoff_at > now()
                ) DESC,
-                 (right(scope.season_label, 4) >= extract(year FROM now())::text) DESC,
+                 (right(split_part(scope.season_label, ' - ', 1), 4)
+                     >= extract(year FROM now())::text) DESC,
                  scope.attempts,
                  scope.season_label DESC, scope.provider_competition_id
                FOR UPDATE OF scope SKIP LOCKED LIMIT 1
@@ -435,8 +439,9 @@ def run_scopes(
     if refresh:
         sync.connection.execute(
             """UPDATE football.product_provider_history_scopes
-               SET status = 'PENDING', attempts = 0, next_attempt_at = now()
+               SET status = 'PENDING'
                WHERE provider_code = %s AND status <> 'RUNNING'
+                 AND next_attempt_at <= now()
                  AND (%s::text IS NULL OR provider_competition_id = %s)
                  AND (%s::text IS NULL OR season_label = %s)""",
             (sync.provider_code, competition, competition, season, season),
@@ -526,7 +531,8 @@ def _scope_response(
     refresh: bool,
 ) -> tuple[FotmobResponse | PitchApiResponse, bool]:
     resource = f"league-{league_id}-{selected_season}"
-    freshness = history_freshness() if int(selected_season[-4:]) >= datetime.now(UTC).year else None
+    years = selected_season.split(" - ", 1)[0]
+    freshness = history_freshness() if int(years[-4:]) >= datetime.now(UTC).year else None
     response = None if refresh else cached_response(sync, resource, freshness=freshness)
     if response is None and not refresh and sync.provider_code == "fotmob":
         catalogue = cached_response(sync, f"league-catalogue-{league_id}", freshness=freshness)

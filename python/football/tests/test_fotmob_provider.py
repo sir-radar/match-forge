@@ -99,6 +99,32 @@ def test_access_is_disabled_and_never_calls_transport() -> None:
     assert stub.calls == []
 
 
+@pytest.mark.parametrize("stage", ["Apertura", "Clausura"])
+def test_league_transport_preserves_native_split_season(stage: str) -> None:
+    season = f"2024/2025 - {stage}"
+    stub = StubTransport({"details": {"id": 337, "selectedSeason": season}})
+    client = FotmobClient(transport=stub, access_approved=True)
+
+    result = client.league("337", season)
+
+    assert result.data == {"details": {"id": 337, "selectedSeason": season}}
+    assert stub.calls == [
+        (
+            f"https://www.fotmob.com/api/data/leagues?id=337&season=2024%2F2025+-+{stage}",
+            10.0,
+            4_000_000,
+        )
+    ]
+
+
+def test_league_transport_rejects_unknown_stage_before_request() -> None:
+    stub = StubTransport({})
+    client = FotmobClient(transport=stub, access_approved=True)
+    with pytest.raises(ValueError, match="invalid FotMob season"):
+        client.league("337", "2024/2025 - Final")
+    assert stub.calls == []
+
+
 def test_fetch_preserves_auditable_source_and_uses_fixed_endpoints() -> None:
     stub = StubTransport({"leagues": []})
     client = FotmobClient(transport=stub, access_approved=True)

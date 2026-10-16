@@ -126,7 +126,7 @@ class FotmobClient:
     def league(self, league_id: int | str, season: str | None = None) -> FotmobResponse:
         params = {"id": _provider_id(league_id)}
         if season is not None:
-            if not re.fullmatch(r"\d{4}(?:/\d{4})?", season):
+            if not re.fullmatch(r"\d{4}(?:/\d{4})?(?: - (?:Apertura|Clausura))?", season):
                 raise ValueError("invalid FotMob season")
             params["season"] = season
         return self._get("leagues", params)

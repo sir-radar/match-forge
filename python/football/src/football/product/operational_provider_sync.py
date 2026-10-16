@@ -316,6 +316,9 @@ class OperationalProviderSync:
             "reviewed_fixture_id": str(target[0]),
         }
         self.connection.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
+        )
+        self.connection.execute(
             "SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))"
         )
         provisional = self.connection.execute(
@@ -2013,7 +2016,7 @@ class OperationalProviderSync:
             return
         from football.product.provider_history_scopes import normalize_seasons
 
-        years = normalize_seasons([season_label])[0].split("/")
+        years = normalize_seasons([season_label])[0].split(" - ", 1)[0].split("/")
         start = int(years[0])
         if len(years) == 2 and int(years[1]) != start + 1:
             raise ValueError("crosswalk league season years must be consecutive")
@@ -2029,6 +2032,8 @@ class OperationalProviderSync:
                 row.provider_competition_id, season_label, fixture[0]
             )
             if season_id is None:
+                if " - " in season_label:
+                    return
                 season_id = stable_id("season", fixture[0], start)
             cursor.execute(
                 "INSERT INTO football.seasons (id, competition_id) VALUES (%s, %s) "
