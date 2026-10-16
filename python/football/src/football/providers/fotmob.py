@@ -126,7 +126,7 @@ class FotmobClient:
     def league(self, league_id: int | str, season: str | None = None) -> FotmobResponse:
         params = {"id": _provider_id(league_id)}
         if season is not None:
-            if not re.fullmatch(r"\d{4}(?:/\d{4})?", season):
+            if not re.fullmatch(r"\d{4}(?:/\d{4})?(?: - (?:Apertura|Clausura))?", season):
                 raise ValueError("invalid FotMob season")
             params["season"] = season
         return self._get("leagues", params)
@@ -219,7 +219,7 @@ def normalize_daily_matches(response: FotmobResponse) -> tuple[FotmobLiveScore, 
     for league in leagues:
         if not isinstance(league, Mapping) or not isinstance(league.get("matches"), list):
             raise FotmobPayloadError("invalid league match list")
-        league_id = _provider_id(league.get("id"))
+        league_id = _provider_id(league.get("primaryId", league.get("id")))
         league_name = league.get("name")
         if not isinstance(league_name, str) or not league_name.strip():
             league_name = None

@@ -139,6 +139,8 @@ def discover_resources(html: bytes | str, base_url: str = INDEX_URL) -> list[Foo
 def discover_catalog(
     index_url: str = INDEX_URL, max_pages: int = 100
 ) -> list[FootballDataResource]:
+    if max_pages <= 0:
+        raise ValueError("catalogue page budget must be positive")
     origin = urllib.parse.urlparse(index_url).netloc
     pending = [index_url]
     visited: set[str] = set()
@@ -165,6 +167,8 @@ def discover_catalog(
                 re.IGNORECASE,
             ):
                 pending.append(candidate)
+    if any(page not in visited for page in pending):
+        raise ValueError("catalogue page budget exhausted before discovery completed")
     return sorted(resources.values(), key=lambda item: item.url)
 
 

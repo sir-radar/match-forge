@@ -16,12 +16,14 @@ from football.product.history_requests import (
 )
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import (
+    _scope_response,
     cached_response,
     claim_scope,
     discover_pitchapi,
     enqueue_seasons,
     run_scopes,
 )
+from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiHttpResponse, PitchApiResponse
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
@@ -130,6 +132,12 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
             connection.commit()
             first = run_scopes(sync, client, budget=2, competition=league)
             assert len(first) == transport.calls == 2
+            assert {scope["status"] for scope in first} == {"ADVERTISED_BUT_UNUSABLE"}
+            assert connection.execute(
+                "SELECT count(*) FROM football.product_provider_history_scopes "
+                "WHERE provider_competition_id=%s AND status='SUCCEEDED'",
+                (league,),
+            ).fetchone() == (0,)
             assert connection.execute(
                 "SELECT count(*)"
                 " FROM football.product_provider_history_scopes"
@@ -384,5 +392,214 @@ def test_changing_season_records_new_rows_and_preserves_prior_snapshot(tmp_path:
                 "DELETE FROM football.product_provider_history_scopes "
                 "WHERE provider_competition_id = %s",
                 (league,),
+            )
+            connection.commit()
+
+
+def test_fotmob_catalogue_uses_retained_primary_relationships_and_preserves_cooldown(
+    tmp_path: Path,
+) -> None:
+    from football.product.provider_history_scopes import _fotmob_primary_ids, discover_fotmob
+    from football.providers.fotmob import FotmobClient, FotmobResponse
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        sync = OperationalProviderSync(c, tmp_path, provider_code="fotmob")
+        payload = {"leagues": [{"id": 943230, "primaryId": 42, "matches": []}]}
+        raw = json.dumps(payload).encode()
+        sync._record_response(
+            "fixtures-primary-test",
+            FotmobResponse(
+                "test",
+                c.execute("SELECT clock_timestamp()").fetchone()[0],
+                hashlib.sha256(raw).hexdigest(),
+                raw,
+                payload,
+            ),
+        )
+        assert _fotmob_primary_ids(sync, ["943230", "42", "47"]) == ["42", "47"]
+        c.execute(
+            """INSERT INTO football.product_provider_history_discovery (provider_code,
+                   provider_competition_id,resource_name,last_attempt_at,next_attempt_at,last_error)
+               VALUES ('fotmob','42','league-catalogue-42',now(),
+                       now()+interval '1 hour','failed')"""
+        )
+        # No registered catalogue request may bypass an existing parent cooldown.
+        result = discover_fotmob(sync, FotmobClient(), budget=0, refresh=False)
+        assert result["requests"] == 0
+        other = {"leagues": [{"id": 943230, "primaryId": 99, "matches": []}]}
+        raw = json.dumps(other).encode()
+        sync._record_response(
+            "fixtures-primary-other",
+            FotmobResponse(
+                "test",
+                c.execute("SELECT clock_timestamp()").fetchone()[0],
+                hashlib.sha256(raw).hexdigest(),
+                raw,
+                other,
+            ),
+        )
+        with pytest.raises(ValueError, match="conflicting retained"):
+            _fotmob_primary_ids(sync, ["943230"])
+
+
+def test_fotmob_scope_reuses_matching_catalogue_bytes_without_a_request(tmp_path: Path) -> None:
+    from football.product.provider_history_scopes import _scope_response
+    from football.providers.fotmob import FotmobAccessError, FotmobClient, FotmobResponse
+
+    with psycopg.connect(DATABASE_URL) as c:
+        sync = OperationalProviderSync(c, tmp_path, provider_code="fotmob")
+        year = str(datetime.now(UTC).year)
+        payload = {
+            "details": {
+                "id": 999999,
+                "selectedSeason": year,
+                "name": "Test league",
+                "country": "ENG",
+            },
+            "fixtures": {"allMatches": []},
+        }
+        raw = json.dumps(payload).encode()
+        acquired = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        sync._record_response(
+            "league-catalogue-999999",
+            FotmobResponse("test", acquired, hashlib.sha256(raw).hexdigest(), raw, payload),
+        )
+        c.commit()
+        enqueue_seasons(sync, "999999", [year])
+        c.commit()
+        assert claim_scope(sync, "999999", year) == ("999999", year)
+        # Disabled network access proves the exact retained catalogue satisfies this scope.
+        response, network = _scope_response(sync, FotmobClient(), "999999", year, refresh=False)
+        assert not network and response.raw == raw and response.fetched_at == acquired
+        count = c.execute("SELECT count(*) FROM football.source_resources").fetchone()
+        _, network = _scope_response(sync, FotmobClient(), "999999", year, refresh=False)
+        assert not network
+        assert c.execute("SELECT count(*) FROM football.source_resources").fetchone() == count
+        with pytest.raises(FotmobAccessError, match="disabled"):
+            _scope_response(sync, FotmobClient(), "999999", str(int(year) - 1), refresh=False)
+
+
+def test_cached_response_uses_database_clock_without_relaxing_future_rejection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import football.product.provider_history_scopes as scopes
+
+    class BehindClock(datetime):
+        @classmethod
+        def now(cls, tz: object = None) -> datetime:
+            return datetime.now(UTC) - timedelta(days=1)
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        acquired = datetime.now(UTC) - timedelta(hours=1)
+        raw = b'{"data":{"matches":[]}}'
+        sync = OperationalProviderSync(c, tmp_path, provider_code="pitchapi")
+        snapshot = sync._record_response(
+            "clock-cache",
+            PitchApiResponse(
+                "test", acquired, hashlib.sha256(raw).hexdigest(), raw, {"data": {"matches": []}}
+            ),
+        )
+        record_history_check(c, "pitchapi", "clock-cache", snapshot)
+        monkeypatch.setattr(scopes, "datetime", BehindClock)
+        cached = cached_response(sync, "clock-cache", freshness=timedelta(days=1))
+        assert cached is not None and cached.fetched_at == acquired
+        c.execute(
+            "UPDATE football.product_provider_history_discovery "
+            "SET last_attempt_at=clock_timestamp()+interval '1 day' "
+            "WHERE provider_code='pitchapi' AND resource_name='clock-cache'"
+        )
+        with pytest.raises(ValueError, match="in the future"):
+            cached_response(sync, "clock-cache")
+
+
+@pytest.mark.parametrize("status", ["FAILED", "SUCCEEDED"])
+@pytest.mark.parametrize("due", [False, True])
+def test_explicit_refresh_preserves_attempt_history_and_retry_cooldown(
+    tmp_path: Path, status: str, due: bool
+) -> None:
+    league = "l_RefreshPreserve" + status + str(due)
+    with psycopg.connect(DATABASE_URL) as connection:
+        sync = OperationalProviderSync(connection, tmp_path, provider_code="pitchapi")
+        try:
+            enqueue_seasons(sync, league, ["2024"])
+            connection.execute(
+                """UPDATE football.product_provider_history_scopes
+                   SET status=%s,attempts=7,next_attempt_at=clock_timestamp()+%s::interval,
+                       summary='{"retained_attempts":7}'::jsonb,last_error='preserved reason'
+                   WHERE provider_code='pitchapi' AND provider_competition_id=%s""",
+                (status, "-1 day" if due else "1 day", league),
+            )
+            before = connection.execute(
+                "SELECT to_jsonb(s) FROM football.product_provider_history_scopes s "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (league,),
+            ).fetchone()[0]
+            connection.commit()
+            assert (
+                run_scopes(
+                    sync,
+                    PitchApiClient("retained-only"),
+                    budget=0,
+                    competition=league,
+                    refresh=True,
+                )
+                == []
+            )
+            after = connection.execute(
+                "SELECT to_jsonb(s) FROM football.product_provider_history_scopes s "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (league,),
+            ).fetchone()[0]
+            assert after == {**before, "status": "PENDING" if due else status}
+        finally:
+            connection.rollback()
+            connection.execute(
+                "DELETE FROM football.product_provider_history_scopes "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (league,),
+            )
+            connection.commit()
+
+
+@pytest.mark.parametrize("season", ["2024/2025 - Apertura", "2099/2100 - Clausura"])
+def test_split_native_season_reuses_exact_cached_response(tmp_path: Path, season: str) -> None:
+    data = {"details": {"id": 337, "selectedSeason": season}, "fixtures": {"allMatches": []}}
+    raw = json.dumps(data).encode()
+    response = FotmobResponse(
+        "retained",
+        datetime.now(UTC) - timedelta(minutes=1),
+        hashlib.sha256(raw).hexdigest(),
+        raw,
+        data,
+    )
+    with psycopg.connect(DATABASE_URL) as connection:
+        sync = OperationalProviderSync(connection, tmp_path, provider_code="fotmob")
+        sync._record_response(f"league-337-{season}", response)
+        enqueue_seasons(sync, "337", [season])
+        connection.commit()
+        try:
+            assert claim_scope(sync, "337", season) == ("337", season)
+            # Access is disabled: this fails if the exact retained response is missed.
+            cached, acquired = _scope_response(sync, FotmobClient(), "337", season, refresh=False)
+            assert not acquired
+            assert cached.data["details"]["selectedSeason"] == season
+            connection.execute(
+                "UPDATE football.product_provider_history_scopes "
+                "SET status='SUCCEEDED',next_attempt_at=clock_timestamp() "
+                "WHERE provider_code='fotmob' AND provider_competition_id='337' "
+                "AND season_label=%s",
+                (season,),
+            )
+            connection.commit()
+            expected = None if season.startswith("2024/") else ("337", season)
+            assert claim_scope(sync, "337", season) == expected
+        finally:
+            connection.rollback()
+            connection.execute(
+                "DELETE FROM football.product_provider_history_scopes "
+                "WHERE provider_code='fotmob' AND provider_competition_id='337' "
+                "AND season_label=%s",
+                (season,),
             )
             connection.commit()

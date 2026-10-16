@@ -15,7 +15,10 @@ from uuid import UUID
 
 from psycopg import Connection, Error
 
-from football.product.competition_geography import refresh_competition_geography
+from football.product.competition_geography import (
+    refresh_competition_geography,
+    verified_geographic_scopes,
+)
 from football.product.domain import (
     canonical_json,
     fixture_identity,
@@ -25,7 +28,11 @@ from football.product.domain import (
 )
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
-from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
+from football.product.identity_admission import (
+    admit_provider_mappings,
+    fixture_identity_blockers,
+    verify_source_identifier,
+)
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
 from football.product.live_resources import normalize_events, normalize_statistics
 from football.providers.fotmob import (
@@ -125,8 +132,16 @@ class OperationalProviderSync:
         self.stale_after = timedelta(seconds=stale_after_seconds)
         self.kickoff_tolerance = timedelta(minutes=kickoff_tolerance_minutes)
         self.pacer = RequestPacer(minimum_interval_seconds)
+        self._geographic_scopes: dict[str, str | None] | None = None
 
-    def apply_reviewed_mapping(self, provider_match_id: str, fixture_id: UUID) -> None:
+    def apply_reviewed_mapping(
+        self,
+        provider_match_id: str,
+        fixture_id: UUID,
+        *,
+        source_snapshot_id: UUID | None = None,
+        competition_only: bool = False,
+    ) -> None:
         """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -139,8 +154,9 @@ class OperationalProviderSync:
                           result_score_basis, canonical_fixture_id
                      FROM football.product_provider_fixture_observations
                     WHERE provider_code = %s AND provider_match_id = %s
+                      AND (%s::uuid IS NULL OR source_snapshot_id=%s)
                     ORDER BY observed_at DESC, observation_id DESC LIMIT 1""",
-                (self.provider_code, provider_match_id),
+                (self.provider_code, provider_match_id, source_snapshot_id, source_snapshot_id),
             )
             source = cursor.fetchone()
             if source is None or any(source[index] is None for index in (0, 1, 2, 3, 4, 5)):
@@ -151,7 +167,10 @@ class OperationalProviderSync:
                           competition.name, home.name, away.name,
                           fixture.status, fixture.home_score, fixture.away_score,
                           fixture.kickoff_at,
-                          fixture.identity_status
+                          fixture.identity_status,
+                          COALESCE((SELECT source_kickoff_precision
+                            FROM football.product_team_match_history h
+                            WHERE h.fixture_id=fixture.fixture_id),'EXACT')
                      FROM football.product_effective_fixtures fixture
                      JOIN football.product_competitions competition
                        ON competition.competition_id = fixture.competition_id
@@ -186,14 +205,7 @@ class OperationalProviderSync:
             result_score_basis=source[17],
         )
         snapshot_id = cast(UUID, source[16])
-        if abs(row.kickoff_at - candidate[10]) > self.kickoff_tolerance:
-            raise ValueError("reviewed fixture kickoff contradicts retained provider context")
-        if (
-            row.status == candidate[7] == "FINISHED"
-            and candidate[8] is not None
-            and (candidate[8], candidate[9]) != (row.home_score, row.away_score)
-        ):
-            raise ValueError("reviewed fixture result contradicts retained provider context")
+        self._validate_reviewed_context(row, candidate)
         for entity_type, identifier in (
             ("competition", row.provider_competition_id),
             ("team", row.provider_home_team_id),
@@ -212,21 +224,80 @@ class OperationalProviderSync:
                 is None
             ):
                 raise ValueError("reviewed mapping requires verified retained provider identifiers")
-        self._persist_deterministic_mapping(row, snapshot_id, candidate, mapping_method="manual")
+        members = self._retained_fixture_members(row)
+        self._persist_deterministic_mapping(
+            row,
+            snapshot_id,
+            candidate,
+            mapping_method="manual",
+            competition_only=competition_only,
+        )
         review = self._record_mapping_decision(
             row,
             snapshot_id,
             fixture_id,
             "MANUAL_ACCEPTED",
             "operator explicitly accepted mapping",
-            {"reviewed_fixture_id": str(fixture_id), "reviewed_at": datetime.now(UTC).isoformat()},
+            {
+                "reviewed_fixture_id": str(fixture_id),
+                "competition_only": competition_only,
+            },
         )
-        admit_provider_mappings(self.connection, self.data_root, self.provider_code, snapshot_id)
+        admit_provider_mappings(
+            self.connection,
+            self.data_root,
+            self.provider_code,
+            snapshot_id,
+            entity_types=("competition",) if competition_only else ("competition", "team"),
+        )
+        if competition_only:
+            return
+        for member in members:
+            self._resolve_reviewed_member(member, candidate, row, snapshot_id, review)
         self._update_canonical_fixture(row, fixture_id, snapshot_id)
         self._insert_qualified_history(row, fixture_id, snapshot_id)
-        self._resolve_reviewed_provisional(source[18], candidate, row, snapshot_id, review)
 
-    def _resolve_reviewed_provisional(
+    def _validate_reviewed_context(
+        self,
+        row: FixtureObservation,
+        candidate: tuple[Any, ...],
+    ) -> None:
+        date_score_match = (
+            candidate[12] == "DATE_ONLY"
+            and row.status == candidate[7] == "FINISHED"
+            and row.kickoff_at.astimezone(UTC).date() == candidate[10].astimezone(UTC).date()
+            and (row.home_score, row.away_score) == (candidate[8], candidate[9])
+            and row.result_score_basis == "REGULATION_90"
+        )
+        if not date_score_match and abs(row.kickoff_at - candidate[10]) > self.kickoff_tolerance:
+            raise ValueError("reviewed fixture kickoff contradicts retained provider context")
+        if (
+            row.status == candidate[7] == "FINISHED"
+            and candidate[8] is not None
+            and (candidate[8], candidate[9]) != (row.home_score, row.away_score)
+        ):
+            raise ValueError("reviewed fixture result contradicts retained provider context")
+
+    def _retained_fixture_members(self, row: FixtureObservation) -> list[UUID]:
+        members = self.connection.execute(
+            """SELECT DISTINCT canonical_fixture_id
+               FROM football.product_provider_fixture_observations
+               WHERE provider_code=%s AND provider_match_id=%s
+                 AND provider_competition_id=%s AND provider_home_team_id=%s
+                 AND provider_away_team_id=%s AND kickoff_at=%s
+                 AND canonical_fixture_id IS NOT NULL""",
+            (
+                self.provider_code,
+                row.provider_match_id,
+                row.provider_competition_id,
+                row.provider_home_team_id,
+                row.provider_away_team_id,
+                row.kickoff_at,
+            ),
+        ).fetchall()
+        return [member[0] for member in members]
+
+    def _resolve_reviewed_member(
         self,
         original: UUID | None,
         target: tuple[Any, ...],
@@ -237,7 +308,7 @@ class OperationalProviderSync:
         if original is None or original == target[0]:
             return
         evidence = {
-            "operator_review_decision_id": str(review),
+            "provider_mapping_decision_id": str(review),
             "provider": self.provider_code,
             "provider_match_id": row.provider_match_id,
             "source_snapshot_id": str(snapshot),
@@ -245,14 +316,30 @@ class OperationalProviderSync:
             "reviewed_fixture_id": str(target[0]),
         }
         self.connection.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
+        )
+        self.connection.execute(
             "SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))"
         )
         provisional = self.connection.execute(
-            "SELECT identity_status FROM football.product_fixtures "
+            "SELECT identity_status,kickoff_at,status,home_score,away_score "
+            "FROM football.product_fixtures "
             "WHERE fixture_id = %s FOR UPDATE",
             (original,),
         ).fetchone()
-        if provisional != ("PROVISIONAL",):
+        if provisional is None or provisional[0] not in {"PROVISIONAL", "VERIFIED"}:
+            return
+        if provisional[1] != row.kickoff_at or (
+            provisional[2] == row.status == "FINISHED"
+            and (provisional[3], provisional[4]) != (row.home_score, row.away_score)
+        ):
+            raise ValueError("retained fixture member contradicts reviewed context")
+        if self.connection.execute(
+            """SELECT 1 FROM football.fixture_identity_resolutions
+               WHERE member_fixture_id=%s AND representative_fixture_id=%s
+                 AND resolution_status='DUPLICATE_RESOLVED' AND active""",
+            (original, target[0]),
+        ).fetchone():
             return
         self.connection.execute(
             """UPDATE football.fixture_identity_resolutions SET active = false
@@ -265,7 +352,7 @@ class OperationalProviderSync:
                    resolution_status, selected_competition_id, resolution_reason, evidence_json,
                    evidence_sha256, resolution_version, active, created_at)
                VALUES (%s, %s, %s, 'DUPLICATE_RESOLVED', %s,
-                       'Operator reviewed retained provider IDs and fixture context',
+                       'Reviewed retained provider IDs and fixture context',
                        %s::jsonb, %s, %s, true, clock_timestamp())""",
             (
                 target[0],
@@ -342,31 +429,11 @@ class OperationalProviderSync:
         counts = SyncCounts(
             attempted_requests=int(network_acquired), successful_requests=int(network_acquired)
         )
-        if isinstance(response, FotmobResponse):
-            if not isinstance(response.data, Mapping):
-                raise ValueError("FotMob league response must be an object")
-            details = response.data.get("details", {})
-            fixtures = response.data.get("fixtures", {})
-            if not isinstance(details, Mapping) or not isinstance(fixtures, Mapping):
-                raise ValueError("FotMob league metadata or fixtures missing")
-            if not isinstance(fixtures.get("allMatches"), list):
-                raise ValueError("FotMob league fixture list missing")
-            rows: Sequence[FixtureObservation] = normalize_daily_matches(
-                replace(
-                    response,
-                    data={
-                        "leagues": [
-                            {
-                                "id": league_id,
-                                "name": details.get("name"),
-                                "matches": fixtures["allMatches"],
-                            }
-                        ]
-                    },
-                )
-            )
-        else:
-            rows = normalize_pitchapi_matches(response)
+        rows: Sequence[FixtureObservation] = (
+            _fotmob_season_rows(response, league_id, season)
+            if isinstance(response, FotmobResponse)
+            else normalize_pitchapi_matches(response)
+        )
         counts.fetched = len(rows)
         for row in rows:
             try:
@@ -388,6 +455,7 @@ class OperationalProviderSync:
                         matched = 1
                         self._set_verified_league_season(row, fixture_id, season)
                         updated = self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                        self._reconcile_retained_members(row, fixture_id, snapshot_id)
                         history_inserted = self._insert_qualified_history(
                             row, fixture_id, snapshot_id
                         )
@@ -407,6 +475,7 @@ class OperationalProviderSync:
             self.connection, self.data_root, self.provider_code
         )
         self.connection.commit()
+        qualification = self._season_qualification(snapshot_id, rows, counts)
         return {
             "provider": self.provider_code,
             "competition_geography": geography,
@@ -414,9 +483,160 @@ class OperationalProviderSync:
             "season": season,
             "status": "COMPLETED_WITH_ERRORS"
             if counts.failed or geography["invalid_snapshots"]
-            else "COMPLETED",
+            else qualification["status"],
+            "qualification": qualification,
             **counts.to_dict(),
         }
+
+    def _reconcile_retained_members(
+        self, row: FixtureObservation, fixture_id: UUID, snapshot: UUID
+    ) -> None:
+        """Reconcile earlier copies only after native competition and team IDs qualify."""
+        if not self._verified_provider_entities(row):
+            return
+        target = self.connection.execute(
+            """SELECT fixture_id,competition_id,home_team_id,away_team_id
+               FROM football.product_effective_fixtures WHERE fixture_id=%s
+                 AND identity_status='VERIFIED' AND kickoff_at=%s""",
+            (fixture_id, row.kickoff_at),
+        ).fetchone()
+        if target is None or self._candidate_mapping_conflict(row, target) is not None:
+            return
+        members = [member for member in self._retained_fixture_members(row) if member != fixture_id]
+        quarantine = self.connection.execute(
+            """SELECT canonical_real_fixture_id,evidence_sha256
+               FROM football.fixture_identity_resolutions WHERE member_fixture_id=%s AND active
+                 AND resolution_status='AMBIGUOUS_QUARANTINED'
+                 AND resolution_reason='PROVISIONAL_PROVIDER_IDENTITY'
+                 AND evidence_json->'member_fixture_ids'=jsonb_build_array(%s::text)""",
+            (fixture_id, fixture_id),
+        ).fetchone()
+        if not members and quarantine is None:
+            return
+        decision = self._record_mapping_decision(
+            row,
+            snapshot,
+            fixture_id,
+            "AUTO_ACCEPTED",
+            "admitted native IDs identify retained fixture members",
+            {"rule": "admitted_competition_home_away_exact_kickoff_native_fixture_id"},
+        )
+        for member in members:
+            self._resolve_reviewed_member(member, target, row, snapshot, decision)
+        if quarantine is not None:
+            evidence = {
+                "provider_mapping_decision_id": str(decision),
+                "source_snapshot_id": str(snapshot),
+                "previous_evidence_sha256": quarantine[1],
+            }
+            self.connection.execute(
+                """UPDATE football.fixture_identity_resolutions SET active=false
+                   WHERE member_fixture_id=%s AND active""",
+                (fixture_id,),
+            )
+            self.connection.execute(
+                """INSERT INTO football.fixture_identity_resolutions (
+                     canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+                     resolution_status,selected_competition_id,resolution_reason,evidence_json,
+                     evidence_sha256,resolution_version,active,created_at)
+                   VALUES (%s,%s,%s,'UNIQUE',%s,'Admitted native provider identities',
+                           %s::jsonb,%s,%s,true,clock_timestamp())""",
+                (
+                    quarantine[0],
+                    fixture_id,
+                    fixture_id,
+                    target[1],
+                    json.dumps(evidence),
+                    sha256_json(evidence),
+                    f"admitted-native-ids:{decision}",
+                ),
+            )
+
+    def _season_qualification(
+        self, snapshot: UUID, rows: Sequence[FixtureObservation], counts: SyncCounts
+    ) -> dict[str, object]:
+        if not rows:
+            return {"status": "ADVERTISED_BUT_UNUSABLE", "qualified_results": 0}
+        registered = self.connection.execute(
+            """SELECT clock_timestamp() FROM football.source_snapshots s
+               JOIN football.providers p ON p.id=s.provider_id
+               WHERE s.id=%s AND s.status='validated' AND p.code=%s""",
+            (snapshot, self.provider_code),
+        ).fetchone()
+        if registered is None:
+            return {
+                "status": "BLOCKED_IDENTITY",
+                "qualified_results": 0,
+                "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+            }
+        results = [row for row in rows if row.status == "FINISHED"]
+        # Identical retained facts can keep an earlier observation snapshot. Match
+        # their native context rather than requiring acquisition-specific duplicates.
+        contexts = [
+            {
+                "match_id": row.provider_match_id,
+                "competition": row.provider_competition_id,
+                "home": row.provider_home_team_id,
+                "away": row.provider_away_team_id,
+                "kickoff": row.kickoff_at.isoformat(),
+                "status": row.status,
+                "home_score": row.home_score,
+                "away_score": row.away_score,
+                "basis": row.result_score_basis,
+            }
+            for row in rows
+        ]
+        observed = self.connection.execute(
+            """WITH context AS (SELECT * FROM jsonb_to_recordset(%s::jsonb) AS c(
+                 match_id text,competition text,home text,away text,kickoff timestamptz,
+                 status text,home_score smallint,away_score smallint,basis text))
+               SELECT DISTINCT o.provider_match_id,f.fixture_id,f.identity_status,
+                   c.status='FINISHED' AND c.basis='REGULATION_90' AND EXISTS (
+                       SELECT 1 FROM football.product_eligible_fixture_history_at(
+                           %s,ARRAY[f.fixture_id]) h
+                       WHERE (h.home_goals,h.away_goals)=(o.home_score,o.away_score)) qualified,
+                   EXISTS (SELECT 1 FROM football.product_team_match_history h
+                       WHERE h.fixture_id=f.fixture_id AND c.status='FINISHED'
+                         AND (h.home_goals,h.away_goals)<>
+                             (o.home_score,o.away_score)) result_conflict
+               FROM context c JOIN football.product_provider_fixture_observations o
+                 ON o.provider_code=%s AND o.provider_match_id=c.match_id
+                AND o.provider_competition_id=c.competition
+                AND o.provider_home_team_id=c.home AND o.provider_away_team_id=c.away
+                AND o.kickoff_at=c.kickoff AND o.canonical_status=c.status
+                AND o.home_score IS NOT DISTINCT FROM c.home_score
+                AND o.away_score IS NOT DISTINCT FROM c.away_score
+                AND o.result_score_basis=c.basis
+               JOIN football.product_effective_fixtures f
+                 ON f.fixture_id=o.canonical_fixture_id
+               WHERE NOT EXISTS (SELECT 1 FROM football.fixture_identity_resolutions r
+                   WHERE r.member_fixture_id=f.fixture_id AND r.active
+                     AND r.representative_fixture_id<>r.member_fixture_id)""",
+            (json.dumps(contexts), registered[0], self.provider_code),
+        ).fetchall()
+        count = len({o[0] for o in observed if o[3]})
+        fixtures = [(o[1], o[2]) for o in observed]
+        blockers = fixture_identity_blockers(
+            self.connection,
+            [f[0] for f in fixtures],
+            registered[0],
+            provider_code=self.provider_code,
+        )
+        status = "COMPLETED"
+        if (
+            counts.unmatched
+            or len({o[0] for o in observed}) < len(rows)
+            or any(f[1] != "VERIFIED" for f in fixtures)
+            or any(blockers.values())
+        ):
+            status = "BLOCKED_IDENTITY"
+        elif any(row.result_score_basis != "REGULATION_90" for row in results):
+            status = "BLOCKED_SCORE_BASIS"
+        elif any(o[4] for o in observed):
+            status = "BLOCKED_RESULT_CONFLICT"
+        elif count < len(results):
+            status = "BLOCKED_HISTORY_ADMISSION"
+        return {"status": status, "qualified_results": count, "provider_results": len(results)}
 
     def _sync_dates(
         self,
@@ -723,7 +943,9 @@ class OperationalProviderSync:
                     if fixture_id is None:
                         continue
                     reconciled += 1
+                    self._store_observation(row, snapshot_id, fixture_id)
                     self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                    self._reconcile_retained_members(row, fixture_id, snapshot_id)
                     self._insert_qualified_history(row, fixture_id, snapshot_id)
             except (Error, ValueError) as failure:
                 self._record_failed_observation(row, snapshot_id, str(failure).splitlines()[0])
@@ -1026,6 +1248,8 @@ class OperationalProviderSync:
                     response.fetched_at,
                 ),
             )
+            if cursor.rowcount:
+                self._geographic_scopes = None
         return snapshot_id
 
     def _resolve_fixture(
@@ -1065,7 +1289,11 @@ class OperationalProviderSync:
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at,
                            history.source_kickoff_precision, history.home_goals, history.away_goals
-                    FROM football.product_eligible_match_history history
+                    FROM football.product_eligible_fixture_history_at(
+                        statement_timestamp(), ARRAY(
+                            SELECT h.fixture_id FROM football.product_team_match_history h
+                            WHERE h.kickoff_at BETWEEN %s AND %s
+                        )) history
                     WHERE NOT EXISTS (SELECT 1 FROM football.product_fixtures existing
                                       WHERE existing.fixture_id = history.fixture_id)
                 ) fixture
@@ -1103,6 +1331,8 @@ class OperationalProviderSync:
                 ORDER BY fixture.fixture_id
                 """,
                 (
+                    row.kickoff_at - timedelta(days=1),
+                    row.kickoff_at + timedelta(days=1),
                     self.provider_code,
                     row.provider_home_team_id,
                     self.provider_code,
@@ -1223,7 +1453,11 @@ class OperationalProviderSync:
                     SELECT history.fixture_id, history.competition_id, history.home_team_id,
                            history.away_team_id, history.kickoff_at, 'FINISHED',
                            history.home_goals, history.away_goals
-                    FROM football.product_eligible_match_history history
+                    FROM football.product_eligible_fixture_history_at(
+                        statement_timestamp(), ARRAY(
+                            SELECT h.fixture_id FROM football.product_team_match_history h
+                            WHERE h.kickoff_at BETWEEN %s AND %s
+                        )) history
                     WHERE NOT EXISTS (SELECT 1 FROM football.product_fixtures existing
                                       WHERE existing.fixture_id = history.fixture_id)
                       AND history.source_kickoff_precision = 'EXACT'
@@ -1236,6 +1470,8 @@ class OperationalProviderSync:
                 ORDER BY fixture.fixture_id
                 """,
                 (
+                    row.kickoff_at - self.kickoff_tolerance,
+                    row.kickoff_at + self.kickoff_tolerance,
                     row.kickoff_at - self.kickoff_tolerance,
                     row.kickoff_at + self.kickoff_tolerance,
                 ),
@@ -1266,6 +1502,7 @@ class OperationalProviderSync:
             return None
         candidate = exact[0]
         fixture_id = cast(UUID, candidate[0])
+        self._materialize_history_fixture(fixture_id, row.observed_at)
         mapping_conflict = self._candidate_mapping_conflict(row, candidate)
         if mapping_conflict is not None:
             self._record_mapping_decision(
@@ -1388,6 +1625,7 @@ class OperationalProviderSync:
         candidate: Sequence[Any],
         *,
         mapping_method: str = "deterministic",
+        competition_only: bool = False,
     ) -> None:
         fixture_id, competition_id, home_team_id, away_team_id = candidate[:4]
         mapping_at = (
@@ -1404,7 +1642,7 @@ class OperationalProviderSync:
                 raise ValueError("provider registration missing")
             provider_id = provider[0]
             preserve_observations = False
-            for table, identity_column, canonical_column, provider_value, canonical_value in (
+            entities = (
                 (
                     "competition_provider_mappings",
                     "provider_competition_id",
@@ -1433,6 +1671,9 @@ class OperationalProviderSync:
                     row.provider_match_id,
                     fixture_id,
                 ),
+            )
+            for table, identity_column, canonical_column, provider_value, canonical_value in (
+                entities[:1] if competition_only else entities
             ):
                 read_table = (
                     "product_effective_team_mappings"
@@ -1442,8 +1683,15 @@ class OperationalProviderSync:
                 read_column = (
                     "effective_team_id" if table == "team_provider_mappings" else canonical_column
                 )
+                trust = (
+                    f"football.product_mapping_trusted('team',id,{read_column})"
+                    if table == "team_provider_mappings"
+                    else f"football.product_mapping_trusted('competition',id,{read_column})"
+                    if table == "competition_provider_mappings"
+                    else "false"
+                )
                 cursor.execute(
-                    f"""SELECT {read_column}, mapping_method, {canonical_column}
+                    f"""SELECT {read_column}, mapping_method, {canonical_column}, {trust}
                          FROM football.{read_table}
                          WHERE provider_id = %s AND {identity_column} = %s AND valid_to IS NULL""",
                     (provider_id, provider_value),
@@ -1452,12 +1700,16 @@ class OperationalProviderSync:
                 if existing is not None:
                     corrected = existing[0] != existing[2]
                     preserve_observations |= corrected
+                    admitted = existing[3]
                     if corrected and existing[0] != canonical_value:
                         raise ValueError(
                             "linked correction conflicts with requested fixture mapping"
                         )
                     if existing[0] != canonical_value or (
-                        mapping_method == "manual" and existing[1] != "manual" and not corrected
+                        mapping_method == "manual"
+                        and existing[1] != "manual"
+                        and not corrected
+                        and not admitted
                     ):
                         provisional_id = self._provider_scoped_identity(table, provider_value)
                         if mapping_method != "manual" and (
@@ -1497,10 +1749,11 @@ class OperationalProviderSync:
                         snapshot_id,
                     ),
                 )
-            for provider_team_id, team_name, team_id in (
+            team_aliases = (
                 (row.provider_home_team_id, row.home_team_name, home_team_id),
                 (row.provider_away_team_id, row.away_team_name, away_team_id),
-            ):
+            )
+            for provider_team_id, team_name, team_id in () if competition_only else team_aliases:
                 cursor.execute(
                     """INSERT INTO football.product_team_aliases (
                            provider_code, provider_team_id, normalized_name, team_id
@@ -1518,7 +1771,7 @@ class OperationalProviderSync:
                         mapping_method,
                     ),
                 )
-            if not preserve_observations:
+            if not preserve_observations and not competition_only:
                 cursor.execute(
                     """UPDATE football.product_provider_resource_observations
                       SET canonical_fixture_id = %s,
@@ -1569,11 +1822,31 @@ class OperationalProviderSync:
         )
         with self.connection.cursor() as cursor:
             cursor.execute(
-                """SELECT season_label, metadata_status FROM football.product_competitions
+                """SELECT season_label, metadata_status, geographic_scope
+                   FROM football.product_competitions
                    WHERE competition_id = %s""",
                 (competition_id,),
             )
             metadata = cursor.fetchone()
+        if self._geographic_scopes is None:
+            self._geographic_scopes = verified_geographic_scopes(
+                self.connection, self.data_root, self.provider_code
+            )
+        geographic_scope = self._geographic_scopes.get(row.provider_competition_id)
+        if metadata is not None and metadata[2] is not None:
+            if geographic_scope is not None and geographic_scope != metadata[2]:
+                raise ValueError("CONFLICTING_COMPETITION_GEOGRAPHY")
+            geographic_scope = metadata[2]
+        if geographic_scope is None:
+            self._record_mapping_decision(
+                row,
+                snapshot_id,
+                None,
+                "REVIEW_REQUIRED",
+                "CANONICAL_FIXTURE_GEOGRAPHY_REQUIRED",
+                {},
+            )
+            return None
         season_label = season_label or "Unknown"
         source_season_label = season_label
         crosswalk = OPERATIONAL_COMPETITION_CROSSWALKS.get(
@@ -1623,10 +1896,13 @@ class OperationalProviderSync:
                        competition_id, name, country, continent, division,
                        competition_type, season_label, fixtures_available,
                        results_available, availability_status, source_roles, updated_at,
-                       metadata_status
+                       metadata_status, geographic_scope
                    ) VALUES (%s, %s, 'Unknown', 'Unknown', NULL, 'UNKNOWN', %s, true, %s,
-                       'SOURCE_DATA_INCOMPLETE', %s::jsonb, %s, 'PROVISIONAL')
+                       'SOURCE_DATA_INCOMPLETE', %s::jsonb, %s, 'PROVISIONAL', %s)
                    ON CONFLICT (competition_id) DO UPDATE SET
+                       geographic_scope = COALESCE(
+                           football.product_competitions.geographic_scope,
+                           EXCLUDED.geographic_scope),
                        updated_at = GREATEST(
                            football.product_competitions.updated_at, EXCLUDED.updated_at
                        )""",
@@ -1646,6 +1922,7 @@ class OperationalProviderSync:
                         sort_keys=True,
                     ),
                     row.observed_at,
+                    geographic_scope,
                 ),
             )
             cursor.execute(
@@ -1737,10 +2014,11 @@ class OperationalProviderSync:
         )
         if crosswalk is None or crosswalk[0] != "api_football":
             return
-        if re.fullmatch(r"\d{4}/\d{4}", season_label) is None:
-            raise ValueError("crosswalk season must identify both years")
-        start, end = (int(year) for year in season_label.split("/"))
-        if end != start + 1:
+        from football.product.provider_history_scopes import normalize_seasons
+
+        years = normalize_seasons([season_label])[0].split(" - ", 1)[0].split("/")
+        start = int(years[0])
+        if len(years) == 2 and int(years[1]) != start + 1:
             raise ValueError("crosswalk league season years must be consecutive")
         with self.connection.cursor() as cursor:
             fixture = cursor.execute(
@@ -1750,7 +2028,13 @@ class OperationalProviderSync:
             ).fetchone()
             if fixture is None:
                 return
-            season_id = stable_id("season", fixture[0], start)
+            season_id = self._reviewed_league_season(
+                row.provider_competition_id, season_label, fixture[0]
+            )
+            if season_id is None:
+                if " - " in season_label:
+                    return
+                season_id = stable_id("season", fixture[0], start)
             cursor.execute(
                 "INSERT INTO football.seasons (id, competition_id) VALUES (%s, %s) "
                 "ON CONFLICT DO NOTHING",
@@ -1760,6 +2044,38 @@ class OperationalProviderSync:
                 "UPDATE football.matches SET season_id = %s WHERE id = %s",
                 (season_id, fixture_id),
             )
+
+    def _reviewed_league_season(
+        self, competition: str, label: str, canonical_competition: UUID
+    ) -> UUID | None:
+        """Use only the exact prospectively reviewed native label; never extrapolate years."""
+        mappings = self.connection.execute(
+            """SELECT mapping.provider_season_id, mapping.season_id,
+                      season.competition_id, mapping.mapping_confidence,
+                      mapping.mapping_method, snapshot.status
+               FROM football.season_provider_mappings mapping
+               JOIN football.providers provider ON provider.id = mapping.provider_id
+               JOIN football.seasons season ON season.id = mapping.season_id
+               JOIN football.source_snapshots snapshot ON snapshot.id = mapping.source_snapshot_id
+               WHERE provider.code = %s AND mapping.provider_competition_id = %s
+                 AND mapping.valid_to IS NULL AND mapping.created_at <= clock_timestamp()
+                 AND (mapping.valid_from IS NULL OR mapping.valid_from <= clock_timestamp())""",
+            (self.provider_code, competition),
+        ).fetchall()
+        if not mappings:
+            return None
+        for native_label, season, target, confidence, method, status in mappings:
+            if native_label != label:
+                continue
+            if (
+                target != canonical_competition
+                or confidence != 1
+                or method != "manual"
+                or status != "validated"
+            ):
+                raise ValueError("provider season correspondence is not independently reviewed")
+            return cast(UUID, season)
+        raise ValueError("explicit provider season correspondence required for this label")
 
     def _mapped_or_scoped_team(self, provider_team_id: str) -> UUID:
         with self.connection.cursor() as cursor:
@@ -1808,14 +2124,31 @@ class OperationalProviderSync:
                        source_snapshot_id, source_kickoff_precision
                    ) SELECT fixture_id, competition_id, home_team_id, away_team_id,
                             kickoff_at, %s, %s, %s, %s, 'EXACT'
-                       FROM football.product_fixtures WHERE fixture_id = %s
-                   ON CONFLICT (fixture_id) DO NOTHING""",
+                       FROM football.product_effective_fixtures WHERE fixture_id = %s
+                   ON CONFLICT (fixture_id) DO UPDATE SET
+                       competition_id=EXCLUDED.competition_id,
+                       home_team_id=EXCLUDED.home_team_id,away_team_id=EXCLUDED.away_team_id,
+                       kickoff_at=EXCLUDED.kickoff_at,
+                       source_provider_code=EXCLUDED.source_provider_code,
+                       source_snapshot_id=EXCLUDED.source_snapshot_id,
+                       source_kickoff_precision=EXCLUDED.source_kickoff_precision
+                   WHERE %s AND
+                     (football.product_team_match_history.home_goals,
+                      football.product_team_match_history.away_goals)=
+                     (EXCLUDED.home_goals,EXCLUDED.away_goals)
+                     AND NOT EXISTS (SELECT 1 FROM football.product_eligible_fixture_history_at(
+                         statement_timestamp(),ARRAY[EXCLUDED.fixture_id]))
+                     AND (football.product_team_match_history.source_provider_code,
+                          football.product_team_match_history.source_snapshot_id)
+                         IS DISTINCT FROM
+                         (EXCLUDED.source_provider_code,EXCLUDED.source_snapshot_id)""",
                 (
                     row.home_score,
                     row.away_score,
                     self.provider_code,
                     snapshot_id,
                     fixture_id,
+                    self._verified_provider_entities(row),
                 ),
             )
             return cursor.rowcount
@@ -2248,6 +2581,40 @@ class OperationalProviderSync:
             snapshot_id,
             eligibility="ELIGIBLE",
         )
+
+
+def _fotmob_season_rows(
+    response: FotmobResponse, league_id: str, season: str
+) -> tuple[FotmobLiveScore, ...]:
+    if not isinstance(response.data, Mapping):
+        raise ValueError("FotMob league response must be an object")
+    details = response.data.get("details", {})
+    fixtures = response.data.get("fixtures", {})
+    if not isinstance(details, Mapping) or not isinstance(fixtures, Mapping):
+        raise ValueError("FotMob league metadata or fixtures missing")
+    from football.product.provider_history_scopes import normalize_seasons
+
+    selected = details.get("selectedSeason", response.data.get("selectedSeason"))
+    if str(details.get("id")) != league_id:
+        raise ValueError("FotMob fixture competition ID mismatch")
+    if normalize_seasons([selected]) != normalize_seasons([season]):
+        raise ValueError("FotMob selected season does not match requested season")
+    if not isinstance(fixtures.get("allMatches"), list):
+        raise ValueError("FotMob league fixture list missing")
+    return normalize_daily_matches(
+        replace(
+            response,
+            data={
+                "leagues": [
+                    {
+                        "id": league_id,
+                        "name": details.get("name"),
+                        "matches": fixtures["allMatches"],
+                    }
+                ]
+            },
+        )
+    )
 
 
 def _fotmob_resources(payload: Mapping[str, Any] | list[Any]) -> dict[str, Any]:

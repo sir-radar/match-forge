@@ -178,12 +178,19 @@ def test_calendar_batch_spends_live_details_after_both_dates_are_ingested(tmp_pa
                 }
                 for index in range(offset, offset + 6)
             ]
-            raw = json.dumps({"matches": matches}).encode()
+            raw = json.dumps(
+                {
+                    "data": {
+                        "matches": matches,
+                        "leagues": [{"id": "l_Day001", "country_code": "ENG"}],
+                    }
+                }
+            ).encode()
             return PitchApiResponse(
                 path=f"/v1/date/{day}",
                 fetched_at=datetime.now(UTC),
                 raw=raw,
-                data=json.loads(raw),
+                data=json.loads(raw)["data"],
                 sha256=hashlib.sha256(raw).hexdigest(),
             )
 

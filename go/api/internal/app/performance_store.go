@@ -80,10 +80,10 @@ func (store *PostgresProductStore) Performances(ctx context.Context, filters Per
 }
 
 func (store *PostgresProductStore) performanceCompetitions(ctx context.Context, filters PerformanceFilters) ([]Performance, error) {
-	query := `SELECT competition_id::text,name,country,continent FROM football.product_competitions WHERE true`
+	query := `SELECT competition_id::text,name,COALESCE(geographic_scope,country),continent FROM football.product_competitions WHERE true`
 	args := []any{}
 	query = addFilter(query, &args, "continent", filters.Continent)
-	query = addFilter(query, &args, "country", filters.Country)
+	query = addFilter(query, &args, "COALESCE(geographic_scope,country)", filters.Country)
 	if filters.CompetitionID != "" {
 		var id pgtype.UUID
 		if err := id.Scan(filters.CompetitionID); err != nil {
@@ -92,7 +92,7 @@ func (store *PostgresProductStore) performanceCompetitions(ctx context.Context, 
 		args = append(args, id)
 		query += fmt.Sprintf(" AND competition_id=$%d", len(args))
 	}
-	query += ` ORDER BY continent COLLATE "C",country COLLATE "C",name COLLATE "C",competition_id`
+	query += ` ORDER BY continent COLLATE "C",COALESCE(geographic_scope,country) COLLATE "C",name COLLATE "C",competition_id`
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err

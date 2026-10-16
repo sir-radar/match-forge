@@ -27,7 +27,7 @@ from football.product.identity_admission import admit_provider_mappings
 
 PROVIDER_CODE = "openfootball"
 REPOSITORY_URL = "https://github.com/openfootball/football.json.git"
-PARSER_VERSION = "openfootball-product-v1"
+PARSER_VERSION = "openfootball-product-v2"
 LOGGER = logging.getLogger(__name__)
 _SEASON = re.compile(r"^(?:19|20)\d{2}(?:[-_]\d{2,4})?$")
 _COUNTRIES = {
@@ -178,7 +178,7 @@ def parse_competition(entry: OpenFootballCatalogEntry) -> list[HistoricalMatch]:
         away = _team_name(raw.get("team2"))
         if not home or not away or home == away:
             continue
-        kickoff, precision = _kickoff(raw, country)
+        kickoff, precision = _kickoff(raw, country, competition_id=competition_id)
         source_path = f"{entry.season}/{entry.source_file.name}"
         parsed.append(
             HistoricalMatch(
@@ -283,15 +283,21 @@ def run_backfill(
     return summary.to_dict()
 
 
-def _kickoff(raw: dict[str, object], country: str) -> tuple[datetime, KickoffPrecision]:
+def _kickoff(
+    raw: dict[str, object], country: str, *, competition_id: str | None = None
+) -> tuple[datetime, KickoffPrecision]:
     day = datetime.strptime(str(raw["date"]), "%Y-%m-%d")
     raw_time = raw.get("time")
     if isinstance(raw_time, str) and re.fullmatch(r"\d{1,2}:\d{2}", raw_time):
         hour, minute = (int(part) for part in raw_time.split(":"))
+        # The UEFA catalogue uses CET/CEST across host countries.
+        timezone = (
+            "Europe/Berlin" if competition_id == "uefa.cl" else _TIMEZONES.get(country, "UTC")
+        )
         local = day.replace(
             hour=hour,
             minute=minute,
-            tzinfo=ZoneInfo(_TIMEZONES.get(country, "UTC")),
+            tzinfo=ZoneInfo(timezone),
         )
         return local.astimezone(UTC), "EXACT"
     return date_only_timestamp(day.replace(tzinfo=UTC)), "DATE_ONLY"

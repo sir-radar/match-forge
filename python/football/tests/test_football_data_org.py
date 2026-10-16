@@ -1,5 +1,8 @@
 import json
+import urllib.error
 from datetime import date
+from email.message import Message
+from io import BytesIO
 
 import pytest
 from football.product.football_data_org import (
@@ -60,3 +63,21 @@ def test_provider_error_is_explicit() -> None:
     )
     with pytest.raises(FootballDataOrgError, match="plan restriction"):
         client.finished_matches("PL", 2026)
+
+
+@pytest.mark.parametrize("status", [401, 403, 429, 503])
+def test_http_failure_preserves_status_without_exposing_credentials(status: int) -> None:
+    body = BytesIO(b'{"message":"restricted resource"}')
+    calls: list[str] = []
+
+    def transport(url: str, _headers: object) -> bytes:
+        calls.append(url)
+        raise urllib.error.HTTPError(url, status, "Rejected", Message(), body)
+
+    client = FootballDataOrgClient("private-token", transport=transport)
+    with pytest.raises(FootballDataOrgError, match=f"HTTP {status}") as failure:
+        client.finished_matches("CL", 2020)
+
+    assert "private-token" not in str(failure.value)
+    assert len(calls) == 1
+    assert body.closed

@@ -24,14 +24,14 @@ func NewPostgresProductStore(pool *pgxpool.Pool) *PostgresProductStore {
 
 func (store *PostgresProductStore) Competitions(ctx context.Context, filters CompetitionFilters) ([]Competition, error) {
 	query := `
-		SELECT competition_id::text, name, country, continent, division,
+		SELECT competition_id::text, name, COALESCE(geographic_scope, country), continent, division,
 		       competition_type, season_label, fixtures_available, results_available,
 		       standings_available, h2h_available, forecast_available, xg_available,
 		       team_stats_available, availability_status, source_roles
 		FROM football.product_competitions WHERE true`
 	args := []any{}
 	query = addFilter(query, &args, "continent", filters.Continent)
-	query = addFilter(query, &args, "country", filters.Country)
+	query = addFilter(query, &args, "COALESCE(geographic_scope, country)", filters.Country)
 	if filters.Division > 0 {
 		args = append(args, filters.Division)
 		query += fmt.Sprintf(" AND division = $%d", len(args))
@@ -40,7 +40,7 @@ func (store *PostgresProductStore) Competitions(ctx context.Context, filters Com
 		args = append(args, *filters.ForecastAvailable)
 		query += fmt.Sprintf(" AND forecast_available = $%d", len(args))
 	}
-	query += " ORDER BY continent, country, division NULLS LAST, name"
+	query += " ORDER BY continent, COALESCE(geographic_scope, country), division NULLS LAST, name"
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (store *PostgresProductStore) Competitions(ctx context.Context, filters Com
 
 func (store *PostgresProductStore) Fixtures(ctx context.Context, filters FixtureFilters) ([]FixtureGroup, error) {
 	query := `
-		SELECT pc.competition_id::text, pc.name, pc.country, pc.continent, pc.division,
+		SELECT pc.competition_id::text, pc.name, COALESCE(pc.geographic_scope, pc.country), pc.continent, pc.division,
 		       pc.competition_type, pc.season_label, pc.fixtures_available,
 		       pc.results_available, pc.standings_available, pc.h2h_available,
 		       pc.forecast_available, pc.xg_available, pc.team_stats_available,
@@ -69,7 +69,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       observation.match_minute, observation.added_time, observation.period,
 		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
 		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code
-		FROM football.product_effective_fixtures pf
+		FROM football.product_serving_fixtures pf
 		JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
 		JOIN football.product_teams ht ON ht.team_id = pf.home_team_id
 		JOIN football.product_teams at ON at.team_id = pf.away_team_id
@@ -101,23 +101,13 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) event_resource ON true
 		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
-          AND (pf.identity_status <> 'PROVISIONAL' OR EXISTS (
-              SELECT 1 FROM football.match_provider_mappings mapping
-              WHERE mapping.match_id = pf.fixture_id AND mapping.valid_to IS NULL
-          ))
-		  AND NOT EXISTS (
-			SELECT 1 FROM football.fixture_identity_resolutions resolution
-			WHERE resolution.member_fixture_id = pf.fixture_id AND resolution.active
-			  AND resolution.resolution_version = 'ProductFixtureCrosswalkV1'
-			  AND resolution.resolution_status = 'DUPLICATE_RESOLVED'
-			  AND resolution.member_fixture_id <> resolution.representative_fixture_id
-		  )`
+`
 	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
-	query = addFilter(query, &args, "pc.country", filters.Country)
+	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
 	query = addFilter(query, &args, "pf.forecast_availability", filters.ForecastAvailability)
-	query += " ORDER BY pc.continent, pc.country, pc.name, pf.kickoff_at, pf.fixture_id"
+	query += " ORDER BY pc.continent, COALESCE(pc.geographic_scope, pc.country), pc.name, pf.kickoff_at, pf.fixture_id"
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -478,7 +468,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 	query = addPredictionDateRange(query, &args, filters)
 	query = addFilter(query, &args, "ep.source_code", filters.Source)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "pc.country", filters.Country)
+	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
 	query = addFilter(query, &args, "ep.market", filters.Market)
 	query = addFilter(query, &args, "ep.fixture_id::text", filters.FixtureID)
@@ -541,7 +531,7 @@ func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context
 	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
 	query = addFilter(query, &args, "ep.market", filters.Market)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "pc.country", filters.Country)
+	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addPredictionDateRange(query, &args, filters)
 	query += " GROUP BY source.source_code ORDER BY source.name"
 	rows, err := store.pool.Query(ctx, query, args...)

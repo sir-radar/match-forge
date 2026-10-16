@@ -49,14 +49,32 @@ The full bulk import completed on 30 September 2026. OpenFootball mapped all 90,
 
 The required stored-data forecast refresh created zero new forecasts. This is not a history-depth failure: 1,735 canonical teams now have at least ten matches. Of the teams in the current 204-fixture schedule, 384 have no mapped bulk history because that schedule is dominated by youth, women's, international, and lower-tier competitions outside the 55 imported competitions. Forecast mathematics and the 10-match rule were not changed to manufacture coverage.
 
+## Canonical fixture geography
+
+`product_competitions.geographic_scope` classifies fixtures independently of
+venue and team country. Serving uses this classification for country filters and
+labels. Domestic competitions use verified competition geography; continental,
+global and international competitions use `International`. Club friendlies use
+verified tournament geography when available and otherwise `International`.
+Venue fields remain independent. Legacy `country` values remain available where
+provider-origin UUIDs depend on them.
+
+New canonical fixtures require a resolved geographic scope. Missing or
+conflicting provider metadata remains retained for review and cannot create a
+fixture with unknown geography. Native OpenFootball file prefixes resolve the
+legacy domestic `World` classifications without changing identity inputs.
+
 ## Data fields and gap statuses
 
 Each stored competition records country, continent, inferred division, season, fixtures, results, standings, H2H, forecast, xG and team-stat availability plus source roles. Fixture availability is separate from forecast availability. The product exposes `FORECAST_AVAILABLE`, `NOT_ENOUGH_HISTORY`, `SOURCE_DATA_INCOMPLETE`, and `TEMPORARILY_UNAVAILABLE` without inventing probabilities.
 
 Provider-scoped provisional competitions can display country metadata from
 checksum- and size-verified retained FotMob daily/league responses or the PitchAPI
-league catalogue. Matching uses the exact provider competition ID, including
-FotMob phase IDs; names and parent league IDs never substitute for that ID.
+league catalogue. FotMob daily normalization uses its explicit `primaryId` when present. The
+original group `id` remains in retained bytes and existing registrations. Catalogue
+requests use checksum-verified group-to-primary relationships; conflicting
+relationships stop discovery. League catalogue `details.id` must still match the
+requested ID. Names and `parentLeagueId` do not establish competition identity.
 Supported country codes use the existing product country names. `INT` and
 `INT-2` display as `International`, with continent `World`. Conflicting,
 unsupported or missing evidence leaves the country unresolved. The landing page
@@ -91,3 +109,58 @@ Current material gaps are:
 Sportmonks, SportDevs, TheSportsDB, OpenLigaDB, Sportradar and Stats Perform/Opta remain candidates only where a measured coverage gap justifies integration. No new paid provider was added. Before integration, MatchForge must record exact competition gain, historical depth, request/storage rights, rate limits, reliability and expected cost for the intended plan.
 
 Current source references: [API-Football pricing](https://www.api-football.com/pricing), [API-Football coverage](https://www.api-football.com/coverage), and [football-data.org pricing](https://www.football-data.org/pricing).
+
+## Identity review and history replay
+
+Competition and team candidates use retained fixture context: country, season,
+known gender and division, opponents, home/away roles, kickoff and compatible
+results. Names locate candidates and cannot admit a mapping. Operator review can
+admit a competition separately, then admit its teams and reconcile fixture
+representatives. Decisions use actual admission time and keep prior decisions.
+A review preserves an already-admitted mapping with the same canonical identity,
+including its version and source evidence. Explicit `reviewed_revalidation` can
+renew a linked correction revoked by a supporting mapping change only after full
+retained-evidence qualification. Automatic retries and operator revocations do
+not authorize renewed admission. The new decision preserves the prior correction
+and revocation events and applies only from its actual decision time.
+A qualified date-only result can support identity review on the same UTC day;
+its stored history time and precision remain unchanged.
+A composite catalogue cannot establish a crosswalk to one constituent division.
+Proven native season-label correspondences use the existing season mapping table
+with a validated source snapshot and a fully confident manual mapping to the same
+canonical competition. Replay uses the exact reviewed label and holds other
+labels for that competition; it never extrapolates a start-year or end-year rule.
+New competition crosswalks use exact fixture correspondence in retained independent
+responses. FotMob 193 includes the Russian Cup groups, and 336 includes both
+Guatemalan Apertura and Clausura stages; neither correspondence proves a complete
+season. Combined U18 coverage remains separate from its regional divisions. A
+requested historical season that returns another selected season remains unusable
+for that scope.
+
+OpenFootball parser v2 reads `uefa.cl` clocks as CET/CEST, including summer time;
+competition geography remains `World`. Manual R2 reviews verify OpenFootball IDs
+against the retained competition namespace, independently of the canonical
+club country. The source competition ID must also occur in the verified snapshot.
+Existing retained history is not rewritten
+by the parser change. football-data.org history requires an explicit regulation
+score duration; extra-time, shootout and unknown totals remain outside regulation
+history. A confirmed awarded, abandoned or cancelled canonical status excludes
+previously retained played results through a new dated history decision. Earlier
+cutoffs and raw scores remain unchanged. HTTP failures retain their status code
+for scoped access diagnostics.
+
+Historical qualification emits one decision per fixture. All applicable team
+aliases must agree on identity and trust. Replaying identical facts reuses their
+original observation lineage. A different source cannot replace qualified
+history, and conflicting results cannot make a scope complete. Retained current
+league catalogues can satisfy an exact matching season request without network
+access. Durable scope IDs, attempts and cooldowns remain intact.
+Cache freshness and current season qualification compare database timestamps
+against the database clock. Original acquisition times and strict future-time
+rejection remain intact; host clock differences do not change admission time.
+
+`history-coverage` includes `provider_history_depth`. Each provider competition
+reports stored and qualified results, advertised and completed scopes, season
+states and its first blocker. Metadata-only discovery remains distinct from
+qualified fixture/results history. Advanced features are not inferred from basic
+fixture availability.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -17,11 +18,39 @@ from football.product.history_requests import (
     record_history_check,
 )
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
-from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_provider_sync import OperationalProviderSync, _fotmob_season_rows
 from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
 from football.storage.raw import ImmutableFileStore
+
+
+def normalize_seasons(values: Any) -> list[str]:
+    """Normalize provider season aliases without imposing a historical floor."""
+    if not isinstance(values, list) or not values:
+        raise ValueError("provider catalogue missing available seasons")
+    seasons = set()
+    for value in values:
+        if type(value) not in (str, int):
+            raise ValueError("invalid provider season identifier")
+        match = re.fullmatch(
+            r"(\d{4})(?:[/-](\d{2}|\d{4}))?( - (?:Apertura|Clausura))?", str(value).strip()
+        )
+        if match is None:
+            raise ValueError("invalid provider season identifier")
+        start = int(match[1])
+        if match[2] is None:
+            seasons.add(f"{start:04d}{match[3] or ''}")
+            continue
+        end = int(match[2])
+        if len(match[2]) == 2:
+            end += start // 100 * 100
+            if end < start:
+                end += 100
+        if end <= start:
+            raise ValueError("provider season end must follow its start")
+        seasons.add(f"{start:04d}/{end:04d}{match[3] or ''}")
+    return sorted(seasons, reverse=True)
 
 
 def cached_response(
@@ -34,7 +63,7 @@ def cached_response(
                         THEN COALESCE(discovery.last_attempt_at, snapshot.acquired_at)
                         ELSE snapshot.acquired_at END,
                       resource.sha256, resource.size_bytes, resource.parse_status,
-                      resource.validation_status
+                      resource.validation_status, clock_timestamp()
                FROM football.source_snapshots snapshot
                JOIN football.providers provider ON provider.id = snapshot.provider_id
                JOIN football.source_resources resource ON resource.source_snapshot_id = snapshot.id
@@ -51,7 +80,7 @@ def cached_response(
         stored = cursor.fetchone()
     if stored is None:
         return None
-    now = datetime.now(UTC)
+    now = stored[8]
     if stored[2] > now or stored[3] > now:
         raise ValueError("cached provider acquisition/check timestamp is in the future")
     if freshness is not None and now - stored[3] >= freshness:
@@ -111,13 +140,43 @@ def discover_pitchapi(
     for league in data["leagues"]:
         if not isinstance(league, Mapping) or not isinstance(league.get("seasons"), list):
             raise ValueError("PitchAPI league missing seasons")
-        seasons = [str(season) for season in league["seasons"]]
+        seasons = normalize_seasons(league["seasons"])
         snapshot = sync._record_response("league-catalogue", response)
         bind_league_crosswalk(sync, str(league["id"]), league, snapshot)
         enqueue_seasons(sync, str(league["id"]), seasons)
         scopes += len(seasons)
     sync.connection.commit()
     return scopes
+
+
+def _fotmob_primary_ids(sync: OperationalProviderSync, identifiers: list[str]) -> list[str]:
+    """Resolve catalogue requests through retained provider-declared group relationships."""
+    resources = sync.connection.execute(
+        """SELECT DISTINCT s.source_identity FROM football.source_snapshots s
+           JOIN football.providers p ON p.id=s.provider_id
+           WHERE p.code='fotmob' AND s.status='validated'
+             AND s.source_identity LIKE 'fixtures-%' ORDER BY s.source_identity"""
+    ).fetchall()
+    relationships: dict[str, set[str]] = {}
+    for (resource,) in resources:
+        response = cached_response(sync, resource)
+        if response is None or not isinstance(response.data, Mapping):
+            continue
+        for league in response.data.get("leagues", []):
+            if not isinstance(league, Mapping):
+                continue
+            group, primary = league.get("id"), league.get("primaryId")
+            if type(group) in (int, str) and type(primary) in (int, str):
+                relationships.setdefault(str(group), set()).add(str(primary))
+    resolved = []
+    for identifier in identifiers:
+        targets = relationships.get(identifier, {identifier})
+        if len(targets) != 1:
+            raise ValueError("conflicting retained FotMob primary competition IDs")
+        primary = next(iter(targets))
+        if primary not in resolved:
+            resolved.append(primary)
+    return resolved
 
 
 def discover_fotmob(
@@ -150,11 +209,21 @@ def discover_fotmob(
                    AND fixture.kickoff_at > now()) DESC, mapping.provider_competition_id""",
             (competition, competition),
         )
-        leagues = [row[0] for row in cursor.fetchall()]
+        leagues = _fotmob_primary_ids(sync, [row[0] for row in cursor.fetchall()])
     requests = scopes = 0
     errors: dict[str, str] = {}
     deferred_scopes: dict[str, str] = {}
+    cooling = {
+        row[0]
+        for row in sync.connection.execute(
+            """SELECT provider_competition_id FROM football.product_provider_history_discovery
+               WHERE provider_code='fotmob' AND last_error IS NOT NULL
+                 AND next_attempt_at>now()"""
+        ).fetchall()
+    }
     for league_id in leagues:
+        if league_id in cooling:
+            continue
         resource = f"league-catalogue-{league_id}"
         response = (
             None if refresh else cached_response(sync, resource, freshness=history_freshness())
@@ -213,13 +282,13 @@ def _fotmob_seasons(
     if not isinstance(response.data, Mapping):
         raise ValueError("FotMob catalogue must be an object")
     seasons = response.data.get("allAvailableSeasons")
-    if not isinstance(seasons, list):
-        raise ValueError("FotMob catalogue missing available seasons")
+    seasons = normalize_seasons(seasons)
     snapshot = sync._record_response(resource, response)
     details = response.data.get("details", {})
-    if isinstance(details, Mapping):
-        bind_league_crosswalk(sync, league_id, details, snapshot)
-    return [str(season) for season in seasons]
+    if not isinstance(details, Mapping) or str(details.get("id")) != league_id:
+        raise ValueError("FotMob catalogue competition ID mismatch")
+    bind_league_crosswalk(sync, league_id, details, snapshot)
+    return seasons
 
 
 def bind_league_crosswalk(
@@ -312,7 +381,8 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                WHERE scope.provider_code = %s
                  AND (scope.status IN ('PENDING', 'FAILED', 'DEFERRED')
                       OR (scope.status = 'SUCCEEDED'
-                          AND right(scope.season_label, 4) >= extract(year FROM now())::text)
+                          AND right(split_part(scope.season_label, ' - ', 1), 4)
+                              >= extract(year FROM now())::text)
                       OR (scope.status = 'RUNNING'
                           AND scope.claimed_at < now() - interval '30 minutes'))
                  AND scope.next_attempt_at <= now()
@@ -331,7 +401,8 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                      AND fixture.identity_status = 'VERIFIED'
                      AND fixture.status = 'SCHEDULED' AND fixture.kickoff_at > now()
                ) DESC,
-                 (right(scope.season_label, 4) >= extract(year FROM now())::text) DESC,
+                 (right(split_part(scope.season_label, ' - ', 1), 4)
+                     >= extract(year FROM now())::text) DESC,
                  scope.attempts,
                  scope.season_label DESC, scope.provider_competition_id
                FOR UPDATE OF scope SKIP LOCKED LIMIT 1
@@ -368,8 +439,9 @@ def run_scopes(
     if refresh:
         sync.connection.execute(
             """UPDATE football.product_provider_history_scopes
-               SET status = 'PENDING', attempts = 0, next_attempt_at = now()
+               SET status = 'PENDING'
                WHERE provider_code = %s AND status <> 'RUNNING'
+                 AND next_attempt_at <= now()
                  AND (%s::text IS NULL OR provider_competition_id = %s)
                  AND (%s::text IS NULL OR season_label = %s)""",
             (sync.provider_code, competition, competition, season, season),
@@ -392,7 +464,7 @@ def run_scopes(
                 league_id, selected_season, response, network_acquired=acquired
             )
             if result["status"] != "COMPLETED":
-                error = "one or more fixture rows failed; replay stored snapshot"
+                error = str(result["status"])
                 status = "FAILED"
         except HistoryDeferred as deferred:
             sync.connection.rollback()
@@ -459,8 +531,19 @@ def _scope_response(
     refresh: bool,
 ) -> tuple[FotmobResponse | PitchApiResponse, bool]:
     resource = f"league-{league_id}-{selected_season}"
-    freshness = history_freshness() if int(selected_season[-4:]) >= datetime.now(UTC).year else None
+    years = selected_season.split(" - ", 1)[0]
+    freshness = history_freshness() if int(years[-4:]) >= datetime.now(UTC).year else None
     response = None if refresh else cached_response(sync, resource, freshness=freshness)
+    if response is None and not refresh and sync.provider_code == "fotmob":
+        catalogue = cached_response(sync, f"league-catalogue-{league_id}", freshness=freshness)
+        if catalogue is not None and isinstance(catalogue, FotmobResponse):
+            details = (
+                catalogue.data.get("details", {}) if isinstance(catalogue.data, Mapping) else {}
+            )
+            selected = details.get("selectedSeason") if isinstance(details, Mapping) else None
+            if selected is not None and normalize_seasons([selected]) == [selected_season]:
+                _fotmob_season_rows(catalogue, league_id, selected_season)
+                response = catalogue
     acquired = response is None
     if response is None:
         sync.pacer.wait()

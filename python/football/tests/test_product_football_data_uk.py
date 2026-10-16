@@ -80,6 +80,19 @@ def test_csv_parser_handles_bom_old_dates_time_and_incomplete_rows() -> None:
     assert matches[0].country == "England"
 
 
+def test_catalog_budget_cannot_silently_report_partial_discovery(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "football.product.football_data_uk._download",
+        lambda _: b'<a href="data/england.php">England</a>',
+    )
+    with pytest.raises(ValueError, match="budget exhausted"):
+        discover_catalog(max_pages=1)
+    with pytest.raises(ValueError, match="budget must be positive"):
+        discover_catalog(max_pages=0)
+
+
 def test_zip_archive_yields_every_csv() -> None:
     target = io.BytesIO()
     with zipfile.ZipFile(target, "w") as archive:

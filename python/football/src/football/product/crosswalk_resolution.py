@@ -13,7 +13,7 @@ from difflib import SequenceMatcher
 from enum import StrEnum
 from itertools import combinations
 from pathlib import Path
-from typing import Any, TextIO, cast
+from typing import Any, Literal, TextIO, cast
 from uuid import UUID
 
 import psycopg
@@ -21,6 +21,7 @@ from psycopg import Connection
 
 from football.product.identity_audit import audit_report
 from football.product.identity_crosswalks import COMPETITION_CROSSWALKS
+from football.product.identity_trust import origin_id
 
 
 class Decision(StrEnum):
@@ -264,6 +265,13 @@ def apply_high_confidence_resolutions(
             continue
         for mapping in resolution.mappings:
             if mapping.mapping_method in {"explicit_crosswalk", "manual"}:
+                continue
+            if mapping.mapping_method == "deterministic" and mapping.entity_id == origin_id(
+                resolution.entity_type,
+                mapping.provider_code,
+                mapping.provider_entity_id,
+                mapping.country,
+            ):
                 continue
             _revise_mapping(connection, resolution.entity_type, mapping, resolved_at)
             revised += 1
@@ -545,7 +553,13 @@ def _revise_mapping(
     entity_type: str,
     mapping: MappingRecord,
     resolved_at: datetime,
+    *,
+    mapping_method: Literal["explicit_crosswalk", "deterministic"] = "explicit_crosswalk",
 ) -> None:
+    if mapping_method == "deterministic" and mapping.entity_id != origin_id(
+        entity_type, mapping.provider_code, mapping.provider_entity_id, mapping.country
+    ):
+        raise ValueError("origin revision requires the exact provider-ID UUID")
     table, identity_column, provider_identity_column = {
         "competition": (
             "football.competition_provider_mappings",
@@ -555,6 +569,9 @@ def _revise_mapping(
         "team": ("football.team_provider_mappings", "team_id", "provider_team_id"),
     }[entity_type]
     with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission', 0))"
+        )
         cursor.execute(
             f"UPDATE {table} SET valid_to = %s WHERE id = %s AND valid_to IS NULL",
             (resolved_at, mapping.mapping_id),
@@ -567,7 +584,7 @@ def _revise_mapping(
                 {identity_column}, provider_id, {provider_identity_column}, valid_from,
                 valid_to, first_seen_at, last_seen_at, mapping_method,
                 mapping_confidence, source_snapshot_id
-            ) VALUES (%s, %s, %s, %s, NULL, %s, %s, 'explicit_crosswalk', 1.0, %s)
+            ) VALUES (%s, %s, %s, %s, NULL, %s, %s, %s, 1.0, %s)
             """,
             (
                 mapping.entity_id,
@@ -576,6 +593,7 @@ def _revise_mapping(
                 resolved_at,
                 mapping.first_seen_at,
                 mapping.last_seen_at,
+                mapping_method,
                 mapping.source_snapshot_id,
             ),
         )

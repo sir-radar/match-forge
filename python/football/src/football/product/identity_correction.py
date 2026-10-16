@@ -417,7 +417,11 @@ def qualify_team_correction(
 
 
 def correct_team_identity(
-    connection: Connection[Any], root: Path, request: TeamIdentityCorrection
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    *,
+    reviewed_revalidation: bool = False,
 ) -> dict[str, Any]:
     """Append one qualified correction atomically; callers control outer transaction commit."""
     ready = connection.execute(
@@ -453,8 +457,14 @@ def correct_team_identity(
                 result = qualify_team_correction(connection, root, request)
                 if result["status"] != "QUALIFIED":
                     raise ValueError(result["reason"])
-            return {**decision, "decided_at": datetime.fromisoformat(decision["decided_at"])}
-        if previous and previous[0]["disposition"] == "REVOKED":
+            if reviewed_revalidation and decision["disposition"] == "REVOKED":
+                if decision["reason"] != "MAPPING_CHANGED_REVALIDATION_REQUIRED":
+                    raise ValueError(
+                        "only a mapping-change revocation permits reviewed revalidation"
+                    )
+            else:
+                return {**decision, "decided_at": datetime.fromisoformat(decision["decided_at"])}
+        elif previous and previous[0]["disposition"] == "REVOKED":
             raise ValueError("a revoked source mapping requires a new reviewed promotion")
         result = qualify_team_correction(connection, root, request)
         if result["status"] != "QUALIFIED":
