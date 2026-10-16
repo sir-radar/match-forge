@@ -14,6 +14,33 @@ Current implementation, gate, and authorization state must be read from the repo
 
 Where these sources disagree, the newer explicit owner/Wayfinder decision takes precedence over a stale architectural or planning checkpoint.
 
+### Architecture V2 baseline
+
+Architecture V2 starts from the final R3 head, `c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365`, merged through PR #167. Phase 0 preserves the existing runtime before any schema or worker cutover. The remaining phases require implementation and acceptance evidence.
+
+Run the capture from the repository root with the existing `.env` exported and `scripts/toolchain.sh` loaded:
+
+```sh
+uv run --locked python -m scripts.capture_architecture_v2_baseline \
+  --output .local/remediation/matchforge-architecture-v2/new-baseline \
+  --fixture-date 2026-10-14 --fixture-date 2026-10-15 --fixture-date 2026-10-16 \
+  --cutoff 2026-10-15T23:29:06.806401Z
+```
+
+The output directory must not exist. The tool shares an exported PostgreSQL snapshot between a read-only repeatable-read transaction and the Compose PostgreSQL container's `pg_dump`. It retains a restorable database archive, schema, migration checksums, primary-key and row-hash inventories, current projections, historical cutoff hashes, source registrations and verified source bytes, champion checksum, history coverage, queue state and observable locks. Database row contents stay in the local backup; row inventories contain keys and hashes. API captures are separately timed observations because live sync remains enabled.
+
+Missing or unverifiable legacy source bytes are reported individually and produce `PASS_WITH_WARNINGS`; they are never silently repaired. The dump preserves their registrations. An interrupted capture remains `INCOMPLETE`. Keep all output under ignored `.local/` storage, with the same access restrictions as the original data, and leave old R3 evidence untouched.
+
+Restore `database.dump` using PostgreSQL 18's `pg_restore --exit-on-error --no-owner --no-acl` into a new, empty database. Never restore over the operating database. Then select the restored database through `DATABASE_URL` and run:
+
+```sh
+uv run --locked python -m scripts.capture_architecture_v2_baseline \
+  --output .local/remediation/matchforge-architecture-v2/new-restore-verification \
+  --verify-restored-baseline .local/remediation/matchforge-architecture-v2/phase-0
+```
+
+Verification requires exact table and historical-cutoff hashes, the original dump checksum, and intact archived source bytes. Current-time views are captured for reference rather than compared at a later wall-clock time. A successful capture alone does not prove a successful restore or completion of Architecture V2.
+
 ## System Flow
 
 ```text

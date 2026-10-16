@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-16T07:25:38.259783Z",
+  "updated_at": "2026-10-16T11:12:20.506783Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1035,7 +1035,7 @@
         "R8",
         "R9"
       ],
-      "current_phase": "R3_PARTIAL_REMAINING_BLOCKERS",
+      "current_phase": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
       "checkpoint_root": ".local/remediation/matchforge-audit",
       "research_execution_authorized": false,
       "blocked_findings": [
@@ -1202,6 +1202,24 @@
         ]
       }
     }
+  },
+  "architecture_v2": {
+    "status": "PHASE_0_PASSED_OWNER_HANDOFF",
+    "current_phase": 0,
+    "completed_phases": [
+      0
+    ],
+    "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
+    "branch": "ft/matchforge-architecture-v2",
+    "baseline_ref": ".local/remediation/matchforge-architecture-v2/phase-0/manifest.json",
+    "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
+    "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+    "schema_changes": [],
+    "runtime_cutover": false,
+    "remaining_work": "Phases 1-48 have not started. Return control to the owner at the Phase 0 gate under AGENTS.md section 5.",
+    "phase_gate": "PASS_WITH_WARNINGS",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
+    "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json"
   },
   "phase_1b": {
     "status": "PASS",
