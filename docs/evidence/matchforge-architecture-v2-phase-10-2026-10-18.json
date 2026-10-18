@@ -1,0 +1,39 @@
+{
+  "additional_live_provider_requests": 0,
+  "authority_assignments_recorded_in_shadow": 0,
+  "authority_postgres_cases_passed": 20,
+  "authority_unit_tests_passed": 10,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "20153d6789867a1a76ba253c9f9633ac9942fcb9",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-10-check-integration.log",
+    "python_unit_tests_passed": 1394,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 106,
+  "limitations": [
+    "No authority assignments are inferred from capability availability, retained observations, static provider roles or roadmap documents. Explicit owner qualification evidence is required.",
+    "Authority labels do not define a universal provider ranking or identity admission. Overlapping and negative claims remain visible to approved scoped resolution policy.",
+    "Existing production resolution remains active until controlled cutover; complete replay and parity remain later gates."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180400_provider_resource_authority.sql",
+  "migration_seconds": 0.208121,
+  "migration_sha256": "b9cb7e1eebe056c5b52f111144ce79e2d1a080c59ee711b174361b9df759f0b6",
+  "phase": 10,
+  "pre_existing_migrations_verified": 74,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T07:53:51.165479+00:00",
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-10-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-10/upgrade-verification.json",
+  "shadow_verification_sha256": "f4dc99ec1ec371eb438a9b450d5f8994dab666fb22594ceb07991998db3dc4b1",
+  "status": "PASS_WITH_WARNINGS",
+  "unregistered_scope_authority_assignments": 0,
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}
