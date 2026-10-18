@@ -108,3 +108,30 @@ require both input and publication knowledge to be available at the requested
 cutoff; a later calculation of an older input snapshot cannot replace a newer
 snapshot. Artifact reload verifies checksum, identity, scope and metrics.
 Existing production coverage reports remain active until parity and cutover.
+
+## Structured quality assessments
+
+`football.validation.quality.DataQualityAssessment` records a stable subject
+reference and resource, input knowledge cutoff, assessment time, and eight
+independent dimensions: identity state, completeness, freshness, precision,
+consistency, temporal integrity, provenance state, and conflict state. Each
+`QualityDimension` retains its domain owner's state, actionable reason codes,
+required action and retained evidence references. Existing validation findings
+and policy decisions supply these values; the report does not invent thresholds
+or infer missing checks from the absence of findings. Unknown dimensions must
+be reported explicitly, with the action needed to assess them.
+
+There is no combined confidence score or automatic acceptance result. A complete
+resource can still have unresolved identity or conflicting evidence. A positive
+identity state reports an existing owner's conclusion; canonical publication
+still verifies that owner's independent identity proof. Quality reports cannot
+be used as `CanonicalBinding` identity evidence.
+
+`to_decision_record` binds all dimensions and their evidence in the existing
+immutable `DecisionRecordV1` format, with a `data_quality_assessment` type and
+`ASSESSED` disposition. Its checksum and deterministic ID identify the exact
+assessment. The inverse adapter rejects missing or unknown dimensions, malformed
+clocks and unsupported versions. Both clocks require timezones, and assessment
+time cannot precede the input knowledge cutoff. Reports describe input quality;
+they do not alter historical eligibility, qualification, quarantine, promotion
+or production serving decisions.
