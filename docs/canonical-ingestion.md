@@ -74,3 +74,37 @@ cutoff; a later review or quarantine remains visible instead of exposing an olde
 winner. Read the selected typed observation separately through
 `ObservationArtifactStore`. This shadow path does not replace current product
 serving or historical eligibility rules.
+
+## Resource coverage snapshots
+
+`football.coverage.resources` keeps provider coverage separate from canonical
+coverage. Provider snapshots count explicit expected, observed and qualified
+native/source-record unit keys. Canonical snapshots use MatchForge competition
+and season IDs, count distinct qualified canonical unit IDs, and retain each
+supporting provider. Multiple provider observations or retries cannot increase
+the count of one canonical fixture. Provider coverage can remain partial while
+qualified sources together provide complete canonical coverage.
+
+Eligibility owners supply the frozen expected unit set and already-qualified
+inputs, with evidence references and an explicit knowledge cutoff. For fixture
+resources, qualification must establish the required resource completeness
+before supplying a fixture ID; one partial team row is not a complete fixture.
+Coverage code does not infer identity, qualify raw observations, derive an
+expected total from observed rows, or rewrite R3 provider-specific history.
+Qualified provider units must be observed; qualified units must belong to any
+declared expected set. Unexpected raw observations remain in the input evidence.
+
+Ratios are distinct qualified units divided by the explicit expected count.
+An unknown or empty expectation produces an unknown ratio and status, never a
+claim of complete coverage. Positive expectations are complete only when every
+expected unit is qualified. Provider and canonical reports retain their own
+metrics and inputs.
+
+`prepare_coverage` writes immutable canonical JSON containing the input sets,
+metrics and evidence references. `CoverageRegistry` registers provider and
+canonical summaries in separate tables after verifying those bytes. Canonical
+competition/season pairs and supporting providers must be registered. Queries
+require both input and publication knowledge to be available at the requested
+cutoff; a later calculation of an older input snapshot cannot replace a newer
+snapshot. Artifact reload verifies checksum, identity, scope and metrics.
+Existing production coverage reports remain active until parity and cutover.
