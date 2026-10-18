@@ -8,12 +8,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from psycopg import Connection, sql
+from psycopg import Connection, Error, sql
 from psycopg.errors import InvalidParameterValue, ObjectNotInPrerequisiteState, UniqueViolation
 from psycopg.pq import TransactionStatus
 from psycopg.rows import dict_row
 
 from football.contracts.source import SHA256_PATTERN
+from football.storage.locks import LOCK_ORDER_SQLSTATE, LockOrderError
 from football.work.contracts import (
     RetryClassification,
     WorkClaim,
@@ -162,6 +163,10 @@ class WorkRegistry:
         except ObjectNotInPrerequisiteState as error:
             if name in ("lock_work", "heartbeat_work", "finish_work", "fail_work"):
                 raise WorkLeaseLost("work lease ownership lost") from error
+            raise
+        except Error as error:
+            if error.sqlstate == LOCK_ORDER_SQLSTATE:
+                raise LockOrderError(str(error)) from error
             raise
 
 

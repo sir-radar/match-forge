@@ -248,6 +248,47 @@ Phase 17; this foundation does not declare production scheduling unified or
 authorize cutover. Global lock ordering, the full adversarial concurrency matrix
 and controlled production cutover remain their own required gates.
 
+### Transaction lock ordering
+
+The Phase 15 implementation is in progress. The shared ordering functions and
+work-publication checks below are implemented; integration of all legacy
+mutation paths remains required before the phase gate.
+
+`football.storage.locks` and the SQL functions in
+`202610180800_transaction_lock_order.sql` order blocking coordination requests
+by class, then exact key in C/Unicode order:
+
+| Class | Order |
+| --- | ---: |
+| Source | 10 |
+| Identity | 20 |
+| Competition | 30 |
+| Fixture | 40 |
+| Work | 50 |
+| Feature | 60 |
+| Publication | 70 |
+
+Declare a transaction's required scopes together through `acquire_locks`.
+Already-held keys can be reentered. A new lower request fails before waiting;
+reentry cannot change the key's class or hash convention. Existing 64-bit and
+legacy 32-bit advisory hashes are retained explicitly. Ordering state is local
+to the transaction and follows savepoint rollback. Lock-order errors use SQLSTATE
+`MFL01` and remain distinct from lost work leases. Locks require a transaction
+that stays open through the protected mutation.
+
+`lock_fixtures` derives the existing parent competitions, acquires every
+competition before its fixtures, and locks IDs in sorted order. It creates no
+identity or fixture rows. If a fixture changes competition during acquisition,
+the transaction must retry. `wait=False` defers busy scopes and rolls back all
+locks and ordering entries acquired by that call; it does not leave partial
+claims. Work publication records its blocking work-row lock, so acquiring a new
+identity, competition or fixture scope afterward fails and rolls back its
+publication writes. Acquire those scopes before entering publication.
+
+Existing identity serialization and legacy scheduling remain in place while
+their transaction paths are integrated. This section does not declare the
+global hierarchy migration complete or authorize production cutover.
+
 ## System Flow
 
 ```text
