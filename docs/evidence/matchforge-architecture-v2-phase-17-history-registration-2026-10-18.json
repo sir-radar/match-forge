@@ -1,0 +1,71 @@
+{
+  "acceptance_runner_sha256": "569f92ffcef4fb24c30c0428743e130acfc3ae00c8edc2b2ff36c6731c91c3f0",
+  "additional_live_provider_requests": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "history-request-registration",
+  "code_commit_sha": "9a86c6d7efbe36d18b86669e615d122191d1c093",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-final-check-integration.log",
+    "python_unit_tests_passed": 1460,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "empty_filtered_registry_claim": null,
+  "empty_registry_claim": null,
+  "existing_projections_verified": 1,
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 111,
+  "finished_at": "2026-10-18T18:53:39.791997+00:00",
+  "fixture_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "fixture_projection_preserved": true,
+  "focused_postgres_cases_before_ownership_review": 377,
+  "focused_work_and_product_sync_unit_cases_passed": 58,
+  "legacy_and_explicit_lease_policy_sql_signatures": "PASS",
+  "limitations": [
+    "Four queue-specific adapters and controlled execution parity remain required inside Phase 17.",
+    "This checkpoint registers immutable legacy requests and preserves retry/lease policy; fenced execution and scheduler handoff are not implemented yet.",
+    "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
+    "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
+  ],
+  "migration_hashes": {
+    "infrastructure/migrations/202610181600_lease_expiry_retry_policy.sql": "08cecce69c973d9ad684d384bbf4922fadf1139841b5269e73f8a646a3d25188",
+    "infrastructure/migrations/202610181700_history_work_registration.sql": "21ce409d06f4f8f681a2a0ef3f9d3dfb91fdd61ca1d7e93f4b97d7819289e630"
+  },
+  "migration_seconds": 0.304052,
+  "old_and_shared_sql_signatures": "PASS",
+  "ownership_regression_cases_passed": 2,
+  "ownership_regression_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-ownership-green.log",
+  "phase": 17,
+  "phase_gate_complete": false,
+  "pre_existing_migrations_verified": 86,
+  "qualification_query_volatility": "v",
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T18:54:17.963244+00:00",
+  "registered_history_requests": 0,
+  "registered_work_dependencies": 0,
+  "registered_work_items": 0,
+  "remaining_phase_17_work": [
+    "Integrate authoritative claim/publication ownership for bulk history jobs.",
+    "Integrate provider-history scope jobs and generation-safe forecast work.",
+    "Retain operator sync runs as parent/control records driven by shared work.",
+    "Run controlled legacy/new execution parity before disabling old schedulers."
+  ],
+  "runtime_cutover": false,
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-17/history-registration/upgrade-verification.json",
+  "shadow_verification_sha256": "f7c8413029895b06d40b73e5dff2d714c9163caa59caf2cbae0f5d7b06613d3c",
+  "shared_upgrade_guard": "PASS",
+  "status": "PASS_WITH_WARNINGS",
+  "three_and_four_argument_claim_signatures": "PASS",
+  "transaction_ledger_cleanup": "PASS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "work_before_history_detail_guard": "PASS",
+  "work_reference_no_key_update": "PASS",
+  "worker_control_statement_guard": "PASS"
+}

@@ -1246,7 +1246,9 @@
       "202610181200_publication_lock_order.sql",
       "202610181300_worker_fence_lock_order.sql",
       "202610181400_scoped_history_locks.sql",
-      "202610181500_scoped_work_claims.sql"
+      "202610181500_scoped_work_claims.sql",
+      "202610181600_lease_expiry_retry_policy.sql",
+      "202610181700_history_work_registration.sql"
     ],
     "runtime_cutover": false,
     "remaining_work": "Implement phases 17-48 in order; commit each completed phase before beginning the next.",
@@ -1916,7 +1918,7 @@
         "production_temporal_rules_changed": false
       },
       "history_registration_validation": {
-        "status": "FOCUSED_PASS",
+        "status": "PASS_WITH_WARNINGS",
         "scope": "Immutable legacy history-request registration and compatible error/lease retry policy; execution migration remains pending.",
         "postgres_cases_passed": 377,
         "unit_cases_passed": 58,
@@ -1941,7 +1943,14 @@
           "web_tests_passed": 56,
           "lint_typing_build_migrations_storage_api": "PASS",
           "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-final-check-integration.log"
-        }
+        },
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-17-history-registration-2026-10-18.json",
+        "code_commit_sha": "9a86c6d7efbe36d18b86669e615d122191d1c093",
+        "existing_tables_verified": 111,
+        "existing_table_hashes_preserved": true,
+        "fixture_projection_preserved": true,
+        "registered_history_requests": 0,
+        "registered_work_items": 0
       }
     }
   },
