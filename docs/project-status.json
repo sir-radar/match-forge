@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 16,
+    "current_phase": 17,
     "completed_phases": [
       0,
       1,
@@ -1222,7 +1222,8 @@
       12,
       13,
       14,
-      15
+      15,
+      16
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1243,10 +1244,11 @@
       "202610181000_identity_lock_order.sql",
       "202610181100_model_publication_lock_order.sql",
       "202610181200_publication_lock_order.sql",
-      "202610181300_worker_fence_lock_order.sql"
+      "202610181300_worker_fence_lock_order.sql",
+      "202610181400_scoped_history_locks.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 16-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 17-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1818,13 +1820,11 @@
       ]
     },
     "phase_16": {
-      "status": "IN_PROGRESS",
-      "scope": "Competition-scoped pure history qualification with shared identity fencing; identity-wide fact mutation remains exclusive.",
+      "status": "PASS_WITH_WARNINGS",
+      "scope": "Competition-scoped pure history qualification with shared identity fencing and exclusive fact mutation.",
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
-      "remaining_work": [
-        "Run committed-code shadow preservation."
-      ],
+      "remaining_work": [],
       "focused_validation": {
         "status": "PASS",
         "postgres_cases_passed": 351,
@@ -1846,7 +1846,21 @@
         "web_tests_passed": 56,
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-16-check-integration.log"
-      }
+      },
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-16-2026-10-18.json",
+      "code_commit_sha": "4126691c3ec3a9325fef27fd2704eb025378012a",
+      "existing_tables_verified": 111,
+      "existing_table_hashes_preserved": true,
+      "fixture_projection_preserved": true,
+      "pre_existing_migrations_verified": 84,
+      "registered_work_items": 0,
+      "registered_work_dependencies": 0,
+      "limitations": [
+        "Identity-wide mutations retain exclusive coordination because they can affect linked mappings and fixtures; only pure competition history qualification is scoped.",
+        "Production scheduler migration remains Phase 17 and the all-route adversarial matrix remains Phase 20.",
+        "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
+        "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
+      ]
     }
   },
   "phase_1b": {
