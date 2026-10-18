@@ -44,3 +44,33 @@ provider bytes.
 StatsBomb position `from`/`to` values are preserved as provider observations. Real source rows can be non-monotonic across periods and clocks, so ingestion validates presence, shape, positivity, and paired nullability without inventing corrected intervals. Raw bytes remain available for the later data-quality and quarantine phase.
 
 Event resources can be ingested with their match bundle or as a later manifest scope. Existing rich team and player observations are reused; an event-only scope does not replace them with partial event references. New event observations close prior half-open knowledge intervals while retaining stable event identity and match linkage.
+
+## Canonical resource decisions
+
+The Architecture V2 shadow path keeps normalized observations immutable. A
+`CanonicalCandidate` binds every entity reference to identity-owner evidence and
+identifies one resource context, such as a fixture result with a specific score
+basis or one team's statistics for one fixture and period. Reported validity
+intervals remain separate contexts. Event and shot units
+require their own identity; a fixture ID cannot identify an individual event.
+
+`resolve_canonical_resource` consumes an explicit `ConflictRecordV1` selection.
+It records exact-value supporting and conflicting observations in a
+`DecisionRecordV1`; it does not infer a winner from provider counts or confidence.
+Review and quarantine decisions expose no selected value. Sources retain their
+original IDs, values, bytes and clocks.
+
+Prepare immutable decision and identity-evidence files before calling
+`CanonicalResolutionRegistry.register`. Registration verifies observation hashes
+and the existing persisted `ResolutionDecisionV1` evidence, then commits the
+conclusion and all lineage together. Other identity owners need an explicit
+publication adapter before their evidence can be registered through this path.
+No identity is created by the canonical resolver.
+
+Canonical revisions are append-only, reference the current predecessor within
+the same resource context, and cannot fork. Knowledge starts at database
+publication time. Reads require the context hash and an explicit knowledge
+cutoff; a later review or quarantine remains visible instead of exposing an older
+winner. Read the selected typed observation separately through
+`ObservationArtifactStore`. This shadow path does not replace current product
+serving or historical eligibility rules.
