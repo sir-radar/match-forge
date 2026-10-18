@@ -1245,7 +1245,8 @@
       "202610181100_model_publication_lock_order.sql",
       "202610181200_publication_lock_order.sql",
       "202610181300_worker_fence_lock_order.sql",
-      "202610181400_scoped_history_locks.sql"
+      "202610181400_scoped_history_locks.sql",
+      "202610181500_scoped_work_claims.sql"
     ],
     "runtime_cutover": false,
     "remaining_work": "Implement phases 17-48 in order; commit each completed phase before beginning the next.",
@@ -1890,7 +1891,7 @@
         "replacement_excludes_old_owner": "PASS"
       },
       "work_prerequisite_validation": {
-        "status": "FOCUSED_PASS",
+        "status": "PASS_WITH_WARNINGS",
         "postgres_cases_passed": 358,
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-work-prerequisites-focused.log",
         "comprehensive_validation": {
@@ -1900,7 +1901,13 @@
           "web_tests_passed": 56,
           "lint_typing_build_migrations_storage_api": "PASS",
           "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-work-prerequisites-final-check-integration.log"
-        }
+        },
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-17-work-prerequisites-2026-10-18.json",
+        "code_commit_sha": "2a1f86956b989f5069fb93df7a1abb2ca02f8d06",
+        "existing_tables_verified": 111,
+        "existing_table_hashes_preserved": true,
+        "fixture_projection_preserved": true,
+        "phase_gate_complete": false
       },
       "identity_fixture_clock_regression": {
         "status": "FOCUSED_PASS",
