@@ -1205,14 +1205,15 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 6,
+    "current_phase": 7,
     "completed_phases": [
       0,
       1,
       2,
       3,
       4,
-      5
+      5,
+      6
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1224,7 +1225,7 @@
       "202610180100_provider_mapping_history.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 6-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 7-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1403,7 +1404,7 @@
       }
     },
     "phase_6": {
-      "status": "IMPLEMENTED_PENDING_COMMITTED_SHADOW_UPGRADE",
+      "status": "PASS_WITH_WARNINGS",
       "identity_owner": "Existing provider mappings and identity decision ledgers",
       "mapping_history": "Append-only recorded states for competition, season, team, player and match mappings; existing canonical IDs retained.",
       "initial_knowledge": "Capture time, with source/mapping clock guards; earlier mapping states are not fabricated.",
@@ -1411,7 +1412,7 @@
       "focused_unit_and_postgres_tests_passed": 29,
       "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-identity-red.log",
       "focused_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-identity-final-focused.log",
-      "migration_applied_to": "DISPOSABLE_TEST_DATABASES_ONLY",
+      "migration_applied_to": "ISOLATED_SHADOW_AND_DISPOSABLE_TEST_DATABASES_ONLY",
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
       "comprehensive_validation": {
@@ -1421,6 +1422,18 @@
         "web_tests_passed": 56,
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-check-integration.log"
+      },
+      "shadow_upgrade": {
+        "status": "PASS_WITH_WARNINGS",
+        "code_commit_sha": "ab442febedb6570736f5d4af65d0b3eb2887c458",
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-6-2026-10-18.json",
+        "evidence_sha256": "5a55344b631c9a0efa07a0b377a116a87a736e73ca01de867893346ddfad3bb8",
+        "existing_tables_verified": 102,
+        "existing_table_hashes_preserved": true,
+        "mapping_history_rows": 486452,
+        "pre_existing_migrations_verified": 71,
+        "champion_unchanged": true,
+        "v1_schema_unchanged": true
       }
     }
   },
