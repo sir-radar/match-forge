@@ -1,0 +1,63 @@
+{
+  "additional_live_provider_requests": 0,
+  "baseline_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "04c1b79afe381065b8409943c7c53d5afefc8a86",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-13-check-integration.log",
+    "python_unit_tests_passed": 1430,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 109,
+  "fixture_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "fixture_projection_postgres_cases_passed": 7,
+  "historical_fixture_ids_preserved": true,
+  "idempotent_rebuild": true,
+  "limitations": [
+    "The projection is a current serving cache of the existing baseline, not a historical PIT input or new canonical identity owner.",
+    "Product serving remains on product_serving_fixtures; scheduled refresh must join the authoritative work engine before production cutover.",
+    "This verifies the retained fixture projection only. Complete V2 retained replay, full shadow parity, other required read-model consumers and controlled cutover remain later gates."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180600_fixture_read_model.sql",
+  "migration_seconds": 0.663145,
+  "migration_sha256": "d149163f7e405251c1e19ccc6e7dd22bd8abfcf9c63b6d60ecf9bc0c8032d74a",
+  "phase": 13,
+  "pre_existing_migrations_verified": 76,
+  "projection_columns": [
+    "fixture_id",
+    "competition_id",
+    "home_team_id",
+    "away_team_id",
+    "kickoff_at",
+    "status",
+    "home_score",
+    "away_score",
+    "venue",
+    "round_name",
+    "forecast_availability",
+    "updated_at",
+    "result_score_basis",
+    "identity_status"
+  ],
+  "projection_rebuild_seconds": 18.474008,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T08:47:11.385328+00:00",
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-13-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-13/upgrade-verification.json",
+  "shadow_verification_sha256": "14a2852e73404fc28f1bb410f5cf358e5d6d32dc3e5969a9b85d0d97b5380a4a",
+  "status": "PASS_WITH_WARNINGS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}
