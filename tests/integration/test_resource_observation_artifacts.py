@@ -378,3 +378,51 @@ def test_legacy_openfootball_reader_uses_git_revision_without_changing_snapshot_
     assert loaded == raw
     assert context.provenance.source_snapshot_id == snapshot[0]
     assert str(snapshot[0]) != revision
+
+
+def test_frozen_csv_reader_preserves_logical_manifest_digest_and_registered_source(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.providers.football_data_uk import FootballDataUkSourceResourceV1
+    from football.providers.football_data_uk_evidence import (
+        FootballDataUkAcquisitionEvidenceStoreV1,
+        FootballDataUkAcquisitionEvidenceV1,
+    )
+    from football.providers.football_data_uk_registration import (
+        FootballDataUkPostgresSourceRegistryV1,
+    )
+    from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
+    from football.providers.normalization.cli import registered_resource
+
+    raw = b"Div,Date,HomeTeam,AwayTeam,FTHG,FTAG,FTR\nE0,16/08/2025,Home,Away,1,0,H\n"
+    receipts = tuple(
+        FootballDataUkSourceResourceV1.from_payload(
+            resource_type=kind,
+            source_path=path,
+            payload=payload,
+            observed_by_matchforge_at=NOW,
+            http_status=200,
+            content_type="text/plain" if path == "notes.txt" else "text/csv",
+        )
+        for kind, path, payload in (
+            ("schema_semantics_and_attribution", "notes.txt", b"terms"),
+            ("historical_league_csv", "mmz4281/2526/E0.csv", raw),
+            ("historical_league_csv", "mmz4281/1516/E0.csv", raw),
+        )
+    )
+    for receipt, payload in zip(receipts, (b"terms", raw, raw), strict=True):
+        FootballDataUkRawStoreV1(tmp_path).publish(receipt, payload)
+    evidence = FootballDataUkAcquisitionEvidenceV1(receipts)
+    written = FootballDataUkAcquisitionEvidenceStoreV1(tmp_path).publish(evidence)
+    assert written.sha256 != evidence.sha256
+    registered = FootballDataUkPostgresSourceRegistryV1().register(connection.cursor(), evidence)
+    source = registered.resource_ids["mmz4281/2526/E0.csv"]
+    context, loaded = registered_resource(connection, tmp_path, source)
+    assert loaded == raw
+    assert context.provenance.source_snapshot_id == registered.snapshot_id
+    assert context.provenance.source_resource_id == source
+    assert context.time.acquired_at == receipts[1].observed_by_matchforge_at
+    raw_path = tmp_path / FootballDataUkRawStoreV1.relative_path(receipts[1])
+    raw_path.write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="checksum"):
+        registered_resource(connection, tmp_path, source)

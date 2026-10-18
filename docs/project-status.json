@@ -1321,14 +1321,14 @@
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
       "focused_unit_tests_passed": 149,
-      "focused_postgres_tests_passed": 16,
+      "focused_postgres_tests_passed": 17,
       "comprehensive_validation": {
         "status": "PASS",
-        "python_unit_tests_passed": 1256,
+        "python_unit_tests_passed": 1277,
         "rust_tests_passed": 16,
         "web_tests_passed": 56,
         "lint_typing_build_migrations_storage_api": "PASS",
-        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-final-check-integration.log"
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-frozen-csv-check-integration.log"
       },
       "retained_source_acceptance": "PENDING_COMMITTED_CODE_REPLAY",
       "legacy_openfootball_regression": {
@@ -1337,6 +1337,16 @@
         "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-openfootball-green.log",
         "snapshot_uuid_preserved": true,
         "git_sha_used_for_legacy_raw_path": true
+      },
+      "frozen_csv_regression": {
+        "status": "PASS",
+        "source_contract": "FootballDataUkAcquisitionEvidenceV1",
+        "logical_manifest_digest_preserved": true,
+        "receipt_reader_unit_tests_passed": 22,
+        "rolled_back_postgres_regression_passed": true,
+        "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-frozen-csv-red.log",
+        "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-frozen-csv-green.log",
+        "remaining_retained_resource_probes": "CSV results, statistics and odds; StatsBomb shots and events produced observations without writing registrations."
       }
     }
   },

@@ -20,6 +20,8 @@ from football.contracts.source import SourceManifest, SourceResource, canonical_
 from football.ingestion.registration import MAX_SOURCE_MANIFEST_BYTES, MAX_SOURCE_RESOURCE_BYTES
 from football.observations.storage import ObservationArtifactStore
 from football.product.identity_admission import _retained_payload
+from football.providers.football_data_uk_evidence import FootballDataUkAcquisitionEvidenceV1
+from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.normalization.common import NormalizationContext, NormalizationResult
 from football.providers.normalization.pipeline import normalize_resource
 from football.storage.raw import ImmutableFileStore, ImmutableRawStore
@@ -41,11 +43,16 @@ def registered_resource(
     # The legacy reader's fifth value is the pinned Git SHA used in file paths.
     # Keep the snapshot UUID at row[4] for observation provenance.
     legacy_row = (*row[:4], row[12], *row[5:9])
-    raw = (
-        _statsbomb_payload(root, row[:9])
-        if row[9] == "statsbomb_open_data"
-        else _retained_payload(root, row[9], legacy_row)
-    )
+    raw: bytes | None
+    if row[9] == "statsbomb_open_data":
+        raw = _statsbomb_payload(root, row[:9])
+    elif (row[9], row[2]) == (
+        "football_data_uk",
+        "football_data_uk/phase1b/frozen-resource-bundle",
+    ):
+        raw = _frozen_csv_payload(root, row)
+    else:
+        raw = _retained_payload(root, row[9], legacy_row)
     if raw is None:
         raise ValueError("source bytes are missing or fail registered checksum verification")
     context = NormalizationContext(
@@ -59,6 +66,32 @@ def registered_resource(
         season_label=scope.get("season_label"),
     )
     return context, raw
+
+
+def _frozen_csv_payload(root: Path, row: tuple[Any, ...]) -> bytes:
+    files = ImmutableFileStore(root)
+    manifest_raw = _read_source(files.path_for(row[0]), MAX_SOURCE_MANIFEST_BYTES)
+    evidence = FootballDataUkAcquisitionEvidenceV1.from_bytes(manifest_raw)
+    if (evidence.sha256, evidence.sha256) != (row[1], row[3]):
+        raise ValueError("registered acquisition evidence checksum mismatch")
+    matches = [receipt for receipt in evidence.receipts if receipt.source_path == row[6]]
+    if len(matches) != 1:
+        raise ValueError("registered resource is absent from acquisition evidence")
+    receipt = matches[0]
+    if (receipt.raw_sha256, receipt.raw_byte_size, receipt.observed_by_matchforge_at) != (
+        row[7],
+        row[8],
+        row[10],
+    ):
+        raise ValueError("source receipt differs from its registered resource")
+    if max(item.observed_by_matchforge_at for item in evidence.receipts) != row[11]:
+        raise ValueError("source receipt clocks differ from the registered snapshot")
+    raw = _read_source(
+        files.path_for(FootballDataUkRawStoreV1.relative_path(receipt)), MAX_SOURCE_RESOURCE_BYTES
+    )
+    if hashlib.sha256(raw).hexdigest() != receipt.raw_sha256 or len(raw) != receipt.raw_byte_size:
+        raise ValueError("registered source resource checksum mismatch")
+    return raw
 
 
 def _statsbomb_payload(root: Path, row: tuple[Any, ...]) -> bytes:
