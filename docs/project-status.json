@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-18T08:47:11.386593Z",
+  "updated_at": "2026-10-18T09:20:06.921647Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 14,
+    "current_phase": 15,
     "completed_phases": [
       0,
       1,
@@ -1220,7 +1220,8 @@
       10,
       11,
       12,
-      13
+      13,
+      14
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1234,10 +1235,11 @@
       "202610180300_provider_resource_capabilities.sql",
       "202610180400_provider_resource_authority.sql",
       "202610180500_resource_coverage.sql",
-      "202610180600_fixture_read_model.sql"
+      "202610180600_fixture_read_model.sql",
+      "202610180700_work_orchestration.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 14-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 15-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1624,6 +1626,56 @@
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-13-check-integration.log"
       },
       "production_serving_baseline": "product_serving_fixtures",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0
+    },
+    "phase_14": {
+      "status": "PASS_WITH_WARNINGS",
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-14-2026-10-18.json",
+      "code_commit_sha": "d39d37250c0cc68f30ef44ece8c858ea068c741d",
+      "work_contract_unit_cases_passed": 21,
+      "work_postgres_cases_passed": 107,
+      "state_transition_cases_passed": 49,
+      "work_types": [
+        "PROVIDER_ACQUISITION",
+        "HISTORICAL_ACQUISITION",
+        "NORMALIZATION",
+        "IDENTITY_REMEDIATION",
+        "CANONICAL_RECONCILIATION",
+        "COVERAGE_REBUILD",
+        "READ_MODEL_PROJECTION",
+        "FEATURE_BUILD",
+        "FORECAST_REFRESH",
+        "SIMULATION",
+        "POST_MATCH_EVALUATION",
+        "EXPERIMENT_EXECUTION"
+      ],
+      "work_states": [
+        "PENDING",
+        "RUNNING",
+        "RETRY_WAIT",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED",
+        "BLOCKED"
+      ],
+      "existing_tables_verified": 109,
+      "existing_table_hashes_preserved": true,
+      "existing_projections_verified": 1,
+      "fixture_projection_preserved": true,
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1451,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-14-final-check-integration.log"
+      },
+      "semantic_inputs_immutable": true,
+      "source_generation_in_semantic_key": true,
+      "scheduling_generation": "LEASE_FENCING_EPOCH",
+      "transaction_bound_downstream_enqueue": true,
+      "production_scheduler_migration": "PHASE_17_PENDING",
       "runtime_cutover": false,
       "additional_live_provider_requests": 0
     }
