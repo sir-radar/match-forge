@@ -1205,12 +1205,13 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 4,
+    "current_phase": 5,
     "completed_phases": [
       0,
       1,
       2,
-      3
+      3,
+      4
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1221,7 +1222,7 @@
       "202610160200_observation_contract_foundation.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 4-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 5-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1305,7 +1306,7 @@
       "runtime_cutover": false
     },
     "phase_4": {
-      "status": "IMPLEMENTED_PENDING_RETAINED_SOURCE_ACCEPTANCE",
+      "status": "PASS_WITH_WARNINGS",
       "providers": [
         "api_football",
         "football_data_org",
@@ -1330,7 +1331,21 @@
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-frozen-csv-check-integration.log"
       },
-      "retained_source_acceptance": "PENDING_COMMITTED_CODE_REPLAY",
+      "retained_source_acceptance": {
+        "status": "PASS_WITH_WARNINGS",
+        "code_commit_sha": "2e41d527f38659a3ab74d6a95554de97c54223da",
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-4-2026-10-18.json",
+        "evidence_sha256": "b220375a089064c079a8eaa5db078d28e49f7ac026198495099ca4ffe957e7c1",
+        "replay_cases": 21,
+        "unique_observation_ids": 5609,
+        "legacy_tables_verified": 100,
+        "legacy_tables_unchanged": true,
+        "original_migrations_verified": 70,
+        "retry_added_registrations": 0,
+        "champion_unchanged": true,
+        "v1_schema_unchanged": true,
+        "scope": "Bounded normalization acceptance; full retained-source replay and parity remain phases 33 and 34."
+      },
       "legacy_openfootball_regression": {
         "status": "PASS",
         "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-openfootball-red.log",
