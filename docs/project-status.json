@@ -1695,7 +1695,7 @@
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-foundation-check-integration.log"
       },
       "remaining_work": [
-        "Integrate and verify legacy mutation lock order.",
+        "Integrate and verify remaining legacy, feature and artifact publication lock paths.",
         "Run final full-phase checks and committed-code shadow preservation."
       ],
       "legacy_inversion_reproduced": {
@@ -1712,6 +1712,18 @@
         "immutable_work_reference_during_publication": "PASS",
         "comprehensive_checks": "PASS",
         "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-fixes-check-integration.log"
+      },
+      "legacy_mutation_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 278,
+        "lock_postgres_cases_passed": 28,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-sql-guards-green.log",
+        "bulk_identity_before_team_mutation": "PASS",
+        "busy_forecast_work_defers_without_completion": "PASS",
+        "direct_sql_identity_order_guards": "PASS",
+        "old_schema_upgrade_and_cutoff_assertions": "PASS",
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-mutations-check-integration.log"
       }
     }
   },

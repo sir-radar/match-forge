@@ -33,6 +33,7 @@ from football.ingestion.statsbomb_contracts import (
     Team,
     parse_statsbomb_bundle,
 )
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 
 
 @dataclass(frozen=True)
@@ -67,9 +68,14 @@ class StatsBombCanonicalIngestor:
         bundle = parse_statsbomb_bundle(source)
         try:
             with self._connection.transaction(), self._connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                    (f"canonical-provider:{source.manifest.snapshot.provider}",),
+                acquire_locks(
+                    cursor,
+                    (
+                        LockRequest(
+                            LockClass.SOURCE,
+                            f"canonical-provider:{source.manifest.snapshot.provider}",
+                        ),
+                    ),
                 )
                 registered = PostgresSourceRegistry().register(cursor, source)
                 writer = _CanonicalWriter(cursor, registered, source)

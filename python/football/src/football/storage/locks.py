@@ -46,6 +46,9 @@ class LockRequest:
 
 
 IDENTITY_ADMISSION_LOCK = LockRequest(LockClass.IDENTITY, "product-identity-admission")
+FIXTURE_CROSSWALK_LOCK = LockRequest(
+    LockClass.IDENTITY, "product_fixture_crosswalk", legacy_hash=True
+)
 
 
 def ordered_locks(requests: Iterable[LockRequest]) -> tuple[LockRequest, ...]:

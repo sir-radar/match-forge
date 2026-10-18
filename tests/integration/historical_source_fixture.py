@@ -1,11 +1,18 @@
 """Real immutable source bytes for historical persistence integration tests."""
 
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
+import pytest
+from football.product import historical_backfill, identity_admission
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.historical_manifest import publish_manifest
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, LockRequest
+from psycopg import Connection, Cursor
 
 
 def test_snapshot(
@@ -41,3 +48,29 @@ def test_snapshot(
         acquired_at=acquired_at,
     )
     return snapshot
+
+
+@contextmanager
+def legacy_identity_locking(connection: Connection[Any]) -> Iterator[None]:
+    """Seed pre-Phase-15 schemas using their original physical lock contract.
+
+    Current writers require the later shared SQL guard. Upgrade fixtures must
+    create old data before that function exists, then restore current writers
+    before checking the upgraded database. No eligibility or decision logic changes.
+    """
+    assert connection.execute(
+        "SELECT to_regprocedure('football.acquire_transaction_lock(integer,text,boolean,boolean)')"
+    ).fetchone() == (None,)
+
+    def acquire_original(
+        executor: Connection[Any] | Cursor[Any], requests: Iterable[LockRequest]
+    ) -> None:
+        assert tuple(requests) == (IDENTITY_ADMISSION_LOCK,)
+        executor.execute(
+            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
+        )
+
+    with pytest.MonkeyPatch.context() as overrides:
+        overrides.setattr(historical_backfill, "acquire_locks", acquire_original)
+        overrides.setattr(identity_admission, "acquire_locks", acquire_original)
+        yield

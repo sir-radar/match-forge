@@ -408,3 +408,176 @@ def test_immutable_parent_work_can_be_referenced_during_publication() -> None:
             if registry.state(child.work_id) is not None:
                 registry.cancel(child.work_id)
             registry.cancel(parent.work_id)
+
+
+def test_bulk_fixture_ingestion_waits_for_identity_before_team_updates(tmp_path: Path) -> None:
+    from football.product.api_football import ApiFootballClient, ApiResponse
+    from football.product.domain import MODEL_ARTIFACT_PATH, stable_id
+    from football.product.sync import ProductSync
+
+    with (
+        committed_product_fixture() as (owner, competition, fixture),
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as worker,
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as observer,
+    ):
+        home, away, kickoff, now = owner.execute(
+            "SELECT home_team_id,away_team_id,kickoff_at,clock_timestamp() "
+            "FROM football.product_fixtures WHERE fixture_id=%s",
+            (fixture,),
+        ).fetchone()
+        sync = ProductSync(worker, ApiFootballClient("stored-only"), tmp_path, MODEL_ARTIFACT_PATH)
+        snapshot = sync._record_response(
+            f"lock-test:{uuid4()}", ApiResponse("/fixtures", now, b"{}", (), None)
+        )
+        native_competition, native_match, native_home, native_away = [
+            str(uuid4().int) for _ in range(4)
+        ]
+        provider = stable_id("provider", "api_football")
+        with owner.transaction():
+            owner.execute(
+                """INSERT INTO football.competition_provider_mappings
+                (competition_id,provider_id,provider_competition_id,first_seen_at,last_seen_at,
+                 mapping_method,mapping_confidence,source_snapshot_id)
+                VALUES (%s,%s,%s,%s,%s,'deterministic',1,%s)""",
+                (competition, provider, native_competition, now, now, snapshot),
+            )
+            owner.execute(
+                """INSERT INTO football.match_provider_mappings
+                (match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,
+                 mapping_method,mapping_confidence,source_snapshot_id)
+                VALUES (%s,%s,%s,%s,%s,'deterministic',1,%s)""",
+                (fixture, provider, native_match, now, now, snapshot),
+            )
+            owner.execute(
+                """INSERT INTO football.product_team_aliases
+                (provider_code,provider_team_id,normalized_name,team_id)
+                VALUES ('api_football',%s,'home',%s),('api_football',%s,'away',%s)""",
+                (native_home, home, native_away, away),
+            )
+        row = {
+            "fixture": {
+                "id": int(native_match),
+                "date": kickoff.isoformat(),
+                "status": {"short": "LIVE"},
+                "venue": {},
+            },
+            "league": {"id": int(native_competition), "season": 2026, "country": "England"},
+            "teams": {
+                "home": {"id": int(native_home), "name": "Home"},
+                "away": {"id": int(native_away), "name": "Away"},
+            },
+            "goals": {"home": None, "away": None},
+        }
+        worker.execute("SET statement_timeout='5s'")
+
+        def update() -> int:
+            with worker.transaction(force_rollback=True):
+                return len(sync._store_fixtures([row], snapshot, now))
+
+        try:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                with owner.transaction():
+                    acquire_locks(
+                        owner, (LockRequest(LockClass.IDENTITY, "product-identity-admission"),)
+                    )
+                    result = executor.submit(update)
+                    deadline = monotonic() + 3
+                    blocked = False
+                    while monotonic() < deadline:
+                        blockers = observer.execute(
+                            "SELECT pg_blocking_pids(%s)", (worker.info.backend_pid,)
+                        ).fetchone()[0]
+                        if owner.info.backend_pid in blockers:
+                            blocked = True
+                            break
+                        if result.done():
+                            break
+                        sleep(0.01)
+                    assert blocked, "bulk writer did not reach the controlled identity wait"
+                    available = True
+                    try:
+                        with observer.transaction(force_rollback=True):
+                            observer.execute(
+                                "SELECT 1 FROM football.product_teams "
+                                "WHERE team_id=%s FOR UPDATE NOWAIT",
+                                (home,),
+                            )
+                    except psycopg.errors.LockNotAvailable:
+                        available = False
+                    if available:
+                        owner.execute(
+                            "UPDATE football.product_teams SET name='Identity owner' "
+                            "WHERE team_id=%s",
+                            (home,),
+                        )
+                assert result.result(timeout=5) == 1
+            assert available, "team row was locked while waiting for identity coordination"
+        finally:
+            with owner.transaction():
+                owner.execute(
+                    "DELETE FROM football.product_team_aliases "
+                    "WHERE provider_code='api_football' AND provider_team_id=ANY(%s)",
+                    ([native_home, native_away],),
+                )
+                owner.execute(
+                    "DELETE FROM football.match_provider_mappings "
+                    "WHERE provider_id=%s AND provider_match_id=%s",
+                    (provider, native_match),
+                )
+                owner.execute(
+                    "DELETE FROM football.competition_provider_mappings "
+                    "WHERE provider_id=%s AND provider_competition_id=%s",
+                    (provider, native_competition),
+                )
+
+
+@pytest.mark.parametrize("operation", ["reconciliation", "correction"])
+def test_legacy_identity_mutations_reject_coordination_after_work(
+    locks: Connection[Any], operation: str
+) -> None:
+    from football.product.fixture_reconciliation import reconcile_product_fixtures
+    from football.product.identity_correction import revoke_team_correction
+
+    acquire_locks(locks, (LockRequest(LockClass.WORK, f"work:{uuid4()}"),))
+    with pytest.raises(LockOrderError), locks.transaction():
+        if operation == "reconciliation":
+            reconcile_product_fixtures(locks)
+        else:
+            revoke_team_correction(locks, uuid4(), "test lock order")
+
+
+def test_sql_history_qualification_rejects_identity_after_work(locks: Connection[Any]) -> None:
+    acquire_locks(locks, (LockRequest(LockClass.WORK, f"work:{uuid4()}"),))
+    with pytest.raises(psycopg.Error) as failure, locks.transaction():
+        locks.execute("SELECT football.record_product_history_decisions(ARRAY[]::uuid[])")
+    assert failure.value.sqlstate == "MFL01"
+
+
+def test_sql_identity_admission_rejects_identity_after_work(
+    locks: Connection[Any], tmp_path: Path
+) -> None:
+    from datetime import UTC, datetime
+
+    from football.product.historical_backfill import HistoricalBackfillStore
+
+    from tests.integration.historical_source_fixture import test_snapshot as source_snapshot
+
+    provider = f"lock_test_{uuid4().hex}"
+    snapshot = source_snapshot(
+        HistoricalBackfillStore(locks, provider, "Lock test", "test-v1"),
+        tmp_path,
+        source_identity="lock-order",
+        source_revision="test-v1",
+        acquired_at=datetime(2026, 1, 1, tzinfo=UTC),
+        manifest_path="raw/lock-order.json",
+    )
+    acquire_locks(locks, (LockRequest(LockClass.WORK, f"work:{uuid4()}"),))
+    with pytest.raises(psycopg.Error) as failure, locks.transaction():
+        locks.execute(
+            """INSERT INTO football.product_identity_admissions
+            (entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+             disposition,reason,source_snapshot_id,evidence,evidence_sha256)
+            VALUES ('team',%s,%s,%s,'unresolved','UNRESOLVED','lock order',%s,'{}',%s)""",
+            (uuid4(), uuid4(), provider, snapshot, "a" * 64),
+        )
+    assert failure.value.sqlstate == "MFL01"

@@ -47,7 +47,7 @@ from football.providers.pitchapi import (
     PitchApiResponse,
     normalize_pitchapi_matches,
 )
-from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
+from football.storage.locks import FIXTURE_CROSSWALK_LOCK, IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 FixtureObservation = FotmobLiveScore | PitchApiFixture
@@ -317,12 +317,7 @@ class OperationalProviderSync:
             "original_fixture_id": str(original),
             "reviewed_fixture_id": str(target[0]),
         }
-        self.connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
-        self.connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))"
-        )
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK, FIXTURE_CROSSWALK_LOCK))
         provisional = self.connection.execute(
             "SELECT identity_status,kickoff_at,status,home_score,away_score "
             "FROM football.product_fixtures "

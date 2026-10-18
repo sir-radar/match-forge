@@ -56,6 +56,7 @@ from football.product.football_data_org import (
 )
 from football.product.identity_admission import admit_provider_mappings, fixture_identity_blockers
 from football.product.identity_crosswalks import FOOTBALL_DATA_COMPETITIONS
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 PROVIDER_CODE = "api_football"
@@ -846,6 +847,7 @@ class ProductSync:
     def backfill_fixtures_from_history(
         self, from_date: date, through_date: date, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1074,6 +1076,7 @@ class ProductSync:
     def _store_competitions(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         count = 0
         for row in rows:
             league = _mapping(row, "league")
@@ -1270,6 +1273,7 @@ class ProductSync:
     def _store_fixtures(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> list[Mapping[str, Any]]:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         stored: list[Mapping[str, Any]] = []
         for row in rows:
             league = _mapping(row, "league")
@@ -1350,6 +1354,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> tuple[int, list[tuple[int, int]]]:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         reverse_codes = {code: league_id for league_id, code in FOOTBALL_DATA_COMPETITIONS.items()}
         count = 0
         league_seasons: set[tuple[int, int]] = set()
@@ -1503,6 +1508,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         season_label = str(season)
         season_id = stable_id("season", competition_id, season)
         with self.connection.cursor() as cursor:
@@ -1596,6 +1602,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         if rows:
             self._reset_standings(competition_id)
         count = 0
@@ -1673,6 +1680,7 @@ class ProductSync:
     def _store_standings(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         count = 0
         for envelope in rows:
             league = _mapping(envelope, "league")
@@ -1819,12 +1827,14 @@ class ProductSync:
             fixture_ids = [row[0] for row in cursor.fetchall()]
             # Claim the competition before its fixtures; ingestion locks fixtures before work.
             # Busy competitions are deferred without holding their fixture/work rows.
+            # History can already hold work rows; never wait for them with canonical locks.
             cursor.execute(
                 """SELECT fixture_id FROM football.product_forecast_refresh_work
-                   WHERE fixture_id = ANY(%s::uuid[]) ORDER BY fixture_id FOR UPDATE""",
+                   WHERE fixture_id = ANY(%s::uuid[])
+                   ORDER BY fixture_id FOR UPDATE SKIP LOCKED""",
                 (fixture_ids,),
             )
-            cursor.fetchall()
+            fixture_ids = [row[0] for row in cursor.fetchall()]
         knowledge_cutoff = self._database_now()
         created = (
             self.refresh_forecasts(knowledge_cutoff, fixture_ids, admit_mappings=False)

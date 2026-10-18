@@ -22,6 +22,7 @@ from football.product.identity_trust import (
     origin_id,
     qualify_mapping,
 )
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 TABLES = {
@@ -347,9 +348,7 @@ def mapping_rows(
 
 
 def _record_decision(connection: Connection[Any], decision: dict[str, Any]) -> None:
-    connection.execute(
-        "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission', 0))"
-    )
+    acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
     semantic = {key: value for key, value in decision.items() if key != "source_observed_at"}
     key = sha256_json(semantic)
     previous = connection.execute(

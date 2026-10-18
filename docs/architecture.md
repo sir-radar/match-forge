@@ -290,6 +290,16 @@ excluded, while child work can reference immutable parent/dependency keys
 without waiting for publication. Operational fixture updates acquire the
 existing identity admission lock before locking fixture rows, including
 finished-result updates.
+Bulk fixture, standings and historical-result writers acquire that same
+existing identity lock before canonical mutations. Admission, correction and
+fixture-crosswalk callers use the shared guard. The forward SQL migration
+`202610181000_identity_lock_order.sql` also guards direct admission and history
+qualification without changing their eligibility predicates or decision clocks.
+
+Legacy forecast refresh defers busy work rows with `SKIP LOCKED` after acquiring
+its competition/fixture rows. Deferred work stays pending; it is excluded from
+that transaction's completed generation. This prevents history's existing work
+lock from making refresh wait while holding canonical rows.
 
 Existing identity serialization and legacy scheduling remain in place while
 their transaction paths are integrated. This section does not declare the

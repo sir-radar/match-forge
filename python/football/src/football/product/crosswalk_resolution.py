@@ -22,6 +22,7 @@ from psycopg import Connection
 from football.product.identity_audit import audit_report
 from football.product.identity_crosswalks import COMPETITION_CROSSWALKS
 from football.product.identity_trust import origin_id
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
 class Decision(StrEnum):
@@ -569,9 +570,7 @@ def _revise_mapping(
         "team": ("football.team_provider_mappings", "team_id", "provider_team_id"),
     }[entity_type]
     with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission', 0))"
-        )
+        acquire_locks(cursor, (IDENTITY_ADMISSION_LOCK,))
         cursor.execute(
             f"UPDATE {table} SET valid_to = %s WHERE id = %s AND valid_to IS NULL",
             (resolved_at, mapping.mapping_id),

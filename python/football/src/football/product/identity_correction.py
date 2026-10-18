@@ -29,6 +29,7 @@ from football.product.identity_trust import (
     origin_id,
     qualify_mapping,
 )
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
 @dataclass(frozen=True, slots=True)
@@ -430,9 +431,7 @@ def correct_team_identity(
     if not ready or not ready[0]:
         raise ValueError("team identity correction requires migration 202610140100")
     with connection.transaction():
-        connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
         previous = connection.execute(
             """SELECT to_jsonb(a) FROM football.product_identity_admissions a
                WHERE mapping_id=%s AND entity_type='team'
@@ -539,9 +538,7 @@ def revoke_team_correction(
     if not reason.strip():
         raise ValueError("revocation reason is required")
     with connection.transaction():
-        connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
         row = connection.execute(
             """SELECT to_jsonb(latest) FROM football.product_identity_admissions original
                CROSS JOIN LATERAL (SELECT * FROM football.product_identity_admissions

@@ -21,6 +21,7 @@ from football.product.identity_crosswalks import (
     canonical_team_provider_identity,
 )
 from football.product.identity_trust import origin_id
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 KickoffPrecision = Literal["EXACT", "DATE_ONLY"]
@@ -252,6 +253,7 @@ class HistoricalBackfillStore:
     def import_match(
         self, match: HistoricalMatch, snapshot_id: UUID, observed_at: datetime
     ) -> Literal["inserted", "existing", "conflict", "identity_conflict", "mapping_failure"]:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         competition_id, competition_created = self._competition_id(match, snapshot_id, observed_at)
         if competition_id is None:
             return "mapping_failure"
