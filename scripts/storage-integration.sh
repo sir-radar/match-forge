@@ -42,6 +42,7 @@ goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_identity_history.py \
 	tests/integration/test_canonical_resource_resolutions.py \
+	tests/integration/test_provider_resource_capabilities.py \
 	tests/integration/test_resource_observation_artifacts.py \
 	tests/integration/test_artifact_retirement.py \
 	tests/integration/test_integrity_verification.py \

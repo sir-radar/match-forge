@@ -65,7 +65,7 @@ An explicit `football_cutoff` restricts history to observations with a reported 
 
 `native_record(Model, payload)` checks required fields and native types, rejects nonfinite/non-JSON values, and returns an independent typed copy. It preserves additive fields, unknown status values, string spelling, timezone text, numeric representation, omitted fields and explicit nulls. Football meaning and canonical identity belong to subsequent normalization/resolution. These are field-shape readers, not assertions that an API resource is enabled, complete or historically eligible. Existing acquisition and serving paths remain active during shadow migration.
 
-For offline inspection, `uv run --locked python -m football.providers.native.cli --model FotmobFixture INPUT` returns the parsed native record with the exact input-byte SHA256. Duplicate JSON keys are rejected. The static model list selects a decoder; runtime provider availability belongs to the later capability registry.
+For offline inspection, `uv run --locked python -m football.providers.native.cli --model FotmobFixture INPUT` returns the parsed native record with the exact input-byte SHA256. Duplicate JSON keys are rejected. The static model list selects a decoder; runtime provider availability belongs to the scoped runtime capability registry.
 
 ### Provider acquisition capabilities
 
@@ -74,6 +74,40 @@ For offline inspection, `uv run --locked python -m football.providers.native.cli
 HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football and football-data.org clients. Queries and native season labels stay inside this boundary; football-data.org requires an explicit competition scope, and API-Football's current-only catalog filter remains in the resource key. FotMob's detailed capabilities share its physical match-details response; PitchAPI's xG capability uses its shot resource. Preserve those original bytes rather than creating synthetic provider responses. Coach and odds ports have no standalone acquisition implementation at this stage.
 
 File implementations read existing Football-Data.co.uk receipts and pinned OpenFootball Git objects; they neither reacquire historical sources nor trust mutable working files or file modification times as knowledge evidence. StatsBomb retains its existing commit pin. These ports are for shadow ingestion; current production entry points remain active until the parity and cutover phases. Network work must finish before the later normalization/persistence transaction begins.
+
+### Runtime resource capabilities
+
+`CapabilityRegistry` persists append-only `DecisionRecordV1` evidence in
+`provider_resource_capabilities`. Its exact key is provider, resource type,
+provider-native competition key and native season key. Null scope keys describe
+an explicit catalog request; they never act as wildcards or permit fallback to
+another competition, season or resource. Static `ProviderCapabilityRegistryV1`
+declarations remain compatible configuration, not runtime availability evidence.
+No production states are populated from roadmap documents or method presence.
+
+Each state records availability, inclusive historical date bounds, freshness in seconds,
+expected completeness as an optional fraction, entitlement and retention
+findings, rate limit per minute, timestamp precision, identity quality and exact
+adapter/normalizer versions. Null metadata means unknown. Completeness is an
+expectation, not measured canonical coverage. Identity-quality descriptions do
+not grant identity admission. These records do not override provider terms,
+credentials, existing quota budgets or acquisition policy.
+
+`prepare_capability` publishes immutable evidence bytes before registration.
+Registration verifies the prepared bytes, records database publication knowledge
+and requires the current scoped predecessor. Corrections retain prior states;
+database constraints prevent roots or successors from forking. `at` requires an
+explicit knowledge cutoff. `plan` uses the latest committed scoped transition,
+returns its decision ID, and permits only registered `SUPPORTED` or `PARTIAL` scopes with matching
+processing versions and compatible requested dates. Other states block calls
+until a new evidenced transition changes them; no retry interval is invented.
+A database clock rollback cannot revive an older permission during acquisition.
+
+`CapabilityRegistry.acquire` applies that plan before invoking a narrow provider
+source. It requires an idle database connection and finishes the planning
+transaction before provider I/O. Existing clients retain their byte, access,
+quota and retry controls. The new path is exercised in shadow and test databases;
+current serving and synchronization remain active until the cutover gate.
 
 ### Resource normalization
 
