@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 7,
+    "current_phase": 8,
     "completed_phases": [
       0,
       1,
@@ -1213,7 +1213,8 @@
       3,
       4,
       5,
-      6
+      6,
+      7
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1225,7 +1226,7 @@
       "202610180100_provider_mapping_history.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 7-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 8-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1437,7 +1438,7 @@
       }
     },
     "phase_7": {
-      "status": "IMPLEMENTED_PENDING_COMMITTED_WIRE_ACCEPTANCE",
+      "status": "PASS",
       "contract": "DecisionRecordV1",
       "schema_ref": "schemas/contracts/decision-record-v1.schema.json",
       "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
@@ -1459,6 +1460,16 @@
         "web_tests_passed": 56,
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-7-check-integration.log"
+      },
+      "wire_acceptance": {
+        "status": "PASS",
+        "code_commit_sha": "a35c6c11d81398d06645fb76814b5b00ff44e334",
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-7-2026-10-18.json",
+        "evidence_sha256": "8cb912c2c314d46b7ce0c4836fdcc209202579c76d2f30cd99fee5f3758b3534",
+        "pre_existing_migrations_preserved": 72,
+        "champion_unchanged": true,
+        "v1_observation_schema_unchanged": true,
+        "database_mutations": 0
       }
     }
   },

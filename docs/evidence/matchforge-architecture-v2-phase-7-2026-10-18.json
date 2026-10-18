@@ -1,0 +1,36 @@
+{
+  "additional_live_provider_requests": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "a35c6c11d81398d06645fb76814b5b00ff44e334",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-7-check-integration.log",
+    "python_unit_tests_passed": 1316,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database_mutations": 0,
+  "focused_contract_and_resolution_tests_passed": 33,
+  "golden_decision_id": "13bf3fd9-ca03-5a16-bf06-0b2e3df74ea8",
+  "golden_record_sha256": "f36c60adc3a5b69375e1decd72a22713d0d5482f967253fbad5cf69a4d48ab15",
+  "historical_rows_rewritten": 0,
+  "limitations": [
+    "The common value contract describes decisions; existing domain registries retain identity, qualification, authorization and promotion checks.",
+    "Existing physical decision tables remain in place. No historical records are backfilled into a common table."
+  ],
+  "phase": 7,
+  "pre_existing_migrations_preserved": 72,
+  "recorded_at": "2026-10-18T03:47:31.597465+00:00",
+  "round_trip_bytes_match": true,
+  "runtime_cutover": false,
+  "schema_ref": "schemas/contracts/decision-record-v1.schema.json",
+  "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+  "source_adapters": [
+    "ResolutionDecisionV1.to_decision_record",
+    "ModelPromotionEventV1.to_decision_record"
+  ],
+  "status": "PASS",
+  "v1_observation_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}
