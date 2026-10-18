@@ -1914,6 +1914,34 @@
         "postgres_cases_passed": 4,
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-identity-clock-green.log",
         "production_temporal_rules_changed": false
+      },
+      "history_registration_validation": {
+        "status": "FOCUSED_PASS",
+        "scope": "Immutable legacy history-request registration and compatible error/lease retry policy; execution migration remains pending.",
+        "postgres_cases_passed": 377,
+        "unit_cases_passed": 58,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-final-focused.log",
+        "unit_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-units.log",
+        "legacy_queue_rows_and_cooldowns_preserved": "PASS",
+        "active_legacy_ownership_not_adopted": "PASS",
+        "busy_or_changed_request_leaves_no_orphan_work": "PASS",
+        "concurrent_registration_idempotent": "PASS",
+        "changed_inputs_rejected": "PASS",
+        "terminal_requeue_has_new_identity": "PASS",
+        "immediate_expired_lease_and_error_backoff_preserved": "PASS",
+        "phase_gate_complete": false,
+        "ownership_race_cases_passed": 2,
+        "ownership_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-ownership-green.log",
+        "existing_work_row_locked_before_detail": "PASS",
+        "previously_claimed_unassociated_work_rejected": "PASS",
+        "comprehensive_validation": {
+          "status": "PASS",
+          "python_unit_tests_passed": 1460,
+          "rust_tests_passed": 16,
+          "web_tests_passed": 56,
+          "lint_typing_build_migrations_storage_api": "PASS",
+          "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-registration-final-check-integration.log"
+        }
       }
     }
   },

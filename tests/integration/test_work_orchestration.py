@@ -781,3 +781,71 @@ def test_expired_progress_rolls_back_before_replacement_claim(
     assert replacement is not None and replacement.generation == claim.generation + 1
     with pytest.raises(WorkLeaseLost), registry.progress(claim):
         pytest.fail("expired owner regained publication rights")
+
+
+def test_history_lease_expiry_can_retry_immediately_without_losing_error_backoff(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    connection, registry, identities = worker
+    policy = RetryPolicy(timedelta(hours=1), timedelta(hours=1), 1, lease_expiry_delay=timedelta())
+    identity = worker_request(registry, identities, retry_policy=policy)
+    first = worker_claim(registry, lease=timedelta(milliseconds=20))
+    connection.execute(
+        "SELECT pg_sleep(GREATEST(0,extract(epoch "
+        "FROM (%s::timestamptz-clock_timestamp())))+0.005)",
+        (first.lease_until,),
+    )
+    replacement = registry.claim(
+        "replacement", timedelta(minutes=1), (WorkType.READ_MODEL_PROJECTION,), work_ids=(identity,)
+    )
+    assert replacement is not None and replacement.generation == first.generation + 1
+    before = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+    assert (
+        registry.fail(
+            replacement,
+            RetryClassification.RETRYABLE,
+            error_code="PROVIDER_TEMPORARY",
+            error_message="Provider retry retains its configured error backoff",
+        )
+        == WorkState.RETRY_WAIT
+    )
+    available_at = connection.execute(
+        "SELECT available_at FROM football.work_items WHERE work_id=%s", (identity,)
+    ).fetchone()[0]
+    assert available_at >= before + timedelta(hours=1)
+    assert (
+        registry.claim(
+            "too-early",
+            timedelta(minutes=1),
+            (WorkType.READ_MODEL_PROJECTION,),
+            work_ids=(identity,),
+        )
+        is None
+    )
+
+
+def test_lease_expiry_policy_is_immutable_for_an_existing_request(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    connection, registry, identities = worker
+    item = request(
+        work_type=WorkType.READ_MODEL_PROJECTION,
+        retry_policy=RetryPolicy(
+            timedelta(seconds=60), timedelta(hours=1), 2, lease_expiry_delay=timedelta()
+        ),
+    )
+    registry.enqueue(item)
+    identities.append(item.work_id)
+    with pytest.raises(WorkConflict):
+        registry.enqueue(
+            request(
+                work_type=item.work_type,
+                semantic_key=item.semantic_key,
+                retry_policy=RetryPolicy(timedelta(seconds=60), timedelta(hours=1), 2),
+            )
+        )
+    with pytest.raises(psycopg.errors.ObjectNotInPrerequisiteState), connection.transaction():
+        connection.execute(
+            "UPDATE football.work_items SET lease_retry_delay_seconds=1 WHERE work_id=%s",
+            (item.work_id,),
+        )

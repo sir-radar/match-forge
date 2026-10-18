@@ -52,6 +52,7 @@ class RetryPolicy:
     base_delay: timedelta
     max_delay: timedelta
     multiplier: float
+    lease_expiry_delay: timedelta | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.base_delay, timedelta) or not isinstance(self.max_delay, timedelta):
@@ -65,6 +66,11 @@ class RetryPolicy:
             or self.multiplier < 1
         ):
             raise WorkContractError("retry multiplier must be finite and at least one")
+        if self.lease_expiry_delay is not None and (
+            not isinstance(self.lease_expiry_delay, timedelta)
+            or self.lease_expiry_delay < timedelta()
+        ):
+            raise WorkContractError("lease expiry delay must be a nonnegative timedelta")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

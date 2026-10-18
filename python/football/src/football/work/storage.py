@@ -55,6 +55,11 @@ class WorkRegistry:
                 policy.multiplier,
                 list(request.dependencies),
                 request.parent_work_id,
+                (
+                    policy.lease_expiry_delay.total_seconds()
+                    if policy.lease_expiry_delay is not None
+                    else None
+                ),
             )
             assert row is not None
             return UUID(str(row["work_id"]))

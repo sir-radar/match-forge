@@ -96,3 +96,17 @@ def test_constant_and_zero_backoff_require_explicit_policy_values() -> None:
     policy = RetryPolicy(timedelta(), timedelta(), 1)
     assert request(retry_policy=policy).retry_policy == policy
     assert replace(request(), max_attempts=1).max_attempts == 1
+
+
+@pytest.mark.parametrize("delay", [timedelta(seconds=-1), 0, "immediate"])
+def test_lease_expiry_delay_requires_an_explicit_nonnegative_timedelta(delay: Any) -> None:
+    with pytest.raises(WorkContractError, match="lease"):
+        RetryPolicy(timedelta(seconds=60), timedelta(hours=1), 2, lease_expiry_delay=delay)
+
+
+def test_lease_expiry_delay_defaults_to_error_backoff_and_can_be_zero() -> None:
+    assert RetryPolicy(timedelta(seconds=60), timedelta(hours=1), 2).lease_expiry_delay is None
+    policy = RetryPolicy(
+        timedelta(seconds=60), timedelta(hours=1), 2, lease_expiry_delay=timedelta()
+    )
+    assert policy.lease_expiry_delay == timedelta()

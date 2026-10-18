@@ -540,7 +540,7 @@ class ProductSync:
             )
             for league_id, season in cursor.fetchall():
                 cursor.execute(
-                    "SELECT football.record_transaction_lock(50,%s)",
+                    "SELECT football.record_transaction_lock(51,%s)",
                     (f"history-queue:{league_id}:{season}",),
                 )
                 cursor.execute(
@@ -576,7 +576,7 @@ class ProductSync:
             )
             for league_key, season in keys:
                 cursor.execute(
-                    "SELECT football.record_transaction_lock(50,%s)",
+                    "SELECT football.record_transaction_lock(51,%s)",
                     (f"history-queue:{league_key}:{season}",),
                 )
                 if (league_key, season) not in requested:

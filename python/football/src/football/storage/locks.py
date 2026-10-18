@@ -28,6 +28,7 @@ class LockClass(IntEnum):
     COMPETITION = 30
     FIXTURE = 40
     WORK = 50
+    WORK_DETAIL = 51
     DATASET = 55
     VALIDATION = 56
     LIFECYCLE = 57

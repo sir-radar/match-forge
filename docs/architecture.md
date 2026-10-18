@@ -260,6 +260,23 @@ acquired first, and provider/file I/O stays outside that transaction. Final
 Queue-specific adapters still need migration and controlled execution parity
 before their independent schedulers are disabled.
 
+The retry policy can specify a fixed delay after lease expiry independently of
+acknowledged-error backoff. A missing value preserves the original shared
+backoff behavior. Bulk history requests configure immediate expired-lease
+recovery while retaining their existing 60-second exponential error backoff,
+capped at one hour and adjusted for attempts made before registration.
+
+`register_history_request` binds a pending legacy history request, identified by
+its job UUID and queued time, to immutable shared work. The association retains
+provider competition, season and the prior attempt count. Registration locks
+unclaimed shared work before its domain row and rejects previously claimed
+work. Registration and the association commit together; a busy or changed queue
+row rolls back both. It
+leaves the original queue row and cooldown intact, rejects active legacy jobs,
+and does not switch scheduling or execute provider work. Request registration
+is a migration prerequisite; fenced execution and controlled parity are still
+required inside Phase 17.
+
 ### Transaction lock ordering
 
 The shared ordering functions and publication checks enforce one class/key
@@ -270,7 +287,7 @@ and the exact fixture projection.
 
 `football.storage.locks` and the SQL functions introduced by
 `202610180800_transaction_lock_order.sql`, extended through
-`202610181400_scoped_history_locks.sql`, order blocking coordination requests
+`202610181700_history_work_registration.sql`, order blocking coordination requests
 by class, then exact key in C/Unicode order:
 
 | Class | Order |
@@ -282,6 +299,7 @@ by class, then exact key in C/Unicode order:
 | Competition | 30 |
 | Fixture | 40 |
 | Work | 50 |
+| Work domain detail | 51 |
 | Dataset | 55 |
 | Validation | 56 |
 | Lifecycle | 57 |
