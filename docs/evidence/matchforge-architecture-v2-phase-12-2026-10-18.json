@@ -1,0 +1,46 @@
+{
+  "additional_live_provider_requests": 0,
+  "byte_exact_round_trip": true,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "09732ca43b79e8ff4156e2a4ac9a0d97fe953e0c",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-12-check-integration.log",
+    "python_unit_tests_passed": 1430,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database_calls": 0,
+  "database_mutations": 0,
+  "decision_id": "52fb0fda-cd86-544b-aa98-131fcdd45ad9",
+  "dimensions_verified": [
+    "identity_state",
+    "completeness",
+    "freshness",
+    "precision",
+    "consistency",
+    "temporal_integrity",
+    "provenance_state",
+    "conflict_state"
+  ],
+  "focused_quality_and_common_decision_cases_passed": 50,
+  "idempotent_publication": true,
+  "immutable_artifact_ref": "/Users/radar/Desktop/football-simutation/.local/remediation/matchforge-architecture-v2/phase-12/quality/v1/9df4db8057d39d2c0002fcd04166906fc14d03f5211c0dda00d1725db2f69d11.json",
+  "limitations": [
+    "The report records explicit domain-owner states and evidence; it does not invent thresholds, assess previously unassessed dimensions or grant qualification.",
+    "This wire acceptance uses a synthetic report; retained resource assessments and production read models remain subject to later replay and parity gates.",
+    "Identity admission continues to require independent existing owner evidence."
+  ],
+  "phase": 12,
+  "pre_existing_migrations_verified": 76,
+  "quality_unit_cases_passed": 22,
+  "recorded_at": "2026-10-18T08:33:39.252608+00:00",
+  "runtime_cutover": false,
+  "status": "PASS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "wire_sha256": "9df4db8057d39d2c0002fcd04166906fc14d03f5211c0dda00d1725db2f69d11",
+  "wire_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-12/acceptance-verification.json",
+  "wire_verification_sha256": "5be023884bc239ea028c5cae47519910dee271c008136303a30ae332c6c2933f"
+}
