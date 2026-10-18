@@ -256,11 +256,12 @@ mutation paths remains required before the phase gate.
 
 `football.storage.locks` and the SQL functions introduced by
 `202610180800_transaction_lock_order.sql`, extended through
-`202610181200_publication_lock_order.sql`, order blocking coordination requests
+`202610181300_worker_fence_lock_order.sql`, order blocking coordination requests
 by class, then exact key in C/Unicode order:
 
 | Class | Order |
 | --- | ---: |
+| Worker control | 5 |
 | Source | 10 |
 | Identity | 20 |
 | Competition | 30 |
@@ -318,6 +319,15 @@ publication transactions end between walk-forward batches. Direct gate callers
 must supply that same mode; the runner rejects an implicit outer transaction
 without committing caller-owned work. This does not change scientific gates or
 authorize running a frozen evaluation.
+
+Legacy run and history-scope ownership checks acquire control fences before
+blocking domain or work locks. `authorize_worker_publication` preserves the
+existing shared run lock, heartbeat windows and scope-token checks. A failed
+nonblocking domain request retains any control fences it already acquired.
+Run creation, heartbeat, cancellation and deletion use separate control
+transactions; a statement guard rejects mixing them with publication before
+run rows can be locked. This prevents shared-to-exclusive upgrades and run-row
+cycles while allowing independent heartbeat connections.
 
 Dataset, validation, lifecycle, kickoff and label registration follow their
 existing input dependencies. Elo history uses the model class. Forecast,

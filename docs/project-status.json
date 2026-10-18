@@ -1695,7 +1695,7 @@
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-foundation-check-integration.log"
       },
       "remaining_work": [
-        "Finish legacy run/scope fencing and overlapping row-lock audit.",
+        "Complete the remaining legacy queue multi-row ordering audit.",
         "Run final full-phase checks and committed-code shadow preservation."
       ],
       "legacy_inversion_reproduced": {
@@ -1755,11 +1755,26 @@
         "independent_dataset_version_transactions": "PASS"
       },
       "legacy_revoked_coordination_probe": {
-        "status": "REPRODUCED",
-        "sqlstate": "57014",
-        "revoked_worker_waits_for_identity_before_fence": true,
+        "status": "CORRECTED_WITH_REGRESSION_TEST",
+        "sqlstate": "55000",
+        "revoked_worker_waits_for_identity_before_fence": false,
         "provider_requests": 0,
-        "report_ref": ".local/remediation/matchforge-architecture-v2/phase-15/revoked-coordination-probe.json"
+        "report_ref": ".local/remediation/matchforge-architecture-v2/phase-15/revoked-coordination-probe.json",
+        "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-revoked-coordination-probe-green.log"
+      },
+      "worker_fence_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 334,
+        "lock_postgres_cases_passed": 40,
+        "worker_fence_postgres_cases_passed": 12,
+        "lock_unit_cases_passed": 5,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-control-all-writes-focused.log",
+        "revocation_before_domain_coordination": "PASS",
+        "independent_heartbeat_and_cancellation_serialization": "PASS",
+        "publication_cannot_mutate_run_controls": "PASS",
+        "nonblocking_control_ledger_retention": "PASS",
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-worker-fences-check-integration.log"
       }
     }
   },

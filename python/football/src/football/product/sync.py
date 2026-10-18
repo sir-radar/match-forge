@@ -1758,6 +1758,7 @@ class ProductSync:
         admit_mappings: bool = True,
     ) -> int:
         """Publish missing future forecasts; busy competition/fixture rows remain queued."""
+        self.connection.execute("SELECT football.authorize_worker_publication()")
         if admit_mappings:
             for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
                 admit_provider_mappings(self.connection, self.data_root, provider)
@@ -1812,6 +1813,7 @@ class ProductSync:
         """Refresh one transaction-sized batch of durable affected fixtures."""
         if limit <= 0 or limit > 32:
             raise ValueError("pending forecast batch limit must be between 1 and 32")
+        self.connection.execute("SELECT football.authorize_worker_publication()")
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1877,6 +1879,7 @@ class ProductSync:
         artifact_sha: str,
         parameters: TransferableParametersV1,
     ) -> int:
+        self.connection.execute("SELECT football.authorize_worker_publication()")
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """SELECT 1 FROM football.product_competitions competition

@@ -21,6 +21,7 @@ class LockOrderError(RuntimeError):
 
 
 class LockClass(IntEnum):
+    CONTROL = 5
     SOURCE = 10
     IDENTITY = 20
     COMPETITION = 30

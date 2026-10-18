@@ -7,6 +7,9 @@ from football.storage.locks import LockClass, LockOrderError, LockRequest, order
 
 def test_locks_use_one_class_order_and_stable_key_order() -> None:
     requests = (
+        LockRequest(LockClass.CONTROL, "control:one"),
+        LockRequest(LockClass.SOURCE, "source:one"),
+        LockRequest(LockClass.IDENTITY, "identity:one"),
         LockRequest(LockClass.PROMOTION, "promotion:one"),
         LockRequest(LockClass.EVALUATION, "evaluation:one"),
         LockRequest(LockClass.LABEL, "label:one"),
@@ -24,6 +27,9 @@ def test_locks_use_one_class_order_and_stable_key_order() -> None:
     )
     result = ordered_locks(requests)
     assert [(item.lock_class, item.key) for item in result] == [
+        (LockClass.CONTROL, "control:one"),
+        (LockClass.SOURCE, "source:one"),
+        (LockClass.IDENTITY, "identity:one"),
         (LockClass.COMPETITION, "competition:one"),
         (LockClass.FIXTURE, "fixture:one"),
         (LockClass.FIXTURE, "fixture:two"),
