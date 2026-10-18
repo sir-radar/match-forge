@@ -45,6 +45,9 @@ class LockRequest:
             raise LockOrderError("lock hash convention must be explicit")
 
 
+IDENTITY_ADMISSION_LOCK = LockRequest(LockClass.IDENTITY, "product-identity-admission")
+
+
 def ordered_locks(requests: Iterable[LockRequest]) -> tuple[LockRequest, ...]:
     unique: dict[str, LockRequest] = {}
     for item in requests:

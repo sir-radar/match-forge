@@ -96,12 +96,16 @@ def expire(connection: Connection[Any], item: dict[str, Any]) -> None:
 
 
 def test_enqueue_is_idempotent_but_cannot_replace_semantic_inputs(work_db: Connection[Any]) -> None:
+    before = work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"]
     first = enqueue(work_db, semantic_key="same")
     again = enqueue(work_db, semantic_key="same")
     assert first == again
     with pytest.raises(psycopg.errors.UniqueViolation), work_db.transaction():
         enqueue(work_db, semantic_key="same", input_hash="c" * 64)
-    assert work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"] == 1
+    assert (
+        work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"]
+        == before + 1
+    )
 
 
 def test_claim_fences_ownership_and_terminal_success_cannot_resurrect(
@@ -251,16 +255,22 @@ def test_dependency_waits_for_success_and_is_sealed_with_semantic_inputs(
 
 
 def test_missing_dependency_rejects_entire_enqueue(work_db: Connection[Any]) -> None:
+    before = work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"]
     with pytest.raises(psycopg.errors.ForeignKeyViolation), work_db.transaction():
         enqueue(work_db, dependencies=(uuid4(),))
-    assert work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"] == 0
+    assert (
+        work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"] == before
+    )
 
 
 def test_enqueue_rolls_back_with_triggering_domain_transaction(work_db: Connection[Any]) -> None:
+    before = work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"]
     with work_db.transaction(force_rollback=True):
         item = enqueue(work_db)
         assert item["state"] == "PENDING"
-    assert work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"] == 0
+    assert (
+        work_db.execute("SELECT count(*) AS n FROM football.work_items").fetchone()["n"] == before
+    )
 
 
 @pytest.fixture

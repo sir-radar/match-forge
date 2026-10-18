@@ -285,6 +285,12 @@ claims. Work publication records its blocking work-row lock, so acquiring a new
 identity, competition or fixture scope afterward fails and rolls back its
 publication writes. Acquire those scopes before entering publication.
 
+Work publication uses `FOR NO KEY UPDATE`: lease and status writers remain
+excluded, while child work can reference immutable parent/dependency keys
+without waiting for publication. Operational fixture updates acquire the
+existing identity admission lock before locking fixture rows, including
+finished-result updates.
+
 Existing identity serialization and legacy scheduling remain in place while
 their transaction paths are integrated. This section does not declare the
 global hierarchy migration complete or authorize production cutover.

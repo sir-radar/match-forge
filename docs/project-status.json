@@ -1696,13 +1696,22 @@
       },
       "remaining_work": [
         "Integrate and verify legacy mutation lock order.",
-        "Correct the reproduced OperationalProviderSync fixture-before-identity inversion.",
         "Run final full-phase checks and committed-code shadow preservation."
       ],
       "legacy_inversion_reproduced": {
         "method": "OperationalProviderSync._update_canonical_fixture",
         "fixture_row_held_while_waiting_for_identity": true,
-        "provider_requests": 0
+        "provider_requests": 0,
+        "status": "CORRECTED_WITH_REGRESSION_TEST"
+      },
+      "legacy_lock_regression_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 191,
+        "lock_postgres_cases_passed": 23,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-lock-final-focused.log",
+        "immutable_work_reference_during_publication": "PASS",
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-fixes-check-integration.log"
       }
     }
   },

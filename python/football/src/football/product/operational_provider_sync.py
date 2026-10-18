@@ -47,6 +47,7 @@ from football.providers.pitchapi import (
     PitchApiResponse,
     normalize_pitchapi_matches,
 )
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 FixtureObservation = FotmobLiveScore | PitchApiFixture
@@ -143,6 +144,7 @@ class OperationalProviderSync:
         competition_only: bool = False,
     ) -> None:
         """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """SELECT provider_competition_id, provider_competition_name,
@@ -440,6 +442,7 @@ class OperationalProviderSync:
                 created = inserted = matched = updated = history_inserted = 0
                 unmatched = skipped = 0
                 with self.connection.transaction():
+                    acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
                     fixture_id = self._resolve_fixture(row, snapshot_id)
                     if fixture_id is None:
                         fixture_id = self._create_provider_scoped_fixture(
@@ -830,6 +833,7 @@ class OperationalProviderSync:
                 created = inserted = matched = updated = history_inserted = 0
                 unmatched = skipped = 0
                 with self.connection.transaction():
+                    acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
                     fixture_id = self._resolve_fixture(row, snapshot_id)
                     if fixture_id is None:
                         fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
@@ -937,6 +941,7 @@ class OperationalProviderSync:
             snapshot_id = cast(UUID, source[17])
             try:
                 with self.connection.transaction():
+                    acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
                     fixture_id = self._resolve_fixture(row, snapshot_id)
                     if fixture_id is None and create_missing:
                         fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
@@ -2297,6 +2302,7 @@ class OperationalProviderSync:
     ) -> int:
         if row.status == "FINISHED":
             return self._apply_finished_result(row, fixture_id, snapshot_id)
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         incoming_at = row.source_updated_at or row.observed_at
         with self.connection.cursor() as cursor:
             current = cursor.execute(
@@ -2336,6 +2342,7 @@ class OperationalProviderSync:
     ) -> int:
         if row.home_score is None or row.away_score is None:
             return 0
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """

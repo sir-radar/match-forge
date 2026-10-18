@@ -1,5 +1,9 @@
 import os
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from pathlib import Path
+from time import monotonic, sleep
 from typing import Any
 from uuid import uuid4
 
@@ -214,10 +218,8 @@ def test_fixture_scope_cannot_be_acquired_after_work_row(locks: Connection[Any])
         lock_fixtures(publisher, (fixture,))
 
 
-@pytest.mark.parametrize("busy_kind", ["row", "advisory"])
-def test_busy_scope_defers_without_leaving_partial_locks(busy_kind: str) -> None:
-    from football.storage.locks import lock_fixtures
-
+@contextmanager
+def committed_product_fixture() -> Iterator[tuple[Connection[Any], Any, Any]]:
     with psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as owner:
         competition, fixture = product_fixture(owner)
         season, home, away = owner.execute(
@@ -227,29 +229,7 @@ def test_busy_scope_defers_without_leaving_partial_locks(busy_kind: str) -> None
             (fixture,),
         ).fetchone()
         try:
-            with owner.transaction():
-                if busy_kind == "row":
-                    owner.execute(
-                        "SELECT 1 FROM football.product_competitions "
-                        "WHERE competition_id=%s FOR UPDATE",
-                        (competition,),
-                    )
-                else:
-                    acquire_locks(
-                        owner, (LockRequest(LockClass.COMPETITION, f"competition:{competition}"),)
-                    )
-                with (
-                    psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as candidate,
-                    candidate.transaction(),
-                ):
-                    candidate.execute("SET LOCAL statement_timeout='2s'")
-                    assert lock_fixtures(candidate, (fixture,), wait=False) is False
-                    acquire_locks(candidate, (LockRequest(LockClass.SOURCE, f"source:{uuid4()}"),))
-                    if busy_kind == "row":
-                        assert owner.execute(
-                            "SELECT pg_try_advisory_xact_lock(hashtextextended(%s,0))",
-                            (f"competition:{competition}",),
-                        ).fetchone() == (True,)
+            yield owner, competition, fixture
         finally:
             with owner.transaction():
                 owner.execute(
@@ -270,3 +250,161 @@ def test_busy_scope_defers_without_leaving_partial_locks(busy_kind: str) -> None
                 )
                 owner.execute("DELETE FROM football.seasons WHERE id=%s", (season,))
                 owner.execute("DELETE FROM football.competitions WHERE id=%s", (competition,))
+
+
+@pytest.mark.parametrize("busy_kind", ["row", "advisory"])
+def test_busy_scope_defers_without_leaving_partial_locks(busy_kind: str) -> None:
+    from football.storage.locks import lock_fixtures
+
+    with committed_product_fixture() as (owner, competition, fixture), owner.transaction():
+        if busy_kind == "row":
+            owner.execute(
+                "SELECT 1 FROM football.product_competitions WHERE competition_id=%s FOR UPDATE",
+                (competition,),
+            )
+        else:
+            acquire_locks(
+                owner, (LockRequest(LockClass.COMPETITION, f"competition:{competition}"),)
+            )
+        with (
+            psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as candidate,
+            candidate.transaction(),
+        ):
+            candidate.execute("SET LOCAL statement_timeout='2s'")
+            assert lock_fixtures(candidate, (fixture,), wait=False) is False
+            acquire_locks(candidate, (LockRequest(LockClass.SOURCE, f"source:{uuid4()}"),))
+            if busy_kind == "row":
+                assert owner.execute(
+                    "SELECT pg_try_advisory_xact_lock(hashtextextended(%s,0))",
+                    (f"competition:{competition}",),
+                ).fetchone() == (True,)
+
+
+def test_operational_mutation_waits_for_identity_before_locking_fixture(tmp_path: Path) -> None:
+    from football.product.operational_provider_sync import OperationalProviderSync
+    from football.providers.pitchapi import PitchApiFixture
+    from football.storage.locks import lock_fixtures
+
+    with (
+        committed_product_fixture() as (owner, _, fixture),
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as worker,
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as observer,
+    ):
+        kickoff, now = owner.execute(
+            "SELECT kickoff_at,clock_timestamp() "
+            "FROM football.product_fixtures WHERE fixture_id=%s",
+            (fixture,),
+        ).fetchone()
+        row = PitchApiFixture(
+            provider_match_id="lock-test",
+            provider_competition_id="scope",
+            provider_home_team_id="home",
+            provider_away_team_id="away",
+            home_team_name="Home",
+            away_team_name="Away",
+            kickoff_at=kickoff,
+            status="LIVE",
+            provider_status="LIVE",
+            home_score=None,
+            away_score=None,
+            minute=None,
+            added_time=None,
+            period=None,
+            source_updated_at=now,
+            observed_at=now,
+        )
+        sync = OperationalProviderSync(worker, tmp_path, provider_code="fotmob")
+        worker.execute("SET statement_timeout='5s'")
+
+        def update() -> int:
+            with worker.transaction():
+                return sync._update_canonical_fixture(row, fixture, uuid4())
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            with owner.transaction():
+                acquire_locks(
+                    owner, (LockRequest(LockClass.IDENTITY, "product-identity-admission"),)
+                )
+                result = executor.submit(update)
+                deadline = monotonic() + 3
+                blocked = False
+                while monotonic() < deadline:
+                    blockers = observer.execute(
+                        "SELECT pg_blocking_pids(%s)", (worker.info.backend_pid,)
+                    ).fetchone()[0]
+                    if owner.info.backend_pid in blockers:
+                        blocked = True
+                        break
+                    if result.done():
+                        break
+                    sleep(0.01)
+                assert blocked, "worker did not reach the controlled identity wait"
+                row_available = True
+                try:
+                    with observer.transaction(force_rollback=True):
+                        observer.execute(
+                            "SELECT 1 FROM football.product_fixtures "
+                            "WHERE fixture_id=%s FOR UPDATE NOWAIT",
+                            (fixture,),
+                        )
+                except psycopg.errors.LockNotAvailable:
+                    row_available = False
+                if row_available:
+                    assert lock_fixtures(owner, (fixture,))
+                    owner.execute(
+                        "UPDATE football.product_fixtures SET venue='Identity owner' "
+                        "WHERE fixture_id=%s",
+                        (fixture,),
+                    )
+            assert result.result(timeout=5) == 1
+        assert row_available, "fixture was locked while waiting for identity coordination"
+
+
+def test_immutable_parent_work_can_be_referenced_during_publication() -> None:
+    from dataclasses import replace
+    from datetime import UTC, datetime, timedelta
+
+    from football.work.contracts import RetryPolicy, WorkRequest, WorkType
+    from football.work.storage import WorkRegistry
+
+    with (
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as owner,
+        psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as other,
+    ):
+        registry = WorkRegistry(owner)
+        submitter = WorkRegistry(other)
+        parent = WorkRequest(
+            work_type=WorkType.EXPERIMENT_EXECUTION,
+            semantic_key=f"parent:{uuid4()}",
+            input_hash="a" * 64,
+            priority=0,
+            available_at=datetime(2026, 1, 1, tzinfo=UTC),
+            max_attempts=1,
+            retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
+        )
+        child = replace(
+            parent,
+            semantic_key=f"child:{uuid4()}",
+            input_hash="b" * 64,
+            parent_work_id=parent.work_id,
+            dependencies=(parent.work_id,),
+        )
+        registry.enqueue(parent)
+        try:
+            claim = registry.claim("parent", timedelta(minutes=1), (WorkType.EXPERIMENT_EXECUTION,))
+            assert claim and claim.work_id == parent.work_id
+            other.execute("SET lock_timeout='200ms'")
+            with registry.publication(claim, result_hash="c" * 64):
+                assert submitter.enqueue(child) == child.work_id
+                assert (
+                    submitter.claim("child", timedelta(minutes=1), (WorkType.EXPERIMENT_EXECUTION,))
+                    is None
+                )
+            claimed = submitter.claim(
+                "child", timedelta(minutes=1), (WorkType.EXPERIMENT_EXECUTION,)
+            )
+            assert claimed and claimed.work_id == child.work_id
+        finally:
+            if registry.state(child.work_id) is not None:
+                registry.cancel(child.work_id)
+            registry.cancel(parent.work_id)
