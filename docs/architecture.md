@@ -248,6 +248,18 @@ Phase 17; this foundation does not declare production scheduling unified or
 authorize cutover. Global lock ordering, the full adversarial concurrency matrix
 and controlled production cutover remain their own required gates.
 
+Compatibility workers can pass explicit work IDs to `WorkRegistry.claim`.
+The shared SQL claim operation applies that set to both runnable selection and
+exhausted-lease cleanup. An empty set claims nothing; unrelated work retains
+its state. The existing unfiltered SQL entry point keeps its signature.
+`WorkRegistry.progress` fences one database step while keeping work running.
+It checks ownership before and after the step and joins an existing caller
+transaction when present. Canonical coordination must be
+acquired first, and provider/file I/O stays outside that transaction. Final
+`publication` still commits domain writes and completion atomically.
+Queue-specific adapters still need migration and controlled execution parity
+before their independent schedulers are disabled.
+
 ### Transaction lock ordering
 
 The shared ordering functions and publication checks enforce one class/key

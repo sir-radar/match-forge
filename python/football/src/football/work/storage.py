@@ -60,17 +60,32 @@ class WorkRegistry:
             return UUID(str(row["work_id"]))
 
     def claim(
-        self, owner: str, lease_duration: timedelta, allowed_types: tuple[WorkType, ...]
+        self,
+        owner: str,
+        lease_duration: timedelta,
+        allowed_types: tuple[WorkType, ...],
+        *,
+        work_ids: tuple[UUID, ...] | None = None,
     ) -> WorkClaim | None:
+        """Claim centrally eligible work; an ID filter also limits exhausted-lease cleanup."""
         _duration(lease_duration)
         if not isinstance(owner, str) or not owner.strip():
             raise WorkContractError("claim owner is required")
         if not allowed_types or any(not isinstance(kind, WorkType) for kind in allowed_types):
             raise WorkContractError("claim requires explicit supported work types")
+        arguments: tuple[object, ...] = (
+            owner,
+            lease_duration,
+            [kind.value for kind in allowed_types],
+        )
+        if work_ids is not None:
+            if not isinstance(work_ids, (tuple, list)) or any(
+                not isinstance(identity, UUID) for identity in work_ids
+            ):
+                raise WorkContractError("work claim filters require UUID identities")
+            arguments += (sorted(set(work_ids)),)
         with self._short_transaction():
-            row = self._call(
-                "claim_work", owner, lease_duration, [kind.value for kind in allowed_types]
-            )
+            row = self._call("claim_work", *arguments)
             return _claim(row) if row else None
 
     def heartbeat(self, claim: WorkClaim, lease_duration: timedelta) -> WorkClaim:
@@ -79,6 +94,18 @@ class WorkRegistry:
             row = self._call("heartbeat_work", *_ownership(claim), lease_duration)
             assert row is not None
             return _claim(row)
+
+    @contextmanager
+    def progress(self, claim: WorkClaim) -> Iterator[Connection[Any]]:
+        """Fence one database step under the lease without completing the work item.
+
+        Acquire canonical scopes first. Provider/file I/O belongs outside this
+        transaction. Ownership is checked again after the step. An existing caller
+        transaction retains control of the final commit.
+        """
+        with self._publication_transaction(claim) as connection:
+            yield connection
+            self._call("lock_work", *_ownership(claim))
 
     @contextmanager
     def publication(self, claim: WorkClaim, *, result_hash: str) -> Iterator[Connection[Any]]:
@@ -90,10 +117,15 @@ class WorkRegistry:
         """
         if not isinstance(result_hash, str) or not SHA256_PATTERN.fullmatch(result_hash):
             raise WorkContractError("work result hash must be lowercase SHA256")
+        with self._publication_transaction(claim) as connection:
+            yield connection
+            self._call("finish_work", *_ownership(claim), result_hash)
+
+    @contextmanager
+    def _publication_transaction(self, claim: WorkClaim) -> Iterator[Connection[Any]]:
         with self._connection.transaction():
             self._call("lock_work", *_ownership(claim))
             yield self._connection
-            self._call("finish_work", *_ownership(claim), result_hash)
 
     def fail(
         self,

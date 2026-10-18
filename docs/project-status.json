@@ -1861,6 +1861,53 @@
         "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
         "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
       ]
+    },
+    "phase_17": {
+      "status": "IN_PROGRESS",
+      "scope": "Migrate sync-run control, history queue, provider-history scopes and forecast refresh behind the shared work engine.",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "claim_filter_validation": {
+        "status": "FOCUSED_PASS",
+        "postgres_cases_passed": 4,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-claim-filter-green.log",
+        "unrelated_work_untouched": "PASS",
+        "empty_filter_claims_nothing": "PASS",
+        "scoped_exhausted_lease_cleanup": "PASS"
+      },
+      "remaining_work": [
+        "Integrate authoritative claim/publication ownership for bulk history jobs.",
+        "Integrate provider-history scope jobs and generation-safe forecast work.",
+        "Retain operator sync runs as parent/control records driven by shared work.",
+        "Run controlled legacy/new execution parity before disabling old schedulers."
+      ],
+      "progress_validation": {
+        "status": "FOCUSED_PASS",
+        "postgres_cases_passed": 3,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-progress-green.log",
+        "success_keeps_work_running": "PASS",
+        "exception_and_expiry_rollback": "PASS",
+        "replacement_excludes_old_owner": "PASS"
+      },
+      "work_prerequisite_validation": {
+        "status": "FOCUSED_PASS",
+        "postgres_cases_passed": 358,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-work-prerequisites-focused.log",
+        "comprehensive_validation": {
+          "status": "PASS",
+          "python_unit_tests_passed": 1456,
+          "rust_tests_passed": 16,
+          "web_tests_passed": 56,
+          "lint_typing_build_migrations_storage_api": "PASS",
+          "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-work-prerequisites-final-check-integration.log"
+        }
+      },
+      "identity_fixture_clock_regression": {
+        "status": "FOCUSED_PASS",
+        "postgres_cases_passed": 4,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-identity-clock-green.log",
+        "production_temporal_rules_changed": false
+      }
     }
   },
   "phase_1b": {

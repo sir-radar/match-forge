@@ -645,3 +645,139 @@ def test_sql_claim_rejects_unbounded_or_nonpositive_leases(
             "SELECT * FROM football.claim_work(%s,%s::interval,%s)",
             ("worker", duration, [WorkType.NORMALIZATION.value]),
         )
+
+
+def test_adapter_claim_is_limited_to_its_work_ids(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    _, registry, identities = worker
+    target = request(work_type=WorkType.READ_MODEL_PROJECTION, priority=-10)
+    unrelated = request(work_type=WorkType.READ_MODEL_PROJECTION, priority=100)
+    registry.enqueue(target)
+    registry.enqueue(unrelated)
+    identities.extend((target.work_id, unrelated.work_id))
+    selected = registry.claim(
+        "adapter",
+        timedelta(minutes=1),
+        (WorkType.READ_MODEL_PROJECTION,),
+        work_ids=(target.work_id, target.work_id),
+    )
+    assert selected is not None and selected.work_id == target.work_id
+    assert registry.state(unrelated.work_id) == WorkState.PENDING
+    assert (
+        registry.claim(
+            "adapter",
+            timedelta(minutes=1),
+            (WorkType.READ_MODEL_PROJECTION,),
+            work_ids=(target.work_id,),
+        )
+        is None
+    )
+
+
+def test_empty_adapter_claim_never_claims_unrelated_work(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    _, registry, identities = worker
+    item = request(work_type=WorkType.READ_MODEL_PROJECTION)
+    registry.enqueue(item)
+    identities.append(item.work_id)
+    assert (
+        registry.claim(
+            "adapter", timedelta(minutes=1), (WorkType.READ_MODEL_PROJECTION,), work_ids=()
+        )
+        is None
+    )
+    assert registry.state(item.work_id) == WorkState.PENDING
+
+
+def test_adapter_claim_reaps_only_its_own_exhausted_lease(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    _, registry, identities = worker
+    outside = request(work_type=WorkType.READ_MODEL_PROJECTION, max_attempts=1, priority=100)
+    exhausted = request(work_type=WorkType.READ_MODEL_PROJECTION, max_attempts=1, priority=50)
+    ready = request(work_type=WorkType.READ_MODEL_PROJECTION, priority=0)
+    for item in (outside, exhausted, ready):
+        registry.enqueue(item)
+        identities.append(item.work_id)
+    for item in (outside, exhausted):
+        leased = registry.claim(
+            "old",
+            timedelta(milliseconds=5),
+            (WorkType.READ_MODEL_PROJECTION,),
+            work_ids=(item.work_id,),
+        )
+        assert leased is not None
+    with psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as observer:
+        observer.execute("SELECT pg_sleep(0.02)")
+    selected = registry.claim(
+        "adapter",
+        timedelta(minutes=1),
+        (WorkType.READ_MODEL_PROJECTION,),
+        work_ids=(exhausted.work_id, ready.work_id),
+    )
+    assert selected is not None and selected.work_id == ready.work_id
+    assert registry.state(exhausted.work_id) == WorkState.FAILED
+    assert registry.state(outside.work_id) == WorkState.RUNNING
+
+
+def test_adapter_claim_rejects_non_uuid_filter(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    _, registry, identities = worker
+    with pytest.raises(WorkContractError, match="UUID"):
+        registry.claim(
+            "adapter",
+            timedelta(minutes=1),
+            (WorkType.READ_MODEL_PROJECTION,),
+            work_ids=("invalid",),
+        )
+
+
+def test_fenced_progress_commits_without_completing_work(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    connection, registry, identities = worker
+    identity = worker_request(registry, identities)
+    claim = worker_claim(registry)
+    with registry.progress(claim) as publishing:
+        publishing.execute("INSERT INTO work_results VALUES (%s,1)", (identity,))
+    assert registry.state(identity) == WorkState.RUNNING
+    assert connection.execute(
+        "SELECT value FROM work_results WHERE work_id=%s", (identity,)
+    ).fetchone() == (1,)
+    with registry.publication(claim, result_hash="a" * 64):
+        pass
+    assert registry.state(identity) == WorkState.SUCCEEDED
+
+
+def test_fenced_progress_failure_rolls_back_its_domain_writes(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    connection, registry, identities = worker
+    identity = worker_request(registry, identities)
+    claim = worker_claim(registry)
+    with pytest.raises(ValueError, match="failed step"), registry.progress(claim) as publishing:
+        publishing.execute("INSERT INTO work_results VALUES (%s,1)", (identity,))
+        raise ValueError("failed step")
+    assert connection.execute("SELECT count(*) FROM work_results").fetchone() == (0,)
+    assert registry.state(identity) == WorkState.RUNNING
+
+
+def test_expired_progress_rolls_back_before_replacement_claim(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    connection, registry, identities = worker
+    identity = worker_request(registry, identities)
+    claim = worker_claim(registry, lease=timedelta(milliseconds=50))
+    with pytest.raises(WorkLeaseLost), registry.progress(claim) as publishing:
+        publishing.execute("INSERT INTO work_results VALUES (%s,1)", (identity,))
+        publishing.execute("SELECT pg_sleep(0.1)")
+    assert connection.execute("SELECT count(*) FROM work_results").fetchone() == (0,)
+    replacement = registry.claim(
+        "replacement", timedelta(minutes=1), (WorkType.READ_MODEL_PROJECTION,), work_ids=(identity,)
+    )
+    assert replacement is not None and replacement.generation == claim.generation + 1
+    with pytest.raises(WorkLeaseLost), registry.progress(claim):
+        pytest.fail("expired owner regained publication rights")
