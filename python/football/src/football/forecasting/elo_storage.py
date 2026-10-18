@@ -9,6 +9,7 @@ from psycopg import Connection, Cursor
 from psycopg.types.json import Jsonb
 
 from football.forecasting.elo import EloRun, EloTeamRating
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 
 
 class EloStorageError(RuntimeError):
@@ -29,9 +30,8 @@ class PostgresEloHistory:
 
     def publish(self, run: EloRun) -> EloPublicationResult:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"elo-model:{run.config.model_version}",),
+            acquire_locks(
+                cursor, (LockRequest(LockClass.MODEL, f"elo-model:{run.config.model_version}"),)
             )
             model_inserted = self._register_model(cursor, run)
             ratings_inserted = sum(self._rating(cursor, run, rating) for rating in run.history)

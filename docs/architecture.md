@@ -255,9 +255,9 @@ work-publication checks below are implemented; integration of all legacy
 mutation paths remains required before the phase gate.
 
 `football.storage.locks` and the SQL functions introduced by
-`202610180800_transaction_lock_order.sql`, extended for model artifacts by
-`202610181100_model_publication_lock_order.sql`, order blocking coordination
-requests by class, then exact key in C/Unicode order:
+`202610180800_transaction_lock_order.sql`, extended through
+`202610181200_publication_lock_order.sql`, order blocking coordination requests
+by class, then exact key in C/Unicode order:
 
 | Class | Order |
 | --- | ---: |
@@ -266,9 +266,16 @@ requests by class, then exact key in C/Unicode order:
 | Competition | 30 |
 | Fixture | 40 |
 | Work | 50 |
+| Dataset | 55 |
+| Validation | 56 |
+| Lifecycle | 57 |
+| Kickoff | 58 |
+| Labels | 59 |
 | Feature | 60 |
 | Model artifact | 65 |
 | Publication | 70 |
+| Evaluation | 75 |
+| Promotion | 80 |
 
 Declare a transaction's required scopes together through `acquire_locks`.
 Already-held keys can be reentered. A new lower request fails before waiting;
@@ -311,6 +318,13 @@ publication transactions end between walk-forward batches. Direct gate callers
 must supply that same mode; the runner rejects an implicit outer transaction
 without committing caller-owned work. This does not change scientific gates or
 authorize running a frozen evaluation.
+
+Dataset, validation, lifecycle, kickoff and label registration follow their
+existing input dependencies. Elo history uses the model class. Forecast,
+evaluation and promotion writers use the later publication classes. All
+Python advisory coordination requests now use this shared contract, retaining
+their previous exact keys and hash namespaces. Forecast batches acquire keys
+in semantic-hash order and return the original target/model-family order.
 
 Existing identity serialization and legacy scheduling remain in place while
 their transaction paths are integrated. This section does not declare the

@@ -25,6 +25,7 @@ from football.normalization.statsbomb_events import (
     logical_sha256,
     normalize_statsbomb_events,
 )
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.parquet import ImmutableEventParquetStore, PublishedParquetFile
 from football.storage.raw import ImmutableFileConflict, ImmutableFileStore
 
@@ -524,10 +525,7 @@ def _register_dataset(
     files: tuple[PublishedParquetFile, ...],
     build_spec: DatasetBuildSpecV1 | None,
 ) -> None:
-    cursor.execute(
-        "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-        (f"dataset:{identity_hash}",),
-    )
+    acquire_locks(cursor, (LockRequest(LockClass.DATASET, f"dataset:{identity_hash}"),))
     published_at = datetime.now(UTC)
     cursor.execute(
         """

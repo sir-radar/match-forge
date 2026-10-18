@@ -13,6 +13,7 @@ from psycopg.types.json import Jsonb
 
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.governance import EvaluationCorpusV1
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 
 LIFECYCLE_CLAIM_VERSION = "statsbomb-terminal-event-score-v1"
 _VALIDATOR_VERSION = "statsbomb-dataset-validator-v3"
@@ -89,9 +90,13 @@ class Sprint2LifecycleClaimPublisher:
     ) -> LifecycleClaimPublicationResult:
         with self._connection.transaction(), self._connection.cursor() as cursor:
             resolved = resolver(cursor)
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"lifecycle-claims:{resolved.dataset_version_id}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.LIFECYCLE, f"lifecycle-claims:{resolved.dataset_version_id}"
+                    ),
+                ),
             )
             claims = _build_claims(cursor, resolved)
             inserted = sum(_register_claim(cursor, resolved, claim) for claim in claims)

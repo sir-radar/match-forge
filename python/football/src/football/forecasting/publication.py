@@ -11,6 +11,7 @@ from psycopg import Connection, Cursor
 from football.contracts.dependencies import DependencyNodeV1
 from football.forecasting.contracts import BaselineForecastV1, forecast_payload_bytes
 from football.ingestion.dependencies import PostgresDependencyStoreV1
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 ForecastPublicationStatus = Literal["published", "verified_existing"]
@@ -70,9 +71,13 @@ class PostgresForecastRegistry:
     def register(self, publication: PublishedBaselineForecastV1) -> ForecastPublicationStatus:
         forecast = publication.forecast
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"baseline-forecast:{forecast.semantic_sha256}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.PUBLICATION, f"baseline-forecast:{forecast.semantic_sha256}"
+                    ),
+                ),
             )
             inserted = self._register_forecast(cursor, publication)
             for artifact_id in forecast.model_artifact_ids:
@@ -223,9 +228,13 @@ class BaselineForecastPublisher:
         self, forecast: BaselineForecastV1, published_at: datetime
     ) -> PublishedBaselineForecastV1:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"baseline-forecast:{forecast.semantic_sha256}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.PUBLICATION, f"baseline-forecast:{forecast.semantic_sha256}"
+                    ),
+                ),
             )
             existing = cursor.execute(
                 """

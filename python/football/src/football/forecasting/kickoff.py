@@ -17,6 +17,7 @@ from psycopg.types.json import Jsonb
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 
 KICKOFF_CLAIM_VERSION = "statsbomb-england-local-kickoff-v1"
 KICKOFF_TIMEZONE = "Europe/London"
@@ -134,9 +135,14 @@ class Sprint2KickoffClaimPublisher:
         with self._connection.transaction(), self._connection.cursor() as cursor:
             resolved, policy, dataset_version_id, source_snapshot_id = resolver(cursor)
             claim_version, country_name, timezone_name = policy
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"kickoff-claims:{resolved.season_id}:{claim_version}:{TZDATA_VERSION}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.KICKOFF,
+                        f"kickoff-claims:{resolved.season_id}:{claim_version}:{TZDATA_VERSION}",
+                    ),
+                ),
             )
             sources = _source_claims(cursor, resolved, dataset_version_id, source_snapshot_id)
             claims = tuple(

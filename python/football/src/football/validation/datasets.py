@@ -20,6 +20,7 @@ from football.normalization.statsbomb_events import (
     NORMALIZER_VERSION,
     logical_sha256,
 )
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.parquet import ImmutableEventParquetStore, ParquetPublicationError
 from football.validation.statsbomb import (
     EventFileValidationInput,
@@ -561,10 +562,7 @@ def _register(
     completed_at: datetime,
     findings: tuple[ValidationFinding, ...],
 ) -> str:
-    cursor.execute(
-        "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-        (f"validation:{identity_hash}",),
-    )
+    acquire_locks(cursor, (LockRequest(LockClass.VALIDATION, f"validation:{identity_hash}"),))
     inserted = cursor.execute(
         """
         INSERT INTO football.validation_runs

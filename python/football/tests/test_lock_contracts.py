@@ -7,6 +7,13 @@ from football.storage.locks import LockClass, LockOrderError, LockRequest, order
 
 def test_locks_use_one_class_order_and_stable_key_order() -> None:
     requests = (
+        LockRequest(LockClass.PROMOTION, "promotion:one"),
+        LockRequest(LockClass.EVALUATION, "evaluation:one"),
+        LockRequest(LockClass.LABEL, "label:one"),
+        LockRequest(LockClass.KICKOFF, "kickoff:one"),
+        LockRequest(LockClass.LIFECYCLE, "lifecycle:one"),
+        LockRequest(LockClass.VALIDATION, "validation:one"),
+        LockRequest(LockClass.DATASET, "dataset:one"),
         LockRequest(LockClass.PUBLICATION, "publication:one"),
         LockRequest(LockClass.MODEL, "model:one"),
         LockRequest(LockClass.FEATURE, "feature:one"),
@@ -21,9 +28,16 @@ def test_locks_use_one_class_order_and_stable_key_order() -> None:
         (LockClass.FIXTURE, "fixture:one"),
         (LockClass.FIXTURE, "fixture:two"),
         (LockClass.WORK, "work:two"),
+        (LockClass.DATASET, "dataset:one"),
+        (LockClass.VALIDATION, "validation:one"),
+        (LockClass.LIFECYCLE, "lifecycle:one"),
+        (LockClass.KICKOFF, "kickoff:one"),
+        (LockClass.LABEL, "label:one"),
         (LockClass.FEATURE, "feature:one"),
         (LockClass.MODEL, "model:one"),
         (LockClass.PUBLICATION, "publication:one"),
+        (LockClass.EVALUATION, "evaluation:one"),
+        (LockClass.PROMOTION, "promotion:one"),
     ]
     assert ordered_locks(tuple(reversed(requests))) == result
 

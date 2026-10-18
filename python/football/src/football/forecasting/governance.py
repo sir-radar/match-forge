@@ -21,6 +21,7 @@ from football.contracts.source import (
 from football.forecasting.contracts import ModelFamily, PointInTimeScopeV1
 from football.forecasting.evaluation import MatchResultMetricsV1
 from football.ingestion.dependencies import PostgresDependencyStoreV1
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 if TYPE_CHECKING:
@@ -334,9 +335,13 @@ class PostgresEvaluationRegistry:
         if report.scope is None:
             raise GovernancePublicationError("unresolved evaluation scope cannot be registered")
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"sprint2-evaluation:{report.evaluation_run_id}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.EVALUATION, f"sprint2-evaluation:{report.evaluation_run_id}"
+                    ),
+                ),
             )
             inserted = cursor.execute(
                 """
@@ -472,9 +477,8 @@ class PostgresModelPromotionRegistry:
 
     def record(self, event: ModelPromotionEventV1) -> PublishedPromotionEventV1:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"model-promotion:{event.role}",),
+            acquire_locks(
+                cursor, (LockRequest(LockClass.PROMOTION, f"model-promotion:{event.role}"),)
             )
             evaluation_status = _evaluation_status(cursor, event.evaluation_run_id)
             model_family = _model_family(cursor, event.model_artifact_id)

@@ -45,7 +45,7 @@ from football.forecasting.governance import (
 )
 from football.forecasting.publication import BaselineForecastPublisher
 from football.retirement import PostgresArtifactRetirementStore
-from football.storage.locks import LockClass, LockRequest, acquire_locks
+from football.storage.locks import LockClass, LockOrderError, LockRequest, acquire_locks
 from football.temporal.repository import PointInTimeRepository
 from psycopg import Connection
 from psycopg.errors import (
@@ -888,6 +888,10 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
     )
     publisher = BaselineForecastPublisher(connection, tmp_path)
 
+    with connection.transaction(force_rollback=True):
+        acquire_locks(connection, (LockRequest(LockClass.PUBLICATION, "zzzz:held"),))
+        with pytest.raises(LockOrderError):
+            publisher.publish(forecast, now)
     first = publisher.publish(forecast, now)
     with connection.cursor() as cursor:
         retry_forecast_id = cursor.execute("SELECT uuidv7()").fetchone()[0]
@@ -1132,8 +1136,9 @@ def test_sprint2_batch_publication_registers_complete_retry_safe_batch(
         ).fetchone() == (4,)
 
 
+@pytest.mark.parametrize("lock_guard_stage", ["evaluation", "promotion"])
 def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
-    connection: Connection[Any], tmp_path: Path
+    connection: Connection[Any], tmp_path: Path, lock_guard_stage: str
 ) -> None:
     _provider_id, snapshot_id, _resource_id = _source_lineage(connection, uuid.uuid4().hex)
     now = datetime(2026, 8, 30, 13, 0, tzinfo=UTC)
@@ -1213,6 +1218,11 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
     )
     report_publisher = EvaluationReportPublisher(connection, tmp_path)
 
+    if lock_guard_stage == "evaluation":
+        with connection.transaction(force_rollback=True):
+            acquire_locks(connection, (LockRequest(LockClass.PROMOTION, "zzzz:held"),))
+            with pytest.raises(LockOrderError):
+                EvaluationReportPublisher(connection, tmp_path / "reverse").publish(report)
     first_report = report_publisher.publish(report)
     retry_report = report_publisher.publish(report)
     event = ModelPromotionEventV1(
@@ -1224,6 +1234,11 @@ def test_evaluation_and_model_promotion_are_governed_and_retry_safe(
         recorded_at=now,
     )
     promotion_registry = PostgresModelPromotionRegistry(connection)
+    if lock_guard_stage == "promotion":
+        with connection.transaction(force_rollback=True):
+            acquire_locks(connection, (LockRequest(LockClass.PROMOTION, "zzzz:held"),))
+            with pytest.raises(LockOrderError):
+                promotion_registry.record(event)
     first_event = promotion_registry.record(event)
     retry_event = promotion_registry.record(event)
 

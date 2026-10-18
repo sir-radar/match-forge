@@ -26,9 +26,16 @@ class LockClass(IntEnum):
     COMPETITION = 30
     FIXTURE = 40
     WORK = 50
+    DATASET = 55
+    VALIDATION = 56
+    LIFECYCLE = 57
+    KICKOFF = 58
+    LABEL = 59
     FEATURE = 60
     MODEL = 65
     PUBLICATION = 70
+    EVALUATION = 75
+    PROMOTION = 80
 
 
 @dataclass(frozen=True, slots=True)

@@ -1695,7 +1695,7 @@
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-foundation-check-integration.log"
       },
       "remaining_work": [
-        "Integrate and verify remaining legacy, feature and artifact publication lock paths.",
+        "Finish legacy run/scope fencing and overlapping row-lock audit.",
         "Run final full-phase checks and committed-code shadow preservation."
       ],
       "legacy_inversion_reproduced": {
@@ -1739,6 +1739,27 @@
         "authoritative_evaluation_executed": false,
         "comprehensive_checks": "PASS",
         "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-model-publication-check-integration.log"
+      },
+      "publication_dependency_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 321,
+        "lock_postgres_cases_passed": 39,
+        "unit_cases_passed": 9,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-publication-order-final-focused.log",
+        "unit_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-publication-order-unit.log",
+        "python_advisory_writers_use_shared_guard": true,
+        "forecast_evaluation_promotion_reverse_order_guards": "PASS",
+        "correction_dataset_bytes_and_lineage_preserved": "PASS",
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-publication-dependencies-final-check-integration.log",
+        "independent_dataset_version_transactions": "PASS"
+      },
+      "legacy_revoked_coordination_probe": {
+        "status": "REPRODUCED",
+        "sqlstate": "57014",
+        "revoked_worker_waits_for_identity_before_fence": true,
+        "provider_requests": 0,
+        "report_ref": ".local/remediation/matchforge-architecture-v2/phase-15/revoked-coordination-probe.json"
       }
     }
   },
