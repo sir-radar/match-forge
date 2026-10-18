@@ -155,6 +155,39 @@ uv run --locked python -m football.providers.normalization.cli \
   --data-root .local/football-data --artifact-root .local/shadow-observations --persist
 ```
 
+### Rebuildable fixture projection
+
+`football.fixture_read_model` materializes the current columns of
+`product_serving_fixtures`, including exact fixture IDs, identity status, score
+basis and availability. The unique fixture index and date/competition index
+support direct serving reads without re-running the canonical view's identity
+and competition lookups for every request. This is a disposable projection. It
+does not create identities, resolve conflicts or provide historical PIT inputs.
+Existing competition, forecast and team-context stores remain in use; additional
+projections require an actual consumer.
+
+The migration creates the projection without data. Reading an unbuilt projection
+fails explicitly. Rebuild an isolated shadow with:
+
+```sql
+BEGIN;
+REFRESH MATERIALIZED VIEW football.fixture_read_model;
+COMMIT;
+```
+
+Refresh takes PostgreSQL's exclusive materialized-view lock and replaces the
+projection atomically. Rollback retains the prior projection. Source changes
+become visible in the cache only after another explicit refresh. Refresh performs
+only database work, with no provider or file I/O. Scheduled refresh publication
+must join the authoritative work engine before production cutover.
+
+`product_serving_fixtures` remains the production fixture-list baseline until
+parity is proven and controlled cutover is authorized. Detail references and
+historical reconstruction continue using the original fixture IDs and dated
+contracts. A proven duplicate can be absent from the list projection while both
+its member and representative IDs remain available in the original tables.
+Discarding or rebuilding the projection cannot delete those identifiers.
+
 ## System Flow
 
 ```text
