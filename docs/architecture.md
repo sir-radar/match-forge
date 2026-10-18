@@ -250,9 +250,11 @@ and controlled production cutover remain their own required gates.
 
 ### Transaction lock ordering
 
-The Phase 15 implementation is in progress. The shared ordering functions and
-work-publication checks below are implemented; integration of all legacy
-mutation paths remains required before the phase gate.
+The shared ordering functions and publication checks enforce one class/key
+order across significant current mutation paths. Controlled regressions cover
+legacy identity, work references, fitted artifacts, forecasts, worker fences
+and queue batches. The Phase 15 shadow gate preserves all 111 retained tables
+and the exact fixture projection.
 
 `football.storage.locks` and the SQL functions introduced by
 `202610180800_transaction_lock_order.sql`, extended through
@@ -347,9 +349,9 @@ Python advisory coordination requests now use this shared contract, retaining
 their previous exact keys and hash namespaces. Forecast batches acquire keys
 in semantic-hash order and return the original target/model-family order.
 
-Existing identity serialization and legacy scheduling remain in place while
-their transaction paths are integrated. This section does not declare the
-global hierarchy migration complete or authorize production cutover.
+Broad identity serialization remains for Phase 16, and existing queues remain
+for Phase 17 migration. Full-route adversarial tests and controlled production
+cutover remain required later gates.
 
 ## System Flow
 

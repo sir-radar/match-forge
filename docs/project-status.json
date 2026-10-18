@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 15,
+    "current_phase": 16,
     "completed_phases": [
       0,
       1,
@@ -1221,7 +1221,8 @@
       11,
       12,
       13,
-      14
+      14,
+      15
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1236,10 +1237,16 @@
       "202610180400_provider_resource_authority.sql",
       "202610180500_resource_coverage.sql",
       "202610180600_fixture_read_model.sql",
-      "202610180700_work_orchestration.sql"
+      "202610180700_work_orchestration.sql",
+      "202610180800_transaction_lock_order.sql",
+      "202610180900_work_reference_locks.sql",
+      "202610181000_identity_lock_order.sql",
+      "202610181100_model_publication_lock_order.sql",
+      "202610181200_publication_lock_order.sql",
+      "202610181300_worker_fence_lock_order.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 15-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 16-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1680,8 +1687,8 @@
       "additional_live_provider_requests": 0
     },
     "phase_15": {
-      "status": "IN_PROGRESS",
-      "scope": "Ordered transaction lock contract, competition/fixture scopes and shared work publication checks; legacy mutation integration pending.",
+      "status": "PASS_WITH_WARNINGS",
+      "scope": "Enforced class/key order across significant current mutation paths, legacy worker fences and queue batches.",
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
       "foundation_validation": {
@@ -1694,9 +1701,7 @@
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-foundation-check-integration.log"
       },
-      "remaining_work": [
-        "Run committed-code shadow preservation."
-      ],
+      "remaining_work": [],
       "legacy_inversion_reproduced": {
         "method": "OperationalProviderSync._update_canonical_fixture",
         "fixture_row_held_while_waiting_for_identity": true,
@@ -1788,7 +1793,29 @@
         "scope_refresh_and_recovery_order": "PASS",
         "comprehensive_checks": "PASS",
         "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-queue-check-integration.log"
-      }
+      },
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-15-2026-10-18.json",
+      "code_commit_sha": "aebec0440b4af2ffd11b49cfccbd488b5e93895a",
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1456,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-queue-check-integration.log"
+      },
+      "existing_tables_verified": 111,
+      "existing_table_hashes_preserved": true,
+      "fixture_projection_preserved": true,
+      "pre_existing_migrations_verified": 78,
+      "registered_work_items": 0,
+      "registered_work_dependencies": 0,
+      "limitations": [
+        "Broad identity coordination remains until Phase 16; production scheduler migration remains Phase 17.",
+        "The all-route adversarial matrix remains Phase 20; this phase verifies the lock hierarchy and identified legacy inversions.",
+        "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
+        "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
+      ]
     }
   },
   "phase_1b": {
