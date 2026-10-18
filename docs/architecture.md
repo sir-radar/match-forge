@@ -188,6 +188,66 @@ contracts. A proven duplicate can be absent from the list projection while both
 its member and representative IDs remain available in the original tables.
 Discarding or rebuilding the projection cannot delete those identifiers.
 
+### Shared work orchestration
+
+`football.work_items` and `work_dependencies` define the shared durable scheduling
+contract. SQL functions own the state machine, claim ordering, lease checks,
+retries, cancellation and completion. `football.work.storage.WorkRegistry` is a
+thin Python worker adapter; Go submissions can use the same SQL contract. Domain
+inputs remain in their existing stores or specific detail tables. The core row
+does not contain provider payloads, model state or football decisions.
+
+A work type and semantic key identify one immutable logical input. The request
+binds its input SHA256, priority, maximum attempts, retry configuration, parent
+and dependencies. Reusing the key with different bindings fails. An identical
+request returns the existing work ID and preserves its current retry deadline
+and outcome. Source generations, cutoffs and processing versions belong in the
+semantic key when they change the logical input. `generation` in the scheduling
+row is a monotonic lease/fencing epoch, not a replacement for source generation
+or either football/knowledge cutoff. Terminal success, failure and cancellation
+cannot be reopened.
+
+`enqueue` joins its caller's database transaction. Publish the domain change and
+enqueue its downstream request in that same transaction; rollback removes both.
+Dependencies and the optional lineage parent must already exist. Dependencies
+are sealed before enqueue returns and cannot subsequently change. Edges only
+point to already sealed items, so concurrent construction cannot create cycles.
+A deferred constraint requires each newly inserted item to be sealed before
+commit. Dependent work is claimable only after every prerequisite succeeds;
+failed or cancelled prerequisites do not silently qualify their dependents.
+
+Claims select one ready item by priority, availability and work ID using
+`FOR UPDATE SKIP LOCKED`. Every claim has a new token and fencing epoch. Claims,
+heartbeats and control operations require an idle connection and finish their
+short transaction before returning. Lease duration, attempt limit and retry
+policy are explicit caller inputs. All lease and retry clocks use database time.
+An expired attempt can be replaced after its configured backoff; an exhausted
+final attempt fails instead of remaining running forever. A claim cleans up at
+most one exhausted attempt and can still return other runnable work in the same
+bounded transaction. Leases and scheduled availability must be finite.
+
+The common retry classifications are `RETRYABLE`, `NON_RETRYABLE`,
+`BLOCKED_EXTERNAL` and `CANCELLED`. SQL calculates capped exponential backoff
+without overflowing on large attempt counts. Retry-After and provider cooldown
+can delay the next attempt further. External blocks require explicit release;
+release cannot bypass the attempt budget. Existing provider access and quota
+policies still apply.
+
+Acquire the required canonical coordination locks before entering
+`WorkRegistry.publication`. Perform provider/file access and expensive computation
+beforehand. The context verifies and locks the exact live lease, permits only
+database publication work, then verifies the deadline and completes with an
+explicit result checksum in the same transaction. Exceptions or a lost lease
+roll back the published rows and completion together. The work-row lock
+serializes publication, cancellation and replacement. Cancellation clears lease
+rights before recording its terminal state.
+
+The shared engine is introduced on the isolated shadow path. Existing queues
+remain active during implementation and must migrate through this contract in
+Phase 17; this foundation does not declare production scheduling unified or
+authorize cutover. Global lock ordering, the full adversarial concurrency matrix
+and controlled production cutover remain their own required gates.
+
 ## System Flow
 
 ```text

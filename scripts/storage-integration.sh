@@ -46,6 +46,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_provider_resource_authority.py \
 	tests/integration/test_resource_coverage_storage.py \
 	tests/integration/test_fixture_read_model.py \
+	tests/integration/test_work_orchestration.py \
 	tests/integration/test_resource_observation_artifacts.py \
 	tests/integration/test_artifact_retirement.py \
 	tests/integration/test_integrity_verification.py \
