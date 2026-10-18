@@ -437,13 +437,22 @@ def run_scopes(
     if budget < 0:
         raise ValueError("provider scope budget must be nonnegative")
     if refresh:
+        sync.connection.execute("SELECT football.authorize_worker_publication()")
         sync.connection.execute(
-            """UPDATE football.product_provider_history_scopes
-               SET status = 'PENDING'
+            """WITH eligible AS MATERIALIZED (
+               SELECT provider_code,provider_competition_id,season_label
+               FROM football.product_provider_history_scopes
                WHERE provider_code = %s AND status <> 'RUNNING'
                  AND next_attempt_at <= now()
                  AND (%s::text IS NULL OR provider_competition_id = %s)
-                 AND (%s::text IS NULL OR season_label = %s)""",
+                 AND (%s::text IS NULL OR season_label = %s)
+               ORDER BY provider_code COLLATE "C",provider_competition_id COLLATE "C",
+                        season_label COLLATE "C"
+               FOR UPDATE
+            ) UPDATE football.product_provider_history_scopes scope SET status='PENDING'
+              FROM eligible WHERE scope.provider_code=eligible.provider_code
+                AND scope.provider_competition_id=eligible.provider_competition_id
+                AND scope.season_label=eligible.season_label""",
             (sync.provider_code, competition, competition, season, season),
         )
         sync.connection.commit()

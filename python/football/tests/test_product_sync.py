@@ -105,8 +105,11 @@ def test_all_227_history_candidates_are_enqueued() -> None:
         def __exit__(self, *_args: object) -> None:
             return None
 
-        def execute(self, statement: str, parameters: tuple[object, ...]) -> None:
+        def execute(self, statement: str, parameters: tuple[object, ...] = ()) -> None:
             statements.append((statement, parameters))
+
+        def fetchone(self) -> tuple[datetime]:
+            return (datetime.now(UTC),)
 
     class Connection:
         def cursor(self) -> Cursor:

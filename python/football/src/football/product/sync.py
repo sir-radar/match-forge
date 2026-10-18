@@ -144,6 +144,7 @@ class ProductSync:
         fixture_count, league_seasons = self._sync_fixtures(fixture_dates)
         context_observations = self.sync_context(competition_response.remaining_day)
         self._recover_abandoned_history_jobs()
+        self.connection.commit()
         self._enqueue_history_jobs(league_seasons)
         self.connection.commit()
         queue_result = self._process_history_queue(history_concurrency)
@@ -528,26 +529,69 @@ class ProductSync:
 
     def _recover_abandoned_history_jobs(self) -> None:
         with self.connection.cursor() as cursor:
+            cursor.execute("SELECT football.authorize_worker_publication()")
             cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
-                    next_attempt_at = NULL, updated_at = clock_timestamp(),
-                    last_error = COALESCE(last_error, 'worker lease expired')
-                WHERE job_status = 'RUNNING'
-                  AND claimed_at < clock_timestamp() - %s
+                """SELECT provider_competition_id,season
+                FROM football.product_history_sync_queue
+                WHERE job_status='RUNNING' AND claimed_at < clock_timestamp() - %s
+                ORDER BY ('history-queue:'||provider_competition_id||':'||season) COLLATE "C"
                 """,
                 (HISTORY_JOB_LEASE,),
             )
+            for league_id, season in cursor.fetchall():
+                cursor.execute(
+                    "SELECT football.record_transaction_lock(50,%s)",
+                    (f"history-queue:{league_id}:{season}",),
+                )
+                cursor.execute(
+                    """UPDATE football.product_history_sync_queue
+                    SET job_status='PENDING',claimed_at=NULL,started_at=NULL,
+                        next_attempt_at=NULL,updated_at=clock_timestamp(),
+                        last_error=COALESCE(last_error,'worker lease expired')
+                    WHERE provider_competition_id=%s AND season=%s
+                      AND job_status='RUNNING' AND claimed_at < clock_timestamp() - %s""",
+                    (league_id, season, HISTORY_JOB_LEASE),
+                )
 
     def _enqueue_history_jobs(self, candidates: Sequence[tuple[int, int]]) -> None:
         with self.connection.cursor() as cursor:
+            cursor.execute("SELECT football.authorize_worker_publication()")
+            requested: dict[tuple[str, int], datetime] = {}
             for league_id, season in candidates:
+                key = (str(league_id), season)
+                if key not in requested:
+                    cursor.execute("SELECT clock_timestamp()")
+                    stamp = cursor.fetchone()
+                    assert stamp is not None
+                    requested[key] = stamp[0]
+            backlog: set[tuple[str, int]] = set()
+            if self.sync_run_id is not None:
+                cursor.execute(
+                    """SELECT provider_competition_id,season
+                    FROM football.product_history_sync_queue WHERE job_status='PENDING'"""
+                )
+                backlog.update(cursor.fetchall())
+            keys = sorted(
+                requested.keys() | backlog, key=lambda key: f"history-queue:{key[0]}:{key[1]}"
+            )
+            for league_key, season in keys:
+                cursor.execute(
+                    "SELECT football.record_transaction_lock(50,%s)",
+                    (f"history-queue:{league_key}:{season}",),
+                )
+                if (league_key, season) not in requested:
+                    cursor.execute(
+                        """UPDATE football.product_history_sync_queue
+                        SET sync_run_id=%s,updated_at=clock_timestamp()
+                        WHERE provider_competition_id=%s AND season=%s AND job_status='PENDING'""",
+                        (self.sync_run_id, league_key, season),
+                    )
+                    continue
                 cursor.execute(
                     """
                     INSERT INTO football.product_history_sync_queue (
-                        provider_competition_id, season, sync_run_id
-                    ) VALUES (%s, %s, %s)
+                        provider_competition_id, season, sync_run_id, queued_at
+                    ) VALUES (%s, %s, %s, %s)
                     ON CONFLICT (provider_competition_id, season) DO UPDATE SET
                         sync_run_id = EXCLUDED.sync_run_id,
                         job_status = CASE
@@ -557,7 +601,7 @@ class ProductSync:
                         END,
                         queued_at = CASE
                             WHEN football.product_history_sync_queue.job_status IN
-                                 ('SUCCEEDED', 'FAILED') THEN clock_timestamp()
+                                 ('SUCCEEDED', 'FAILED') THEN EXCLUDED.queued_at
                             ELSE football.product_history_sync_queue.queued_at
                         END,
                         started_at = CASE
@@ -587,16 +631,7 @@ class ProductSync:
                         END,
                         updated_at = clock_timestamp()
                     """,
-                    (str(league_id), season, self.sync_run_id),
-                )
-            if self.sync_run_id is not None:
-                cursor.execute(
-                    """
-                    UPDATE football.product_history_sync_queue
-                    SET sync_run_id = %s, updated_at = clock_timestamp()
-                    WHERE job_status = 'PENDING'
-                    """,
-                    (self.sync_run_id,),
+                    (league_key, season, self.sync_run_id, requested[(league_key, season)]),
                 )
 
     def _process_history_queue(self, concurrency: int) -> dict[str, int]:

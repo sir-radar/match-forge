@@ -1695,8 +1695,7 @@
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-foundation-check-integration.log"
       },
       "remaining_work": [
-        "Complete the remaining legacy queue multi-row ordering audit.",
-        "Run final full-phase checks and committed-code shadow preservation."
+        "Run committed-code shadow preservation."
       ],
       "legacy_inversion_reproduced": {
         "method": "OperationalProviderSync._update_canonical_fixture",
@@ -1775,6 +1774,20 @@
         "nonblocking_control_ledger_retention": "PASS",
         "comprehensive_checks": "PASS",
         "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-worker-fences-check-integration.log"
+      },
+      "legacy_queue_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 341,
+        "history_queue_postgres_cases_passed": 7,
+        "unit_cases_passed": 33,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-queue-final-focused.log",
+        "unit_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-queue-unit.log",
+        "three_controlled_ordering_regressions_failed_before_fixes": true,
+        "request_priority_and_retry_state_preserved": "PASS",
+        "same_transaction_reverse_batch_rejected": "PASS",
+        "scope_refresh_and_recovery_order": "PASS",
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-queue-check-integration.log"
       }
     }
   },

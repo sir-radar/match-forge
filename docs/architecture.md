@@ -329,6 +329,17 @@ transactions; a statement guard rejects mixing them with publication before
 run rows can be locked. This prevents shared-to-exclusive upgrades and run-row
 cycles while allowing independent heartbeat connections.
 
+Legacy history recovery and enqueue use work-class keys
+`history-queue:<provider_competition_id>:<season>` in C/Unicode order. Recovery
+commits before enqueue. Enqueue snapshots pending backlog keys before taking
+row locks, then processes that set and requested keys in one order. Original
+request-order database timestamps retain queue priority; existing pending retry
+state stays unchanged. Jobs arriving after that snapshot remain durable and
+claimable, and claims attach the current run. Provider-scope refresh locks its
+eligible rows by provider, competition and season in C order before updating.
+Single-job claims use `SKIP LOCKED` and commit before provider calls; completion
+and retry update one owned queue row and commit before further domain work.
+
 Dataset, validation, lifecycle, kickoff and label registration follow their
 existing input dependencies. Elo history uses the model class. Forecast,
 evaluation and promotion writers use the later publication classes. All
