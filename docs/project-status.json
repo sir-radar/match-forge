@@ -1363,6 +1363,32 @@
         "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-4-frozen-csv-green.log",
         "remaining_retained_resource_probes": "CSV results, statistics and odds; StatsBomb shots and events produced observations without writing registrations."
       }
+    },
+    "phase_5": {
+      "status": "IMPLEMENTED_PENDING_COMMITTED_READ_ACCEPTANCE",
+      "reader": "PointInTimeRepository.resource_observation_ids_at",
+      "observation_contract_versions": [
+        "1",
+        "2"
+      ],
+      "knowledge_rule": "known_at <= knowledge_cutoff",
+      "football_history_rule": "reported event_time < football_cutoff; unknown event times excluded",
+      "validity_rule": "reported valid_from <= valid_at < valid_to; null end is open",
+      "correction_policy": "Append-only observations; earlier knowledge retained; no implicit latest version or conflict winner.",
+      "focused_unit_and_postgres_tests_passed": 34,
+      "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-temporal-red.log",
+      "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-temporal-green.log",
+      "database_validation": "Fresh disposable database created, migrated, tested and dropped; test transactions rolled back.",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1280,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-check-integration.log"
+      }
     }
   },
   "phase_1b": {

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from collections.abc import Iterator
 from dataclasses import replace
@@ -14,15 +15,19 @@ from football.contracts.observation_schema import observation_schema_sha256
 from football.contracts.observations import (
     EntityReference,
     FixtureObservationV1,
+    Observation,
     ObservationError,
     ObservationProvenance,
     ObservationTime,
     ObservationVersions,
+    ResultObservationV1,
+    observation_from_bytes,
 )
 from football.observations.storage import ObservationArtifactStore
 from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.sync import ProductSync
 from football.storage.raw import ImmutableFileConflict
+from football.temporal.repository import PointInTimeRepository
 from psycopg.errors import RaiseException
 
 NOW = datetime(2026, 10, 16, 12, tzinfo=UTC)
@@ -37,8 +42,12 @@ def connection() -> Iterator[psycopg.Connection[object]]:
         yield database
 
 
-def _observation(connection: psycopg.Connection[object], root: Path) -> FixtureObservationV1:
-    raw = b'{"response":[{"fixture":{"id":42}}]}'
+def _observation(
+    connection: psycopg.Connection[object], root: Path, *, fixture_id: int = 42
+) -> FixtureObservationV1:
+    raw = json.dumps(
+        {"response": [{"fixture": {"id": fixture_id}}]}, separators=(",", ":")
+    ).encode()
     sync = ProductSync(connection, ApiFootballClient("test"), root, root / "unused-model")
     snapshot = sync._record_response(
         "observation-contract-test", ApiResponse("/fixtures", NOW, raw, (), None)
@@ -50,7 +59,7 @@ def _observation(connection: psycopg.Connection[object], root: Path) -> FixtureO
     assert row is not None
     return FixtureObservationV1(
         provenance=ObservationProvenance(
-            "api_football", "42", snapshot, row[0], hashlib.sha256(raw).hexdigest()
+            "api_football", str(fixture_id), snapshot, row[0], hashlib.sha256(raw).hexdigest()
         ),
         time=ObservationTime(observed_at=NOW, acquired_at=row[1], known_at=NOW),
         versions=ObservationVersions(
@@ -59,7 +68,7 @@ def _observation(connection: psycopg.Connection[object], root: Path) -> FixtureO
             normalizer_version="fixtures-test-1",
             resolution_version=None,
         ),
-        fixture=EntityReference("42"),
+        fixture=EntityReference(str(fixture_id)),
         competition=EntityReference("47"),
         home_team=EntityReference("1"),
         away_team=EntityReference("2"),
@@ -234,8 +243,6 @@ def test_v1_and_v2_artifacts_coexist_without_schema_or_byte_changes(
 
 
 def _normalization_source(connection: psycopg.Connection[object], root: Path) -> UUID:
-    import json
-
     row = {
         "fixture": {"id": 42, "date": "2026-10-17T12:00:00Z", "status": {"short": "NS"}},
         "league": {"id": 7, "season": 2026},
@@ -337,6 +344,187 @@ def test_registered_normalization_rejects_unregistered_or_corrupt_sources(
     (tmp_path / str(row[0])).write_bytes(b"tampered")
     with pytest.raises(ValueError, match="checksum"):
         registered_resource(connection, tmp_path, source)
+
+
+def _versioned_observation(item: Observation, version: str) -> Observation:
+    if version == "1":
+        return item
+    payload = item.to_dict()
+    payload["contract"] = item.CONTRACT.replace("V1", "V2")
+    payload["versions"]["observation_contract_version"] = "2"
+    return observation_from_bytes(json.dumps(payload).encode())
+
+
+def _resource_ids(
+    connection: psycopg.Connection[object], item: Observation, cutoff: datetime, **times: datetime
+) -> tuple[UUID, ...]:
+    provider = connection.execute(
+        "SELECT id FROM football.providers WHERE code=%s", (item.provenance.provider,)
+    ).fetchone()
+    assert provider is not None
+    return PointInTimeRepository(connection).resource_observation_ids_at(
+        item.CONTRACT, provider[0], cutoff, **times
+    )
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+@pytest.mark.parametrize("resource", ["lineup", "injury", "coach"])
+def test_later_resource_knowledge_is_unavailable_even_with_older_provider_or_valid_time(
+    connection: psycopg.Connection[object], tmp_path: Path, version: str, resource: str
+) -> None:
+    from football.contracts.observations import (
+        AvailabilityObservationV1,
+        CoachObservationV1,
+        LineupMember,
+        LineupObservationV1,
+    )
+
+    base = _observation(connection, tmp_path)
+    common = {
+        "provenance": base.provenance,
+        "versions": base.versions,
+        "time": replace(
+            base.time,
+            known_at=NOW + timedelta(hours=2),
+            provider_updated_at=NOW - timedelta(days=30),
+            event_time=NOW - timedelta(days=1),
+            valid_from=NOW - timedelta(days=1),
+        ),
+        "team": base.home_team,
+    }
+    if resource == "lineup":
+        item = LineupObservationV1(
+            **common,
+            fixture=base.fixture,
+            lineup_mode="CONFIRMED",
+            players=(LineupMember(EntityReference("7"), "STARTER"),),
+        )
+    elif resource == "injury":
+        item = AvailabilityObservationV1(
+            **common,
+            player=EntityReference("7"),
+            fixture=base.fixture,
+            availability_type="INJURY",
+            availability_state="UNAVAILABLE_INJURY",
+        )
+    else:
+        item = CoachObservationV1(**common, coach=EntityReference("7"), name="Coach")
+    item = _versioned_observation(item, version)
+    store = ObservationArtifactStore(connection, tmp_path)
+    store.publish(item)
+    assert store.load(item.observation_id).time == item.time
+    assert _resource_ids(connection, item, NOW + timedelta(hours=1), valid_at=NOW) == ()
+    assert _resource_ids(connection, item, item.time.known_at, valid_at=NOW) == (
+        item.observation_id,
+    )
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+def test_later_correction_keeps_earlier_knowledge_and_immutable_bytes(
+    connection: psycopg.Connection[object], tmp_path: Path, version: str
+) -> None:
+    original = _versioned_observation(_observation(connection, tmp_path), version)
+    correction = replace(
+        original, status="CANCELLED", time=replace(original.time, known_at=NOW + timedelta(hours=2))
+    )
+    store = ObservationArtifactStore(connection, tmp_path)
+    store.publish(original)
+    before = _resource_ids(connection, original, NOW + timedelta(hours=1))
+    store.publish(correction)
+    assert (
+        _resource_ids(connection, original, NOW + timedelta(hours=1))
+        == before
+        == (original.observation_id,)
+    )
+    assert _resource_ids(connection, original, correction.time.known_at) == (
+        original.observation_id,
+        correction.observation_id,
+    )
+    assert store.load(original.observation_id).to_bytes() == original.to_bytes()
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+def test_resource_history_excludes_same_kickoff_future_and_unknown_event_times(
+    connection: psycopg.Connection[object], tmp_path: Path, version: str
+) -> None:
+    cutoff = NOW + timedelta(days=1)
+    items = []
+    for fixture_id, event_time in enumerate(
+        (cutoff - timedelta(seconds=1), cutoff, cutoff, cutoff + timedelta(seconds=1), None),
+        start=42,
+    ):
+        base = _observation(connection, tmp_path, fixture_id=fixture_id)
+        item = _versioned_observation(
+            ResultObservationV1(
+                provenance=base.provenance,
+                versions=base.versions,
+                time=replace(base.time, event_time=event_time),
+                fixture=base.fixture,
+                status="FINISHED",
+                score_basis="REGULATION_90",
+                home_goals=1,
+                away_goals=0,
+            ),
+            version,
+        )
+        ObservationArtifactStore(connection, tmp_path).publish(item)
+        items.append(item)
+    assert _resource_ids(connection, items[0], cutoff, football_cutoff=cutoff) == (
+        items[0].observation_id,
+    )
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+def test_resource_validity_is_half_open_and_unknown_start_is_excluded_when_requested(
+    connection: psycopg.Connection[object], tmp_path: Path, version: str
+) -> None:
+    from football.contracts.observations import CoachObservationV1
+
+    base = _observation(connection, tmp_path)
+    coach = CoachObservationV1(
+        provenance=base.provenance,
+        time=base.time,
+        versions=base.versions,
+        coach=EntityReference("7"),
+        team=base.home_team,
+        name="Coach",
+    )
+    start, end = NOW + timedelta(hours=1), NOW + timedelta(hours=2)
+    item = _versioned_observation(
+        replace(coach, time=replace(coach.time, valid_from=start, valid_to=end)), version
+    )
+    unknown = _versioned_observation(coach, version)
+    store = ObservationArtifactStore(connection, tmp_path)
+    store.publish(item)
+    store.publish(unknown)
+    assert _resource_ids(connection, item, NOW, valid_at=start - timedelta(microseconds=1)) == ()
+    assert _resource_ids(connection, item, NOW, valid_at=start) == (item.observation_id,)
+    assert _resource_ids(connection, item, NOW, valid_at=end - timedelta(microseconds=1)) == (
+        item.observation_id,
+    )
+    assert _resource_ids(connection, item, NOW, valid_at=end) == ()
+
+
+def test_resource_query_is_scoped_and_ordered_without_selecting_a_latest_normalizer(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    base = _observation(connection, tmp_path)
+    items = [
+        replace(base, versions=replace(base.versions, normalizer_version=v)) for v in ("b", "a")
+    ]
+    store = ObservationArtifactStore(connection, tmp_path)
+    for item in items:
+        store.publish(item)
+    assert _resource_ids(connection, base, NOW) == tuple(
+        sorted((item.observation_id for item in items), key=lambda value: value.int)
+    )
+    provider = connection.execute(
+        "SELECT provider_id FROM football.resource_observation_artifacts WHERE observation_id=%s",
+        (items[0].observation_id,),
+    ).fetchone()[0]
+    repository = PointInTimeRepository(connection)
+    assert repository.resource_observation_ids_at(base.CONTRACT, UUID(int=0), NOW) == ()
+    assert repository.resource_observation_ids_at("LineupObservationV1", provider, NOW) == ()
 
 
 def test_legacy_openfootball_reader_uses_git_revision_without_changing_snapshot_identity(

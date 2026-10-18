@@ -21,3 +21,20 @@ def test_point_in_time_query_rejects_naive_cutoff_before_database_access() -> No
             provider_id=uuid.uuid4(),
             knowledge_cutoff=datetime(2026, 1, 1),
         )
+
+
+@pytest.mark.parametrize("field", ["knowledge_cutoff", "football_cutoff", "valid_at"])
+def test_resource_observation_query_rejects_naive_times_before_database_access(field: str) -> None:
+    from datetime import UTC
+
+    repository = PointInTimeRepository(cast(Connection[Any], ConnectionNotUsed()))
+    times = {"knowledge_cutoff": datetime(2026, 1, 1, tzinfo=UTC)}
+    times[field] = datetime(2026, 1, 1)
+    with pytest.raises(ValueError, match=f"{field} must include a timezone"):
+        repository.resource_observation_ids_at(
+            "LineupObservationV2",
+            uuid.uuid4(),
+            times["knowledge_cutoff"],
+            football_cutoff=times.get("football_cutoff"),
+            valid_at=times.get("valid_at"),
+        )

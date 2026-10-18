@@ -72,7 +72,48 @@ class PointInTimeRepository:
                 (player_id, provider_id),
             ).fetchone()
 
+    def resource_observation_ids_at(
+        self,
+        contract_name: str,
+        provider_id: uuid.UUID,
+        knowledge_cutoff: datetime,
+        *,
+        football_cutoff: datetime | None = None,
+        valid_at: datetime | None = None,
+    ) -> tuple[uuid.UUID, ...]:
+        """Return immutable evidence known by the cutoff, without resolving conflicts.
 
-def _require_aware(value: datetime) -> None:
+        Football history requires an explicit, strictly earlier event time.
+        A requested validity instant requires a reported start and uses [start, end).
+        Omitted football/validity filters ask only what source facts were known;
+        they do not qualify those facts as model history or forecast context.
+        """
+        _require_aware(knowledge_cutoff)
+        if football_cutoff is not None:
+            _require_aware(football_cutoff, "football_cutoff")
+        if valid_at is not None:
+            _require_aware(valid_at, "valid_at")
+        rows = self._connection.execute(
+            """SELECT observation_id FROM football.resource_observation_artifacts
+               WHERE contract_name=%s AND provider_id=%s AND known_at<=%s
+                 AND (%s::timestamptz IS NULL OR event_time<%s)
+                 AND (%s::timestamptz IS NULL OR
+                      (valid_from<=%s AND (valid_to IS NULL OR %s<valid_to)))
+               ORDER BY known_at,observation_id""",
+            (
+                contract_name,
+                provider_id,
+                knowledge_cutoff,
+                football_cutoff,
+                football_cutoff,
+                valid_at,
+                valid_at,
+                valid_at,
+            ),
+        ).fetchall()
+        return tuple(row[0] for row in rows)
+
+
+def _require_aware(value: datetime, field: str = "knowledge_cutoff") -> None:
     if value.utcoffset() is None:
-        raise ValueError("knowledge_cutoff must include a timezone")
+        raise ValueError(f"{field} must include a timezone")
