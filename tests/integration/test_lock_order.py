@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from time import monotonic, sleep
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import psycopg
 import pytest
@@ -673,3 +673,212 @@ def test_scientific_batch_runner_requires_independent_publication_transactions(
             datetime(2026, 1, 1, tzinfo=UTC),
             _competition_rules(),
         )
+
+
+@pytest.fixture
+def qualification_history(tmp_path: Path) -> Iterator[tuple[str, tuple[UUID, ...]]]:
+    from datetime import UTC, datetime
+
+    from football.product.football_data_uk import parse_csv_resource
+    from football.product.historical_backfill import HistoricalBackfillStore
+    from football.product.historical_manifest import publish_manifest
+    from football.product.identity_admission import admit_provider_mappings
+
+    from tests.integration.test_team_identity_correction import isolated_database
+
+    raw = (
+        b"Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG\n"
+        b"E0,01/08/2026,15:00,Scope home one,Scope away one,2,1\n"
+        b"E1,02/08/2026,15:00,Scope home two,Scope away two,0,0\n"
+        b"E0,03/08/2026,15:00,Scope home three,Scope away three,1,1\n"
+    )
+    stamp = datetime(2026, 9, 1, tzinfo=UTC)
+    with isolated_database() as url, psycopg.connect(url, autocommit=True) as connection:
+        with connection.transaction():
+            manifest = publish_manifest(
+                tmp_path,
+                provider="football_data_uk",
+                source_identity="test/scoped.csv",
+                source_revision="test",
+                acquired_at=stamp,
+                resources=[("test/scoped.csv", "raw/scoped.csv", raw)],
+            )
+            store = HistoricalBackfillStore(
+                connection, "football_data_uk", "Football Data", "test-v1", data_root=tmp_path
+            )
+            snapshot = store.ensure_snapshot(
+                source_identity="test/scoped.csv",
+                source_revision="test",
+                acquired_at=stamp,
+                manifest_path=manifest,
+            )
+            store.record_resource(
+                snapshot_id=snapshot,
+                provider_path="test/scoped.csv",
+                payload=raw,
+                media_type="text/csv",
+                acquired_at=stamp,
+            )
+            for match in parse_csv_resource(
+                raw, source_path="test/scoped.csv", season="2026", country_hint="England"
+            ):
+                assert store.import_match(match, snapshot, stamp) == "inserted"
+            admit_provider_mappings(connection, tmp_path, "football_data_uk")
+        rows = connection.execute(
+            "SELECT fixture_id,competition_id FROM football.product_team_match_history "
+            "ORDER BY fixture_id"
+        ).fetchall()
+        assert len(rows) == 3
+        assert connection.execute(
+            "SELECT count(DISTINCT competition_id) FROM football.product_team_match_history"
+        ).fetchone() == (2,)
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_eligible_history_at(clock_timestamp())"
+        ).fetchone() == (3,)
+        grouped: dict[UUID, list[UUID]] = {}
+        for fixture, competition in rows:
+            grouped.setdefault(competition, []).append(fixture)
+        same = next(values for values in grouped.values() if len(values) == 2)
+        other = next(values for values in grouped.values() if len(values) == 1)
+        yield url, (same[0], other[0], same[1])
+
+
+def test_unrelated_history_competitions_qualify_concurrently(
+    qualification_history: tuple[str, tuple[UUID, ...]],
+) -> None:
+    url, fixtures = qualification_history
+    with (
+        psycopg.connect(url, autocommit=True) as first,
+        psycopg.connect(url, autocommit=True) as second,
+    ):
+        before = first.execute(
+            "SELECT to_jsonb(d) FROM football.product_match_history_decisions d "
+            "ORDER BY decision_id"
+        ).fetchall()
+        second.execute("SET lock_timeout='200ms'")
+        with first.transaction(), second.transaction():
+            first.execute("SELECT football.record_product_history_decisions(%s)", ([fixtures[0]],))
+            second.execute("SELECT football.record_product_history_decisions(%s)", ([fixtures[1]],))
+        assert (
+            first.execute(
+                "SELECT to_jsonb(d) FROM football.product_match_history_decisions d "
+                "ORDER BY decision_id"
+            ).fetchall()
+            == before
+        )
+
+
+def test_shared_history_ownership_cannot_upgrade_to_global_mutation(
+    qualification_history: tuple[str, tuple[UUID, ...]],
+) -> None:
+    from football.storage.locks import IDENTITY_ADMISSION_LOCK
+
+    url, fixtures = qualification_history
+    with psycopg.connect(url, autocommit=True) as connection, connection.transaction():
+        connection.execute("SELECT football.record_product_history_decisions(%s)", ([fixtures[0]],))
+        with pytest.raises(LockOrderError), connection.transaction():
+            acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
+
+
+@pytest.mark.parametrize("overlap", ["fixture", "competition", "global"])
+def test_history_scope_excludes_overlapping_qualification_and_global_mutation(
+    qualification_history: tuple[str, tuple[UUID, ...]],
+    overlap: str,
+) -> None:
+    from football.storage.locks import IDENTITY_ADMISSION_LOCK
+
+    url, fixtures = qualification_history
+    with (
+        psycopg.connect(url, autocommit=True) as first,
+        psycopg.connect(url, autocommit=True) as second,
+    ):
+        second.execute("SET lock_timeout='100ms'")
+        with first.transaction():
+            first.execute("SELECT football.record_product_history_decisions(%s)", ([fixtures[0]],))
+            with pytest.raises(psycopg.errors.LockNotAvailable), second.transaction():
+                if overlap == "global":
+                    acquire_locks(second, (IDENTITY_ADMISSION_LOCK,))
+                else:
+                    second.execute(
+                        "SELECT football.record_product_history_decisions(%s)",
+                        ([fixtures[2] if overlap == "competition" else fixtures[0]],),
+                    )
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_shared_modes_keep_hashes_and_failed_try_restores_ledger(legacy: bool) -> None:
+    key = f"shared-mode:{uuid4()}"
+    url = os.environ["TEST_DATABASE_URL"]
+    with (
+        psycopg.connect(url, autocommit=True) as first,
+        psycopg.connect(url, autocommit=True) as second,
+    ):
+        with first.transaction():
+            acquire_locks(first, (LockRequest(LockClass.IDENTITY, key, legacy_hash=legacy),))
+            with second.transaction():
+                assert second.execute(
+                    "SELECT football.acquire_transaction_lock(20,%s,%s,false,true)", (key, legacy)
+                ).fetchone() == (False,)
+                assert second.execute(
+                    "SELECT coalesce(nullif(current_setting("
+                    "'matchforge.lock_order',true),''),'{}')::jsonb"
+                ).fetchone() == ({},)
+        with first.transaction():
+            assert first.execute(
+                "SELECT football.acquire_transaction_lock(20,%s,%s,true,true)", (key, legacy)
+            ).fetchone() == (True,)
+            ledger = first.execute(
+                "SELECT current_setting('matchforge.lock_order')::jsonb"
+            ).fetchone()[0]
+            assert ledger["held"][key]["shared"] is True
+            expression = "hashtext(%s)::bigint" if legacy else "hashtextextended(%s,0)"
+            assert second.execute(
+                "SELECT pg_try_advisory_xact_lock(" + expression + ")", (key,)
+            ).fetchone() == (False,)
+            with pytest.raises(LockOrderError), first.transaction():
+                acquire_locks(first, (LockRequest(LockClass.IDENTITY, key, legacy_hash=legacy),))
+
+
+def test_history_competition_keys_are_sorted_and_deduplicated(
+    qualification_history: tuple[str, tuple[UUID, ...]],
+) -> None:
+    url, fixtures = qualification_history
+    with psycopg.connect(url, autocommit=True) as connection, connection.transaction():
+        connection.execute(
+            "SELECT football.record_product_history_decisions(%s)",
+            (list(reversed(fixtures)) + list(fixtures),),
+        )
+        ledger = connection.execute(
+            "SELECT current_setting('matchforge.lock_order')::jsonb"
+        ).fetchone()[0]
+        keys = [
+            f"history:competition:{row[0]}"
+            for row in connection.execute(
+                "SELECT DISTINCT competition_id FROM football.product_team_match_history "
+                "ORDER BY competition_id"
+            )
+        ]
+        assert ledger["class"] == LockClass.IDENTITY_SCOPE
+        assert ledger["key"] == max(keys)
+        assert set(ledger["held"]) == {"product-identity-admission", *keys}
+
+
+def test_existing_exclusive_identity_ownership_keeps_constant_lock_count(
+    qualification_history: tuple[str, tuple[UUID, ...]],
+) -> None:
+    from football.storage.locks import IDENTITY_ADMISSION_LOCK
+
+    url, fixtures = qualification_history
+    with psycopg.connect(url, autocommit=True) as connection, connection.transaction():
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
+        connection.execute(
+            "SELECT football.record_product_history_decisions(%s)", (list(fixtures),)
+        )
+        assert connection.execute(
+            "SELECT count(*) FROM pg_locks WHERE pid=pg_backend_pid() AND locktype='advisory'"
+        ).fetchone() == (1,)
+        ledger = connection.execute(
+            "SELECT current_setting('matchforge.lock_order')::jsonb"
+        ).fetchone()[0]
+        assert set(ledger["held"]) == {"product-identity-admission"}
+        assert ledger["held"]["product-identity-admission"]["shared"] is False

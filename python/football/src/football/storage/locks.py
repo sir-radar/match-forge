@@ -24,6 +24,7 @@ class LockClass(IntEnum):
     CONTROL = 5
     SOURCE = 10
     IDENTITY = 20
+    IDENTITY_SCOPE = 25
     COMPETITION = 30
     FIXTURE = 40
     WORK = 50

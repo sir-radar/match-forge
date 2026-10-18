@@ -1816,6 +1816,37 @@
         "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
         "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
       ]
+    },
+    "phase_16": {
+      "status": "IN_PROGRESS",
+      "scope": "Competition-scoped pure history qualification with shared identity fencing; identity-wide fact mutation remains exclusive.",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "remaining_work": [
+        "Run committed-code shadow preservation."
+      ],
+      "focused_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 351,
+        "lock_postgres_cases_passed": 50,
+        "scoped_history_postgres_cases_passed": 9,
+        "lock_unit_cases_passed": 5,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-16-scoped-history-final-focused.log",
+        "unrelated_competition_concurrency": "PASS",
+        "overlapping_scope_and_global_exclusion": "PASS",
+        "shared_upgrade_rejected": "PASS",
+        "legacy_hash_compatibility": "PASS",
+        "failed_try_ledger_rollback": "PASS",
+        "bounded_qualification_and_statsbomb_lock_counts": "PASS"
+      },
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1456,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-16-check-integration.log"
+      }
     }
   },
   "phase_1b": {

@@ -258,7 +258,7 @@ and the exact fixture projection.
 
 `football.storage.locks` and the SQL functions introduced by
 `202610180800_transaction_lock_order.sql`, extended through
-`202610181300_worker_fence_lock_order.sql`, order blocking coordination requests
+`202610181400_scoped_history_locks.sql`, order blocking coordination requests
 by class, then exact key in C/Unicode order:
 
 | Class | Order |
@@ -266,6 +266,7 @@ by class, then exact key in C/Unicode order:
 | Worker control | 5 |
 | Source | 10 |
 | Identity | 20 |
+| Scoped identity | 25 |
 | Competition | 30 |
 | Fixture | 40 |
 | Work | 50 |
@@ -349,8 +350,24 @@ Python advisory coordination requests now use this shared contract, retaining
 their previous exact keys and hash namespaces. Forecast batches acquire keys
 in semantic-hash order and return the original target/model-family order.
 
-Broad identity serialization remains for Phase 16, and existing queues remain
-for Phase 17 migration. Full-route adversarial tests and controlled production
+Phase 16 scopes pure history qualification by competition. It takes a shared
+lock on the existing `product-identity-admission` key, then exclusive class-25
+`history:competition:<competition-id>` keys in sorted order. Only competitions
+with retained history rows need a scoped lock. Unrelated competitions can
+qualify concurrently; overlapping qualification remains serialized.
+
+Fact-changing ingestion, correction, source-validation and resolution paths
+retain exclusive identity coordination because their effects can cross
+fixtures, mappings and competitions. An already held exclusive identity lock
+covers its qualification fan-out without adding per-match locks. Shared mode
+cannot upgrade to exclusive mode inside the transaction; callers must declare
+exclusive mutation first. Failed nonblocking requests restore the prior ledger,
+and existing SQL lock entry points retain their original signatures.
+
+The qualification predicates and decision clocks stay unchanged. The writer
+remains volatile, so its query after coordination can observe committed prior
+decisions under PostgreSQL's [function snapshot rules](https://www.postgresql.org/docs/18/xfunc-volatility.html).
+Existing queue migration, full-route adversarial tests and controlled production
 cutover remain required later gates.
 
 ## System Flow
