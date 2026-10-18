@@ -284,6 +284,12 @@ Do not merge entities solely because their names look similar.
 
 Resolution must be explicit, deterministic, and traceable.
 
+`IdentityRepository.mapping_at` reads recorded states of the five existing provider-mapping tables: competition, season, team, player and match. Those tables remain the identity owners. `provider_mapping_history` records their inserts, identity changes and deletions atomically with the original write, retaining the original mapping, canonical and source-snapshot IDs. Routine `last_seen_at` touches leave the identity history unchanged. Mapping IDs and history rows are immutable; truncation cannot bypass recorded changes.
+
+Each read requires a football-validity instant and an explicit `knowledge_cutoff`. Mapping validity follows the existing half-open ranges, where null bounds are unbounded. Season native IDs require their native competition scope. The reader selects the known state before matching its native key, so a renamed or deleted mapping cannot resurrect its earlier key. Initial capture establishes knowledge at capture time; it does not reconstruct unrecorded earlier states. Source and mapping clocks can delay knowledge, and subsequent states cannot move knowledge backwards.
+
+A returned mapping is an identity claim with provenance. Qualification stays with the existing decisions: `admitted_identity_at` reads R2 admissions and revocations, and delegates team corrections to `product_team_identity_at`. Confidence alone does not create admission. The resolution-decision and R3 fixture-resolution owners remain in place; an R3 version label does not make its mutable rows an immutable historical record. Existing lineup participation and coach observations retain their fixture and time scope. Continuous membership or management tenure requires independent evidence. The new mapping capture is rehearsed in shadow/test databases before the controlled cutover.
+
 Team corrections extend the R2 `product_identity_admissions` log. A correction
 links one source mapping to a verified target mapping and the original fixture
 contradiction using `corrects_decision_id` and `target_mapping_id`. It preserves

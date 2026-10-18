@@ -1220,7 +1220,8 @@
     "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
     "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
     "schema_changes": [
-      "202610160200_observation_contract_foundation.sql"
+      "202610160200_observation_contract_foundation.sql",
+      "202610180100_provider_mapping_history.sql"
     ],
     "runtime_cutover": false,
     "remaining_work": "Implement phases 6-48 in order; commit each completed phase before beginning the next.",
@@ -1399,6 +1400,27 @@
         "provider_contract_queries": 44,
         "read_only_session": true,
         "database_mutations": 0
+      }
+    },
+    "phase_6": {
+      "status": "IMPLEMENTED_PENDING_COMMITTED_SHADOW_UPGRADE",
+      "identity_owner": "Existing provider mappings and identity decision ledgers",
+      "mapping_history": "Append-only recorded states for competition, season, team, player and match mappings; existing canonical IDs retained.",
+      "initial_knowledge": "Capture time, with source/mapping clock guards; earlier mapping states are not fabricated.",
+      "qualification_owner": "Existing R2 admission/correction history and R3 fixture-resolution owners",
+      "focused_unit_and_postgres_tests_passed": 29,
+      "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-identity-red.log",
+      "focused_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-identity-final-focused.log",
+      "migration_applied_to": "DISPOSABLE_TEST_DATABASES_ONLY",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1288,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-6-check-integration.log"
       }
     }
   },
