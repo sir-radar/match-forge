@@ -1435,6 +1435,31 @@
         "champion_unchanged": true,
         "v1_schema_unchanged": true
       }
+    },
+    "phase_7": {
+      "status": "IMPLEMENTED_PENDING_COMMITTED_WIRE_ACCEPTANCE",
+      "contract": "DecisionRecordV1",
+      "schema_ref": "schemas/contracts/decision-record-v1.schema.json",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "adapters": [
+        "ResolutionDecisionV1.to_decision_record",
+        "ModelPromotionEventV1.to_decision_record"
+      ],
+      "existing_decision_owners_preserved": true,
+      "historical_rows_rewritten": 0,
+      "focused_contract_and_resolution_tests_passed": 33,
+      "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-7-decision-red.log",
+      "focused_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-7-decision-focused.log",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "comprehensive_validation": {
+        "status": "PASS",
+        "python_unit_tests_passed": 1316,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-7-check-integration.log"
+      }
     }
   },
   "phase_1b": {

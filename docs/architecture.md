@@ -309,6 +309,14 @@ competition, season, orientation and conflict checks.
 The typed correction operation and deployment procedure are documented in
 [MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
 
+## Decision records
+
+`football.contracts.decisions.DecisionRecordV1` gives future identity, canonical-resolution, authority, capability, promotion and suspension decisions common semantics. The schema is `schemas/contracts/decision-record-v1.schema.json`. Domain owners supply stable subject and predecessor references, their disposition and reason, decision time, optional effective time and JSON evidence. Decision and effective time remain separate; future effective times are valid. Stored clocks normalize to UTC, and evidence is an immutable copy containing finite JSON values.
+
+Use `to_dict()` or `to_bytes()` for serialization. Evidence hashes cover canonical UTF-8 JSON without a newline. The record checksum covers the complete canonical document with its trailing newline; its deterministic UUID identifies that semantic record. Unknown versions, fields, duplicate JSON keys and mismatched evidence hashes are rejected. Corrections produce new records linked to their predecessors.
+
+Existing physical decision tables and domain checks remain the owners. `ResolutionDecisionV1.to_decision_record` preserves its original payload and checksum and requires an explicit stable subject ID. `ModelPromotionEventV1.to_decision_record` preserves artifact/evaluation/event IDs and requires a reason. These adapters leave effective time unreported when the original contract has none. Promotion approval remains with the existing registry and evaluation gates. Historical rows are not rewritten into a common table.
+
 ## Point-in-Time Contract
 
 Historical forecast work separates:
