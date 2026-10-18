@@ -1248,7 +1248,8 @@
       "202610181400_scoped_history_locks.sql",
       "202610181500_scoped_work_claims.sql",
       "202610181600_lease_expiry_retry_policy.sql",
-      "202610181700_history_work_registration.sql"
+      "202610181700_history_work_registration.sql",
+      "202610181800_history_work_execution.sql"
     ],
     "runtime_cutover": false,
     "remaining_work": "Implement phases 17-48 in order; commit each completed phase before beginning the next.",
@@ -1953,7 +1954,7 @@
         "registered_work_items": 0
       },
       "history_database_adapter_validation": {
-        "status": "FOCUSED_PASS",
+        "status": "PASS_WITH_WARNINGS",
         "postgres_cases_passed": 397,
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-final-focused.log",
         "recovery_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-execution-recovery.log",
@@ -1982,7 +1983,14 @@
           "web_tests_passed": 56,
           "lint_typing_build_migrations_storage_api": "PASS",
           "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-final-check-integration.log"
-        }
+        },
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-17-history-database-adapter-2026-10-18.json",
+        "code_commit_sha": "be4e0027728a667a5135e160ae408f7448acf24f",
+        "existing_tables_verified": 111,
+        "existing_table_hashes_preserved": true,
+        "fixture_projection_preserved": true,
+        "registered_history_requests": 0,
+        "registered_work_items": 0
       }
     }
   },
