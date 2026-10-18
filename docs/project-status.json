@@ -1205,13 +1205,14 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 5,
+    "current_phase": 6,
     "completed_phases": [
       0,
       1,
       2,
       3,
-      4
+      4,
+      5
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1222,7 +1223,7 @@
       "202610160200_observation_contract_foundation.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Implement phases 5-48 in order; commit each completed phase before beginning the next.",
+    "remaining_work": "Implement phases 6-48 in order; commit each completed phase before beginning the next.",
     "phase_gate": "PASS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-0-2026-10-16.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -1365,7 +1366,7 @@
       }
     },
     "phase_5": {
-      "status": "IMPLEMENTED_PENDING_COMMITTED_READ_ACCEPTANCE",
+      "status": "PASS",
       "reader": "PointInTimeRepository.resource_observation_ids_at",
       "observation_contract_versions": [
         "1",
@@ -1388,6 +1389,16 @@
         "web_tests_passed": 56,
         "lint_typing_build_migrations_storage_api": "PASS",
         "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-check-integration.log"
+      },
+      "retained_read_acceptance": {
+        "status": "PASS",
+        "code_commit_sha": "db88e27399f29670abf4ea1e1c5962f29b1d8904",
+        "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-5-2026-10-18.json",
+        "evidence_sha256": "0e765635d1930842a3a99f6de1adbced79767670c1d918537050f0b325e7cbcb",
+        "unique_artifacts_verified": 5609,
+        "provider_contract_queries": 44,
+        "read_only_session": true,
+        "database_mutations": 0
       }
     }
   },

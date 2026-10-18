@@ -1,0 +1,435 @@
+{
+  "acceptance_runner_sha256": "db6891898fbef0843c8b36425f9a6443b33a70211a7502c6c99bfeb81b84c51f",
+  "additional_live_provider_requests": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "db88e27399f29670abf4ea1e1c5962f29b1d8904",
+  "code_worktree_clean": true,
+  "database": "football_architecture_v2_shadow_20261016",
+  "database_mutations": 0,
+  "finished_at": "2026-10-18T02:57:39.634242+00:00",
+  "limitations": [
+    "Source facts remain unresolved observations, not model-history admission or a forecast context.",
+    "The retained Phase 4 corpus has no inferred event times or validity intervals; those filters conservatively exclude unknown clocks. Real temporal boundaries and same-kickoff outcomes are exercised in rolled-back PostgreSQL tests for V1 and V2."
+  ],
+  "maximum_known_at": "2026-10-16T10:52:15.373647+00:00",
+  "minimum_known_at": "2026-09-04T16:20:55.150645+00:00",
+  "phase": 5,
+  "phase_4_evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-4-2026-10-18.json",
+  "phase_4_evidence_sha256": "b220375a089064c079a8eaa5db078d28e49f7ac026198495099ca4ffe957e7c1",
+  "queries": [
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "api_football",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "api_football",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "api_football",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 3,
+      "provider": "football_data_org",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 6,
+      "provider": "football_data_org",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CompetitionObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 392,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 392,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "OddsObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 380,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 380,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 784,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamStatisticObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 760,
+      "provider": "football_data_uk",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CoachObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CompetitionObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "EventObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 3,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ExpectedGoalsObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 17,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "LineupObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "PlayerObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 81,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "PlayerStatisticObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 23,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ShotObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 17,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 4,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamStatisticObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "fotmob",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CompetitionObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "openfootball",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 352,
+      "provider": "openfootball",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 352,
+      "provider": "openfootball",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 704,
+      "provider": "openfootball",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CoachObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "CompetitionObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ExpectedGoalsObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 22,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FixtureObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "FormationObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "LineupObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 2,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "PlayerObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 72,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "PlayerStatisticObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 31,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 1,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ShotObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 20,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 4,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamStatisticObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 6,
+      "provider": "pitchapi",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "EventObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 17,
+      "provider": "statsbomb_open_data",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ExpectedGoalsObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 22,
+      "provider": "statsbomb_open_data",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ResultObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 240,
+      "provider": "statsbomb_open_data",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "ShotObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 22,
+      "provider": "statsbomb_open_data",
+      "valid_at_cutoff_observations": 0
+    },
+    {
+      "artifact_time_and_order_verified": true,
+      "before_first_knowledge": 0,
+      "contract": "TeamObservationV2",
+      "football_history_observations": 0,
+      "known_observations": 480,
+      "provider": "statsbomb_open_data",
+      "valid_at_cutoff_observations": 0
+    }
+  ],
+  "read_only_session": true,
+  "runtime_cutover": false,
+  "status": "PASS",
+  "unique_artifacts_verified": 5609,
+  "verification": {
+    "comprehensive_validation": {
+      "lint_typing_build_migrations_storage_api": "PASS",
+      "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-check-integration.log",
+      "python_unit_tests_passed": 1280,
+      "rust_tests_passed": 16,
+      "status": "PASS",
+      "web_tests_passed": 56
+    },
+    "focused_unit_and_postgres_tests_passed": 34,
+    "green_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-temporal-green.log",
+    "new_tests_failed_before_implementation": 16,
+    "red_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-5-temporal-red.log"
+  }
+}
