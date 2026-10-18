@@ -1,22 +1,33 @@
-"""Register legacy history requests without changing their retained domain rows.
+"""Bind history requests and project shared work state into legacy queue detail.
 
-This migration step binds immutable request inputs to shared work. Execution and
-legacy scheduler handoff require the separate Phase 17 adapter/parity checks.
+Provider execution and scheduler handoff still require Phase 17 integration and
+controlled parity checks.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from psycopg import Connection
-from psycopg.rows import dict_row
+from psycopg import Connection, Error, sql
+from psycopg.errors import InvalidParameterValue, ObjectNotInPrerequisiteState, UniqueViolation
+from psycopg.pq import TransactionStatus
+from psycopg.rows import dict_row, tuple_row
 
+from football.contracts.source import SHA256_PATTERN
 from football.product.domain import sha256_json
-from football.storage.locks import LockClass
-from football.work.contracts import RetryPolicy, WorkContractError, WorkRequest, WorkType
-from football.work.storage import WorkConflict, WorkRegistry
+from football.storage.locks import LOCK_ORDER_SQLSTATE, LockClass, LockOrderError
+from football.work.contracts import (
+    RetryClassification,
+    RetryPolicy,
+    WorkClaim,
+    WorkContractError,
+    WorkRequest,
+    WorkState,
+    WorkType,
+)
+from football.work.storage import WorkConflict, WorkLeaseLost, WorkRegistry, claim_from_record
 
 
 class _HistoryRequestChanged(Exception):
@@ -117,7 +128,7 @@ def _history_request(connection: Connection[Any], row: dict[str, Any]) -> WorkRe
     offset = int(row["attempt_count"])
     if offset >= 2**31 - 1:
         raise WorkContractError("history attempt count exhausted PostgreSQL integer capacity")
-    with connection.cursor() as cursor:
+    with connection.cursor(row_factory=tuple_row) as cursor:
         cursor.execute("SELECT football.work_retry_seconds(60,3600,2,%s)", (offset + 1,))
         delay = cursor.fetchone()
         assert delay is not None
@@ -143,3 +154,107 @@ def _history_request(connection: Connection[Any], row: dict[str, Any]) -> WorkRe
             lease_expiry_delay=timedelta(),
         ),
     )
+
+
+def claim_history_request(
+    connection: Connection[Any],
+    job_id: UUID,
+    owner: str,
+    batch_started_at: datetime,
+    *,
+    lease_duration: timedelta,
+) -> WorkClaim | None:
+    """Claim one explicitly selected request through shared eligibility and fencing."""
+    _require_idle(connection)
+    if not isinstance(owner, str) or not owner.strip():
+        raise WorkContractError("history claim owner is required")
+    if not isinstance(lease_duration, timedelta) or lease_duration <= timedelta():
+        raise WorkContractError("history claim lease duration must be positive")
+    if not isinstance(batch_started_at, datetime) or batch_started_at.utcoffset() is None:
+        raise WorkContractError("history batch start requires a timezone")
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        cursor.execute(
+            """SELECT binding.work_id FROM football.product_history_sync_queue queue
+            JOIN football.product_history_work binding USING (job_id,queued_at)
+            WHERE queue.job_id=%s""",
+            (job_id,),
+        )
+        bound = cursor.fetchone()
+    identity = UUID(str(bound[0])) if bound else register_history_request(connection, job_id)
+    if identity is None:
+        return None
+    row = _history_operation(
+        connection, "claim_history_work", identity, owner, lease_duration, batch_started_at
+    )
+    return claim_from_record(row) if row else None
+
+
+def complete_history_request(
+    connection: Connection[Any], claim: WorkClaim, *, result_hash: str
+) -> None:
+    """Complete work and its matching queue request in one short transaction."""
+    if not isinstance(result_hash, str) or not SHA256_PATTERN.fullmatch(result_hash):
+        raise WorkContractError("history work result hash must be lowercase SHA256")
+    _history_operation(
+        connection,
+        "finish_history_work",
+        claim.work_id,
+        claim.lease_owner,
+        claim.lease_token,
+        claim.generation,
+        result_hash,
+    )
+
+
+def fail_history_request(
+    connection: Connection[Any],
+    claim: WorkClaim,
+    classification: RetryClassification,
+    *,
+    error_code: str,
+    error_message: str,
+) -> WorkState:
+    """Apply shared retry classification and atomically project the domain state."""
+    if not isinstance(classification, RetryClassification):
+        raise WorkContractError("history failure requires shared retry classification")
+    row = _history_operation(
+        connection,
+        "fail_history_work",
+        claim.work_id,
+        claim.lease_owner,
+        claim.lease_token,
+        claim.generation,
+        classification.value,
+        error_code,
+        error_message,
+    )
+    assert row is not None
+    return WorkState(row["state"])
+
+
+def _require_idle(connection: Connection[Any]) -> None:
+    if connection.info.transaction_status != TransactionStatus.IDLE:
+        raise WorkContractError("history work control requires an idle connection")
+
+
+def _history_operation(
+    connection: Connection[Any], name: str, *arguments: object
+) -> dict[str, Any] | None:
+    _require_idle(connection)
+    query = sql.SQL("SELECT * FROM football.{}({})").format(
+        sql.Identifier(name), sql.SQL(",").join(sql.Placeholder() for _ in arguments)
+    )
+    try:
+        with connection.transaction(), connection.cursor(row_factory=dict_row) as cursor:
+            cursor.execute(query, arguments)
+            return cursor.fetchone()
+    except ObjectNotInPrerequisiteState as error:
+        raise WorkLeaseLost("history work lease ownership lost") from error
+    except UniqueViolation as error:
+        raise WorkConflict(str(error)) from error
+    except InvalidParameterValue as error:
+        raise WorkContractError(str(error)) from error
+    except Error as error:
+        if error.sqlstate == LOCK_ORDER_SQLSTATE:
+            raise LockOrderError(str(error)) from error
+        raise

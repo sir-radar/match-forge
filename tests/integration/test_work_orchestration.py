@@ -849,3 +849,57 @@ def test_lease_expiry_policy_is_immutable_for_an_existing_request(
             "UPDATE football.work_items SET lease_retry_delay_seconds=1 WHERE work_id=%s",
             (item.work_id,),
         )
+
+
+def test_concurrent_enqueue_of_one_deterministic_id_is_idempotent(
+    worker: tuple[Connection[Any], WorkRegistry, list[UUID]],
+) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    connection, _, identities = worker
+    item = request()
+    identities.append(item.work_id)
+    barrier = Barrier(8, timeout=5)
+
+    def submit() -> UUID:
+        with psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as concurrent:
+            concurrent.execute("SET statement_timeout='5s'")
+            barrier.wait()
+            return WorkRegistry(concurrent).enqueue(item)
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = [future.result(timeout=10) for future in [pool.submit(submit) for _ in range(8)]]
+    assert results == [item.work_id] * 8
+    assert connection.execute(
+        "SELECT count(*),bool_and(dependencies_sealed) FROM football.work_items WHERE work_id=%s",
+        (item.work_id,),
+    ).fetchone() == (1, True)
+
+
+def test_sql_primary_identity_collision_cannot_bind_another_semantic_request(
+    work_db: Connection[Any],
+) -> None:
+    first = enqueue(work_db)
+    with pytest.raises(psycopg.errors.UniqueViolation), work_db.transaction():
+        work_db.execute(
+            "SELECT * FROM football.enqueue_work(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (
+                first["work_id"],
+                first["work_type"],
+                f"collision:{uuid4()}",
+                first["input_hash"],
+                first["priority"],
+                first["available_at"],
+                first["max_attempts"],
+                first["retry_base_seconds"],
+                first["retry_cap_seconds"],
+                first["retry_multiplier"],
+                [],
+                None,
+            ),
+        )
+    assert work_db.execute(
+        "SELECT semantic_key,input_hash FROM football.work_items WHERE work_id=%s",
+        (first["work_id"],),
+    ).fetchone() == {"semantic_key": first["semantic_key"], "input_hash": first["input_hash"]}

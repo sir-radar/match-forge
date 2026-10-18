@@ -1951,6 +1951,38 @@
         "fixture_projection_preserved": true,
         "registered_history_requests": 0,
         "registered_work_items": 0
+      },
+      "history_database_adapter_validation": {
+        "status": "FOCUSED_PASS",
+        "postgres_cases_passed": 397,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-final-focused.log",
+        "recovery_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-execution-recovery.log",
+        "atomic_claim_completion_failure_projection": "PASS",
+        "busy_detail_claim_rollback": "PASS",
+        "stale_worker_excluded": "PASS",
+        "expiry_during_projection_rolls_back": "PASS",
+        "invalid_arguments_have_no_registration_side_effects": "PASS",
+        "terminal_projection_idempotent": "PASS",
+        "phase_gate_complete": false,
+        "remaining_work": "Integrate provider execution, heartbeat and result publication; migrate the remaining domain queues and run controlled execution parity.",
+        "recovery_cases_passed": 6,
+        "concurrent_enqueue_primary_key_regression": {
+          "status": "FINAL_COMPREHENSIVE_PASS",
+          "initial_full_validation": "FAIL",
+          "failure_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-check-integration.log",
+          "constraint": "work_items_pkey",
+          "primary_and_semantic_conflicts_handled": true,
+          "conflicting_identity_inputs_rejected": true
+        },
+        "busy_expired_attempt_cleanup": "PASS",
+        "comprehensive_validation": {
+          "status": "PASS",
+          "python_unit_tests_passed": 1460,
+          "rust_tests_passed": 16,
+          "web_tests_passed": 56,
+          "lint_typing_build_migrations_storage_api": "PASS",
+          "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-final-check-integration.log"
+        }
       }
     }
   },

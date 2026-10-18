@@ -736,3 +736,550 @@ def test_history_registration_locks_existing_work_before_domain_detail(
             for identity in identities:
                 WorkRegistry(owner).cancel(identity)
             owner.execute("DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,))
+
+
+def test_shared_history_claim_and_completion_drive_legacy_detail_atomically() -> None:
+    from football.product.history_work import claim_history_request, complete_history_request
+    from football.work.contracts import WorkState
+    from football.work.storage import WorkRegistry
+    from psycopg.pq import TransactionStatus
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        before = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = None
+        try:
+            claim = claim_history_request(
+                connection, job, "history-worker", before, lease_duration=timedelta(minutes=30)
+            )
+            assert claim is not None
+            assert connection.info.transaction_status == TransactionStatus.IDLE
+            assert WorkRegistry(connection).state(claim.work_id) == WorkState.RUNNING
+            assert connection.execute(
+                "SELECT job_status,attempt_count,claimed_at IS NOT NULL "
+                "FROM football.product_history_sync_queue WHERE job_id=%s",
+                (job,),
+            ).fetchone() == ("RUNNING", 1, True)
+            complete_history_request(connection, claim, result_hash="a" * 64)
+            assert WorkRegistry(connection).state(claim.work_id) == WorkState.SUCCEEDED
+            assert connection.execute(
+                "SELECT job_status,finished_at IS NOT NULL,claimed_at "
+                "FROM football.product_history_sync_queue WHERE job_id=%s",
+                (job,),
+            ).fetchone() == ("SUCCEEDED", True, None)
+            assert connection.info.transaction_status == TransactionStatus.IDLE
+            completed = connection.execute(
+                "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s",
+                (job,),
+            ).fetchone()
+            next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            assert (
+                claim_history_request(
+                    connection,
+                    job,
+                    "repeat-worker",
+                    next_batch,
+                    lease_duration=timedelta(minutes=30),
+                )
+                is None
+            )
+            assert (
+                connection.execute(
+                    "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s",
+                    (job,),
+                ).fetchone()
+                == completed
+            )
+        finally:
+            if claim is not None:
+                WorkRegistry(connection).cancel(claim.work_id)
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work() -> None:
+    from football.product.history_work import claim_history_request, fail_history_request
+    from football.work.contracts import RetryClassification, WorkState
+    from football.work.storage import WorkRegistry
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue
+            (provider_competition_id,season,attempt_count)
+            VALUES (%s,2099,2) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = None
+        try:
+            claim = claim_history_request(
+                connection, job, "history-worker", batch, lease_duration=timedelta(minutes=30)
+            )
+            assert claim is not None
+            before = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            assert (
+                fail_history_request(
+                    connection,
+                    claim,
+                    RetryClassification.RETRYABLE,
+                    error_code="PROVIDER_TEMPORARY",
+                    error_message="retry after provider failure",
+                )
+                == WorkState.RETRY_WAIT
+            )
+            row = connection.execute(
+                """SELECT queue.job_status,queue.attempt_count,queue.next_attempt_at,
+                work.available_at,queue.last_error FROM football.product_history_sync_queue queue
+                JOIN football.product_history_work binding USING (job_id,queued_at)
+                JOIN football.work_items work USING (work_id) WHERE queue.job_id=%s""",
+                (job,),
+            ).fetchone()
+            assert row is not None
+            assert row[0:2] == ("PENDING", 3)
+            assert row[2] == row[3] and row[2] >= before + timedelta(seconds=240)
+            assert row[4] == "retry after provider failure"
+            next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            assert (
+                claim_history_request(
+                    connection,
+                    job,
+                    "early-worker",
+                    next_batch,
+                    lease_duration=timedelta(minutes=30),
+                )
+                is None
+            )
+        finally:
+            if claim is not None:
+                WorkRegistry(connection).cancel(claim.work_id)
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+@pytest.mark.parametrize(
+    ("owner_key", "lease"),
+    [
+        ("", timedelta(minutes=30)),
+        ("worker", timedelta()),
+        ("worker", timedelta(seconds=-1)),
+    ],
+)
+def test_invalid_shared_history_claim_does_not_register_work(
+    owner_key: str, lease: timedelta
+) -> None:
+    from football.product.history_work import claim_history_request
+    from football.work.contracts import WorkContractError
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        before = connection.execute("SELECT count(*) FROM football.work_items").fetchone()
+        try:
+            with pytest.raises(WorkContractError):
+                claim_history_request(connection, job, owner_key, batch, lease_duration=lease)
+            assert (
+                connection.execute("SELECT count(*) FROM football.work_items").fetchone() == before
+            )
+            assert connection.execute(
+                "SELECT count(*) FROM football.product_history_work WHERE job_id=%s", (job,)
+            ).fetchone() == (0,)
+        finally:
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+def test_busy_history_detail_does_not_consume_a_shared_attempt() -> None:
+    from football.product.history_work import claim_history_request, register_history_request
+    from football.work.storage import WorkRegistry
+
+    with (
+        psycopg.connect(DATABASE_URL, autocommit=True) as owner,
+        psycopg.connect(DATABASE_URL, autocommit=True) as worker,
+    ):
+        job = owner.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        identity = register_history_request(owner, job)
+        assert identity is not None
+        batch = owner.execute("SELECT clock_timestamp()").fetchone()[0]
+        try:
+            with owner.transaction():
+                owner.execute(
+                    "SELECT 1 FROM football.product_history_sync_queue WHERE job_id=%s FOR UPDATE",
+                    (job,),
+                )
+                assert (
+                    claim_history_request(
+                        worker, job, "worker", batch, lease_duration=timedelta(minutes=30)
+                    )
+                    is None
+                )
+                assert worker.execute(
+                    "SELECT state,attempt_count,lease_token FROM football.work_items "
+                    "WHERE work_id=%s",
+                    (identity,),
+                ).fetchone() == ("PENDING", 0, None)
+                with worker.transaction():
+                    worker.execute(
+                        "SELECT 1 FROM football.work_items WHERE work_id=%s FOR UPDATE NOWAIT",
+                        (identity,),
+                    )
+        finally:
+            WorkRegistry(owner).cancel(identity)
+            owner.execute("DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,))
+
+
+def test_expired_history_worker_cannot_complete_or_fail_its_replacement() -> None:
+    from football.product.history_work import (
+        claim_history_request,
+        complete_history_request,
+        fail_history_request,
+    )
+    from football.work.contracts import RetryClassification
+    from football.work.storage import WorkLeaseLost, WorkRegistry
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        first = None
+        try:
+            first = claim_history_request(
+                connection, job, "expired", batch, lease_duration=timedelta(milliseconds=30)
+            )
+            assert first is not None
+            connection.execute(
+                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
+                "(%s::timestamptz-clock_timestamp())))+0.005)",
+                (first.lease_until,),
+            )
+            next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            replacement = claim_history_request(
+                connection, job, "replacement", next_batch, lease_duration=timedelta(minutes=30)
+            )
+            assert replacement is not None and replacement.generation == first.generation + 1
+            before = connection.execute(
+                "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s",
+                (job,),
+            ).fetchone()
+            with pytest.raises(WorkLeaseLost):
+                complete_history_request(connection, first, result_hash="a" * 64)
+            with pytest.raises(WorkLeaseLost):
+                fail_history_request(
+                    connection,
+                    first,
+                    RetryClassification.NON_RETRYABLE,
+                    error_code="STALE",
+                    error_message="Must not affect replacement",
+                )
+            assert (
+                connection.execute(
+                    "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s",
+                    (job,),
+                ).fetchone()
+                == before
+            )
+            complete_history_request(connection, replacement, result_hash="b" * 64)
+        finally:
+            if first is not None:
+                WorkRegistry(connection).cancel(first.work_id)
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+@pytest.mark.parametrize("operation", ["complete", "fail"])
+def test_history_transition_expiring_while_detail_is_locked_rolls_back(operation: str) -> None:
+    from football.product.history_work import (
+        claim_history_request,
+        complete_history_request,
+        fail_history_request,
+    )
+    from football.work.contracts import RetryClassification
+    from football.work.storage import WorkLeaseLost, WorkRegistry
+
+    with (
+        psycopg.connect(DATABASE_URL, autocommit=True) as owner,
+        psycopg.connect(DATABASE_URL, autocommit=True) as worker,
+        psycopg.connect(DATABASE_URL, autocommit=True) as observer,
+    ):
+        job = owner.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = owner.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = claim_history_request(
+            worker, job, "worker", batch, lease_duration=timedelta(seconds=1)
+        )
+        assert claim is not None
+        worker.execute("SET statement_timeout='5s'")
+        before = owner.execute(
+            "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s", (job,)
+        ).fetchone()
+
+        def transition() -> None:
+            if operation == "complete":
+                complete_history_request(worker, claim, result_hash="a" * 64)
+            else:
+                fail_history_request(
+                    worker,
+                    claim,
+                    RetryClassification.NON_RETRYABLE,
+                    error_code="TEST_FAILURE",
+                    error_message="Owned failure",
+                )
+
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                with owner.transaction():
+                    owner.execute(
+                        "SELECT job_id FROM football.product_history_sync_queue "
+                        "WHERE job_id=%s FOR UPDATE",
+                        (job,),
+                    )
+                    future = pool.submit(transition)
+                    deadline = monotonic() + 3
+                    while monotonic() < deadline:
+                        if observer.execute(
+                            "SELECT pg_blocking_pids(%s)", (worker.info.backend_pid,)
+                        ).fetchone()[0]:
+                            break
+                        if future.done():
+                            future.result()
+                            pytest.fail("transition did not reach its controlled detail lock")
+                        sleep(0.01)
+                    else:
+                        pytest.fail("transition did not block on detail")
+                    observer.execute(
+                        "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
+                        "(%s::timestamptz-clock_timestamp())))+0.005)",
+                        (claim.lease_until,),
+                    )
+                with pytest.raises(WorkLeaseLost):
+                    future.result(timeout=5)
+            assert (
+                owner.execute(
+                    "SELECT to_jsonb(q) FROM football.product_history_sync_queue q WHERE job_id=%s",
+                    (job,),
+                ).fetchone()
+                == before
+            )
+            assert owner.execute(
+                "SELECT state,result_hash FROM football.work_items WHERE work_id=%s",
+                (claim.work_id,),
+            ).fetchone() == ("RUNNING", None)
+        finally:
+            WorkRegistry(owner).cancel(claim.work_id)
+            owner.execute("DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,))
+
+
+@pytest.mark.parametrize("batch", [None, "infinity", "-infinity"])
+def test_sql_history_claim_rejects_nonfinite_batches_without_an_attempt(batch: Any) -> None:
+    from football.product.history_work import register_history_request
+    from football.work.storage import WorkRegistry
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        identity = register_history_request(connection, job)
+        assert identity is not None
+        try:
+            with pytest.raises(psycopg.errors.InvalidParameterValue):
+                connection.execute(
+                    "SELECT * FROM football.claim_history_work(%s,%s,%s,%s::timestamptz)",
+                    (identity, "worker", timedelta(minutes=30), batch),
+                )
+            assert connection.execute(
+                "SELECT state,attempt_count FROM football.work_items WHERE work_id=%s",
+                (identity,),
+            ).fetchone() == ("PENDING", 0)
+        finally:
+            WorkRegistry(connection).cancel(identity)
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+def test_shared_history_reaps_its_last_expired_attempt_into_failed_detail() -> None:
+    from football.product.history_work import claim_history_request
+    from football.work.storage import WorkRegistry
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job = connection.execute(
+            """INSERT INTO football.product_history_sync_queue
+            (provider_competition_id,season,attempt_count)
+            VALUES (%s,2099,2147483646) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = None
+        try:
+            claim = claim_history_request(
+                connection, job, "last-worker", batch, lease_duration=timedelta(milliseconds=30)
+            )
+            assert claim is not None
+            connection.execute(
+                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
+                "(%s::timestamptz-clock_timestamp())))+0.005)",
+                (claim.lease_until,),
+            )
+            next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            assert (
+                claim_history_request(
+                    connection, job, "replacement", next_batch, lease_duration=timedelta(minutes=30)
+                )
+                is None
+            )
+            assert connection.execute(
+                """SELECT queue.job_status,queue.attempt_count,work.state,work.last_error_code,
+                queue.finished_at=work.finished_at FROM football.product_history_sync_queue queue
+                JOIN football.product_history_work binding USING (job_id,queued_at)
+                JOIN football.work_items work USING (work_id) WHERE queue.job_id=%s""",
+                (job,),
+            ).fetchone() == ("FAILED", 2147483647, "FAILED", "LEASE_EXPIRED", True)
+        finally:
+            if claim is not None:
+                WorkRegistry(connection).cancel(claim.work_id)
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+def test_history_batch_deferral_does_not_consume_a_shared_attempt() -> None:
+    from football.product.history_work import claim_history_request
+    from football.work.storage import WorkRegistry
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as connection:
+        job, stamp = connection.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id,queued_at""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()
+        try:
+            assert (
+                claim_history_request(
+                    connection,
+                    job,
+                    "worker",
+                    stamp - timedelta(seconds=1),
+                    lease_duration=timedelta(minutes=30),
+                )
+                is None
+            )
+            row = connection.execute(
+                """SELECT work.work_id,work.state,work.attempt_count,queue.job_status
+                FROM football.product_history_sync_queue queue
+                JOIN football.product_history_work binding USING (job_id,queued_at)
+                JOIN football.work_items work USING (work_id) WHERE queue.job_id=%s""",
+                (job,),
+            ).fetchone()
+            assert row is not None and row[1:] == ("PENDING", 0, "PENDING")
+            WorkRegistry(connection).cancel(row[0])
+        finally:
+            connection.execute(
+                "DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,)
+            )
+
+
+def test_shared_history_supports_connections_with_dictionary_rows() -> None:
+    from football.product.history_work import claim_history_request, complete_history_request
+    from football.work.storage import WorkRegistry
+    from psycopg.rows import dict_row
+
+    with psycopg.connect(DATABASE_URL, autocommit=True) as owner:
+        job = owner.execute(
+            """INSERT INTO football.product_history_sync_queue (provider_competition_id,season)
+            VALUES (%s,2099) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = owner.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = None
+        try:
+            with psycopg.connect(DATABASE_URL, autocommit=True, row_factory=dict_row) as worker:
+                claim = claim_history_request(
+                    worker, job, "worker", batch, lease_duration=timedelta(minutes=30)
+                )
+                assert claim is not None
+                complete_history_request(worker, claim, result_hash="a" * 64)
+        finally:
+            if claim is not None:
+                WorkRegistry(owner).cancel(claim.work_id)
+            owner.execute("DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,))
+
+
+def test_history_expired_attempt_cleanup_skips_busy_detail_without_publishing_failure() -> None:
+    from football.product.history_work import claim_history_request
+    from football.work.storage import WorkRegistry
+
+    with (
+        psycopg.connect(DATABASE_URL, autocommit=True) as owner,
+        psycopg.connect(DATABASE_URL, autocommit=True) as worker,
+    ):
+        job = owner.execute(
+            """INSERT INTO football.product_history_sync_queue
+            (provider_competition_id,season,attempt_count)
+            VALUES (%s,2099,2147483646) RETURNING job_id""",
+            (str(uuid4().int % 2_000_000_000),),
+        ).fetchone()[0]
+        batch = owner.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = claim_history_request(
+            worker, job, "expired", batch, lease_duration=timedelta(milliseconds=30)
+        )
+        assert claim is not None
+        try:
+            worker.execute(
+                "SELECT pg_sleep(GREATEST(0,extract(epoch FROM "
+                "(%s::timestamptz-clock_timestamp())))+0.005)",
+                (claim.lease_until,),
+            )
+            worker.execute("SET statement_timeout='200ms'")
+            next_batch = worker.execute("SELECT clock_timestamp()").fetchone()[0]
+            with owner.transaction():
+                owner.execute(
+                    "SELECT job_id FROM football.product_history_sync_queue "
+                    "WHERE job_id=%s FOR UPDATE",
+                    (job,),
+                )
+                assert (
+                    claim_history_request(
+                        worker, job, "cleanup", next_batch, lease_duration=timedelta(minutes=30)
+                    )
+                    is None
+                )
+                assert worker.execute(
+                    "SELECT state,last_error_code FROM football.work_items WHERE work_id=%s",
+                    (claim.work_id,),
+                ).fetchone() == ("RUNNING", None)
+            assert (
+                claim_history_request(
+                    worker, job, "cleanup", next_batch, lease_duration=timedelta(minutes=30)
+                )
+                is None
+            )
+            assert owner.execute(
+                "SELECT job_status FROM football.product_history_sync_queue WHERE job_id=%s",
+                (job,),
+            ).fetchone() == ("FAILED",)
+        finally:
+            WorkRegistry(owner).cancel(claim.work_id)
+            owner.execute("DELETE FROM football.product_history_sync_queue WHERE job_id=%s", (job,))

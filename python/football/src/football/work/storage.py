@@ -91,14 +91,14 @@ class WorkRegistry:
             arguments += (sorted(set(work_ids)),)
         with self._short_transaction():
             row = self._call("claim_work", *arguments)
-            return _claim(row) if row else None
+            return claim_from_record(row) if row else None
 
     def heartbeat(self, claim: WorkClaim, lease_duration: timedelta) -> WorkClaim:
         _duration(lease_duration)
         with self._short_transaction():
             row = self._call("heartbeat_work", *_ownership(claim), lease_duration)
             assert row is not None
-            return _claim(row)
+            return claim_from_record(row)
 
     @contextmanager
     def progress(self, claim: WorkClaim) -> Iterator[Connection[Any]]:
@@ -207,7 +207,8 @@ class WorkRegistry:
             raise
 
 
-def _claim(row: dict[str, Any]) -> WorkClaim:
+def claim_from_record(row: dict[str, Any]) -> WorkClaim:
+    """Decode the shared SQL claim shape for workers and domain adapters."""
     return WorkClaim(
         work_id=row["work_id"],
         work_type=WorkType(row["work_type"]),

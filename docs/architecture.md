@@ -277,6 +277,22 @@ and does not switch scheduling or execute provider work. Request registration
 is a migration prerequisite; fenced execution and controlled parity are still
 required inside Phase 17.
 
+Concurrent enqueue of the same deterministic work identity handles conflicts
+on either the primary or semantic unique index. Existing input, policy and
+dependency checks still reject a primary identity used by different semantics.
+
+History workers can select one request through `claim_history_request` and
+complete or fail it through the corresponding shared-history operations. These
+control calls own short transactions and require an idle connection. Shared
+work decides eligibility, expired ownership, retry delay and attempt limits;
+the SQL adapter projects status, attempts and deadlines into the matching
+legacy request atomically. A busy detail row rolls back a tentative claim or
+expired-attempt cleanup without publishing partial failure.
+Ownership is checked after projection, so waiting beyond the lease rolls back
+completion or failure. Repeated terminal claims leave queue detail unchanged.
+The worker still needs provider execution integration and controlled parity
+before the legacy scheduler is disabled.
+
 ### Transaction lock ordering
 
 The shared ordering functions and publication checks enforce one class/key
