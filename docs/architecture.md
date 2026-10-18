@@ -109,6 +109,36 @@ transaction before provider I/O. Existing clients retain their byte, access,
 quota and retry controls. The new path is exercised in shadow and test databases;
 current serving and synchronization remain active until the cutover gate.
 
+### Provider resource authority
+
+`football.providers.resource_authority.AuthorityRegistry` records authority
+assignments for an exact provider/resource/native competition/season scope and
+an explicit half-open effective interval. Each assignment has a stable metadata
+UUID; revisions preserve that ID and scope while correcting its interval, tier
+or qualification state. The ID describes a policy assignment, not a football
+entity. Prepared immutable `DecisionRecordV1` artifacts retain qualification
+source references, decision time and effective time separately.
+
+Authority tiers and qualification states are explicit owner labels. This
+registry does not invent a global tier order, infer qualification from a
+capability, or assign authority from static provider roles. Lookup returns all
+applicable assignments, including negative qualification states and overlapping
+claims, for the caller's approved scoped resolution policy. It never chooses a
+conflict winner or changes source observations.
+
+`at` requires both effective time and knowledge cutoff. It selects each
+assignment's latest state known at the cutoff before applying its effective
+interval. A correction that moves an interval cannot revive an older grant.
+Publication knowledge starts at database registration; backdated effective time
+does not change earlier knowledge. Revisions and artifacts are immutable, and
+database constraints prevent assignment forks or scope relabeling.
+
+Authority does not establish football identity. Canonical candidates still
+require independent identity-owner bindings; an authority decision cannot be
+used as an identity decision. Existing production resolution stays active until
+the parity and cutover gates. No authority assignments are inferred during the
+shadow schema upgrade.
+
 ### Resource normalization
 
 `football.providers.normalization.pipeline.normalize_resource` verifies the registered source checksum and dispatches an explicit provider/resource pair. Fixtures and results, participants, lineups, availability, events, shots, xG, named statistics, standings and retained CSV odds produce separate observations. Missing resources produce no measurements. Unknown values and unsupported fields produce structured findings; a bad record does not replace valid sibling records. Repeated statistics may corroborate each other, while contradictory duplicates quarantine the affected measurement. This decoder registry does not establish runtime provider availability.
