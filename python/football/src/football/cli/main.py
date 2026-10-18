@@ -311,6 +311,8 @@ def _run_database_command(
         provider_factory(source_git_sha) if args.command == "ingest" and source_git_sha else None
     )
     with connection_factory(database_url) as connection:
+        if args.command == "evaluate":
+            connection.autocommit = True
         evaluation_provenance = (
             Sprint2EvidenceProvenanceV1(
                 code_commit_sha,

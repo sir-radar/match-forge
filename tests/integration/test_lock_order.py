@@ -581,3 +581,95 @@ def test_sql_identity_admission_rejects_identity_after_work(
             (uuid4(), uuid4(), provider, snapshot, "a" * 64),
         )
     assert failure.value.sqlstate == "MFL01"
+
+
+@pytest.mark.parametrize("entrypoint", ["publisher", "registry"])
+def test_fitted_artifact_writers_reject_coordination_after_forecast_publication(
+    locks: Connection[Any], tmp_path: Path, entrypoint: str
+) -> None:
+    from datetime import UTC, datetime
+
+    from football.forecasting.artifacts import (
+        ModelArtifactPublisher,
+        PortableModelArtifactStore,
+        PostgresModelArtifactRegistry,
+    )
+    from football.forecasting.contracts import ModelFitSpecV1, PointInTimeScopeV1
+
+    from tests.integration.test_canonical_storage import _source_lineage
+
+    _, snapshot, _ = _source_lineage(locks, uuid4().hex)
+    dataset = uuid4()
+    now = datetime(2026, 1, 1, tzinfo=UTC)
+    locks.execute(
+        """INSERT INTO football.dataset_versions
+        (id,source_snapshot_id,dataset_name,layer,identity_hash,schema_version,
+         schema_sha256,normalizer_version,manifest_path,manifest_sha256,status,published_at)
+        VALUES (%s,%s,'events','normalized',%s,'v1',%s,'test-v1',%s,%s,'published',%s)""",
+        (dataset, snapshot, dataset.hex * 2, "a" * 64, f"manifests/{dataset}.json", "b" * 64, now),
+    )
+    spec = ModelFitSpecV1(
+        model_family="DIXON_COLES_GOALS",
+        algorithm_version="dixon-coles-v1",
+        config_sha256="c" * 64,
+        scope=PointInTimeScopeV1(
+            dataset_version_id=dataset,
+            source_snapshot_id=snapshot,
+            feature_set_version="sprint2-features-v1",
+            football_cutoff=now,
+            knowledge_cutoff=now,
+            knowledge_mode="bitemporal",
+            quality_policy_sha256="d" * 64,
+            target_set_sha256="e" * 64,
+        ),
+        code_commit_sha="f" * 40,
+        dependency_lock_sha256="1" * 64,
+    )
+    state = {"contract": "DixonColesModelStateV1", "home_advantage": 0.2}
+    artifact = None
+    if entrypoint == "registry":
+        artifact = PortableModelArtifactStore(tmp_path).publish(
+            model_artifact_id=uuid4(),
+            fit_spec=spec,
+            state=state,
+            created_at=now,
+        )
+    acquire_locks(locks, (LockRequest(LockClass.PUBLICATION, "publication:forecast"),))
+    with pytest.raises(LockOrderError), locks.transaction():
+        if entrypoint == "publisher":
+            ModelArtifactPublisher(locks, tmp_path).publish(
+                model_artifact_id=uuid4(),
+                fit_spec=spec,
+                state=state,
+                created_at=now,
+            )
+        else:
+            assert artifact is not None
+            PostgresModelArtifactRegistry(locks).register(artifact, spec)
+
+
+def test_scientific_batch_runner_requires_independent_publication_transactions(
+    locks: Connection[Any], tmp_path: Path
+) -> None:
+    from datetime import UTC, datetime
+
+    from football.forecasting.dataset import PointInTimeMatchDatasetProvider
+    from football.forecasting.evidence import Sprint2EvidenceProvenanceV1
+    from football.forecasting.execution import Sprint2ExecutionError, Sprint2ExecutionPolicyV1
+    from football.forecasting.gate import Sprint2GateService
+
+    from tests.integration.test_canonical_storage import _competition_rules
+
+    service = Sprint2GateService(
+        locks,
+        tmp_path,
+        data_root=tmp_path,
+        provenance=Sprint2EvidenceProvenanceV1("a" * 40, "b" * 64),
+    )
+    with pytest.raises(Sprint2ExecutionError, match="autocommit"):
+        service._runner(
+            PointInTimeMatchDatasetProvider(locks),
+            Sprint2ExecutionPolicyV1(),
+            datetime(2026, 1, 1, tzinfo=UTC),
+            _competition_rules(),
+        )

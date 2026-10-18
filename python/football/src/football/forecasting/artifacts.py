@@ -42,6 +42,7 @@ from football.forecasting.dixon_coles_shared_match_pace import (
 )
 from football.forecasting.elo import EloConfig, EloRun, RatedEloMatch
 from football.ingestion.dependencies import PostgresDependencyStoreV1
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 ArtifactPublicationStatus = Literal["published", "verified_existing"]
@@ -198,9 +199,8 @@ class PostgresModelArtifactRegistry:
         if manifest.fit_spec_sha256 != fit_spec.sha256:
             raise ArtifactPublicationError("artifact manifest does not match fit specification")
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"model-artifact:{fit_spec.sha256}",),
+            acquire_locks(
+                cursor, (LockRequest(LockClass.MODEL, f"model-artifact:{fit_spec.sha256}"),)
             )
             inserted = self._register_artifact(cursor, artifact)
             for file in manifest.files:
@@ -378,9 +378,8 @@ class ModelArtifactPublisher:
         created_at: datetime,
     ) -> PublishedModelArtifactV1:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"model-artifact:{fit_spec.sha256}",),
+            acquire_locks(
+                cursor, (LockRequest(LockClass.MODEL, f"model-artifact:{fit_spec.sha256}"),)
             )
             existing = cursor.execute(
                 """

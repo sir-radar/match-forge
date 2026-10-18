@@ -27,6 +27,7 @@ class LockClass(IntEnum):
     FIXTURE = 40
     WORK = 50
     FEATURE = 60
+    MODEL = 65
     PUBLICATION = 70
 
 

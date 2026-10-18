@@ -45,6 +45,7 @@ from football.forecasting.governance import (
 )
 from football.forecasting.publication import BaselineForecastPublisher
 from football.retirement import PostgresArtifactRetirementStore
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.temporal.repository import PointInTimeRepository
 from psycopg import Connection
 from psycopg.errors import (
@@ -847,10 +848,10 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
         (first_artifact_id, "DIXON_COLES_GOALS", "d" * 64),
         (second_artifact_id, "TEAM_ELO", "e" * 64),
     )
-    for artifact_id, model_family, config_sha256 in model_specs:
-        model_publisher.publish(
-            model_artifact_id=artifact_id,
-            fit_spec=ModelFitSpecV1(
+    prepared = [
+        (
+            artifact_id,
+            ModelFitSpecV1(
                 model_family=model_family,
                 algorithm_version="baseline-v1",
                 config_sha256=config_sha256,
@@ -858,6 +859,17 @@ def test_forecast_publication_supports_multiple_primary_artifacts_and_retry(
                 code_commit_sha="f" * 40,
                 dependency_lock_sha256="1" * 64,
             ),
+        )
+        for artifact_id, model_family, config_sha256 in model_specs
+    ]
+    acquire_locks(
+        connection,
+        (LockRequest(LockClass.MODEL, f"model-artifact:{spec.sha256}") for _, spec in prepared),
+    )
+    for artifact_id, spec in prepared:
+        model_publisher.publish(
+            model_artifact_id=artifact_id,
+            fit_spec=spec,
             state={"contract": "TestModelStateV1", "coefficient": 0.2},
             created_at=now,
         )

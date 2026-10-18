@@ -254,9 +254,10 @@ The Phase 15 implementation is in progress. The shared ordering functions and
 work-publication checks below are implemented; integration of all legacy
 mutation paths remains required before the phase gate.
 
-`football.storage.locks` and the SQL functions in
-`202610180800_transaction_lock_order.sql` order blocking coordination requests
-by class, then exact key in C/Unicode order:
+`football.storage.locks` and the SQL functions introduced by
+`202610180800_transaction_lock_order.sql`, extended for model artifacts by
+`202610181100_model_publication_lock_order.sql`, order blocking coordination
+requests by class, then exact key in C/Unicode order:
 
 | Class | Order |
 | --- | ---: |
@@ -266,6 +267,7 @@ by class, then exact key in C/Unicode order:
 | Fixture | 40 |
 | Work | 50 |
 | Feature | 60 |
+| Model artifact | 65 |
 | Publication | 70 |
 
 Declare a transaction's required scopes together through `acquire_locks`.
@@ -300,6 +302,15 @@ Legacy forecast refresh defers busy work rows with `SKIP LOCKED` after acquiring
 its competition/fixture rows. Deferred work stays pending; it is excluded from
 that transaction's completed generation. This prevents history's existing work
 lock from making refresh wait while holding canonical rows.
+
+Fitted-artifact registration and publication acquire model scopes before
+forecast publication. Multi-model batches order exact fit-specification keys;
+artifact identity, state and returned model-family order stay unchanged.
+The scientific evaluation CLI opens an autocommit connection so explicit
+publication transactions end between walk-forward batches. Direct gate callers
+must supply that same mode; the runner rejects an implicit outer transaction
+without committing caller-owned work. This does not change scientific gates or
+authorize running a frozen evaluation.
 
 Existing identity serialization and legacy scheduling remain in place while
 their transaction paths are integrated. This section does not declare the

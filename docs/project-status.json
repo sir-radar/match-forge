@@ -1724,6 +1724,21 @@
         "old_schema_upgrade_and_cutoff_assertions": "PASS",
         "comprehensive_checks": "PASS",
         "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-legacy-mutations-check-integration.log"
+      },
+      "model_publication_validation": {
+        "status": "PASS",
+        "postgres_cases_passed": 310,
+        "lock_postgres_cases_passed": 32,
+        "unit_cases_passed": 30,
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-model-command-final-focused.log",
+        "unit_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-model-command-order-unit.log",
+        "model_before_forecast_guard": "PASS",
+        "multi_model_key_order": "PASS",
+        "scientific_cli_transaction_ownership": "PASS",
+        "borrowed_transaction_preservation": "PASS",
+        "authoritative_evaluation_executed": false,
+        "comprehensive_checks": "PASS",
+        "comprehensive_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-15-model-publication-check-integration.log"
       }
     }
   },

@@ -133,12 +133,14 @@ def test_cli_ingests_and_validates_fixture_season(
         assert path.with_suffix(".md").is_file()
 
 
-def test_cli_evaluate_sprint2_retains_failed_corpus_report(
-    connection: Connection[Any], tmp_path: Path
-) -> None:
+def test_cli_evaluate_sprint2_retains_failed_corpus_report(tmp_path: Path) -> None:
+    transaction_modes: list[tuple[bool, psycopg.pq.TransactionStatus]] = []
+
     @contextmanager
-    def connection_factory(_database_url: str) -> Iterator[Connection[Any]]:
-        yield connection
+    def connection_factory(database_url: str) -> Iterator[Connection[Any]]:
+        with psycopg.connect(database_url) as owned:
+            yield owned
+            transaction_modes.append((owned.autocommit, owned.info.transaction_status))
 
     stdout = StringIO()
     stderr = StringIO()
@@ -158,6 +160,7 @@ def test_cli_evaluate_sprint2_retains_failed_corpus_report(
     )
 
     reports = tuple(tmp_path.glob("run=*/Sprint2EvaluationReportV1.json"))
+    assert transaction_modes == [(True, psycopg.pq.TransactionStatus.IDLE)]
     assert exit_code == 7
     assert stderr.getvalue() == ""
     assert "Sprint 2 evaluation: status=FAIL stage=corpus-resolution" in stdout.getvalue()
@@ -186,3 +189,30 @@ def test_cli_evaluate_sprint2_retains_failed_corpus_report(
 
 def _season_id(fixture_name: str) -> int:
     return 1 if fixture_name == "valid" else 2
+
+
+def test_cli_evaluation_does_not_commit_a_borrowed_transaction(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    connection.execute("CREATE TEMP TABLE caller_work (id integer)")
+    connection.execute("INSERT INTO caller_work VALUES (1)")
+
+    @contextmanager
+    def connection_factory(_database_url: str) -> Iterator[Connection[Any]]:
+        yield connection
+
+    errors = StringIO()
+    assert (
+        run(
+            ["--database-url", DATABASE_URL, "--report-root", str(tmp_path), "evaluate", "sprint2"],
+            environ={},
+            stdout=StringIO(),
+            stderr=errors,
+            connection_factory=connection_factory,
+        )
+        == 4
+    )
+    assert "database operation failed" in errors.getvalue()
+    assert connection.autocommit is False
+    assert connection.info.transaction_status == psycopg.pq.TransactionStatus.INTRANS
+    assert connection.execute("SELECT id FROM caller_work").fetchall() == [(1,)]

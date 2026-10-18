@@ -168,15 +168,21 @@ class Sprint2BatchPublisher:
     ]:
         publications: dict[ModelFamily, PublishedModelArtifactV1] = {}
         loaded_states: dict[ModelFamily, LoadedPortableModelStateV1] = {}
-        for item in self._artifact_inputs(fitted):
-            fit_spec = ModelFitSpecV1(
-                model_family=item.family,
-                algorithm_version=item.algorithm_version,
-                config_sha256=item.config_sha256,
-                scope=scope,
-                code_commit_sha=self._provenance.code_commit_sha,
-                dependency_lock_sha256=self._provenance.dependency_lock_sha256,
+        inputs = [
+            (
+                ModelFitSpecV1(
+                    model_family=item.family,
+                    algorithm_version=item.algorithm_version,
+                    config_sha256=item.config_sha256,
+                    scope=scope,
+                    code_commit_sha=self._provenance.code_commit_sha,
+                    dependency_lock_sha256=self._provenance.dependency_lock_sha256,
+                ),
+                item,
             )
+            for item in self._artifact_inputs(fitted)
+        ]
+        for fit_spec, item in sorted(inputs, key=lambda pair: pair[0].sha256):
             publication = self._artifacts.publish(
                 model_artifact_id=uuid5(_ARTIFACT_NAMESPACE, fit_spec.sha256),
                 fit_spec=fit_spec,
