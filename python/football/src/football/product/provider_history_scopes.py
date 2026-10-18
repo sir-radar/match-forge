@@ -373,18 +373,30 @@ def bind_scoped_mapping(
 
 
 def claim_scope(sync: OperationalProviderSync, competition: str | None, season: str | None) -> Any:
+    sync.connection.execute("SELECT set_config('matchforge.history_claim_token', '', false)")
+    sync.connection.commit()
     with sync.connection.cursor() as cursor:
         cursor.execute(
             """WITH candidate AS (
                SELECT scope.provider_code, scope.provider_competition_id, scope.season_label
                FROM football.product_provider_history_scopes scope
+               LEFT JOIN football.product_provider_scope_work binding USING
+                   (provider_code,provider_competition_id,season_label)
                WHERE scope.provider_code = %s
                  AND (scope.status IN ('PENDING', 'FAILED', 'DEFERRED')
                       OR (scope.status = 'SUCCEEDED'
                           AND right(split_part(scope.season_label, ' - ', 1), 4)
                               >= extract(year FROM now())::text)
                       OR (scope.status = 'RUNNING'
-                          AND scope.claimed_at < now() - interval '30 minutes'))
+                          AND ((binding.work_id IS NULL
+                                AND scope.claimed_at < now() - interval '30 minutes')
+                               OR EXISTS (SELECT 1 FROM football.work_items work
+                                   WHERE work.work_id=binding.work_id
+                                     AND work.state='RUNNING'
+                                     AND work.lease_until<=clock_timestamp()))))
+                 AND (scope.status='PENDING' OR NOT EXISTS (
+                     SELECT 1 FROM football.work_items cancelled
+                     WHERE cancelled.work_id=binding.work_id AND cancelled.state='CANCELLED'))
                  AND scope.next_attempt_at <= now()
                  AND (%s::text IS NULL OR scope.provider_competition_id = %s)
                  AND (%s::text IS NULL OR scope.season_label = %s)
@@ -539,6 +551,7 @@ def _scope_response(
     *,
     refresh: bool,
 ) -> tuple[FotmobResponse | PitchApiResponse, bool]:
+    sync._heartbeat_history_scope()
     resource = f"league-{league_id}-{selected_season}"
     years = selected_season.split(" - ", 1)[0]
     freshness = history_freshness() if int(years[-4:]) >= datetime.now(UTC).year else None
@@ -573,5 +586,6 @@ def _scope_response(
              AND claim_token = current_setting('matchforge.history_claim_token')::uuid""",
         (snapshot, sync.provider_code, league_id, selected_season),
     )
+    sync.connection.execute("SELECT football.check_provider_scope_work()")
     sync.connection.commit()
     return response, acquired

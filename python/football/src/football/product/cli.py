@@ -33,6 +33,7 @@ from football.product.football_data_org import FootballDataOrgClient, FootballDa
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.history_coverage import history_coverage
 from football.product.history_requests import HistoryDeferred, HistoryRequestBudget
+from football.product.history_worker import HistorySyncWorker
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
@@ -748,10 +749,10 @@ def _history_worker_factory(
     sync_run_id: UUID | None,
 ) -> HistoryWorkerFactory:
     @contextmanager
-    def create_worker() -> Iterator[ProductSync]:
+    def create_worker() -> Iterator[HistorySyncWorker]:
         fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
         with psycopg.connect(database_url) as connection:
-            yield ProductSync(
+            yield HistorySyncWorker(
                 connection,
                 ApiFootballClient(api_key, request_budget=PostgresApiFootballBudget(database_url)),
                 data_root,

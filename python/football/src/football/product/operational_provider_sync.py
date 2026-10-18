@@ -412,6 +412,10 @@ class OperationalProviderSync:
         response = client.league_matches(league_id, season=season, status="played")
         return self.backfill_league_response(league_id, season, response, network_acquired=True)
 
+    def _heartbeat_history_scope(self) -> None:
+        self.connection.execute("SELECT football.heartbeat_provider_scope_work()")
+        self.connection.commit()
+
     def backfill_league_response(
         self,
         league_id: str,
@@ -422,6 +426,7 @@ class OperationalProviderSync:
     ) -> dict[str, object]:
         """Replay an immutable league snapshot through the existing ingestion path."""
         snapshot_id = self._record_response(f"league-{league_id}-{season}", response)
+        self.connection.execute("SELECT football.check_provider_scope_work()")
         self.connection.commit()
         counts = SyncCounts(
             attempted_requests=int(network_acquired), successful_requests=int(network_acquired)
@@ -433,6 +438,7 @@ class OperationalProviderSync:
         )
         counts.fetched = len(rows)
         for row in rows:
+            self._heartbeat_history_scope()
             try:
                 created = inserted = matched = updated = history_inserted = 0
                 unmatched = skipped = 0
@@ -457,6 +463,7 @@ class OperationalProviderSync:
                         history_inserted = self._insert_qualified_history(
                             row, fixture_id, snapshot_id
                         )
+                    self.connection.execute("SELECT football.check_provider_scope_work()")
                 counts.canonical_fixtures_created += created
                 counts.inserted += inserted
                 counts.skipped += skipped
@@ -472,6 +479,7 @@ class OperationalProviderSync:
         geography = refresh_competition_geography(
             self.connection, self.data_root, self.provider_code
         )
+        self.connection.execute("SELECT football.check_provider_scope_work()")
         self.connection.commit()
         qualification = self._season_qualification(snapshot_id, rows, counts)
         return {
@@ -876,6 +884,7 @@ class OperationalProviderSync:
                     "provider_competition_id": row.provider_competition_id,
                 },
             )
+            self.connection.execute("SELECT football.check_provider_scope_work()")
 
     def reconcile_stored_observations(self, *, create_missing: bool = False) -> int:
         """Retry deterministic mappings from immutable stored observations."""

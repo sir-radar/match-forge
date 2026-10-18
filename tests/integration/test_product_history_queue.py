@@ -11,6 +11,7 @@ from uuid import uuid4
 import psycopg
 import pytest
 from football.product.api_football import ApiFootballError
+from football.product.history_worker import HistorySyncWorker
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import run_scopes
 from football.product.sync import HISTORY_JOB_LEASE, ProductSync
@@ -18,7 +19,7 @@ from football.product.sync import HISTORY_JOB_LEASE, ProductSync
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
-def test_history_queue_deduplicates_recovers_and_claims_once() -> None:
+def test_history_queue_deduplicates_recovers_and_claims_once(tmp_path: Path) -> None:
     first = 990_001
     second = 990_002
     candidates = [(first, 2099), (first, 2099), (second, 2099)]
@@ -54,12 +55,13 @@ def test_history_queue_deduplicates_recovers_and_claims_once() -> None:
         with (
             psycopg.connect(DATABASE_URL) as first_connection,
             psycopg.connect(DATABASE_URL) as second_connection,
+            psycopg.connect(DATABASE_URL) as observer,
         ):
-            first_sync = ProductSync(
-                first_connection, cast(Any, object()), Path("data"), Path("artifact")
+            first_sync = HistorySyncWorker(
+                first_connection, cast(Any, object()), tmp_path / "first", Path("artifact")
             )
-            second_sync = ProductSync(
-                second_connection, cast(Any, object()), Path("data"), Path("artifact")
+            second_sync = HistorySyncWorker(
+                second_connection, cast(Any, object()), tmp_path / "second", Path("artifact")
             )
             batch_started_at = datetime.now(UTC)
             first_job = first_sync._claim_history_job(batch_started_at)
@@ -67,7 +69,12 @@ def test_history_queue_deduplicates_recovers_and_claims_once() -> None:
             assert first_job is not None
             assert second_job is not None
             assert first_job[0] != second_job[0]
-            assert first_sync._claim_history_job(batch_started_at) is None
+            assert (
+                HistorySyncWorker(
+                    observer, cast(Any, object()), tmp_path / "observer", Path("artifact")
+                )._claim_history_job(batch_started_at)
+                is None
+            )
 
             first_sync._retry_history_job(
                 first_job[0], first_job[3], ApiFootballError("temporary provider failure")

@@ -207,6 +207,18 @@ def test_provider_history_scopes_are_idempotent_fair_and_resumable(tmp_path: Pat
                 (league,),
             )
             database.commit()
+            # Legacy detail alone cannot expire an authoritative shared lease.
+            assert claim_scope(sync, league, None) is None
+            database.execute(
+                """UPDATE football.work_items SET
+                   heartbeat_at=clock_timestamp()-interval '32 minutes',
+                   lease_until=clock_timestamp()-interval '1 minute'
+                   WHERE work_id IN (SELECT work_id
+                       FROM football.product_provider_scope_work
+                       WHERE provider_code='pitchapi' AND provider_competition_id=%s)""",
+                (league,),
+            )
+            database.commit()
             assert claim_scope(sync, league, None) == (league, "2025/2026")
         finally:
             database.rollback()

@@ -89,6 +89,15 @@ def register_history_request(connection: Connection[Any], job_id: UUID) -> UUID 
                 "PENDING",
                 0,
             ):
+                cursor.execute(
+                    """SELECT 1 FROM football.product_history_work
+                    WHERE work_id=%s AND job_id=%s AND queued_at=%s""",
+                    (request.work_id, job_id, original["queued_at"]),
+                )
+                if cursor.fetchone() is not None:
+                    # Another registrar bound and claimed this same request while
+                    # our enqueue waited. Its ownership is valid; skip the candidate.
+                    raise _HistoryRequestChanged
                 raise WorkConflict("history request registration requires unclaimed shared work")
             cursor.execute(
                 "SELECT football.record_transaction_lock(%s,%s)",
@@ -258,3 +267,34 @@ def _history_operation(
         if error.sqlstate == LOCK_ORDER_SQLSTATE:
             raise LockOrderError(str(error)) from error
         raise
+
+
+def heartbeat_history_request(
+    connection: Connection[Any],
+    claim: WorkClaim,
+    lease_duration: timedelta,
+    *,
+    sync_run_id: UUID | None = None,
+) -> WorkClaim:
+    """Renew the shared lease and its legacy operator detail atomically."""
+    if not isinstance(lease_duration, timedelta) or lease_duration <= timedelta():
+        raise WorkContractError("history heartbeat lease duration must be positive")
+    row = _history_operation(
+        connection,
+        "heartbeat_history_work",
+        claim.work_id,
+        claim.lease_owner,
+        claim.lease_token,
+        claim.generation,
+        lease_duration,
+        sync_run_id,
+    )
+    assert row is not None
+    return claim_from_record(row)
+
+
+def cancel_history_request(connection: Connection[Any], work_id: UUID) -> WorkState:
+    """Revoke publication rights and project cancellation in one transaction."""
+    row = _history_operation(connection, "cancel_history_work", work_id)
+    assert row is not None
+    return WorkState(row["state"])

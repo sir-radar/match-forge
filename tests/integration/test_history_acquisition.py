@@ -29,6 +29,23 @@ from football.providers.pitchapi import PitchApiClient, PitchApiHttpResponse, Pi
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
+def _advance_shared_scope_retry(
+    connection: psycopg.Connection[Any],
+    league: str,
+    season: str | None = None,
+) -> None:
+    """Simulate elapsed cooldown at the authoritative work deadline."""
+    connection.execute(
+        """UPDATE football.work_items SET available_at=clock_timestamp()
+        WHERE state='RETRY_WAIT' AND work_id IN (
+            SELECT work_id FROM football.product_provider_scope_work
+            WHERE provider_code='pitchapi' AND provider_competition_id=%s
+              AND (%s::text IS NULL OR season_label=%s))""",
+        (league, season, season),
+    )
+    connection.commit()
+
+
 def test_history_scope_claim_recovers_abandoned_owner(tmp_path: Path) -> None:
     league = "l_Claim01"
     with psycopg.connect(DATABASE_URL) as first, psycopg.connect(DATABASE_URL) as second:
@@ -49,6 +66,16 @@ def test_history_scope_claim_recovers_abandoned_owner(tmp_path: Path) -> None:
                 (league,),
             )
             first.commit()
+            assert claim_scope(contender, league, "2021") is None
+            second.execute(
+                """UPDATE football.work_items SET
+                heartbeat_at=clock_timestamp()-interval '32 minutes',
+                lease_until=clock_timestamp()-interval '1 minute' WHERE work_id IN (
+                    SELECT work_id FROM football.product_provider_scope_work
+                    WHERE provider_code='pitchapi' AND provider_competition_id=%s)""",
+                (league,),
+            )
+            second.commit()
             assert claim_scope(contender, league, "2021") == (league, "2021")
             second_token = second.execute(
                 "SELECT current_setting('matchforge.history_claim_token')"
@@ -154,6 +181,8 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
                 (league,),
             )
             connection.commit()
+            assert run_scopes(sync, client, budget=2, competition=league) == []
+            _advance_shared_scope_retry(connection, league, "2021")
             replay = run_scopes(sync, client, budget=2, competition=league)
             assert len(replay) == 1 and replay[0]["attempted_requests"] == 0
             assert transport.calls == 3
@@ -170,6 +199,8 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
             )
             connection.commit()
 
+            assert run_scopes(sync, client, budget=2, competition=league) == []
+            _advance_shared_scope_retry(connection, league, "2099")
             assert len(run_scopes(sync, client, budget=2, competition=league)) == 1
             assert transport.calls == 4
         finally:
@@ -366,6 +397,8 @@ def test_changing_season_records_new_rows_and_preserves_prior_snapshot(tmp_path:
                 (resource,),
             )
             connection.commit()
+            assert run_scopes(sync, client, budget=2, competition=league) == []
+            _advance_shared_scope_retry(connection, league)
             result = run_scopes(sync, client, budget=2, competition=league)
             assert len(result) == 1 and result[0]["fetched"] == 2
             assert transport.calls == 2

@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import AbstractContextManager, nullcontext
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from uuid import UUID
 
 import psycopg
@@ -54,10 +54,12 @@ from football.product.football_data_org import (
     FootballDataOrgError,
     FootballDataResponse,
 )
+from football.product.forecast_work import claim_forecast_generations, complete_forecast_generations
 from football.product.identity_admission import admit_provider_mappings, fixture_identity_blockers
 from football.product.identity_crosswalks import FOOTBALL_DATA_COMPETITIONS
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
-from football.storage.raw import ImmutableFileStore
+from football.storage.raw import ImmutableFileStore, ImmutableWrite
+from football.work.storage import WorkLeaseLost
 
 PROVIDER_CODE = "api_football"
 FALLBACK_PROVIDER_CODE = "football_data_org"
@@ -65,11 +67,14 @@ PRODUCT_FORECAST_ALGORITHM_VERSION = "transferable-rolling-goals-poisson-v1-roll
 
 
 HISTORY_JOB_LEASE = timedelta(minutes=30)
-HISTORY_RETRY_MAX_SECONDS = 3600
+
+
+if TYPE_CHECKING:
+    from football.product.history_worker import HistorySyncWorker
 
 
 class HistoryWorkerFactory(Protocol):
-    def __call__(self) -> AbstractContextManager[ProductSync]: ...
+    def __call__(self) -> AbstractContextManager[HistorySyncWorker]: ...
 
 
 def _empty_standing() -> dict[str, int]:
@@ -534,6 +539,9 @@ class ProductSync:
                 """SELECT provider_competition_id,season
                 FROM football.product_history_sync_queue
                 WHERE job_status='RUNNING' AND claimed_at < clock_timestamp() - %s
+                  AND NOT EXISTS (SELECT 1 FROM football.product_history_work binding
+                      WHERE binding.job_id=product_history_sync_queue.job_id
+                        AND binding.queued_at=product_history_sync_queue.queued_at)
                 ORDER BY ('history-queue:'||provider_competition_id||':'||season) COLLATE "C"
                 """,
                 (HISTORY_JOB_LEASE,),
@@ -549,7 +557,10 @@ class ProductSync:
                         next_attempt_at=NULL,updated_at=clock_timestamp(),
                         last_error=COALESCE(last_error,'worker lease expired')
                     WHERE provider_competition_id=%s AND season=%s
-                      AND job_status='RUNNING' AND claimed_at < clock_timestamp() - %s""",
+                      AND job_status='RUNNING' AND claimed_at < clock_timestamp() - %s
+                      AND NOT EXISTS (SELECT 1 FROM football.product_history_work binding
+                          WHERE binding.job_id=product_history_sync_queue.job_id
+                            AND binding.queued_at=product_history_sync_queue.queued_at)""",
                     (league_id, season, HISTORY_JOB_LEASE),
                 )
 
@@ -637,10 +648,25 @@ class ProductSync:
     def _process_history_queue(self, concurrency: int) -> dict[str, int]:
         if concurrency > 1 and self.history_worker_factory is None:
             raise ValueError("history_worker_factory is required for concurrent history sync")
-        factory = self.history_worker_factory or (lambda: nullcontext(self))
+        from football.product.history_worker import HistorySyncWorker
+
+        factory = self.history_worker_factory or (
+            lambda: nullcontext(
+                HistorySyncWorker(
+                    self.connection,
+                    self.client,
+                    self.data_root,
+                    self.artifact_path,
+                    self.history_fallback,
+                    self.api_football_max_history_season,
+                    self.sync_run_id,
+                )
+            )
+        )
         total = self._history_queue_total()
         self.connection.commit()
-        batch_started_at = datetime.now(UTC)
+        batch_started_at = self._database_now()
+        self.connection.commit()
         lock = threading.Lock()
         active = 0
         peak = 0
@@ -666,6 +692,9 @@ class ProductSync:
                             league_id, season
                         )
                         worker._complete_history_job(job_id)
+                    except WorkLeaseLost:
+                        worker.connection.rollback()
+                        raise
                     except (
                         ApiFootballError,
                         FootballDataOrgError,
@@ -725,80 +754,6 @@ class ProductSync:
                 )
             row = cursor.fetchone()
         return int(row[0]) if row else 0
-
-    def _claim_history_job(self, batch_started_at: datetime) -> tuple[UUID, int, int, int] | None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                WITH candidate AS (
-                    SELECT job_id
-                    FROM football.product_history_sync_queue queue
-                    WHERE job_status = 'PENDING'
-                      AND (next_attempt_at IS NULL OR next_attempt_at <= clock_timestamp())
-                      AND queue.updated_at < %s
-                    ORDER BY queued_at, job_id
-                    FOR UPDATE SKIP LOCKED
-                    LIMIT 1
-                )
-                UPDATE football.product_history_sync_queue queue
-                SET job_status = 'RUNNING', claimed_at = clock_timestamp(),
-                    started_at = clock_timestamp(), finished_at = NULL,
-                    attempt_count = attempt_count + 1, updated_at = clock_timestamp(),
-                    sync_run_id = COALESCE(%s, sync_run_id)
-                FROM candidate
-                WHERE queue.job_id = candidate.job_id
-                RETURNING queue.job_id, queue.provider_competition_id,
-                          queue.season, queue.attempt_count
-                """,
-                (batch_started_at, self.sync_run_id),
-            )
-            row = cursor.fetchone()
-        self.connection.commit()
-        if row is None:
-            return None
-        return cast(tuple[UUID, int, int, int], (row[0], int(row[1]), row[2], row[3]))
-
-    def _complete_history_job(self, job_id: UUID) -> None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'SUCCEEDED', finished_at = clock_timestamp(),
-                    claimed_at = NULL, next_attempt_at = NULL, last_error = NULL,
-                    updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (job_id,),
-            )
-        self.connection.commit()
-
-    def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> None:
-        delay = min(60 * (2 ** max(0, attempt_count - 1)), HISTORY_RETRY_MAX_SECONDS)
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
-                    next_attempt_at = clock_timestamp() + %s * interval '1 second',
-                    last_error = %s, updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (delay, str(error)[:4000], job_id),
-            )
-        self.connection.commit()
-
-    def _fail_history_job(self, job_id: UUID, error: Exception) -> None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'FAILED', finished_at = clock_timestamp(),
-                    claimed_at = NULL, last_error = %s, updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (str(error)[:4000], job_id),
-            )
-        self.connection.commit()
 
     def _scheduled_history_leagues(self) -> set[tuple[int, int]]:
         with self.connection.cursor() as cursor:
@@ -972,18 +927,34 @@ class ProductSync:
     def _settle_external_predictions(self, settled_at: datetime) -> int:
         return settle_external_predictions(self.connection, settled_at)
 
-    def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
+    def _prepare_response(
+        self, provider_code: str, response: ApiResponse | FootballDataResponse
+    ) -> ImmutableWrite:
         digest = hashlib.sha256(response.raw).hexdigest()
-        provider_id = stable_id("provider", PROVIDER_CODE)
-        snapshot_id = stable_id("source-snapshot", PROVIDER_CODE, resource_name, digest)
-        resource_id = stable_id("source-resource", snapshot_id, resource_name)
         relative_path = (
             Path("mvp")
-            / PROVIDER_CODE
+            / provider_code
             / response.fetched_at.strftime("%Y/%m/%d")
             / f"{digest}.json"
         )
-        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+        return ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+
+    def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
+        prepared = self._prepare_response(PROVIDER_CODE, response)
+        return self._register_response(resource_name, response, prepared)
+
+    def _record_fallback_response(self, resource_name: str, response: FootballDataResponse) -> UUID:
+        prepared = self._prepare_response(FALLBACK_PROVIDER_CODE, response)
+        return self._register_fallback_response(resource_name, response, prepared)
+
+    def _register_response(
+        self, resource_name: str, response: ApiResponse, prepared: ImmutableWrite
+    ) -> UUID:
+        digest = prepared.sha256
+        provider_id = stable_id("provider", PROVIDER_CODE)
+        snapshot_id = stable_id("source-snapshot", PROVIDER_CODE, resource_name, digest)
+        resource_id = stable_id("source-resource", snapshot_id, resource_name)
+        relative_path = prepared.relative_path
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1030,18 +1001,14 @@ class ProductSync:
             )
         return snapshot_id
 
-    def _record_fallback_response(self, resource_name: str, response: FootballDataResponse) -> UUID:
-        digest = hashlib.sha256(response.raw).hexdigest()
+    def _register_fallback_response(
+        self, resource_name: str, response: FootballDataResponse, prepared: ImmutableWrite
+    ) -> UUID:
+        digest = prepared.sha256
         provider_id = stable_id("provider", FALLBACK_PROVIDER_CODE)
         snapshot_id = stable_id("source-snapshot", FALLBACK_PROVIDER_CODE, resource_name, digest)
         resource_id = stable_id("source-resource", snapshot_id, resource_name)
-        relative_path = (
-            Path("mvp")
-            / FALLBACK_PROVIDER_CODE
-            / response.fetched_at.strftime("%Y/%m/%d")
-            / f"{digest}.json"
-        )
-        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+        relative_path = prepared.relative_path
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1862,31 +1829,16 @@ class ProductSync:
                 (limit,),
             )
             fixture_ids = [row[0] for row in cursor.fetchall()]
-            # Claim the competition before its fixtures; ingestion locks fixtures before work.
-            # Busy competitions are deferred without holding their fixture/work rows.
-            # History can already hold work rows; never wait for them with canonical locks.
-            cursor.execute(
-                """SELECT fixture_id FROM football.product_forecast_refresh_work
-                   WHERE fixture_id = ANY(%s::uuid[])
-                   ORDER BY fixture_id FOR UPDATE SKIP LOCKED""",
-                (fixture_ids,),
-            )
-            fixture_ids = [row[0] for row in cursor.fetchall()]
+        claims = claim_forecast_generations(self.connection, fixture_ids)
+        fixture_ids = [fixture for fixture, _generation, _claim in claims]
         knowledge_cutoff = self._database_now()
         created = (
             self.refresh_forecasts(knowledge_cutoff, fixture_ids, admit_mappings=False)
             if fixture_ids
             else 0
         )
+        complete_forecast_generations(self.connection, claims)
         with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_forecast_refresh_work
-                SET completed_generation = generation, completed_at = clock_timestamp()
-                WHERE fixture_id = ANY(%s::uuid[])
-                """,
-                (fixture_ids,),
-            )
             cursor.execute(
                 """SELECT count(*) FROM football.product_forecast_refresh_work
                    WHERE generation > completed_generation"""

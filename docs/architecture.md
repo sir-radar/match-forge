@@ -242,10 +242,11 @@ roll back the published rows and completion together. The work-row lock
 serializes publication, cancellation and replacement. Cancellation clears lease
 rights before recording its terminal state.
 
-The shared engine is introduced on the isolated shadow path. Existing queues
-remain active during implementation and must migrate through this contract in
-Phase 17; this foundation does not declare production scheduling unified or
-authorize cutover. Global lock ordering, the full adversarial concurrency matrix
+The shared engine and Phase 17 queue adapters run on the isolated shadow path.
+Operator runs and provider-history scopes retain their existing control/detail
+records behind SQL adapters. Bulk history and pending forecast workers use shared
+work directly. The original production checkout remains frozen until the
+separate cutover gate; this migration does not authorize production cutover. Global lock ordering, the full adversarial concurrency matrix
 and controlled production cutover remain their own required gates.
 
 Compatibility workers can pass explicit work IDs to `WorkRegistry.claim`.
@@ -257,8 +258,9 @@ It checks ownership before and after the step and joins an existing caller
 transaction when present. Canonical coordination must be
 acquired first, and provider/file I/O stays outside that transaction. Final
 `publication` still commits domain writes and completion atomically.
-Queue-specific adapters still need migration and controlled execution parity
-before their independent schedulers are disabled.
+Queue-specific adapters delegate claim, expiry, retry and completion to this
+state machine. Controlled execution tests compare legacy outcomes before the
+independent history scheduler is removed.
 
 The retry policy can specify a fixed delay after lease expiry independently of
 acknowledged-error backoff. A missing value preserves the original shared
@@ -271,11 +273,10 @@ its job UUID and queued time, to immutable shared work. The association retains
 provider competition, season and the prior attempt count. Registration locks
 unclaimed shared work before its domain row and rejects previously claimed
 work. Registration and the association commit together; a busy or changed queue
-row rolls back both. It
-leaves the original queue row and cooldown intact, rejects active legacy jobs,
-and does not switch scheduling or execute provider work. Request registration
-is a migration prerequisite; fenced execution and controlled parity are still
-required inside Phase 17.
+row rolls back both. Registration leaves the original queue row and cooldown
+intact and rejects active legacy jobs. If another worker registers and claims
+that same request while registration waits, the waiter skips it without
+interfering with its ownership.
 
 Concurrent enqueue of the same deterministic work identity handles conflicts
 on either the primary or semantic unique index. Existing input, policy and
@@ -290,8 +291,37 @@ legacy request atomically. A busy detail row rolls back a tentative claim or
 expired-attempt cleanup without publishing partial failure.
 Ownership is checked after projection, so waiting beyond the lease rolls back
 completion or failure. Repeated terminal claims leave queue detail unchanged.
-The worker still needs provider execution integration and controlled parity
-before the legacy scheduler is disabled.
+`HistorySyncWorker` renews ownership between bounded provider/file operations and
+short SQL publications. Raw files keep their existing paths, bytes and source
+identities. An immutable result receipt binds the request hash, source snapshots,
+resource checksums and result counts. Cancellation or expiry prevents subsequent
+publication. Legacy recovery applies only to requests without shared bindings.
+
+`product_provider_scope_work` associates current league/season detail with shared
+work without changing retained scope columns. Claims use shared lease tokens;
+explicit heartbeats renew them between committed history rows. Each publication
+checks ownership before commit. Failures and deferrals use shared retry deadlines,
+including the existing one-hour failure delay and provider retry-after deadline.
+Shared cancellation projects a failed scope with an explicit cancellation reason;
+an operator refresh creates a new request rather than reviving cancelled work.
+Successful current seasons create new work when their freshness interval expires;
+explicit refresh retains its existing eligibility and cooldown rules.
+
+Operator run transitions delegate to shared work through SQL triggers. Existing
+lanes, command launch, logs, summaries and manual retry-as-new-run behavior remain.
+Shared root cancellation serializes with child publication through the existing
+run-control fence. In-flight pre-migration controls may drain through their
+compatibility path; all newly inserted runs receive shared work atomically.
+Expired-run cleanup commits before a new run is submitted, preserving control
+lock ordering and the lane uniqueness constraint.
+
+Pending forecast work binds the captured fixture generation. Updates coalesce in
+the existing detail row; completion records only the captured generation and a
+hash of the existing forecast receipts. Busy detail rows return shared work to
+retry without clearing pending generations. A superseded generation is cancelled;
+the newer generation remains pending. Canonical ownership, work ownership
+and completion join the caller's transaction. Commit or roll back each refresh
+batch before beginning another batch, as required by transaction lock ordering.
 
 ### Transaction lock ordering
 

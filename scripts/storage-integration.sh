@@ -61,6 +61,8 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_team_elo.py \
 	tests/integration/test_product_historical_backfill.py \
 	tests/integration/test_product_history_queue.py \
+	tests/integration/test_product_history_provider_work.py \
+	tests/integration/test_domain_work_adapters.py \
 	tests/integration/test_live_context.py \
 	tests/integration/test_operational_provider_sync.py \
 	tests/integration/test_worker_publication_fencing.py \

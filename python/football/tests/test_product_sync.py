@@ -175,6 +175,7 @@ def test_history_queue_honors_concurrency_and_isolates_failures(
         history_worker_factory=cast(Any, worker_factory),
     )
     monkeypatch.setattr(sync, "_history_queue_total", lambda: 9)
+    monkeypatch.setattr(sync, "_database_now", lambda: datetime(2026, 10, 3, tzinfo=UTC))
 
     result = sync._process_history_queue(3)
 
@@ -229,6 +230,7 @@ def test_transient_queue_failure_returns_to_pending_retry(
         history_worker_factory=cast(Any, worker_factory),
     )
     monkeypatch.setattr(sync, "_history_queue_total", lambda: 1)
+    monkeypatch.setattr(sync, "_database_now", lambda: datetime(2026, 10, 3, tzinfo=UTC))
 
     result = sync._process_history_queue(1)
 
@@ -245,10 +247,11 @@ def test_history_queue_migration_enforces_states_deduplication_and_recovery() ->
 
     assert "job_status IN ('PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED')" in migration
     assert "UNIQUE (provider_competition_id, season)" in migration
-    assert "FOR UPDATE SKIP LOCKED" in implementation
     assert "claimed_at < clock_timestamp()" in implementation
-    assert "next_attempt_at = clock_timestamp() + %s * interval '1 second'" in implementation
-    assert "queue.updated_at < %s" in implementation
+    adapter = Path("infrastructure/migrations/202610181800_history_work_execution.sql").read_text()
+    assert "FOR UPDATE SKIP LOCKED" in adapter
+    assert "next_attempt_at" in adapter and "item.available_at" in adapter
+    assert "queue.updated_at<batch_started_at" in adapter
     assert "last_status" not in migration
 
 
