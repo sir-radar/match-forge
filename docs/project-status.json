@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-18T23:30:44.034137Z",
+  "updated_at": "2026-10-19T00:40:45.146049Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1224,7 +1224,8 @@
       14,
       15,
       16,
-      17
+      17,
+      18
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1256,9 +1257,9 @@
       "202610190100_history_import_completion.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 18 concurrency boundaries are implemented; final repository validation, committed-source shadow preservation and the Phase 18 gate remain pending. Phases 19-48 are unstarted.",
-    "phase_gate": "IN_PROGRESS",
-    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-17-2026-10-19.json",
+    "remaining_work": "Phase 18 is gated. Return control to the owner before Phase 19; Phases 19-48 remain unstarted.",
+    "phase_gate": "PASS_WITH_WARNINGS",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-18-2026-10-19.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
       "backup_directory_mode": "0700",
@@ -2014,11 +2015,33 @@
       "registered_provider_scope_bindings": 0
     },
     "phase_18": {
-      "status": "IN_PROGRESS",
-      "scope": "Bounded worker transactions, external I/O before domain locks, prepared-input revalidation and crash-safe import completion.",
+      "status": "PASS_WITH_WARNINGS",
+      "phase_gate_complete": true,
+      "scope": "Bounded worker publications, I/O and model preparation before domain locks, prepared-input revalidation and crash-safe imports.",
+      "code_commit_sha": "24c880b5bb55b769219fca3ac4e16f74b0648c1a",
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-18-2026-10-19.json",
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
-      "phase_gate_complete": false
+      "comprehensive_validation": {
+        "status": "PASS",
+        "command": "make check integration",
+        "python_unit_tests_passed": 1460,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "postgres_storage_cases_passed": 626,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-18-publication-final-check-integration.log",
+        "log_sha256": "4acfa9be047ac12a4891dda1584810889386f67ef12532dcf44198c4b8bac266",
+        "unrelated_owner_gitignore_sha256": "fa7e3ee634671a1473d8beb140f16c467da2a7d166891175c286844eb3ae2d79"
+      },
+      "focused_cases_passed": 13,
+      "existing_tables_verified": 113,
+      "frozen_legacy_tables_verified": 111,
+      "existing_table_hashes_preserved": true,
+      "fixture_projection_preserved": true,
+      "pre_existing_migrations_verified": 91,
+      "empty_shadow_down_up": "PASS",
+      "remaining_work": []
     }
   },
   "phase_1b": {
