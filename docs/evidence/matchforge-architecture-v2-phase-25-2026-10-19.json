@@ -1,0 +1,63 @@
+{
+  "acceptance": {
+    "censored_score_buckets_and_unresolved_tail_preserved": "PASS",
+    "coherent_seven_score_derived_market_groups": "PASS",
+    "independent_goal_and_corner_contracts": "PASS",
+    "invalid_input_error_path": "PASS",
+    "legacy_forecast_serialization_unchanged": "PASS",
+    "metadata_does_not_activate_unsupported_products": "PASS",
+    "provider_ingestion_unchanged": "PASS",
+    "read_only_inspection_and_defensive_projections": "PASS"
+  },
+  "additional_live_provider_requests": 0,
+  "authoritative_evaluations_run": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-25-gate",
+  "code_commit_sha": "e7c3d34436810297486ba5bf9655d40b926436a2",
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-25/check-integration.log",
+    "log_sha256": "bb5e3928c06476266a37f295d949934003b00029b9b22316335310895a0fc293",
+    "postgres_storage_cases_passed": 658,
+    "python_unit_tests_passed": 1539,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "current_runtime_products": [
+    "SCORE_DISTRIBUTION"
+  ],
+  "database_mutations": 0,
+  "focused_cases_passed": 54,
+  "independent_corner_research_contract_preserved": true,
+  "model_activations": 0,
+  "new_product_contract_cases_passed": 15,
+  "non_test_fits": 0,
+  "observation_v1_schema_file_sha256": "5c0fdc64fd5e01a6f4bf4798898d9a0d7a52292e8a9b3d49ff4f644322deae06",
+  "observation_v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "preservation_ref": ".local/remediation/matchforge-architecture-v2/phase-25/preservation.json",
+  "preservation_sha256": "be2cbc33ec1b5923360a0f4f07e8668f6c67b1e3b54635a0b1f59ba40530b931",
+  "promotions": 0,
+  "remaining_work_inside_phase": [],
+  "runtime_cutover": false,
+  "status": "PASS_WITH_WARNINGS",
+  "tested_source_files": {
+    "docs/architecture.md": "04424fb81a9e3b40a1aef55a96d9527657b57fb9eb450a911759491d7be00778",
+    "python/football/src/football/forecasting/multimodel_cli.py": "f6fe50dc641eb76bb179734a1592cceabe9be898f94092b2e0fe1d04c9da1dc8",
+    "python/football/src/football/forecasting/products.py": "2458625e5ce5b9271061a8e8360ee1505c64a7e880aa202296532fdc64c0abd2",
+    "python/football/tests/test_forecast_products.py": "6d404def4f78eb69d9077e32fc5300416ffd5aeb64e5c76f9c7bdbda0b03686f"
+  },
+  "unchanged_migration_files": 94,
+  "unsupported_runtime_products": [
+    "CORNERS_DISTRIBUTION",
+    "CARDS_DISTRIBUTION",
+    "PLAYER_MINUTES",
+    "PLAYER_SHOTS",
+    "PLAYER_GOALS"
+  ],
+  "warnings": [
+    "Existing Python/web warnings remain unchanged.",
+    "The same 59 retained generic-snapshot Elo conflicts remain a later runtime migration restriction; Phase 25 changes no snapshot construction."
+  ]
+}
