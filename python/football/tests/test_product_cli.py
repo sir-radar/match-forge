@@ -81,7 +81,8 @@ def test_sync_all_continues_after_api_football_quota_failure(
             calls.append("fixture_history")
             return 2
 
-        def refresh_forecasts(self, *_args: object) -> int:
+        def refresh_forecasts(self, *_args: object, commit_batches: bool = False) -> int:
+            assert commit_batches is True
             calls.append("forecasts")
             return 3
 
@@ -164,7 +165,8 @@ def test_sync_all_enables_operational_providers_independently(
         def backfill_fixtures_from_history(self, *_args: object) -> int:
             return 0
 
-        def refresh_forecasts(self) -> int:
+        def refresh_forecasts(self, *, commit_batches: bool = False) -> int:
+            assert commit_batches is True
             return 0
 
     class OperationalSync:

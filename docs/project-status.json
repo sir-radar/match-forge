@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 17,
+    "current_phase": 18,
     "completed_phases": [
       0,
       1,
@@ -1252,11 +1252,12 @@
       "202610181700_history_work_registration.sql",
       "202610181800_history_work_execution.sql",
       "202610181900_history_work_heartbeat.sql",
-      "202610182000_domain_work_adapters.sql"
+      "202610182000_domain_work_adapters.sql",
+      "202610190100_history_import_completion.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 17 is gated and committed; stop before Phase 18 under the owner instruction. Phases 18-48 remain unstarted.",
-    "phase_gate": "PASS_WITH_WARNINGS",
+    "remaining_work": "Phase 18 concurrency boundaries are implemented; final repository validation, committed-source shadow preservation and the Phase 18 gate remain pending. Phases 19-48 are unstarted.",
+    "phase_gate": "IN_PROGRESS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-17-2026-10-19.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
@@ -1265,7 +1266,7 @@
       "make_check_integration": "PASS",
       "log_ref": ".local/remediation/matchforge-architecture-v2/validation/review-check-integration.log"
     },
-    "execution_policy": "Owner instructed on 2026-10-19: finish Phase 17, commit its verified gate, and stop before Phase 18.",
+    "execution_policy": "Owner authorized continuation from Phase 18 on the existing branch on 2026-10-19. Complete the Phase 18 gate and return control before Phase 19.",
     "phase_1": {
       "status": "PASS_WITH_WARNINGS",
       "resource_contracts": 16,
@@ -2011,6 +2012,13 @@
       "pre_existing_migrations_verified": 89,
       "registered_work_items": 0,
       "registered_provider_scope_bindings": 0
+    },
+    "phase_18": {
+      "status": "IN_PROGRESS",
+      "scope": "Bounded worker transactions, external I/O before domain locks, prepared-input revalidation and crash-safe import completion.",
+      "runtime_cutover": false,
+      "additional_live_provider_requests": 0,
+      "phase_gate_complete": false
     }
   },
   "phase_1b": {

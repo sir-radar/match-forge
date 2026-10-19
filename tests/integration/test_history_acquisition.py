@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from email.message import Message
 from pathlib import Path
@@ -171,6 +172,7 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
                 " WHERE provider_competition_id = %s AND status = 'PENDING'",
                 (league,),
             ).fetchone() == (1,)
+            connection.commit()  # End assertion reads before the next owned claim batch.
             assert len(run_scopes(sync, client, budget=2, competition=league)) == 1
             assert transport.calls == 3
             assert run_scopes(sync, client, budget=2, competition=league) == []
@@ -215,6 +217,7 @@ def test_bounded_scopes_reuse_closed_history_and_refresh_changing_history(tmp_pa
 
 def test_due_catalogue_discovers_new_season_without_refetching_fresh_catalogue(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     with psycopg.connect(DATABASE_URL) as connection:
         sync = OperationalProviderSync(
@@ -222,6 +225,13 @@ def test_due_catalogue_discovers_new_season_without_refetching_fresh_catalogue(
         )
         transport = EmptyLeagueTransport()
         client = PitchApiClient("test", transport=transport)
+        fetch_leagues = client.leagues
+
+        def leagues() -> PitchApiResponse:
+            # Fake source time must not depend on host/PostgreSQL clock skew.
+            return replace(fetch_leagues(), fetched_at=datetime(2026, 1, 1, tzinfo=UTC))
+
+        monkeypatch.setattr(client, "leagues", leagues)
         try:
             assert discover_pitchapi(sync, client, refresh=False) == 1
             assert discover_pitchapi(sync, client, refresh=False) == 1

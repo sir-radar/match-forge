@@ -24,6 +24,7 @@ from football.product.historical_backfill import (
 )
 from football.product.historical_manifest import publish_manifest
 from football.product.identity_admission import admit_provider_mappings
+from football.storage.transactions import require_idle_connection
 
 PROVIDER_CODE = "openfootball"
 REPOSITORY_URL = "https://github.com/openfootball/football.json.git"
@@ -212,6 +213,7 @@ def run_backfill(
     country: str | None = None,
     update: bool = True,
 ) -> dict[str, object]:
+    require_idle_connection(connection, "OpenFootball backfill")
     revision = update_mirror(mirror) if update else _local_revision(mirror)
     catalog = discover_catalog(mirror, revision)
     selected = [
@@ -254,7 +256,9 @@ def run_backfill(
         )
         if store.resource_already_imported(provider_path, digest):
             summary.resources_cached += 1
+            connection.commit()
             continue
+        matches = parse_competition(item)
         snapshot = store.ensure_snapshot(
             source_identity=REPOSITORY_URL,
             source_revision=revision,
@@ -263,22 +267,26 @@ def run_backfill(
             repository=REPOSITORY_URL,
             git_sha=revision,
         )
-        store.record_resource(
+        resource_id = store.record_resource(
             snapshot_id=snapshot,
             provider_path=provider_path,
             payload=payload,
             media_type="application/json",
             acquired_at=observed_at,
+            import_pending=True,
         )
         summary.resources_changed += 1
-        matches = parse_competition(item)
+        connection.commit()
         summary.matches_parsed += len(matches)
         for match in matches:
             result = store.import_match(match, snapshot, observed_at)
             _count_result(summary, result)
+            connection.commit()
+        store.complete_resource_import(resource_id)
+        connection.commit()
     summary.competition_mappings_created = store.competition_mappings_created
     summary.team_mappings_created = store.team_mappings_created
-    admit_provider_mappings(connection, data_root, PROVIDER_CODE)
+    admit_provider_mappings(connection, data_root, PROVIDER_CODE, commit_each=True)
     connection.commit()
     return summary.to_dict()
 

@@ -323,6 +323,36 @@ the newer generation remains pending. Canonical ownership, work ownership
 and completion join the caller's transaction. Commit or roll back each refresh
 batch before beginning another batch, as required by transaction lock ordering.
 
+### Worker transaction boundaries
+
+MVP fixture and context acquisition commits the preceding database step before
+another provider request. Bulk history workers commit and recheck shared ownership
+between individual result imports. Provider ingestion loads retained geography
+before identity coordination. Identity admission and reviewed corrections prepare
+retained bytes before locking, then recheck registered evidence and mapping inputs
+under coordination. A changed prepared input aborts the operation and requires a
+fresh preparation; missing or tampered bytes keep their existing failure behavior.
+
+Pending forecast refresh captures a bounded set of source generations and computes
+from the existing point-in-time inputs before claiming canonical rows and shared
+work. Publication requires the captured generation and fixture context to remain
+current. An upstream change during preparation stays pending for another refresh.
+Database results, captured-generation completion and downstream enqueue still
+commit atomically. Runtime full refresh uses `commit_batches=True`, with each
+fixture publication in its own transaction. The caller-owned refresh mode retains
+its existing transaction contract for short composed operations.
+
+OpenFootball and Football-Data.co.uk backfills own an idle connection and commit
+individual match imports before reading or downloading another resource. CSV/archive
+parsing finishes before registering a successfully parsed resource.
+`product_history_resource_imports` records whether an import has completed; it
+contains no claim, lease or retry policy. Resource registration and a pending
+import record commit together. A partially imported resource remains eligible for
+replay, and deterministic match identities make repeated rows converge. Only a
+complete import becomes cached. Retained resources without an import record keep
+their established cache behavior. Transaction-owning imports, full refresh and
+provider scope claims reject borrowed transactions without committing their work.
+
 ### Transaction lock ordering
 
 The shared ordering functions and publication checks enforce one class/key

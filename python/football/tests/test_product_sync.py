@@ -636,12 +636,12 @@ def test_run_uses_history_for_dates_before_live_provider_window(
     )
     monkeypatch.setattr(sync, "backfill_fixtures_from_history", backfill_fixtures)
     monkeypatch.setattr(sync, "_settle_external_predictions", lambda *_args: 0)
-    monkeypatch.setattr(sync, "refresh_forecasts", lambda *_args: 0)
+    monkeypatch.setattr(sync, "refresh_forecasts", lambda *_args, **_kwargs: 0)
     monkeypatch.setattr(sync, "_database_now", lambda: datetime(2026, 10, 3, 8, tzinfo=UTC))
     admissions: list[str] = []
     monkeypatch.setattr(
         "football.product.sync.admit_provider_mappings",
-        lambda _connection, _root, provider: admissions.append(provider),
+        lambda _connection, _root, provider, **_kwargs: admissions.append(provider),
     )
 
     sync.run(date(2026, 10, 3), fixture_from_date=date(2019, 12, 30))

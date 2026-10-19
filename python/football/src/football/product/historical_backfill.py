@@ -163,6 +163,9 @@ class HistoricalBackfillStore:
                 WHERE provider.code = %s AND resource.provider_path = %s
                   AND resource.sha256 = %s AND resource.parse_status = 'parsed'
                   AND resource.validation_status IN ('valid', 'warnings')
+                  AND NOT EXISTS (
+                    SELECT 1 FROM football.product_history_resource_imports progress
+                    WHERE progress.source_resource_id=resource.id AND progress.completed_at IS NULL)
                 LIMIT 1
                 """,
                 (self.provider_code, provider_path, sha256),
@@ -181,6 +184,9 @@ class HistoricalBackfillStore:
                 WHERE provider.code = %s AND resource.provider_path = %s
                   AND resource.parse_status = 'parsed'
                   AND resource.validation_status IN ('valid', 'warnings')
+                  AND NOT EXISTS (
+                    SELECT 1 FROM football.product_history_resource_imports progress
+                    WHERE progress.source_resource_id=resource.id AND progress.completed_at IS NULL)
                 LIMIT 1
                 """,
                 (self.provider_code, provider_path),
@@ -196,6 +202,7 @@ class HistoricalBackfillStore:
         media_type: str,
         acquired_at: datetime,
         warnings: bool = False,
+        import_pending: bool = False,
     ) -> UUID:
         digest = hashlib.sha256(payload).hexdigest()
         with self.connection.cursor() as cursor:
@@ -248,7 +255,21 @@ class HistoricalBackfillStore:
             )
             if cursor.fetchone() != (digest, len(payload), media_type):
                 raise ValueError("immutable historical resource registration conflict")
+        if import_pending:
+            self.connection.execute(
+                "INSERT INTO football.product_history_resource_imports(source_resource_id) "
+                "VALUES (%s) ON CONFLICT DO NOTHING",
+                (resource_id,),
+            )
         return resource_id
+
+    def complete_resource_import(self, resource_id: UUID) -> None:
+        """Mark a source cached only after every bounded match import has committed."""
+        self.connection.execute(
+            "UPDATE football.product_history_resource_imports SET completed_at=clock_timestamp() "
+            "WHERE source_resource_id=%s AND completed_at IS NULL",
+            (resource_id,),
+        )
 
     def import_match(
         self, match: HistoricalMatch, snapshot_id: UUID, observed_at: datetime

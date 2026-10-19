@@ -29,6 +29,7 @@ from football.product.domain import (
 from football.product.external_predictions import settle_external_predictions
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.identity_admission import (
+    RetainedIdentityVerifier,
     admit_provider_mappings,
     fixture_identity_blockers,
     verify_source_identifier,
@@ -144,7 +145,95 @@ class OperationalProviderSync:
         competition_only: bool = False,
     ) -> None:
         """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
+        source, candidate = self._reviewed_mapping_inputs(
+            provider_match_id, fixture_id, source_snapshot_id
+        )
+        verifier = RetainedIdentityVerifier(self.data_root)
+        row = PitchApiFixture(
+            provider_match_id=provider_match_id,
+            provider_competition_id=source[0],
+            provider_home_team_id=source[2],
+            provider_away_team_id=source[4],
+            home_team_name=source[3],
+            away_team_name=source[5],
+            kickoff_at=source[6],
+            status=source[7],
+            provider_status=source[8] or "",
+            home_score=source[9],
+            away_score=source[10],
+            minute=source[11],
+            added_time=source[12],
+            period=source[13],
+            source_updated_at=source[14],
+            observed_at=source[15],
+            provider_competition_name=source[1],
+            result_score_basis=source[17],
+        )
+        snapshot_id = cast(UUID, source[16])
+        self._validate_reviewed_context(row, candidate)
+        for entity_type, identifier in (
+            ("competition", row.provider_competition_id),
+            ("team", row.provider_home_team_id),
+            ("team", row.provider_away_team_id),
+        ):
+            if (
+                verify_source_identifier(
+                    self.connection,
+                    self.data_root,
+                    snapshot_id,
+                    self.provider_code,
+                    entity_type,
+                    identifier,
+                    None,
+                    verifier,
+                )
+                is None
+            ):
+                raise ValueError("reviewed mapping requires verified retained provider identifiers")
+        verifier.seal()
         acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
+        if self._reviewed_mapping_inputs(provider_match_id, fixture_id, source_snapshot_id) != (
+            source,
+            candidate,
+        ):
+            raise ValueError("reviewed mapping inputs changed; prepare again before locking")
+        members = self._retained_fixture_members(row)
+        self._persist_deterministic_mapping(
+            row,
+            snapshot_id,
+            candidate,
+            mapping_method="manual",
+            competition_only=competition_only,
+        )
+        review = self._record_mapping_decision(
+            row,
+            snapshot_id,
+            fixture_id,
+            "MANUAL_ACCEPTED",
+            "operator explicitly accepted mapping",
+            {
+                "reviewed_fixture_id": str(fixture_id),
+                "competition_only": competition_only,
+            },
+        )
+        admit_provider_mappings(
+            self.connection,
+            self.data_root,
+            self.provider_code,
+            snapshot_id,
+            entity_types=("competition",) if competition_only else ("competition", "team"),
+            verifier=verifier,
+        )
+        if competition_only:
+            return
+        for member in members:
+            self._resolve_reviewed_member(member, candidate, row, snapshot_id, review)
+        self._update_canonical_fixture(row, fixture_id, snapshot_id)
+        self._insert_qualified_history(row, fixture_id, snapshot_id)
+
+    def _reviewed_mapping_inputs(
+        self, provider_match_id: str, fixture_id: UUID, source_snapshot_id: UUID | None
+    ) -> tuple[tuple[Any, ...], tuple[Any, ...]]:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """SELECT provider_competition_id, provider_competition_name,
@@ -186,78 +275,7 @@ class OperationalProviderSync:
                 raise ValueError("reviewed canonical fixture does not exist")
             if candidate[11] != "VERIFIED":
                 raise ValueError("reviewed target must be a verified canonical fixture")
-        row = PitchApiFixture(
-            provider_match_id=provider_match_id,
-            provider_competition_id=source[0],
-            provider_home_team_id=source[2],
-            provider_away_team_id=source[4],
-            home_team_name=source[3],
-            away_team_name=source[5],
-            kickoff_at=source[6],
-            status=source[7],
-            provider_status=source[8] or "",
-            home_score=source[9],
-            away_score=source[10],
-            minute=source[11],
-            added_time=source[12],
-            period=source[13],
-            source_updated_at=source[14],
-            observed_at=source[15],
-            provider_competition_name=source[1],
-            result_score_basis=source[17],
-        )
-        snapshot_id = cast(UUID, source[16])
-        self._validate_reviewed_context(row, candidate)
-        for entity_type, identifier in (
-            ("competition", row.provider_competition_id),
-            ("team", row.provider_home_team_id),
-            ("team", row.provider_away_team_id),
-        ):
-            if (
-                verify_source_identifier(
-                    self.connection,
-                    self.data_root,
-                    snapshot_id,
-                    self.provider_code,
-                    entity_type,
-                    identifier,
-                    None,
-                )
-                is None
-            ):
-                raise ValueError("reviewed mapping requires verified retained provider identifiers")
-        members = self._retained_fixture_members(row)
-        self._persist_deterministic_mapping(
-            row,
-            snapshot_id,
-            candidate,
-            mapping_method="manual",
-            competition_only=competition_only,
-        )
-        review = self._record_mapping_decision(
-            row,
-            snapshot_id,
-            fixture_id,
-            "MANUAL_ACCEPTED",
-            "operator explicitly accepted mapping",
-            {
-                "reviewed_fixture_id": str(fixture_id),
-                "competition_only": competition_only,
-            },
-        )
-        admit_provider_mappings(
-            self.connection,
-            self.data_root,
-            self.provider_code,
-            snapshot_id,
-            entity_types=("competition",) if competition_only else ("competition", "team"),
-        )
-        if competition_only:
-            return
-        for member in members:
-            self._resolve_reviewed_member(member, candidate, row, snapshot_id, review)
-        self._update_canonical_fixture(row, fixture_id, snapshot_id)
-        self._insert_qualified_history(row, fixture_id, snapshot_id)
+        return source, candidate
 
     def _validate_reviewed_context(
         self,
@@ -437,6 +455,8 @@ class OperationalProviderSync:
             else normalize_pitchapi_matches(response)
         )
         counts.fetched = len(rows)
+        self._load_geographic_scopes()
+        self.connection.commit()
         for row in rows:
             self._heartbeat_history_scope()
             try:
@@ -476,6 +496,7 @@ class OperationalProviderSync:
                 reason = str(error).splitlines()[0]
                 counts.failure_reasons[reason] = counts.failure_reasons.get(reason, 0) + 1
                 self._record_failed_observation(row, snapshot_id, reason)
+        self.connection.commit()
         geography = refresh_competition_geography(
             self.connection, self.data_root, self.provider_code
         )
@@ -711,6 +732,7 @@ class OperationalProviderSync:
         self._add_detail_counts(counts, bulk_counts)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
         diagnostics = self._sync_diagnostics(sync_started, from_date)
+        self.connection.commit()
         geography = refresh_competition_geography(
             self.connection, self.data_root, self.provider_code
         )
@@ -831,6 +853,7 @@ class OperationalProviderSync:
         self, rows: Sequence[FixtureObservation], snapshot_id: UUID, counts: SyncCounts
     ) -> list[tuple[FixtureObservation, UUID | None]]:
         resolved: list[tuple[FixtureObservation, UUID | None]] = []
+        self._load_geographic_scopes()
         for row in rows:
             try:
                 created = inserted = matched = updated = history_inserted = 0
@@ -914,6 +937,8 @@ class OperationalProviderSync:
                 (self.provider_code,),
             )
             stored = cursor.fetchall()
+        self.connection.commit()
+        self._load_geographic_scopes()
         self.connection.commit()
         reconciled = 0
         for source in stored:
@@ -1804,6 +1829,12 @@ class OperationalProviderSync:
             return stable_id("provider-scoped-match", self.provider_code, provider_value)
         raise ValueError(f"unsupported provider mapping table: {table}")
 
+    def _load_geographic_scopes(self) -> None:
+        if self._geographic_scopes is None:
+            self._geographic_scopes = verified_geographic_scopes(
+                self.connection, self.data_root, self.provider_code
+            )
+
     def _create_provider_scoped_fixture(
         self, row: FixtureObservation, snapshot_id: UUID, *, season_label: str | None = None
     ) -> UUID | None:
@@ -1837,10 +1868,8 @@ class OperationalProviderSync:
                 (competition_id,),
             )
             metadata = cursor.fetchone()
-        if self._geographic_scopes is None:
-            self._geographic_scopes = verified_geographic_scopes(
-                self.connection, self.data_root, self.provider_code
-            )
+        self._load_geographic_scopes()
+        assert self._geographic_scopes is not None
         geographic_scope = self._geographic_scopes.get(row.provider_competition_id)
         if metadata is not None and metadata[2] is not None:
             if geographic_scope is not None and geographic_scope != metadata[2]:

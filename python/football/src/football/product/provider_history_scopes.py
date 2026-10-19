@@ -23,6 +23,7 @@ from football.providers.base import ProviderFetchError
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiResponse
 from football.storage.raw import ImmutableFileStore
+from football.storage.transactions import require_idle_connection
 
 
 def normalize_seasons(values: Any) -> list[str]:
@@ -222,6 +223,7 @@ def discover_fotmob(
         ).fetchall()
     }
     for league_id in leagues:
+        sync.connection.commit()
         if league_id in cooling:
             continue
         resource = f"league-catalogue-{league_id}"
@@ -373,6 +375,7 @@ def bind_scoped_mapping(
 
 
 def claim_scope(sync: OperationalProviderSync, competition: str | None, season: str | None) -> Any:
+    require_idle_connection(sync.connection, "provider scope claim")
     sync.connection.execute("SELECT set_config('matchforge.history_claim_token', '', false)")
     sync.connection.commit()
     with sync.connection.cursor() as cursor:
@@ -448,6 +451,7 @@ def run_scopes(
 ) -> list[dict[str, object]]:
     if budget < 0:
         raise ValueError("provider scope budget must be nonnegative")
+    require_idle_connection(sync.connection, "provider scope execution")
     if refresh:
         sync.connection.execute("SELECT football.authorize_worker_publication()")
         sync.connection.execute(

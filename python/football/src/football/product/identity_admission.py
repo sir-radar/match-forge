@@ -24,6 +24,7 @@ from football.product.identity_trust import (
 )
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
+from football.storage.transactions import require_idle_connection
 
 TABLES = {
     "competition": (
@@ -36,6 +37,10 @@ TABLES = {
 }
 
 
+class RetainedEvidenceChanged(RuntimeError):
+    """Registered evidence changed after preparation; retry before taking locks."""
+
+
 class RetainedIdentityVerifier:
     """An operation-scoped index of identities from verified immutable resource bytes."""
 
@@ -44,6 +49,35 @@ class RetainedIdentityVerifier:
         self.knowledge_time = datetime.now(UTC)
         self.indexes: dict[tuple[object, ...], dict[tuple[str, str | None], set[str]]] = {}
         self.source_bytes_verified = 0
+        self._payloads: dict[tuple[object, ...], bytes | Exception | None] = {}
+        self._sealed = False
+
+    def seal(self) -> None:
+        """Permit database rechecks with prepared bytes only, without file I/O."""
+        self._sealed = True
+
+    def payload(self, provider: str, row: tuple[Any, ...]) -> bytes | None:
+        key = (provider, *row)
+        if key not in self._payloads:
+            if self._sealed:
+                raise RetainedEvidenceChanged(
+                    "retained evidence changed; prepare again before locking"
+                )
+            try:
+                self._payloads[key] = _retained_payload(self.root, provider, row)
+            except (
+                OSError,
+                ValueError,
+                KeyError,
+                TypeError,
+                ValidationError,
+                RecursionError,
+            ) as error:
+                self._payloads[key] = error
+        prepared = self._payloads[key]
+        if isinstance(prepared, Exception):
+            raise prepared
+        return prepared
 
     def contains(
         self,
@@ -55,8 +89,12 @@ class RetainedIdentityVerifier:
     ) -> bool:
         if row[9] > self.knowledge_time:
             return False
-        key = (provider, row[5], row[7], row[8], row[1])
+        key = (provider, *row)
         if key not in self.indexes:
+            if self._sealed:
+                raise RetainedEvidenceChanged(
+                    "retained evidence changed; prepare again before locking"
+                )
             try:
                 payload = _retained_payload(self.root, provider, row)
                 if payload is not None:
@@ -86,7 +124,7 @@ def classify_mapping(
     if len(row) > 9 and row[9] is not None:
         from football.product.identity_correction import revalidate_team_correction
 
-        return revalidate_team_correction(connection, data_root, row[9])
+        return revalidate_team_correction(connection, data_root, row[9], verifier=verifier)
     mapping_id, canonical_id, provider, identifier, method, confidence, country, snapshot_id = row[
         :8
     ]
@@ -184,22 +222,38 @@ def admit_provider_mappings(
     snapshot_id: UUID | None = None,
     *,
     entity_types: tuple[Literal["competition", "team"], ...] = ("competition", "team"),
+    commit_each: bool = False,
+    verifier: RetainedIdentityVerifier | None = None,
 ) -> list[dict[str, Any]]:
+    if commit_each:
+        require_idle_connection(connection, "bounded identity admission")
     decisions = []
-    verifier = RetainedIdentityVerifier(data_root)
-    for entity_type in entity_types:
-        for row in mapping_rows(connection, entity_type, provider, snapshot_id):
-            decision = classify_mapping(connection, entity_type, row, data_root, verifier)
-            if len(row) > 9 and row[9] is not None:
-                if decision["disposition"] not in {"CROSSWALK", "REVOKED"}:
-                    from football.product.identity_correction import revoke_team_correction
+    verifier = verifier or RetainedIdentityVerifier(data_root)
+    candidates = [
+        (kind, row)
+        for kind in entity_types
+        for row in mapping_rows(connection, kind, provider, snapshot_id)
+    ]
+    if not commit_each:
+        for kind, row in candidates:
+            classify_mapping(connection, kind, row, data_root, verifier)
+        verifier.seal()
+    for entity_type, row in candidates:
+        decision = classify_mapping(connection, entity_type, row, data_root, verifier)
+        if len(row) > 9 and row[9] is not None:
+            if decision["disposition"] not in {"CROSSWALK", "REVOKED"}:
+                from football.product.identity_correction import revoke_team_correction
 
-                    revoke_team_correction(
-                        connection, UUID(row[9]["decision_id"]), "CORRECTION_EVIDENCE_UNVERIFIED"
-                    )
-            else:
-                _record_decision(connection, decision)
-            decisions.append(decision)
+                revoke_team_correction(
+                    connection, UUID(row[9]["decision_id"]), "CORRECTION_EVIDENCE_UNVERIFIED"
+                )
+        else:
+            _record_decision(connection, decision, row)
+        decisions.append(decision)
+        if commit_each:
+            connection.commit()
+    if commit_each:
+        connection.commit()
     return decisions
 
 
@@ -319,6 +373,8 @@ def mapping_rows(
     entity_type: Literal["team", "competition"],
     provider: str | None = None,
     snapshot_id: UUID | None = None,
+    *,
+    mapping_id: UUID | None = None,
 ) -> list[tuple[Any, ...]]:
     table, canonical, identifier, product = TABLES[entity_type]
     corrected = connection.execute(
@@ -342,13 +398,24 @@ def mapping_rows(
             LEFT JOIN football.{product} product ON product.{canonical} = mapping.{canonical}
             WHERE mapping.valid_to IS NULL AND (%s::text IS NULL OR provider.code = %s)
               AND (%s::uuid IS NULL OR mapping.source_snapshot_id = %s)
+              AND (%s::uuid IS NULL OR mapping.id = %s)
             ORDER BY mapping.id""",
-        (provider, provider, snapshot_id, snapshot_id),
+        (provider, provider, snapshot_id, snapshot_id, mapping_id, mapping_id),
     ).fetchall()
 
 
-def _record_decision(connection: Connection[Any], decision: dict[str, Any]) -> None:
+def _record_decision(
+    connection: Connection[Any], decision: dict[str, Any], expected_mapping: tuple[Any, ...]
+) -> None:
     acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
+    current = mapping_rows(
+        connection,
+        decision["entity_type"],
+        decision["provider"],
+        mapping_id=UUID(decision["mapping_id"]),
+    )
+    if current != [expected_mapping]:
+        raise RetainedEvidenceChanged("mapping changed; prepare again before locking")
     semantic = {key: value for key, value in decision.items() if key != "source_observed_at"}
     key = sha256_json(semantic)
     previous = connection.execute(

@@ -200,8 +200,11 @@ class HistorySyncWorker(ProductSync):
     def _store_history(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
-        with self._database_step():
-            return super()._store_history(rows, snapshot_id, observed_at)
+        count = 0
+        for row in rows:
+            with self._database_step():
+                count += super()._store_history([row], snapshot_id, observed_at)
+        return count
 
     def _store_fallback_history(
         self,
@@ -211,10 +214,13 @@ class HistorySyncWorker(ProductSync):
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
-        with self._database_step():
-            return super()._store_fallback_history(
-                rows, competition_id, season, snapshot_id, observed_at
-            )
+        count = 0
+        for row in rows:
+            with self._database_step():
+                count += super()._store_fallback_history(
+                    [row], competition_id, season, snapshot_id, observed_at
+                )
+        return count
 
     def _competition_id(self, provider_competition_id: str, snapshot_id: UUID) -> UUID:
         with self._database_step():

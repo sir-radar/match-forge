@@ -34,6 +34,7 @@ from football.product.football_data_uk import run_backfill as run_football_data_
 from football.product.history_coverage import history_coverage
 from football.product.history_requests import HistoryDeferred, HistoryRequestBudget
 from football.product.history_worker import HistorySyncWorker
+from football.product.identity_admission import RetainedEvidenceChanged
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
@@ -43,6 +44,7 @@ from football.providers.fotmob import FotmobClient
 from football.providers.pitchapi import PitchApiClient, UrllibPitchApiTransport
 
 _DATA_OPERATION_ERRORS = (
+    RetainedEvidenceChanged,
     ApiFootballError,
     FootballDataOrgError,
     psycopg.Error,
@@ -281,7 +283,7 @@ def _run_development_provider_preview(args: argparse.Namespace) -> int:
                 MODEL_ARTIFACT_PATH,
                 provider_code=args.provider,
             )
-    except (psycopg.Error, OSError, ValueError) as error:
+    except (psycopg.Error, OSError, ValueError, RetainedEvidenceChanged) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
@@ -301,7 +303,7 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 if args.pending_only:
                     result: dict[str, object] = product.refresh_pending_forecasts()
                 else:
-                    result = {"forecasts_created": product.refresh_forecasts()}
+                    result = {"forecasts_created": product.refresh_forecasts(commit_batches=True)}
                 connection.commit()
             elif args.command == "backfill-openfootball":
                 result = _openfootball(connection, args)
@@ -722,7 +724,7 @@ def _structured_failures(value: object) -> list[str]:
 def _refresh(connection: psycopg.Connection[Any], data_root: Path) -> int:
     count = ProductSync(
         connection, ApiFootballClient("stored-data-only"), data_root, MODEL_ARTIFACT_PATH
-    ).refresh_forecasts()
+    ).refresh_forecasts(commit_batches=True)
     connection.commit()
     return count
 

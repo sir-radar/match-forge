@@ -15,7 +15,10 @@ from football.work.storage import WorkRegistry, claim_from_record
 
 
 def claim_forecast_generations(
-    connection: Connection[Any], fixture_ids: list[UUID]
+    connection: Connection[Any],
+    fixture_ids: list[UUID],
+    *,
+    expected_generations: dict[UUID, int] | None = None,
 ) -> list[tuple[UUID, int, WorkClaim]]:
     """Join canonical ownership; acquire shared work before nonblocking detail locks."""
     with connection.cursor(row_factory=tuple_row) as cursor:
@@ -42,6 +45,7 @@ def claim_forecast_generations(
                 ),
             )
             for fixture, generation, requested_at in cursor.fetchall()
+            if expected_generations is None or expected_generations.get(fixture) == generation
         ]
     claims: list[tuple[UUID, int, WorkClaim]] = []
     registry = WorkRegistry(connection)
