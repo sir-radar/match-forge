@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 19,
+    "current_phase": 20,
     "completed_phases": [
       0,
       1,
@@ -1259,7 +1259,7 @@
       "202610190200_work_metrics.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 19 gated. Commit this gate before continuing to Phase 20 under the owner continuous-execution instruction; Phases 20-48 pending.",
+    "remaining_work": "Phase 20 concurrency stress verification in progress; Phases 21-48 pending.",
     "phase_gate": "PASS_WITH_WARNINGS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-19-2026-10-19.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -2072,6 +2072,12 @@
       "fixture_projection_preserved": true,
       "pre_existing_migrations_verified": 92,
       "remaining_work": []
+    },
+    "phase_20": {
+      "status": "IN_PROGRESS",
+      "phase_gate_complete": false,
+      "scope": "Controlled overlapping domain work, stale publication, cancellation, cooldown, adversarial transaction retry and parallel workers.",
+      "runtime_cutover": false
     }
   },
   "phase_1b": {

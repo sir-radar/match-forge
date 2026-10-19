@@ -107,7 +107,10 @@ def test_refresh_claim_serializes_fixture_changes_without_losing_new_work(tmp_pa
 
 
 @contextmanager
-def _forecast_fixture(database_url: str) -> Iterator[tuple[UUID, UUID, UUID, UUID]]:
+def _forecast_fixture(
+    database_url: str, *, cleanup: bool = True
+) -> Iterator[tuple[UUID, UUID, UUID, UUID]]:
+    """Disable row cleanup only inside a disposable database that retains publications."""
     with psycopg.connect(database_url, autocommit=True) as owner:
         with owner.transaction():
             competition, home, away, season = owner.execute(
@@ -144,25 +147,26 @@ def _forecast_fixture(database_url: str) -> Iterator[tuple[UUID, UUID, UUID, UUI
         try:
             yield competition, home, away, fixture
         finally:
-            with owner.transaction():
-                owner.execute(
-                    "DELETE FROM football.product_forecast_refresh_work WHERE fixture_id=%s",
-                    (fixture,),
-                )
-                owner.execute(
-                    "DELETE FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
-                )
-                owner.execute("DELETE FROM football.matches WHERE id=%s", (fixture,))
-                owner.execute(
-                    "DELETE FROM football.product_teams WHERE team_id=ANY(%s)", ([home, away],)
-                )
-                owner.execute("DELETE FROM football.teams WHERE id=ANY(%s)", ([home, away],))
-                owner.execute(
-                    "DELETE FROM football.product_competitions WHERE competition_id=%s",
-                    (competition,),
-                )
-                owner.execute("DELETE FROM football.seasons WHERE id=%s", (season,))
-                owner.execute("DELETE FROM football.competitions WHERE id=%s", (competition,))
+            if cleanup:
+                with owner.transaction():
+                    owner.execute(
+                        "DELETE FROM football.product_forecast_refresh_work WHERE fixture_id=%s",
+                        (fixture,),
+                    )
+                    owner.execute(
+                        "DELETE FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
+                    )
+                    owner.execute("DELETE FROM football.matches WHERE id=%s", (fixture,))
+                    owner.execute(
+                        "DELETE FROM football.product_teams WHERE team_id=ANY(%s)", ([home, away],)
+                    )
+                    owner.execute("DELETE FROM football.teams WHERE id=ANY(%s)", ([home, away],))
+                    owner.execute(
+                        "DELETE FROM football.product_competitions WHERE competition_id=%s",
+                        (competition,),
+                    )
+                    owner.execute("DELETE FROM football.seasons WHERE id=%s", (season,))
+                    owner.execute("DELETE FROM football.competitions WHERE id=%s", (competition,))
 
 
 @pytest.mark.parametrize("pending_only", [False, True])
