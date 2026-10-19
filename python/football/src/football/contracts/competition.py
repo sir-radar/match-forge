@@ -35,6 +35,7 @@ class CompetitionRulesV1:
     contract: str = "CompetitionRulesV1"
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "source_refs", tuple(self.source_refs))
         if self.contract != "CompetitionRulesV1":
             raise CompetitionRulesError("unsupported competition rules contract")
         if not self.rules_id or not self.competition_ref or not self.policy_version:

@@ -9,6 +9,7 @@ from uuid import UUID
 from psycopg import Connection, Cursor
 
 from football.contracts.dependencies import DependencyNodeV1
+from football.contracts.source import sha256_bytes
 from football.forecasting.contracts import BaselineForecastV1, forecast_payload_bytes
 from football.ingestion.dependencies import PostgresDependencyStoreV1
 from football.storage.locks import LockClass, LockRequest, acquire_locks
@@ -44,14 +45,14 @@ class ImmutableForecastStore:
             f"forecasts/match={forecast.match_id}/cutoff={cutoff}/"
             f"variant={forecast.probability_variant.lower()}/forecast={forecast.forecast_id}.json"
         )
-        write = self._files.publish(
-            relative_path,
-            forecast_payload_bytes(
-                forecast.match_result,
-                goal=forecast.goal,
-                corners=forecast.corners,
-            ),
+        payload = forecast_payload_bytes(
+            forecast.match_result,
+            goal=forecast.goal,
+            corners=forecast.corners,
         )
+        if sha256_bytes(payload) != forecast.payload_sha256:
+            raise ForecastPublicationError("sealed payload checksum does not match forecast")
+        write = self._files.publish(relative_path, payload)
         if write.sha256 != forecast.payload_sha256:
             raise ForecastPublicationError("published payload checksum does not match forecast")
         return PublishedBaselineForecastV1(
