@@ -16,9 +16,9 @@ from uuid import UUID, uuid5
 
 from football.forecasting.pitchapi_v3 import (
     MatchHistoryFeaturesV1,
-    TeamHistoryFeaturesV1,
     TransferableGoalModelV1,
     TransferableParametersV1,
+    team_history_features,
 )
 
 PRODUCT_NAMESPACE = UUID("4944b082-913a-4b04-9c42-76374ff3d840")
@@ -142,8 +142,8 @@ def forecast_from_history(
         artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
         parameters = TransferableParametersV1(**artifact["parameters"])
     features = MatchHistoryFeaturesV1(
-        home=_team_features(home_history[-MINIMUM_HISTORY_MATCHES:]),
-        away=_team_features(away_history[-MINIMUM_HISTORY_MATCHES:]),
+        home=team_history_features(home_history[-MINIMUM_HISTORY_MATCHES:]),
+        away=team_history_features(away_history[-MINIMUM_HISTORY_MATCHES:]),
     )
     goal_forecast = TransferableGoalModelV1(parameters).forecast_features(features)
     score_cells = tuple(
@@ -392,18 +392,6 @@ def _team_history(
         elif match.away_team_id == team_id:
             rows.append((match.away_goals, match.home_goals, match.away_xg))
     return rows
-
-
-def _team_features(rows: Sequence[tuple[int, int, float | None]]) -> TeamHistoryFeaturesV1:
-    xg_values = tuple(row[2] for row in rows if row[2] is not None)
-    return TeamHistoryFeaturesV1(
-        appearances=len(rows),
-        goals_for_mean=sum(row[0] for row in rows) / len(rows),
-        goals_against_mean=sum(row[1] for row in rows) / len(rows),
-        # The production control has beta_xg_for=0.0. Keep missing xG explicit until this
-        # boundary; the ignored value is only materialized to satisfy its frozen contract.
-        npxg_for_mean=(sum(xg_values) / len(xg_values) if xg_values else 0.0),
-    )
 
 
 def _total_goal_distribution(home: Sequence[float], away: Sequence[float]) -> tuple[float, ...]:

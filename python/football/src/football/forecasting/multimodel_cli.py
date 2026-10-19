@@ -11,6 +11,7 @@ from uuid import UUID
 
 import psycopg
 
+from football.forecasting.features import FixtureFeatureSnapshotV1
 from football.forecasting.model_contracts import (
     CompetitionContext,
     FittedModelArtifact,
@@ -135,7 +136,7 @@ def _forecast(args: argparse.Namespace, environment: Mapping[str, str]) -> dict[
         runtime_model=loaded,
         diagnostics=cast(dict[str, object], manifest.get("diagnostics", {})),
     )
-    snapshot = _load_snapshot(args.snapshot)
+    snapshot = FixtureFeatureSnapshotV1(_load_snapshot(args.snapshot)).model_input
     forecast = adapter.predict(artifact, snapshot)
     result = _forecast_dict(forecast)
     if args.persist:

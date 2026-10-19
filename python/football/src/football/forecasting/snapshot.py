@@ -56,7 +56,9 @@ def build_forecast_snapshot(
             (
                 match
                 for match in history
-                if match.kickoff_at < football_cutoff and match.known_at <= knowledge_cutoff
+                if match.fixture_id != fixture_id
+                and match.kickoff_at < football_cutoff
+                and match.known_at <= knowledge_cutoff
             ),
             key=lambda match: (match.kickoff_at, str(match.fixture_id)),
         )

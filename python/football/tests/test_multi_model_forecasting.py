@@ -50,7 +50,7 @@ HOME = UUID(int=1)
 AWAY = UUID(int=2)
 THIRD = UUID(int=3)
 COMPETITION = UUID(int=4)
-TARGET = UUID(int=5)
+TARGET = UUID(int=1_000_000)
 KICKOFF = datetime(2026, 10, 7, 18, tzinfo=UTC)
 
 

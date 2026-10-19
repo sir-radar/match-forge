@@ -85,6 +85,25 @@ class MatchHistoryFeaturesV1:
     away: TeamHistoryFeaturesV1
 
 
+def team_history_features(
+    rows: Sequence[tuple[int, int, float | None]],
+) -> TeamHistoryFeaturesV1:
+    """Shared frozen arithmetic for training, replay and production appearances.
+
+    Missing xG stays absent in source/feature snapshots. The zero here preserves
+    the legacy model interface's ignored value for the goals-only champion.
+    """
+    if not rows:
+        raise TransferableModelError("team feature history must not be empty")
+    xg = tuple(row[2] for row in rows if row[2] is not None)
+    return TeamHistoryFeaturesV1(
+        appearances=len(rows),
+        goals_for_mean=sum(row[0] for row in rows) / len(rows),
+        goals_against_mean=sum(row[1] for row in rows) / len(rows),
+        npxg_for_mean=sum(xg) / len(xg) if xg else 0.0,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class _TeamAppearance:
     kickoff_at: datetime
@@ -168,11 +187,8 @@ class RollingHistoryV1:
         if len(history) < self.window:
             raise TransferableModelError("team requires 10 prior appearances")
         selected = tuple(history)[-self.window :]
-        return TeamHistoryFeaturesV1(
-            appearances=len(selected),
-            goals_for_mean=sum(item.goals_for for item in selected) / self.window,
-            goals_against_mean=sum(item.goals_against for item in selected) / self.window,
-            npxg_for_mean=sum(item.npxg_for for item in selected) / self.window,
+        return team_history_features(
+            tuple((item.goals_for, item.goals_against, item.npxg_for) for item in selected)
         )
 
 

@@ -1926,6 +1926,8 @@ class ProductSync:
         artifact_sha: str,
         parameters: TransferableParametersV1,
     ) -> int:
+        if any(match.fixture_id == fixture_id for match in history):
+            raise ValueError("forecast history must not contain the target fixture")
         window = forecast_history_window(history, kickoff_at, home_id, away_id)
         forecast = forecast_from_history(
             artifact_path=self.artifact_path,
@@ -2129,12 +2131,13 @@ class ProductSync:
                        source_kickoff_precision
                 FROM football.product_eligible_history_at(%s)
                 WHERE kickoff_at < %s
+                  AND fixture_id <> ALL(%s::uuid[])
                   AND (home_team_id = ANY(%s::uuid[])
                        OR away_team_id = ANY(%s::uuid[]))
                   AND known_at <= %s
                 ORDER BY kickoff_at, fixture_id
                 """,
-                (now, latest_kickoff, teams, teams, now),
+                (now, latest_kickoff, [fixture for fixture, _, _, _ in targets], teams, teams, now),
             )
             rows = cursor.fetchall()
         by_team: dict[UUID, list[tuple[FinishedMatch, str]]] = {}

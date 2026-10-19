@@ -66,6 +66,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_domain_work_adapters.py \
 	tests/integration/test_concurrency_boundaries.py \
 	tests/integration/test_concurrency_stress.py \
+	tests/integration/test_fixture_features.py \
 	tests/integration/test_live_context.py \
 	tests/integration/test_operational_provider_sync.py \
 	tests/integration/test_worker_publication_fencing.py \

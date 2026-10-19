@@ -4,6 +4,7 @@ import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from football.forecasting.features import FixtureFeatureSnapshotV1
 from football.forecasting.model_contracts import (
     FittedModelArtifact,
     ForecastInputSnapshot,
@@ -47,10 +48,16 @@ class ModelRunner:
     def __init__(self, registry: ModelRegistry) -> None:
         self.registry = registry
 
-    def run(self, fixture: ForecastInputSnapshot) -> ModelRunResult:
+    def run(self, fixture: ForecastInputSnapshot | FixtureFeatureSnapshotV1) -> ModelRunResult:
+        features = (
+            fixture
+            if isinstance(fixture, FixtureFeatureSnapshotV1)
+            else FixtureFeatureSnapshotV1(fixture)
+        )
         forecasts = []
         availability = []
         for registered in self.registry.models:
+            fixture = features.model_input
             adapter = registered.adapter
             if not registered.enabled:
                 availability.append(

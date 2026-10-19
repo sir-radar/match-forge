@@ -826,6 +826,33 @@ Python correctness prototype
 
 ## Multi-model Forecast Boundary
 
+`FixtureFeatureSnapshotV1` seals provider-neutral, eligible inputs for the model
+runner and model CLI. Its portable JSON contract is defined in
+`schemas/contracts/fixture-feature-snapshot-v1.schema.json`. Football and knowledge
+cutoffs stay separate. Target IDs, same-kickoff results, future facts and facts
+known after the supplied knowledge cutoff cannot enter qualified history. The
+production history query excludes all target IDs before returning result columns,
+including when an earlier kickoff revision exists for the same canonical fixture.
+
+The snapshot keeps goals history, existing rating/rest/congestion calculations,
+qualified context, missingness, quality and source references. Missing context
+remains null. League strength and home advantage remain model-specific rather
+than fabricated shared estimates; tactical, corner, card and player features stay
+null because this contract's current input does not supply qualified features for
+those families. External context needs source
+references and eligible knowledge times. Unknown quality is distinct from an
+explicit empty finding list.
+
+Feature exports have their own checksum. Existing model-input projections keep
+their approved schema, predictive-input checksum and mathematics. Each model gets
+an independent projection of the same sealed values, so mutable context cannot
+change another model's input or the feature export. Training, replay and production
+use the same rolling-feature arithmetic. The goals-only champion's ignored legacy
+xG value remains confined to its existing model interface; unknown source xG stays
+null in feature exports. Published artifacts and forecast rows are not rewritten.
+The export includes the complete legacy model input for replay; its family views
+are derived from that one sealed input.
+
 Python constructs one immutable, point-in-time forecast snapshot per fixture and passes
 that same snapshot to every eligible model through the model registry. One model failure
 is recorded without suppressing successful forecasts from other models. Model artifacts,

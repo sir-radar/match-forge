@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 20,
+    "current_phase": 21,
     "completed_phases": [
       0,
       1,
@@ -1260,7 +1260,7 @@
       "202610190200_work_metrics.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 20 gated. Commit this gate before Phase 21 under the owner continuous-execution instruction; Phases 21-48 pending.",
+    "remaining_work": "Phase 21 point-in-time feature implementation in progress; Phases 22-48 pending.",
     "phase_gate": "PASS_WITH_WARNINGS",
     "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-20-2026-10-19.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
@@ -2105,6 +2105,12 @@
       "runtime_cutover": false,
       "additional_live_provider_requests": 0,
       "remaining_work": []
+    },
+    "phase_21": {
+      "status": "IN_PROGRESS",
+      "phase_gate_complete": false,
+      "scope": "Typed feature snapshots and shared feature calculations across training, replay and production; explicit unsupported resources and retained provenance.",
+      "runtime_cutover": false
     }
   },
   "phase_1b": {
