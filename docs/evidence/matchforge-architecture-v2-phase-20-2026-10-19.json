@@ -1,0 +1,84 @@
+{
+  "additional_live_provider_requests": 0,
+  "branch": "ft/matchforge-architecture-v2",
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-20-gate",
+  "code_commit_sha": "5f524944ef892d0df439a7ff3b4a6fa177aefa3e",
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/check-integration-verified.log",
+    "log_sha256": "845db144f4e29ca222af7c0bff857825cf4c1a8341bb5a7059e14bbff062820c",
+    "postgres_storage_cases_passed": 646,
+    "python_unit_tests_passed": 1460,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "unrelated_owner_gitignore_sha256": "fa7e3ee634671a1473d8beb140f16c467da2a7d166891175c286844eb3ae2d79",
+    "unrelated_owner_gitignore_staged_blob": "b4bb7d1fbe22cf1f1d2a13fd781d4bb749e959c4",
+    "web_tests_passed": 56
+  },
+  "data_preservation": {
+    "fresh_full_table_rehash_performed": false,
+    "inherited_verified_evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-19-2026-10-19.json",
+    "inherited_verified_evidence_sha256": "d649967c262564bdd77421518084f9526ed60f4f2a7c5113ebe622c3e93844f1",
+    "new_upgrade_required": false,
+    "reason": "Only integration tests, test invocation and project status changed; all production code, migration bytes and the Phase 19 preservation evidence are unchanged.",
+    "retained_shadow_written": false
+  },
+  "dedicated_stress_cases_passed": 11,
+  "development_failures": [
+    {
+      "disposition": "Disposable fixture cleanup retains immutable forecast/observation references until database drop.",
+      "log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/stress-first.log"
+    },
+    {
+      "disposition": "Controlled serialization retry starts a fresh snapshot after the competing publication commits.",
+      "log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/check-integration.log"
+    },
+    {
+      "disposition": "Existing two-second Go cancellation check timed out once; 20 isolated repetitions and the full serving group passed with unchanged deadlines/assertions.",
+      "log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/check-integration-final.log"
+    }
+  ],
+  "finished_at": "2026-10-19T07:47:46.901001+00:00",
+  "focused_cases_passed": 17,
+  "focused_final_retry_cases_passed": 2,
+  "focused_final_retry_log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/retry-regression.log",
+  "focused_log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/stress-final.log",
+  "focused_log_sha256": "7fd0c8607797753a4ce4d32b7c7a79faadfc460416f184e382cb62d4d46bf397",
+  "focused_suite_timing": "17 cases passed before final retry coordination; two changed retry cases passed after it; final aggregate covers all cases.",
+  "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+  "phase": 20,
+  "phase_gate_complete": true,
+  "pre_existing_migrations_verified": 93,
+  "production_code_unchanged": true,
+  "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
+  "remaining_work_inside_phase_20": [],
+  "runtime_cutover": false,
+  "scenarios": {
+    "adversarial_deadlock": "Actual PostgreSQL 40P01; whole publication retries within two controlled attempts; two work results and two immutable files, no duplicate rows.",
+    "adversarial_serialization": "Actual PostgreSQL 40001; whole publication retries within two controlled attempts; two committed results, no lost marker or duplicate publication.",
+    "crashed_worker": "Lease expires, replacement gets a new epoch, stale publication is rejected before domain insertion.",
+    "duplicate_generations": "Five increments demonstrably wait behind active publication, remain pending, then coalesce without a second forecast artifact.",
+    "forecast_history": "Ten eligible retained matches; real champion forecast overlaps history qualification; ten prior fixtures remain eligible.",
+    "identity_history": "History qualification holds shared identity coordination; correction demonstrably waits, then succeeds and requalifies.",
+    "independent_fixtures": "Six workers simultaneously hold independent fixture publication transactions before a barrier releases their commits.",
+    "independent_provider_scopes": "Six workers simultaneously own independent scopes during controlled provider execution; all six shared/domain outcomes succeed.",
+    "operator_cancellation": "Active claim is cancelled; its later publication is fenced before domain insertion.",
+    "provider_cooldown": "Retryable provider failure prevents early reclaim; database-time cooldown expiry permits exactly the next attempt.",
+    "provider_fixture": "Retained provider observation postpones the target during model preparation; stale prepared result cannot publish."
+  },
+  "schema_unchanged": true,
+  "serving_timeout_followup": {
+    "full_group": "PASS_ORIGINAL_SOURCE",
+    "full_group_log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/go-group.log",
+    "isolated_log_ref": ".local/remediation/matchforge-architecture-v2/phase-20/go-cancel-reproduce.log",
+    "isolated_repetitions_passed": 20
+  },
+  "status": "PASS_WITH_WARNINGS",
+  "validation_type": "ENGINEERING_CONCURRENCY_ONLY",
+  "warnings": [
+    "An existing two-second Go cancellation check timed out once; the cause was not reproduced in 20 isolated repetitions or the unchanged complete serving group. No timeout/assertion was relaxed.",
+    "Existing missing/unverifiable retained source bytes and existing compiler/lint deprecation warnings remain unchanged."
+  ]
+}
