@@ -865,6 +865,31 @@ and simulation inputs. Context features retain structured competition type, home
 splits, missingness, rest, opponent-adjusted form, and recency-weighted head-to-head data.
 External provider predictions are benchmark-only and require exact fixture mapping.
 
+## Experiment runs
+
+`ExperimentProtocolV1` freezes a hypothesis, explicit MatchForge fixture ID sets
+for development, validation, evaluation and forbidden targets, candidate IDs,
+feature contract and checksum-bound policy/authorization references. Its canonical
+JSON and schema are versioned; corpus partitions are disjoint. The forbidden
+manifest remains in the frozen protocol, independently of the evaluation corpus.
+References record existing decisions and do not grant new research access.
+
+`football.forecasting.experiments.run_experiment` accepts the exact development
+feature snapshots and already-fitted candidates through the existing `ModelRunner`.
+It rejects other targets and protected history before executing a model or writing
+an artifact. Model/artifact identity, training cutoffs, feature hashes, eligibility
+settings, code, dependency lock and explicit execution time bind the run identity.
+All candidates run in protocol order; model unavailability yields a failed run.
+There is no automatic candidate search, fallback or model promotion.
+
+The existing immutable file store publishes the protocol, feature inputs, results
+and `ExperimentRun`; identical retries converge and changed bytes conflict.
+`ExperimentArtifact` records URI and SHA-256. `ExperimentDecision` retains the
+common `DecisionRecordV1` and binds the exact published run/result checksum.
+The common runner has no corpus loader or outcome reader. Fitting, calibration,
+validation/evaluation scoring and promotion still require their existing governed
+runners and owner decisions. Frozen historical scripts and evidence are preserved.
+
 ## API Boundary
 
 The Go API exposes only capabilities supported by executed data and evaluation gates.
