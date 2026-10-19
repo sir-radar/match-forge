@@ -216,6 +216,24 @@ def _eligibility(
     adapter = registered.adapter
     entry = registered.registration
     if (
+        registered.artifact is not None
+        and registered.artifact.training_cutoff >= fixture.football_cutoff
+    ):
+        return ModelAvailability(
+            adapter.model_id,
+            ModelStatus.MODEL_FIT_UNAVAILABLE,
+            "ARTIFACT_TRAINING_NOT_BEFORE_FOOTBALL_CUTOFF",
+        )
+    if (
+        registered.artifact is not None
+        and registered.artifact.training_cutoff >= fixture.knowledge_cutoff
+    ):
+        return ModelAvailability(
+            adapter.model_id,
+            ModelStatus.MODEL_FIT_UNAVAILABLE,
+            "ARTIFACT_TRAINING_NOT_BEFORE_KNOWLEDGE_CUTOFF",
+        )
+    if (
         entry is not None
         and entry.eligible_competitions is not None
         and fixture.competition_id not in entry.eligible_competitions

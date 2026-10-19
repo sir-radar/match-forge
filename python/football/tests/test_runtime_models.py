@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from football.forecasting.champion_adapter import TransferableRollingGoalsChampion
 from football.forecasting.features import FixtureFeatureSnapshotV1
-from football.forecasting.model_contracts import ModelRunResult
+from football.forecasting.model_contracts import ForecastInputSnapshot, ModelRunResult
 from football.forecasting.model_runner import ModelRegistry, ModelRunner
 from football.forecasting.runtime_models import ModelRegistration, load_registered_champion
 from test_feature_snapshots import _input
@@ -156,3 +156,110 @@ def test_experiment_identity_includes_exact_runtime_registration(tmp_path: Path)
         )
     assert results[0].run_id != results[1].run_id
     assert results[0].status == "SUCCEEDED" and results[1].status == "FAILED"
+
+
+@pytest.mark.parametrize("runtime_metadata", [False, True])
+@pytest.mark.parametrize("relation", ["after", "same_kickoff"])
+def test_registered_artifact_trained_after_prediction_is_unavailable(
+    runtime_metadata: bool,
+    relation: str,
+) -> None:
+    from datetime import timedelta
+
+    from football.forecasting.snapshot import build_forecast_snapshot
+
+    entry = _entry()
+    artifact = load_registered_champion(entry, Path("."))
+    original = _input()
+    shift = original.football_cutoff - entry.training_cutoff
+    if relation == "after":
+        shift += timedelta(days=1)
+    history = tuple(
+        replace(row, kickoff_at=row.kickoff_at - shift, known_at=row.known_at - shift)
+        for row in original.qualified_history
+    )
+    snapshot = build_forecast_snapshot(
+        fixture_id=original.fixture_id,
+        competition_id=original.competition_id,
+        competition_context=original.competition_context,
+        season_label="synthetic-earlier-season",
+        kickoff_at=original.kickoff_at - shift,
+        home_team_id=original.home_team_id,
+        away_team_id=original.away_team_id,
+        football_cutoff=original.football_cutoff - shift,
+        knowledge_cutoff=original.knowledge_cutoff - shift,
+        knowledge_mode=original.knowledge_mode,
+        history=history,
+    )
+    registry = ModelRegistry.from_registrations(
+        (entry,),
+        (TransferableRollingGoalsChampion(),),
+        {artifact.artifact_sha256: artifact},
+        enabled=frozenset((entry.model_id,)),
+    )
+    if not runtime_metadata:
+        from football.forecasting.model_runner import RegisteredModel
+
+        registry = ModelRegistry(
+            (RegisteredModel(TransferableRollingGoalsChampion(), artifact, True, 10),)
+        )
+    result = ModelRunner(registry).run(snapshot)
+    assert result.forecasts == ()
+    assert result.availability[0].reason == "ARTIFACT_TRAINING_NOT_BEFORE_FOOTBALL_CUTOFF"
+
+
+def _early_knowledge_snapshot(knowledge_cutoff: datetime) -> ForecastInputSnapshot:
+    from datetime import timedelta
+
+    from football.forecasting.snapshot import build_forecast_snapshot
+
+    original = _input()
+    shift = max(row.known_at for row in original.qualified_history) - (
+        knowledge_cutoff - timedelta(days=1)
+    )
+    history = tuple(
+        replace(row, kickoff_at=row.kickoff_at - shift, known_at=row.known_at - shift)
+        for row in original.qualified_history
+    )
+    return build_forecast_snapshot(
+        fixture_id=original.fixture_id,
+        competition_id=original.competition_id,
+        competition_context=original.competition_context,
+        season_label=original.season_label,
+        kickoff_at=original.kickoff_at,
+        home_team_id=original.home_team_id,
+        away_team_id=original.away_team_id,
+        football_cutoff=original.football_cutoff,
+        knowledge_cutoff=knowledge_cutoff,
+        knowledge_mode=original.knowledge_mode,
+        history=history,
+    )
+
+
+@pytest.mark.parametrize("runtime_metadata", [False, True])
+@pytest.mark.parametrize("relation", ["after", "same_kickoff"])
+def test_artifact_training_must_precede_independent_knowledge_cutoff(
+    runtime_metadata: bool, relation: str
+) -> None:
+    from datetime import timedelta
+
+    from football.forecasting.model_runner import RegisteredModel
+
+    entry = _entry()
+    artifact = load_registered_champion(entry, Path("."))
+    known = entry.training_cutoff - (timedelta(days=1) if relation == "after" else timedelta(0))
+    snapshot = _early_knowledge_snapshot(known)
+    if runtime_metadata:
+        registry = ModelRegistry.from_registrations(
+            (entry,),
+            (TransferableRollingGoalsChampion(),),
+            {artifact.artifact_sha256: artifact},
+            enabled=frozenset((entry.model_id,)),
+        )
+    else:
+        registry = ModelRegistry(
+            (RegisteredModel(TransferableRollingGoalsChampion(), artifact, True, 10),)
+        )
+    result = ModelRunner(registry).run(snapshot)
+    assert result.forecasts == ()
+    assert result.availability[0].reason == "ARTIFACT_TRAINING_NOT_BEFORE_KNOWLEDGE_CUTOFF"

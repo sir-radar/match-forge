@@ -890,7 +890,10 @@ reads that exact version. These commands make no provider requests. Registration
 never enables a model. `ModelRegistry.from_registrations` uses explicit selected
 registrations, verified loaded artifacts, known adapters and an explicit enabled
 set. It checks their identities, disables retired entries and enforces competition
-and product eligibility before prediction. A null competition list preserves the
+and product eligibility before prediction. Central model eligibility rejects a
+fitted artifact whose latest training-match kickoff is at or after either the
+fixture football cutoff or its independent knowledge cutoff, in both legacy and
+registered paths. This preserves same-kickoff outcome isolation. A null competition list preserves the
 current champion's unrestricted competition scope; an empty list allows none.
 The goals runner only accepts `SCORE_DISTRIBUTION`. Unsupported product metadata
 cannot activate another distribution. Experiment identity includes the exact

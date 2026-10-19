@@ -320,3 +320,33 @@ def test_incomplete_model_result_cannot_claim_success(
     with pytest.raises(ValueError):
         _run(tmp_path)
     assert not list(tmp_path.rglob("run.json"))
+
+
+def test_same_kickoff_fitted_artifact_is_rejected_before_publication(tmp_path: Path) -> None:
+    registered = _registry().models[0]
+    assert registered.artifact is not None
+    invalid = replace(
+        registered, artifact=replace(registered.artifact, training_cutoff=_input().football_cutoff)
+    )
+    with pytest.raises(ValueError, match="training"):
+        _run(tmp_path, registry=ModelRegistry((invalid,)))
+    assert not list(tmp_path.rglob("*.json"))
+
+
+@pytest.mark.parametrize("relation", ["after", "same_kickoff"])
+def test_fitted_artifact_respects_independent_knowledge_cutoff(
+    tmp_path: Path, relation: str
+) -> None:
+    from football.forecasting.runtime_models import load_registered_champion
+    from test_runtime_models import _early_knowledge_snapshot, _entry
+
+    entry = _entry()
+    artifact = load_registered_champion(entry, Path("."))
+    known = entry.training_cutoff - (timedelta(days=1) if relation == "after" else timedelta(0))
+    snapshot = _early_knowledge_snapshot(known)
+    registry = ModelRegistry(
+        (RegisteredModel(TransferableRollingGoalsChampion(), artifact, True, 10),)
+    )
+    with pytest.raises(ValueError, match="training"):
+        _run(tmp_path, registry=registry, features=(FixtureFeatureSnapshotV1(snapshot),))
+    assert not list(tmp_path.rglob("*.json"))

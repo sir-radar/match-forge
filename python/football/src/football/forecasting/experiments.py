@@ -255,10 +255,15 @@ def _preflight(
     for feature in features:
         if any(
             item.artifact is not None
-            and item.artifact.training_cutoff > feature.model_input.football_cutoff
+            and (
+                item.artifact.training_cutoff >= feature.model_input.football_cutoff
+                or item.artifact.training_cutoff >= feature.model_input.knowledge_cutoff
+            )
             for item in registry.models
         ):
-            raise ValueError("experiment artifact training follows prediction cutoff")
+            raise ValueError(
+                "experiment artifact training must precede football and knowledge cutoffs"
+            )
         if protected & {item.fixture_id for item in feature.model_input.qualified_history}:
             raise ValueError("experiment development input contains protected history")
     return tuple(by_id[key] for key in protocol.development_corpus)
