@@ -42,6 +42,7 @@ from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.base import ProviderFetchError, UrllibHttpTransport
 from football.providers.fotmob import FotmobClient
 from football.providers.pitchapi import PitchApiClient, UrllibPitchApiTransport
+from football.work.metrics import render_metrics
 
 _DATA_OPERATION_ERRORS = (
     RetainedEvidenceChanged,
@@ -91,6 +92,7 @@ def build_parser() -> argparse.ArgumentParser:
     refresh = commands.add_parser("refresh-forecasts")
     refresh.add_argument("--pending-only", action="store_true")
     commands.add_parser("history-coverage")
+    commands.add_parser("work-metrics")
     geography = commands.add_parser("refresh-competition-geography")
     geography.add_argument("--provider", choices=("fotmob", "pitchapi"), required=True)
     geography.add_argument(
@@ -157,6 +159,8 @@ def main(argv: list[str] | None = None) -> int:
     if not args.database_url:
         print("error: DATABASE_URL is required", file=sys.stderr)
         return 2
+    if args.command == "work-metrics":
+        return _run_work_metrics(args)
     if args.command == "external-predictions":
         return _run_external_predictions(args)
     if args.command == "refresh-competition-geography":
@@ -287,6 +291,18 @@ def _run_development_provider_preview(args: argparse.Namespace) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _run_work_metrics(args: argparse.Namespace) -> int:
+    try:
+        with psycopg.connect(args.database_url) as connection, connection.transaction():
+            connection.execute("SET TRANSACTION READ ONLY")
+            output = render_metrics(connection)
+    except (psycopg.Error, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(output, end="")
     return 0
 
 

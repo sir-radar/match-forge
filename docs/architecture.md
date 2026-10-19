@@ -323,6 +323,35 @@ the newer generation remains pending. Canonical ownership, work ownership
 and completion join the caller's transaction. Commit or roll back each refresh
 batch before beginning another batch, as required by transaction lock ordering.
 
+### Work metrics
+
+`python -m football.product.cli work-metrics` reads `football.work_metrics` in a
+read-only transaction and emits Prometheus text. The five state gauges describe
+all registered work, including expired items still marked running. Every work
+type has explicit zero samples. The only label is the bounded `WorkType` enum;
+fixture IDs, work IDs, owners and semantic keys never become metric labels.
+
+SQL observes attempts for Python and direct SQL workers alike. Claim latency is
+time after the configured ready deadline, including dependency waits; execution
+duration ends at completion, cancellation, failure or the expired lease deadline.
+Both durations expose summary sums and counts without invented histogram bounds.
+Retries count replacement claims. Lease expirations count expired attempts when
+a committed state transition observes them. Attempt counters start with this
+migration; existing work is neither reconstructed nor rescheduled for metrics.
+
+Fencing rejections and deadlocks in shared coordinator/work-row lock functions
+advance PostgreSQL sequences, so rejected transactions retain their error count.
+Deadlocks in unrelated SQL are outside this counter. Read-only transactions skip
+these increments to preserve their original failure behavior. Restoring a backup
+also restores its counter position; these are operational metrics, not audit logs.
+
+`work_lock_wait_duration` measures acquisition elapsed time, including SQL overhead,
+for the shared advisory coordinator and work-row lock functions. Samples commit
+with their transaction; rollback and read-only coordination exclude those samples.
+Each PostgreSQL session writes its own accumulator, avoiding a global metrics row
+lock. Attempt observations also join the work transaction and roll back with it.
+The exporter reads these stores without taking domain locks or changing counters.
+
 ### Worker transaction boundaries
 
 MVP fixture and context acquisition commits the preceding database step before
