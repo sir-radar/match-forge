@@ -865,6 +865,37 @@ and simulation inputs. Context features retain structured competition type, home
 splits, missingness, rest, opponent-adjusted form, and recency-weighted head-to-head data.
 External provider predictions are benchmark-only and require exact fixture mapping.
 
+## Runtime model registration
+
+`ModelRegistration` records model/family/version, feature contract, the content
+hash and interval of its training manifest, artifact URI/hash, implementation
+version, original dependency fingerprint, competition/product eligibility,
+evaluation/calibrator references and lifecycle state. The PostgreSQL runtime
+registry stores immutable canonical bytes with a checked hash and registration
+knowledge time. Exact-reference reads require an explicit knowledge cutoff;
+registration does not create earlier historical knowledge. Metadata can be
+superseded by a new registration, without changing an existing record.
+
+This is runtime configuration that references fitted artifacts. Existing artifact
+registries, fit lineage and promotion owners remain authoritative. The sole
+champion compatibility import is the existing artifact `e856dedf...e46eb4`;
+other champion declarations are rejected, and roadmap text grants no promotion.
+The bootstrap file preserves the original development-manifest interval and
+historical dependency fingerprint. Its negative evaluation reference remains
+negative evidence. No fitted bytes or published forecasts are rewritten.
+
+`football models registry-register --registration config/models/current-champion.json`
+registers the declaration; `registry-show --registration-sha256 HASH --knowledge-cutoff TIME`
+reads that exact version. These commands make no provider requests. Registration
+never enables a model. `ModelRegistry.from_registrations` uses explicit selected
+registrations, verified loaded artifacts, known adapters and an explicit enabled
+set. It checks their identities, disables retired entries and enforces competition
+and product eligibility before prediction. A null competition list preserves the
+current champion's unrestricted competition scope; an empty list allows none.
+The goals runner only accepts `SCORE_DISTRIBUTION`. Unsupported product metadata
+cannot activate another distribution. Experiment identity includes the exact
+registration when one is supplied. Legacy registry/run identities remain intact.
+
 ## Experiment runs
 
 `ExperimentProtocolV1` freezes a hypothesis, explicit MatchForge fixture ID sets

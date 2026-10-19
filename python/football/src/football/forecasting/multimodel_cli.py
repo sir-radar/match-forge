@@ -66,6 +66,15 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
 
+    register = scopes.add_parser("registry-register", help="register immutable runtime metadata")
+    register.add_argument("--registration", required=True, type=Path)
+    register.add_argument("--artifact-root", type=Path, default=Path("."))
+    show = scopes.add_parser(
+        "registry-show", help="read an exact registration at a knowledge cutoff"
+    )
+    show.add_argument("--registration-sha256", required=True)
+    show.add_argument("--knowledge-cutoff", required=True)
+
     benchmarks = commands.add_parser("benchmarks", help="collect probabilistic benchmarks")
     benchmark_scopes = benchmarks.add_subparsers(dest="scope", required=True)
     collect = benchmark_scopes.add_parser("collect")
@@ -84,6 +93,8 @@ def run_multimodel_command(
             result = _fit(args)
         elif args.command == "models" and args.scope == "forecast":
             result = _forecast(args, environment)
+        elif args.command == "models" and args.scope in {"registry-register", "registry-show"}:
+            result = _runtime_registry(args, environment)
         elif args.command == "models":
             result = _evaluate(args)
         else:
@@ -93,6 +104,43 @@ def run_multimodel_command(
         return 4
     print(json.dumps(result, sort_keys=True, allow_nan=False), file=output)
     return 0
+
+
+def _runtime_registry(
+    args: argparse.Namespace, environment: Mapping[str, str]
+) -> dict[str, object]:
+    from football.forecasting.runtime_models import (
+        ModelRegistration,
+        PostgresModelRegistry,
+        load_registered_champion,
+    )
+
+    database_url = (
+        args.database_url
+        or environment.get("FOOTBALL_DATABASE_URL")
+        or environment.get("DATABASE_URL")
+    )
+    if not database_url:
+        raise ValueError("DATABASE_URL is required for the runtime model registry")
+    with psycopg.connect(database_url) as connection:
+        store = PostgresModelRegistry(connection)
+        if args.scope == "registry-show":
+            found = store.get(
+                args.registration_sha256, knowledge_cutoff=_datetime(args.knowledge_cutoff)
+            )
+            if found is None:
+                raise ValueError("runtime model registration is not known at the requested cutoff")
+            return found.to_dict()
+        entry = ModelRegistration.from_bytes(args.registration.read_bytes())
+        if entry.lifecycle_state == "CHAMPION":
+            load_registered_champion(entry, args.artifact_root)
+        status = store.register(entry)
+        return {
+            "registration_sha256": entry.sha256,
+            "model_id": entry.model_id,
+            "status": status,
+            "activated": False,
+        }
 
 
 def _fit(args: argparse.Namespace) -> dict[str, object]:

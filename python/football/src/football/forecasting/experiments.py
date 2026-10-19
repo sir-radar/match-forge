@@ -187,6 +187,7 @@ def run_experiment(
         "models": [
             {
                 "model_id": item.adapter.model_id,
+                **({"registration_sha256": item.registration.sha256} if item.registration else {}),
                 "model_family": item.adapter.model_family,
                 "model_version": item.adapter.model_version,
                 "artifact_sha256": item.artifact.artifact_sha256 if item.artifact else None,
