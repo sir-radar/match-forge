@@ -899,6 +899,27 @@ The goals runner only accepts `SCORE_DISTRIBUTION`. Unsupported product metadata
 cannot activate another distribution. Experiment identity includes the exact
 registration when one is supplied. Legacy registry/run identities remain intact.
 
+## Independent forecast products
+
+Runtime registrations declare eligible products independently of provider acquisition.
+The current runtime champion implements only `SCORE_DISTRIBUTION`. Its runner rejects
+corner, card and player product selections before calling the goal model. Adding a
+product requires an approved model, eligible feature contract and its own output
+contract; naming it in registration metadata does not implement or activate it.
+Existing research `CornerModels`, `CornerFixture` and `CornerForecastPayloadV1`
+remain independent of goal inputs and score matrices. `BaselineForecastV1` can
+carry a corner payload without a goal or match-result payload. Existing research
+Elo result forecasts also retain their own contract and governance.
+
+`football models products --forecast PATH` reads an existing score-model forecast
+and projects 1X2, double chance, BTTS, totals, exact scores, team goals and clean
+sheets from that same validated distribution. It performs no model execution or
+publication. Analytic market probabilities, resolved mass and unresolved tails are
+preserved. Legacy censored buckets retain their labels, are excluded from exact
+score atoms, and their summed bucket indices are explicitly distinguished from an
+exact total-goal distribution. Existing forecast serialization and hashes stay
+unchanged. Cards and player products have no runtime implementation or activation.
+
 ## Experiment runs
 
 `ExperimentProtocolV1` freezes a hypothesis, explicit MatchForge fixture ID sets

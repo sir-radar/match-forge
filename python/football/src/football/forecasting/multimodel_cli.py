@@ -63,6 +63,8 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     forecast.add_argument("--manifest", required=True, type=Path)
     forecast.add_argument("--snapshot", required=True, type=Path)
     forecast.add_argument("--persist", action="store_true")
+    products = scopes.add_parser("products", help="inspect score-derived products without fitting")
+    products.add_argument("--forecast", required=True, type=Path)
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
 
@@ -93,6 +95,8 @@ def run_multimodel_command(
             result = _fit(args)
         elif args.command == "models" and args.scope == "forecast":
             result = _forecast(args, environment)
+        elif args.command == "models" and args.scope == "products":
+            result = _products(args.forecast)
         elif args.command == "models" and args.scope in {"registry-register", "registry-show"}:
             result = _runtime_registry(args, environment)
         elif args.command == "models":
@@ -104,6 +108,15 @@ def run_multimodel_command(
         return 4
     print(json.dumps(result, sort_keys=True, allow_nan=False), file=output)
     return 0
+
+
+def _products(path: Path) -> dict[str, Any]:
+    from football.forecasting.products import score_products
+
+    try:
+        return score_products(_forecast_from_dict(json.loads(path.read_bytes())))
+    except (KeyError, TypeError, AttributeError) as error:
+        raise ValueError("invalid score forecast") from error
 
 
 def _runtime_registry(
