@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-20T07:59:29.236422Z",
+  "updated_at": "2026-10-20T23:58:22.043400Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 32,
+    "current_phase": 33,
     "completed_phases": [
       0,
       1,
@@ -1239,7 +1239,8 @@
       29,
       30,
       31,
-      32
+      32,
+      33
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1275,9 +1276,9 @@
       "202610200100_public_read_reports.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 32 storage tiering verified and clarified; commit this checkpoint before Phase 33 replay of all retained data. Phases 33-48 pending.",
+    "remaining_work": "Phase 33 retained replay and explicit canonical dispositions verified. Commit this checkpoint before Phase 34 shadow parity; phases 34-48 remain pending. No runtime cutover is authorized by replay completion.",
     "phase_gate": "PASS_WITH_WARNINGS",
-    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-32-2026-10-20.json",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-33-2026-10-20.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
       "backup_directory_mode": "0700",
@@ -2453,6 +2454,110 @@
       "scientific_gates_unchanged": true,
       "phase_gate_complete": true,
       "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-32-2026-10-20.json",
+      "remaining_work": []
+    },
+    "phase_33": {
+      "status": "PASS_WITH_WARNINGS",
+      "code_commit_sha": "f6dc14d64f198b84eecd37baedceefe0d53397f8",
+      "normalization_code_commit_sha": "349d6b971e1eb7edc97f594f816d4ff35e918535",
+      "comprehensive_validation": {
+        "captured_output": "Validation streamed through the exec session; no full local console log was separately written.",
+        "checks": {
+          "api_integration": "PASS",
+          "format_lint_strict_typing_clippy_go_vet_golangci_migrations_builds_and_project_status": "PASS",
+          "postgres_storage_cases_passed": 708,
+          "postgres_storage_integration": "PASS",
+          "python_unit_tests_passed": 1675,
+          "rust_tests_passed": 16,
+          "web_tests_passed": 97
+        },
+        "command": "make check integration",
+        "committed_code_head": "f6dc14d64f198b84eecd37baedceefe0d53397f8",
+        "execution_session_id": 62256,
+        "fallow": {
+          "no_auto_fixes_applied": true,
+          "root_duplicate_clone_groups": 6,
+          "root_envelope_kind": "combined",
+          "root_health_findings": 6,
+          "root_health_severity_counts": {
+            "critical": 0,
+            "high": 0,
+            "moderate": 6
+          },
+          "root_report_sha256": "6633f1282b13ab499bdd421dee0882cb76c0cb1cdfd706c793983d93e626da42",
+          "root_unused_file_findings": 1,
+          "staged_security_findings": 0,
+          "staged_security_gate": {
+            "mode": "new",
+            "new_count": 0,
+            "verdict": "pass"
+          },
+          "staged_security_report_sha256": "ccac6f61aa070d153363ea565d09a70b712aeeae3fb78ec88b5471396629adc7",
+          "staged_unresolved_callee_sites": 588,
+          "staged_unresolved_edge_files": 0
+        },
+        "observed_warnings": [
+          "Seven upstream penaltyblog/NumPy deprecation warnings in tests.",
+          "Existing web lint warning in forecast-history.test.tsx for unused _input.",
+          "Next.js noted parent /Users/radar/package-lock.json outside repository; build succeeded."
+        ],
+        "operator_attempts": [
+          {
+            "attempt": "first full aggregate",
+            "cause": "Strict mypy rejected the intentionally lightweight test doubles; explicit test-only casts fixed both type errors. No tests or production behavior were weakened.",
+            "execution_session_id": 61246,
+            "process_exit_code": 2
+          },
+          {
+            "attempt": "corrected full aggregate",
+            "execution_session_id": 62256,
+            "process_exit_code": 0,
+            "status": "PASS"
+          }
+        ],
+        "post_commit_canonical_work_tests": {
+          "cases": [
+            "metadata-only registration leaves bytes validation to owner",
+            "canonical REVIEW_REQUIRED carries no selected value",
+            "common-work publication and checkpoint recovery are idempotent"
+          ],
+          "command": "run-canonical-focused-tests.sh",
+          "database": "fresh disposable PostgreSQL database; created, migrated, and dropped by wrapper",
+          "execution_session_id": 5541,
+          "publisher_selection": "actual committed storage module; no proposed-module substitution",
+          "status": "PASS",
+          "test_count": 3
+        },
+        "process_exit_code": 0,
+        "staged_patch_sha256": "f4cbadaacae635ed8a110961a7feb92fa781223275217f4a5646b5dba0495901",
+        "status": "PASS",
+        "tested_head_before_checkpoint_commit": "71e56938b66cd4bf2c8ffe38915d40d8572c44b1",
+        "validated_file_hashes": {
+          "docs/architecture.md": "544f7ce4b15f2d213e8a8d44e0c7bcad297b121faa7059a6739f91fb2cae42fd",
+          "docs/canonical-ingestion.md": "6402951a75cb85d81492b1f1e6c4660bd340a371eb16b00782f11a11e0caa6dc",
+          "python/football/src/football/canonical_resources/storage.py": "92452cbe599b56bc718f0dfe63457230bc6e8080721bcd3a0d7f17bda97238fb",
+          "python/football/src/football/contracts/observation_codec.py": "428d4fa06c3cff076eb666bff4e71efd7b960c723750df28327dea81ff1de99a",
+          "python/football/src/football/identity/repository.py": "a999efa0c30a740a94f4f8e1300806dd63649ae2293549321011ba39800bb2a0",
+          "python/football/src/football/observations/storage.py": "0f35b2e176efc95aa53b96941d63e5c27f5204f7b7ac385b666f1783f75d718d",
+          "python/football/tests/test_canonical_evidence_registration.py": "a2a53f77175f4e308918f4eae4c28d0ceed7294a8378fec8ea356a04482b98e9",
+          "python/football/tests/test_observation_validator_dispatch.py": "7bbe3cfb729328e95dfa3a1573e246449ff6f8c7fea9c57cacf474c025dd9632",
+          "tests/integration/test_canonical_resource_resolutions.py": "bbaceb5e1f570e1d9f4e9c63ce7501b1cec133bcabcf499ec89b1194685ff21a",
+          "tests/integration/test_identity_history.py": "a0aec2eb81fe8c3363365f9c3efa6020553cf2a568c87283da79a0b6b67cadb1",
+          "tests/integration/test_resource_observation_artifacts.py": "2d65432c089c4c5d188ddd49822c19e7a6855b8c4db3d5cd5966d9f2d4753c65"
+        }
+      },
+      "source_resources": 10373,
+      "normalizer_targets": 29561,
+      "registered_observations": 3153511,
+      "canonical_review_decisions": 10192,
+      "canonical_selected_values": 0,
+      "source_categories_dispositioned": true,
+      "unverifiable_resources": 33,
+      "unavailable_dataset_files": 3,
+      "frozen_r3_state_preserved": true,
+      "runtime_cutover": false,
+      "phase_gate_complete": true,
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-33-2026-10-20.json",
       "remaining_work": []
     }
   },

@@ -1,0 +1,857 @@
+{
+  "ambiguous_verified_native_identity_scopes": 0,
+  "authoritative_evaluations": 0,
+  "canonical_checkpoint_sources": {
+    "canonical-checkpoints": 416,
+    "canonical-checkpoints-v2": 9776
+  },
+  "canonical_evidence_rows": 595517,
+  "canonical_observation_dispositions": {
+    "CANONICAL_REVIEW_REQUIRED": 595517,
+    "EXISTING_CANONICAL_STATE_PRESERVED_IDENTITY_QUALIFICATION_INCOMPLETE": 1761813,
+    "NO_UNIQUE_CURRENT_OWNER_PROOF": 270517,
+    "SOURCE_RECORD_IDENTITY_PROOF_REQUIRED": 525664
+  },
+  "canonical_review_decisions": 10192,
+  "canonical_work_state_counts": {
+    "CANCELLED": 3,
+    "SUCCEEDED": 10192
+  },
+  "code_commit_sha": "f6dc14d64f198b84eecd37baedceefe0d53397f8",
+  "comprehensive_validation": {
+    "captured_output": "Validation streamed through the exec session; no full local console log was separately written.",
+    "checks": {
+      "api_integration": "PASS",
+      "format_lint_strict_typing_clippy_go_vet_golangci_migrations_builds_and_project_status": "PASS",
+      "postgres_storage_cases_passed": 708,
+      "postgres_storage_integration": "PASS",
+      "python_unit_tests_passed": 1675,
+      "rust_tests_passed": 16,
+      "web_tests_passed": 97
+    },
+    "command": "make check integration",
+    "committed_code_head": "f6dc14d64f198b84eecd37baedceefe0d53397f8",
+    "execution_session_id": 62256,
+    "fallow": {
+      "no_auto_fixes_applied": true,
+      "root_duplicate_clone_groups": 6,
+      "root_envelope_kind": "combined",
+      "root_health_findings": 6,
+      "root_health_severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "moderate": 6
+      },
+      "root_report_sha256": "6633f1282b13ab499bdd421dee0882cb76c0cb1cdfd706c793983d93e626da42",
+      "root_unused_file_findings": 1,
+      "staged_security_findings": 0,
+      "staged_security_gate": {
+        "mode": "new",
+        "new_count": 0,
+        "verdict": "pass"
+      },
+      "staged_security_report_sha256": "ccac6f61aa070d153363ea565d09a70b712aeeae3fb78ec88b5471396629adc7",
+      "staged_unresolved_callee_sites": 588,
+      "staged_unresolved_edge_files": 0
+    },
+    "observed_warnings": [
+      "Seven upstream penaltyblog/NumPy deprecation warnings in tests.",
+      "Existing web lint warning in forecast-history.test.tsx for unused _input.",
+      "Next.js noted parent /Users/radar/package-lock.json outside repository; build succeeded."
+    ],
+    "operator_attempts": [
+      {
+        "attempt": "first full aggregate",
+        "cause": "Strict mypy rejected the intentionally lightweight test doubles; explicit test-only casts fixed both type errors. No tests or production behavior were weakened.",
+        "execution_session_id": 61246,
+        "process_exit_code": 2
+      },
+      {
+        "attempt": "corrected full aggregate",
+        "execution_session_id": 62256,
+        "process_exit_code": 0,
+        "status": "PASS"
+      }
+    ],
+    "post_commit_canonical_work_tests": {
+      "cases": [
+        "metadata-only registration leaves bytes validation to owner",
+        "canonical REVIEW_REQUIRED carries no selected value",
+        "common-work publication and checkpoint recovery are idempotent"
+      ],
+      "command": "run-canonical-focused-tests.sh",
+      "database": "fresh disposable PostgreSQL database; created, migrated, and dropped by wrapper",
+      "execution_session_id": 5541,
+      "publisher_selection": "actual committed storage module; no proposed-module substitution",
+      "status": "PASS",
+      "test_count": 3
+    },
+    "process_exit_code": 0,
+    "staged_patch_sha256": "f4cbadaacae635ed8a110961a7feb92fa781223275217f4a5646b5dba0495901",
+    "status": "PASS",
+    "tested_head_before_checkpoint_commit": "71e56938b66cd4bf2c8ffe38915d40d8572c44b1",
+    "validated_file_hashes": {
+      "docs/architecture.md": "544f7ce4b15f2d213e8a8d44e0c7bcad297b121faa7059a6739f91fb2cae42fd",
+      "docs/canonical-ingestion.md": "6402951a75cb85d81492b1f1e6c4660bd340a371eb16b00782f11a11e0caa6dc",
+      "python/football/src/football/canonical_resources/storage.py": "92452cbe599b56bc718f0dfe63457230bc6e8080721bcd3a0d7f17bda97238fb",
+      "python/football/src/football/contracts/observation_codec.py": "428d4fa06c3cff076eb666bff4e71efd7b960c723750df28327dea81ff1de99a",
+      "python/football/src/football/identity/repository.py": "a999efa0c30a740a94f4f8e1300806dd63649ae2293549321011ba39800bb2a0",
+      "python/football/src/football/observations/storage.py": "0f35b2e176efc95aa53b96941d63e5c27f5204f7b7ac385b666f1783f75d718d",
+      "python/football/tests/test_canonical_evidence_registration.py": "a2a53f77175f4e308918f4eae4c28d0ceed7294a8378fec8ea356a04482b98e9",
+      "python/football/tests/test_observation_validator_dispatch.py": "7bbe3cfb729328e95dfa3a1573e246449ff6f8c7fea9c57cacf474c025dd9632",
+      "tests/integration/test_canonical_resource_resolutions.py": "bbaceb5e1f570e1d9f4e9c63ce7501b1cec133bcabcf499ec89b1194685ff21a",
+      "tests/integration/test_identity_history.py": "a0aec2eb81fe8c3363365f9c3efa6020553cf2a568c87283da79a0b6b67cadb1",
+      "tests/integration/test_resource_observation_artifacts.py": "2d65432c089c4c5d188ddd49822c19e7a6855b8c4db3d5cd5966d9f2d4753c65"
+    }
+  },
+  "dataset_file_dispositions": {
+    "UNAVAILABLE_REGISTERED_DATASET_FILE": 3,
+    "VERIFIED_REGISTERED_PARQUET": 760
+  },
+  "expired_canonical_work_cancelled": [
+    "04ccf023-e9ae-57fe-b89e-20d04e6df383",
+    "ab0e72b5-de11-54bf-b760-fe1c94efdbf4",
+    "fe926471-a3d6-5c97-9546-dbac27544be8"
+  ],
+  "frozen_r3_state_preserved": true,
+  "identity_admissions_created": 0,
+  "identity_mapping_dispositions": {
+    "EXISTING_OWNER_PROOF_VERIFIED": 13325,
+    "NO_CURRENT_OWNER_PROOF": 4253
+  },
+  "identity_proof_unavailable_reasons": {
+    "OWNER_DOES_NOT_ADMIT_AT_CUTOFF": 4253
+  },
+  "immutable_observation_files_verified": 3153511,
+  "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+  "model_promotions": 0,
+  "normalization_code_commit_sha": "349d6b971e1eb7edc97f594f816d4ff35e918535",
+  "normalization_dispositions": {
+    "EMPTY_NORMALIZED_RESOURCE": 12394,
+    "NORMALIZED": 7918,
+    "NORMALIZED_WITH_FINDINGS": 8908,
+    "NO_OBSERVATIONS_WITH_FINDINGS": 341
+  },
+  "normalization_finding_counts": {
+    "MF_NORM_COORDINATE_FRAME_UNKNOWN": 18787,
+    "MF_NORM_EVENT_TYPE_UNKNOWN": 3911,
+    "MF_NORM_EVENT_TYPE_UNSUPPORTED": 2583759,
+    "MF_NORM_KICKOFF_TIMEZONE_UNRESOLVED": 1034,
+    "MF_NORM_OBSERVATION_CONTRACT_INVALID": 509,
+    "MF_NORM_POSITION_MAPPING_UNKNOWN": 56489,
+    "MF_NORM_PROVIDER_TIMESTAMP_UNRESOLVED": 1034,
+    "MF_NORM_RESOURCE_INVALID": 2,
+    "MF_NORM_SHOT_OUTCOME_UNKNOWN": 4,
+    "MF_NORM_SOURCE_RECORD_INVALID": 30819,
+    "MF_NORM_STANDING_SCOPE_UNSUPPORTED": 8,
+    "MF_NORM_STATISTIC_REPEATED": 24722,
+    "MF_NORM_STATISTIC_UNSUPPORTED": 1096283,
+    "MF_NORM_XG_SCOPE_UNSUPPORTED": 3212
+  },
+  "normalized_observation_entries": 3153083,
+  "normalizer_targets": 29561,
+  "operational_model_fits": 0,
+  "phase": 33,
+  "phase_gate_complete": true,
+  "planned_normalization_resources": 9688,
+  "prior_append_rows_preserved": {
+    "observation_contract_schemas": 14,
+    "resource_observation_artifacts": 5609,
+    "work_attempt_metrics": 12,
+    "work_items": 12,
+    "work_lock_metrics": 3
+  },
+  "prior_comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-33/check-integration.log",
+    "log_sha256": "76535f8cbb486b7a09a49396f719fc2a2ca174ed2855483c775125c7251aeb3d",
+    "postgres_storage_cases_passed": 706,
+    "python_unit_tests_passed": 1674,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 97
+  },
+  "private_evidence": {
+    "append-baseline.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/append-baseline.json",
+      "sha256": "390424882792035a400602ee31b55f6fa9aef54ce8db0380b210c2bacb644d53"
+    },
+    "baseline.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/baseline.json",
+      "sha256": "e84dce8e2b5a0ab3cd7f960fe8c387f56f063c8092d48540415da62ee6a82217"
+    },
+    "canonical-execution-manifest-71e.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-execution-manifest-71e.json",
+      "sha256": "2d66527d438b7aacd68dc36999c69c19f3c168940ca13342fed6132135d4c7aa"
+    },
+    "canonical-execution-manifest-v2.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-execution-manifest-v2.json",
+      "sha256": "8e5b5660ea1d9509eb947cce333ad5f35da29775129d107b6099e13d0dbcded3"
+    },
+    "canonical-execution-manifest.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-execution-manifest.json",
+      "sha256": "2d66527d438b7aacd68dc36999c69c19f3c168940ca13342fed6132135d4c7aa"
+    },
+    "canonical-generic-identity-dispositions.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-generic-identity-dispositions.json",
+      "sha256": "03146d6272ae6597537124fd43849069fea00e4dc40117a2e1c79d253632f1b4"
+    },
+    "canonical-identity-preflight.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-identity-preflight.json",
+      "sha256": "e813c37d29dab320811bdce0884b83eb1282e0485ef6dedcdf5feee4da4f0922"
+    },
+    "canonical-planning-dispatch-final.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-planning-dispatch-final.json",
+      "sha256": "6f2186d0287d6e63f79d9f89a274262cfde229337588a6ff2e72694fdf34bf5c"
+    },
+    "canonical-planning-dispatch.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-planning-dispatch.json",
+      "sha256": "65d4386d141aa7a8d9fc3a4a922817c07f63f20840b22323aa56bab6fa23aa4f"
+    },
+    "canonical-proof-unavailable-dispositions.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-proof-unavailable-dispositions.json",
+      "sha256": "45f27024d5c4a5bf426cb6aec7b49f4b289a6b0b12a4115ababfc700b3bc1758"
+    },
+    "canonical-replay-plan.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-replay-plan.json",
+      "sha256": "ad5759434fc2add75f3cbcf0b713a76fc512081f498a90c2f158938b85c82799"
+    },
+    "canonical-replay-v2.py": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-replay-v2.py",
+      "sha256": "9339a8ca4e07904e23bcd1113735c49fffbf21451a7856ad76715cb1e57ddaac"
+    },
+    "canonical-replay-verification.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-replay-verification.json",
+      "sha256": "5f75334b297abe9ffd5fae77f48de9a2f4e7b62fe596fc94492b86e6e81ea748"
+    },
+    "canonical-replay.py": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-replay.py",
+      "sha256": "6d01cf108d96bcf6a94f505f8499bb5c5dd68f7fbc1df80c2de85e9dc39ca65d"
+    },
+    "canonical-runtime-recovery.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-runtime-recovery.json",
+      "sha256": "9234da6e92d586ea2f63467b3fbf73490d0aa87baa42b3c612dba81ecf78fc67"
+    },
+    "canonical-validation-checkpoint-71e.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-validation-checkpoint-71e.json",
+      "sha256": "a5ac016b4234c7f4ee6e58e93868a6860deb284b48f2824432cc06537fce0d2e"
+    },
+    "canonical-validation.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-validation.json",
+      "sha256": "f83de7168d5bd5c88d673826473b7c70e0af82b7094ee52b276dd404cf98e1ab"
+    },
+    "canonical-verifier-v2.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-verifier-v2.log",
+      "sha256": "20324bb29ee2c90f57d885b561e7611ccac900c22f604c17fd8c19108eda3b74"
+    },
+    "canonical-worker-0.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-0.log",
+      "sha256": "a0c2d69a2ba717e750b662555778288eb206e025f89d62d6cc7c8d9ce87f6a9d"
+    },
+    "canonical-worker-1.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-1.log",
+      "sha256": "ec2e548d1fed7551379634e5a13c6a055eee2af0fa0ab99fcb34f71e08f737ea"
+    },
+    "canonical-worker-2.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-2.log",
+      "sha256": "e13c64f124e0e4e2dd24cfe9047aeac833f0ed1f75c88980a12a9692f2846047"
+    },
+    "canonical-worker-v2-0.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-v2-0.log",
+      "sha256": "10fbc94e56f3797e542890b7b3472d1fcf6be7ec00ba3c94c783a9547ac08d8c"
+    },
+    "canonical-worker-v2-1.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-v2-1.log",
+      "sha256": "716e73735aae69080a1310ccf0e048d33963c77a7b3b48d6f9ba1a60d77c6aad"
+    },
+    "canonical-worker-v2-2.log": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-v2-2.log",
+      "sha256": "03703b286aae0a51817eb38920459a552f36fefb296440c9f3817606be2014fd"
+    },
+    "canonical-worker-v2-sessions.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/canonical-worker-v2-sessions.json",
+      "sha256": "8327fa9b0d99935d61ebd11542191f7a8619194b5817d8443695ac8fde235492"
+    },
+    "category-inventory.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/category-inventory.json",
+      "sha256": "e9637903946af5cc6aeca37aeb4b02ab6ac8d85278fc4ed1170cfe16f0bb7265"
+    },
+    "execution-manifest.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/execution-manifest.json",
+      "sha256": "2303e76bad54134377c62323740cc7b25e698f5e73c8b25ff04b4193b469ae87"
+    },
+    "fallow-remediation-record-final.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/fallow-remediation-record-final.json",
+      "sha256": "e42f1166e235a2ab662b2de4002fc4906bd6c3f7be58cbcad0a0f5b0235b5e31"
+    },
+    "fallow-remediation-record-performance-fix.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/fallow-remediation-record-performance-fix.json",
+      "sha256": "bf6f8bf1df44261aec3a0855d32e0b2587abb8efe818b67930fb3a0db926c160"
+    },
+    "fallow-root-performance-fix.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/fallow-root-performance-fix.json",
+      "sha256": "6633f1282b13ab499bdd421dee0882cb76c0cb1cdfd706c793983d93e626da42"
+    },
+    "fallow-security-performance-fix.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/fallow-security-performance-fix.json",
+      "sha256": "ccac6f61aa070d153363ea565d09a70b712aeeae3fb78ec88b5471396629adc7"
+    },
+    "file-inventory-summary.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/file-inventory-summary.json",
+      "sha256": "bbf1e355239d08327309575858c93260c63e56edbbc269a1e8df1cf91ee23466"
+    },
+    "inventoried-file-current-verification.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/inventoried-file-current-verification.json",
+      "sha256": "342bcc82a9b4cc6732b14777a8654ffed3e71f8ff5a0fbb44cdac67c1e8a42bb"
+    },
+    "legacy-lineage-by-source.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/legacy-lineage-by-source.json",
+      "sha256": "5511d9461c63e8e5f8c37da9389a40f2f767438ff79378e4915258e7be807719"
+    },
+    "normalization-preflight.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/normalization-preflight.json",
+      "sha256": "49f68930c73d42c8ace3346d6e205756b3c28d33bc7ea30059d0d52592dfe84d"
+    },
+    "partition-1-busy-disposition.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/partition-1-busy-disposition.json",
+      "sha256": "02eca0543079afb51611f2d2a51a60e856a65a38d1f74662d3ffe92d218d0cef"
+    },
+    "preflight-summary.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/preflight-summary.json",
+      "sha256": "3d147b07a0cb9d9f22490887711b9ed09c0d1b90ed53d2e44b9b4da4bcb7a9cc"
+    },
+    "product-db-recovery-audit.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/product-db-recovery-audit.json",
+      "sha256": "bb99f956afc2e839323b48c1847148e46a5757aa1f23e4d0fa8f7c2cf9c812be"
+    },
+    "replay-plan.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/replay-plan.json",
+      "sha256": "1bbf442fdb7bc0c4855316a635b09f6057e5bbb59760d49fc854daa515d7cbc9"
+    },
+    "replay-preservation.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/replay-preservation.json",
+      "sha256": "98f031f4113e908cb940f24133e7fce3965370769f36b5ba125441d4df21d80d"
+    },
+    "replay-verification-dispatch.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/replay-verification-dispatch.json",
+      "sha256": "a558997751440b631607d5622647cccf0265a69544c7ed2204777b86eec37c1b"
+    },
+    "resource-inventory.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/resource-inventory.json",
+      "sha256": "9c6de17fb7abe2c450c1356f443f84e169dc2d7792783daa0ff5a805ddc2f46e"
+    },
+    "standing-scope-correction.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/standing-scope-correction.json",
+      "sha256": "40b3e56a7493144667c8f47536dc238ca869562a47b15c5c5b4cf4031e82a36f"
+    },
+    "validation.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/validation.json",
+      "sha256": "266494c20e9d94870c714c0fea6b560c8ed0e7dcbec49c301a054db2e34728ba"
+    },
+    "verify-canonical-replay-v2.py": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/verify-canonical-replay-v2.py",
+      "sha256": "311bb61b352ccda9f3dbe4da6f2c05f581911389c72ca6d40cc52877a0e3b73d"
+    },
+    "verify-canonical-replay.py": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/verify-canonical-replay.py",
+      "sha256": "ba8400721b87f612dfbe8e4ea9646bf68fd11e5dcfe4660fabf43ad0c83500b4"
+    },
+    "worker-sessions.json": {
+      "ref": ".local/remediation/matchforge-architecture-v2/phase-33/worker-sessions.json",
+      "sha256": "0bd93213cf2932e0d994b6f89a42de7d49bc93d9a3353167b3a326ba3f335f9b"
+    }
+  },
+  "provider_requests": 0,
+  "raw_r3_files_preserved": 52655,
+  "registered_observations": 3153511,
+  "remaining_work_inside_phase": [],
+  "runtime_cutover": false,
+  "selected_canonical_values": 0,
+  "snapshots_without_registered_resources": 2,
+  "source_resources": 10373,
+  "source_snapshots": 8565,
+  "status": "PASS_WITH_WARNINGS",
+  "unaffected_prior_table_hashes": {
+    "football.acquired_resources": {
+      "rows": 3,
+      "sha256": "29e6b907ca5c62314a687a1562e7fe9af6f0e972008a9466665ba6f4caf5db1b"
+    },
+    "football.acquisition_jobs": {
+      "rows": 3,
+      "sha256": "98b33d940d9076bd11c883e5ed8f7d450a7719e44ccf163ae3c40a001854bd06"
+    },
+    "football.artifact_retirement_events": {
+      "rows": 17,
+      "sha256": "644cd11f76bd0551fb0e873dcde1d7e34fbca1eca54d533f5def0f96d6197fc7"
+    },
+    "football.baseline_forecasts": {
+      "rows": 9985,
+      "sha256": "0acc19dc3a49e597d926263631db4aceeb5732e84c82bf4e44345c529f0b3272"
+    },
+    "football.bitemporal_corrections": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.canonical_change_sets": {
+      "rows": 1,
+      "sha256": "50ab1579b29397f18c7ce520b63d3356709e6cc6dd3869f1f39b8c827b498a23"
+    },
+    "football.canonical_resource_coverage": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.competition_observations": {
+      "rows": 52,
+      "sha256": "3978e6b9177332194a98ddcda772a4ed8c2a5e63389d15cf6ea0b800586fefa2"
+    },
+    "football.competition_provider_mappings": {
+      "rows": 1947,
+      "sha256": "4379c6cdc7f29f7c47bfaddee67d21c7f715fda844101281e76d327fe2c49057"
+    },
+    "football.competitions": {
+      "rows": 1619,
+      "sha256": "ea3a56bde34031e810f48480ea4b6e9d3b2e60d5a447189359ed5b5070f32267"
+    },
+    "football.dataset_files": {
+      "rows": 763,
+      "sha256": "a50f8fb03050a2feea2b3965e70133f358011eacbd93cb625de977942b1ca576"
+    },
+    "football.dataset_inputs": {
+      "rows": 1520,
+      "sha256": "b2d40ef44756ad60841f027eca1dc7cec3a3a31a92c5dc212f44dce462ef64b0"
+    },
+    "football.dataset_versions": {
+      "rows": 24,
+      "sha256": "c0446781b979bc3a5a573bba3a34327d6add62e70311379c66ad48982451dfc4"
+    },
+    "football.dependency_edges": {
+      "rows": 16763,
+      "sha256": "c88182e52aa0246a0ce34fd90689c98f23ff60a45c631e003b2e6922e50de92f"
+    },
+    "football.derived_state_events": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.elo_model_versions": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.event_catalog": {
+      "rows": 2609129,
+      "sha256": "98571620bfaeb3a90a363614a5ae672ab6f1d19895cdb9c8f3cf0ec98ed905f2"
+    },
+    "football.event_observations": {
+      "rows": 2609128,
+      "sha256": "98a5497df38973b10313e2c7c7af40a8a871d51063289db52756954cfda6d72d"
+    },
+    "football.event_provider_mappings": {
+      "rows": 2609129,
+      "sha256": "1ab4ba6c74b8ce882325cfae972959782e14b478d8a50fb44477a9f2cb5936f3"
+    },
+    "football.external_prediction_result_revisions": {
+      "rows": 51,
+      "sha256": "2ecea4ce25e0c24a101376e8122f6c2929cbbc793c9b2123415cf5d82dc791d0"
+    },
+    "football.external_prediction_results": {
+      "rows": 18,
+      "sha256": "c0a316c0d7c9e2e6806254fc45f95c5e5bb6c4eda3f24220fa3b05652c85503f"
+    },
+    "football.external_prediction_sources": {
+      "rows": 6,
+      "sha256": "ef259bcdc288a449e8adc010f4b2b49e06e012533aa8354cb6ae8db99bc3dc8b"
+    },
+    "football.external_predictions": {
+      "rows": 559,
+      "sha256": "f7de9b50607707890580771233d53241c3f3c1bfb80906a2be1afcacaf58dc09"
+    },
+    "football.external_probability_benchmarks": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.fixture_identity_ingestion_conflicts": {
+      "rows": 91,
+      "sha256": "a38f62e961ef4926cefa894e50a9c59587b58e3eff8563e861809eb7eb5e84b7"
+    },
+    "football.fixture_identity_resolutions": {
+      "rows": 351017,
+      "sha256": "3671025fe096733615d0dbf19b27664d236117f5a9050263c376431d88827758"
+    },
+    "football.fixture_processing_attempts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.fixture_sources": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.forecast_artifacts": {
+      "rows": 9990,
+      "sha256": "787628237f1540780ea3f2e4398729dafabe715f6681252cad27562c2b73ffb4"
+    },
+    "football.match_corner_labels": {
+      "rows": 760,
+      "sha256": "d59ed162a490bc1394a4d95e0611f058002e6d6186c0678c9ee91cd9f23b823f"
+    },
+    "football.match_kickoff_claims": {
+      "rows": 760,
+      "sha256": "11b3fca294fcec9e6bfd90883fa085540f0ffd1f39be1fab50327a921943f846"
+    },
+    "football.match_lifecycle_claims": {
+      "rows": 760,
+      "sha256": "7a31f50d626b61bc743375ac9a2065b25d37bb6c6e1f0689544d9971a1676ab9"
+    },
+    "football.match_observations": {
+      "rows": 1044,
+      "sha256": "059d8174a0c892dafcdf83a1a21293ca594ce26d8c79033fae465a71ae49c465"
+    },
+    "football.match_player_participation_observations": {
+      "rows": 27354,
+      "sha256": "fc71d6d608f19cb08574c4842ecb20be9c601efb96395965fc9b555303fa4afb"
+    },
+    "football.match_player_participations": {
+      "rows": 27354,
+      "sha256": "9f058765c6024d15c5a3dd9f92405887aee5ef15450712ede4b354e3a5b80582"
+    },
+    "football.match_provider_mappings": {
+      "rows": 464940,
+      "sha256": "24159842fa27f0c1480d2b8c4410b959573ad212397aa2c14f9766cceafba4ad"
+    },
+    "football.match_team_participation_observations": {
+      "rows": 2069,
+      "sha256": "301498632672125332cabf21d7afd786a5416a223deec2d4ab9770f298730748"
+    },
+    "football.match_team_participations": {
+      "rows": 2070,
+      "sha256": "c59743cc1fc65f3e2f4645f1a715e87dda85fa0063fec0319ba52d84b64a4355"
+    },
+    "football.matches": {
+      "rows": 722335,
+      "sha256": "0f2e76e21022cebf780489095407142b3e54ccf977869f3f02b21b04e28b8a0f"
+    },
+    "football.model_artifact_files": {
+      "rows": 5230,
+      "sha256": "68a24983d2b03d8f86d8fa8ab389f178ed918d43dc76f8556c49163603296707"
+    },
+    "football.model_artifact_inputs": {
+      "rows": 5230,
+      "sha256": "8f72511b5ab54e3ccef641d124f1216f49263fa8d961aab62954c991f662f280"
+    },
+    "football.model_artifacts": {
+      "rows": 5230,
+      "sha256": "30a2413ea5a43546d23a40073e30ba084490f44aa925b84af7144cf4d5f168b0"
+    },
+    "football.model_fit_runs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.model_promotion_events": {
+      "rows": 4,
+      "sha256": "9f11f875a61fab6002024a8eeeef06808d5bd79a2c5e668761704889f74df036"
+    },
+    "football.player_cards": {
+      "rows": 3455,
+      "sha256": "9846d952c1c84bf1be36303ad756908083acd8e71278e0229bbfea87fa70e047"
+    },
+    "football.player_observations": {
+      "rows": 1247,
+      "sha256": "6573c462562d62a198e682efd485ff26e3eeba441d33f4666100e7e498dd84b8"
+    },
+    "football.player_position_stints": {
+      "rows": 26327,
+      "sha256": "5d080252a5c5b9f01805db4d209674d0fef38829138cb4d0d971b5dcf5b9a949"
+    },
+    "football.player_provider_mappings": {
+      "rows": 1240,
+      "sha256": "d483a639bb57037a4a615b12a81d07e9e2a4c0d8e6a4fe3ef74cdcde201390b0"
+    },
+    "football.player_source_facts": {
+      "rows": 48349,
+      "sha256": "04beeab09665d6ed106066f55a3a2480a94ebffa74a4a7e2cf62f8ab81599d3b"
+    },
+    "football.players": {
+      "rows": 1243,
+      "sha256": "4631e0deda0f957d6c209328eed935c575c0224eef237401ac6f4bc632fa96d4"
+    },
+    "football.post_match_evaluation_inputs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.post_match_evaluations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_availability_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_coach_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_competitions": {
+      "rows": 1582,
+      "sha256": "c7561f012548a43e74eafb47506729bbb3c1a0131df8f19dd7a02859451fc894"
+    },
+    "football.product_context_capabilities": {
+      "rows": 3723,
+      "sha256": "f02bb1b0a07557138b5aa620a83e0405b5ed844ccef9960be14516ce1e5533d1"
+    },
+    "football.product_context_snapshots": {
+      "rows": 266,
+      "sha256": "7f8d223e3d10ba145561eae475082ea3ea9b6c0ed45bc79625c50f022588e9b9"
+    },
+    "football.product_fixtures": {
+      "rows": 209747,
+      "sha256": "95edb70dd6fe0acf525aa2925dc0cb790d5c64cdea1a1f4a7e725c4f4419f3d3"
+    },
+    "football.product_forecast_refresh_work": {
+      "rows": 2764,
+      "sha256": "f80ffa118326fe895b9dcb3b71ec4d63de36ee7e2306ec9b9e91f8edbc064d28"
+    },
+    "football.product_forecasts": {
+      "rows": 4171,
+      "sha256": "107f183213edf84999375b994d16fb747d4f4b27f670725a6f7568db41509e1e"
+    },
+    "football.product_history_resource_imports": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_history_sync_attempts": {
+      "rows": 385,
+      "sha256": "e99d966c6aeda3173a61e61b1ac58418ea0afa0890ee0cbc8d979eba72c1c9ff"
+    },
+    "football.product_history_sync_queue": {
+      "rows": 559,
+      "sha256": "813524a6ba41b1779c48aef38f1ee11af3cdb86f1c21e857753c480ce79a05f2"
+    },
+    "football.product_history_work": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_identity_admissions": {
+      "rows": 20053,
+      "sha256": "d23952490457f90455b077502bf664989bdccf6843389699045b46c466503555"
+    },
+    "football.product_lineup_accuracy": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_lineup_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_lineup_players": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_match_history_decisions": {
+      "rows": 732899,
+      "sha256": "174d9f14caad01d82314a55215b2edf014c3606a797bdf64a84dfc25f248f4b4"
+    },
+    "football.product_model_artifacts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_model_evaluations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_model_forecasts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_provider_fixture_observations": {
+      "rows": 121179,
+      "sha256": "fb9ad8fa28f2eae668229271f2788d0ec67aa9f82fec5f490c6d083559bb4774"
+    },
+    "football.product_provider_history_discovery": {
+      "rows": 555,
+      "sha256": "5b63fd055f3ca37ec8178811fdf71935cb8c7bbaf49c7f5f9501276fd4165a0d"
+    },
+    "football.product_provider_history_scopes": {
+      "rows": 1222,
+      "sha256": "5dbaac68a81a59c56c8ab8fb24ad7944564a5bcf2629554626098a472c4ba019"
+    },
+    "football.product_provider_mapping_decisions": {
+      "rows": 378610,
+      "sha256": "0f8e7c4d0799d6e606621c6b021e2dbf97f72c134b95aac2bf57a7914817eeb8"
+    },
+    "football.product_provider_refresh_state": {
+      "rows": 796,
+      "sha256": "f9c024fcb7a2dc49b2af55c0108466b0d70ed6dfad97d3a95e86b0dd733d423a"
+    },
+    "football.product_provider_resource_observations": {
+      "rows": 28285,
+      "sha256": "bf98dc4d9dd54d910a04fc23da4d4b5acbf99758e7106b47942ea26224b7d4a1"
+    },
+    "football.product_provider_scope_work": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.product_read_reports": {
+      "rows": 12,
+      "sha256": "3b850ea6acf870b0408c0beaa4238d83f1cb1c4117d44d6fd865c1df7735b7ae"
+    },
+    "football.product_source_result_conflicts": {
+      "rows": 9,
+      "sha256": "269e433a63441bb047db133c4191fa6af4da5b3e2ecc94df0a82b215ca19c7db"
+    },
+    "football.product_standings": {
+      "rows": 150,
+      "sha256": "ac4fdb57be6a70183ca2f82bc06b1d39ad084cfcae4417494595da20517a5e84"
+    },
+    "football.product_sync_runs": {
+      "rows": 2274,
+      "sha256": "d83131a0013e939338348f0f3ec20d6bd3e8c6e8baeea57ec7ae6a4d98887a33"
+    },
+    "football.product_team_aliases": {
+      "rows": 15777,
+      "sha256": "c4d87ff25b2432e1a9140bfd86f90e51142d4711fdb312a1b5300f6cf8871ebc"
+    },
+    "football.product_team_match_history": {
+      "rows": 434031,
+      "sha256": "609c5b9bec24040787b3a645e78d095dd38b0794148606347b1b2592fa018d4a"
+    },
+    "football.product_teams": {
+      "rows": 14811,
+      "sha256": "d51c6a4d9b92fc9137349b3bf68056c58174c3e7a74f8f6ca70ac91ed2593678"
+    },
+    "football.provider_mapping_history": {
+      "rows": 486452,
+      "sha256": "5e3f6f4a3a7a49c023a1dcffb4d30427156aa74ff738956499f034f157b76425"
+    },
+    "football.provider_request_budgets": {
+      "rows": 13,
+      "sha256": "234135790f522c0c8f58c76d6a7825843a61f4815107fd63db7c9189d84aafe8"
+    },
+    "football.provider_resource_authority": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.provider_resource_capabilities": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.provider_resource_coverage": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.provider_resource_cursors": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.provider_sync_runs": {
+      "rows": 1,
+      "sha256": "7bfb5d2a876a5c02c6cf0a902c9b63d94f58a13509dc96c5540c60f318e81a46"
+    },
+    "football.providers": {
+      "rows": 37,
+      "sha256": "830a9df0a4c1390d04e70d700862ffcb1f25aa403d891056d9855a1b958953cb"
+    },
+    "football.quarantine_records": {
+      "rows": 1,
+      "sha256": "1c77fc34c501e2dd6a4846db2b64ae18a1515e1da9bb687bfbb9f2eb49b8ea02"
+    },
+    "football.quarantine_reprocess_requests": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.quarantine_resolution_outcomes": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.reconciliation_conflicts": {
+      "rows": 1,
+      "sha256": "7533880f882ca473903ef9988dc5308a6407f484e69f1e78d27a017f2d3a7cfc"
+    },
+    "football.resolution_decisions": {
+      "rows": 30,
+      "sha256": "d6ff2e2ee1fc9ddf57e21cef6bf866c2b9bf616b36705f2bc2f69094be2e94f8"
+    },
+    "football.runtime_model_registrations": {
+      "rows": 1,
+      "sha256": "5541083bc093263cb094b10834157b51d92e6b93a4cfaf20ae7f5f657e060ebc"
+    },
+    "football.season_observations": {
+      "rows": 164,
+      "sha256": "9618b7538a9168a7c4845585bf95c579f846eb2e8ecf6590fe7c633f5352613a"
+    },
+    "football.season_provider_mappings": {
+      "rows": 86,
+      "sha256": "77dd55f41d611d1f6a9bab221a9bccafaeebf12d4ddb8bc125ba2c5dee54fee4"
+    },
+    "football.seasons": {
+      "rows": 3666,
+      "sha256": "5af37d78fb95ff7318855397704f659a75567a4c9d17c38a44a177780bbbd1cd"
+    },
+    "football.source_resources": {
+      "rows": 10373,
+      "sha256": "1e2e54cacb3532143c9a5b455c74e2146731ce9791def19c2120d5b2ac52bc9b"
+    },
+    "football.source_snapshots": {
+      "rows": 8565,
+      "sha256": "8a96907668f9da24bd3230c0681236786e5953ea1d5d1f1212ca26e974fbdc7e"
+    },
+    "football.sprint2_evaluation_runs": {
+      "rows": 23,
+      "sha256": "6aee013d240eb253eecd80ca2e33d460d1eb089e95cf49fbe11a11e9e3b1adcf"
+    },
+    "football.team_elo_history": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "football.team_observations": {
+      "rows": 76,
+      "sha256": "238d6b84548b3b062b995f76e036c689a1da128dd73a311c9a0a8a77442e6c6a"
+    },
+    "football.team_provider_mappings": {
+      "rows": 18239,
+      "sha256": "5f5d1026f30a06a1a8ac9c9a4646ba044f5e6f59fc46254ecd60f806f1ca3b66"
+    },
+    "football.teams": {
+      "rows": 14875,
+      "sha256": "7026deb2ca1d0ba787eb625baeb56b9370bc3bf7f78ee4104f3a1366f3eff35e"
+    },
+    "football.validation_findings": {
+      "rows": 2184,
+      "sha256": "77057ab854db72ed3c9d318562da9d66dbd7b9056dbca1e0622cfc268db2c875"
+    },
+    "football.validation_runs": {
+      "rows": 6,
+      "sha256": "a9154c4537178b73b57951d51f17b6f43fad6d55d78be26fdee382268f908a82"
+    },
+    "football.work_dependencies": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "unsupported_provider_resource_dispositions": 33,
+  "unsupported_resource_dispositions": 652,
+  "unverifiable_registered_resources": 33,
+  "verified_at": "2026-10-20T23:58:04.963165+00:00",
+  "verified_registered_resource_bytes": 10340,
+  "verified_source_files": {
+    "docs/architecture.md": "544f7ce4b15f2d213e8a8d44e0c7bcad297b121faa7059a6739f91fb2cae42fd",
+    "docs/canonical-ingestion.md": "6402951a75cb85d81492b1f1e6c4660bd340a371eb16b00782f11a11e0caa6dc",
+    "python/football/src/football/canonical_resources/storage.py": "92452cbe599b56bc718f0dfe63457230bc6e8080721bcd3a0d7f17bda97238fb",
+    "python/football/src/football/contracts/observation_codec.py": "428d4fa06c3cff076eb666bff4e71efd7b960c723750df28327dea81ff1de99a",
+    "python/football/src/football/identity/repository.py": "a999efa0c30a740a94f4f8e1300806dd63649ae2293549321011ba39800bb2a0",
+    "python/football/src/football/observations/storage.py": "0f35b2e176efc95aa53b96941d63e5c27f5204f7b7ac385b666f1783f75d718d",
+    "python/football/tests/test_canonical_evidence_registration.py": "a2a53f77175f4e308918f4eae4c28d0ceed7294a8378fec8ea356a04482b98e9",
+    "python/football/tests/test_observation_validator_dispatch.py": "7bbe3cfb729328e95dfa3a1573e246449ff6f8c7fea9c57cacf474c025dd9632",
+    "tests/integration/test_canonical_resource_resolutions.py": "bbaceb5e1f570e1d9f4e9c63ce7501b1cec133bcabcf499ec89b1194685ff21a",
+    "tests/integration/test_identity_history.py": "a0aec2eb81fe8c3363365f9c3efa6020553cf2a568c87283da79a0b6b67cadb1",
+    "tests/integration/test_resource_observation_artifacts.py": "2d65432c089c4c5d188ddd49822c19e7a6855b8c4db3d5cd5966d9f2d4753c65"
+  },
+  "warnings": [
+    "An overlapping operator partition exited 1 on already-owned work, later completed by its existing owner. Partition 1 reached its final post-fingerprint marker; its tool exit status was not retained. Local runtime shutdown interrupted partitions 0 and 2; both unchanged partitions resumed with verified exit 0. Original logs, unknown exit statuses and recovery evidence are preserved. Every planned retained work item and checkpoint is independently verified.",
+    "The first canonical publication run durably completed 416 groups; three later large-group leases expired before their publication transactions committed. After a fresh read-only audit, the three stale work items were cancelled through WorkRegistry and those groups were reissued under the optimized f6dc14d source manifest with a two-hour lease. Both execution manifests, the original 416 checkpoints, cancellation evidence and replacement logs are preserved; the final verifier checks all 10192 groups and confirms three cancelled stale work rows.",
+    "Bytes for thirty-three retained resource registrations remain unverifiable from the retained root, and three registered dataset files are unavailable. Their individual dispositions and original registrations are preserved.",
+    "Unsupported resources and provider values retain raw bytes, existing relational or Parquet facts, and explicit findings. They are not silently coerced into typed facts.",
+    "Existing R2 proofs qualify exact native entity references. All 4253 unavailable native mapping proofs coincide with no admitted identity at the frozen cutoff. Anonymous source records and other identity owners require their own publication evidence, with explicit dispositions retained.",
+    "Canonical contexts without a persisted resource-value selection are REVIEW_REQUIRED and expose no selected value. Identity admission does not grant source authority.",
+    "The retained R3 restore-api.log preserves its exact original 69447-byte prefix and contains one verified 759-byte append recording local product-sync cancellations. The two original football-database sync runs remain FAILED with worker-lease-expired status and were not retried; no provider requests were made.",
+    "R3 remains deferred with MF-AUD-0009 acceptance unmet. Phase 34 parity and all runtime-cutover gates remain required."
+  ]
+}
