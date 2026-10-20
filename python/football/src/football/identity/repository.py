@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Literal
 from uuid import UUID
 
 from psycopg import Connection
-from psycopg.rows import class_row
+from psycopg.rows import class_row, dict_row
 
+from football.contracts.decisions import DecisionRecordV1
+from football.contracts.source import canonical_json_bytes
 from football.ingestion.resolution import ResolutionSubjectV1
+
+ADMISSION_SOURCE_CONTRACT = "football.product_identity_admissions"
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +71,57 @@ class IdentityRepository:
         if row is None or row[1] not in ("ORIGIN_ANCHOR", "CROSSWALK"):
             return None
         return row[0] if row[2] is not None and row[2] <= knowledge_cutoff else None
+
+    def admission_proof_at(
+        self,
+        subject_type: Literal["team", "competition"],
+        mapping_id: UUID,
+        knowledge_cutoff: datetime,
+    ) -> DecisionRecordV1 | None:
+        """Bind the existing R2 admission owner to its exact recorded source decision.
+
+        Mapping confidence does not grant admission. A correction, revocation or
+        unavailable source remains governed by admitted_identity_at. Anonymous
+        source-record references require their own independently verified scope.
+        """
+        canonical = self.admitted_identity_at(subject_type, mapping_id, knowledge_cutoff)
+        if canonical is None:
+            return None
+        with self._connection.cursor(row_factory=dict_row) as cursor:
+            row = cursor.execute(
+                """SELECT decision_id,entity_type,mapping_id,canonical_id,provider_code,
+                          provider_entity_id,disposition,reason,source_snapshot_id,
+                          source_observed_at,decided_at,evidence,evidence_sha256,
+                          corrects_decision_id,target_mapping_id
+                   FROM football.product_identity_admissions
+                   WHERE entity_type=%s AND mapping_id=%s AND decided_at<=%s
+                   ORDER BY decided_at DESC,decision_id DESC LIMIT 1""",
+                (subject_type, mapping_id, knowledge_cutoff),
+            ).fetchone()
+        if row is None or row["canonical_id"] != canonical:
+            return None
+        source = {key: _admission_wire(value) for key, value in row.items()}
+        source["contract"] = ADMISSION_SOURCE_CONTRACT
+        source["identity_scope"] = {
+            "provider": row["provider_code"],
+            "provider_native_id": row["provider_entity_id"],
+            "canonical_id": str(canonical),
+        }
+        return DecisionRecordV1(
+            decision_type="identity_admission",
+            subject_type=subject_type,
+            subject_id=str(canonical),
+            decided_at=row["decided_at"],
+            disposition=row["disposition"],
+            reason=row["reason"],
+            predecessor=str(row["corrects_decision_id"])
+            if row["corrects_decision_id"] is not None
+            else None,
+            evidence={
+                "source_contract": source,
+                "source_sha256": hashlib.sha256(canonical_json_bytes(source)).hexdigest(),
+            },
+        )
 
     def mapping_at(
         self,
@@ -125,6 +181,12 @@ class IdentityRepository:
                     ),
                 ).fetchall()
             )
+
+
+def _admission_wire(value: object) -> object:
+    if isinstance(value, datetime):
+        return value.astimezone(UTC).isoformat()
+    return str(value) if isinstance(value, UUID) else value
 
 
 def _validate_scope(subject: str, native_id: str, competition: str | None) -> None:

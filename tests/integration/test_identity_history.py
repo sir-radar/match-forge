@@ -334,6 +334,12 @@ def test_mapping_confidence_does_not_create_an_identity_admission(connection):
         )
         is None
     )
+    assert (
+        IdentityRepository(connection).admission_proof_at(
+            "team", mapping["mapping_id"], _latest(connection, mapping)
+        )
+        is None
+    )
 
 
 @pytest.mark.parametrize("subject", ["team", "competition"])
@@ -354,7 +360,13 @@ def test_identity_boundary_preserves_r2_admission_and_revocation_cutoffs(
     ).fetchone()
     repository = IdentityRepository(connection)
     assert repository.admitted_identity_at(subject, mapping, before) is None
+    assert repository.admission_proof_at(subject, mapping, before) is None
     assert repository.admitted_identity_at(subject, mapping, admitted) == canonical
+    proof = repository.admission_proof_at(subject, mapping, admitted)
+    assert proof is not None and proof.subject_id == str(canonical)
+    assert proof.subject_type == subject and proof.disposition in ("ORIGIN_ANCHOR", "CROSSWALK")
+    connection.execute("SET LOCAL TIME ZONE 'Europe/Paris'")
+    assert repository.admission_proof_at(subject, mapping, admitted) == proof
     connection.execute(
         """INSERT INTO football.product_identity_admissions(
             entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
@@ -366,4 +378,6 @@ def test_identity_boundary_preserves_r2_admission_and_revocation_cutoffs(
         (mapping,),
     )
     assert repository.admitted_identity_at(subject, mapping, _cutoff(connection)) is None
+    assert repository.admission_proof_at(subject, mapping, _cutoff(connection)) is None
     assert repository.admitted_identity_at(subject, mapping, admitted) == canonical
+    assert repository.admission_proof_at(subject, mapping, admitted) == proof

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -12,7 +13,13 @@ from psycopg.types.json import Jsonb
 
 from football.contracts.observation_schema import observation_schema, observation_schema_sha256
 from football.contracts.observations import Observation, ObservationError, observation_from_bytes
-from football.storage.raw import ImmutableFileStore
+from football.storage.raw import ImmutableFileStore, ImmutableWrite
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedObservation:
+    observation: Observation
+    artifact: ImmutableWrite
 
 
 class ObservationArtifactStore:
@@ -22,10 +29,31 @@ class ObservationArtifactStore:
 
     def publish(self, observation: Observation) -> UUID:
         """Identical retries converge; failed DB writes can leave safe orphan files."""
+        return self.register_prepared(self.prepare(observation))
+
+    def prepare(self, observation: Observation) -> PreparedObservation:
+        """Publish validated immutable observation bytes without database access."""
         digest = observation.sha256
         version = observation.versions.observation_contract_version
         relative = f"observations/v{version}/{observation.CONTRACT}/{digest}.json"
-        self.files.publish(relative, observation.to_bytes())
+        artifact = self.files.publish(relative, observation.to_bytes())
+        return PreparedObservation(observation, artifact)
+
+    def register_prepared(self, prepared: PreparedObservation) -> UUID:
+        """Register checked metadata without filesystem access; caller owns the transaction."""
+        observation = prepared.observation
+        digest = observation.sha256
+        version = observation.versions.observation_contract_version
+        relative = f"observations/v{version}/{observation.CONTRACT}/{digest}.json"
+        expected = (relative, digest, len(observation.to_bytes()), self.files.root / relative)
+        artifact = prepared.artifact
+        if (
+            artifact.relative_path,
+            artifact.sha256,
+            artifact.size_bytes,
+            artifact.path,
+        ) != expected:
+            raise ObservationError("prepared observation metadata or store root differs")
         schema_hash = observation_schema_sha256(version)
         self._register_contract(observation, schema_hash)
         provenance, versions, time = observation.provenance, observation.versions, observation.time

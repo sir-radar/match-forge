@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 from collections.abc import Iterator
 from dataclasses import replace
@@ -21,10 +22,16 @@ from football.canonical_resources.storage import (
     prepare_canonical_resolution,
 )
 from football.contracts.observations import ResultObservationV1
+from football.contracts.observations_v2 import CompetitionObservationV2
+from football.contracts.source import canonical_json_bytes
+from football.identity.repository import IdentityRepository
 from football.ingestion.conflicts import ConflictRecordV1
 from football.ingestion.resolution import ResolutionDecisionV1
 from football.ingestion.resolution_storage import PostgresResolutionDecisionStoreV1
 from football.observations.storage import ObservationArtifactStore
+from football.product.identity_admission import admit_provider_mappings
+from football.providers.normalization.cli import registered_resource
+from football.providers.normalization.pipeline import normalize_resource
 from psycopg.errors import RaiseException
 from test_resource_observation_artifacts import NOW, _observation
 
@@ -94,6 +101,114 @@ def _resolution(connection, root, *, register_identity=True, register_observatio
         created_at=NOW,
     )
     return resolve_canonical_resource((candidate,), choice, knowledge_cutoff=NOW)
+
+
+def _r2_competition_candidate(connection, root):
+    from test_product_identity_admission import _cutoff, _history
+
+    _history(connection, root)
+    admit_provider_mappings(connection, root, "football_data_uk")
+    cutoff = _cutoff(connection)
+    mapping, canonical = connection.execute(
+        "SELECT mapping_id,canonical_id FROM football.product_identity_admissions "
+        "WHERE entity_type='competition' AND disposition IN ('ORIGIN_ANCHOR','CROSSWALK') "
+        "ORDER BY decided_at DESC,decision_id DESC LIMIT 1"
+    ).fetchone()
+    proof = IdentityRepository(connection).admission_proof_at("competition", mapping, cutoff)
+    assert proof is not None
+    resource = connection.execute(
+        "SELECT r.id FROM football.source_resources r "
+        "JOIN football.source_snapshots s ON s.id=r.source_snapshot_id "
+        "JOIN football.providers p ON p.id=s.provider_id "
+        "WHERE p.code='football_data_uk' AND r.provider_path='test/season.csv'"
+    ).fetchone()[0]
+    context, raw = registered_resource(connection, root, resource)
+    result = normalize_resource(context, "results", raw)
+    observation = next(
+        item for item in result.observations if isinstance(item, CompetitionObservationV2)
+    )
+    ObservationArtifactStore(connection, root).publish(observation)
+    candidate = CanonicalCandidate(
+        observation=observation,
+        canonical_subject_id=canonical,
+        subject_identity=proof,
+        bindings=(CanonicalBinding("/competition", canonical, proof),),
+    )
+    selection = ConflictRecordV1(
+        conflict_id="explicit-r2-competition-review",
+        subject_type=f"CompetitionObservation:{canonical}",
+        observation_refs=(str(observation.observation_id),),
+        policy_version="operator-review",
+        disposition="RESOLVED",
+        selected_observation_ref=str(observation.observation_id),
+        reason="Reviewed exact admitted competition reference",
+        created_at=cutoff,
+    )
+    return candidate, selection, cutoff, mapping
+
+
+def test_r2_admission_proof_publishes_and_rejects_changed_proof(connection, tmp_path):
+    candidate, selection, cutoff, _ = _r2_competition_candidate(connection, tmp_path)
+    resolution = resolve_canonical_resource((candidate,), selection, knowledge_cutoff=cutoff)
+    registry = CanonicalResolutionRegistry(connection)
+    prepared = prepare_canonical_resolution(tmp_path, resolution)
+    assert registry.register(resolution, prepared) == resolution.decision.decision_id
+    changed = replace(candidate.subject_identity, reason="asserted replacement reason")
+    forged = replace(
+        candidate,
+        subject_identity=changed,
+        bindings=(CanonicalBinding("/competition", candidate.canonical_subject_id, changed),),
+    )
+    invalid = resolve_canonical_resource((forged,), selection, knowledge_cutoff=cutoff)
+    with pytest.raises(CanonicalResolutionError, match="admission"):
+        registry.register(invalid, prepare_canonical_resolution(tmp_path, invalid))
+
+
+def test_r2_revocation_blocks_new_resolution_and_preserves_earlier_knowledge(connection, tmp_path):
+    from test_product_identity_admission import _cutoff
+
+    candidate, selection, cutoff, mapping = _r2_competition_candidate(connection, tmp_path)
+    old = resolve_canonical_resource((candidate,), selection, knowledge_cutoff=cutoff)
+    registry = CanonicalResolutionRegistry(connection)
+    prepared = prepare_canonical_resolution(tmp_path, old)
+    registry.register(old, prepared)
+    connection.execute(
+        """INSERT INTO football.product_identity_admissions(
+            entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+            disposition,reason,source_snapshot_id,source_observed_at,evidence,evidence_sha256)
+           SELECT entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                  'REVOKED','operator_revocation',source_snapshot_id,source_observed_at,
+                  evidence,evidence_sha256 FROM football.product_identity_admissions
+           WHERE mapping_id=%s ORDER BY decided_at DESC,decision_id DESC LIMIT 1""",
+        (mapping,),
+    )
+    later = _cutoff(connection)
+    stale = resolve_canonical_resource(
+        (candidate,), replace(selection, created_at=later), knowledge_cutoff=later
+    )
+    with pytest.raises(CanonicalResolutionError, match="admission"):
+        registry.register(stale, prepare_canonical_resolution(tmp_path, stale))
+    assert registry.register(old, prepared) == old.decision.decision_id
+
+
+@pytest.mark.parametrize("mapping", [None, "not-a-uuid", str(UUID(int=404))])
+def test_r2_proof_rejects_rehashed_mapping_forgery(connection, tmp_path, mapping):
+    candidate, selection, cutoff, _ = _r2_competition_candidate(connection, tmp_path)
+    evidence = candidate.subject_identity.to_dict()["evidence"]
+    source = evidence["source_contract"]
+    source["mapping_id"] = mapping
+    evidence["source_sha256"] = hashlib.sha256(canonical_json_bytes(source)).hexdigest()
+    proof = replace(candidate.subject_identity, evidence=evidence)
+    forged = replace(
+        candidate,
+        subject_identity=proof,
+        bindings=(CanonicalBinding("/competition", candidate.canonical_subject_id, proof),),
+    )
+    resolution = resolve_canonical_resource((forged,), selection, knowledge_cutoff=cutoff)
+    with pytest.raises(CanonicalResolutionError, match="admission"):
+        CanonicalResolutionRegistry(connection).register(
+            resolution, prepare_canonical_resolution(tmp_path, resolution)
+        )
 
 
 def test_publication_round_trip_retry_and_explicit_knowledge(connection, tmp_path):

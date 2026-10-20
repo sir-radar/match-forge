@@ -26,7 +26,7 @@ from football.contracts.observations import (
 from football.observations.storage import ObservationArtifactStore
 from football.product.api_football import ApiFootballClient, ApiResponse
 from football.product.sync import ProductSync
-from football.storage.raw import ImmutableFileConflict
+from football.storage.raw import ImmutableFileConflict, ImmutableFileStore
 from football.temporal.repository import PointInTimeRepository
 from psycopg.errors import RaiseException
 
@@ -76,6 +76,53 @@ def _observation(
         status="SCHEDULED",
         kickoff_precision="EXACT",
     )
+
+
+def test_observation_preparation_needs_no_database_and_registration_needs_no_filesystem(
+    connection: psycopg.Connection[object], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    item = _observation(connection, tmp_path)
+    with psycopg.connect(os.environ["TEST_DATABASE_URL"]) as disconnected:
+        pass
+    prepared = ObservationArtifactStore(disconnected, tmp_path).prepare(item)
+    assert prepared.artifact.path.read_bytes() == item.to_bytes()
+    assert connection.execute(
+        "SELECT count(*) FROM football.resource_observation_artifacts WHERE observation_id=%s",
+        (item.observation_id,),
+    ).fetchone() == (0,)
+
+    def reject_filesystem(*args: object, **kwargs: object) -> None:
+        raise AssertionError("filesystem access during observation registration")
+
+    store = ObservationArtifactStore(connection, tmp_path)
+    with monkeypatch.context() as patch:
+        patch.setattr(ImmutableFileStore, "publish", reject_filesystem)
+        patch.setattr(Path, "read_bytes", reject_filesystem)
+        patch.setattr(Path, "exists", reject_filesystem)
+        assert store.register_prepared(prepared) == item.observation_id
+        assert store.register_prepared(prepared) == item.observation_id
+    assert store.load(item.observation_id) == item
+
+
+def test_prepared_observation_rejects_changed_metadata_and_another_store_root(
+    connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    item = _observation(connection, tmp_path)
+    store = ObservationArtifactStore(connection, tmp_path)
+    prepared = store.prepare(item)
+    changed = replace(prepared, artifact=replace(prepared.artifact, sha256="f" * 64))
+    with pytest.raises(ObservationError, match="prepared"):
+        store.register_prepared(changed)
+    changed_observation = replace(prepared, observation=replace(item, status="POSTPONED"))
+    with pytest.raises(ObservationError, match="prepared"):
+        store.register_prepared(changed_observation)
+    with pytest.raises(ObservationError, match="prepared"):
+        ObservationArtifactStore(connection, tmp_path / "another").register_prepared(prepared)
+    assert connection.execute(
+        "SELECT count(*) FROM football.resource_observation_artifacts WHERE observation_id=%s",
+        (item.observation_id,),
+    ).fetchone() == (0,)
+    assert store.register_prepared(prepared) == item.observation_id
 
 
 def test_publish_load_and_retry_preserve_versions_and_canonical_state(

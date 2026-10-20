@@ -7,7 +7,7 @@ import types
 from collections.abc import Callable
 from dataclasses import fields, is_dataclass
 from datetime import UTC, datetime
-from functools import lru_cache
+from functools import cache, lru_cache
 from typing import Annotated, Any, Union, cast, get_args, get_origin, get_type_hints
 from uuid import UUID
 
@@ -66,9 +66,14 @@ def observation_bytes(value: Observation) -> bytes:
         raise ObservationError("observation must contain finite JSON values") from error
 
 
-@lru_cache(maxsize=2)
-def _validator(version: str) -> Draft202012Validator:
-    schema = observation_schema(version)
+@cache
+def _validator(version: str, contract: str) -> Draft202012Validator:
+    # The caller resolves a declared model first, so this cache has a finite key set.
+    # Distinct contract constants make every other union branch impossible.
+    schema = {
+        **observation_schema(version),
+        "oneOf": [{"$ref": f"#/$defs/{contract}"}],
+    }
     Draft202012Validator.check_schema(schema)
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
@@ -76,7 +81,7 @@ def _validator(version: str) -> Draft202012Validator:
 def _validate_payload(payload: object) -> None:
     model = _observation_model(payload)
     try:
-        _validator(model.VERSIONS_TYPE.VERSION).validate(payload)
+        _validator(model.VERSIONS_TYPE.VERSION, model.CONTRACT).validate(payload)
     except ValidationError as error:
         raise ObservationError(f"invalid resource observation: {error.message}") from error
 

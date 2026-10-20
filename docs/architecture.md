@@ -53,6 +53,12 @@ Canonical UTF-8 JSON sorts object keys, normalizes timestamps to UTC and integra
 
 `football.observations.storage.ObservationArtifactStore` writes immutable typed JSON files and registers only provenance, time, version and file metadata in PostgreSQL. This shared registry contains no EAV domain values. Source provenance is checked against raw registrations, and SQL rejects updates/deletes to artifacts and contract versions. File publication precedes registration; rollback can leave an unregistered immutable file, and an identical retry converges. The caller owns the transaction. These shadow artifacts do not admit identity, replace existing serving/history tables, or alter forecasts.
 
+`prepare` seals and publishes observation bytes without database access.
+`register_prepared` checks their expected path, checksum, size and configured
+root, then registers metadata without filesystem access. Shared work can prepare
+files before entering its bounded publication transaction. The existing `publish`
+method composes both operations for compatible callers.
+
 With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
 
 `PointInTimeRepository.resource_observation_ids_at` reads this registry by exact contract and provider with an explicit `knowledge_cutoff`. It returns all immutable observations whose `known_at` is at or before that cutoff, ordered by knowledge time and observation ID. Provider update times and earlier football validity never backdate MatchForge knowledge. Later corrections add observations; the reader preserves earlier evidence and does not choose a conflict winner or latest normalizer.

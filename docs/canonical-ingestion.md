@@ -62,9 +62,16 @@ original IDs, values, bytes and clocks.
 
 Prepare immutable decision and identity-evidence files before calling
 `CanonicalResolutionRegistry.register`. Registration verifies observation hashes
-and the existing persisted `ResolutionDecisionV1` evidence, then commits the
-conclusion and all lineage together. Other identity owners need an explicit
-publication adapter before their evidence can be registered through this path.
+and the existing persisted `ResolutionDecisionV1` evidence or an exact R2
+admission proof, then commits the conclusion and all lineage together. R2 proofs
+come from `IdentityRepository.admission_proof_at`, which reuses the existing
+admission/correction owner at the requested knowledge cutoff and binds the full
+source decision with its native provider identity. Registration recomputes that
+proof; changed, unregistered, superseded or revoked evidence cannot authorize a
+new conclusion. Earlier valid cutoffs retain their original proof. A bare mapping
+or confidence is insufficient, and anonymous source-record references still
+require independently verified record scope. Other identity owners need an
+explicit publication adapter before their evidence can be registered here.
 No identity is created by the canonical resolver.
 
 Canonical revisions are append-only, reference the current predecessor within

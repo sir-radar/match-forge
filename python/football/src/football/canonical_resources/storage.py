@@ -6,7 +6,7 @@ import hashlib
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from psycopg import Connection, Cursor
@@ -19,6 +19,7 @@ from football.canonical_resources.resolution import (
 from football.contracts.decisions import DecisionRecordV1, decision_schema
 from football.contracts.observations import Observation
 from football.contracts.source import canonical_json_bytes
+from football.identity.repository import ADMISSION_SOURCE_CONTRACT, IdentityRepository
 from football.storage.raw import ImmutableFileStore, ImmutableWrite
 
 
@@ -242,6 +243,9 @@ def _check_identities[T: Observation](
         assert isinstance(evidence, dict)
         source = evidence["source_contract"]
         assert isinstance(source, dict)
+        if source.get("contract") == ADMISSION_SOURCE_CONTRACT:
+            _check_admission(cursor, proof, source, resolution.knowledge_cutoff)
+            continue
         if source.get("contract") != "ResolutionDecisionV1":
             raise CanonicalResolutionError("identity source has no registered publication adapter")
         row = cursor.execute(
@@ -290,6 +294,33 @@ def _check_identities[T: Observation](
             or proof.effective_at is not None
         ):
             raise CanonicalResolutionError("identity proof is unregistered, superseded or changed")
+
+
+def _check_admission(
+    cursor: Cursor[Any],
+    proof: DecisionRecordV1,
+    source: dict[str, Any],
+    cutoff: datetime,
+) -> None:
+    if proof.subject_type not in ("team", "competition"):
+        raise CanonicalResolutionError("identity admission proof has the wrong entity kind")
+    mapping = source.get("mapping_id")
+    if not isinstance(mapping, str):
+        raise CanonicalResolutionError("identity admission proof requires its mapping UUID")
+    try:
+        mapping_id = UUID(mapping)
+    except ValueError as error:
+        raise CanonicalResolutionError(
+            "identity admission proof has an invalid mapping UUID"
+        ) from error
+    subject: Literal["team", "competition"] = (
+        "team" if proof.subject_type == "team" else "competition"
+    )
+    actual = IdentityRepository(cursor.connection).admission_proof_at(subject, mapping_id, cutoff)
+    if actual != proof:
+        raise CanonicalResolutionError(
+            "identity admission proof is unregistered, revoked or changed"
+        )
 
 
 def load_canonical_decision(root: Path, decision_id: UUID, sha256: str) -> DecisionRecordV1:
