@@ -1,7 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { parseFixtureGroups, parseLiveMatch, parsePerformance, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
+import { parseContext, parseFixtureGroups, parseLiveMatch, parsePerformance, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
+
+const competition = { id: "c", name: "League", country: "Country", continent: "Europe", division: 1, type: "LEAGUE", season: "2026", availability: { fixtures: true, results: true, standings: true, h2h: true, forecast: false, xg: false, team_stats: false }, availability_status: "FIXTURES_ONLY", sources: {} };
+const fixture = { id: "f", kickoff_at: "2026-01-01T12:00:00Z", status: "SCHEDULED", home: { id: "h", name: "Home", crest_url: null }, away: { id: "a", name: "Away", crest_url: null }, home_score: null, away_score: null, venue: null, round: null, forecast_availability: "UNAVAILABLE", forecast: null };
+const context = { fixture_id: "f", home_form: [], away_form: [], h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: {} };
 
 describe("API contract boundary", () => {
+  it("rejects duplicate canonical identities within and across groups", () => {
+    expect(() => parseFixtureGroups({ groups: [{ competition, fixtures: [fixture, fixture] }] })).toThrow(/duplicate fixture/);
+    expect(() => parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }, { competition: { ...competition, id: "other" }, fixtures: [fixture] }] })).toThrow(/duplicate fixture/);
+    expect(() => parseFixtureGroups({ groups: [{ competition, fixtures: [] }, { competition, fixtures: [] }] })).toThrow(/duplicate competition/);
+  });
+
+  it("preserves separate canonical matches with the same teams and kickoff", () => {
+    const groups = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture, { ...fixture, id: "second-leg" }] }] });
+    expect(groups[0].fixtures.map(({ id }) => id)).toEqual(["f", "second-leg"]);
+  });
+
+  it.each(["SCHEDULED", "LIVE", "HALF_TIME", "FINISHED", "POSTPONED", "CANCELLED", "ABANDONED", "SUSPENDED", "INTERRUPTED", "AWARDED"])("accepts canonical fixture state %s", (status) => {
+    expect(parseFixtureGroups({ groups: [{ competition, fixtures: [{ ...fixture, status }] }] })[0].fixtures[0].status).toBe(status);
+  });
+
+  it.each(["UNKNOWN", "live", "IN_PLAY"])("rejects noncanonical fixture state %s", (status) => {
+    expect(() => parseFixtureGroups({ groups: [{ competition, fixtures: [{ ...fixture, status }] }] })).toThrow(/status/);
+  });
+
+  it.each(["not-a-date", "2026-01-01", "2026-01-01T12:00:00", null])("rejects invalid required fixture time %s", (kickoff_at) => {
+    expect(() => parseFixtureGroups({ groups: [{ competition, fixtures: [{ ...fixture, kickoff_at }] }] })).toThrow(/kickoff_at/);
+  });
+
+  it("validates form venue before using it as a domain value", () => {
+    const form = { kickoff_at: fixture.kickoff_at, opponent: "Other", venue: "NEUTRAL", goals_for: 0, goals_against: 0, result: "D" };
+    expect(() => parseContext({ ...context, home_form: [form] })).toThrow(/venue/);
+    expect(parseContext({ ...context, home_form: [{ ...form, venue: "AWAY" }] }).home_form[0].venue).toBe("AWAY");
+  });
   it("parses zero-valued live scores and statistics", () => {
     const value = parseLiveMatch({
       fixture_id: "f", status: "LIVE",

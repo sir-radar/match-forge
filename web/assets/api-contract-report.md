@@ -65,3 +65,26 @@ within one lane cannot overlap mutations; other lanes retain their controls.
 Polling waits for completion before scheduling the next request, aborts superseded
 reads, preserves terminal run states and retrieves active runs omitted from the
 recent-list page. Cancellation/retry and errors remain lane-specific.
+
+## Architecture V2 frontend cleanup
+
+Normal components consume the existing MatchForge DTOs. Provider IDs, status
+labels and original statistic names remain explicit provenance fields, rather
+than provider-native objects or behavioral identity keys. Fixture groups reject
+repeated canonical IDs across the entire response; separate canonical matches
+with identical teams and kickoff remain separate. Both public fixture status
+enums now match the existing SQL constraint, with a drift regression.
+
+Single-resource requests bind decoded fixture, forecast and competition IDs to
+their requested IDs. Required fixture, context, forecast and live-source clocks
+use the existing timezone-aware timestamp validator. Form venues are validated
+before becoming domain values. Untrusted HTTP error envelopes are checked as
+unknown values and retain a status-based fallback.
+
+Forecast requests depend on the immutable forecast ID and fixture ID, not the
+summary object's reference. Polling can update a fixture without reloading the
+same forecast. New revisions cancel old requests, and stale completions cannot
+replace current data. Failed fixture refreshes display retained same-key rows
+with an alert and retry; changed request keys still hide old rows immediately.
+Context, live and forecast failures remain independent. Simulation evidence
+stays explicitly unavailable because no approved linked artifact is exposed.

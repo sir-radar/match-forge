@@ -106,16 +106,20 @@ function FixtureFilters({ filters, setFilters, competitions, options, refreshing
 
 function FixtureResults({ state, expanded, setExpanded, teamQuery, statusFilter }: { state: ReturnType<typeof useResource<FixtureGroup[]>>; expanded: string | null; setExpanded: (id: string | null) => void; teamQuery: string; statusFilter: string }) {
   if (state.loading) return <ResourceLoading label="Loading fixtures" />;
-  if (state.error) return <ResourceError message={state.error} retry={state.retry} />;
-  if (state.data?.length === 0) return <EmptyState title="No fixtures found" detail="The fixture can still be absent when a provider has no match for this date or the active filters exclude it." />;
+  if (state.error && state.data === null) return <ResourceError message={state.error} retry={state.retry} />;
+  const refreshError = state.error && <ResourceError message={`Showing previously loaded fixtures. Refresh failed: ${state.error}`} retry={state.retry} />;
+  if (state.data?.length === 0) return <>{refreshError}<EmptyState title="No fixtures found" detail="The fixture can still be absent when a provider has no match for this date or the active filters exclude it." /></>;
   const query = teamQuery.trim().toLocaleLowerCase();
   const groups = (state.data ?? []).map((group) => ({ ...group, fixtures: group.fixtures.filter((fixture) => {
     const matchesTeam = !query || fixture.home.name.toLocaleLowerCase().includes(query) || fixture.away.name.toLocaleLowerCase().includes(query);
     const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : statusFilter === "LIVE" ? ["LIVE", "HALF_TIME"].includes(fixture.status) : fixture.status === statusFilter);
     return matchesTeam && matchesStatus;
   }) })).filter((group) => group.fixtures.length);
-  if (!groups.length) return <EmptyState title="No fixtures found" detail="No team in the selected fixture set matches this filter." />;
-  return groups.map((group) => <FixtureGroupView key={group.competition.id} group={group} expanded={expanded} setExpanded={setExpanded} />);
+  if (!groups.length) return <>{refreshError}<EmptyState title="No fixtures found" detail="No team in the selected fixture set matches this filter." /></>;
+  return <>
+    {refreshError}
+    {groups.map((group) => <FixtureGroupView key={group.competition.id} group={group} expanded={expanded} setExpanded={setExpanded} />)}
+  </>;
 }
 
 function FixtureGroupView({ group, expanded, setExpanded }: { group: FixtureGroup; expanded: string | null; setExpanded: (id: string | null) => void }) {
@@ -162,7 +166,7 @@ function isActive(fixture: Fixture) {
 }
 
 function fixtureStateLabel(fixture: Fixture) {
-  let label = fixture.status;
+  let label: string = fixture.status;
   if (fixture.status === "HALF_TIME") label = "HT";
   else if (fixture.status === "FINISHED") label = "FT";
   else if (fixture.match_minute !== null) {

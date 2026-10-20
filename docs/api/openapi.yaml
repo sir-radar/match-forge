@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.9.0
+  version: 0.9.1
   description: >-
     Versioned MatchForge domain responses and protected operational controls.
     Python produces immutable analytical read reports through shared work; Go
@@ -421,7 +421,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         kickoff_at: { type: string, format: date-time }
-        status: { type: string, enum: [SCHEDULED, LIVE, FINISHED, POSTPONED, CANCELLED, ABANDONED] }
+        status: { type: string, enum: [SCHEDULED, LIVE, HALF_TIME, FINISHED, POSTPONED, CANCELLED, ABANDONED, SUSPENDED, INTERRUPTED, AWARDED] }
         home: { $ref: '#/components/schemas/Team' }
         away: { $ref: '#/components/schemas/Team' }
         home_score: { type: [integer, 'null'], minimum: 0 }
@@ -743,7 +743,7 @@ components:
       required: ["fixture_id", "status", "home", "away", "home_score", "away_score", "match_minute", "added_time", "period", "events", "statistics", "score_source", "event_source", "statistics_source", "availability", "partial"]
       properties:
         fixture_id: {"type": "string"}
-        status: {"type": "string"}
+        status: { type: string, enum: [SCHEDULED, LIVE, HALF_TIME, FINISHED, POSTPONED, CANCELLED, ABANDONED, SUSPENDED, INTERRUPTED, AWARDED] }
         home: {"$ref": "#/components/schemas/Team"}
         away: {"$ref": "#/components/schemas/Team"}
         home_score: {"type": ["integer", "null"]}

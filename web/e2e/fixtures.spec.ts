@@ -5,6 +5,34 @@ const competition = { id: "31ba91ba-d228-41f7-b5fd-dd9222aa95dc", name: "Premier
 const fixture = { id: "1f3ce86e-743f-49b7-a957-4725495329b1", kickoff_at: "2026-09-29T15:00:00Z", status: "SCHEDULED", home: { id: "bed584cb-1830-42a2-904b-dbf97c526a62", name: "Arsenal", crest_url: null }, away: { id: "780bd040-4ad6-4e40-af03-b2fe9f52e140", name: "Chelsea", crest_url: null }, home_score: null, away_score: null, venue: "Emirates Stadium", round: "Round 6", forecast_availability: "FORECAST_AVAILABLE", forecast: { id: "6b0326f4-bc7c-4ec0-a0ca-b6f0ca6477ea", expected_home_goals: 1.5, expected_away_goals: 1.1, probabilities: { home: .46, draw: .27, away: .27 } } };
 const duplicateForm = { kickoff_at: "2026-08-30T14:00:00+01:00", opponent: "Brentford FC", venue: "HOME", goals_for: 2, goals_against: 1, result: "W" };
 
+for (const name of ["Europa League", "Conference League", "Botola Pro"]) {
+  test(`${name} preserves canonical representatives through polling, navigation and reload`, async ({ page }) => {
+    let updated = false;
+    await page.clock.install();
+    await page.route("http://127.0.0.1:8080/v1/fixtures?**", async (route) => {
+      const current = updated ? { ...fixture, id: "admitted-representative", status: "LIVE", home_score: 1, away_score: 0 } : { ...fixture, id: "provisional" };
+      await route.fulfill({ json: { groups: [{ competition: { ...competition, name }, fixtures: [current, { ...fixture, id: "separate-cup-leg" }] }] } });
+    });
+    await page.goto("/");
+    const rows = page.getByRole("button", { name: /Arsenal.*Chelsea/ });
+    await expect(rows).toHaveCount(2);
+    updated = true;
+    await page.clock.runFor(45_000);
+    await expect(page.getByText("1–0", { exact: true })).toBeVisible();
+    await expect(page.locator('[aria-controls="fixture-panel-provisional"]')).toHaveCount(0);
+    await expect(rows).toHaveCount(2);
+    await page.getByRole("button", { name: "Next day" }).click();
+    await expect(rows).toHaveCount(2);
+    await page.getByRole("button", { name: "Previous day" }).click();
+    await expect(rows).toHaveCount(2);
+    await page.reload();
+    await expect(rows).toHaveCount(2);
+    await expect(page.getByRole("heading", { name: `England — ${name}` })).toHaveCount(1);
+    await expect(page.locator('[aria-controls="fixture-panel-admitted-representative"]')).toHaveCount(1);
+    await expect(page.locator('[aria-controls="fixture-panel-separate-cup-leg"]')).toHaveCount(1);
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await page.route("http://127.0.0.1:8080/**", async (route) => {
     const url = route.request().url();

@@ -61,3 +61,23 @@ produces the scoped error/retry state; empty populations retain nullable metrics
 | Bulk and provider lanes active together | Disable only corresponding lane; separate stop/retry | hook and admin component tests |
 | Delayed RUNNING after terminal / slow poll | Terminal precedence; no overlapping polls; cleanup aborts | controlled-request hook regressions |
 | Optimistic rollback | Not applicable: job state is reconciled from durable server responses | admin hook |
+
+## Architecture V2 frontend boundary
+
+| State | Treatment | Evidence |
+| --- | --- | --- |
+| Duplicate canonical fixture or competition ID | Reject the response; retain same-key rows and show refresh failure | contract and fixture component tests |
+| Separate match IDs with identical teams and kickoff | Preserve both rows; identity is never inferred from display fields | contract, representative component and browser tests |
+| Representative replacement | Replace the response array under canonical IDs through polling, navigation and reload | Europa League, Conference League and Botola Pro regressions |
+| Wrong fixture, forecast revision or competition response | Reject at the request boundary; scope the error to that resource | API identity tests |
+| Unknown canonical status or malformed display timestamp | Reject before date formatting or status controls | contract and API tests; SQL/OpenAPI drift test |
+| Same forecast ID with a refreshed summary object | Keep the existing immutable forecast request | controlled component regression |
+| New forecast revision / late old response | Change the resource key, abort old request and reject stale completion | controlled component and resource hook regressions |
+| Same-key fixture polling failure | Show retained rows plus an alert and local Retry button | component regression |
+| Date change followed by failure | Clear previous-date rows and show scoped error | component and delayed-day browser regressions |
+| Missing analytical read report / HTTP 503 | Explicit resource failure; independent forecasts and fixture summaries remain visible | API and component regressions |
+| Live request failure | Show local error and retry without a perpetual loading indicator | component regression |
+| Simulation evidence | Explicitly unavailable until the API exposes a linked approved artifact; no inferred validation | existing expanded-fixture tab |
+
+Product requests remain read-only. Presentation filters and selected tabs stay
+local; no additional server-state store or optimistic mutation is introduced.

@@ -34,10 +34,12 @@ export type ForecastSummary = {
   probabilities: Record<string, number>;
 };
 
+const fixtureStatuses = ["SCHEDULED", "LIVE", "HALF_TIME", "FINISHED", "POSTPONED", "CANCELLED", "ABANDONED", "SUSPENDED", "INTERRUPTED", "AWARDED"] as const;
+
 export type Fixture = {
   id: string;
   kickoff_at: string;
-  status: string;
+  status: (typeof fixtureStatuses)[number];
   home: Team;
   away: Team;
   home_score: number | null;
@@ -89,7 +91,7 @@ export type LiveSource = { provider: string; provider_match_id: string; observed
 
 export type LiveMatch = {
   fixture_id: string;
-  status: string;
+  status: Fixture["status"];
   home: Team;
   away: Team;
   home_score: number | null;
@@ -338,19 +340,25 @@ export function parseCompetitions(value: unknown): Competition[] {
 
 export function parseFixtureGroups(value: unknown): FixtureGroup[] {
   const envelope = object(value, "fixtures response");
+  const competitionIds = new Set<string>(), fixtureIds = new Set<string>();
   return array(envelope.groups, "groups").map((item) => {
     const group = object(item, "fixture group");
-    return {
-      competition: parseCompetition(group.competition),
-      fixtures: array(group.fixtures, "fixtures").map(parseFixture),
-    };
+    const competition = parseCompetition(group.competition);
+    if (competitionIds.has(competition.id)) throw new Error("duplicate competition identity");
+    competitionIds.add(competition.id);
+    const fixtures = array(group.fixtures, "fixtures").map(parseFixture);
+    for (const fixture of fixtures) {
+      if (fixtureIds.has(fixture.id)) throw new Error("duplicate fixture identity");
+      fixtureIds.add(fixture.id);
+    }
+    return { competition, fixtures };
   });
 }
 
 export function parseLiveMatch(value: unknown): LiveMatch {
   const item = object(value, "live match");
   return {
-    fixture_id: text(item.fixture_id, "fixture_id"), status: text(item.status, "status"),
+    fixture_id: text(item.fixture_id, "fixture_id"), status: parseFixtureStatus(item.status),
     home: parseTeam(item.home), away: parseTeam(item.away),
     home_score: nullableNumber(item.home_score, "home_score"), away_score: nullableNumber(item.away_score, "away_score"),
     match_minute: nullableNumber(item.match_minute, "match_minute"), added_time: nullableNumber(item.added_time, "added_time"),
@@ -375,9 +383,9 @@ export function parseForecast(value: unknown): Forecast {
     fixture_id: text(item.fixture_id, "fixture_id"),
     model_label: text(item.model_label, "model_label"),
     model_algorithm_version: algorithm,
-    created_at: text(item.created_at, "created_at"),
-    football_cutoff: text(item.football_cutoff, "football_cutoff"),
-    knowledge_cutoff: text(item.knowledge_cutoff, "knowledge_cutoff"),
+    created_at: timestamp(item.created_at, "created_at"),
+    football_cutoff: timestamp(item.football_cutoff, "football_cutoff"),
+    knowledge_cutoff: timestamp(item.knowledge_cutoff, "knowledge_cutoff"),
     knowledge_mode: text(item.knowledge_mode, "knowledge_mode"),
     publication_mode: text(item.publication_mode, "publication_mode"),
     score_matrix_version: version,
@@ -422,10 +430,12 @@ export function parseContext(value: unknown): MatchContext {
     const row = object(entry, "form match");
     const result = text(row.result, "result");
     if (!(["W", "D", "L"] as string[]).includes(result)) throw new Error("invalid form result");
+    const venue = row.venue;
+    if (venue !== "HOME" && venue !== "AWAY") throw new Error("invalid form venue");
     return {
-      kickoff_at: text(row.kickoff_at, "kickoff_at"),
+      kickoff_at: timestamp(row.kickoff_at, "kickoff_at"),
       opponent: text(row.opponent, "opponent"),
-      venue: text(row.venue, "venue") as "HOME" | "AWAY",
+      venue,
       goals_for: numeric(row.goals_for, "goals_for"),
       goals_against: numeric(row.goals_against, "goals_against"),
       result: result as FormMatch["result"],
@@ -438,7 +448,7 @@ export function parseContext(value: unknown): MatchContext {
     h2h: array(item.h2h, "h2h").map((entry) => {
       const row = object(entry, "h2h match");
       return {
-        kickoff_at: text(row.kickoff_at, "kickoff_at"),
+        kickoff_at: timestamp(row.kickoff_at, "kickoff_at"),
         home_team: text(row.home_team, "home_team"),
         away_team: text(row.away_team, "away_team"),
         home_goals: numeric(row.home_goals, "home_goals"),
@@ -673,9 +683,19 @@ function nonNegativeNumber(value: unknown, field: string): number {
 }
 
 function nullableTimestamp(value: unknown, field: string): string | null {
-  const result = nullableText(value, field);
-  if (result !== null && (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(result) || !Number.isFinite(Date.parse(result)))) throw new Error(`${field} must be a timestamp with a timezone`);
+  return value === null ? null : timestamp(value, field);
+}
+
+function timestamp(value: unknown, field: string): string {
+  const result = text(value, field);
+  if (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(result) || !Number.isFinite(Date.parse(result))) throw new Error(`${field} must be a timestamp with a timezone`);
   return result;
+}
+
+function parseFixtureStatus(value: unknown): Fixture["status"] {
+  const status = fixtureStatuses.find((status) => status === value);
+  if (status === undefined) throw new Error("invalid fixture status");
+  return status;
 }
 
 function parseCompetition(value: unknown): Competition {
@@ -707,8 +727,8 @@ function parseFixture(value: unknown): Fixture {
   const item = object(value, "fixture");
   return {
     id: text(item.id, "id"),
-    kickoff_at: text(item.kickoff_at, "kickoff_at"),
-    status: text(item.status, "status"),
+    kickoff_at: timestamp(item.kickoff_at, "kickoff_at"),
+    status: parseFixtureStatus(item.status),
     home: parseTeam(item.home),
     away: parseTeam(item.away),
     home_score: nullableNumber(item.home_score, "home_score"),
@@ -722,7 +742,7 @@ function parseFixture(value: unknown): Fixture {
     match_minute: item.match_minute === undefined ? null : nullableNumber(item.match_minute, "match_minute"),
     added_time: item.added_time === undefined ? null : nullableNumber(item.added_time, "added_time"),
     period: item.period === undefined ? null : nullableText(item.period, "period"),
-    last_successful_update: item.last_successful_update === undefined ? null : nullableText(item.last_successful_update, "last_successful_update"),
+    last_successful_update: item.last_successful_update === undefined ? null : nullableTimestamp(item.last_successful_update, "last_successful_update"),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
     goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
   };
@@ -750,7 +770,7 @@ function parseLiveStatistic(value: unknown): LiveStatistic {
 
 function parseLiveSource(value: unknown): LiveSource {
   const item = object(value, "live source");
-  return { provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: text(item.observed_at, "observed_at"), last_fetched_at: text(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
+  return { provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: timestamp(item.observed_at, "observed_at"), last_fetched_at: timestamp(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
 }
 
 function parseTeam(value: unknown): Team {
@@ -838,11 +858,10 @@ export function parseForecastHistory(value: unknown): ForecastRevision[] {
   return array(envelope.forecasts, "forecasts").map((value) => {
     const item = object(value, "forecast revision");
     const model = text(item.model_id, "model_id");
-    const timestamp = (field: string) => { const value = nullableTimestamp(item[field], field); if (value === null) throw new Error(`${field} is required`); return value; };
     const checksum = (field: string) => { const value = text(item[field], field); if (!/^[0-9a-f]{64}$/.test(value)) throw new Error(`invalid ${field}`); return value; };
     const id = text(item.forecast_id, "forecast_id");
     const fixture = text(item.fixture_id, "fixture_id");
-    const issued = timestamp("issued_at"), football = timestamp("football_cutoff"), knowledge = timestamp("knowledge_cutoff");
+    const issued = timestamp(item.issued_at, "issued_at"), football = timestamp(item.football_cutoff, "football_cutoff"), knowledge = timestamp(item.knowledge_cutoff, "knowledge_cutoff");
     const payload = object(item.probability_payload, "probability_payload");
     return {
       forecast_id: id, fixture_id: fixture, issued_at: issued, football_cutoff: football, knowledge_cutoff: knowledge,
