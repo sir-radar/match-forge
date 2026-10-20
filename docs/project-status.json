@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 29,
+    "current_phase": 30,
     "completed_phases": [
       0,
       1,
@@ -1236,7 +1236,8 @@
       26,
       27,
       28,
-      29
+      29,
+      30
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1268,12 +1269,13 @@
       "202610190100_history_import_completion.sql",
       "202610190200_work_metrics.sql",
       "202610190300_runtime_model_registry.sql",
-      "202610190400_post_match_evaluation.sql"
+      "202610190400_post_match_evaluation.sql",
+      "202610200100_public_read_reports.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 29 operational control plane gated; commit this checkpoint before Phase 30 public API cleanup. Phases 30-48 pending.",
+    "remaining_work": "Phase 30 public API cleanup gated; commit this checkpoint before Phase 31 frontend cleanup. Phases 31-48 pending.",
     "phase_gate": "PASS_WITH_WARNINGS",
-    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-29-2026-10-20.json",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-30-2026-10-20.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
       "backup_directory_mode": "0700",
@@ -2346,6 +2348,36 @@
       ],
       "phase_gate_complete": true,
       "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-29-2026-10-20.json",
+      "remaining_work": []
+    },
+    "phase_30": {
+      "status": "PASS_WITH_WARNINGS",
+      "code_commit_sha": "a8b11eeaac50b1e1b91d9c3f23cf04e9bfc5c41e",
+      "comprehensive_validation": {
+        "status": "PASS",
+        "command": "make check integration",
+        "python_unit_tests_passed": 1642,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 56,
+        "postgres_storage_cases_passed": 699,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/phase-30/check-integration.log",
+        "log_sha256": "81b10527c3f59817aca3b7f1b0aa57a0272b280a6973ebbe1e9221a669549b07"
+      },
+      "frozen_go_reference_cases": 32,
+      "focused_public_python_cases": 68,
+      "new_postgres_cases": 12,
+      "retained_legacy_new_response_pairs": 11,
+      "retained_leaf_comparisons": 13218,
+      "retained_reports": 12,
+      "preserved_prior_legacy_reports": 1,
+      "openapi_http_responses_validated": 14,
+      "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "prior_migrations_unchanged": 95,
+      "all_prior_table_definitions_preserved": true,
+      "runtime_cutover": false,
+      "phase_gate_complete": true,
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-30-2026-10-20.json",
       "remaining_work": []
     }
   },
