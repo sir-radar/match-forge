@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 31,
+    "current_phase": 32,
     "completed_phases": [
       0,
       1,
@@ -1238,7 +1238,8 @@
       28,
       29,
       30,
-      31
+      31,
+      32
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1274,9 +1275,9 @@
       "202610200100_public_read_reports.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 31 frontend cleanup gated; commit this checkpoint before Phase 32 storage tiering. Phases 32-48 pending.",
+    "remaining_work": "Phase 32 storage tiering verified and clarified; commit this checkpoint before Phase 33 replay of all retained data. Phases 33-48 pending.",
     "phase_gate": "PASS_WITH_WARNINGS",
-    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-31-2026-10-20.json",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-32-2026-10-20.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
       "backup_directory_mode": "0700",
@@ -2421,6 +2422,37 @@
       "scientific_gates_unchanged": true,
       "phase_gate_complete": true,
       "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-31-2026-10-20.json",
+      "remaining_work": []
+    },
+    "phase_32": {
+      "status": "PASS_WITH_WARNINGS",
+      "code_commit_sha": "175ecd1e3eaf57200c0dd436bacddd06f00ad48d",
+      "executable_code_unchanged": true,
+      "storage_domains_verified": [
+        "identity",
+        "canonical_state",
+        "normalized_relational_observations",
+        "decisions",
+        "coverage",
+        "quality",
+        "work_orchestration",
+        "registries",
+        "operational_state",
+        "forecast_metadata"
+      ],
+      "retained_base_tables": 120,
+      "retained_views": 12,
+      "observation_file_samples_verified": 16,
+      "raw_file_samples_verified": 7,
+      "unverifiable_raw_samples": 30,
+      "parquet_file_samples_verified": 1,
+      "missing_dataset_samples": 2,
+      "phase_31_comprehensive_validation_reused": true,
+      "retained_database_mutations": 0,
+      "runtime_cutover": false,
+      "scientific_gates_unchanged": true,
+      "phase_gate_complete": true,
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-32-2026-10-20.json",
       "remaining_work": []
     }
   },

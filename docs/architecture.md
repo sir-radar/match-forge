@@ -642,10 +642,11 @@ Use PostgreSQL for structured relational state and registrations, including:
 - MatchForge competitions, seasons, teams, players, and matches;
 - provider registry and provider-entity mappings;
 - bitemporal source observations;
+- canonical resource state and append-only resolution decisions;
+- provider and canonical resource coverage, validation findings, and quarantine state;
 - lineup and availability observations where applicable;
 - source snapshot and resource registration;
-- provider sync policy, cursor, and job state;
-- resolution decisions and quarantine state;
+- provider sync policy, cursors, request budgets, and shared work orchestration;
 - `CanonicalChangeSetV1` registration where applicable;
 - dataset and lineage registry;
 - model artifact registration;
@@ -656,11 +657,19 @@ Use PostgreSQL for structured relational state and registrations, including:
 
 PostgreSQL should register model artifact identity, URI, checksums, compatibility, lineage, and governance metadata rather than opaque Python binaries.
 
+The shared work registry owns durable job status, leases, retries, cancellation,
+dependencies, and completion. These records remain relational operational state.
+The event catalogue and temporal event references also remain in PostgreSQL;
+full analytical event and shot facts belong in immutable datasets. Observation
+artifact registrations bind paths and checksums to source/time/version metadata;
+the complete observation files remain outside the database.
+
 ### Parquet / Object Storage
 
 Use Parquet or object storage for:
 
 - normalized event history;
+- large shot datasets;
 - StatsBomb 360 or equivalent high-volume data;
 - curated modelling datasets;
 - generated feature matrices;
@@ -669,16 +678,26 @@ Use Parquet or object storage for:
 - simulation archives;
 - model artifact files where appropriate.
 
+Use the existing immutable file, raw-resource, observation, event-Parquet, and
+evaluation-evidence stores. Files bind exact source inputs and physical/logical
+checksums where their contracts require them. PostgreSQL keeps their registrations
+and lineage. Do not move identity, canonical decisions, coverage, quality,
+registries, or work state into Parquet. Compact serving reports and immutable
+per-forecast monitoring records remain structured PostgreSQL records; bulk
+evaluation corpora, feature matrices, and simulation archives remain artifacts.
+
 ### Redis
 
 Use Redis only for ephemeral or cache concerns:
 
 - prediction cache;
-- simulation job state;
+- cached simulation progress;
 - API caching;
 - other non-authoritative short-lived state.
 
 Redis is never the authoritative model registry, forecast history, lineage store, or evaluation store.
+Durable simulation work uses the shared PostgreSQL work registry; a cache loss
+must not lose ownership, retries, or completion.
 
 ### DuckDB
 
