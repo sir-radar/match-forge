@@ -10,6 +10,7 @@ from types import MappingProxyType
 from typing import Any, cast
 
 from football.forecasting.model_contracts import PROBABILITY_TOLERANCE
+from football.product.domain import league_rating
 
 POLICY_VERSION = "pre-match-revisions-v2"
 _OUTCOMES = ("home", "draw", "away")
@@ -67,7 +68,7 @@ def _bucket(cell: Mapping[str, Any], side: str, version: str) -> tuple[int, str]
         if goals > 5:
             raise ValueError("invalid legacy score bucket")
         return goals, "AT_LEAST" if goals == 5 else "EXACT"
-    kind, label = cell[side + "_bucket_kind"], cell[side + "_bucket_label"]
+    kind, label = cell.get(side + "_bucket_kind"), cell.get(side + "_label")
     if kind not in ("EXACT", "AT_LEAST") or label != str(goals) + (
         "+" if kind == "AT_LEAST" else ""
     ):
@@ -249,18 +250,17 @@ def performance_report(
         latest_fifty_baseline_brier=latest["baseline_brier"],
         latest_fifty_baseline_log_loss=latest["baseline_log_loss"],
     )
-    beats_all = (
-        all_records["brier"] < all_records["baseline_brier"]
-        and all_records["log_loss"] < all_records["baseline_log_loss"]
-    )
-    beats_latest = (
-        latest["brier"] < latest["baseline_brier"]
-        and latest["log_loss"] < latest["baseline_log_loss"]
-    )
-    if len(records) >= 50:
-        result["rating"] = "GOOD" if beats_all else "WATCH"
-    if len(records) >= 100 and beats_all and beats_latest:
-        result["rating"] = "STRONG"
+    result["rating"] = league_rating(
+        total_forecasts=len(records),
+        brier=all_records["brier"],
+        log_loss=all_records["log_loss"],
+        baseline_brier=all_records["baseline_brier"],
+        baseline_log_loss=all_records["baseline_log_loss"],
+        recent_brier=latest["brier"],
+        recent_log_loss=latest["log_loss"],
+        recent_baseline_brier=latest["baseline_brier"],
+        recent_baseline_log_loss=latest["baseline_log_loss"],
+    ).value
     return result
 
 
@@ -279,6 +279,8 @@ _SELECTIONS = {
 def selection_agreement(
     market: str, selection: str, values: Mapping[str, float]
 ) -> tuple[float | None, str]:
+    # The public policy permits selection-only lookup even with a legacy market tag.
+    # domain.agreement_for_selection has a different, market-specific contract.
     selection = selection.strip().upper()
     if selection in ("HOME_OR_DRAW", "DRAW_OR_AWAY"):
         first, second = ("home", "draw") if selection == "HOME_OR_DRAW" else ("draw", "away")

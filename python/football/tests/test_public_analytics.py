@@ -179,8 +179,8 @@ def test_explicit_exact_buckets_and_invalid_labels_preserve_the_contract() -> No
         "probability": 1.0,
         "home_bucket_kind": "EXACT",
         "away_bucket_kind": "EXACT",
-        "home_bucket_label": "5",
-        "away_bucket_label": "0",
+        "home_label": "5",
+        "away_label": "0",
     }
     cells = score_cells([cell], "compact-buckets-v2", "")
     result = performance_report(
@@ -189,7 +189,7 @@ def test_explicit_exact_buckets_and_invalid_labels_preserve_the_contract() -> No
         horizon="LATEST",
     )
     assert result["exact_score_rate"] == 1
-    cell["home_bucket_label"] = "5+"
+    cell["home_label"] = "5+"
     with pytest.raises(ValueError, match="bucket label"):
         score_cells([cell], "compact-buckets-v2", "")
     with pytest.raises(ValueError, match="legacy score interpretation"):
@@ -231,3 +231,51 @@ def test_baseline_includes_outcome_at_exact_knowledge_boundary() -> None:
     assert first.outcome_known_at is not None
     second = replace(observation(2), knowledge_cutoff=first.outcome_known_at)
     assert performance_baselines((first, second))[1] == {"home": 0.5, "draw": 0.25, "away": 0.25}
+
+
+def test_current_product_serializer_buckets_are_consumed_without_translation() -> None:
+    from football.product.domain import forecast_from_history, forecast_payload
+    from football.product.public_analytics import score_cells
+    from jsonschema import Draft202012Validator
+    from test_product_domain import ARTIFACT, AWAY, HOME, _history
+
+    target = BASE + timedelta(days=100)
+    forecast = forecast_from_history(
+        artifact_path=ARTIFACT,
+        target_kickoff=target,
+        home_team_id=HOME,
+        away_team_id=AWAY,
+        history=_history(target, 10),
+    )
+    assert forecast is not None
+    payload = json.loads(json.dumps(forecast_payload(forecast)))
+    schema = json.loads(Path("schemas/contracts/product-score-buckets-v2.schema.json").read_bytes())
+    Draft202012Validator(schema).validate(payload)
+    cells = score_cells(payload["score_matrix"], payload["score_matrix_version"], "")
+    assert len(cells) == len(forecast.score_matrix) == 36
+    assert cells[-1].home_kind == cells[-1].away_kind == "AT_LEAST"
+    assert cells[-1].matches(7, 8)
+    assert [cell.probability for cell in cells] == [
+        row["probability"] for row in forecast.score_matrix
+    ]
+
+
+def test_missing_modern_bucket_labels_are_rejected_as_invalid_data() -> None:
+    from football.product.public_analytics import score_cells
+
+    with pytest.raises(ValueError, match="bucket label"):
+        score_cells(
+            [
+                {
+                    "home_goals": 1,
+                    "away_goals": 0,
+                    "probability": 1.0,
+                    "home_bucket_kind": "EXACT",
+                    "away_bucket_kind": "EXACT",
+                    "home_bucket_label": "1",
+                    "away_bucket_label": "0",
+                }
+            ],
+            "compact-buckets-v2",
+            "",
+        )

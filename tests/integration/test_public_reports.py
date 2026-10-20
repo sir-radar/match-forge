@@ -375,3 +375,63 @@ def test_context_input_retains_coach_lineup_and_upcoming_fixture_references(repo
     assert all(
         row["fixture_id"] == str(next_fixture) for row in inputs["source_manifest"]["upcoming"]
     )
+
+
+def test_current_product_bucket_contract_publishes_a_performance_report(report_database):
+    from pathlib import Path
+
+    from football.product.domain import FinishedMatch, forecast_from_history
+    from psycopg.types.json import Jsonb
+
+    forecast = forecast_from_history(
+        artifact_path=Path(
+            "docs/evaluation/pitchapi-v3-models/pitchapi-v3-reference-artifact.json"
+        ),
+        target_kickoff=KICKOFF,
+        home_team_id=HOME,
+        away_team_id=AWAY,
+        history=[
+            FinishedMatch(uuid4(), KICKOFF - timedelta(days=20 + index), HOME, AWAY, 2, 1)
+            for index in range(10)
+        ],
+    )
+    assert forecast is not None
+    probabilities = {
+        "home": forecast.home_probability,
+        "draw": forecast.draw_probability,
+        "away": forecast.away_probability,
+        "total_over_2_5": sum(forecast.total_goal_distribution[3:]),
+        "btts_yes": forecast.btts_yes,
+    }
+    identity = uuid4()
+    with psycopg.connect(report_database) as connection:
+        connection.execute(
+            """INSERT INTO football.product_forecasts
+            SELECT (jsonb_populate_record(NULL::football.product_forecasts,to_jsonb(f)||
+                jsonb_build_object('forecast_id',%s::uuid,'semantic_sha256',%s::text,
+                    'payload_sha256',%s::text,'predictive_input_snapshot_sha256',%s::text,
+                    'created_at',f.created_at+interval '1 minute',
+                    'football_cutoff',f.football_cutoff+interval '1 minute',
+                    'knowledge_cutoff',f.knowledge_cutoff+interval '1 minute',
+                    'probabilities',%s::jsonb,'score_matrix',%s::jsonb,
+                    'score_matrix_version','compact-buckets-v2'))).*
+            FROM football.product_forecasts f ORDER BY created_at DESC,forecast_id DESC LIMIT 1""",
+            (
+                identity,
+                identity.hex * 2,
+                identity.hex * 2,
+                identity.hex * 2,
+                Jsonb(probabilities),
+                Jsonb(list(forecast.score_matrix)),
+            ),
+        )
+    assert build(report_database, "PERFORMANCE", COMPETITION)["published"] == 1
+    with psycopg.connect(report_database) as connection:
+        inputs, payload = connection.execute(
+            "SELECT input_bytes,record_bytes FROM football.product_read_reports"
+        ).fetchone()
+    assert (
+        json.loads(bytes(inputs))["source_manifest"][0]["score_matrix_version"]
+        == "compact-buckets-v2"
+    )
+    assert json.loads(bytes(payload))["forecasts"] == 1
