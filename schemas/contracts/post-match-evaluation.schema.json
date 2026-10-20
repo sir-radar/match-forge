@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:matchforge:post-match-evaluation",
+  "title": "PostMatchEvaluation",
+  "type": "object",
+  "required": [
+    "contract",
+    "policy_version",
+    "input_sha256",
+    "input",
+    "outcome",
+    "status",
+    "probabilities",
+    "metrics",
+    "reasons"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract": {
+      "const": "PostMatchEvaluation"
+    },
+    "policy_version": {
+      "const": "postmatch-monitoring-v1"
+    },
+    "input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "contract",
+        "policy_version",
+        "code_commit_sha",
+        "dependency_lock_sha256",
+        "forecast_id",
+        "fixture_id",
+        "competition_id",
+        "forecast_payload_sha256",
+        "model_artifact_sha256",
+        "model_id",
+        "season",
+        "horizon",
+        "data_quality_tier",
+        "kickoff_at",
+        "issued_at",
+        "football_cutoff",
+        "knowledge_cutoff",
+        "outcome_known_at",
+        "home_goals",
+        "away_goals"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "const": "PostMatchEvaluationInput"
+        },
+        "policy_version": {
+          "const": "postmatch-monitoring-v1"
+        },
+        "code_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dependency_lock_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "forecast_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fixture_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "competition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "forecast_payload_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "model_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "season": {
+          "type": "string",
+          "minLength": 1
+        },
+        "horizon": {
+          "enum": [
+            "LATEST",
+            "7D",
+            "3D",
+            "24H",
+            "6H",
+            "1H",
+            "15M"
+          ]
+        },
+        "data_quality_tier": {
+          "const": "UNKNOWN"
+        },
+        "kickoff_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "football_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "knowledge_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "outcome_known_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "home_goals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "away_goals": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "outcome": {
+      "enum": [
+        "HOME",
+        "DRAW",
+        "AWAY"
+      ]
+    },
+    "status": {
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "UNSCORABLE"
+      ]
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      ]
+    },
+    "metrics": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "log_loss",
+            "brier",
+            "rps",
+            "sharpness_entropy",
+            "crps"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "log_loss": {
+              "type": "number",
+              "minimum": 0
+            },
+            "brier": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rps": {
+              "type": "number",
+              "minimum": 0
+            },
+            "sharpness_entropy": {
+              "type": "number",
+              "minimum": 0
+            },
+            "crps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "INVALID_FORECAST",
+          "COUNT_DISTRIBUTION_UNAVAILABLE"
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "UNSCORABLE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "metrics": {
+            "type": "null"
+          },
+          "probabilities": {
+            "type": "null"
+          },
+          "reasons": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "metrics": {
+            "type": "object"
+          },
+          "probabilities": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "COMPLETE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "metrics": {
+            "properties": {
+              "crps": {
+                "type": "number"
+              }
+            }
+          },
+          "reasons": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PARTIAL"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "metrics": {
+            "properties": {
+              "crps": {
+                "type": "null"
+              }
+            }
+          },
+          "reasons": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

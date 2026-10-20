@@ -945,6 +945,44 @@ The common runner has no corpus loader or outcome reader. Fitting, calibration,
 validation/evaluation scoring and promotion still require their existing governed
 runners and owner decisions. Frozen historical scripts and evidence are preserved.
 
+## Continuous post-match monitoring
+
+`football models postmatch-evaluate` runs a bounded scan with explicit competition
+IDs, kickoff window, forecast horizon, row limit and work lease. It reuses the
+production performance selector for the latest eligible published pre-match
+revision and verified regulation-time final result. It excludes active aliases,
+incompatible results and result knowledge beyond the database clock. Research
+forecasts and protected evaluation corpora are outside this path.
+
+The shared `POST_MATCH_EVALUATION` work type owns retries and lease fencing. Pure
+scoring finishes outside publication locks. Publication locks the fixture,
+revalidates the selected forecast and result, and atomically stores immutable
+checksum-bound input and evaluation bytes while completing the work. Inputs bind
+fixture, forecast, original payload and artifact hashes, all temporal cutoffs,
+result knowledge time, scoring policy, code commit and dependency lock. Supply
+the existing root `--code-commit-sha` and `--dependency-lock-sha256` options or
+their existing environment variables. Corrections create new work and records;
+forecasts and earlier evaluation bytes remain unchanged.
+
+`football models postmatch-monitor` reads a supplied window and knowledge cutoff
+in a read-only transaction. It reports the latest captured result per fixture,
+model and horizon known by that cutoff, with Log Loss, Brier, RPS, CRPS, calibration,
+Shannon entropy in nats and scoring coverage. Segments use model, competition,
+season, the existing minimum-lead-time horizon selections and data quality tier.
+Tier is `UNKNOWN` because published forecasts do not carry a quality tier; later
+data quality cannot be inferred as pre-match knowledge. Coverage counts selected
+published forecasts, excluding fixtures without a forecast.
+
+CRPS uses the current champion's published independent-Poisson parameters only
+after checking its artifact, algorithm, matrix version, probabilities and compact
+grid. The full count distribution is scored without folding outcomes into the
+5+ display bucket. Other or inconsistent count distributions have explicit
+missing CRPS; invalid result probabilities are unscorable without clipping.
+Calibration is descriptive and reuses the existing evaluator. Optional numeric
+review limits are caller-supplied; incomplete scoring also yields
+`REVIEW_REQUIRED`. Monitoring never fits, recalibrates or promotes a model and
+does not replace governed chronological evaluation or its frozen thresholds.
+
 ## API Boundary
 
 The Go API exposes only capabilities supported by executed data and evaluation gates.

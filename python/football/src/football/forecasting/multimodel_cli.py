@@ -68,6 +68,10 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
 
+    from football.forecasting.postmatch_cli import add_postmatch_commands
+
+    add_postmatch_commands(scopes)
+
     register = scopes.add_parser("registry-register", help="register immutable runtime metadata")
     register.add_argument("--registration", required=True, type=Path)
     register.add_argument("--artifact-root", type=Path, default=Path("."))
@@ -97,6 +101,10 @@ def run_multimodel_command(
             result = _forecast(args, environment)
         elif args.command == "models" and args.scope == "products":
             result = _products(args.forecast)
+        elif args.command == "models" and args.scope in {"postmatch-evaluate", "postmatch-monitor"}:
+            from football.forecasting.postmatch_cli import run_postmatch_command
+
+            result = run_postmatch_command(args, environment)
         elif args.command == "models" and args.scope in {"registry-register", "registry-show"}:
             result = _runtime_registry(args, environment)
         elif args.command == "models":
@@ -107,7 +115,7 @@ def run_multimodel_command(
         print(f"error: {error}", file=errors)
         return 4
     print(json.dumps(result, sort_keys=True, allow_nan=False), file=output)
-    return 0
+    return 4 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
 
 
 def _products(path: Path) -> dict[str, Any]:
