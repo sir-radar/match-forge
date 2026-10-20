@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 30,
+    "current_phase": 31,
     "completed_phases": [
       0,
       1,
@@ -1237,7 +1237,8 @@
       27,
       28,
       29,
-      30
+      30,
+      31
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -1273,9 +1274,9 @@
       "202610200100_public_read_reports.sql"
     ],
     "runtime_cutover": false,
-    "remaining_work": "Phase 30 public API cleanup gated; commit this checkpoint before Phase 31 frontend cleanup. Phases 31-48 pending.",
+    "remaining_work": "Phase 31 frontend cleanup gated; commit this checkpoint before Phase 32 storage tiering. Phases 32-48 pending.",
     "phase_gate": "PASS_WITH_WARNINGS",
-    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-30-2026-10-20.json",
+    "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-31-2026-10-20.json",
     "restore_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
     "final_review": {
       "backup_directory_mode": "0700",
@@ -2378,6 +2379,48 @@
       "runtime_cutover": false,
       "phase_gate_complete": true,
       "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-30-2026-10-20.json",
+      "remaining_work": []
+    },
+    "phase_31": {
+      "status": "PASS_WITH_WARNINGS",
+      "code_commit_sha": "3c1867d781cc358cf6495a6912b14f510565c125",
+      "comprehensive_validation": {
+        "status": "PASS",
+        "command": "make check integration",
+        "python_unit_tests_passed": 1642,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 97,
+        "postgres_storage_cases_passed": 699,
+        "lint_typing_build_migrations_storage_api": "PASS",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/phase-31/check-integration.log",
+        "log_sha256": "05fd4bf13fe5daff803cb68215ed795d5323fcbcd5a8fc5cb4a3d41705528616",
+        "browser": {
+          "command": "MATCHFORGE_REAL_PROVIDER_E2E=false pnpm exec playwright test e2e/fixtures.spec.ts e2e/design-routes.spec.ts e2e/data-sync.spec.ts --reporter=json",
+          "status": "PASS",
+          "stats": {
+            "startTime": "2026-10-20T12:41:35.798Z",
+            "duration": 64850.73100000001,
+            "expected": 28,
+            "skipped": 2,
+            "unexpected": 0,
+            "flaky": 0
+          },
+          "representative_scenarios": 3,
+          "representative_browser_cases": 6,
+          "axe_fixture_expansion_cases": 2,
+          "log_ref": ".local/remediation/matchforge-architecture-v2/phase-31/browser.json",
+          "log_sha256": "97d4904d41148136a7b81202f29217468f140ba60768a7f529152bc759f830e4",
+          "scope": "Deterministic routed desktop Chromium and mobile WebKit tests; no live provider calls or full WCAG conformance claim."
+        }
+      },
+      "representative_browser_cases_passed": 6,
+      "prior_migrations_unchanged": 96,
+      "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "retained_database_mutations": 0,
+      "runtime_cutover": false,
+      "scientific_gates_unchanged": true,
+      "phase_gate_complete": true,
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-31-2026-10-20.json",
       "remaining_work": []
     }
   },
