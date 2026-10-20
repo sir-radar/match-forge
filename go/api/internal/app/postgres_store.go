@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -230,56 +228,57 @@ func attachEventTeams(events []LiveEvent, homeID, awayID, provider string) {
 		if events[index].TeamSide == nil {
 			continue
 		}
-		teamID := awayID
-		if *events[index].TeamSide == "HOME" {
+		var teamID string
+		switch *events[index].TeamSide {
+		case "HOME":
 			teamID = homeID
+		case "AWAY":
+			teamID = awayID
+		default:
+			continue
 		}
 		events[index].TeamID = &teamID
 	}
 }
 
 func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID string) (MatchContext, error) {
-	var competitionID, homeID, awayID string
+	var competitionID string
 	var kickoffAt, knowledgeCutoff time.Time
-	err := store.pool.QueryRow(ctx, `
-		SELECT competition_id::text,
-               football.product_fixture_team_at(fixture_id, home_team_id,
-                   LEAST(kickoff_at, statement_timestamp()))::text,
-               football.product_fixture_team_at(fixture_id, away_team_id,
-                   LEAST(kickoff_at, statement_timestamp()))::text,
-               kickoff_at, LEAST(kickoff_at, statement_timestamp())
-		FROM football.product_fixtures WHERE fixture_id = $1::uuid`, fixtureID,
-	).Scan(&competitionID, &homeID, &awayID, &kickoffAt, &knowledgeCutoff)
+	var payload []byte
+	var digest *string
+	err := store.pool.QueryRow(ctx, `SELECT f.competition_id::text,
+        f.kickoff_at,
+        LEAST(f.kickoff_at,statement_timestamp()),report.record_bytes,report.record_sha256
+        FROM football.product_fixtures f
+        CROSS JOIN LATERAL (SELECT football.public_context_source(f.fixture_id) AS value) source
+        LEFT JOIN LATERAL (
+            SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
+            WHERE r.report_kind='CONTEXT' AND r.scope_id=f.fixture_id AND r.horizon='LATEST'
+              AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
+            ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
+        ) report ON true WHERE f.fixture_id=$1::uuid`, fixtureID).Scan(
+		&competitionID, &kickoffAt, &knowledgeCutoff, &payload, &digest)
 	if err != nil {
 		return MatchContext{}, productQueryError(err)
 	}
-	homeForm, err := store.form(ctx, homeID, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return MatchContext{}, err
+	var item MatchContext
+	if err := decodeReadReport(payload, digest, &item); err != nil {
+		return item, err
 	}
-	awayForm, err := store.form(ctx, awayID, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return MatchContext{}, err
-	}
-	h2h, err := store.h2h(ctx, homeID, awayID, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return MatchContext{}, err
+	if item.FixtureID != fixtureID {
+		return MatchContext{}, errors.New("stored context report identity mismatch")
 	}
 	standings, err := store.standingsAt(ctx, competitionID, kickoffAt)
 	if err != nil {
 		return MatchContext{}, err
 	}
-	item := MatchContext{
-		FixtureID: fixtureID, HomeForm: homeForm, AwayForm: awayForm, H2H: h2h,
-		H2HSummary: summarizeH2H(h2h), HomeStats: summarizeForm(homeForm),
-		AwayStats: summarizeForm(awayForm), Standings: standings,
-		DataStatus: map[string]bool{
-			"recent_form": len(homeForm) > 0 && len(awayForm) > 0,
-			"h2h":         len(h2h) > 0, "standings": len(standings) > 0,
-			"team_stats": len(homeForm) > 0 && len(awayForm) > 0,
-		},
+	item.Standings = standings
+	item.DataStatus = map[string]bool{
+		"recent_form": len(item.HomeForm) > 0 && len(item.AwayForm) > 0,
+		"h2h":         len(item.H2H) > 0, "standings": len(standings) > 0,
+		"team_stats": len(item.HomeForm) > 0 && len(item.AwayForm) > 0,
 	}
-	if err := store.addLiveContext(ctx, &item, homeID, awayID, kickoffAt, knowledgeCutoff); err != nil {
+	if err := store.addLiveContext(ctx, &item, kickoffAt, knowledgeCutoff); err != nil {
 		return MatchContext{}, err
 	}
 	return item, nil
@@ -441,17 +440,20 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		       ep.prediction_date::text, ep.original_date_text, ep.collected_at,
 		       ep.fixture_id::text, pf.kickoff_at, ep.competition_text, ep.home_team_text,
 		       ep.away_team_text, ep.market, ep.selection, ep.match_status,
-		       forecast.probabilities, COALESCE(result.settlement_state, 'PENDING'),
+		       comparison.record_bytes,comparison.record_sha256,source.value->>'forecast_id', COALESCE(result.settlement_state, 'PENDING'),
 		       result.home_score, result.away_score, result.score_basis, result.provider_code,
 		       result.provider_updated_at
 		FROM football.external_predictions ep
 		JOIN football.external_prediction_sources eps ON eps.source_code = ep.source_code
 		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
 		LEFT JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
-		LEFT JOIN LATERAL (
-			SELECT probabilities FROM football.product_forecasts
-			WHERE fixture_id = ep.fixture_id ORDER BY created_at DESC LIMIT 1
-		) forecast ON true
+        CROSS JOIN LATERAL (SELECT football.public_comparison_source(ep.prediction_id) AS value) source
+        LEFT JOIN LATERAL (
+            SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
+            WHERE r.report_kind='COMPARISON' AND r.scope_id=ep.prediction_id AND r.horizon='LATEST'
+              AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
+            ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
+        ) comparison ON true
 		LEFT JOIN LATERAL (
 			SELECT settlement_state, home_score, away_score, score_basis, provider_code,
 			       provider_updated_at
@@ -481,25 +483,21 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 	items := []ExternalPrediction{}
 	for rows.Next() {
 		var item ExternalPrediction
-		var probabilities []byte
+		var comparison []byte
+		var digest, forecastID *string
 		if err := rows.Scan(
 			&item.ID, &item.Source, &item.SourcePage, &item.PredictionDate,
 			&item.OriginalDateText, &item.CollectedAt, &item.FixtureID, &item.KickoffAt,
 			&item.Competition, &item.HomeTeam, &item.AwayTeam, &item.Market,
-			&item.Selection, &item.MatchStatus, &probabilities, &item.SettlementState,
+			&item.Selection, &item.MatchStatus, &comparison, &digest, &forecastID, &item.SettlementState,
 			&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis,
 			&item.ResultProvider,
 			&item.ResultUpdatedAt,
 		); err != nil {
 			return nil, err
 		}
-		item.Agreement = "UNABLE_TO_EVALUATE"
-		if probabilities != nil {
-			var values map[string]float64
-			if err := json.Unmarshal(probabilities, &values); err != nil {
-				return nil, err
-			}
-			item.MatchForgeProbability, item.Agreement = selectionAgreement(item.Market, item.Selection, values)
+		if err := attachComparison(&item, forecastID, comparison, digest); err != nil {
+			return nil, err
 		}
 		if filters.Agreement != "" && item.Agreement != filters.Agreement {
 			continue
@@ -577,83 +575,9 @@ func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context
 	return items, nil
 }
 
-func (store *PostgresProductStore) form(
-	ctx context.Context, teamID string, kickoffAt, knowledgeCutoff time.Time,
-) ([]FormMatch, error) {
-	rows, err := store.pool.Query(ctx, `
-		SELECT history.kickoff_at,
-		       CASE WHEN history.home_team_id = $1 THEN away.name ELSE home.name END,
-		       CASE WHEN history.home_team_id = $1 THEN 'HOME' ELSE 'AWAY' END,
-		       CASE WHEN history.home_team_id = $1 THEN history.home_goals ELSE history.away_goals END,
-		       CASE WHEN history.home_team_id = $1 THEN history.away_goals ELSE history.home_goals END
-		FROM football.product_eligible_team_history_at($3,ARRAY[$1::uuid]) history
-		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
-		JOIN football.product_teams home ON home.team_id = history.home_team_id
-		JOIN football.product_teams away ON away.team_id = history.away_team_id
-		WHERE (history.home_team_id = $1 OR history.away_team_id = $1)
-		  AND ((history.source_kickoff_precision = 'EXACT' AND history.kickoff_at < $2)
-		    OR (history.source_kickoff_precision = 'DATE_ONLY'
-		        AND history.kickoff_at::date < $2::date))
-		  AND history.known_at <= $3
-		ORDER BY history.kickoff_at DESC LIMIT 5`, teamID, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []FormMatch{}
-	for rows.Next() {
-		var item FormMatch
-		if err := rows.Scan(
-			&item.KickoffAt, &item.Opponent, &item.Venue, &item.GoalsFor, &item.GoalsAgainst,
-		); err != nil {
-			return nil, err
-		}
-		item.Result = "D"
-		if item.GoalsFor > item.GoalsAgainst {
-			item.Result = "W"
-		} else if item.GoalsFor < item.GoalsAgainst {
-			item.Result = "L"
-		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
-}
-
-func (store *PostgresProductStore) h2h(
-	ctx context.Context, homeID, awayID string, kickoffAt, knowledgeCutoff time.Time,
-) ([]H2HMatch, error) {
-	rows, err := store.pool.Query(ctx, `
-		SELECT history.kickoff_at, home.name, away.name,
-		       history.home_goals, history.away_goals, history.home_xg, history.away_xg
-		FROM football.product_eligible_team_history_at($4,ARRAY[$1::uuid,$2::uuid]) history
-		JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
-		JOIN football.product_teams home ON home.team_id = history.home_team_id
-		JOIN football.product_teams away ON away.team_id = history.away_team_id
-		WHERE ((history.home_team_id = $1 AND history.away_team_id = $2)
-		   OR (history.home_team_id = $2 AND history.away_team_id = $1))
-		  AND ((history.source_kickoff_precision = 'EXACT' AND history.kickoff_at < $3)
-		    OR (history.source_kickoff_precision = 'DATE_ONLY'
-		        AND history.kickoff_at::date < $3::date))
-		  AND history.known_at <= $4
-		ORDER BY history.kickoff_at DESC LIMIT 10`, homeID, awayID, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (H2HMatch, error) {
-		var item H2HMatch
-		err := row.Scan(
-			&item.KickoffAt, &item.HomeTeam, &item.AwayTeam, &item.HomeGoals,
-			&item.AwayGoals, &item.HomeXG, &item.AwayXG,
-		)
-		return item, err
-	})
-}
-
 func (store *PostgresProductStore) addLiveContext(
 	ctx context.Context,
 	item *MatchContext,
-	homeID, awayID string,
 	kickoffAt, knowledgeCutoff time.Time,
 ) error {
 	availability, provenance, err := store.availabilityContext(
@@ -668,25 +592,15 @@ func (store *PostgresProductStore) addLiveContext(
 	if err != nil {
 		return err
 	}
-	coaches, err := store.coachContext(ctx, []string{homeID, awayID}, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return err
-	}
-	rest, err := store.restContext(ctx, []string{homeID, awayID}, kickoffAt, knowledgeCutoff)
-	if err != nil {
-		return err
-	}
 	item.Availability = availability
 	item.ContextProvenance = append(provenance, lineupProvenance...)
-	item.CoachContext = coaches
-	item.RestContext = rest
 	assignLineups(item, lineups)
-	item.ContextMissingness = contextMissingness(item, len(availability), len(coaches))
+	item.ContextMissingness = contextMissingness(item, len(availability), len(item.CoachContext))
 	item.DataStatus["availability"] = len(availability) > 0
 	item.DataStatus["predicted_lineup"] = len(item.PredictedLineups) > 0
 	item.DataStatus["confirmed_lineup"] = len(item.ConfirmedLineups) > 0
-	item.DataStatus["coach_context"] = len(coaches) == 2
-	item.DataStatus["rest_context"] = len(rest) == 2
+	item.DataStatus["coach_context"] = len(item.CoachContext) == 2
+	item.DataStatus["rest_context"] = len(item.RestContext) == 2
 	return nil
 }
 
@@ -832,121 +746,6 @@ func (store *PostgresProductStore) lineupPlayers(
 	})
 }
 
-func (store *PostgresProductStore) coachContext(
-	ctx context.Context, teamIDs []string, kickoffAt, knowledgeCutoff time.Time,
-) ([]CoachContext, error) {
-	items := []CoachContext{}
-	for _, teamID := range teamIDs {
-		var item CoachContext
-		var effectiveAt time.Time
-		err := store.pool.QueryRow(ctx, `
-			SELECT team_id::text, coach_id::text, effective_at
-			FROM football.product_coach_observations
-			WHERE team_id::text = $1 AND effective_at < $2 AND known_at <= $3
-			ORDER BY effective_at DESC, known_at DESC LIMIT 1`,
-			teamID, kickoffAt, knowledgeCutoff,
-		).Scan(&item.TeamID, &item.CoachID, &effectiveAt)
-		if errors.Is(err, pgx.ErrNoRows) {
-			continue
-		}
-		if err != nil {
-			return nil, err
-		}
-		var tenureStart time.Time
-		if err := store.pool.QueryRow(ctx, `
-			SELECT count(*), COALESCE(min(kickoff_at), $3)
-			FROM football.product_lineup_observations
-			WHERE team_id::text = $1 AND coach_id::text = $2
-			  AND lineup_mode = 'CONFIRMED' AND kickoff_at < $3 AND known_at <= $4`,
-			teamID, item.CoachID, kickoffAt, knowledgeCutoff,
-		).Scan(&item.MatchesUnderCoach, &tenureStart); err != nil {
-			return nil, err
-		}
-		item.CoachTenureDays = int(kickoffAt.Sub(tenureStart).Hours() / 24)
-		item.CoachChangedRecently = item.MatchesUnderCoach < 5
-		items = append(items, item)
-	}
-	return items, nil
-}
-
-func (store *PostgresProductStore) restContext(
-	ctx context.Context, teamIDs []string, kickoffAt, knowledgeCutoff time.Time,
-) (map[string]RestContext, error) {
-	items := map[string]RestContext{}
-	for _, teamID := range teamIDs {
-		var item RestContext
-		var last, next *time.Time
-		err := store.pool.QueryRow(ctx, `
-			SELECT max(kickoff_at) FILTER (WHERE kickoff_at < $2),
-			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '3 days' AND kickoff_at < $2),
-			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '7 days' AND kickoff_at < $2),
-			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '14 days' AND kickoff_at < $2),
-			       count(*) FILTER (WHERE kickoff_at >= $2 - interval '30 days' AND kickoff_at < $2)
-			FROM football.product_eligible_team_history_at($3,ARRAY[$1::uuid]) history
-			JOIN football.source_snapshots snapshot ON snapshot.id = history.source_snapshot_id
-			WHERE (home_team_id = $1 OR away_team_id = $1)
-			  AND ((source_kickoff_precision = 'EXACT' AND kickoff_at < $2)
-			    OR (source_kickoff_precision = 'DATE_ONLY'
-			        AND kickoff_at::date < $2::date))
-			  AND history.known_at <= $3`,
-			teamID, kickoffAt, knowledgeCutoff,
-		).Scan(&last, &item.MatchesLast3Days, &item.MatchesLast7Days,
-			&item.MatchesLast14Days, &item.MatchesLast30Days)
-		if err != nil {
-			return nil, err
-		}
-		if err := store.pool.QueryRow(ctx, `
-			SELECT min(kickoff_at) FROM football.product_fixtures
-			WHERE (home_team_id = $1 OR away_team_id = $1)
-			  AND kickoff_at > $2 AND updated_at <= $3`,
-			teamID, kickoffAt, knowledgeCutoff,
-		).Scan(&next); err != nil {
-			return nil, err
-		}
-		if last != nil {
-			value := kickoffAt.Sub(*last).Hours() / 24
-			item.DaysSinceLastMatch = &value
-		}
-		if next != nil {
-			value := next.Sub(kickoffAt).Hours() / 24
-			item.DaysToNextMatch = &value
-		}
-		items[teamID] = item
-	}
-	return items, nil
-}
-
-func summarizeForm(matches []FormMatch) *TeamStatistics {
-	if len(matches) == 0 {
-		return nil
-	}
-	item := &TeamStatistics{RecentMatches: len(matches)}
-	for _, match := range matches {
-		item.GoalsFor += match.GoalsFor
-		item.GoalsAgainst += match.GoalsAgainst
-	}
-	item.AverageGoalsFor = float64(item.GoalsFor) / float64(item.RecentMatches)
-	item.AverageGoalsAgainst = float64(item.GoalsAgainst) / float64(item.RecentMatches)
-	return item
-}
-
-func summarizeH2H(matches []H2HMatch) H2HSummary {
-	result := H2HSummary{Meetings: len(matches)}
-	for _, match := range matches {
-		result.HomeGoals += match.HomeGoals
-		result.AwayGoals += match.AwayGoals
-		switch {
-		case match.HomeGoals > match.AwayGoals:
-			result.HomeWins++
-		case match.HomeGoals < match.AwayGoals:
-			result.AwayWins++
-		default:
-			result.Draws++
-		}
-	}
-	return result
-}
-
 func scanCompetition(row pgx.CollectableRow) (Competition, error) {
 	var item Competition
 	var sourceJSON []byte
@@ -1018,142 +817,6 @@ func verifiedGoals(events []LiveEvent) []LiveEvent {
 	return goals
 }
 
-type scoreCell struct {
-	HomeGoals   int     `json:"home_goals"`
-	HomeKind    string  `json:"home_bucket_kind"`
-	AwayKind    string  `json:"away_bucket_kind"`
-	HomeLabel   string  `json:"home_label"`
-	AwayLabel   string  `json:"away_label"`
-	AwayGoals   int     `json:"away_goals"`
-	Probability float64 `json:"probability"`
-}
-
-type performanceRecord struct {
-	probabilities   map[string]float64
-	scores          []scoreCell
-	homeScore       int
-	awayScore       int
-	kickoff         time.Time
-	knowledgeCutoff time.Time
-	outcomeKnownAt  *time.Time
-}
-
-func calculatePerformance(competitionID string, records []performanceRecord) Performance {
-	item := Performance{CompetitionID: competitionID, Rating: "UNRATED", Forecasts: len(records)}
-	if len(records) == 0 {
-		return item
-	}
-	baselines := performanceBaselines(records)
-	all := performanceWindow(records, baselines, 0)
-	item.OutcomeHitRate = floatPointer(all.hits)
-	item.Brier = floatPointer(all.brier)
-	item.LogLoss = floatPointer(all.logLoss)
-	item.BaselineBrier = floatPointer(all.baselineBrier)
-	item.BaselineLogLoss = floatPointer(all.baselineLogLoss)
-	item.ExactScoreRate = floatPointer(all.exact)
-	item.TopThreeRate = floatPointer(all.topThree)
-	item.TopFiveRate = floatPointer(all.topFive)
-	item.TotalsHitRate = floatPointer(all.totals)
-	item.BTTSHitRate = floatPointer(all.btts)
-	latestStart := max(0, len(records)-50)
-	latest := performanceWindow(records, baselines, latestStart)
-	item.LatestFiftyBrier = floatPointer(latest.brier)
-	item.LatestFiftyLog = floatPointer(latest.logLoss)
-	item.LatestBaseBrier = floatPointer(latest.baselineBrier)
-	item.LatestBaseLog = floatPointer(latest.baselineLogLoss)
-	beatsAll := all.brier < all.baselineBrier && all.logLoss < all.baselineLogLoss
-	beatsLatest := latest.brier < latest.baselineBrier && latest.logLoss < latest.baselineLogLoss
-	if len(records) >= 50 {
-		item.Rating = "WATCH"
-		if beatsAll {
-			item.Rating = "GOOD"
-		}
-	}
-	if len(records) >= 100 && beatsAll && beatsLatest {
-		item.Rating = "STRONG"
-	}
-	return item
-}
-
-type performanceMetrics struct {
-	hits, brier, logLoss, baselineBrier, baselineLogLoss float64
-	exact, topThree, topFive, totals, btts               float64
-}
-
-func performanceWindow(records []performanceRecord, baselines []map[string]float64, start int) performanceMetrics {
-	var result performanceMetrics
-	for index := start; index < len(records); index++ {
-		record := records[index]
-		outcome := outcomeKey(record.homeScore, record.awayScore)
-		baseline := baselines[index]
-		accumulateOutcomeMetrics(&result, record, outcome, baseline)
-		accumulateScoreMetrics(&result, record)
-		accumulateMarketMetrics(&result, record)
-	}
-	count := float64(len(records) - start)
-	result.normalize(count)
-	return result
-}
-
-func accumulateOutcomeMetrics(result *performanceMetrics, record performanceRecord, outcome string, baseline map[string]float64) {
-	if maxOutcome(record.probabilities) == outcome {
-		result.hits++
-	}
-	for _, key := range []string{"home", "draw", "away"} {
-		target := boolFloat(key == outcome)
-		delta := record.probabilities[key] - target
-		result.brier += delta * delta
-		baselineDelta := baseline[key] - target
-		result.baselineBrier += baselineDelta * baselineDelta
-	}
-	result.logLoss -= math.Log(math.Max(record.probabilities[outcome], 1e-15))
-	result.baselineLogLoss -= math.Log(math.Max(baseline[outcome], 1e-15))
-}
-
-func accumulateScoreMetrics(result *performanceMetrics, record performanceRecord) {
-	ranked := append([]scoreCell(nil), record.scores...)
-	sort.Slice(ranked, func(i, j int) bool {
-		if ranked[i].Probability != ranked[j].Probability {
-			return ranked[i].Probability > ranked[j].Probability
-		}
-		if ranked[i].HomeGoals != ranked[j].HomeGoals {
-			return ranked[i].HomeGoals < ranked[j].HomeGoals
-		}
-		return ranked[i].AwayGoals < ranked[j].AwayGoals
-	})
-	position := scorePosition(ranked, record.homeScore, record.awayScore)
-	result.exact += boolFloat(position == 0 && ranked[0].HomeKind != "AT_LEAST" && ranked[0].AwayKind != "AT_LEAST")
-	result.topThree += boolFloat(position >= 0 && position < 3)
-	result.topFive += boolFloat(position >= 0 && position < 5)
-}
-
-func accumulateMarketMetrics(result *performanceMetrics, record performanceRecord) {
-	actualOver := record.homeScore+record.awayScore > 2
-	result.totals += boolFloat((record.probabilities["total_over_2_5"] >= 0.5) == actualOver)
-	actualBTTS := record.homeScore > 0 && record.awayScore > 0
-	result.btts += boolFloat((record.probabilities["btts_yes"] >= 0.5) == actualBTTS)
-}
-
-func (result *performanceMetrics) normalize(count float64) {
-	result.hits /= count
-	result.brier /= count
-	result.logLoss /= count
-	result.baselineBrier /= count
-	result.baselineLogLoss /= count
-	result.exact /= count
-	result.topThree /= count
-	result.topFive /= count
-	result.totals /= count
-	result.btts /= count
-}
-
-func boolFloat(value bool) float64 {
-	if value {
-		return 1
-	}
-	return 0
-}
-
 func addFilter(query string, args *[]any, column, value string) string {
 	if value == "" {
 		return query
@@ -1199,89 +862,4 @@ func productQueryError(err error) error {
 	return err
 }
 
-func outcomeKey(home, away int) string {
-	if home > away {
-		return "home"
-	}
-	if away > home {
-		return "away"
-	}
-	return "draw"
-}
-
-func maxOutcome(values map[string]float64) string {
-	best := "home"
-	for _, key := range []string{"draw", "away"} {
-		if values[key] > values[best] {
-			best = key
-		}
-	}
-	return best
-}
-
-func scorePosition(values []scoreCell, home, away int) int {
-	for index, value := range values {
-		if scoreBucketMatches(value.HomeGoals, value.HomeKind, home) && scoreBucketMatches(value.AwayGoals, value.AwayKind, away) {
-			return index
-		}
-	}
-	return -1
-}
-
 func floatPointer(value float64) *float64 { return &value }
-
-func selectionAgreement(market, selection string, values map[string]float64) (*float64, string) {
-	probability, found := selectionProbability(strings.ToUpper(strings.TrimSpace(selection)), values)
-	if !found || !validProbability(probability) {
-		return nil, "UNABLE_TO_EVALUATE"
-	}
-	return floatPointer(probability), agreementLabel(market, probability, values)
-}
-
-var directSelectionProbabilityKeys = map[string]string{
-	"HOME_WIN":        "home",
-	"DRAW":            "draw",
-	"AWAY_WIN":        "away",
-	"BTTS_YES":        "btts_yes",
-	"TOTAL_OVER_1_5":  "total_over_1_5",
-	"TOTAL_OVER_2_5":  "total_over_2_5",
-	"TOTAL_UNDER_2_5": "total_under_2_5",
-	"TOTAL_UNDER_3_5": "total_under_3_5",
-}
-
-func selectionProbability(selection string, values map[string]float64) (float64, bool) {
-	switch selection {
-	case "HOME_OR_DRAW":
-		return sumProbabilities(values, "home", "draw")
-	case "DRAW_OR_AWAY":
-		return sumProbabilities(values, "draw", "away")
-	}
-	if key, found := directSelectionProbabilityKeys[selection]; found {
-		return mapProbability(values, key)
-	}
-	return 0, false
-}
-
-func agreementLabel(market string, probability float64, values map[string]float64) string {
-	if probability >= 0.5 && (market != "RESULT_1X2" || probability >= values[maxOutcome(values)]) {
-		return "AGREES"
-	}
-	if probability >= 0.4 {
-		return "WEAK_SUPPORT"
-	}
-	return "DISAGREES"
-}
-
-func mapProbability(values map[string]float64, key string) (float64, bool) {
-	value, ok := values[key]
-	return value, ok
-}
-func validProbability(value float64) bool {
-	return !math.IsNaN(value) && !math.IsInf(value, 0) && value >= 0 && value <= 1
-}
-
-func sumProbabilities(values map[string]float64, first, second string) (float64, bool) {
-	a, okA := values[first]
-	b, okB := values[second]
-	return a + b, okA && okB
-}

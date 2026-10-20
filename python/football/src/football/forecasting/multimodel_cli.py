@@ -72,6 +72,10 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
 
     add_postmatch_commands(scopes)
 
+    from football.product.public_reports_cli import add_public_report_command
+
+    add_public_report_command(scopes)
+
     register = scopes.add_parser("registry-register", help="register immutable runtime metadata")
     register.add_argument("--registration", required=True, type=Path)
     register.add_argument("--artifact-root", type=Path, default=Path("."))
@@ -101,6 +105,10 @@ def run_multimodel_command(
             result = _forecast(args, environment)
         elif args.command == "models" and args.scope == "products":
             result = _products(args.forecast)
+        elif args.command == "models" and args.scope == "public-reports":
+            from football.product.public_reports_cli import run_public_report_command
+
+            result = run_public_report_command(args, environment)
         elif args.command == "models" and args.scope in {"postmatch-evaluate", "postmatch-monitor"}:
             from football.forecasting.postmatch_cli import run_postmatch_command
 

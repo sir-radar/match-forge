@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -131,58 +130,6 @@ func TestForecastHistoryAPI(t *testing.T) {
 	}
 }
 
-func TestCalculatePerformanceRatings(t *testing.T) {
-	strong := make([]performanceRecord, 100)
-	for index := range strong {
-		outcomes := []struct {
-			home, away int
-			key        string
-		}{{2, 1, "home"}, {1, 1, "draw"}, {1, 2, "away"}}
-		outcome := outcomes[index%len(outcomes)]
-		probabilities := map[string]float64{
-			"home": 0.1, "draw": 0.1, "away": 0.1,
-			"total_over_2_5": 0.7, "btts_yes": 0.7,
-		}
-		probabilities[outcome.key] = 0.8
-		strong[index] = performanceRecord{
-			probabilities: probabilities,
-			scores:        []scoreCell{{HomeGoals: outcome.home, AwayGoals: outcome.away, Probability: 0.2}},
-			homeScore:     outcome.home, awayScore: outcome.away,
-		}
-	}
-	tests := []struct {
-		name    string
-		records []performanceRecord
-		want    string
-	}{
-		{name: "unrated before fifty", records: strong[:49], want: "UNRATED"},
-		{name: "good after fifty", records: strong[:50], want: "GOOD"},
-		{name: "strong after one hundred and recent advantage", records: strong, want: "STRONG"},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			result := calculatePerformance("competition", test.records)
-			if result.Rating != test.want {
-				t.Fatalf("rating = %s, want %s", result.Rating, test.want)
-			}
-			if result.Brier == nil || result.BaselineBrier == nil || *result.Brier >= *result.BaselineBrier {
-				t.Fatalf("model Brier %v must beat baseline %v", result.Brier, result.BaselineBrier)
-			}
-		})
-	}
-}
-
-func TestPerformancePriorDoesNotAssumeUnknownOutcomeAvailability(t *testing.T) {
-	records := []performanceRecord{
-		{probabilities: map[string]float64{"home": .6, "draw": .2, "away": .2}, homeScore: 1, awayScore: 0},
-		{probabilities: map[string]float64{"home": .2, "draw": .2, "away": .6}, homeScore: 0, awayScore: 1},
-	}
-	result := calculatePerformance("competition", records)
-	if result.BaselineBrier == nil || math.Abs(*result.BaselineBrier-2.0/3.0) > 1e-12 {
-		t.Fatalf("unknown prior outcome times must not influence the baseline: %+v", result.BaselineBrier)
-	}
-}
-
 func TestPerformanceListAPIParsesBrowseFilters(t *testing.T) {
 	store := &performanceStoreStub{}
 	application := New(
@@ -303,52 +250,5 @@ func TestPerformanceFilteringAndOrderingPrecedePagination(t *testing.T) {
 	if result.Pagination.TotalItems != 23 || result.Pagination.TotalPages != 2 || len(result.Performance) != 3 ||
 		result.Performance[0].CompetitionID != "competition-21" {
 		t.Fatalf("filtered page = %+v", result)
-	}
-}
-
-func TestSelectionAgreement(t *testing.T) {
-	values := map[string]float64{
-		"home": 0.55, "draw": 0.25, "away": 0.2, "btts_yes": 0.44,
-		"total_over_1_5": 0.72, "total_under_3_5": 0.68,
-	}
-	tests := []struct {
-		market, selection, want string
-		probability             float64
-	}{
-		{market: "RESULT_1X2", selection: "HOME_WIN", want: "AGREES", probability: 0.55},
-		{market: "BTTS", selection: "BTTS_YES", want: "WEAK_SUPPORT", probability: 0.44},
-		{market: "RESULT_1X2", selection: "AWAY_WIN", want: "DISAGREES", probability: 0.2},
-		{market: "TOTAL_GOALS", selection: "TOTAL_OVER_1_5", want: "AGREES", probability: 0.72},
-		{market: "TOTAL_GOALS", selection: "TOTAL_UNDER_3_5", want: "AGREES", probability: 0.68},
-	}
-	for _, test := range tests {
-		probability, agreement := selectionAgreement(test.market, test.selection, values)
-		if agreement != test.want || probability == nil || math.Abs(*probability-test.probability) > 1e-12 {
-			t.Fatalf("%s = (%v, %s), want (%f, %s)", test.selection, probability, agreement, test.probability, test.want)
-		}
-	}
-	if probability, agreement := selectionAgreement("UNKNOWN", "UNKNOWN", values); probability != nil || agreement != "UNABLE_TO_EVALUATE" {
-		t.Fatalf("unsupported selection = (%v, %s)", probability, agreement)
-	}
-	if probability, agreement := selectionAgreement("RESULT_1X2", "Draw No Bet", values); probability != nil || agreement != "UNABLE_TO_EVALUATE" {
-		t.Fatalf("unmapped selection = (%v, %s)", probability, agreement)
-	}
-}
-
-func TestContextSummariesUseOnlyStoredMatches(t *testing.T) {
-	form := []FormMatch{
-		{GoalsFor: 2, GoalsAgainst: 1},
-		{GoalsFor: 1, GoalsAgainst: 1},
-	}
-	stats := summarizeForm(form)
-	if stats == nil || stats.RecentMatches != 2 || stats.GoalsFor != 3 || stats.AverageGoalsFor != 1.5 {
-		t.Fatalf("team statistics = %+v", stats)
-	}
-	h2h := summarizeH2H([]H2HMatch{
-		{HomeGoals: 2, AwayGoals: 0},
-		{HomeGoals: 1, AwayGoals: 1},
-	})
-	if h2h.Meetings != 2 || h2h.HomeWins != 1 || h2h.Draws != 1 || h2h.HomeGoals != 3 {
-		t.Fatalf("h2h summary = %+v", h2h)
 	}
 }

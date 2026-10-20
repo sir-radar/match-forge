@@ -1,8 +1,13 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.8.0
-  description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
+  version: 0.9.0
+  description: >-
+    Versioned MatchForge domain responses and protected operational controls.
+    Python produces immutable analytical read reports through shared work; Go
+    retrieves current checksum-verified reports. Missing or stale required reports
+    return 503. Provider IDs and original labels are source provenance only,
+    never MatchForge identity or provider-native response objects.
 servers:
   - url: http://127.0.0.1:8080
 paths:
@@ -31,12 +36,21 @@ paths:
         '200': { description: Fixtures grouped by competition, content: { application/json: { schema: { $ref: '#/components/schemas/FixturePage' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/fixtures/{fixture_id}/live:
+    get:
+      operationId: getLiveFixture
+      parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
+      responses:
+        '200': { description: Normalized MatchForge live events and statistics with source provenance, content: { application/json: { schema: { $ref: '#/components/schemas/LiveMatch' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { description: Fixture not found }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/context:
     get:
       operationId: getFixtureContext
       parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
       responses:
-        '200': { description: Display-only recent form, H2H, standings, and availability, content: { application/json: { schema: { type: object } } } }
+        '200': { description: Stored Python form/H2H/rest/coach features plus normalized standings and availability, content: { application/json: { schema: { $ref: '#/components/schemas/MatchContext' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/forecasts:
     get:
@@ -59,7 +73,7 @@ paths:
       operationId: getStandings
       parameters: [ { $ref: '#/components/parameters/CompetitionId' } ]
       responses:
-        '200': { description: Provider or completed-results fallback standings, content: { application/json: { schema: { type: object } } } }
+        '200': { description: Normalized stored standings, content: { application/json: { schema: { $ref: '#/components/schemas/StandingPage' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/competitions/{competition_id}/performance:
     get:
@@ -96,7 +110,7 @@ paths:
         - { name: agreement, in: query, schema: { type: string, enum: [AGREES, WEAK_SUPPORT, DISAGREES, UNABLE_TO_EVALUATE] } }
         - { name: fixture_id, in: query, schema: { type: string, format: uuid } }
       responses:
-        '200': { description: Stored source selections and independent comparison, content: { application/json: { schema: { type: object } } } }
+        '200': { description: Stored source selections and independent comparison, content: { application/json: { schema: { $ref: '#/components/schemas/ExternalPredictionPage' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/fixtures/{fixture_id}/external-predictions:
@@ -104,13 +118,13 @@ paths:
       operationId: listFixtureExternalPredictions
       parameters: [ { $ref: '#/components/parameters/FixtureId' } ]
       responses:
-        '200': { description: Stored selections for one mapped fixture, content: { application/json: { schema: { type: object } } } }
+        '200': { description: Stored selections for one mapped fixture, content: { application/json: { schema: { $ref: '#/components/schemas/ExternalPredictionPage' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/external-prediction-sources:
     get:
       operationId: listExternalPredictionSources
       responses:
-        '200': { description: Access audit, adapter state, and settled tracking metrics, content: { application/json: { schema: { type: object } } } }
+        '200': { description: Access audit, adapter state, and settled tracking metrics, content: { application/json: { schema: { $ref: '#/components/schemas/ExternalPredictionSourcePage' } } } }
         '503': { $ref: '#/components/responses/Unavailable' }
   /v1/admin/sync-runs:
     get:
@@ -133,6 +147,8 @@ paths:
   /v1/admin/sync/history: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/forecast-refresh: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/external-predictions: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/fotmob: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/sync/pitchapi: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/all: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/operations/{domain}:
     get:
@@ -414,6 +430,14 @@ components:
         round: { type: [string, 'null'] }
         forecast_availability: { $ref: '#/components/schemas/ForecastAvailability' }
         forecast: { anyOf: [ { $ref: '#/components/schemas/ForecastSummary' }, { type: 'null' } ] }
+        provider: { type: [string, 'null'], description: Source provenance only. }
+        provider_status: { type: [string, 'null'], description: Original source status for traceability; use status for MatchForge behavior. }
+        match_minute: { type: [integer, 'null'] }
+        added_time: { type: [integer, 'null'] }
+        period: { type: [string, 'null'] }
+        last_successful_update: { type: [string, 'null'], format: date-time }
+        stale: { type: boolean }
+        goal_scorers: { type: array, items: { $ref: '#/components/schemas/LiveEvent' } }
     FixtureGroup:
       type: object
       required: [competition, fixtures]
@@ -513,3 +537,290 @@ components:
       properties:
         performance: { type: array, items: { $ref: '#/components/schemas/Performance' } }
         pagination: { $ref: '#/components/schemas/Pagination' }
+    FormMatch:
+      type: object
+      additionalProperties: false
+      required: ["kickoff_at", "opponent", "venue", "goals_for", "goals_against", "result"]
+      properties:
+        kickoff_at: {"type": "string", "format": "date-time"}
+        opponent: {"type": "string"}
+        venue: {"type": "string"}
+        goals_for: {"type": "integer"}
+        goals_against: {"type": "integer"}
+        result: {"type": "string"}
+    H2HMatch:
+      type: object
+      additionalProperties: false
+      required: ["kickoff_at", "home_team", "away_team", "home_goals", "away_goals", "home_xg", "away_xg"]
+      properties:
+        kickoff_at: {"type": "string", "format": "date-time"}
+        home_team: {"type": "string"}
+        away_team: {"type": "string"}
+        home_goals: {"type": "integer"}
+        away_goals: {"type": "integer"}
+        home_xg: {"type": ["number", "null"]}
+        away_xg: {"type": ["number", "null"]}
+    H2HSummary:
+      type: object
+      additionalProperties: false
+      required: ["meetings", "home_wins", "draws", "away_wins", "home_goals", "away_goals"]
+      properties:
+        meetings: {"type": "integer"}
+        home_wins: {"type": "integer"}
+        draws: {"type": "integer"}
+        away_wins: {"type": "integer"}
+        home_goals: {"type": "integer"}
+        away_goals: {"type": "integer"}
+    TeamStatistics:
+      type: object
+      additionalProperties: false
+      required: ["recent_matches", "goals_for", "goals_against", "average_goals_for", "average_goals_against"]
+      properties:
+        recent_matches: {"type": "integer"}
+        goals_for: {"type": "integer"}
+        goals_against: {"type": "integer"}
+        average_goals_for: {"type": "number"}
+        average_goals_against: {"type": "number"}
+    MatchContext:
+      type: object
+      additionalProperties: false
+      required: ["fixture_id", "home_form", "away_form", "h2h", "h2h_summary", "home_team_statistics", "away_team_statistics", "standings", "data_availability", "availability", "predicted_lineups", "confirmed_lineups", "coach_context", "rest_context", "context_provenance", "context_missingness"]
+      properties:
+        fixture_id: {"type": "string"}
+        home_form: {"type": "array", "items": {"$ref": "#/components/schemas/FormMatch"}}
+        away_form: {"type": "array", "items": {"$ref": "#/components/schemas/FormMatch"}}
+        h2h: {"type": "array", "items": {"$ref": "#/components/schemas/H2HMatch"}}
+        h2h_summary: {"$ref": "#/components/schemas/H2HSummary"}
+        home_team_statistics: {"anyOf": [{"$ref": "#/components/schemas/TeamStatistics"}, {"type": "null"}]}
+        away_team_statistics: {"anyOf": [{"$ref": "#/components/schemas/TeamStatistics"}, {"type": "null"}]}
+        standings: {"type": "array", "items": {"$ref": "#/components/schemas/StandingRow"}}
+        data_availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
+        availability: {"type": "array", "items": {"$ref": "#/components/schemas/AvailabilityContext"}}
+        predicted_lineups: {"type": "array", "items": {"$ref": "#/components/schemas/LineupContext"}}
+        confirmed_lineups: {"type": "array", "items": {"$ref": "#/components/schemas/LineupContext"}}
+        coach_context: {"type": "array", "items": {"$ref": "#/components/schemas/CoachContext"}}
+        rest_context: {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/RestContext"}}
+        context_provenance: {"type": "array", "items": {"$ref": "#/components/schemas/ContextProvenance"}}
+        context_missingness: {"type": "array", "items": {"type": "string"}}
+    AvailabilityContext:
+      type: object
+      additionalProperties: false
+      required: ["team_id", "player_id", "provider_player_id", "availability_type", "availability_state", "reason", "observed_at", "known_at", "provider"]
+      properties:
+        team_id: {"type": "string"}
+        player_id: {"type": ["string", "null"]}
+        provider_player_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
+        availability_type: {"type": "string"}
+        availability_state: {"type": "string"}
+        reason: {"type": ["string", "null"]}
+        observed_at: {"type": "string", "format": "date-time"}
+        known_at: {"type": "string", "format": "date-time"}
+        provider: {"type": "string"}
+    LineupPlayerContext:
+      type: object
+      additionalProperties: false
+      required: ["player_id", "provider_player_id", "role", "position", "normalized_position", "grid_position", "availability_state", "selection_reason", "replaced_player_id", "replacement_reason", "preference_score", "historical_start_count", "slot_status"]
+      properties:
+        player_id: {"type": ["string", "null"]}
+        provider_player_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
+        role: {"type": "string"}
+        position: {"type": "string"}
+        normalized_position: {"type": "string"}
+        grid_position: {"type": ["string", "null"]}
+        availability_state: {"type": "string"}
+        selection_reason: {"type": ["string", "null"]}
+        replaced_player_id: {"type": ["string", "null"]}
+        replacement_reason: {"type": ["string", "null"]}
+        preference_score: {"type": ["number", "null"]}
+        historical_start_count: {"type": ["integer", "null"]}
+        slot_status: {"type": "string"}
+    LineupContext:
+      type: object
+      additionalProperties: false
+      required: ["lineup_observation_id", "team_id", "lineup_mode", "formation", "coach_id", "prediction_confidence", "coach_context", "supersedes_predicted_lineup_id", "observed_at", "known_at", "players"]
+      properties:
+        lineup_observation_id: {"type": "string"}
+        team_id: {"type": "string"}
+        lineup_mode: {"type": "string"}
+        formation: {"type": ["string", "null"]}
+        coach_id: {"type": ["string", "null"]}
+        prediction_confidence: {"type": ["string", "null"]}
+        coach_context: {"type": ["string", "null"]}
+        supersedes_predicted_lineup_id: {"type": ["string", "null"]}
+        observed_at: {"type": "string", "format": "date-time"}
+        known_at: {"type": "string", "format": "date-time"}
+        players: {"type": "array", "items": {"$ref": "#/components/schemas/LineupPlayerContext"}}
+    CoachContext:
+      type: object
+      additionalProperties: false
+      required: ["team_id", "coach_id", "coach_tenure_days", "matches_under_coach", "coach_changed_recently"]
+      properties:
+        team_id: {"type": "string"}
+        coach_id: {"type": "string"}
+        coach_tenure_days: {"type": "integer"}
+        matches_under_coach: {"type": "integer"}
+        coach_changed_recently: {"type": "boolean"}
+    RestContext:
+      type: object
+      additionalProperties: false
+      required: ["days_since_last_match", "matches_last_3_days", "matches_last_7_days", "matches_last_14_days", "matches_last_30_days", "days_to_next_match"]
+      properties:
+        days_since_last_match: {"type": ["number", "null"]}
+        matches_last_3_days: {"type": "integer"}
+        matches_last_7_days: {"type": "integer"}
+        matches_last_14_days: {"type": "integer"}
+        matches_last_30_days: {"type": "integer"}
+        days_to_next_match: {"type": ["number", "null"]}
+    ContextProvenance:
+      type: object
+      additionalProperties: false
+      required: ["provider", "source_snapshot_id", "source_checksum", "known_at"]
+      properties:
+        provider: {"type": "string"}
+        source_snapshot_id: {"type": "string"}
+        source_checksum: {"type": "string"}
+        known_at: {"type": "string", "format": "date-time"}
+    StandingRow:
+      type: object
+      additionalProperties: false
+      required: ["position", "team_id", "team", "played", "won", "drawn", "lost", "goals_for", "goals_against", "goal_difference", "points"]
+      properties:
+        position: {"type": "integer"}
+        team_id: {"type": "string"}
+        team: {"type": "string"}
+        played: {"type": "integer"}
+        won: {"type": "integer"}
+        drawn: {"type": "integer"}
+        lost: {"type": "integer"}
+        goals_for: {"type": "integer"}
+        goals_against: {"type": "integer"}
+        goal_difference: {"type": "integer"}
+        points: {"type": "integer"}
+    LiveEvent:
+      type: object
+      additionalProperties: false
+      required: ["id", "type", "team_id", "team_side", "player_id", "player_name", "minute", "added_time", "period", "own_goal", "penalty", "disallowed", "provider"]
+      properties:
+        id: {"type": "string"}
+        type: {"type": "string"}
+        team_id: {"type": ["string", "null"]}
+        team_side: {"type": ["string", "null"]}
+        player_id: {"type": ["string", "null"]}
+        player_name: {"type": ["string", "null"]}
+        minute: {"type": ["integer", "null"]}
+        added_time: {"type": ["integer", "null"]}
+        period: {"type": ["string", "null"]}
+        own_goal: {"type": "boolean"}
+        penalty: {"type": "boolean"}
+        disallowed: {"type": "boolean"}
+        provider: {"type": "string"}
+    LiveStatistic:
+      type: object
+      additionalProperties: false
+      required: ["metric", "label", "period", "home", "away", "unit", "original_field", "available"]
+      properties:
+        metric: {"type": "string"}
+        label: {"type": "string"}
+        period: {"type": "string"}
+        home: {"type": ["number", "null"]}
+        away: {"type": ["number", "null"]}
+        unit: {"type": "string"}
+        original_field: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
+        available: {"type": "boolean"}
+    LiveSource:
+      type: object
+      additionalProperties: false
+      required: ["provider", "provider_match_id", "observed_at", "last_fetched_at", "stale"]
+      properties:
+        provider: {"type": "string"}
+        provider_match_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
+        observed_at: {"type": "string", "format": "date-time"}
+        last_fetched_at: {"type": "string", "format": "date-time"}
+        stale: {"type": "boolean"}
+    LiveMatch:
+      type: object
+      additionalProperties: false
+      required: ["fixture_id", "status", "home", "away", "home_score", "away_score", "match_minute", "added_time", "period", "events", "statistics", "score_source", "event_source", "statistics_source", "availability", "partial"]
+      properties:
+        fixture_id: {"type": "string"}
+        status: {"type": "string"}
+        home: {"$ref": "#/components/schemas/Team"}
+        away: {"$ref": "#/components/schemas/Team"}
+        home_score: {"type": ["integer", "null"]}
+        away_score: {"type": ["integer", "null"]}
+        match_minute: {"type": ["integer", "null"]}
+        added_time: {"type": ["integer", "null"]}
+        period: {"type": ["string", "null"]}
+        events: {"type": "array", "items": {"$ref": "#/components/schemas/LiveEvent"}}
+        statistics: {"type": "array", "items": {"$ref": "#/components/schemas/LiveStatistic"}}
+        score_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
+        event_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
+        statistics_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
+        availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
+        partial: {"type": "boolean"}
+    ExternalPrediction:
+      type: object
+      additionalProperties: false
+      required: ["id", "source", "source_page", "prediction_date", "original_date_text", "collected_at", "fixture_id", "kickoff_at", "competition", "home_team", "away_team", "market", "selection", "match_status", "matchforge_probability", "agreement", "settlement_state", "actual_home_score", "actual_away_score", "result_score_basis", "result_provider", "result_updated_at"]
+      properties:
+        id: {"type": "string"}
+        source: {"type": "string"}
+        source_page: {"type": "string"}
+        prediction_date: {"type": "string"}
+        original_date_text: {"type": "string"}
+        collected_at: {"type": "string", "format": "date-time"}
+        fixture_id: {"type": ["string", "null"]}
+        kickoff_at: {"type": ["string", "null"], "format": "date-time"}
+        competition: {"type": "string"}
+        home_team: {"type": "string"}
+        away_team: {"type": "string"}
+        market: {"type": "string"}
+        selection: {"type": "string"}
+        match_status: {"type": "string"}
+        matchforge_probability: {"type": ["number", "null"]}
+        agreement: {"type": "string"}
+        settlement_state: {"type": "string"}
+        actual_home_score: {"type": ["integer", "null"]}
+        actual_away_score: {"type": ["integer", "null"]}
+        result_score_basis: {"type": ["string", "null"]}
+        result_provider: {"type": ["string", "null"]}
+        result_updated_at: {"type": ["string", "null"], "format": "date-time"}
+    ExternalPredictionSource:
+      type: object
+      additionalProperties: false
+      required: ["code", "name", "url", "public_predictions", "prediction_date_available", "login_required", "paid_content", "automated_access_status", "adapter_status", "known_issues", "checked_at", "tracked_selections", "settled_selections", "correct_selections", "settled_hit_rate", "matchforge_agreement_rate"]
+      properties:
+        code: {"type": "string"}
+        name: {"type": "string"}
+        url: {"type": "string"}
+        public_predictions: {"type": "boolean"}
+        prediction_date_available: {"type": "boolean"}
+        login_required: {"type": "boolean"}
+        paid_content: {"type": "boolean"}
+        automated_access_status: {"type": "string"}
+        adapter_status: {"type": "string"}
+        known_issues: {"type": "string"}
+        checked_at: {"type": "string", "format": "date-time"}
+        tracked_selections: {"type": "integer"}
+        settled_selections: {"type": "integer"}
+        correct_selections: {"type": "integer"}
+        settled_hit_rate: {"type": ["number", "null"]}
+        matchforge_agreement_rate: {"type": ["number", "null"]}
+    ExternalPredictionPage:
+      type: object
+      additionalProperties: false
+      required: [predictions]
+      properties:
+        predictions: { type: array, items: { $ref: '#/components/schemas/ExternalPrediction' } }
+    ExternalPredictionSourcePage:
+      type: object
+      additionalProperties: false
+      required: [sources]
+      properties:
+        sources: { type: array, items: { $ref: '#/components/schemas/ExternalPredictionSource' } }
+    StandingPage:
+      type: object
+      additionalProperties: false
+      required: [standings]
+      properties:
+        standings: { type: array, items: { $ref: '#/components/schemas/StandingRow' } }

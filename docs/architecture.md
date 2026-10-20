@@ -1065,6 +1065,29 @@ An endpoint's existence must not imply a model or data capability that has not b
 
 The API must not reimplement model mathematics owned by Python or simulation logic owned by Rust.
 
+Python owns public performance scoring and rating, external selection comparison,
+and form, H2H, coach and rest features. `football models public-reports` requires an
+explicit report kind, scope UUIDs, horizon, limit, lease and code/dependency hashes.
+It reads centrally eligible facts in a read-only repeatable snapshot, calculates
+outside publication locks, then publishes immutable `product_read_reports` through
+shared `READ_MODEL_PROJECTION` work. No fit, authoritative evaluation or promotion
+runs. Repeated inputs converge; corrected facts create new report versions.
+
+Go selects only reports matching the current SQL source fingerprint, verifies their
+bytes and scope, and retrieves existing normalized availability, lineups and
+standings. Missing or stale required reports return 503. A verified zero selected
+forecast count retains the empty UNRATED performance state; missing reports never
+become zero samples. Source fingerprints invalidate derived data and do not replace
+canonical model/artifact checksums. Context history excludes the target fixture ID,
+including earlier kickoff revisions. Form uses five matches, H2H ten, and rest
+uses the existing Python helper; policy `pre-match-revisions-v2` is unchanged.
+
+OpenAPI 0.9.0 describes domain context, normalized live data and external comparison
+responses. Provider identifiers, status labels and original statistic fields remain
+explicit source provenance for wire compatibility; they are not model keys or
+provider-native payload contracts. Existing runtime processes are not cut over by
+this change. Report production must precede serving cutover for required scopes.
+
 ## Detailed References
 
 Use the owning document for implementation-level detail:
