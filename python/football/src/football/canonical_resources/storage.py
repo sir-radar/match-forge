@@ -52,6 +52,19 @@ class CanonicalResolutionRegistry:
     ) -> UUID:
         checked = _checked(resolution)
         _check_prepared(checked, prepared)
+        return self._register(checked, prepared)
+
+    def register_prepared[T: Observation](
+        self, resolution: CanonicalResolution[T], prepared: PreparedCanonicalResolution
+    ) -> UUID:
+        """Register prepared metadata without filesystem access; caller owns the transaction."""
+        checked = _checked(resolution)
+        _check_prepared_metadata(checked, prepared)
+        return self._register(checked, prepared)
+
+    def _register[T: Observation](
+        self, checked: CanonicalResolution[T], prepared: PreparedCanonicalResolution
+    ) -> UUID:
         with self._connection.transaction(), self._connection.cursor() as cursor:
             _check_observations(cursor, checked)
             _check_identities(cursor, checked)
@@ -112,7 +125,7 @@ def _identity_path(digest: str) -> str:
     return f"canonical-resolutions/identity/v1/{digest}.json"
 
 
-def _check_prepared[T: Observation](
+def _check_prepared_metadata[T: Observation](
     resolution: CanonicalResolution[T], prepared: PreparedCanonicalResolution
 ) -> None:
     expected = tuple(
@@ -131,7 +144,13 @@ def _check_prepared[T: Observation](
         len(resolution.decision.to_bytes()),
     ):
         raise CanonicalResolutionError("prepared canonical artifact differs from its decision")
-    writes = (artifact, *prepared.identity_artifacts)
+
+
+def _check_prepared[T: Observation](
+    resolution: CanonicalResolution[T], prepared: PreparedCanonicalResolution
+) -> None:
+    _check_prepared_metadata(resolution, prepared)
+    writes = (prepared.artifact, *prepared.identity_artifacts)
     payloads = (
         resolution.decision.to_bytes(),
         *(proof.to_bytes() for proof in _proofs(resolution)),

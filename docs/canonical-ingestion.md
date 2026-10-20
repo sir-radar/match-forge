@@ -72,6 +72,13 @@ new conclusion. Earlier valid cutoffs retain their original proof. A bare mappin
 or confidence is insufficient, and anonymous source-record references still
 require independently verified record scope. Other identity owners need an
 explicit publication adapter before their evidence can be registered here.
+Shared work prepares files before its publication transaction, then calls
+`CanonicalResolutionRegistry.register_prepared` inside that transaction. The
+method revalidates resolution and artifact metadata without filesystem access.
+The existing `register` method also verifies physical files for compatible callers.
+A resolved correction alias whose canonical ID differs from its recorded
+admission still needs a correction-chain proof. An unavailable compatibility
+proof does not mean that the existing owner has no admitted identity.
 No identity is created by the canonical resolver.
 
 Canonical revisions are append-only, reference the current predecessor within

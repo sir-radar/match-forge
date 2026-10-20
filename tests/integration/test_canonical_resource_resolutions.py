@@ -5,6 +5,7 @@ import os
 from collections.abc import Iterator
 from dataclasses import replace
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
@@ -314,12 +315,13 @@ def test_canonical_metadata_and_lineage_are_immutable(connection, tmp_path, tabl
         connection.execute(query + (" CASCADE" if operation == "TRUNCATE" else ""))
 
 
-def test_invalid_prepared_metadata_rolls_back_before_publication(connection, tmp_path):
+@pytest.mark.parametrize("method", ["register", "register_prepared"])
+def test_invalid_prepared_metadata_rolls_back_before_publication(connection, tmp_path, method):
     resolution = _resolution(connection, tmp_path)
     prepared = prepare_canonical_resolution(tmp_path, resolution)
     prepared = replace(prepared, artifact=replace(prepared.artifact, sha256="f" * 64))
     with pytest.raises(CanonicalResolutionError, match="prepared"):
-        CanonicalResolutionRegistry(connection).register(resolution, prepared)
+        getattr(CanonicalResolutionRegistry(connection), method)(resolution, prepared)
     assert connection.execute(
         "SELECT count(*) FROM football.canonical_resource_resolutions"
     ).fetchone() == (0,)
@@ -445,3 +447,24 @@ def test_every_supporting_and_conflicting_observation_is_registered(connection, 
         supporting.observation.observation_id: "SUPPORTING",
         conflicting.observation.observation_id: "CONFLICTING",
     }
+
+
+def test_prepared_canonical_registration_performs_no_filesystem_access(
+    connection, tmp_path, monkeypatch
+):
+    resolution = _resolution(connection, tmp_path)
+    prepared = prepare_canonical_resolution(tmp_path, resolution)
+
+    def reject_filesystem(*args: object, **kwargs: object) -> None:
+        raise AssertionError("filesystem access during canonical metadata registration")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "read_bytes", reject_filesystem)
+        patch.setattr(Path, "is_symlink", reject_filesystem)
+        registry = CanonicalResolutionRegistry(connection)
+        assert registry.register_prepared(resolution, prepared) == resolution.decision.decision_id
+        assert registry.register_prepared(resolution, prepared) == resolution.decision.decision_id
+    assert connection.execute(
+        "SELECT count(*) FROM football.canonical_resource_resolutions WHERE decision_id=%s",
+        (resolution.decision.decision_id,),
+    ).fetchone() == (1,)
