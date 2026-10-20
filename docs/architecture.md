@@ -1021,6 +1021,42 @@ and review gauges reuse the immutable monitoring reader, including corrected-res
 selection; absent scores remain `NaN`. Scraping never publishes evaluations,
 claims work, changes counters, calls providers or triggers model actions.
 
+## Operational control plane
+
+The existing Go application serves protected `GET /v1/admin/operations/{domain}`
+views for `providers`, `work-orchestrator`, `ingestion`, `identity`, `coverage`,
+`data-quality`, `forecasting`, `models`, `experiments` and `r3-audit`. Database views
+use repeatable-read, read-only transactions and bounded metadata pages. The R3
+view reads the existing tracked project-status owner and returns its file checksum;
+it preserves deferred/failed dispositions and does not change audit decisions.
+Models wrap the unchanged immutable registration alongside registration metadata.
+The experiment view reports explicitly registered shared execution work. Run
+manifests remain at caller-selected immutable artifact roots; the API does not
+scan, import or infer experiments from research directories.
+
+`GET /v1/admin/work` filters by shared state, including pending, running, retry
+wait, blocked and failed work. Work detail includes lease owner/expiry/heartbeat,
+generation, age, attempts, the dependency count and first 100 dependency IDs,
+parent work/sync references and redacted errors. Publication lease tokens are
+never exposed. Historical queue links require the exact retained request time;
+a newer queue entry cannot be attributed to an older work item. Pagination uses
+the existing 20/50/100 page sizes and rejects overflowing offsets.
+
+`POST /v1/admin/work/{work_id}/cancel` delegates to existing cancellation and
+parent sync-run controls, retaining their process stop and publication fencing.
+`retry` releases explicitly blocked work through the existing SQL owner without
+lowering its availability deadline. Already scheduled retries retain their
+policy/deadline. Failed or cancelled parent sync runs use the existing fresh-run
+retry path; other terminal work returns a conflict and requires a new request
+from its domain owner. Terminal identities are never reopened, and work control
+does not add an executor or authorize model fitting, evaluation or promotion.
+
+All routes retain private-local binding/Host/peer checks and the existing trusted
+browser Origin or origin-less owner credential. Mutations require JSON and accept
+only an empty object/body. No new administration service, security boundary,
+provider request, scheduler or model calculation is introduced. The versioned
+OpenAPI contract documents the routes, metadata, nulls and failure statuses.
+
 ## API Boundary
 
 The Go API exposes only capabilities supported by executed data and evaluation gates.

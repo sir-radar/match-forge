@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: MatchForge MVP API
-  version: 0.7.0
+  version: 0.8.0
   description: MatchForge product API plus fixed-action local operational/admin synchronization endpoints.
 servers:
   - url: http://127.0.0.1:8080
@@ -134,7 +134,93 @@ paths:
   /v1/admin/sync/forecast-refresh: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/external-predictions: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/all: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/operations/{domain}:
+    get:
+      operationId: getOperationsView
+      description: Protected current operational metadata from existing owners. Experiment records describe shared execution work; immutable file run manifests are not scanned or inferred.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters:
+        - { name: domain, in: path, required: true, schema: { type: string, enum: [providers, work-orchestrator, ingestion, identity, coverage, data-quality, forecasting, models, experiments, r3-audit] } }
+        - { $ref: '#/components/parameters/AdminPage' }
+        - { $ref: '#/components/parameters/AdminPageSize' }
+      responses:
+        '200': { description: Bounded current metadata page, content: { application/json: { schema: { $ref: '#/components/schemas/OperationView' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '500': { $ref: '#/components/responses/AdminInternalError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/work:
+    get:
+      operationId: listWork
+      description: Current shared work; reads never claim, expire or reschedule work.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/AdminPage' }
+        - { $ref: '#/components/parameters/AdminPageSize' }
+        - { name: state, in: query, schema: { $ref: '#/components/schemas/WorkState' } }
+      responses:
+        '200': { description: Bounded shared-work page, content: { application/json: { schema: { $ref: '#/components/schemas/WorkPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '500': { $ref: '#/components/responses/AdminInternalError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/work/{work_id}:
+    get:
+      operationId: getWork
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters: [ { $ref: '#/components/parameters/WorkId' } ]
+      responses:
+        '200': { description: Current work metadata without publication lease tokens, content: { application/json: { schema: { $ref: '#/components/schemas/WorkItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '404': { $ref: '#/components/responses/WorkNotFound' }
+        '500': { $ref: '#/components/responses/AdminInternalError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/work/{work_id}/cancel:
+    post:
+      operationId: cancelWork
+      description: Delegates to the existing cancellation owner and revokes publication rights; terminal work is unchanged.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters: [ { $ref: '#/components/parameters/WorkId' } ]
+      requestBody:
+        required: false
+        content: { application/json: { schema: { type: object, additionalProperties: false } } }
+      responses:
+        '202': { description: Current controlled work or the newly created parent sync work, content: { application/json: { schema: { $ref: '#/components/schemas/WorkItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '404': { $ref: '#/components/responses/WorkNotFound' }
+        '409': { description: Work policy or state prevents the action, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '415': { description: Application JSON content type is required, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { $ref: '#/components/responses/AdminInternalError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/work/{work_id}/retry:
+    post:
+      operationId: retryWork
+      description: Releases explicitly blocked work without lowering its deadline, preserves already scheduled retry policy, and delegates terminal parent sync runs to the existing fresh-run retry owner. Other terminal work requires a new domain request and returns 409.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters: [ { $ref: '#/components/parameters/WorkId' } ]
+      requestBody:
+        required: false
+        content: { application/json: { schema: { type: object, additionalProperties: false } } }
+      responses:
+        '202': { description: Current controlled work or the newly created parent sync work, content: { application/json: { schema: { $ref: '#/components/schemas/WorkItem' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '404': { $ref: '#/components/responses/WorkNotFound' }
+        '409': { description: Work policy or state prevents the action, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '415': { description: Application JSON content type is required, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { $ref: '#/components/responses/AdminInternalError' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
 components:
+  securitySchemes:
+    AdminCLI: { type: http, scheme: bearer, description: Owner configured credential for origin-less automation; server binding, Host and peer must also be loopback. }
+    AdminBrowserOrigin: { type: apiKey, in: header, name: Origin, description: Must exactly match the configured trusted browser Origin; server binding, Host and peer must also be loopback. }
   pathItems:
     StartSync:
       post:
@@ -148,6 +234,9 @@ components:
           '409': { description: Another write-heavy sync is active, content: { application/json: { schema: { $ref: '#/components/schemas/SyncConflict' } } } }
           '503': { $ref: '#/components/responses/Unavailable' }
   parameters:
+    AdminPage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    AdminPageSize: { name: page_size, in: query, schema: { type: integer, enum: [20, 50, 100], default: 20 } }
+    WorkId: { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
     AnalyticsHorizon:
       name: horizon
       in: query
@@ -155,9 +244,64 @@ components:
     FixtureId: { name: fixture_id, in: path, required: true, schema: { type: string, format: uuid } }
     CompetitionId: { name: competition_id, in: path, required: true, schema: { type: string, format: uuid } }
   responses:
+    AdminInternalError: { description: Internal operational failure with no storage details exposed, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    AdminDenied: { description: Existing private-local admin access conditions not met, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    AdminTimeout: { description: Request deadline elapsed, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    WorkNotFound: { description: Unknown work ID, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
     BadRequest: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
     Unavailable: { description: Product data unavailable, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   schemas:
+    WorkState: { type: string, enum: [PENDING, RUNNING, RETRY_WAIT, SUCCEEDED, FAILED, CANCELLED, BLOCKED] }
+    WorkItem:
+      type: object
+      additionalProperties: false
+      required: [work_id, work_type, state, input_hash, priority, requested_at, available_at, started_at, finished_at, lease_until, heartbeat_at, age_seconds, generation, lease_owner, attempt_count, max_attempts, dependency_count, parent_work_id, parent_sync_run_id, dependencies, last_error_code, last_error_message]
+      properties:
+        work_id: { type: string, format: uuid }
+        work_type: { type: string }
+        state: { $ref: '#/components/schemas/WorkState' }
+        input_hash: { type: string, pattern: "^[0-9a-f]{64}$" }
+        priority: { type: integer }
+        requested_at: { type: string, format: date-time }
+        available_at: { type: string, format: date-time }
+        started_at: { type: [string, "null"], format: date-time }
+        finished_at: { type: [string, "null"], format: date-time }
+        lease_until: { type: [string, "null"], format: date-time }
+        heartbeat_at: { type: [string, "null"], format: date-time }
+        age_seconds: { type: number }
+        generation: { type: integer, minimum: 0 }
+        lease_owner: { type: [string, "null"] }
+        attempt_count: { type: integer, minimum: 0 }
+        max_attempts: { type: integer, minimum: 1 }
+        dependency_count: { type: integer, minimum: 0 }
+        parent_work_id: { type: [string, "null"], format: uuid }
+        parent_sync_run_id: { type: [string, "null"], format: uuid }
+        dependencies: { type: array, maxItems: 100, items: { type: string, format: uuid }, description: First 100 dependency IDs in UUID order; dependency_count exposes the complete count. }
+        last_error_code: { type: [string, "null"] }
+        last_error_message: { type: [string, "null"], description: Stored diagnostics with common credential formats redacted. }
+    WorkPage:
+      type: object
+      additionalProperties: false
+      required: [page, page_size, observed_at, has_more, items]
+      properties:
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, enum: [20, 50, 100] }
+        observed_at: { type: string, format: date-time }
+        has_more: { type: boolean }
+        items: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/WorkItem' } }
+    OperationView:
+      type: object
+      additionalProperties: false
+      required: [domain, source, observed_at, page, page_size, has_more, items]
+      properties:
+        domain: { type: string, enum: [providers, work-orchestrator, ingestion, identity, coverage, data-quality, forecasting, models, experiments, r3-audit] }
+        source: { type: string }
+        source_sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: Checksum of the complete tracked project-status document for the R3 view. }
+        observed_at: { type: string, format: date-time }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, enum: [20, 50, 100] }
+        has_more: { type: boolean }
+        items: { type: array, maxItems: 100, items: { type: object }, description: Selected metadata from the named existing domain owner. Model records wrap the unchanged registration under registration; experiment records are shared execution work. }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
     SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
     SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
