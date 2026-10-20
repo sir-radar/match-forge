@@ -361,16 +361,19 @@ def load_canonical_decision(root: Path, decision_id: UUID, sha256: str) -> Decis
 def _register_evidence[T: Observation](
     cursor: Cursor[Any], resolution: CanonicalResolution[T]
 ) -> None:
+    decision_id = resolution.decision.decision_id
+    supporting = set(resolution.supporting)
+    conflicting = set(resolution.conflicting)
     expected = []
     for candidate in resolution.candidates:
         item = candidate.observation
         role = (
             "SUPPORTING"
-            if item.observation_id in resolution.supporting
-            else ("CONFLICTING" if item.observation_id in resolution.conflicting else "UNRESOLVED")
+            if item.observation_id in supporting
+            else ("CONFLICTING" if item.observation_id in conflicting else "UNRESOLVED")
         )
         values = (
-            resolution.decision.decision_id,
+            decision_id,
             item.observation_id,
             role,
             item.sha256,
@@ -386,7 +389,7 @@ def _register_evidence[T: Observation](
     actual = cursor.execute(
         "SELECT observation_id,role,observation_sha256,canonical_value_sha256 "
         "FROM football.canonical_resolution_evidence WHERE decision_id=%s ORDER BY observation_id",
-        (resolution.decision.decision_id,),
+        (decision_id,),
     ).fetchall()
     if actual != expected:
         raise CanonicalResolutionError(
