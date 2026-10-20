@@ -983,6 +983,44 @@ review limits are caller-supplied; incomplete scoring also yields
 `REVIEW_REQUIRED`. Monitoring never fits, recalibrates or promotes a model and
 does not replace governed chronological evaluation or its frozen thresholds.
 
+## Domain metrics
+
+`python -m football.product.cli domain-metrics` exports Prometheus gauges from a
+repeatable-read, read-only transaction. Supply `--competition` UUIDs and an aware
+`--window-start` / `--window-end`; `--horizon` uses the monitoring selections above.
+Optional repeated `--provider` values select from the seven implemented provider
+adapters. Labels contain only those provider codes, normalizer resource names,
+`OTHER` for other reported resources, and the eleven nullable feature families.
+Fixture, competition, season, native scope, work and artifact IDs are never labels.
+
+Provider gauges report retained request-budget reservations, current failed
+lifecycle acquisition jobs and age since the latest validated real acquisition.
+These records do not establish exact HTTP request/failure totals. Missing budget
+or acquisition evidence is `NaN`; failed-job counts use the existing job owner.
+Team identity measures current product teams without a trusted active mapping.
+Fixture identity, resolved duplicate members and forecast availability use the
+selected window and current serving/resolution owners. Forecast availability is
+the existing future scheduled, verified `FORECAST_AVAILABLE` flag; it does not
+execute a new eligibility or forecasting calculation.
+
+Coverage selects the latest report for each exact scope using the coverage
+registry's input-time, knowledge-time and publication ordering. The exposed ratio
+is the minimum known scope ratio, with separate total-scope and known-denominator
+counts. Unknown or empty expected universes remain unknown. Scopes are not summed
+into a new universe; provider measurements cover their reported native scopes,
+while canonical reports use the selected MatchForge competitions.
+
+Optional repeated `--feature-snapshot SHA256 PATH` arguments read explicitly
+supplied `FixtureFeatureSnapshotV1` exports. Their canonical checksum, existing
+schema, competition, window and cutoff metadata are checked. Missingness counts
+null nullable resource families in distinct supplied exports, with an explicit
+sample count. It is not a population estimate, and no feature reconstruction or
+model execution occurs. The existing schema is included in the Python package.
+Without supplied exports, family ratios are `NaN`. Post-match score/coverage
+and review gauges reuse the immutable monitoring reader, including corrected-result
+selection; absent scores remain `NaN`. Scraping never publishes evaluations,
+claims work, changes counters, calls providers or triggers model actions.
+
 ## API Boundary
 
 The Go API exposes only capabilities supported by executed data and evaluation gates.

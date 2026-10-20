@@ -93,6 +93,20 @@ def build_parser() -> argparse.ArgumentParser:
     refresh.add_argument("--pending-only", action="store_true")
     commands.add_parser("history-coverage")
     commands.add_parser("work-metrics")
+    domain_metrics = commands.add_parser("domain-metrics")
+    domain_metrics.add_argument("--competition", action="append", type=UUID, required=True)
+    domain_metrics.add_argument("--window-start", type=datetime.fromisoformat, required=True)
+    domain_metrics.add_argument("--window-end", type=datetime.fromisoformat, required=True)
+    domain_metrics.add_argument("--provider", action="append")
+    domain_metrics.add_argument("--horizon", default="LATEST")
+    domain_metrics.add_argument(
+        "--feature-snapshot",
+        nargs=2,
+        action="append",
+        default=[],
+        metavar=("SHA256", "PATH"),
+        help="Canonical FixtureFeatureSnapshotV1 checksum and explicit export path.",
+    )
     geography = commands.add_parser("refresh-competition-geography")
     geography.add_argument("--provider", choices=("fotmob", "pitchapi"), required=True)
     geography.add_argument(
@@ -159,8 +173,10 @@ def main(argv: list[str] | None = None) -> int:
     if not args.database_url:
         print("error: DATABASE_URL is required", file=sys.stderr)
         return 2
-    if args.command == "work-metrics":
-        return _run_work_metrics(args)
+    if args.command in {"work-metrics", "domain-metrics"}:
+        return {"work-metrics": _run_work_metrics, "domain-metrics": _run_domain_metrics}[
+            args.command
+        ](args)
     if args.command == "external-predictions":
         return _run_external_predictions(args)
     if args.command == "refresh-competition-geography":
@@ -291,6 +307,31 @@ def _run_development_provider_preview(args: argparse.Namespace) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _run_domain_metrics(args: argparse.Namespace) -> int:
+    from football.observability.domain_metrics import PROVIDERS, render_domain_metrics
+
+    try:
+        features = tuple(
+            (digest, json.loads(Path(path).read_bytes())) for digest, path in args.feature_snapshot
+        )
+        with psycopg.connect(args.database_url) as connection, connection.transaction():
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            output = render_domain_metrics(
+                connection,
+                competitions=tuple(args.competition),
+                window_start=args.window_start,
+                window_end=args.window_end,
+                providers=tuple(args.provider) if args.provider else PROVIDERS,
+                horizon=args.horizon,
+                features=features,
+            )
+    except (psycopg.Error, OSError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(output, end="")
     return 0
 
 
