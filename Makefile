@@ -10,7 +10,7 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
 	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate
 
@@ -179,6 +179,12 @@ web-e2e: web-build
 
 mvp-sync: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(HISTORY_CONCURRENCY),--history-concurrency $(HISTORY_CONCURRENCY),)
+
+fotmob-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli fotmob-sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(COMPETITION),--competition "$(COMPETITION)",)
+
+pitchapi-sync: migrate
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli pitchapi-sync $(if $(DATE),--date $(DATE),) $(if $(FROM_DATE),--from-date $(FROM_DATE),) $(if $(COMPETITION),--competition "$(COMPETITION)",)
 
 openfootball-sync: migrate
 	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run python -m football.product.cli backfill-openfootball $(if $(SEASON),--season $(SEASON),) $(if $(COMPETITION),--competition "$(COMPETITION)",) $(if $(COUNTRY),--country "$(COUNTRY)",) $(if $(REFRESH),--refresh,)

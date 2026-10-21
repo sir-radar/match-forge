@@ -16,11 +16,15 @@ Endpoint mapping and cache behavior were cross-checked against the MIT-licensed 
 Manual commands:
 
 ```bash
-uv run python -m football.product.cli fotmob-sync --from-date 2026-10-08 --date 2026-10-09
-uv run python -m football.product.cli pitchapi-sync --from-date 2026-10-08 --date 2026-10-09
+make fotmob-sync FROM_DATE=2026-10-08 DATE=2026-10-09
+make pitchapi-sync FROM_DATE=2026-10-08 DATE=2026-10-09
 uv run python -m football.product.cli provider-mapping-review --provider fotmob
 uv run python -m football.product.cli provider-mapping-review --provider fotmob --provider-match-id PROVIDER_ID --fixture-id MATCHFORGE_UUID
 ```
+
+The provider sync Make targets apply pending database migrations and load `.env`
+before starting the CLI. The admin service requires migrations to be applied
+before startup.
 
 The same operations are available on `/admin/data-sync`. Scheduling is opt-in: an omitted or zero `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` disables it; an enabled interval must be at least `30s`. Provider enablement is also required. FotMob live, PitchAPI live, and bulk work have independent database lanes; browser polling is not required. Worker heartbeats recover abandoned leases. API-Football quota exhaustion stops that provider's requests until the UTC reset without blocking the other providers.
 
