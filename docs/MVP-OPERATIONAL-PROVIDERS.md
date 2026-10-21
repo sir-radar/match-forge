@@ -70,12 +70,13 @@ Raw responses are checksum-addressed under `FOOTBALL_DATA_ROOT/operational`. Nor
 
 Fixture lists use `product_serving_fixtures`. It excludes current, active `DUPLICATE_RESOLVED` members for every resolution version; unresolved, inactive, future-dated and self-representative records are not suppressed. Provisional records use a canonical competition only when their retained native competition IDs resolve to exactly one admitted current mapping. This projection changes neither stored fixture identities nor historical queries. Filtering and grouping use the same serving population; fixture lists have no pagination contract.
 
-The API combines fixture groups whose competition names match after case, accent,
-punctuation, and known provider-name normalization within the same geographic
-scope. It uses known type, season, and division values to keep distinct groups
-separate, and attaches missing values only when exactly one compatible group
-exists. Competition filters match any ID in a combined group. This affects only
-fixture-list grouping; it does not merge stored competition or fixture identities.
+The API combines fixture groups within the same geographic scope after normalizing
+case, accents, punctuation, known provider aliases, trailing `Unknown` labels,
+and season suffixes embedded in competition names. It keeps conflicting known
+competition types, divisions, and seasons separate. Missing metadata joins a
+known group only when exactly one compatible group exists. Competition filters
+match any ID in a combined group. This affects only fixture-list grouping; it
+does not merge stored competition or fixture identities.
 For the current local calendar day, a group with an unknown season uses that
 requested date as its display label. Other dates keep the stored season label.
 

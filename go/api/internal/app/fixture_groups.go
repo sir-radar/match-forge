@@ -1,6 +1,7 @@
 package app
 
 import (
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -51,8 +52,8 @@ func mergeFixtureGroups(groups []FixtureGroup, selectedCompetitionID string) []F
 func collectFixtureClusters(groups []FixtureGroup) map[string][]*fixtureGroupCluster {
 	buckets := map[string][]*fixtureGroupCluster{}
 	for _, group := range groups {
-		competition := group.Competition
-		nameKey := competitionNameKey(competition.Country, competition.Name)
+		competition, nameKey, seasonKey := normalizeFixtureCompetition(group.Competition)
+		group.Competition = competition
 		if nameKey == "" {
 			nameKey = normalizeCompetitionText(competition.ID)
 		}
@@ -61,7 +62,7 @@ func collectFixtureClusters(groups []FixtureGroup) map[string][]*fixtureGroupClu
 		}, "\x00")
 		dimensions := fixtureGroupDimensions{
 			typeName: knownCompetitionValue(competition.Type),
-			season:   knownCompetitionValue(competition.Season),
+			season:   seasonKey,
 		}
 		if competition.Division != nil {
 			dimensions.division = strconv.Itoa(*competition.Division)
@@ -221,17 +222,17 @@ func competitionSpecificity(competition Competition) int {
 
 func dimensionsSpecificity(dimensions fixtureGroupDimensions) int {
 	score := 0
-	for _, value := range []string{dimensions.typeName, dimensions.season, dimensions.division} {
+	for _, value := range []string{dimensions.typeName, dimensions.division} {
 		if value != "" {
 			score++
 		}
 	}
-	return score
+	return score + len(strings.Fields(dimensions.season))
 }
 
 func dimensionsCompatible(left, right fixtureGroupDimensions) bool {
 	return compatibleValue(left.typeName, right.typeName) &&
-		compatibleValue(left.season, right.season) &&
+		(left.season == "" || right.season == "" || seasonValuesCompatible(left.season, right.season)) &&
 		compatibleValue(left.division, right.division)
 }
 
@@ -270,6 +271,133 @@ func competitionNameKey(country, name string) string {
 		return "premier league"
 	}
 	return key
+}
+
+var trailingCompetitionSeason = regexp.MustCompile(`(?i)[\s/_–—-]+[0-9]{4}([\s/_–—-]+[0-9]{2,4})?$`)
+
+func normalizeFixtureCompetition(competition Competition) (Competition, string, string) {
+	nameWithoutUnknown := trimUnknownCompetitionSuffix(competition.Name)
+	baseName, embeddedSeason := splitCompetitionSeasonSuffix(nameWithoutUnknown)
+	declaredSeason := competitionSeasonKey(competition.Season)
+	embeddedSeasonKey := competitionSeasonKey(embeddedSeason)
+	seasonKey := declaredSeason
+	identityName := baseName
+	displayName := baseName
+	if embeddedSeasonKey != "" {
+		if declaredSeason == "" {
+			seasonKey = embeddedSeasonKey
+			competition.Season = embeddedSeason
+		} else if !seasonValuesCompatible(declaredSeason, embeddedSeasonKey) {
+			// A conflicting explicit season is evidence that the suffix is part of
+			// the competition identity. Keep it so distinct competitions cannot merge.
+			identityName = nameWithoutUnknown
+			displayName = nameWithoutUnknown
+		}
+	}
+	if displayName != "" {
+		competition.Name = canonicalCompetitionDisplayName(competition.Country, displayName)
+	}
+	return competition, competitionNameKey(competition.Country, identityName), seasonKey
+}
+
+func trimUnknownCompetitionSuffix(value string) string {
+	trimmed := strings.TrimRightFunc(strings.TrimSpace(value), func(character rune) bool {
+		return unicode.IsSpace(character) || unicode.IsPunct(character)
+	})
+	const unknown = "unknown"
+	if len(trimmed) < len(unknown) || !strings.EqualFold(trimmed[len(trimmed)-len(unknown):], unknown) {
+		return trimmed
+	}
+	return strings.TrimRightFunc(trimmed[:len(trimmed)-len(unknown)], func(character rune) bool {
+		return unicode.IsSpace(character) || unicode.IsPunct(character)
+	})
+}
+
+func splitCompetitionSeasonSuffix(value string) (string, string) {
+	match := trailingCompetitionSeason.FindStringIndex(value)
+	if len(match) != 2 {
+		return strings.TrimSpace(value), ""
+	}
+	baseName := strings.TrimRightFunc(value[:match[0]], func(character rune) bool {
+		return unicode.IsSpace(character) || unicode.IsPunct(character)
+	})
+	season := strings.Trim(value[match[0]:match[1]], " \t\n\r\v\f/_–—-")
+	return baseName, season
+}
+
+func competitionSeasonKey(value string) string {
+	key := knownCompetitionValue(value)
+	if key == "" {
+		return ""
+	}
+	parts := strings.Fields(key)
+	if len(parts) == 2 && len(parts[1]) == 2 && isCompetitionDigits(parts[1]) {
+		if isCompetitionYear(parts[0]) {
+			return parts[0] + " " + parts[0][:2] + parts[1]
+		}
+		if len(parts[0]) == 2 && isCompetitionDigits(parts[0]) {
+			return "20" + parts[0] + " " + "20" + parts[1]
+		}
+	}
+	return key
+}
+
+func isCompetitionYear(value string) bool {
+	return len(value) == 4 && isCompetitionDigits(value)
+}
+
+func isCompetitionDigits(value string) bool {
+	if value == "" {
+		return false
+	}
+	for _, character := range value {
+		if character < '0' || character > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func seasonValuesCompatible(left, right string) bool {
+	if left == right {
+		return true
+	}
+	leftParts, rightParts := strings.Fields(left), strings.Fields(right)
+	if len(leftParts) == 1 && len(rightParts) > 1 {
+		return containsSeasonYear(rightParts, leftParts[0])
+	}
+	if len(rightParts) == 1 && len(leftParts) > 1 {
+		return containsSeasonYear(leftParts, rightParts[0])
+	}
+	return false
+}
+
+func containsSeasonYear(season []string, year string) bool {
+	for _, part := range season {
+		if part == year {
+			return true
+		}
+	}
+	return false
+}
+
+func canonicalCompetitionDisplayName(country, name string) string {
+	switch competitionNameKey(country, name) {
+	case "la liga":
+		return "La Liga"
+	case "j1 league":
+		return "J1 League"
+	case "j2 league":
+		return "J2 League"
+	case "league 1":
+		return "League 1"
+	case "league 2":
+		return "League 2"
+	case "saudi first division":
+		return "Saudi First Division"
+	default:
+		return name
+	}
 }
 
 func normalizeCompetitionName(value string) string {
