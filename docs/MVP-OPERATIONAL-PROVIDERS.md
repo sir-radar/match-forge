@@ -70,6 +70,15 @@ Raw responses are checksum-addressed under `FOOTBALL_DATA_ROOT/operational`. Nor
 
 Fixture lists use `product_serving_fixtures`. It excludes current, active `DUPLICATE_RESOLVED` members for every resolution version; unresolved, inactive, future-dated and self-representative records are not suppressed. Provisional records use a canonical competition only when their retained native competition IDs resolve to exactly one admitted current mapping. This projection changes neither stored fixture identities nor historical queries. Filtering and grouping use the same serving population; fixture lists have no pagination contract.
 
+The API combines fixture groups whose competition names match after case, accent,
+punctuation, and known provider-name normalization within the same geographic
+scope. It uses known type, season, and division values to keep distinct groups
+separate, and attaches missing values only when exactly one compatible group
+exists. Competition filters match any ID in a combined group. This affects only
+fixture-list grouping; it does not merge stored competition or fixture identities.
+For the current local calendar day, a group with an unknown season uses that
+requested date as its display label. Other dates keep the stored season label.
+
 An explicit fixture-only review may prove two provisional provider records describe the same match using retained native IDs and independent competition, season, orientation and kickoff evidence. Record the reviewed relationship and source checksums in `fixture_identity_resolutions`; keep conflicting or insufficient evidence unresolved. Such a decision does not admit team identities, make history eligible, or create a forecast. Prefer an admitted representative when available. Retained-observation replay appends the current association and reconciles superseded members before qualifying history; retries preserve the original source observations and published forecasts.
 
 New OpenFootball and Football-Data.co.uk imports write immutable `HistoricalSourceManifestV1` files. Registrations hash the manifest bytes and verify every referenced resource's size and SHA-256. Replay preserves the original acquisition time. New snapshot revisions use `manifest-v1:`. Legacy registrations remain unchanged and are explicitly `LEGACY_MANIFEST_UNVERIFIED`, including the 48 measured pathname-hashed registrations. Independently verified raw-resource bytes can support prospective identity admission; that verification does not prove the legacy manifest or cross-provider equivalence. Missing or tampered resources remain unverified. Optional append-only repair requires new owner authorization and evidence linked to the original registration.

@@ -101,7 +101,6 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
 `
 	args := []any{filters.Start, filters.End}
-	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
 	query = addFilter(query, &args, "pf.forecast_availability", filters.ForecastAvailability)
@@ -126,7 +125,10 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		}
 		groups[index].Fixtures = append(groups[index].Fixtures, fixture)
 	}
-	return groups, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return mergeFixtureGroups(groups, filters.CompetitionID), nil
 }
 
 func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID string) (LiveMatch, error) {

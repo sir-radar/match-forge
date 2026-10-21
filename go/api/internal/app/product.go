@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -517,7 +518,19 @@ func (application *App) listFixtures(response http.ResponseWriter, request *http
 		ForecastAvailability: request.URL.Query().Get("forecast_availability"),
 	}
 	items, err := application.product.Fixtures(request.Context(), filters)
+	applyCurrentFixtureDate(items, value, time.Now(), location)
 	application.respondProduct(response, map[string]any{"date": value, "groups": items}, err)
+}
+
+func applyCurrentFixtureDate(groups []FixtureGroup, requestedDate string, now time.Time, location *time.Location) {
+	if location == nil || requestedDate != now.In(location).Format("2006-01-02") {
+		return
+	}
+	for index := range groups {
+		if strings.EqualFold(strings.TrimSpace(groups[index].Competition.Season), "unknown") {
+			groups[index].Competition.Season = requestedDate
+		}
+	}
 }
 
 var canonicalIDPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
