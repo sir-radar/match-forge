@@ -1835,11 +1835,52 @@ class OperationalProviderSync:
                 self.connection, self.data_root, self.provider_code
             )
 
+    def _usable_provider_season_label(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID,
+        season_label: str | None,
+        metadata: Sequence[Any] | None = None,
+    ) -> str | None:
+        normalized = season_label.strip() if season_label is not None else ""
+        reason_code = None
+        reason = None
+        evidence: dict[str, Any] = {"provider_competition_id": row.provider_competition_id}
+        if row.provider_competition_name is None:
+            reason_code = "PROVIDER_COMPETITION_NAME_UNAVAILABLE"
+            reason = "provider competition name unavailable"
+        elif normalized.casefold() in {"", "unknown"}:
+            reason_code = "PROVIDER_SEASON_UNAVAILABLE"
+            reason = "provider season label unavailable"
+            evidence["season_label"] = season_label
+            evidence["kickoff_at"] = row.kickoff_at.isoformat()
+        elif (
+            metadata is not None
+            and metadata[1] == "PROVISIONAL"
+            and str(metadata[0]).strip().casefold() == "unknown"
+        ):
+            reason_code = "PROVISIONAL_COMPETITION_SEASON_CONFLICT"
+            reason = "provisional competition season conflicts with the source season"
+            evidence["stored_season_label"] = metadata[0]
+            evidence["source_season_label"] = normalized
+        if reason is not None:
+            self._record_mapping_decision(
+                row,
+                snapshot_id,
+                None,
+                "REVIEW_REQUIRED",
+                reason,
+                {"reason_code": reason_code, **evidence},
+            )
+            return None
+        return normalized
+
     def _create_provider_scoped_fixture(
         self, row: FixtureObservation, snapshot_id: UUID, *, season_label: str | None = None
     ) -> UUID | None:
-        """Create a non-forecastable fixture when provider identity is complete."""
-        if row.provider_competition_name is None:
+        """Create a provisional fixture only when its competition season is known."""
+        season_label = self._usable_provider_season_label(row, snapshot_id, season_label)
+        if season_label is None:
             return None
         with self.connection.cursor() as cursor:
             cursor.execute(
@@ -1868,6 +1909,9 @@ class OperationalProviderSync:
                 (competition_id,),
             )
             metadata = cursor.fetchone()
+        season_label = self._usable_provider_season_label(row, snapshot_id, season_label, metadata)
+        if season_label is None:
+            return None
         self._load_geographic_scopes()
         assert self._geographic_scopes is not None
         geographic_scope = self._geographic_scopes.get(row.provider_competition_id)
@@ -1885,7 +1929,6 @@ class OperationalProviderSync:
                 {},
             )
             return None
-        season_label = season_label or "Unknown"
         source_season_label = season_label
         crosswalk = OPERATIONAL_COMPETITION_CROSSWALKS.get(
             (self.provider_code, row.provider_competition_id)

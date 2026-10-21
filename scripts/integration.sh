@@ -46,7 +46,7 @@ goose -dir infrastructure/migrations postgres "$API_TEST_DATABASE_URL" up
 
 (
 	cd "$FOOTBALL_PROJECT_ROOT/go/api"
-	TEST_DATABASE_URL="$API_TEST_DATABASE_URL" go test ./internal/app -run '^TestServingDatabaseFixtureHTTPFiltersUnknownSeasons$'
+	TEST_DATABASE_URL="$API_TEST_DATABASE_URL" go test ./internal/app -run '^(TestServingDatabaseFixtureHTTPFiltersUnknownSeasons|TestUnknownSeasonFixtureRepairRequiresUniqueExactProviderIdentity)$'
 )
 
 MATCHFORGE_OPERATIONAL_SYNC_INTERVAL=0 MATCHFORGE_HISTORY_SYNC_ENABLED=false \
