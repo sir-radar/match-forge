@@ -52,12 +52,17 @@ func TestServingDatabaseFixtureHTTPFiltersUnknownSeasons(t *testing.T) {
 	}
 	knownCompetition, knownHome, knownAway, knownSeason := seedServingFixtureIdentities(t, pool, "Known season")
 	unknownCompetition, unknownHome, unknownAway, unknownSeason := seedServingFixtureIdentities(t, pool, "Unknown season")
-	for _, competition := range []string{knownCompetition, unknownCompetition} {
+	emptySeasonCompetition, emptySeasonHome, emptySeasonAway, emptySeason :=
+		seedServingFixtureIdentities(t, pool, "Empty season")
+	for _, competition := range []string{knownCompetition, unknownCompetition, emptySeasonCompetition} {
 		setServingCompetitionGeography(t, pool, competition)
 	}
 	setServingCompetitionUnknownSeason(t, pool, unknownCompetition)
+	mustExec(t, pool, `UPDATE football.product_competitions SET season_label='   '
+		WHERE competition_id=$1`, emptySeasonCompetition)
 	knownFixture := seedFixtureForSeason(t, pool, knownCompetition, knownHome, knownAway, knownSeason, kickoff)
 	seedFixtureForSeason(t, pool, unknownCompetition, unknownHome, unknownAway, unknownSeason, kickoff)
+	seedFixtureForSeason(t, pool, emptySeasonCompetition, emptySeasonHome, emptySeasonAway, emptySeason, kickoff)
 	application := New(Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, NewPostgresProductStore(pool))
 
 	assertFixtureHTTPFiltersUnknownSeason(t, application.Handler(), date, knownCompetition, knownFixture)

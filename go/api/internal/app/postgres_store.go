@@ -27,7 +27,7 @@ func (store *PostgresProductStore) Competitions(ctx context.Context, filters Com
 		       standings_available, h2h_available, forecast_available, xg_available,
 		       team_stats_available, availability_status, source_roles
 		FROM football.product_competitions
-		WHERE lower(btrim(season_label)) <> 'unknown'`
+		WHERE NULLIF(lower(btrim(season_label)), '') <> 'unknown'`
 	args := []any{}
 	query = addFilter(query, &args, "continent", filters.Continent)
 	query = addFilter(query, &args, "COALESCE(geographic_scope, country)", filters.Country)
@@ -100,7 +100,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) event_resource ON true
 		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
-		  AND lower(btrim(pc.season_label)) <> 'unknown'
+		  AND NULLIF(lower(btrim(pc.season_label)), '') <> 'unknown'
 `
 	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)

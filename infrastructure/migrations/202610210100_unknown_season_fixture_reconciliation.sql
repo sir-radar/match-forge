@@ -41,10 +41,10 @@ BEGIN
          WHERE member_observation.canonical_fixture_id IS NOT NULL
            AND member.identity_status = 'PROVISIONAL'
            AND member_competition.metadata_status = 'PROVISIONAL'
-           AND lower(btrim(member_competition.season_label)) = 'unknown'
+           AND COALESCE(NULLIF(lower(btrim(member_competition.season_label)), ''), 'unknown') = 'unknown'
            AND target.identity_status = 'VERIFIED'
            AND target_competition.metadata_status = 'VERIFIED'
-           AND lower(btrim(target_competition.season_label)) <> 'unknown'
+           AND NULLIF(lower(btrim(target_competition.season_label)), '') <> 'unknown'
            AND member.home_team_id = target.home_team_id
            AND member.away_team_id = target.away_team_id
            AND member.kickoff_at = target.kickoff_at
@@ -72,7 +72,7 @@ BEGIN
                    AND conflicting_fixture.fixture_id NOT IN (member.fixture_id, target.fixture_id)
                    AND conflicting_fixture.identity_status = 'VERIFIED'
                    AND conflicting_competition.metadata_status = 'VERIFIED'
-                   AND lower(btrim(conflicting_competition.season_label)) <> 'unknown'
+                   AND NULLIF(lower(btrim(conflicting_competition.season_label)), '') <> 'unknown'
                    AND (conflicting_fixture.home_team_id <> member.home_team_id
                         OR conflicting_fixture.away_team_id <> member.away_team_id
                         OR conflicting_fixture.kickoff_at <> member.kickoff_at
