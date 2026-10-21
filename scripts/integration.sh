@@ -44,6 +44,11 @@ export API_TEST_DATABASE
 API_TEST_DATABASE_URL=$(uv run python -c 'import os; from psycopg.conninfo import make_conninfo; print(make_conninfo(os.environ["DATABASE_URL"], dbname=os.environ["API_TEST_DATABASE"]))' )
 goose -dir infrastructure/migrations postgres "$API_TEST_DATABASE_URL" up
 
+(
+	cd "$FOOTBALL_PROJECT_ROOT/go/api"
+	TEST_DATABASE_URL="$API_TEST_DATABASE_URL" go test ./internal/app -run '^TestServingDatabaseFixtureHTTPFiltersUnknownSeasons$'
+)
+
 MATCHFORGE_OPERATIONAL_SYNC_INTERVAL=0 MATCHFORGE_HISTORY_SYNC_ENABLED=false \
     DATABASE_URL="$API_TEST_DATABASE_URL" API_ADDR="$API_ADDRESS" \
     "$FOOTBALL_PROJECT_ROOT/.local/bin/football-api" >"$API_LOG" 2>&1 &

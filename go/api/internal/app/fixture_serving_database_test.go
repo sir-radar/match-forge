@@ -2,6 +2,11 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -35,6 +40,103 @@ func TestServingDatabaseFixtureRepresentatives(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServingDatabaseFixtureHTTPFiltersUnknownSeasons(t *testing.T) {
+	pool := servingDatabasePool(t)
+	date := "2026-10-21"
+	kickoff, err := time.Parse(time.RFC3339, date+"T12:00:00Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	knownCompetition, knownHome, knownAway, knownSeason := seedServingFixtureIdentities(t, pool, "Known season")
+	unknownCompetition, unknownHome, unknownAway, unknownSeason := seedServingFixtureIdentities(t, pool, "Unknown season")
+	for _, competition := range []string{knownCompetition, unknownCompetition} {
+		setServingCompetitionGeography(t, pool, competition)
+	}
+	setServingCompetitionUnknownSeason(t, pool, unknownCompetition)
+	knownFixture := seedFixtureForSeason(t, pool, knownCompetition, knownHome, knownAway, knownSeason, kickoff)
+	seedFixtureForSeason(t, pool, unknownCompetition, unknownHome, unknownAway, unknownSeason, kickoff)
+	application := New(Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)), readinessStub{}, NewPostgresProductStore(pool))
+
+	assertFixtureHTTPFiltersUnknownSeason(t, application.Handler(), date, knownCompetition, knownFixture)
+	assertCompetitionHTTPFiltersUnknownSeason(t, application.Handler(), knownCompetition)
+}
+
+func setServingCompetitionGeography(t *testing.T, pool *pgxpool.Pool, competition string) {
+	t.Helper()
+	_, err := pool.Exec(context.Background(), `UPDATE football.product_competitions
+		SET country='Unknown Season Filter Test', geographic_scope='Unknown Season Filter Test'
+		WHERE competition_id=$1`, competition)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func setServingCompetitionUnknownSeason(t *testing.T, pool *pgxpool.Pool, competition string) {
+	t.Helper()
+	_, err := pool.Exec(context.Background(), `UPDATE football.product_competitions SET season_label='  uNkNoWn  '
+		WHERE competition_id=$1`, competition)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func assertFixtureHTTPFiltersUnknownSeason(t *testing.T, handler http.Handler, date, knownCompetition, knownFixture string) {
+	t.Helper()
+	fixtureResponse := httptest.NewRecorder()
+	fixtureRequest := httptest.NewRequest(http.MethodGet, "/v1/fixtures?date="+date+"&country=Unknown%20Season%20Filter%20Test", nil)
+	handler.ServeHTTP(fixtureResponse, fixtureRequest)
+	if fixtureResponse.Code != http.StatusOK {
+		t.Fatalf("fixtures status %d: %s", fixtureResponse.Code, fixtureResponse.Body)
+	}
+	var fixtures struct {
+		Groups []FixtureGroup `json:"groups"`
+	}
+	if err := json.Unmarshal(fixtureResponse.Body.Bytes(), &fixtures); err != nil {
+		t.Fatal(err)
+	}
+	if len(fixtures.Groups) != 1 || fixtures.Groups[0].Competition.ID != knownCompetition {
+		t.Fatalf("unknown-season fixture group was returned: %+v", fixtures.Groups)
+	}
+	if len(fixtures.Groups[0].Fixtures) != 1 || fixtures.Groups[0].Fixtures[0].ID != knownFixture {
+		t.Fatalf("unknown-season fixture was returned: %+v", fixtures.Groups[0].Fixtures)
+	}
+}
+
+func assertCompetitionHTTPFiltersUnknownSeason(t *testing.T, handler http.Handler, knownCompetition string) {
+	t.Helper()
+	competitionResponse := httptest.NewRecorder()
+	competitionRequest := httptest.NewRequest(http.MethodGet, "/v1/competitions?country=Unknown%20Season%20Filter%20Test", nil)
+	handler.ServeHTTP(competitionResponse, competitionRequest)
+	if competitionResponse.Code != http.StatusOK {
+		t.Fatalf("competitions status %d: %s", competitionResponse.Code, competitionResponse.Body)
+	}
+	var competitions struct {
+		Competitions []Competition `json:"competitions"`
+	}
+	if err := json.Unmarshal(competitionResponse.Body.Bytes(), &competitions); err != nil {
+		t.Fatal(err)
+	}
+	if len(competitions.Competitions) != 1 || competitions.Competitions[0].ID != knownCompetition {
+		t.Fatalf("unknown-season competition was returned: %+v", competitions.Competitions)
+	}
+}
+
+func seedFixtureForSeason(t *testing.T, pool *pgxpool.Pool, competition, home, away, season string, kickoff time.Time) string {
+	t.Helper()
+	ctx := context.Background()
+	var fixture string
+	if err := pool.QueryRow(ctx, `INSERT INTO football.matches(competition_id,season_id)
+		VALUES($1,$2) RETURNING id::text`, competition, season).Scan(&fixture); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO football.product_fixtures(
+		fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,status,forecast_availability,updated_at)
+		VALUES($1,$2,$3,$4,$5,'SCHEDULED','SOURCE_DATA_INCOMPLETE',now())`, fixture, competition, home, away, kickoff); err != nil {
+		t.Fatal(err)
+	}
+	return fixture
 }
 
 func seedServingFixtureIdentities(t *testing.T, pool *pgxpool.Pool, name string) (string, string, string, string) {
