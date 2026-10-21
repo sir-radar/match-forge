@@ -154,4 +154,8 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                         datetime.now(UTC),
                     ),
                 )
-    return len(pairs)
+        cursor.execute("SELECT football.reconcile_unknown_season_fixtures()")
+        repaired_unknown_season_result = cursor.fetchone()
+        assert repaired_unknown_season_result is not None
+        repaired_unknown_season_fixtures = int(repaired_unknown_season_result[0])
+    return len(pairs) + repaired_unknown_season_fixtures
