@@ -116,8 +116,21 @@ class Sprint2BatchPublisher:
         self._validate_batch(scope, fitted, forecasts)
         artifacts, loaded = self._publish_artifacts(scope, fitted)
         reload_delta = self._reload_prediction_delta(fitted, forecasts, loaded)
+        candidates = tuple(
+            self._target_forecasts(scope, forecast, artifacts) for forecast in forecasts
+        )
+        publications = {
+            candidate.semantic_sha256: self._forecasts.publish(
+                candidate, self._provenance.published_at
+            )
+            for candidate in sorted(
+                (item for target in candidates for item in target),
+                key=lambda item: item.semantic_sha256,
+            )
+        }
         published_forecasts = tuple(
-            self._publish_target(scope, forecast, artifacts) for forecast in forecasts
+            tuple(publications[candidate.semantic_sha256] for candidate in target)
+            for target in candidates
         )
         return PersistedSprint2BatchV1(
             cutoff=fitted.cutoff,
@@ -168,15 +181,21 @@ class Sprint2BatchPublisher:
     ]:
         publications: dict[ModelFamily, PublishedModelArtifactV1] = {}
         loaded_states: dict[ModelFamily, LoadedPortableModelStateV1] = {}
-        for item in self._artifact_inputs(fitted):
-            fit_spec = ModelFitSpecV1(
-                model_family=item.family,
-                algorithm_version=item.algorithm_version,
-                config_sha256=item.config_sha256,
-                scope=scope,
-                code_commit_sha=self._provenance.code_commit_sha,
-                dependency_lock_sha256=self._provenance.dependency_lock_sha256,
+        inputs = [
+            (
+                ModelFitSpecV1(
+                    model_family=item.family,
+                    algorithm_version=item.algorithm_version,
+                    config_sha256=item.config_sha256,
+                    scope=scope,
+                    code_commit_sha=self._provenance.code_commit_sha,
+                    dependency_lock_sha256=self._provenance.dependency_lock_sha256,
+                ),
+                item,
             )
+            for item in self._artifact_inputs(fitted)
+        ]
+        for fit_spec, item in sorted(inputs, key=lambda pair: pair[0].sha256):
             publication = self._artifacts.publish(
                 model_artifact_id=uuid5(_ARTIFACT_NAMESPACE, fit_spec.sha256),
                 fit_spec=fit_spec,
@@ -266,12 +285,12 @@ class Sprint2BatchPublisher:
             ),
         )
 
-    def _publish_target(
+    def _target_forecasts(
         self,
         scope: PointInTimeScopeV1,
         raw: Sprint2RawForecastV1,
         artifacts: Mapping[ModelFamily, PublishedModelArtifactV1],
-    ) -> tuple[PublishedBaselineForecastV1, ...]:
+    ) -> tuple[BaselineForecastV1, ...]:
         context_sha256 = sha256_bytes(canonical_json_bytes(raw.context.to_dict()))
         candidates = (
             _forecast(
@@ -312,10 +331,7 @@ class Sprint2BatchPublisher:
                 corners=raw.corner_negative_binomial,
             ),
         )
-        return tuple(
-            self._forecasts.publish(candidate, self._provenance.published_at)
-            for candidate in candidates
-        )
+        return candidates
 
 
 def _forecast(

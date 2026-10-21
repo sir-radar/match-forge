@@ -10,6 +10,7 @@ from football.product.identity_admission import admit_provider_mappings
 from psycopg.conninfo import make_conninfo
 from psycopg.sql import SQL, Identifier
 
+from tests.integration.historical_source_fixture import legacy_identity_locking
 from tests.integration.test_product_identity_admission import _cutoff, _eligible, _history
 
 
@@ -34,7 +35,8 @@ def test_populated_identity_upgrade_is_forward_only_and_idempotent(tmp_path: Pat
         try:
             _migrate(upgrade_url, "up-to", "202610121000")
             with psycopg.connect(upgrade_url) as connection:
-                _history(connection, tmp_path)
+                with legacy_identity_locking(connection):
+                    _history(connection, tmp_path)
                 before = _cutoff(connection)
                 retained = connection.execute(
                     "SELECT to_jsonb(m) FROM football.team_provider_mappings m ORDER BY id"
@@ -71,7 +73,8 @@ def test_populated_identity_upgrade_is_forward_only_and_idempotent(tmp_path: Pat
                     ).fetchall()
                     == initial
                 )
-                admit_provider_mappings(connection, tmp_path, "football_data_uk")
+                with legacy_identity_locking(connection):
+                    admit_provider_mappings(connection, tmp_path, "football_data_uk")
                 admitted = _cutoff(connection)
                 assert len(_eligible(connection, admitted)) == 1
                 assert _eligible(connection, before) == []
@@ -96,7 +99,8 @@ def test_bulk_history_upgrade_does_not_exhaust_advisory_locks(tmp_path: Path) ->
         try:
             _migrate(upgrade_url, "up-to", "202610121000")
             with psycopg.connect(upgrade_url) as connection:
-                _history(connection, tmp_path)
+                with legacy_identity_locking(connection):
+                    _history(connection, tmp_path)
                 connection.execute(
                     """WITH original AS (
                            SELECT h.*, m.season_id FROM football.product_team_match_history h

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contract": {
+      "const": "DecisionRecordV1"
+    },
+    "contract_version": {
+      "const": "1"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "decision_type": {
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "disposition": {
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "effective_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "evidence_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "predecessor": {
+      "anyOf": [
+        {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "subject_id": {
+      "pattern": "\\S",
+      "type": "string"
+    },
+    "subject_type": {
+      "pattern": "\\S",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract",
+    "contract_version",
+    "decision_type",
+    "subject_type",
+    "subject_id",
+    "decided_at",
+    "effective_at",
+    "disposition",
+    "reason",
+    "evidence",
+    "evidence_hash",
+    "predecessor"
+  ],
+  "title": "DecisionRecordV1",
+  "type": "object"
+}

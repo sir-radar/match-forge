@@ -1,0 +1,154 @@
+{
+  "additional_live_provider_requests": 0,
+  "authoritative_evaluations_run": 0,
+  "bulk_artifact_owners": {
+    "feature_matrices_evaluation_corpora_bulk_analytical_artifacts": "Existing immutable artifact/evidence stores; Parquet for analytical rows",
+    "large_events_and_shots": "ImmutableEventParquetStore and registered dataset files",
+    "normalized_observation_files": "ObservationArtifactStore / ImmutableFileStore",
+    "raw_provider_bytes": "ImmutableRawStore / FootballDataUkRawStoreV1",
+    "simulation_archives": "Immutable artifacts when produced; no production simulation artifact or runtime gate activated"
+  },
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-32-gate",
+  "code_commit_sha": "175ecd1e3eaf57200c0dd436bacddd06f00ad48d",
+  "contract": "MatchForgeArchitectureV2PhaseGate",
+  "documentation_file_sha256": {
+    "docs/architecture.md": "3b08568c0ceac13d327392022c1da3290d294648fbcb5037c5c7d56fdc8bd888",
+    "docs/data-platform-architecture.md": "b0d5b8926bef7cf3d59416311add34f32419071bb37b3bc843f7fb19d399d542"
+  },
+  "duckdb": "Local analytics only; not a current runtime dependency. No dependency introduced.",
+  "executable_code_schema_dependencies_configuration_unchanged": true,
+  "finished_at": "2026-10-20T12:54:45.654448+00:00",
+  "implementation": "Existing stores and operational registries already conform. Clarified durable shared work, coverage/quality, event catalogue versus bulk facts, artifact registrations, Redis progress and optional DuckDB ownership. No speculative adapter, dependency or data movement.",
+  "non_test_fits": 0,
+  "owner_gitignore_sha256": "fa7e3ee634671a1473d8beb140f16c467da2a7d166891175c286844eb3ae2d79",
+  "phase": 32,
+  "phase_31_validated_executable_commit_sha": "3c1867d781cc358cf6495a6912b14f510565c125",
+  "postgresql_storage_domains": {
+    "canonical_state": [
+      "canonical_resource_resolutions",
+      "product_fixtures"
+    ],
+    "coverage": [
+      "provider_resource_coverage",
+      "canonical_resource_coverage"
+    ],
+    "decisions": [
+      "resolution_decisions",
+      "product_match_history_decisions"
+    ],
+    "forecast_metadata": [
+      "product_forecasts",
+      "forecast_artifacts"
+    ],
+    "identity": [
+      "matches",
+      "teams",
+      "provider_mapping_history"
+    ],
+    "normalized_relational_observations": [
+      "resource_observation_artifacts",
+      "event_observations"
+    ],
+    "operational_state": [
+      "provider_request_budgets",
+      "provider_resource_cursors",
+      "acquisition_jobs"
+    ],
+    "quality": [
+      "validation_runs",
+      "validation_findings",
+      "quarantine_records"
+    ],
+    "registries": [
+      "runtime_model_registrations",
+      "model_artifacts",
+      "dataset_versions"
+    ],
+    "work_orchestration": [
+      "work_items",
+      "work_dependencies",
+      "work_attempt_metrics"
+    ]
+  },
+  "promotions": 0,
+  "redis": "Readiness and ephemeral cache/progress only; shared PostgreSQL work owns durability. Current app uses PING readiness, no authoritative Redis persistence.",
+  "retained_database_mutations": 0,
+  "retained_storage_audit": {
+    "audit_ref": ".local/remediation/matchforge-architecture-v2/phase-32/audit.json",
+    "audit_runner_sha256": "a8095d83f644a9fc5552038a87ae7a141b659c5456d6a88500e5d164ba5afbb5",
+    "audit_sha256": "689a4657658b7ad8429a2f7f67392b9fcfade6ec4258ae41a72c01b78ed6104c",
+    "base_tables": 120,
+    "dataset_files_sampled": 3,
+    "dataset_samples_missing": 2,
+    "event_catalog_has_no_full_provider_payload_column": true,
+    "observation_files_verified": 16,
+    "parquet_files_verified": 1,
+    "raw_and_artifact_registries_contain_only_metadata": true,
+    "raw_files_verified": 7,
+    "raw_resources_sampled": 37,
+    "raw_samples_unverifiable": 30,
+    "scope": "Bounded storage ownership and checksum inspection. Full retained-source replay is Phase 33; no missing byte is recovered or inferred here.",
+    "status": "PASS_WITH_WARNINGS",
+    "transaction_read_only": true,
+    "verified_parquet_rows": 3683,
+    "verified_raw_providers": [
+      "api_football",
+      "football_data_org",
+      "football_data_uk",
+      "fotmob",
+      "openfootball",
+      "pitchapi",
+      "statsbomb_open_data"
+    ],
+    "views": 12
+  },
+  "runtime_cutover": false,
+  "scientific_gates_unchanged": true,
+  "status": "PASS_WITH_WARNINGS",
+  "validation_reuse": {
+    "current_checks": [
+      "enforced read-only retained storage/physical checksum audit",
+      "make project-status-check",
+      "git diff --check",
+      "executable/schema/dependency/configuration diff against validated source"
+    ],
+    "prior_comprehensive_validation": {
+      "browser": {
+        "axe_fixture_expansion_cases": 2,
+        "command": "MATCHFORGE_REAL_PROVIDER_E2E=false pnpm exec playwright test e2e/fixtures.spec.ts e2e/design-routes.spec.ts e2e/data-sync.spec.ts --reporter=json",
+        "log_ref": ".local/remediation/matchforge-architecture-v2/phase-31/browser.json",
+        "log_sha256": "97d4904d41148136a7b81202f29217468f140ba60768a7f529152bc759f830e4",
+        "representative_browser_cases": 6,
+        "representative_scenarios": 3,
+        "scope": "Deterministic routed desktop Chromium and mobile WebKit tests; no live provider calls or full WCAG conformance claim.",
+        "stats": {
+          "duration": 64850.73100000001,
+          "expected": 28,
+          "flaky": 0,
+          "skipped": 2,
+          "startTime": "2026-10-20T12:41:35.798Z",
+          "unexpected": 0
+        },
+        "status": "PASS"
+      },
+      "command": "make check integration",
+      "lint_typing_build_migrations_storage_api": "PASS",
+      "log_ref": ".local/remediation/matchforge-architecture-v2/phase-31/check-integration.log",
+      "log_sha256": "05fd4bf13fe5daff803cb68215ed795d5323fcbcd5a8fc5cb4a3d41705528616",
+      "postgres_storage_cases_passed": 699,
+      "python_unit_tests_passed": 1642,
+      "rust_tests_passed": 16,
+      "status": "PASS",
+      "web_tests_passed": 97
+    },
+    "prior_gate_ref": "docs/evidence/matchforge-architecture-v2-phase-31-2026-10-20.json",
+    "reason": "Documentation and gate evidence only; no executable, schema, configuration or dependency change since the fully validated Phase 31 source. No successful test suite is repeated."
+  },
+  "warnings": [
+    "Bounded storage ownership inspection is not Phase 33 full retained-source replay. Every sampled unverifiable raw registration and missing dataset path retains its exact private disposition; no bytes were recovered or inferred.",
+    "Thirty sampled raw registrations and two sampled dataset files could not be verified from the retained root. These registrations remain preserved.",
+    "Phase 31 analyzer limits and prior Phase 30 report-population/Elo restrictions remain recorded.",
+    "R3 remains deferred; MF-AUD-0009 acceptance remains unmet and Sprint 2 remains FAIL."
+  ]
+}

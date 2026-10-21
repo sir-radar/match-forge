@@ -40,8 +40,9 @@ type AnalysisResources = {
 function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
-  const forecastLoad = useCallback((signal: AbortSignal) => fixture.forecast ? api.forecast(fixture.id, fixture.forecast.id, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, fixture.forecast]);
-  const forecast = useResource(`forecast-${fixture.forecast?.id ?? "none"}`, forecastLoad);
+  const forecastId = fixture.forecast?.id ?? null;
+  const forecastLoad = useCallback((signal: AbortSignal) => forecastId ? api.forecast(fixture.id, forecastId, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, forecastId]);
+  const forecast = useResource(`forecast-${fixture.id}-${forecastId ?? "none"}`, forecastLoad);
   const liveLoad = useCallback((signal: AbortSignal) => api.live(fixture.id, signal), [fixture.id]);
   const live = useResource(`live-${fixture.id}`, liveLoad);
   const retryLive = live.retry;
@@ -83,7 +84,7 @@ function MatchAnalysisTabs({ fixture, resources }: { fixture: Fixture; resources
 
 function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; resources: AnalysisResources }) {
   const content: Record<Tab, ReactNode> = {
-    "Live Match": <LiveMatchPanel fixture={fixture} live={resources.live.data} />,
+    "Live Match": resources.live.error && resources.live.data === null ? null : <LiveMatchPanel fixture={fixture} live={resources.live.data} />,
     "Overview": <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />,
     "Markets": <Markets forecast={resources.forecast.data} />,
     "Score matrix": <ScoreMatrix forecast={resources.forecast.data} />,
@@ -201,7 +202,7 @@ function MatchInterpretation({ fixture, forecast }: { fixture: Fixture; forecast
     </div>
     <dl className="stat-glossary">
       <div><dt>Win %</dt><dd>Share of the model distribution assigned to each full-time result.</dd></div>
-      <div><dt>Expected goals (λ)</dt><dd>Average goals implied by repeated model simulations, not a predicted final score.</dd></div>
+      <div><dt>Expected goals (λ)</dt><dd>Average goals under this fitted model, not a predicted final score.</dd></div>
       <div><dt>Score matrix</dt><dd>Probability of each exact home–away score combination; all cells form one distribution.</dd></div>
     </dl>
   </section>;

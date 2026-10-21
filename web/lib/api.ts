@@ -28,27 +28,45 @@ async function request<T>(path: string, parse: (value: unknown) => T, options: R
     headers: { Accept: "application/json", ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
-  if (!response.ok) {
-    let message = `Request failed (${response.status})`;
-    try {
-      const payload = (await response.json()) as { error?: unknown };
-      if (typeof payload.error === "string") message = payload.error;
-    } catch {
-      // Keep status-based message when the server did not return JSON.
-    }
-    throw new ApiError(message, response.status);
-  }
+  if (!response.ok) throw await responseError(response);
   return parse(await response.json());
+}
+
+async function responseError(response: Response): Promise<ApiError> {
+  let message = `Request failed (${response.status})`;
+  try {
+    const payload: unknown = await response.json();
+    if (typeof payload === "object" && payload !== null && "error" in payload && typeof payload.error === "string") message = payload.error;
+  } catch {
+    // Keep status-based message when the server did not return JSON.
+  }
+  return new ApiError(message, response.status);
 }
 
 export const api = {
   competitions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/competitions?${query}`, parseCompetitions, { signal }),
   fixtures: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/fixtures?${query}`, parseFixtureGroups, { signal }),
-  live: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/live`, parseLiveMatch, { signal }),
-  context: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/context`, parseContext, { signal }),
-  forecast: (fixtureId: string, forecastId: string, signal?: AbortSignal) => request(`/v1/fixtures/${fixtureId}/forecasts/${forecastId}`, parseForecast, { signal }),
+  live: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/live`, (value) => {
+    const live = parseLiveMatch(value);
+    if (live.fixture_id !== fixtureId) throw new Error("live fixture mismatch");
+    return live;
+  }, { signal }),
+  context: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/context`, (value) => {
+    const context = parseContext(value);
+    if (context.fixture_id !== fixtureId) throw new Error("context fixture mismatch");
+    return context;
+  }, { signal }),
+  forecast: (fixtureId: string, forecastId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/forecasts/${encodeURIComponent(forecastId)}`, (value) => {
+    const forecast = parseForecast(value);
+    if (forecast.fixture_id !== fixtureId || forecast.id !== forecastId) throw new Error("forecast identity mismatch");
+    return forecast;
+  }, { signal }),
   forecastHistory: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/forecasts`, (value) => { const rows = parseForecastHistory(value); if (rows.some((row) => row.fixture_id !== fixtureId)) throw new Error("forecast history fixture mismatch"); return rows; }, { signal }),
-  performance: (competitionId: string, signal?: AbortSignal) => request(`/v1/competitions/${competitionId}/performance`, parsePerformance, { signal }),
+  performance: (competitionId: string, signal?: AbortSignal) => request(`/v1/competitions/${encodeURIComponent(competitionId)}/performance`, (value) => {
+    const performance = parsePerformance(value);
+    if (performance.competition_id !== competitionId) throw new Error("performance competition mismatch");
+    return performance;
+  }, { signal }),
   performanceList: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/performance?${query}`, parsePerformanceList, { signal }),
   predictions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/external-predictions?${query}`, parsePredictions, { signal }),
   sources: (query = new URLSearchParams(), signal?: AbortSignal) => request(`/v1/external-prediction-sources?${query}`, parseSources, { signal }),

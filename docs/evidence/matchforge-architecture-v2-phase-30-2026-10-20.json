@@ -1,0 +1,183 @@
+{
+  "additional_live_provider_requests": 0,
+  "analytics_policy_version": "pre-match-revisions-v2",
+  "authoritative_evaluations_run": 0,
+  "canonical_score_bucket_schema_sha256": "f40e2bd0f214f5c027f631b4ac041c5c7d6b78e4e1954a0f2f834587c349e91c",
+  "canonical_score_bucket_schema_unchanged": true,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-30-gate",
+  "code_commit_sha": "a8b11eeaac50b1e1b91d9c3f23cf04e9bfc5c41e",
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-30/check-integration.log",
+    "log_sha256": "81b10527c3f59817aca3b7f1b0aa57a0272b280a6973ebbe1e9221a669549b07",
+    "postgres_storage_cases_passed": 699,
+    "python_unit_tests_passed": 1642,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "contract": "MatchForgeArchitectureV2PhaseGate",
+  "current_report_kinds": [
+    "PERFORMANCE",
+    "CONTEXT",
+    "COMPARISON"
+  ],
+  "evidence_file_sha256": {
+    "acceptance-scopes.json": "9f9cdd45c631ae21dabdac1517a1c5a41f24266f9efa560a5b8cf657f6349066",
+    "acceptance.py": "f67189635231ab17381e4f0e47c9942f668ae85fd10a0423170eace17d844bf2",
+    "legacy-retained.json": "852ff1b2ed593d0375b22d67b0f1fcbabc74d954e1598fa8b4e89f47bdae4bb7",
+    "legacy_parity_test.go": "677996a42fbf6f5016432bb11312ad6434c5776980959fec02f7ab7f277e5179",
+    "new-retained.json": "511f14c0979c7eecf2255f0cebcb6382438a14b063d78f47336f5d55726c3f26",
+    "new_parity_test.go": "c8e75e46a88776c30435342448743c3b44956d390a5a41b970420f9cedef79e8",
+    "preserve.py": "8f121ec67d5067ead388ce689656f9154137d0d2b5c2f2ef8dc8f1fbf44860c9"
+  },
+  "evidence_refs": {
+    "acceptance": ".local/remediation/matchforge-architecture-v2/phase-30/acceptance.json",
+    "contract-validation": ".local/remediation/matchforge-architecture-v2/phase-30/contract-validation.json",
+    "full-validation": ".local/remediation/matchforge-architecture-v2/phase-30/full-validation.json",
+    "preflight": ".local/remediation/matchforge-architecture-v2/phase-30/preflight.json",
+    "upgrade-verification": ".local/remediation/matchforge-architecture-v2/phase-30/upgrade-verification.json"
+  },
+  "existing_analytics_postgres_cases": 8,
+  "finished_at": "2026-10-20T12:16:58.378749+00:00",
+  "focused_public_python_cases": 68,
+  "frozen_go_reference_cases": 32,
+  "go_analytics_removed": [
+    "performance scoring and prior baselines",
+    "league ratings",
+    "selection normalization/probability comparison",
+    "form/H2H/coach/rest features"
+  ],
+  "new_postgres_cases": 12,
+  "non_test_fits": 0,
+  "openapi_validation": {
+    "actual_disposable_http_responses": 3,
+    "actual_retained_readonly_http_responses": 11,
+    "openapi_sha256": "1ecf29aa916f668b477320bd399d0ceddc56148673f19dbd75f9974960d63a59",
+    "parsed_openapi_sha256": "76e4fe3d0cec5addfde1d2cc7c74f93bff7aaf6c63ababb97b6d4996eff378f7",
+    "response_count": 14,
+    "responses": {
+      "ExternalPredictionPage": 2,
+      "MatchContext": 6,
+      "Performance": 5,
+      "PerformancePage": 1
+    },
+    "status": "PASS",
+    "version": "0.9.0"
+  },
+  "phase": 30,
+  "phase_27_monitor_runs": 0,
+  "point_in_time_checks": [
+    "central eligible history",
+    "target fixture excluded including earlier kickoff revisions",
+    "same-kickoff outcome exclusion",
+    "knowledge-cutoff baseline inclusion",
+    "UTC input timestamps and cross-timezone retries"
+  ],
+  "prior_migration_files_unchanged": 95,
+  "promotions": 0,
+  "read_only_python_preflight": {
+    "leaf_comparisons": 725,
+    "prior_immutable_reports": 1,
+    "pure_python_legacy_scope_pairs": 11,
+    "retained_database_writes": 0,
+    "status": "PASS"
+  },
+  "retained_acceptance": {
+    "absolute_numeric_tolerance": 1e-12,
+    "additional_live_provider_requests": 0,
+    "all_other_prior_table_hashes_preserved": true,
+    "authoritative_evaluations_run": 0,
+    "changed_prior_tables": [
+      "football.work_attempt_metrics",
+      "football.work_items",
+      "football.work_lock_metrics"
+    ],
+    "code_commit_sha": "a8b11eeaac50b1e1b91d9c3f23cf04e9bfc5c41e",
+    "comparison_inputs": 1,
+    "context_fixtures": 5,
+    "current_code_reports": 11,
+    "datetime_instants_equal": true,
+    "leaf_comparisons": 13218,
+    "legacy_new_response_pairs": 11,
+    "non_test_fits": 0,
+    "performance_competitions": 5,
+    "phase_27_monitor_runs": 0,
+    "preserved_prior_legacy_reports": 1,
+    "promotions": 0,
+    "retained_reports": 12,
+    "runtime_cutover": false,
+    "selected_forecasts": 10,
+    "status": "PASS"
+  },
+  "retained_legacy_reference_commit": "993285d89025618f6f580d73bcaab1b4e4467217",
+  "review_corrections": [
+    "Retained preflight exposed modern label names; home_label/away_label now consume the unchanged existing contract. Three red cases and a real-serializer/database regression preserve the fix.",
+    "One valid legacy-format report published before the failed batch remains as an immutable prior version; the final source adds 11 fresh reports.",
+    "Existing Python league-rating owner is reused. Public selection-only lookup remains separate from the older market-specific comparison contract."
+  ],
+  "runtime_cutover": false,
+  "shadow_upgrade": {
+    "code_commit_sha": "dd71a266fff548938452b0cdbdb890afab36c0b5",
+    "fixture_projection": {
+      "rows": 192481,
+      "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+    },
+    "new_tables_empty": [
+      "football.product_read_reports"
+    ],
+    "prior_definitions_preserved": true,
+    "prior_functions_preserved": 90,
+    "prior_tables_preserved": 119,
+    "runtime_cutover": false,
+    "schema_version": 202610200100,
+    "status": "PASS"
+  },
+  "shared_work_type": "READ_MODEL_PROJECTION",
+  "source_commits": [
+    "dd71a266fff548938452b0cdbdb890afab36c0b5",
+    "a8b11eeaac50b1e1b91d9c3f23cf04e9bfc5c41e"
+  ],
+  "stale_or_missing_required_report_http_status": 503,
+  "status": "PASS_WITH_WARNINGS",
+  "unchanged": [
+    "forecast and fitted artifact bytes",
+    "current model registration",
+    "rating thresholds",
+    "censored score semantics",
+    "frozen R3 evidence",
+    "owner .gitignore"
+  ],
+  "verified_source_file_sha256": {
+    "docs/api/openapi.yaml": "1ecf29aa916f668b477320bd399d0ceddc56148673f19dbd75f9974960d63a59",
+    "docs/architecture.md": "66dc0052fe3302ffc1a4fd4ef25d5b67460c04cb9dcdf7929ee38b11882c0be9",
+    "go/api/internal/app/performance_policy_test.go": "93e3ffa62d7fb994c0e312ff3b9bdefdbe54d1d8be033adc430d2c5f0ac3b4bc",
+    "go/api/internal/app/performance_store.go": "051de73f9c78a157659d20109e3969c54fdf3941fb5135ca6c33c21ffa7ccff4",
+    "go/api/internal/app/postgres_store.go": "c7b02260131f8f2a58747c729e35da38dd31f1ffb66de08dfe7b64975337b4f5",
+    "go/api/internal/app/product_test.go": "eaddbb7395ce13270428775140b701d210232446f16ef2160d46569be3dbf5de",
+    "go/api/internal/app/read_reports.go": "89ebdec0aea1008d4de2edc88b23d7f94aa763eac895ed3f0a2183d7f23ab30f",
+    "go/api/internal/app/read_reports_test.go": "bd15b3fe0e6b3810e5fa65c91a5cb0592ee2d6dc52f747d0f8ee4ec0dce333e9",
+    "infrastructure/migrations/202610200100_public_read_reports.sql": "2403c8474a276c65960ba619623cc2a3438aa0aacd6700cd7e7b7b486f8b49e1",
+    "python/football/src/football/forecasting/multimodel_cli.py": "7910a3fcffdd8d827bf40063e1ed486104d76f0e82dd41362715e0d00dc0202b",
+    "python/football/src/football/product/public_analytics.py": "8651e444830d045866307811ef61e6af54b72734610157757c314cd2c3fd06b5",
+    "python/football/src/football/product/public_context.py": "d57832119d89a30e015de769be9405e83826d729e0468edc9425f03c333b3946",
+    "python/football/src/football/product/public_reports.py": "6658b7eed71ad7383cba5b060bfc644deda2ec1728c468c5dd8b7ab0196996d1",
+    "python/football/src/football/product/public_reports_cli.py": "3a3514f964916f87b0dffe13a5f7070babe8a150b34e995aa8fa246c97fdb9c4",
+    "python/football/tests/fixtures/legacy-public-performance.json": "904231d55bcdc9d48a0f759d9ed6c1491883bffa2623b9c2991d1e50e7f23860",
+    "python/football/tests/test_public_analytics.py": "a5b750aaaa82368edde1f240929352500477702637beb9e266b030126eff5d45",
+    "python/football/tests/test_public_context.py": "0b9bcbb74e17690e9fd4a452a519d85dc7bcc7347347aec78ee8abd90ab519b0",
+    "python/football/tests/test_public_reports.py": "b75eccca30399d3f69b7531e4d86f4dfdaac22546178684e7f34910819fe7498",
+    "scripts/storage-integration.sh": "dc99e24b14287b5034d8d35e7ac9bd133c1a700323a8ddcc72b452e0b5f96b69",
+    "tests/integration/test_product_analytics.py": "901c4d675d199ec99ed2d4bd9db5b415c5389bf03154927ebd5e5a633402bb15",
+    "tests/integration/test_public_reports.py": "88b30b6e279daa8ae8e17c957f20d2783ebd7090ef93b9f54113b2473527a864"
+  },
+  "verified_zero_forecasts_state": "UNRATED with null metrics",
+  "warnings": [
+    "Retained reports cover 11 bounded acceptance scopes; required serving scopes must be populated before runtime cutover.",
+    "The same 59 generic Elo snapshot conflicts remain an explicit runtime migration restriction.",
+    "R3 remains deferred; MF-AUD-0009 acceptance remains unmet and Sprint 2 remains FAIL.",
+    "The unreproduced Phase 20 cancellation timeout and existing source-byte/Python/web warnings remain recorded."
+  ]
+}

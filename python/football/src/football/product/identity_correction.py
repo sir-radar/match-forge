@@ -18,8 +18,8 @@ from psycopg.types.json import Jsonb
 
 from football.product.domain import sha256_json
 from football.product.identity_admission import (
+    RetainedIdentityVerifier,
     _objects,
-    _retained_payload,
     classify_mapping,
     verify_source_identifier,
 )
@@ -29,6 +29,7 @@ from football.product.identity_trust import (
     origin_id,
     qualify_mapping,
 )
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,9 +70,9 @@ def _target_not_revoked(connection: Connection[Any], key: UUID) -> bool:
 
 def _registered_payloads(
     connection: Connection[Any],
-    root: Path,
     snapshot: str,
     provider: str,
+    verifier: RetainedIdentityVerifier,
 ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
     rows = connection.execute(
         """SELECT s.manifest_path,s.manifest_sha256,s.source_identity,s.source_revision,s.git_sha,
@@ -84,7 +85,7 @@ def _registered_payloads(
     ).fetchall()
     results = []
     for row in rows:
-        payload = _retained_payload(root, provider, row)
+        payload = verifier.payload(provider, row)
         if payload is None or row[9] > datetime.now(UTC):
             raise ValueError("retained context bytes or acquisition time are unverified")
         value = json.loads(payload)
@@ -163,6 +164,7 @@ def _source_context(
     root: Path,
     request: TeamIdentityCorrection,
     source: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     row = connection.execute(
         """SELECT to_jsonb(d),to_jsonb(m),to_jsonb(f),to_jsonb(s)
@@ -192,7 +194,7 @@ def _source_context(
         raise ValueError("additional retained contradiction requires separate review")
     context, proof, _ = _fixture(
         _registered_payloads(
-            connection, root, registration["source_snapshot_id"], source["provider"]
+            connection, registration["source_snapshot_id"], source["provider"], verifier
         ),
         source["provider"],
         registration["provider_match_id"],
@@ -220,9 +222,10 @@ def _support_context(
     context: dict[str, Any],
     request: TeamIdentityCorrection,
     target: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     support, proof, _ = _fixture(
-        _registered_payloads(connection, root, original["source_snapshot_id"], "fotmob"),
+        _registered_payloads(connection, original["source_snapshot_id"], "fotmob", verifier),
         "fotmob",
         original["provider_match_id"],
     )
@@ -254,7 +257,7 @@ def _support_context(
     ).fetchall()
     if len(mapping) != 1:
         raise ValueError("supporting active crosswalk conflicts with the target UUID")
-    qualified = classify_mapping(connection, "team", mapping[0], root)
+    qualified = classify_mapping(connection, "team", mapping[0], root, verifier)
     if qualified["disposition"] != "CROSSWALK" or qualified["canonical_id"] != target["team_id"]:
         raise ValueError("supporting mapping fails the shared R2 trust predicate")
     mapping_proof = {
@@ -270,10 +273,11 @@ def _target_context(
     root: Path,
     target: dict[str, Any],
     context: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
 ) -> dict[str, Any]:
     league = explicit_target("competition", "football_data_org", context["league"])
     for payload, proof in _registered_payloads(
-        connection, root, target["source_snapshot_id"], target["provider"]
+        connection, target["source_snapshot_id"], target["provider"], verifier
     ):
         for row in _records(payload):
             if "teams" not in row or "league" not in row:
@@ -293,8 +297,13 @@ def _target_context(
 
 
 def _qualify(
-    connection: Connection[Any], root: Path, request: TeamIdentityCorrection
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    *,
+    verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
+    verifier = verifier or RetainedIdentityVerifier(root)
     source, target = (
         _mapping(connection, request.source_mapping_id),
         _mapping(connection, request.target_mapping_id),
@@ -316,10 +325,12 @@ def _qualify(
         origin_id("team", source["provider"], source["provider_team_id"], None)
     ):
         raise ValueError("source mapping is not the retained incorrect origin projection")
-    original, context, fixture_proof, fixture = _source_context(connection, root, request, source)
-    target_proof = _target_context(connection, root, target, context)
+    original, context, fixture_proof, fixture = _source_context(
+        connection, root, request, source, verifier
+    )
+    target_proof = _target_context(connection, root, target, context, verifier)
     support_proof, support_mapping_proof = _support_context(
-        connection, root, original, context, request, target
+        connection, root, original, context, request, target, verifier
     )
     source_proof = verify_source_identifier(
         connection,
@@ -329,6 +340,7 @@ def _qualify(
         "team",
         source["provider_team_id"],
         context["country"],
+        verifier,
     )
     origin_proof = verify_source_identifier(
         connection,
@@ -338,6 +350,7 @@ def _qualify(
         "team",
         target["provider_team_id"],
         target["country"],
+        verifier,
     )
     target_disposition, _ = qualify_mapping(
         MappingEvidence(
@@ -403,11 +416,15 @@ def _qualify(
 
 
 def qualify_team_correction(
-    connection: Connection[Any], root: Path, request: TeamIdentityCorrection
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    *,
+    verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
     """Read-only qualification; never fabricate an operational observation or decision time."""
     try:
-        return _qualify(connection, root, request)
+        return _qualify(connection, root, request, verifier=verifier)
     except (ValueError, OSError, KeyError, TypeError, ValidationError, RecursionError) as error:
         return {
             "status": "UNRESOLVED",
@@ -429,10 +446,11 @@ def correct_team_identity(
     ).fetchone()
     if not ready or not ready[0]:
         raise ValueError("team identity correction requires migration 202610140100")
+    verifier = RetainedIdentityVerifier(root)
+    qualify_team_correction(connection, root, request, verifier=verifier)
+    verifier.seal()
     with connection.transaction():
-        connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
         previous = connection.execute(
             """SELECT to_jsonb(a) FROM football.product_identity_admissions a
                WHERE mapping_id=%s AND entity_type='team'
@@ -454,7 +472,7 @@ def correct_team_identity(
             ):
                 raise ValueError("existing correction conflicts with the requested operation")
             if decision["disposition"] == "CROSSWALK":
-                result = qualify_team_correction(connection, root, request)
+                result = qualify_team_correction(connection, root, request, verifier=verifier)
                 if result["status"] != "QUALIFIED":
                     raise ValueError(result["reason"])
             if reviewed_revalidation and decision["disposition"] == "REVOKED":
@@ -466,7 +484,7 @@ def correct_team_identity(
                 return {**decision, "decided_at": datetime.fromisoformat(decision["decided_at"])}
         elif previous and previous[0]["disposition"] == "REVOKED":
             raise ValueError("a revoked source mapping requires a new reviewed promotion")
-        result = qualify_team_correction(connection, root, request)
+        result = qualify_team_correction(connection, root, request, verifier=verifier)
         if result["status"] != "QUALIFIED":
             raise ValueError(result["reason"])
         semantic = {
@@ -500,7 +518,11 @@ def correct_team_identity(
 
 
 def revalidate_team_correction(
-    connection: Connection[Any], root: Path, decision: dict[str, Any]
+    connection: Connection[Any],
+    root: Path,
+    decision: dict[str, Any],
+    *,
+    verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
     """Audit and automated ingestion share qualification without replacing linked decisions."""
     result = {
@@ -526,7 +548,7 @@ def revalidate_team_correction(
         UUID(decision["evidence"]["fixture_registration_id"]),
         decision["evidence"]["orientation"],
     )
-    qualified = qualify_team_correction(connection, root, request)
+    qualified = qualify_team_correction(connection, root, request, verifier=verifier)
     if qualified["status"] != "QUALIFIED":
         result.update(disposition="UNRESOLVED", reason=qualified["reason"])
     return result
@@ -539,9 +561,7 @@ def revoke_team_correction(
     if not reason.strip():
         raise ValueError("revocation reason is required")
     with connection.transaction():
-        connection.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
         row = connection.execute(
             """SELECT to_jsonb(latest) FROM football.product_identity_admissions original
                CROSS JOIN LATERAL (SELECT * FROM football.product_identity_admissions

@@ -1,0 +1,77 @@
+{
+  "acceptance_runner_sha256": "6ed5136bfbe8ad540a2ec72ce61f704b8b62808c88e3ac501c47d2b5f1e40bce",
+  "additional_live_provider_requests": 0,
+  "busy_expired_attempt_cleanup": "PASS",
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "history-database-adapter",
+  "code_commit_sha": "be4e0027728a667a5135e160ae408f7448acf24f",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-final-check-integration.log",
+    "python_unit_tests_passed": 1460,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "concurrent_enqueue_primary_key_regression": {
+    "conflicting_identity_inputs_rejected": true,
+    "constraint": "work_items_pkey",
+    "failure_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-17-history-database-adapter-check-integration.log",
+    "initial_full_validation": "FAIL",
+    "primary_and_semantic_conflicts_handled": true,
+    "status": "FINAL_COMPREHENSIVE_PASS"
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "empty_filtered_registry_claim": null,
+  "empty_registry_claim": null,
+  "existing_projections_verified": 1,
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 111,
+  "finished_at": "2026-10-18T19:37:13.525810+00:00",
+  "fixture_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "fixture_projection_preserved": true,
+  "focused_postgres_cases_passed": 397,
+  "legacy_and_explicit_lease_policy_sql_signatures": "PASS",
+  "limitations": [
+    "Four queue-specific adapters and controlled execution parity remain required inside Phase 17.",
+    "This checkpoint implements atomic shared claims and legacy-detail completion/failure. Provider execution, heartbeat/result integration and full scheduler handoff are not implemented yet.",
+    "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
+    "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
+  ],
+  "migration_hashes": {
+    "infrastructure/migrations/202610181800_history_work_execution.sql": "cc33796bd15dc87c3d8568c299a1f2c70407360efabbc1aad88664719f8ba164"
+  },
+  "migration_seconds": 0.18254,
+  "old_and_shared_sql_signatures": "PASS",
+  "phase": 17,
+  "phase_gate_complete": false,
+  "pre_existing_migrations_verified": 88,
+  "qualification_query_volatility": "v",
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T19:42:18.707933+00:00",
+  "registered_history_requests": 0,
+  "registered_work_dependencies": 0,
+  "registered_work_items": 0,
+  "remaining_phase_17_work": [
+    "Integrate authoritative claim/publication ownership for bulk history jobs.",
+    "Integrate provider-history scope jobs and generation-safe forecast work.",
+    "Retain operator sync runs as parent/control records driven by shared work.",
+    "Run controlled legacy/new execution parity before disabling old schedulers."
+  ],
+  "runtime_cutover": false,
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-17/history-database-adapter/upgrade-verification.json",
+  "shadow_verification_sha256": "5efa68443a5acf8a08fd62e2e2e3217b5fdf52110520015707e4c4e5d9c9338b",
+  "shared_history_sql_signatures": "PASS",
+  "shared_upgrade_guard": "PASS",
+  "status": "PASS_WITH_WARNINGS",
+  "three_and_four_argument_claim_signatures": "PASS",
+  "transaction_ledger_cleanup": "PASS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "work_before_history_detail_guard": "PASS",
+  "work_reference_no_key_update": "PASS",
+  "worker_control_statement_guard": "PASS"
+}

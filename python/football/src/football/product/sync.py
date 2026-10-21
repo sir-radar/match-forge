@@ -9,9 +9,10 @@ import threading
 from collections.abc import Iterable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import AbstractContextManager, nullcontext
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from uuid import UUID
 
 import psycopg
@@ -39,6 +40,7 @@ from football.product.context_sync import (
 from football.product.domain import (
     MINIMUM_HISTORY_MATCHES,
     FinishedMatch,
+    ProductForecast,
     fixture_identity,
     forecast_from_history,
     forecast_history_window,
@@ -54,9 +56,13 @@ from football.product.football_data_org import (
     FootballDataOrgError,
     FootballDataResponse,
 )
+from football.product.forecast_work import claim_forecast_generations, complete_forecast_generations
 from football.product.identity_admission import admit_provider_mappings, fixture_identity_blockers
 from football.product.identity_crosswalks import FOOTBALL_DATA_COMPETITIONS
-from football.storage.raw import ImmutableFileStore
+from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
+from football.storage.raw import ImmutableFileStore, ImmutableWrite
+from football.storage.transactions import require_idle_connection
+from football.work.storage import WorkLeaseLost
 
 PROVIDER_CODE = "api_football"
 FALLBACK_PROVIDER_CODE = "football_data_org"
@@ -64,11 +70,14 @@ PRODUCT_FORECAST_ALGORITHM_VERSION = "transferable-rolling-goals-poisson-v1-roll
 
 
 HISTORY_JOB_LEASE = timedelta(minutes=30)
-HISTORY_RETRY_MAX_SECONDS = 3600
+
+
+if TYPE_CHECKING:
+    from football.product.history_worker import HistorySyncWorker
 
 
 class HistoryWorkerFactory(Protocol):
-    def __call__(self) -> AbstractContextManager[ProductSync]: ...
+    def __call__(self) -> AbstractContextManager[HistorySyncWorker]: ...
 
 
 def _empty_standing() -> dict[str, int]:
@@ -96,6 +105,17 @@ def _history_sync_candidates(
             item,
         ),
     )
+
+
+@dataclass(frozen=True)
+class _PreparedForecast:
+    fixture_id: UUID
+    home_id: UUID
+    away_id: UUID
+    kickoff_at: datetime
+    window: tuple[FinishedMatch, ...] | None
+    forecast: ProductForecast | None
+    blocked: bool
 
 
 class ProductSync:
@@ -140,20 +160,27 @@ class ProductSync:
         competition_count = self._store_competitions(
             competition_response.rows, competition_snapshot, competition_response.fetched_at
         )
+        self.connection.commit()
         fixture_count, league_seasons = self._sync_fixtures(fixture_dates)
         context_observations = self.sync_context(competition_response.remaining_day)
         self._recover_abandoned_history_jobs()
+        self.connection.commit()
         self._enqueue_history_jobs(league_seasons)
         self.connection.commit()
         queue_result = self._process_history_queue(history_concurrency)
         for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
-            admit_provider_mappings(self.connection, self.data_root, provider)
+            admit_provider_mappings(self.connection, self.data_root, provider, commit_each=True)
         completed_at = self._database_now()
         history_fixture_count = self.backfill_fixtures_from_history(
             fixture_history_start, requested_date, completed_at
         )
         settled_count = self._settle_external_predictions(completed_at)
-        forecast_count = self.refresh_forecasts(completed_at) if refresh else 0
+        self.connection.commit()
+        forecast_count = (
+            self.refresh_forecasts(completed_at, admit_mappings=False, commit_batches=True)
+            if refresh
+            else 0
+        )
         self.connection.commit()
         return {
             "competitions": competition_count,
@@ -224,6 +251,7 @@ class ProductSync:
         store = ContextObservationStore(self.connection)
         count = 0
         for request in requests:
+            self.connection.commit()
             fixture_id, kickoff_at = by_provider_id[request.provider_fixture_id]
             try:
                 if request.resource is ContextResource.INJURIES:
@@ -515,9 +543,11 @@ class ProductSync:
         fixture_count = 0
         league_seasons: set[tuple[int, int]] = set()
         for fixture_date in fixture_dates:
+            self.connection.commit()
             stored_count, stored_leagues = self._store_requested_fixtures(fixture_date)
             fixture_count += stored_count
             league_seasons.update(stored_leagues)
+            self.connection.commit()
         league_seasons.update(self._scheduled_history_leagues())
         ordered_leagues = _history_sync_candidates(
             league_seasons,
@@ -527,26 +557,75 @@ class ProductSync:
 
     def _recover_abandoned_history_jobs(self) -> None:
         with self.connection.cursor() as cursor:
+            cursor.execute("SELECT football.authorize_worker_publication()")
             cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
-                    next_attempt_at = NULL, updated_at = clock_timestamp(),
-                    last_error = COALESCE(last_error, 'worker lease expired')
-                WHERE job_status = 'RUNNING'
-                  AND claimed_at < clock_timestamp() - %s
+                """SELECT provider_competition_id,season
+                FROM football.product_history_sync_queue
+                WHERE job_status='RUNNING' AND claimed_at < clock_timestamp() - %s
+                  AND NOT EXISTS (SELECT 1 FROM football.product_history_work binding
+                      WHERE binding.job_id=product_history_sync_queue.job_id
+                        AND binding.queued_at=product_history_sync_queue.queued_at)
+                ORDER BY ('history-queue:'||provider_competition_id||':'||season) COLLATE "C"
                 """,
                 (HISTORY_JOB_LEASE,),
             )
+            for league_id, season in cursor.fetchall():
+                cursor.execute(
+                    "SELECT football.record_transaction_lock(51,%s)",
+                    (f"history-queue:{league_id}:{season}",),
+                )
+                cursor.execute(
+                    """UPDATE football.product_history_sync_queue
+                    SET job_status='PENDING',claimed_at=NULL,started_at=NULL,
+                        next_attempt_at=NULL,updated_at=clock_timestamp(),
+                        last_error=COALESCE(last_error,'worker lease expired')
+                    WHERE provider_competition_id=%s AND season=%s
+                      AND job_status='RUNNING' AND claimed_at < clock_timestamp() - %s
+                      AND NOT EXISTS (SELECT 1 FROM football.product_history_work binding
+                          WHERE binding.job_id=product_history_sync_queue.job_id
+                            AND binding.queued_at=product_history_sync_queue.queued_at)""",
+                    (league_id, season, HISTORY_JOB_LEASE),
+                )
 
     def _enqueue_history_jobs(self, candidates: Sequence[tuple[int, int]]) -> None:
         with self.connection.cursor() as cursor:
+            cursor.execute("SELECT football.authorize_worker_publication()")
+            requested: dict[tuple[str, int], datetime] = {}
             for league_id, season in candidates:
+                key = (str(league_id), season)
+                if key not in requested:
+                    cursor.execute("SELECT clock_timestamp()")
+                    stamp = cursor.fetchone()
+                    assert stamp is not None
+                    requested[key] = stamp[0]
+            backlog: set[tuple[str, int]] = set()
+            if self.sync_run_id is not None:
+                cursor.execute(
+                    """SELECT provider_competition_id,season
+                    FROM football.product_history_sync_queue WHERE job_status='PENDING'"""
+                )
+                backlog.update(cursor.fetchall())
+            keys = sorted(
+                requested.keys() | backlog, key=lambda key: f"history-queue:{key[0]}:{key[1]}"
+            )
+            for league_key, season in keys:
+                cursor.execute(
+                    "SELECT football.record_transaction_lock(51,%s)",
+                    (f"history-queue:{league_key}:{season}",),
+                )
+                if (league_key, season) not in requested:
+                    cursor.execute(
+                        """UPDATE football.product_history_sync_queue
+                        SET sync_run_id=%s,updated_at=clock_timestamp()
+                        WHERE provider_competition_id=%s AND season=%s AND job_status='PENDING'""",
+                        (self.sync_run_id, league_key, season),
+                    )
+                    continue
                 cursor.execute(
                     """
                     INSERT INTO football.product_history_sync_queue (
-                        provider_competition_id, season, sync_run_id
-                    ) VALUES (%s, %s, %s)
+                        provider_competition_id, season, sync_run_id, queued_at
+                    ) VALUES (%s, %s, %s, %s)
                     ON CONFLICT (provider_competition_id, season) DO UPDATE SET
                         sync_run_id = EXCLUDED.sync_run_id,
                         job_status = CASE
@@ -556,7 +635,7 @@ class ProductSync:
                         END,
                         queued_at = CASE
                             WHEN football.product_history_sync_queue.job_status IN
-                                 ('SUCCEEDED', 'FAILED') THEN clock_timestamp()
+                                 ('SUCCEEDED', 'FAILED') THEN EXCLUDED.queued_at
                             ELSE football.product_history_sync_queue.queued_at
                         END,
                         started_at = CASE
@@ -586,25 +665,31 @@ class ProductSync:
                         END,
                         updated_at = clock_timestamp()
                     """,
-                    (str(league_id), season, self.sync_run_id),
-                )
-            if self.sync_run_id is not None:
-                cursor.execute(
-                    """
-                    UPDATE football.product_history_sync_queue
-                    SET sync_run_id = %s, updated_at = clock_timestamp()
-                    WHERE job_status = 'PENDING'
-                    """,
-                    (self.sync_run_id,),
+                    (league_key, season, self.sync_run_id, requested[(league_key, season)]),
                 )
 
     def _process_history_queue(self, concurrency: int) -> dict[str, int]:
         if concurrency > 1 and self.history_worker_factory is None:
             raise ValueError("history_worker_factory is required for concurrent history sync")
-        factory = self.history_worker_factory or (lambda: nullcontext(self))
+        from football.product.history_worker import HistorySyncWorker
+
+        factory = self.history_worker_factory or (
+            lambda: nullcontext(
+                HistorySyncWorker(
+                    self.connection,
+                    self.client,
+                    self.data_root,
+                    self.artifact_path,
+                    self.history_fallback,
+                    self.api_football_max_history_season,
+                    self.sync_run_id,
+                )
+            )
+        )
         total = self._history_queue_total()
         self.connection.commit()
-        batch_started_at = datetime.now(UTC)
+        batch_started_at = self._database_now()
+        self.connection.commit()
         lock = threading.Lock()
         active = 0
         peak = 0
@@ -630,6 +715,9 @@ class ProductSync:
                             league_id, season
                         )
                         worker._complete_history_job(job_id)
+                    except WorkLeaseLost:
+                        worker.connection.rollback()
+                        raise
                     except (
                         ApiFootballError,
                         FootballDataOrgError,
@@ -689,80 +777,6 @@ class ProductSync:
                 )
             row = cursor.fetchone()
         return int(row[0]) if row else 0
-
-    def _claim_history_job(self, batch_started_at: datetime) -> tuple[UUID, int, int, int] | None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                WITH candidate AS (
-                    SELECT job_id
-                    FROM football.product_history_sync_queue queue
-                    WHERE job_status = 'PENDING'
-                      AND (next_attempt_at IS NULL OR next_attempt_at <= clock_timestamp())
-                      AND queue.updated_at < %s
-                    ORDER BY queued_at, job_id
-                    FOR UPDATE SKIP LOCKED
-                    LIMIT 1
-                )
-                UPDATE football.product_history_sync_queue queue
-                SET job_status = 'RUNNING', claimed_at = clock_timestamp(),
-                    started_at = clock_timestamp(), finished_at = NULL,
-                    attempt_count = attempt_count + 1, updated_at = clock_timestamp(),
-                    sync_run_id = COALESCE(%s, sync_run_id)
-                FROM candidate
-                WHERE queue.job_id = candidate.job_id
-                RETURNING queue.job_id, queue.provider_competition_id,
-                          queue.season, queue.attempt_count
-                """,
-                (batch_started_at, self.sync_run_id),
-            )
-            row = cursor.fetchone()
-        self.connection.commit()
-        if row is None:
-            return None
-        return cast(tuple[UUID, int, int, int], (row[0], int(row[1]), row[2], row[3]))
-
-    def _complete_history_job(self, job_id: UUID) -> None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'SUCCEEDED', finished_at = clock_timestamp(),
-                    claimed_at = NULL, next_attempt_at = NULL, last_error = NULL,
-                    updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (job_id,),
-            )
-        self.connection.commit()
-
-    def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> None:
-        delay = min(60 * (2 ** max(0, attempt_count - 1)), HISTORY_RETRY_MAX_SECONDS)
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'PENDING', claimed_at = NULL, started_at = NULL,
-                    next_attempt_at = clock_timestamp() + %s * interval '1 second',
-                    last_error = %s, updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (delay, str(error)[:4000], job_id),
-            )
-        self.connection.commit()
-
-    def _fail_history_job(self, job_id: UUID, error: Exception) -> None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_history_sync_queue
-                SET job_status = 'FAILED', finished_at = clock_timestamp(),
-                    claimed_at = NULL, last_error = %s, updated_at = clock_timestamp()
-                WHERE job_id = %s
-                """,
-                (str(error)[:4000], job_id),
-            )
-        self.connection.commit()
 
     def _scheduled_history_leagues(self) -> set[tuple[int, int]]:
         with self.connection.cursor() as cursor:
@@ -846,6 +860,7 @@ class ProductSync:
     def backfill_fixtures_from_history(
         self, from_date: date, through_date: date, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -935,18 +950,34 @@ class ProductSync:
     def _settle_external_predictions(self, settled_at: datetime) -> int:
         return settle_external_predictions(self.connection, settled_at)
 
-    def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
+    def _prepare_response(
+        self, provider_code: str, response: ApiResponse | FootballDataResponse
+    ) -> ImmutableWrite:
         digest = hashlib.sha256(response.raw).hexdigest()
-        provider_id = stable_id("provider", PROVIDER_CODE)
-        snapshot_id = stable_id("source-snapshot", PROVIDER_CODE, resource_name, digest)
-        resource_id = stable_id("source-resource", snapshot_id, resource_name)
         relative_path = (
             Path("mvp")
-            / PROVIDER_CODE
+            / provider_code
             / response.fetched_at.strftime("%Y/%m/%d")
             / f"{digest}.json"
         )
-        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+        return ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+
+    def _record_response(self, resource_name: str, response: ApiResponse) -> UUID:
+        prepared = self._prepare_response(PROVIDER_CODE, response)
+        return self._register_response(resource_name, response, prepared)
+
+    def _record_fallback_response(self, resource_name: str, response: FootballDataResponse) -> UUID:
+        prepared = self._prepare_response(FALLBACK_PROVIDER_CODE, response)
+        return self._register_fallback_response(resource_name, response, prepared)
+
+    def _register_response(
+        self, resource_name: str, response: ApiResponse, prepared: ImmutableWrite
+    ) -> UUID:
+        digest = prepared.sha256
+        provider_id = stable_id("provider", PROVIDER_CODE)
+        snapshot_id = stable_id("source-snapshot", PROVIDER_CODE, resource_name, digest)
+        resource_id = stable_id("source-resource", snapshot_id, resource_name)
+        relative_path = prepared.relative_path
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -993,18 +1024,14 @@ class ProductSync:
             )
         return snapshot_id
 
-    def _record_fallback_response(self, resource_name: str, response: FootballDataResponse) -> UUID:
-        digest = hashlib.sha256(response.raw).hexdigest()
+    def _register_fallback_response(
+        self, resource_name: str, response: FootballDataResponse, prepared: ImmutableWrite
+    ) -> UUID:
+        digest = prepared.sha256
         provider_id = stable_id("provider", FALLBACK_PROVIDER_CODE)
         snapshot_id = stable_id("source-snapshot", FALLBACK_PROVIDER_CODE, resource_name, digest)
         resource_id = stable_id("source-resource", snapshot_id, resource_name)
-        relative_path = (
-            Path("mvp")
-            / FALLBACK_PROVIDER_CODE
-            / response.fetched_at.strftime("%Y/%m/%d")
-            / f"{digest}.json"
-        )
-        ImmutableFileStore(self.data_root).publish(str(relative_path), response.raw)
+        relative_path = prepared.relative_path
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1074,6 +1101,7 @@ class ProductSync:
     def _store_competitions(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         count = 0
         for row in rows:
             league = _mapping(row, "league")
@@ -1270,6 +1298,7 @@ class ProductSync:
     def _store_fixtures(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> list[Mapping[str, Any]]:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         stored: list[Mapping[str, Any]] = []
         for row in rows:
             league = _mapping(row, "league")
@@ -1350,6 +1379,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> tuple[int, list[tuple[int, int]]]:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         reverse_codes = {code: league_id for league_id, code in FOOTBALL_DATA_COMPETITIONS.items()}
         count = 0
         league_seasons: set[tuple[int, int]] = set()
@@ -1503,6 +1533,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         season_label = str(season)
         season_id = stable_id("season", competition_id, season)
         with self.connection.cursor() as cursor:
@@ -1596,6 +1627,7 @@ class ProductSync:
         snapshot_id: UUID,
         observed_at: datetime,
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         if rows:
             self._reset_standings(competition_id)
         count = 0
@@ -1673,6 +1705,7 @@ class ProductSync:
     def _store_standings(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         count = 0
         for envelope in rows:
             league = _mapping(envelope, "league")
@@ -1748,16 +1781,37 @@ class ProductSync:
         fixture_ids: Sequence[UUID] | None = None,
         *,
         admit_mappings: bool = True,
+        commit_batches: bool = False,
     ) -> int:
         """Publish missing future forecasts; busy competition/fixture rows remain queued."""
+        if commit_batches:
+            require_idle_connection(self.connection, "bounded forecast refresh")
         if admit_mappings:
             for provider in (PROVIDER_CODE, FALLBACK_PROVIDER_CODE):
-                admit_provider_mappings(self.connection, self.data_root, provider)
+                admit_provider_mappings(
+                    self.connection, self.data_root, provider, commit_each=commit_batches
+                )
         now = now or self._database_now()
+        artifact_sha, prepared = self._prepare_forecasts(now, fixture_ids)
+        if not commit_batches:
+            return sum(
+                self._publish_prepared_forecast(item, now, artifact_sha) for item in prepared
+            )
+        self.connection.commit()
+        count = 0
+        for item in prepared:
+            with self.connection.transaction():
+                count += self._publish_prepared_forecast(item, now, artifact_sha)
+        return count
+
+    def _prepare_forecasts(
+        self, now: datetime, fixture_ids: Sequence[UUID] | None
+    ) -> tuple[str, list[_PreparedForecast]]:
+        """Read immutable inputs and compute before taking canonical or work locks."""
         artifact_bytes = self.artifact_path.read_bytes()
         artifact_sha = hashlib.sha256(artifact_bytes).hexdigest()
         parameters = TransferableParametersV1(**json.loads(artifact_bytes)["parameters"])
-        count = 0
+        prepared = []
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -1774,31 +1828,36 @@ class ProductSync:
             )
             targets = cursor.fetchall()
         blockers = fixture_identity_blockers(self.connection, [row[0] for row in targets], now)
-        rejected = [identifier for identifier, reason in blockers.items() if reason is not None]
-        if rejected:
-            self.connection.execute(
-                "UPDATE football.product_fixtures "
-                "SET forecast_availability='SOURCE_DATA_INCOMPLETE' "
-                "WHERE fixture_id=ANY(%s::uuid[])",
-                (rejected,),
-            )
-        targets = [row for row in targets if blockers.get(row[0]) is None]
         for start in range(0, len(targets), 32):
             batch = targets[start : start + 32]
             history_by_team = self._batch_history(batch, now)
             for fixture_id, home_id, away_id, kickoff_at in batch:
                 history = self._target_history(history_by_team, home_id, away_id, kickoff_at)
-                count += self._publish_forecast(
-                    fixture_id,
-                    home_id,
-                    away_id,
-                    kickoff_at,
-                    now,
-                    history,
-                    artifact_sha,
-                    parameters,
+                window = forecast_history_window(history, kickoff_at, home_id, away_id)
+                forecast = (
+                    forecast_from_history(
+                        artifact_path=self.artifact_path,
+                        target_kickoff=kickoff_at,
+                        home_team_id=home_id,
+                        away_team_id=away_id,
+                        history=window or (),
+                        parameters=parameters,
+                    )
+                    if blockers.get(fixture_id) is None
+                    else None
                 )
-        return count
+                prepared.append(
+                    _PreparedForecast(
+                        fixture_id,
+                        home_id,
+                        away_id,
+                        kickoff_at,
+                        window,
+                        forecast,
+                        blockers.get(fixture_id) is not None,
+                    )
+                )
+        return artifact_sha, prepared
 
     def refresh_pending_forecasts(self, limit: int = 32) -> dict[str, object]:
         """Refresh one transaction-sized batch of durable affected fixtures."""
@@ -1806,40 +1865,40 @@ class ProductSync:
             raise ValueError("pending forecast batch limit must be between 1 and 32")
         with self.connection.cursor() as cursor:
             cursor.execute(
+                """SELECT fixture_id,generation FROM football.product_forecast_refresh_work
+                WHERE generation>completed_generation ORDER BY requested_at,fixture_id LIMIT 32"""
+            )
+            generations = dict(cursor.fetchall())
+        if not generations:
+            return {"forecasts_created": 0, "fixtures_processed": 0, "fixtures_pending": 0}
+        knowledge_cutoff = self._database_now()
+        artifact_sha, prepared = self._prepare_forecasts(knowledge_cutoff, list(generations))
+        self.connection.execute("SELECT football.authorize_worker_publication()")
+        with self.connection.cursor() as cursor:
+            cursor.execute(
                 """
                 SELECT fixture.fixture_id FROM football.product_competitions competition
                 JOIN football.product_fixtures fixture USING (competition_id)
                 JOIN football.product_forecast_refresh_work work USING (fixture_id)
                 WHERE work.generation > work.completed_generation
-                ORDER BY work.requested_at, fixture.fixture_id
+                  AND fixture.fixture_id=ANY(%s::uuid[])
+                ORDER BY competition.competition_id, fixture.fixture_id
                 FOR UPDATE OF competition, fixture SKIP LOCKED LIMIT %s
                 """,
-                (limit,),
+                (list(generations), limit),
             )
             fixture_ids = [row[0] for row in cursor.fetchall()]
-            # Claim the competition before its fixtures; ingestion locks fixtures before work.
-            # Busy competitions are deferred without holding their fixture/work rows.
-            cursor.execute(
-                """SELECT fixture_id FROM football.product_forecast_refresh_work
-                   WHERE fixture_id = ANY(%s::uuid[]) ORDER BY fixture_id FOR UPDATE""",
-                (fixture_ids,),
-            )
-            cursor.fetchall()
-        knowledge_cutoff = self._database_now()
-        created = (
-            self.refresh_forecasts(knowledge_cutoff, fixture_ids, admit_mappings=False)
-            if fixture_ids
-            else 0
+        claims = claim_forecast_generations(
+            self.connection, fixture_ids, expected_generations=generations
         )
+        selected = {fixture for fixture, _generation, _claim in claims}
+        created = sum(
+            self._publish_prepared_forecast(item, knowledge_cutoff, artifact_sha)
+            for item in prepared
+            if item.fixture_id in selected
+        )
+        complete_forecast_generations(self.connection, claims)
         with self.connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE football.product_forecast_refresh_work
-                SET completed_generation = generation, completed_at = clock_timestamp()
-                WHERE fixture_id = ANY(%s::uuid[])
-                """,
-                (fixture_ids,),
-            )
             cursor.execute(
                 """SELECT count(*) FROM football.product_forecast_refresh_work
                    WHERE generation > completed_generation"""
@@ -1847,7 +1906,7 @@ class ProductSync:
             remaining = cursor.fetchone()
         return {
             "forecasts_created": created,
-            "fixtures_processed": len(fixture_ids),
+            "fixtures_processed": len(claims),
             "fixtures_pending": remaining[0] if remaining is not None else 0,
         }
 
@@ -1867,20 +1926,8 @@ class ProductSync:
         artifact_sha: str,
         parameters: TransferableParametersV1,
     ) -> int:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                """SELECT 1 FROM football.product_competitions competition
-                   JOIN football.product_fixtures fixture USING (competition_id)
-                   WHERE fixture_id = %s
-                     AND football.product_fixture_team_at(fixture_id, home_team_id, %s) = %s
-                     AND football.product_fixture_team_at(fixture_id, away_team_id, %s) = %s
-                     AND kickoff_at = %s AND kickoff_at > clock_timestamp()
-                     AND status = 'SCHEDULED' AND identity_status = 'VERIFIED'
-                   FOR UPDATE OF competition, fixture SKIP LOCKED""",
-                (fixture_id, now, home_id, now, away_id, kickoff_at),
-            )
-            if cursor.fetchone() is None:
-                return 0
+        if any(match.fixture_id == fixture_id for match in history):
+            raise ValueError("forecast history must not contain the target fixture")
         window = forecast_history_window(history, kickoff_at, home_id, away_id)
         forecast = forecast_from_history(
             artifact_path=self.artifact_path,
@@ -1890,6 +1937,47 @@ class ProductSync:
             history=window or (),
             parameters=parameters,
         )
+        return self._publish_prepared_forecast(
+            _PreparedForecast(fixture_id, home_id, away_id, kickoff_at, window, forecast, False),
+            now,
+            artifact_sha,
+        )
+
+    def _publish_prepared_forecast(
+        self, item: _PreparedForecast, now: datetime, artifact_sha: str
+    ) -> int:
+        fixture_id, home_id, away_id, kickoff_at = (
+            item.fixture_id,
+            item.home_id,
+            item.away_id,
+            item.kickoff_at,
+        )
+        window, forecast = item.window, item.forecast
+        self.connection.execute("SELECT football.authorize_worker_publication()")
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT 1 FROM football.product_competitions competition
+                   JOIN football.product_fixtures fixture USING (competition_id)
+                   WHERE fixture_id = %s
+                     AND football.product_fixture_team_at(fixture_id, home_team_id, %s)
+                         IS NOT DISTINCT FROM %s
+                     AND football.product_fixture_team_at(fixture_id, away_team_id, %s)
+                         IS NOT DISTINCT FROM %s
+                     AND kickoff_at = %s AND (%s OR kickoff_at > clock_timestamp())
+                     AND status = 'SCHEDULED' AND identity_status = 'VERIFIED'
+                   FOR UPDATE OF competition, fixture SKIP LOCKED""",
+                (fixture_id, now, home_id, now, away_id, kickoff_at, item.blocked),
+            )
+            if cursor.fetchone() is None:
+                return 0
+        if item.blocked:
+            self.connection.execute(
+                "UPDATE football.product_fixtures "
+                "SET forecast_availability='SOURCE_DATA_INCOMPLETE' "
+                "WHERE fixture_id=%s",
+                (fixture_id,),
+            )
+            return 0
         if forecast is None:
             with self.connection.cursor() as cursor:
                 cursor.execute(
@@ -2043,12 +2131,13 @@ class ProductSync:
                        source_kickoff_precision
                 FROM football.product_eligible_history_at(%s)
                 WHERE kickoff_at < %s
+                  AND fixture_id <> ALL(%s::uuid[])
                   AND (home_team_id = ANY(%s::uuid[])
                        OR away_team_id = ANY(%s::uuid[]))
                   AND known_at <= %s
                 ORDER BY kickoff_at, fixture_id
                 """,
-                (now, latest_kickoff, teams, teams, now),
+                (now, latest_kickoff, [fixture for fixture, _, _, _ in targets], teams, teams, now),
             )
             rows = cursor.fetchall()
         by_team: dict[UUID, list[tuple[FinishedMatch, str]]] = {}

@@ -219,7 +219,9 @@ def _review_pair(connection: Connection[Any], root: Path) -> tuple[Any, ...]:
         "SELECT fixture_id,kickoff_at FROM football.product_team_match_history"
     ).fetchone()
     sync = OperationalProviderSync(connection, root, provider_code="fotmob")
-    sync._materialize_history_fixture(fixture, datetime.now(UTC))
+    # Retained source time must precede both database and verifier clocks.
+    observed_at = datetime(2026, 9, 1, tzinfo=UTC)
+    sync._materialize_history_fixture(fixture, observed_at)
     payload = {
         "details": {
             "id": 47,
@@ -246,13 +248,48 @@ def _review_pair(connection: Connection[Any], root: Path) -> tuple[Any, ...]:
         },
     }
     raw = json.dumps(payload).encode()
-    response = FotmobResponse(
-        "league", datetime.now(UTC), hashlib.sha256(raw).hexdigest(), raw, payload
-    )
+    response = FotmobResponse("league", observed_at, hashlib.sha256(raw).hexdigest(), raw, payload)
     snapshot = sync._record_response("league-47-2026/2027", response)
     row = _fotmob_season_rows(response, "47", "2026/2027")[0]
     sync._store_observation(row, snapshot, None)
     return sync, fixture, snapshot, row
+
+
+def test_serving_review_fixture_is_independent_of_host_clock_skew(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    host_datetime = datetime
+
+    class AheadClock(datetime):
+        @classmethod
+        def now(cls, tz: Any = None) -> datetime:
+            return host_datetime.now(tz) + timedelta(days=1)
+
+    monkeypatch.setitem(globals(), "datetime", AheadClock)
+    with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
+        sync, fixture, snapshot, row = _review_pair(connection, tmp_path)
+        assert row.observed_at <= _cutoff(connection)
+        member = sync._create_provider_scoped_fixture(row, snapshot, season_label="2026/2027")
+        assert member is not None and member != fixture
+
+
+def test_review_fixture_is_verifiable_when_database_clock_is_ahead(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
+        knowledge_time = _cutoff(connection) - timedelta(seconds=1)
+
+        class VerifierClock(datetime):
+            @classmethod
+            def now(cls, tz: Any = None) -> datetime:
+                return knowledge_time.astimezone(tz)
+
+        monkeypatch.setattr("football.product.identity_admission.datetime", VerifierClock)
+        sync, fixture, snapshot, row = _review_pair(connection, tmp_path)
+        assert row.observed_at <= knowledge_time
+        sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
 
 
 def test_competition_review_does_not_admit_teams_or_complete_the_source_season(

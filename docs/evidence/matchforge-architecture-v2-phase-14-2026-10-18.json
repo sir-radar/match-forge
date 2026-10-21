@@ -1,0 +1,70 @@
+{
+  "additional_live_provider_requests": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "d39d37250c0cc68f30ef44ece8c858ea068c741d",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-14-final-check-integration.log",
+    "python_unit_tests_passed": 1451,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "empty_registry_claim": null,
+  "existing_projections_verified": 1,
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 109,
+  "fixture_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "fixture_projection_preserved": true,
+  "limitations": [
+    "The shared engine foundation is isolated. Existing production scheduler migration remains Phase 17; production scheduling is not yet unified.",
+    "Global canonical/work lock ordering, all-route adversarial concurrency and controlled cutover remain separate required gates. Publication callers must acquire canonical coordination before their work-row lock.",
+    "Work semantic keys bind immutable inputs, policy and dependency sets. Source generations and cutoffs belong in new keys when they change the input; the scheduling generation is a lease/fencing epoch. No legacy jobs or provider scopes are inferred during upgrade."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180700_work_orchestration.sql",
+  "migration_seconds": 0.225331,
+  "migration_sha256": "6dc6863f9aaa37914aa239c1c63bc195d6721ea0b1fa267c0f7f9393396447e5",
+  "phase": 14,
+  "pre_existing_migrations_verified": 77,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T09:20:06.920057+00:00",
+  "registered_work_dependencies": 0,
+  "registered_work_items": 0,
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-14-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-14/upgrade-verification.json",
+  "shadow_verification_sha256": "afa244d5714588b21c96a8247f9ff798cae01347b224bef3f4429efee4440176",
+  "state_transition_cases_passed": 49,
+  "status": "PASS_WITH_WARNINGS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "work_contract_unit_cases_passed": 21,
+  "work_postgres_cases_passed": 107,
+  "work_states": [
+    "PENDING",
+    "RUNNING",
+    "RETRY_WAIT",
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED",
+    "BLOCKED"
+  ],
+  "work_types": [
+    "PROVIDER_ACQUISITION",
+    "HISTORICAL_ACQUISITION",
+    "NORMALIZATION",
+    "IDENTITY_REMEDIATION",
+    "CANONICAL_RECONCILIATION",
+    "COVERAGE_REBUILD",
+    "READ_MODEL_PROJECTION",
+    "FEATURE_BUILD",
+    "FORECAST_REFRESH",
+    "SIMULATION",
+    "POST_MATCH_EVALUATION",
+    "EXPERIMENT_EXECUTION"
+  ]
+}

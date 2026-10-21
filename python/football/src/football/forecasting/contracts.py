@@ -289,6 +289,10 @@ class GoalForecastPayloadV1:
     contract: str = "GoalForecastPayloadV1"
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "score_labels", tuple(self.score_labels))
+        object.__setattr__(
+            self, "score_probabilities", tuple(tuple(row) for row in self.score_probabilities)
+        )
         if self.contract != "GoalForecastPayloadV1":
             raise ForecastContractError("unsupported goal forecast payload contract")
         _non_negative_finite(self.lambda_home, "lambda_home")
@@ -433,6 +437,7 @@ class BaselineForecastV1:
     contract: str = "BaselineForecastV1"
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "model_artifact_ids", tuple(self.model_artifact_ids))
         if self.contract != "BaselineForecastV1":
             raise ForecastContractError("unsupported baseline forecast contract")
         _aware(self.prediction_cutoff, "prediction_cutoff")

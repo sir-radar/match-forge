@@ -15,6 +15,8 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request
 
 from football.providers.base import ProviderFetchError, open_bounded, read_bounded
+from football.providers.native.pitchapi import PitchApiMatch
+from football.providers.native.reader import NativeRecordError, native_record
 
 _BASE_URL = "https://api.pitchapi.dev"
 _ID = re.compile(r"^[mltp]_[A-Za-z0-9]{6}$")
@@ -250,6 +252,20 @@ class PitchApiClient:
             raw=result.payload,
             data=cast(Mapping[str, Any] | list[Any], data),
         )
+
+
+def parse_pitchapi_match(row: Mapping[str, Any]) -> PitchApiMatch:
+    """Retain native strings and nulls before MatchForge status conversion."""
+    _resource_id(row.get("id"), "m")
+    for key in ("home_team", "away_team"):
+        team = _mapping(row.get(key), key)
+        _resource_id(team.get("id"), "t")
+    _score(row.get("score_home"))
+    _score(row.get("score_away"))
+    try:
+        return native_record(PitchApiMatch, row)
+    except NativeRecordError as error:
+        raise PitchApiPayloadError(str(error)) from error
 
 
 def normalize_pitchapi_matches(response: PitchApiResponse) -> tuple[PitchApiFixture, ...]:

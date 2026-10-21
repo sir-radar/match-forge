@@ -484,12 +484,15 @@ def test_backfill_history_unlocks_missing_forecast(
         tmp_path,
         PROJECT_ROOT / MODEL_ARTIFACT_PATH,
     )
-    before_tenth = product.refresh_pending_forecasts()
-    assert before_tenth["forecasts_created"] == 0
-    assert connection.execute(
-        "SELECT forecast_availability FROM football.product_fixtures WHERE fixture_id = %s",
-        (fixture_id,),
-    ).fetchone() == ("NOT_ENOUGH_HISTORY",)
+    # Each work batch has its own transaction lock lifetime. Keep the initial
+    # insufficient-history assertions without retaining its completed work locks.
+    with connection.transaction(force_rollback=True):
+        before_tenth = product.refresh_pending_forecasts()
+        assert before_tenth["forecasts_created"] == 0
+        assert connection.execute(
+            "SELECT forecast_availability FROM football.product_fixtures WHERE fixture_id = %s",
+            (fixture_id,),
+        ).fetchone() == ("NOT_ENOUGH_HISTORY",)
     import_pair(9)
     admit_provider_mappings(connection, tmp_path, "openfootball")
     forecast_knowledge_cutoff = _first(connection.execute("SELECT clock_timestamp()").fetchone())

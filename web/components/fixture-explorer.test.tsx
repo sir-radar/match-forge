@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FixtureExplorer } from "@/components/fixture-explorer";
-import { parseForecast } from "@/lib/contracts";
+import { parseFixtureGroups, parseForecast } from "@/lib/contracts";
+import { ExpandedFixture } from "@/components/expanded-fixture";
 
 const competition = {
   id: "league-1", name: "Premier League", country: "England", continent: "Europe", division: 1,
@@ -43,6 +44,73 @@ describe("FixtureExplorer", () => {
     }));
   });
   afterEach(() => vi.unstubAllGlobals());
+
+  it("isolates failed context and live resources from a successful forecast", async () => {
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => /\/(context|live)$/.test(String(input))
+      ? Promise.resolve(new Response(JSON.stringify({ error: "Resource unavailable" }), { status: 503 })) : original(input, options)));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    fireEvent.click(await screen.findByRole("button", { name: /Arsenal.*Chelsea/s }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Resource unavailable");
+    expect(await screen.findByText("Forecast record")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Score matrix" }));
+    await waitFor(() => expect(screen.getAllByText("14.0%")).toHaveLength(2));
+    fireEvent.click(screen.getByRole("tab", { name: "Live Match" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Resource unavailable");
+    expect(screen.queryByText("Loading live match")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Arsenal.*Chelsea/s })).toBeInTheDocument();
+  });
+
+  it("keeps an immutable forecast request stable and rejects its late superseded result", async () => {
+    const original = fetch;
+    let finish!: (value: Response) => void;
+    let oldSignal: AbortSignal | undefined;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => {
+      if (String(input).endsWith("/forecasts/forecast-1")) {
+        oldSignal = options?.signal ?? undefined;
+        return new Promise<Response>((resolve) => { finish = resolve; });
+      }
+      if (String(input).endsWith("/forecasts/forecast-2")) return Promise.resolve(new Response(JSON.stringify({ ...forecast, id: "forecast-2", score_matrix: [{ home_goals: 2, away_goals: 0, probability: .21 }] })));
+      return original(input, options);
+    }));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    const view = render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    await waitFor(() => expect(oldSignal).toBeDefined());
+    view.rerender(<ExpandedFixture fixture={{ ...group.fixtures[0], forecast: { ...group.fixtures[0].forecast! } }} competition={group.competition} />);
+    expect(vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/forecasts/")).length).toBe(1);
+    expect(oldSignal!.aborted).toBe(false);
+    view.rerender(<ExpandedFixture fixture={{ ...group.fixtures[0], forecast: { ...group.fixtures[0].forecast!, id: "forecast-2" } }} competition={group.competition} />);
+    expect(oldSignal!.aborted).toBe(true);
+    fireEvent.click(screen.getByRole("tab", { name: "Score matrix" }));
+    await waitFor(() => expect(screen.getAllByText("21.0%")).toHaveLength(2));
+    await act(async () => finish(new Response(JSON.stringify(forecast))));
+    expect(screen.getAllByText("21.0%")).toHaveLength(2);
+    expect(screen.queryByText("14.0%")).not.toBeInTheDocument();
+  });
+
+  it("retains fixtures on polling failure, retries locally, and clears them on date change", async () => {
+    const original = fetch;
+    let fail = false;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => fail && String(input).includes("/v1/fixtures?")
+      ? Promise.resolve(new Response(JSON.stringify({ error: "Report unavailable" }), { status: 503 })) : original(input, options)));
+    vi.useFakeTimers();
+    try {
+      render(<FixtureExplorer initialDate="2026-09-29" />);
+      await vi.waitFor(() => expect(screen.getByText("Arsenal")).toBeInTheDocument());
+      fail = true;
+      await act(async () => vi.advanceTimersByTimeAsync(45_000));
+      await vi.waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Showing previously loaded fixtures"));
+      expect(screen.getByText("Arsenal")).toBeInTheDocument();
+      fail = false;
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      await vi.waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+      fail = true;
+      fireEvent.click(screen.getByRole("button", { name: "Next day" }));
+      expect(screen.queryByText("Arsenal")).not.toBeInTheDocument();
+      await vi.waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Report unavailable"));
+      expect(screen.queryByText("Arsenal")).not.toBeInTheDocument();
+    } finally { vi.useRealTimers(); }
+  });
 
   it.each(["Unknown", "UNKNOWN"])("labels missing country %s clearly and keeps the API filter value", async (country) => {
     const unknown = { ...competition, country, continent: "Unknown", type: "UNKNOWN" };

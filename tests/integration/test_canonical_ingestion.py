@@ -1454,37 +1454,41 @@ def test_publishes_and_registers_normalized_event_dataset_idempotently(
 
 
 def test_explicit_build_spec_reuses_verified_dataset_and_changes_identity_only_for_semantic_change(
-    connection: Connection[Any], tmp_path: Path
+    tmp_path: Path,
 ) -> None:
-    acquisition = _acquire_bundle(
-        tmp_path,
-        source_git_sha="a" * 40,
-        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
-        events=_event_payload(),
-    )
-    canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
-    spec = _event_build_spec(connection, canonical.source_snapshot_id)
-    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+    from tests.integration.test_team_identity_correction import isolated_database
 
-    first = publisher.publish(acquisition, spec)
-    retry = publisher.publish(acquisition, spec)
-    changed_spec = replace(spec, quality_policy_version="statsbomb-quality-policy-v4")
-    changed = publisher.publish(acquisition, changed_spec)
+    with isolated_database() as url, psycopg.connect(url, autocommit=True) as connection:
+        acquisition = _acquire_bundle(
+            tmp_path,
+            source_git_sha="a" * 40,
+            acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+            events=_event_payload(),
+        )
+        canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(acquisition)
+        spec = _event_build_spec(connection, canonical.source_snapshot_id)
+        publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
 
-    assert first.dataset_version_id == retry.dataset_version_id
-    assert first.build_spec_sha256 == retry.build_spec_sha256 == spec.sha256
-    assert changed.dataset_version_id != first.dataset_version_id
-    assert changed.build_spec_sha256 == changed_spec.sha256
-    assert first.files[0].logical_sha256 == retry.files[0].logical_sha256
-    assert first.files[0].physical_sha256 == retry.files[0].physical_sha256
-    verified = publisher.verify(first.dataset_version_id)
-    assert verified.status == "verified"
-    with connection.cursor() as cursor:
-        count = cursor.execute(
-            "SELECT count(*) FROM football.dataset_versions WHERE build_spec_sha256 IN (%s, %s)",
-            (spec.sha256, changed_spec.sha256),
-        ).fetchone()
-    assert count == (2,)
+        first = publisher.publish(acquisition, spec)
+        retry = publisher.publish(acquisition, spec)
+        changed_spec = replace(spec, quality_policy_version="statsbomb-quality-policy-v4")
+        changed = publisher.publish(acquisition, changed_spec)
+
+        assert first.dataset_version_id == retry.dataset_version_id
+        assert first.build_spec_sha256 == retry.build_spec_sha256 == spec.sha256
+        assert changed.dataset_version_id != first.dataset_version_id
+        assert changed.build_spec_sha256 == changed_spec.sha256
+        assert first.files[0].logical_sha256 == retry.files[0].logical_sha256
+        assert first.files[0].physical_sha256 == retry.files[0].physical_sha256
+        verified = publisher.verify(first.dataset_version_id)
+        assert verified.status == "verified"
+        with connection.cursor() as cursor:
+            count = cursor.execute(
+                "SELECT count(*) FROM football.dataset_versions "
+                "WHERE build_spec_sha256 IN (%s, %s)",
+                (spec.sha256, changed_spec.sha256),
+            ).fetchone()
+        assert count == (2,)
 
 
 def test_explicit_build_spec_rejects_source_or_canonical_input_drift_before_publication(
@@ -1513,108 +1517,113 @@ def test_explicit_build_spec_rejects_source_or_canonical_input_drift_before_publ
 
 
 def test_trusted_correction_rebuilds_a_new_dataset_and_preserves_the_old_dataset(
-    connection: Connection[Any], tmp_path: Path
+    tmp_path: Path,
 ) -> None:
-    first_acquisition = _acquire_bundle(
-        tmp_path,
-        source_git_sha="c" * 40,
-        acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
-        events=_event_payload(),
-    )
-    first_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(first_acquisition)
-    publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
-    first = publisher.publish(
-        first_acquisition,
-        _event_build_spec(connection, first_canonical.source_snapshot_id),
-    )
-    first_file_bytes = first.files[0].absolute_path.read_bytes()
-    first_manifest_bytes = first.manifest_path.read_bytes()
-    change_set_id = _trusted_dataset_correction(connection, first_canonical.source_snapshot_id)
+    from tests.integration.test_team_identity_correction import isolated_database
 
-    second_acquisition = _acquire_bundle(
-        tmp_path,
-        source_git_sha="d" * 40,
-        acquired_at=datetime(2026, 9, 5, 11, 0, tzinfo=UTC),
-        events=_event_payload(second_type="Carry"),
-    )
-    second_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(second_acquisition)
-    historical_spec = _event_build_spec(connection, second_canonical.source_snapshot_id)
+    with isolated_database() as url, psycopg.connect(url, autocommit=True) as connection:
+        first_acquisition = _acquire_bundle(
+            tmp_path,
+            source_git_sha="c" * 40,
+            acquired_at=datetime(2026, 9, 5, 8, 0, tzinfo=UTC),
+            events=_event_payload(),
+        )
+        first_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(first_acquisition)
+        publisher = StatsBombEventDatasetPublisher(connection, tmp_path)
+        first = publisher.publish(
+            first_acquisition,
+            _event_build_spec(connection, first_canonical.source_snapshot_id),
+        )
+        first_file_bytes = first.files[0].absolute_path.read_bytes()
+        first_manifest_bytes = first.manifest_path.read_bytes()
+        change_set_id = _trusted_dataset_correction(connection, first_canonical.source_snapshot_id)
 
-    with pytest.raises(DatasetPublicationError, match="not known by the knowledge cutoff"):
-        publisher.publish(second_acquisition, historical_spec)
+        second_acquisition = _acquire_bundle(
+            tmp_path,
+            source_git_sha="d" * 40,
+            acquired_at=datetime(2026, 9, 5, 11, 0, tzinfo=UTC),
+            events=_event_payload(second_type="Carry"),
+        )
+        second_canonical = StatsBombCanonicalIngestor(connection, tmp_path).ingest(
+            second_acquisition
+        )
+        historical_spec = _event_build_spec(connection, second_canonical.source_snapshot_id)
 
-    second_spec = _event_build_spec(
-        connection,
-        second_canonical.source_snapshot_id,
-        knowledge_cutoff=datetime(2026, 9, 5, 12, 0, tzinfo=UTC),
-    )
+        with pytest.raises(DatasetPublicationError, match="not known by the knowledge cutoff"):
+            publisher.publish(second_acquisition, historical_spec)
 
-    with pytest.raises(DatasetPublicationError, match="source inputs"):
-        publisher.publish(
+        second_spec = _event_build_spec(
+            connection,
+            second_canonical.source_snapshot_id,
+            knowledge_cutoff=datetime(2026, 9, 5, 12, 0, tzinfo=UTC),
+        )
+
+        with pytest.raises(DatasetPublicationError, match="source inputs"):
+            publisher.publish(
+                second_acquisition,
+                replace(second_spec, source_input_refs=second_spec.source_input_refs[:-1]),
+                supersedes_dataset_id=first.dataset_version_id,
+                cause_change_set_id=change_set_id,
+            )
+        with connection.cursor() as cursor:
+            state = cursor.execute(
+                """
+                SELECT state FROM football.derived_state_events
+                WHERE object_kind = 'DATASET' AND object_id = %s
+                ORDER BY recorded_at DESC, id DESC LIMIT 1
+                """,
+                (first.dataset_version_id,),
+            ).fetchone()
+        assert state == ("REBUILD_REQUIRED",)
+
+        second = publisher.publish(
             second_acquisition,
-            replace(second_spec, source_input_refs=second_spec.source_input_refs[:-1]),
+            second_spec,
             supersedes_dataset_id=first.dataset_version_id,
             cause_change_set_id=change_set_id,
         )
-    with connection.cursor() as cursor:
-        state = cursor.execute(
-            """
-            SELECT state FROM football.derived_state_events
-            WHERE object_kind = 'DATASET' AND object_id = %s
-            ORDER BY recorded_at DESC, id DESC LIMIT 1
-            """,
-            (first.dataset_version_id,),
-        ).fetchone()
-    assert state == ("REBUILD_REQUIRED",)
+        retry = publisher.publish(
+            second_acquisition,
+            second_spec,
+            supersedes_dataset_id=first.dataset_version_id,
+            cause_change_set_id=change_set_id,
+        )
 
-    second = publisher.publish(
-        second_acquisition,
-        second_spec,
-        supersedes_dataset_id=first.dataset_version_id,
-        cause_change_set_id=change_set_id,
-    )
-    retry = publisher.publish(
-        second_acquisition,
-        second_spec,
-        supersedes_dataset_id=first.dataset_version_id,
-        cause_change_set_id=change_set_id,
-    )
-
-    assert second.dataset_version_id != first.dataset_version_id
-    assert retry.dataset_version_id == second.dataset_version_id
-    assert first.files[0].absolute_path.read_bytes() == first_file_bytes
-    assert first.manifest_path.read_bytes() == first_manifest_bytes
-    assert publisher.verify(first.dataset_version_id).status == "verified"
-    assert publisher.verify(second.dataset_version_id).status == "verified"
-    with connection.cursor() as cursor:
-        old_state = cursor.execute(
-            """
-            SELECT state FROM football.derived_state_events
-            WHERE object_kind = 'DATASET' AND object_id = %s
-            ORDER BY recorded_at, id
-            """,
-            (first.dataset_version_id,),
-        ).fetchall()
-        lineage = cursor.execute(
-            """
-            SELECT count(*) FROM football.dependency_edges
-            WHERE upstream_kind = 'DATASET' AND upstream_id = %s
-              AND relationship = 'DERIVED_FROM' AND downstream_kind = 'DATASET'
-              AND downstream_id = %s
-            """,
-            (first.dataset_version_id, second.dataset_version_id),
-        ).fetchone()
-        source_snapshots = cursor.execute(
-            """
-            SELECT source_snapshot_id FROM football.dataset_versions
-            WHERE id IN (%s, %s) ORDER BY id
-            """,
-            (first.dataset_version_id, second.dataset_version_id),
-        ).fetchall()
-    assert old_state == [("REBUILD_REQUIRED",), ("SUPERSEDED",)]
-    assert lineage == (1,)
-    assert len(source_snapshots) == 2
-    assert source_snapshots[0] != source_snapshots[1]
+        assert second.dataset_version_id != first.dataset_version_id
+        assert retry.dataset_version_id == second.dataset_version_id
+        assert first.files[0].absolute_path.read_bytes() == first_file_bytes
+        assert first.manifest_path.read_bytes() == first_manifest_bytes
+        assert publisher.verify(first.dataset_version_id).status == "verified"
+        assert publisher.verify(second.dataset_version_id).status == "verified"
+        with connection.cursor() as cursor:
+            old_state = cursor.execute(
+                """
+                SELECT state FROM football.derived_state_events
+                WHERE object_kind = 'DATASET' AND object_id = %s
+                ORDER BY recorded_at, id
+                """,
+                (first.dataset_version_id,),
+            ).fetchall()
+            lineage = cursor.execute(
+                """
+                SELECT count(*) FROM football.dependency_edges
+                WHERE upstream_kind = 'DATASET' AND upstream_id = %s
+                  AND relationship = 'DERIVED_FROM' AND downstream_kind = 'DATASET'
+                  AND downstream_id = %s
+                """,
+                (first.dataset_version_id, second.dataset_version_id),
+            ).fetchone()
+            source_snapshots = cursor.execute(
+                """
+                SELECT source_snapshot_id FROM football.dataset_versions
+                WHERE id IN (%s, %s) ORDER BY id
+                """,
+                (first.dataset_version_id, second.dataset_version_id),
+            ).fetchall()
+        assert old_state == [("REBUILD_REQUIRED",), ("SUPERSEDED",)]
+        assert lineage == (1,)
+        assert len(source_snapshots) == 2
+        assert source_snapshots[0] != source_snapshots[1]
 
 
 def test_explicit_build_spec_recovers_after_file_publication_database_rollback(

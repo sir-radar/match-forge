@@ -40,6 +40,16 @@ export TEST_DATABASE_URL
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 uv run pytest -q tests/integration/test_canonical_storage.py \
+	tests/integration/test_identity_history.py \
+	tests/integration/test_canonical_resource_resolutions.py \
+	tests/integration/test_provider_resource_capabilities.py \
+	tests/integration/test_provider_resource_authority.py \
+	tests/integration/test_resource_coverage_storage.py \
+	tests/integration/test_fixture_read_model.py \
+	tests/integration/test_work_orchestration.py \
+	tests/integration/test_work_metrics.py \
+	tests/integration/test_lock_order.py \
+	tests/integration/test_resource_observation_artifacts.py \
 	tests/integration/test_artifact_retirement.py \
 	tests/integration/test_integrity_verification.py \
 	tests/integration/test_provider_observability.py \
@@ -52,6 +62,13 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_team_elo.py \
 	tests/integration/test_product_historical_backfill.py \
 	tests/integration/test_product_history_queue.py \
+	tests/integration/test_product_history_provider_work.py \
+	tests/integration/test_domain_work_adapters.py \
+	tests/integration/test_concurrency_boundaries.py \
+	tests/integration/test_concurrency_stress.py \
+	tests/integration/test_fixture_features.py tests/integration/test_runtime_model_registry.py \
+	tests/integration/test_postmatch.py tests/integration/test_domain_metrics.py \
+	tests/integration/test_admin_operations.py \
 	tests/integration/test_live_context.py \
 	tests/integration/test_operational_provider_sync.py \
 	tests/integration/test_worker_publication_fencing.py \
@@ -67,6 +84,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
     tests/integration/test_product_forecast_worklist.py \
     tests/integration/test_product_score_bucket_upgrade.py \
     tests/integration/test_product_analytics.py \
+    tests/integration/test_public_reports.py \
     tests/integration/test_serving_limits.py
 
 printf 'Fresh-database migration and canonical storage invariants passed\n'

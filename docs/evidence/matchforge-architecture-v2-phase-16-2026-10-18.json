@@ -1,0 +1,61 @@
+{
+  "acceptance_runner_sha256": "833c9c031bce7220320330d8fd73fa1355b835bcc13ca7e9be2dd7e51b105402",
+  "additional_live_provider_requests": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "4126691c3ec3a9325fef27fd2704eb025378012a",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-16-check-integration.log",
+    "python_unit_tests_passed": 1456,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "empty_registry_claim": null,
+  "existing_projections_verified": 1,
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 111,
+  "finished_at": "2026-10-18T15:11:19.145283+00:00",
+  "fixture_projection": {
+    "rows": 192481,
+    "sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec"
+  },
+  "fixture_projection_preserved": true,
+  "focused_postgres_cases_passed": 351,
+  "history_queue_postgres_cases_passed": 7,
+  "limitations": [
+    "Identity-wide mutations retain exclusive coordination because they can affect linked mappings and fixtures; only pure competition history qualification is scoped.",
+    "Production scheduler migration remains Phase 17 and the all-route adversarial matrix remains Phase 20.",
+    "Production remains on the frozen original checkout; no runtime cutover or inferred work registrations.",
+    "Existing missing or unverifiable legacy source bytes remain explicit in the frozen baseline."
+  ],
+  "lock_contract_unit_cases_passed": 5,
+  "lock_postgres_cases_passed": 50,
+  "migration_hashes": {
+    "infrastructure/migrations/202610181400_scoped_history_locks.sql": "82a4efd3ceb9db23bcd05a2c0962cba0ec79e000310babba7415768347ce9b84"
+  },
+  "migration_seconds": 0.209494,
+  "old_and_shared_sql_signatures": "PASS",
+  "phase": 16,
+  "pre_existing_migrations_verified": 84,
+  "qualification_query_volatility": "v",
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T17:41:52.121132+00:00",
+  "registered_work_dependencies": 0,
+  "registered_work_items": 0,
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-16-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-16/upgrade-verification.json",
+  "shadow_verification_sha256": "b890995a2cb6c880c75a28c3a0c14f54c667e15ce2aaaddd279007ab560b4d05",
+  "shared_upgrade_guard": "PASS",
+  "status": "PASS_WITH_WARNINGS",
+  "transaction_audit_ref": ".local/remediation/matchforge-architecture-v2/phase-16/transaction-audit.json",
+  "transaction_audit_sha256": "b4911a822d35908bf1276368beb3c7038f71927bd34f1c0d3b07d4c99a822d40",
+  "transaction_ledger_cleanup": "PASS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "work_reference_no_key_update": "PASS",
+  "worker_control_statement_guard": "PASS",
+  "worker_fence_postgres_cases_passed": 12
+}

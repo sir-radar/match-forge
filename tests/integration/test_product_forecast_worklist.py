@@ -107,7 +107,10 @@ def test_refresh_claim_serializes_fixture_changes_without_losing_new_work(tmp_pa
 
 
 @contextmanager
-def _forecast_fixture(database_url: str) -> Iterator[tuple[UUID, UUID, UUID, UUID]]:
+def _forecast_fixture(
+    database_url: str, *, cleanup: bool = True
+) -> Iterator[tuple[UUID, UUID, UUID, UUID]]:
+    """Disable row cleanup only inside a disposable database that retains publications."""
     with psycopg.connect(database_url, autocommit=True) as owner:
         with owner.transaction():
             competition, home, away, season = owner.execute(
@@ -144,25 +147,26 @@ def _forecast_fixture(database_url: str) -> Iterator[tuple[UUID, UUID, UUID, UUI
         try:
             yield competition, home, away, fixture
         finally:
-            with owner.transaction():
-                owner.execute(
-                    "DELETE FROM football.product_forecast_refresh_work WHERE fixture_id=%s",
-                    (fixture,),
-                )
-                owner.execute(
-                    "DELETE FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
-                )
-                owner.execute("DELETE FROM football.matches WHERE id=%s", (fixture,))
-                owner.execute(
-                    "DELETE FROM football.product_teams WHERE team_id=ANY(%s)", ([home, away],)
-                )
-                owner.execute("DELETE FROM football.teams WHERE id=ANY(%s)", ([home, away],))
-                owner.execute(
-                    "DELETE FROM football.product_competitions WHERE competition_id=%s",
-                    (competition,),
-                )
-                owner.execute("DELETE FROM football.seasons WHERE id=%s", (season,))
-                owner.execute("DELETE FROM football.competitions WHERE id=%s", (competition,))
+            if cleanup:
+                with owner.transaction():
+                    owner.execute(
+                        "DELETE FROM football.product_forecast_refresh_work WHERE fixture_id=%s",
+                        (fixture,),
+                    )
+                    owner.execute(
+                        "DELETE FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
+                    )
+                    owner.execute("DELETE FROM football.matches WHERE id=%s", (fixture,))
+                    owner.execute(
+                        "DELETE FROM football.product_teams WHERE team_id=ANY(%s)", ([home, away],)
+                    )
+                    owner.execute("DELETE FROM football.teams WHERE id=ANY(%s)", ([home, away],))
+                    owner.execute(
+                        "DELETE FROM football.product_competitions WHERE competition_id=%s",
+                        (competition,),
+                    )
+                    owner.execute("DELETE FROM football.seasons WHERE id=%s", (season,))
+                    owner.execute("DELETE FROM football.competitions WHERE id=%s", (competition,))
 
 
 @pytest.mark.parametrize("pending_only", [False, True])
@@ -253,3 +257,34 @@ def test_limited_refresh_does_not_claim_other_competitions(tmp_path: Path) -> No
         right = ProductSync(second, ApiFootballClient("stored-only"), tmp_path, MODEL_ARTIFACT_PATH)
         assert left.refresh_pending_forecasts(limit=1)["fixtures_processed"] == 1
         assert right.refresh_pending_forecasts(limit=1)["fixtures_processed"] == 1
+
+
+def test_refresh_defers_busy_work_without_waiting_while_holding_canonical_rows(
+    tmp_path: Path,
+) -> None:
+    database_url = os.environ["TEST_DATABASE_URL"]
+    with (
+        _forecast_fixture(database_url) as (competition, _, _, fixture),
+        psycopg.connect(database_url) as history,
+        psycopg.connect(database_url) as worker,
+    ):
+        history.execute(
+            "SELECT 1 FROM football.product_forecast_refresh_work WHERE fixture_id=%s FOR UPDATE",
+            (fixture,),
+        )
+        worker.execute("SET statement_timeout='1s'")
+        sync = ProductSync(worker, ApiFootballClient("stored-only"), tmp_path, MODEL_ARTIFACT_PATH)
+        result = sync.refresh_pending_forecasts()
+        assert result["fixtures_processed"] == 0
+        assert result["fixtures_pending"] == 1
+        worker.commit()
+        history.execute("SET lock_timeout='100ms'")
+        history.execute(
+            "UPDATE football.product_competitions SET updated_at=clock_timestamp() "
+            "WHERE competition_id=%s",
+            (competition,),
+        )
+        history.commit()
+        assert sync.refresh_pending_forecasts()["fixtures_processed"] == 1
+        worker.commit()
+        assert sync.refresh_pending_forecasts()["fixtures_pending"] == 0

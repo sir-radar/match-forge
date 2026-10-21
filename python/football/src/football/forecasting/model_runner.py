@@ -4,6 +4,7 @@ import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from football.forecasting.features import FixtureFeatureSnapshotV1
 from football.forecasting.model_contracts import (
     FittedModelArtifact,
     ForecastInputSnapshot,
@@ -17,6 +18,7 @@ from football.forecasting.penaltyblog_models import (
     PenaltyblogModelError,
     default_penaltyblog_models,
 )
+from football.forecasting.runtime_models import ModelRegistration
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,6 +29,7 @@ class RegisteredModel:
     artifact: FittedModelArtifact | None
     enabled: bool
     minimum_team_history: int = 5
+    registration: ModelRegistration | None = None
 
 
 class ModelRegistry:
@@ -38,6 +41,38 @@ class ModelRegistry:
             raise ValueError("model registry may contain at most one enabled champion")
         self._models = models
 
+    @classmethod
+    def from_registrations(
+        cls,
+        registrations: tuple[ModelRegistration, ...],
+        adapters: tuple[ForecastModel, ...],
+        artifacts: Mapping[str, FittedModelArtifact],
+        *,
+        enabled: frozenset[str],
+    ) -> ModelRegistry:
+        by_id = {adapter.model_id: adapter for adapter in adapters}
+        if len(by_id) != len(adapters) or not enabled.issubset(
+            {entry.model_id for entry in registrations}
+        ):
+            raise ValueError("runtime model selection contains duplicate or unregistered adapters")
+        models = []
+        for entry in registrations:
+            adapter = by_id.get(entry.model_id)
+            artifact = artifacts.get(entry.artifact_hash)
+            if adapter is None or artifact is None:
+                raise ValueError("runtime model implementation or artifact is unavailable")
+            _validate_registration(entry, adapter, artifact)
+            models.append(
+                RegisteredModel(
+                    adapter,
+                    artifact,
+                    entry.model_id in enabled and entry.lifecycle_state != "RETIRED",
+                    10 if entry.model_id == "transferable-rolling-goals-poisson-v1" else 5,
+                    entry,
+                )
+            )
+        return cls(tuple(models))
+
     @property
     def models(self) -> tuple[RegisteredModel, ...]:
         return self._models
@@ -47,10 +82,16 @@ class ModelRunner:
     def __init__(self, registry: ModelRegistry) -> None:
         self.registry = registry
 
-    def run(self, fixture: ForecastInputSnapshot) -> ModelRunResult:
+    def run(self, fixture: ForecastInputSnapshot | FixtureFeatureSnapshotV1) -> ModelRunResult:
+        features = (
+            fixture
+            if isinstance(fixture, FixtureFeatureSnapshotV1)
+            else FixtureFeatureSnapshotV1(fixture)
+        )
         forecasts = []
         availability = []
         for registered in self.registry.models:
+            fixture = features.model_input
             adapter = registered.adapter
             if not registered.enabled:
                 availability.append(
@@ -135,10 +176,75 @@ def penaltyblog_registry_from_environment(
     )
 
 
+def _validate_registration(
+    entry: ModelRegistration, adapter: ForecastModel, artifact: FittedModelArtifact
+) -> None:
+    if (
+        (
+            entry.model_id,
+            entry.family,
+            entry.version,
+            entry.feature_contract,
+            entry.training_manifest,
+            entry.training_start,
+            entry.training_cutoff,
+            entry.artifact_hash,
+            entry.implementation_version,
+        )
+        != (
+            artifact.model_id,
+            artifact.model_family,
+            artifact.model_version,
+            artifact.feature_contract,
+            artifact.dataset_sha256,
+            artifact.training_start,
+            artifact.training_cutoff,
+            artifact.artifact_sha256,
+            adapter.model_version,
+        )
+        or adapter.model_id != entry.model_id
+        or adapter.model_family != entry.family
+    ):
+        raise ValueError("runtime model identity conflicts with implementation or fitted artifact")
+    if entry.lifecycle_state != "RETIRED" and adapter.role.value != entry.lifecycle_state:
+        raise ValueError("runtime lifecycle does not match the approved adapter role")
+
+
 def _eligibility(
     registered: RegisteredModel, fixture: ForecastInputSnapshot
 ) -> ModelAvailability | None:
     adapter = registered.adapter
+    entry = registered.registration
+    if (
+        registered.artifact is not None
+        and registered.artifact.training_cutoff >= fixture.football_cutoff
+    ):
+        return ModelAvailability(
+            adapter.model_id,
+            ModelStatus.MODEL_FIT_UNAVAILABLE,
+            "ARTIFACT_TRAINING_NOT_BEFORE_FOOTBALL_CUTOFF",
+        )
+    if (
+        registered.artifact is not None
+        and registered.artifact.training_cutoff >= fixture.knowledge_cutoff
+    ):
+        return ModelAvailability(
+            adapter.model_id,
+            ModelStatus.MODEL_FIT_UNAVAILABLE,
+            "ARTIFACT_TRAINING_NOT_BEFORE_KNOWLEDGE_CUTOFF",
+        )
+    if (
+        entry is not None
+        and entry.eligible_competitions is not None
+        and fixture.competition_id not in entry.eligible_competitions
+    ):
+        return ModelAvailability(
+            adapter.model_id, ModelStatus.INSUFFICIENT_DATA, "COMPETITION_NOT_ELIGIBLE"
+        )
+    if entry is not None and "SCORE_DISTRIBUTION" not in entry.eligible_products:
+        return ModelAvailability(
+            adapter.model_id, ModelStatus.INSUFFICIENT_DATA, "PRODUCT_NOT_ELIGIBLE"
+        )
     home_count = sum(
         fixture.home_team_id in (match.home_team_id, match.away_team_id)
         for match in fixture.qualified_history

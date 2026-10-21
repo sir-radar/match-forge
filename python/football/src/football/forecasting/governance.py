@@ -10,6 +10,7 @@ from uuid import UUID
 from psycopg import Connection, Cursor
 
 from football.contracts.competition import CompetitionRulesV1
+from football.contracts.decisions import DecisionRecordV1
 from football.contracts.dependencies import DependencyNodeV1
 from football.contracts.source import (
     SHA256_PATTERN,
@@ -20,6 +21,7 @@ from football.contracts.source import (
 from football.forecasting.contracts import ModelFamily, PointInTimeScopeV1
 from football.forecasting.evaluation import MatchResultMetricsV1
 from football.ingestion.dependencies import PostgresDependencyStoreV1
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.raw import ImmutableFileStore
 
 if TYPE_CHECKING:
@@ -333,9 +335,13 @@ class PostgresEvaluationRegistry:
         if report.scope is None:
             raise GovernancePublicationError("unresolved evaluation scope cannot be registered")
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"sprint2-evaluation:{report.evaluation_run_id}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.EVALUATION, f"sprint2-evaluation:{report.evaluation_run_id}"
+                    ),
+                ),
             )
             inserted = cursor.execute(
                 """
@@ -438,6 +444,26 @@ class ModelPromotionEventV1:
             raise GovernanceContractError("unsupported promotion designation")
         _aware(self.recorded_at, "recorded_at")
 
+    def to_decision_record(self, reason: str) -> DecisionRecordV1:
+        """Describe a promotion event; the registry still owns promotion validation."""
+        return DecisionRecordV1(
+            decision_type="model_promotion",
+            subject_type="model_artifact",
+            subject_id=str(self.model_artifact_id),
+            decided_at=self.recorded_at,
+            disposition=self.designation,
+            reason=reason,
+            evidence={
+                "source_contract": "ModelPromotionEventV1",
+                "promotion_event_id": str(self.promotion_event_id),
+                "model_artifact_id": str(self.model_artifact_id),
+                "evaluation_run_id": str(self.evaluation_run_id),
+                "role": self.role,
+                "designation": self.designation,
+                "recorded_at": self.recorded_at.isoformat(),
+            },
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class PublishedPromotionEventV1:
@@ -451,9 +477,8 @@ class PostgresModelPromotionRegistry:
 
     def record(self, event: ModelPromotionEventV1) -> PublishedPromotionEventV1:
         with self._connection.transaction(), self._connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"model-promotion:{event.role}",),
+            acquire_locks(
+                cursor, (LockRequest(LockClass.PROMOTION, f"model-promotion:{event.role}"),)
             )
             evaluation_status = _evaluation_status(cursor, event.evaluation_run_id)
             model_family = _model_family(cursor, event.model_artifact_id)

@@ -1,0 +1,55 @@
+{
+  "acceptance": {
+    "artifact_identity_training_and_knowledge_clocks": "PASS",
+    "committed_protocol_canonical_wire_round_trip": "PASS",
+    "common_decision_binds_published_run_and_result": "PASS",
+    "complete_model_results_and_exact_forecast_identity": "PASS",
+    "exact_development_corpus_and_candidate_preflight": "PASS",
+    "existing_frozen_experiment_evidence_and_runners_preserved": "PASS",
+    "failed_model_availability_persists_failed_run": "PASS",
+    "immutable_run_inputs_outputs_retry_and_corruption_detection": "PASS",
+    "policy_and_authorization_references_do_not_grant_execution": "PASS",
+    "validation_evaluation_forbidden_targets_and_history_rejected_before_models": "PASS"
+  },
+  "additional_live_provider_requests": 0,
+  "authoritative_evaluations_run": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-23-gate",
+  "code_commit_sha": "9d58f92732a234cb145f27d6681626ae6b20420c",
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-23/check-integration.log",
+    "log_sha256": "7147b5b7d45a5ae55cf23812ff92519d7f37b4dc5c245507411fc9cf5302399b",
+    "postgres_storage_cases_passed": 647,
+    "python_unit_tests_passed": 1502,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "execution_scope": "Common runner forecasts supplied development snapshots with already-fitted models. Policy refs are frozen evidence; fitting, calibration, scoring and promotion retain their existing approved executors and explicit owner gates. No corpus loader or outcome reader is exposed.",
+  "finished_at": "2026-10-19T09:08:28.283606+00:00",
+  "focused_validation": {
+    "experiment_cases_in_final_full_suite": 22,
+    "focused_log_ref": ".local/remediation/matchforge-architecture-v2/phase-23/focused.log",
+    "model_dependency_cases_passed": 62,
+    "timing": "Focused dependency tests preceded final immutable-reference and result-status guards; complete validation covers final committed source."
+  },
+  "new_dependencies": [],
+  "new_environment_variables": [],
+  "non_test_model_fit_or_promotion_executions": 0,
+  "phase": 23,
+  "phase_gate_complete": true,
+  "pre_existing_migrations_verified": 93,
+  "remaining_work_inside_phase_23": [],
+  "retained_shadow_written": false,
+  "runtime_cutover": false,
+  "schema_ref": "schemas/contracts/experiment-protocol-v1.schema.json",
+  "schema_sha256": "4df8ef834e2ea2fc42e2d4cba972c32cee6ae2e5573c072d583221b11de329f8",
+  "status": "PASS_WITH_WARNINGS",
+  "warnings": [
+    "Existing retained-source byte warnings and Python/web warnings remain unchanged.",
+    "The recorded Phase 20 Go timeout remains historical; this final full API/storage suite passed unchanged.",
+    "The identical 59 pre-existing generic Elo timestamp rejections recorded by Phase 22 remain explicit for later runtime migration."
+  ]
+}

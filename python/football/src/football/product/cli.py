@@ -33,6 +33,8 @@ from football.product.football_data_org import FootballDataOrgClient, FootballDa
 from football.product.football_data_uk import run_backfill as run_football_data_uk_backfill
 from football.product.history_coverage import history_coverage
 from football.product.history_requests import HistoryDeferred, HistoryRequestBudget
+from football.product.history_worker import HistorySyncWorker
+from football.product.identity_admission import RetainedEvidenceChanged
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
@@ -40,8 +42,10 @@ from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.base import ProviderFetchError, UrllibHttpTransport
 from football.providers.fotmob import FotmobClient
 from football.providers.pitchapi import PitchApiClient, UrllibPitchApiTransport
+from football.work.metrics import render_metrics
 
 _DATA_OPERATION_ERRORS = (
+    RetainedEvidenceChanged,
     ApiFootballError,
     FootballDataOrgError,
     psycopg.Error,
@@ -88,6 +92,21 @@ def build_parser() -> argparse.ArgumentParser:
     refresh = commands.add_parser("refresh-forecasts")
     refresh.add_argument("--pending-only", action="store_true")
     commands.add_parser("history-coverage")
+    commands.add_parser("work-metrics")
+    domain_metrics = commands.add_parser("domain-metrics")
+    domain_metrics.add_argument("--competition", action="append", type=UUID, required=True)
+    domain_metrics.add_argument("--window-start", type=datetime.fromisoformat, required=True)
+    domain_metrics.add_argument("--window-end", type=datetime.fromisoformat, required=True)
+    domain_metrics.add_argument("--provider", action="append")
+    domain_metrics.add_argument("--horizon", default="LATEST")
+    domain_metrics.add_argument(
+        "--feature-snapshot",
+        nargs=2,
+        action="append",
+        default=[],
+        metavar=("SHA256", "PATH"),
+        help="Canonical FixtureFeatureSnapshotV1 checksum and explicit export path.",
+    )
     geography = commands.add_parser("refresh-competition-geography")
     geography.add_argument("--provider", choices=("fotmob", "pitchapi"), required=True)
     geography.add_argument(
@@ -154,6 +173,10 @@ def main(argv: list[str] | None = None) -> int:
     if not args.database_url:
         print("error: DATABASE_URL is required", file=sys.stderr)
         return 2
+    if args.command in {"work-metrics", "domain-metrics"}:
+        return {"work-metrics": _run_work_metrics, "domain-metrics": _run_domain_metrics}[
+            args.command
+        ](args)
     if args.command == "external-predictions":
         return _run_external_predictions(args)
     if args.command == "refresh-competition-geography":
@@ -280,10 +303,47 @@ def _run_development_provider_preview(args: argparse.Namespace) -> int:
                 MODEL_ARTIFACT_PATH,
                 provider_code=args.provider,
             )
-    except (psycopg.Error, OSError, ValueError) as error:
+    except (psycopg.Error, OSError, ValueError, RetainedEvidenceChanged) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def _run_domain_metrics(args: argparse.Namespace) -> int:
+    from football.observability.domain_metrics import PROVIDERS, render_domain_metrics
+
+    try:
+        features = tuple(
+            (digest, json.loads(Path(path).read_bytes())) for digest, path in args.feature_snapshot
+        )
+        with psycopg.connect(args.database_url) as connection, connection.transaction():
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            output = render_domain_metrics(
+                connection,
+                competitions=tuple(args.competition),
+                window_start=args.window_start,
+                window_end=args.window_end,
+                providers=tuple(args.provider) if args.provider else PROVIDERS,
+                horizon=args.horizon,
+                features=features,
+            )
+    except (psycopg.Error, OSError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(output, end="")
+    return 0
+
+
+def _run_work_metrics(args: argparse.Namespace) -> int:
+    try:
+        with psycopg.connect(args.database_url) as connection, connection.transaction():
+            connection.execute("SET TRANSACTION READ ONLY")
+            output = render_metrics(connection)
+    except (psycopg.Error, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(output, end="")
     return 0
 
 
@@ -300,7 +360,7 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 if args.pending_only:
                     result: dict[str, object] = product.refresh_pending_forecasts()
                 else:
-                    result = {"forecasts_created": product.refresh_forecasts()}
+                    result = {"forecasts_created": product.refresh_forecasts(commit_batches=True)}
                 connection.commit()
             elif args.command == "backfill-openfootball":
                 result = _openfootball(connection, args)
@@ -721,7 +781,7 @@ def _structured_failures(value: object) -> list[str]:
 def _refresh(connection: psycopg.Connection[Any], data_root: Path) -> int:
     count = ProductSync(
         connection, ApiFootballClient("stored-data-only"), data_root, MODEL_ARTIFACT_PATH
-    ).refresh_forecasts()
+    ).refresh_forecasts(commit_batches=True)
     connection.commit()
     return count
 
@@ -748,10 +808,10 @@ def _history_worker_factory(
     sync_run_id: UUID | None,
 ) -> HistoryWorkerFactory:
     @contextmanager
-    def create_worker() -> Iterator[ProductSync]:
+    def create_worker() -> Iterator[HistorySyncWorker]:
         fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
         with psycopg.connect(database_url) as connection:
-            yield ProductSync(
+            yield HistorySyncWorker(
                 connection,
                 ApiFootballClient(api_key, request_budget=PostgresApiFootballBudget(database_url)),
                 data_root,

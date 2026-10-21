@@ -11,6 +11,7 @@ from uuid import UUID
 
 import psycopg
 
+from football.forecasting.features import FixtureFeatureSnapshotV1
 from football.forecasting.model_contracts import (
     CompetitionContext,
     FittedModelArtifact,
@@ -62,8 +63,27 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     forecast.add_argument("--manifest", required=True, type=Path)
     forecast.add_argument("--snapshot", required=True, type=Path)
     forecast.add_argument("--persist", action="store_true")
+    products = scopes.add_parser("products", help="inspect score-derived products without fitting")
+    products.add_argument("--forecast", required=True, type=Path)
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
+
+    from football.forecasting.postmatch_cli import add_postmatch_commands
+
+    add_postmatch_commands(scopes)
+
+    from football.product.public_reports_cli import add_public_report_command
+
+    add_public_report_command(scopes)
+
+    register = scopes.add_parser("registry-register", help="register immutable runtime metadata")
+    register.add_argument("--registration", required=True, type=Path)
+    register.add_argument("--artifact-root", type=Path, default=Path("."))
+    show = scopes.add_parser(
+        "registry-show", help="read an exact registration at a knowledge cutoff"
+    )
+    show.add_argument("--registration-sha256", required=True)
+    show.add_argument("--knowledge-cutoff", required=True)
 
     benchmarks = commands.add_parser("benchmarks", help="collect probabilistic benchmarks")
     benchmark_scopes = benchmarks.add_subparsers(dest="scope", required=True)
@@ -83,6 +103,18 @@ def run_multimodel_command(
             result = _fit(args)
         elif args.command == "models" and args.scope == "forecast":
             result = _forecast(args, environment)
+        elif args.command == "models" and args.scope == "products":
+            result = _products(args.forecast)
+        elif args.command == "models" and args.scope == "public-reports":
+            from football.product.public_reports_cli import run_public_report_command
+
+            result = run_public_report_command(args, environment)
+        elif args.command == "models" and args.scope in {"postmatch-evaluate", "postmatch-monitor"}:
+            from football.forecasting.postmatch_cli import run_postmatch_command
+
+            result = run_postmatch_command(args, environment)
+        elif args.command == "models" and args.scope in {"registry-register", "registry-show"}:
+            result = _runtime_registry(args, environment)
         elif args.command == "models":
             result = _evaluate(args)
         else:
@@ -91,7 +123,53 @@ def run_multimodel_command(
         print(f"error: {error}", file=errors)
         return 4
     print(json.dumps(result, sort_keys=True, allow_nan=False), file=output)
-    return 0
+    return 4 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
+
+
+def _products(path: Path) -> dict[str, Any]:
+    from football.forecasting.products import score_products
+
+    try:
+        return score_products(_forecast_from_dict(json.loads(path.read_bytes())))
+    except (KeyError, TypeError, AttributeError) as error:
+        raise ValueError("invalid score forecast") from error
+
+
+def _runtime_registry(
+    args: argparse.Namespace, environment: Mapping[str, str]
+) -> dict[str, object]:
+    from football.forecasting.runtime_models import (
+        ModelRegistration,
+        PostgresModelRegistry,
+        load_registered_champion,
+    )
+
+    database_url = (
+        args.database_url
+        or environment.get("FOOTBALL_DATABASE_URL")
+        or environment.get("DATABASE_URL")
+    )
+    if not database_url:
+        raise ValueError("DATABASE_URL is required for the runtime model registry")
+    with psycopg.connect(database_url) as connection:
+        store = PostgresModelRegistry(connection)
+        if args.scope == "registry-show":
+            found = store.get(
+                args.registration_sha256, knowledge_cutoff=_datetime(args.knowledge_cutoff)
+            )
+            if found is None:
+                raise ValueError("runtime model registration is not known at the requested cutoff")
+            return found.to_dict()
+        entry = ModelRegistration.from_bytes(args.registration.read_bytes())
+        if entry.lifecycle_state == "CHAMPION":
+            load_registered_champion(entry, args.artifact_root)
+        status = store.register(entry)
+        return {
+            "registration_sha256": entry.sha256,
+            "model_id": entry.model_id,
+            "status": status,
+            "activated": False,
+        }
 
 
 def _fit(args: argparse.Namespace) -> dict[str, object]:
@@ -135,7 +213,7 @@ def _forecast(args: argparse.Namespace, environment: Mapping[str, str]) -> dict[
         runtime_model=loaded,
         diagnostics=cast(dict[str, object], manifest.get("diagnostics", {})),
     )
-    snapshot = _load_snapshot(args.snapshot)
+    snapshot = FixtureFeatureSnapshotV1(_load_snapshot(args.snapshot)).model_input
     forecast = adapter.predict(artifact, snapshot)
     result = _forecast_dict(forecast)
     if args.persist:

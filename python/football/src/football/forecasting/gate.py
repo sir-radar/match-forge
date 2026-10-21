@@ -32,6 +32,7 @@ from football.forecasting.evidence import (
 )
 from football.forecasting.execution import (
     Sprint2BatchModeler,
+    Sprint2ExecutionError,
     Sprint2ExecutionPolicyV1,
     Sprint2WalkForwardExecutor,
 )
@@ -229,6 +230,11 @@ class Sprint2GateService:
     ) -> Sprint2EvaluationRunner:
         if self._data_root is None or self._provenance is None:
             raise RuntimeError("Sprint 2 execution configuration is missing")
+        if not self._connection.autocommit:
+            raise Sprint2ExecutionError(
+                "walk-forward publication requires an autocommit connection; "
+                "each publication must finish its transaction before the next batch"
+            )
         persistence = Sprint2BatchPublisher(
             artifact_publisher=ModelArtifactPublisher(self._connection, self._data_root),
             artifact_loader=PortableModelArtifactStore(self._data_root),

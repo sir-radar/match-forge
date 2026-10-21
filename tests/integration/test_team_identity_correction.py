@@ -36,6 +36,7 @@ from psycopg.conninfo import make_conninfo
 from psycopg.sql import SQL, Identifier
 from psycopg.types.json import Jsonb
 
+from tests.integration.historical_source_fixture import legacy_identity_locking
 from tests.integration.historical_source_fixture import test_snapshot as snapshot
 from tests.integration.test_product_identity_upgrade import _migrate
 
@@ -611,7 +612,8 @@ def test_later_invalidations_preserve_earlier_correction(tmp_path: Path, change:
 def test_populated_upgrade_preserves_prior_r2_decisions_and_does_not_admit(tmp_path: Path) -> None:
     with isolated_database("202610130600") as url:
         with psycopg.connect(url) as c:
-            request, other = seed(c, tmp_path)
+            with legacy_identity_locking(c):
+                request, other = seed(c, tmp_path)
             before = retained(c)
             t0 = c.execute("SELECT clock_timestamp()").fetchone()[0]
             admissions = c.execute(

@@ -32,6 +32,7 @@ from football.product.historical_backfill import (
 from football.product.historical_manifest import publish_manifest
 from football.product.identity_admission import admit_provider_mappings
 from football.providers.base import UrllibHttpTransport, read_bounded
+from football.storage.transactions import require_idle_connection
 
 PROVIDER_CODE = "football_data_uk"
 INDEX_URL = "https://www.football-data.co.uk/downloadm.php"
@@ -325,6 +326,27 @@ def csv_members(
     return members
 
 
+def _parse_download(
+    resource: FootballDataResource, provider_path: str, payload: bytes
+) -> tuple[list[HistoricalMatch], int]:
+    """Finish CSV/archive parsing before registering a successfully parsed resource."""
+    sources = (
+        list(csv_members(payload)) if resource.archive else [(Path(provider_path).name, payload)]
+    )
+    matches = []
+    for member_name, csv_payload in sources:
+        matches.extend(
+            parse_csv_resource(
+                csv_payload,
+                source_path=f"{provider_path}!{member_name}" if resource.archive else provider_path,
+                season=resource.season,
+                country_hint=resource.country,
+                division_hint=resource.division,
+            )
+        )
+    return matches, len(sources)
+
+
 def run_backfill(
     connection: Connection[Any],
     *,
@@ -334,6 +356,7 @@ def run_backfill(
     country: str | None = None,
     index_url: str = INDEX_URL,
 ) -> dict[str, object]:
+    require_idle_connection(connection, "Football-Data.co.uk backfill")
     catalog = discover_catalog(index_url)
     selected = [
         resource
@@ -370,7 +393,9 @@ def run_backfill(
             provider_path
         ):
             summary.resources_cached += 1
+            connection.commit()
             continue
+        connection.commit()
         payload = _download(resource.url)
         observed_at = datetime.now(UTC)
         digest = hashlib.sha256(payload).hexdigest()
@@ -386,6 +411,7 @@ def run_backfill(
             acquired_at=observed_at,
             resources=[(provider_path, str(cache_path.relative_to(data_root)), payload)],
         )
+        matches, csv_files = _parse_download(resource, provider_path, payload)
         snapshot = store.ensure_snapshot(
             source_identity=resource.url,
             source_revision=digest,
@@ -394,40 +420,34 @@ def run_backfill(
         )
         if store.resource_already_imported(provider_path, digest):
             summary.resources_cached += 1
+            connection.commit()
             continue
-        store.record_resource(
+        resource_id = store.record_resource(
             snapshot_id=snapshot,
             provider_path=provider_path,
             payload=payload,
             media_type="application/zip" if resource.archive else "text/csv",
             acquired_at=observed_at,
+            import_pending=True,
         )
+        connection.commit()
         summary.resources_changed += 1
-        if resource.archive:
-            summary.zip_files += 1
-            sources = list(csv_members(payload))
-        else:
-            sources = [(Path(provider_path).name, payload)]
-        summary.csv_files += len(sources)
-        for member_name, csv_payload in sources:
-            matches = parse_csv_resource(
-                csv_payload,
-                source_path=f"{provider_path}!{member_name}" if resource.archive else provider_path,
-                season=resource.season,
-                country_hint=resource.country,
-                division_hint=resource.division,
-            )
-            summary.matches_parsed += len(matches)
-            for match in matches:
-                parsed_competitions.add(match.provider_competition_id)
-                parsed_seasons.add(match.season)
-                result = store.import_match(match, snapshot, observed_at)
-                _count_result(summary, result)
+        summary.zip_files += int(resource.archive)
+        summary.csv_files += csv_files
+        summary.matches_parsed += len(matches)
+        for match in matches:
+            parsed_competitions.add(match.provider_competition_id)
+            parsed_seasons.add(match.season)
+            result = store.import_match(match, snapshot, observed_at)
+            _count_result(summary, result)
+            connection.commit()
+        store.complete_resource_import(resource_id)
+        connection.commit()
     summary.competitions = len(parsed_competitions)
     summary.seasons = len(parsed_seasons)
     summary.competition_mappings_created = store.competition_mappings_created
     summary.team_mappings_created = store.team_mappings_created
-    admit_provider_mappings(connection, data_root, PROVIDER_CODE)
+    admit_provider_mappings(connection, data_root, PROVIDER_CODE, commit_each=True)
     connection.commit()
     return summary.to_dict()
 

@@ -1,0 +1,175 @@
+{
+  "phase": 0,
+  "status": "PASS_WITH_WARNINGS",
+  "recorded_at": "2026-10-16T11:12:20.506783Z",
+  "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
+  "branch": "ft/matchforge-architecture-v2",
+  "starting_point_resolution": "PR #167 merged at 984d8461556922b724a7c54960e66d9a4f9d98ec; its final R3 head c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365 is newer than the specification quote and has the same tree as that merge.",
+  "baseline": {
+    "ref": ".local/remediation/matchforge-architecture-v2/phase-0/manifest.json",
+    "sha256": "4f7eb544be0142f8294a2a3347e51a9728d7a2aff5ea6a4a638b496e9288c4bc",
+    "captured_at": "2026-10-16T10:54:20.787085+00:00",
+    "tables": 101,
+    "views": 11,
+    "row_counts": {
+      "product_fixtures": 209747,
+      "product_forecast_refresh_work": 2764,
+      "product_forecasts": 4171,
+      "product_history_sync_queue": 559,
+      "product_sync_runs": 2274,
+      "product_team_match_history": 434031,
+      "providers": 37,
+      "source_resources": 10373,
+      "source_snapshots": 8565
+    },
+    "database_dump_sha256": "86fa7c79ebd8da37cf961c9b17a57e03a4b2b2d9dd416bdbb3a8dab109e0306c",
+    "schema_sha256": "ea303398508fc49ad17f99153d2a49d6126fec0eff9c1dc12568d3b9d8f8bf07",
+    "source_bytes": {
+      "manifests": {
+        "BYTE_VERIFIED": 8483,
+        "REGISTERED_CHECKSUM_NOT_VERIFIED": 48,
+        "SOURCE_BYTES_MISSING": 34
+      },
+      "resources": {
+        "BYTE_VERIFIED": 8811,
+        "REGISTERED_CHECKSUM_NOT_VERIFIED": 1529,
+        "SOURCE_BYTES_MISSING": 33
+      }
+    },
+    "source_registration_and_byte_regression_check": {
+      "prior_verified_resource_regressions": [],
+      "known_duplicate_regression_groups": [
+        {
+          "competition_id": "104fa69b-4af3-53a3-b866-d3a4c0ce1025",
+          "visible_fixtures": 1
+        },
+        {
+          "competition_id": "ceb568b3-31fc-5740-93de-a4cc9bbad960",
+          "visible_fixtures": 18
+        },
+        {
+          "competition_id": "09a4d8a1-2c8c-5c11-8dc8-2075b4203236",
+          "visible_fixtures": 18
+        }
+      ],
+      "status": "PASS",
+      "missing_prior_registered_resources": []
+    },
+    "cutoffs": {
+      "2026-10-15T23:29:06.806401+00:00": {
+        "rows": 244529,
+        "sha256": "af8ca66e8b0445303a63d1690c37618d1a8b8591baa72fbef3bf7846da59d564"
+      },
+      "2026-10-16T10:54:20.787085+00:00": {
+        "rows": 253099,
+        "sha256": "a0eff8e7afd1eb10c5cdf1f24fe770a86bfb2dd9d83cab784d5582cdf27ddfc7"
+      }
+    },
+    "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "api_fixture_dates": [
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-16"
+    ],
+    "api_fixtures": 741,
+    "locks_ref": ".local/remediation/matchforge-architecture-v2/phase-0/locks.json",
+    "work_state_ref": ".local/remediation/matchforge-architecture-v2/phase-0/operations.json",
+    "capture_recovery": {
+      "exact_restored_relation_comparison": "PASS; see restore.ref",
+      "metadata_reconstructed_from": "Original gzip row inventories, retained history-coverage cutoff, and an isolated successful restore of the original dump.",
+      "original_capture_exit_code": 1,
+      "original_failure_preserved": "initial-capture-failure.log",
+      "original_snapshot_token": "Not persisted before the schema-export failure; never fabricated.",
+      "r3_prior_cutoff_matches": true,
+      "reason": "PostgreSQL 18 pg_restore schema export required --file=-. The complete exported-snapshot dump, row inventories and raw-byte archives were already captured.",
+      "restore_database": "football_architecture_v2_phase0_20261016"
+    }
+  },
+  "restore": {
+    "status": "PASS",
+    "ref": ".local/remediation/matchforge-architecture-v2/phase-0-restore-verification/manifest.json",
+    "sha256": "de6513e21713dde7129dc02cf1b6baf3e32fa701286a15a7b2ad12d86f489e72",
+    "database": "football_architecture_v2_phase0_20261016",
+    "mismatched_relations": [],
+    "mismatched_cutoffs": [],
+    "invalid_source_archives": [],
+    "dump_checksum_matches": true
+  },
+  "migrations": {
+    "existing_files_preserved": 70,
+    "last_existing_migration": "202610160100_native_split_history_scopes.sql",
+    "new_migrations": []
+  },
+  "verification": {
+    "make_check_integration": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/final-check-integration.log",
+    "python_unit_tests_passed": 1070,
+    "rust_tests_passed": 16,
+    "web_unit_tests_passed": 56,
+    "fresh_database_storage_integration": "PASS",
+    "postgres_redis_go_api_integration": "PASS",
+    "focused_baseline_tests_passed": 13,
+    "focused_ruff": "PASS",
+    "focused_strict_mypy": "PASS"
+  },
+  "warnings": [
+    "Retained legacy resources and manifests with missing or unverifiable bytes remain individually classified. All prior registered resources and prior byte-verified resources are retained without regression.",
+    "The first capture failed only at schema extraction; the complete dump and inventories were retained. Corrected PostgreSQL 18 output selection and recovered metadata from the original artifacts and isolated restore; the separate exact restore verification passed."
+  ],
+  "production_runtime_changed": false,
+  "live_sync_stopped": false,
+  "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
+  "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+  "architecture_v2_complete": false,
+  "remaining_phases": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+  ],
+  "handoff": "AGENTS.md section 5 requires recording the passing phase gate and returning control to the owner before later-phase work."
+}

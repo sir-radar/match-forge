@@ -11,6 +11,7 @@ from psycopg import Connection
 
 from football.product.domain import sha256_json
 from football.product.identity_crosswalks import OPERATIONAL_TEAM_CROSSWALKS
+from football.storage.locks import FIXTURE_CROSSWALK_LOCK, IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
 def reconcile_product_fixtures(connection: Connection[Any]) -> int:
@@ -27,10 +28,7 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
     with connection.cursor() as cursor:
         # Mapping and history-decision triggers use this lock. Acquire it before
         # the fixture crosswalk lock, including when no mapping is being changed.
-        cursor.execute(
-            "SELECT pg_advisory_xact_lock(hashtextextended('product-identity-admission',0))"
-        )
-        cursor.execute("SELECT pg_advisory_xact_lock(hashtext('product_fixture_crosswalk'))")
+        acquire_locks(cursor, (IDENTITY_ADMISSION_LOCK, FIXTURE_CROSSWALK_LOCK))
         cursor.execute(
             """UPDATE football.fixture_identity_resolutions SET active = false
                WHERE active AND resolution_version = 'ProductFixtureCrosswalkV1'"""
@@ -156,4 +154,8 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                         datetime.now(UTC),
                     ),
                 )
-    return len(pairs)
+        cursor.execute("SELECT football.reconcile_unknown_season_fixtures()")
+        repaired_unknown_season_result = cursor.fetchone()
+        assert repaired_unknown_season_result is not None
+        repaired_unknown_season_fixtures = int(repaired_unknown_season_result[0])
+    return len(pairs) + repaired_unknown_season_fixtures

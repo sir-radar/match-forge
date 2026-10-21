@@ -222,6 +222,22 @@ def test_go_performance_batch_scopes_and_cancellation() -> None:
                        FROM football.competitions WHERE id<>%s""",
                     (COMPETITION,),
                 )
+            from football.product.public_reports import run_public_reports
+
+            with psycopg.connect(url) as connection:
+                assert (
+                    run_public_reports(
+                        connection,
+                        report_kind="PERFORMANCE",
+                        scope_ids=(COMPETITION,),
+                        horizon="LATEST",
+                        limit=1,
+                        lease_duration=timedelta(minutes=5),
+                        code_commit_sha="f" * 40,
+                        dependency_lock_sha256="d" * 64,
+                    )["published"]
+                    == 1
+                )
             result = subprocess.run(
                 [
                     "go",

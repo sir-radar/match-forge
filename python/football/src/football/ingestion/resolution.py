@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
+from football.contracts.decisions import DecisionRecordV1
 from football.contracts.source import PROVIDER_PATTERN, canonical_json_bytes
 
 ResolutionSubjectV1 = Literal["competition", "season", "team", "player", "match"]
@@ -76,6 +77,19 @@ class ResolutionDecisionV1:
             "created_at": self.created_at.isoformat(),
             "supersedes_decision_id": self.supersedes_decision_id,
         }
+
+    def to_decision_record(self, subject_id: str) -> DecisionRecordV1:
+        """Describe this decision using an explicit stable subject ID from its owner."""
+        return DecisionRecordV1(
+            decision_type="identity_resolution",
+            subject_type=self.subject_type,
+            subject_id=subject_id,
+            decided_at=self.created_at,
+            disposition=self.status,
+            reason=self.reason,
+            predecessor=self.supersedes_decision_id,
+            evidence={"source_contract": self.to_dict(), "source_sha256": self.sha256},
+        )
 
 
 def _validate_identity(decision: ResolutionDecisionV1) -> None:

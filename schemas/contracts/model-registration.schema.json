@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelRegistration",
+  "type": "object",
+  "properties": {
+    "contract": {
+      "const": "ModelRegistration"
+    },
+    "model_id": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "family": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "feature_contract": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "training_manifest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "training_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "training_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifact_uri": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "artifact_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "implementation_version": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "dependency_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "eligible_competitions": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        }
+      ]
+    },
+    "eligible_products": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "evaluation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "calibrator_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
+    },
+    "lifecycle_state": {
+      "enum": [
+        "RESEARCH",
+        "CHALLENGER",
+        "CHAMPION",
+        "RETIRED"
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "model_id",
+    "family",
+    "version",
+    "feature_contract",
+    "training_manifest",
+    "training_start",
+    "training_cutoff",
+    "artifact_uri",
+    "artifact_hash",
+    "implementation_version",
+    "dependency_fingerprint",
+    "eligible_competitions",
+    "eligible_products",
+    "evaluation_refs",
+    "calibrator_refs",
+    "lifecycle_state"
+  ],
+  "additionalProperties": false
+}

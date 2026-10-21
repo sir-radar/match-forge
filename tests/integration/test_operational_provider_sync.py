@@ -68,7 +68,7 @@ def geography_fixture(
         observed_at=now,
         provider_competition_name="Geography League",
     )
-    fixture = sync._create_provider_scoped_fixture(row, snapshot)
+    fixture = sync._create_provider_scoped_fixture(row, snapshot, season_label="2026")
     if fixture is None:
         assert country == "XXX"
         assert connection.execute(
@@ -204,6 +204,18 @@ def test_provider_history_scopes_are_idempotent_fair_and_resumable(tmp_path: Pat
                 """UPDATE football.product_provider_history_scopes
                    SET claimed_at = now() - interval '31 minutes'
                    WHERE provider_code = 'pitchapi' AND provider_competition_id = %s""",
+                (league,),
+            )
+            database.commit()
+            # Legacy detail alone cannot expire an authoritative shared lease.
+            assert claim_scope(sync, league, None) is None
+            database.execute(
+                """UPDATE football.work_items SET
+                   heartbeat_at=clock_timestamp()-interval '32 minutes',
+                   lease_until=clock_timestamp()-interval '1 minute'
+                   WHERE work_id IN (SELECT work_id
+                       FROM football.product_provider_scope_work
+                       WHERE provider_code='pitchapi' AND provider_competition_id=%s)""",
                 (league,),
             )
             database.commit()
@@ -539,7 +551,9 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         provider_home_team_id="t_ProvisionalHome01",
         provider_away_team_id="t_ProvisionalAway01",
     )
-    provisional_fixture_id = sync._create_provider_scoped_fixture(provisional, snapshot_id)
+    provisional_fixture_id = sync._create_provider_scoped_fixture(
+        provisional, snapshot_id, season_label="2026"
+    )
     assert provisional_fixture_id is not None
     assert not sync._store_observation(provisional, snapshot_id, provisional_fixture_id)
 
@@ -607,10 +621,12 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         ),
         snapshot_id,
     )
+    assert no_season is None
     assert connection.execute(
-        "SELECT identity_status FROM football.product_fixtures WHERE fixture_id = %s",
-        (no_season,),
-    ).fetchone() == ("PROVISIONAL",)
+        """SELECT count(*) FROM football.product_provider_mapping_decisions
+           WHERE provider_code = 'pitchapi' AND provider_match_id = 'm_Noseas'
+             AND reason = 'provider season label unavailable'"""
+    ).fetchone() == (1,)
 
     sync.apply_reviewed_mapping(provisional.provider_match_id, fixture_id)
 

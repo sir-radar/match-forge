@@ -1,0 +1,43 @@
+{
+  "additional_live_provider_requests": 0,
+  "canonical_decisions_published_in_shadow": 0,
+  "canonical_postgres_cases_passed": 17,
+  "canonical_unit_cases_passed": 46,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "5caaa8200fa6583b500a545087df302be4178120",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-8-final-check-integration.log",
+    "python_unit_tests_passed": 1362,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 103,
+  "limitations": [
+    "Shadow acceptance verifies schema upgrade and preservation, not full canonical replay. Retained replay remains Phase 33.",
+    "Publication currently verifies the existing persisted ResolutionDecisionV1 owner. Other identity owners require explicit adapters before publishing their resources.",
+    "Canonical selections are explicit reviewed inputs; scoped provider authority is Phase 10. No majority rule, numerical tolerance or universal provider ranking is introduced."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180200_canonical_resource_resolutions.sql",
+  "migration_seconds": 0.19177,
+  "migration_sha256": "faa294e9e7db33a9195e6ebcc2da1631dd9ba1df9e5265e3e01dc8a653ebc7c5",
+  "observation_contract_versions": [
+    "1",
+    "2"
+  ],
+  "phase": 8,
+  "pre_existing_migrations_verified": 72,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T05:00:10.447457+00:00",
+  "resource_families_verified": 16,
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-8-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-8/upgrade-verification.json",
+  "shadow_verification_sha256": "d8d852748b83cb125070595c55d64b7d4cfe931f337d1b64cfae32bcc3e5caa7",
+  "status": "PASS_WITH_WARNINGS",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}

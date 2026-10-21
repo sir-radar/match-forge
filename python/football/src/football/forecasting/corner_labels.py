@@ -15,6 +15,7 @@ from psycopg.types.json import Jsonb
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
+from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.parquet import ImmutableEventParquetStore, ParquetPublicationError
 
 _PASS_EVENT_TYPE_ID = "30"
@@ -113,9 +114,14 @@ class Sprint2CornerLabelPublisher:
                 and dataset_version_id != expected_dataset_version_id
             ):
                 raise CornerLabelError("explicit corner scope resolved a different dataset")
-            cursor.execute(
-                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
-                (f"corner-labels:{dataset_version_id}:{CORNER_LABEL_VERSION}",),
+            acquire_locks(
+                cursor,
+                (
+                    LockRequest(
+                        LockClass.LABEL,
+                        f"corner-labels:{dataset_version_id}:{CORNER_LABEL_VERSION}",
+                    ),
+                ),
             )
             claims = tuple(self._build_claim(source) for source in sources)
             inserted = sum(_register_claim(cursor, claim) for claim in claims)

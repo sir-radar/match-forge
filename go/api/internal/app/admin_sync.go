@@ -258,12 +258,7 @@ func (runner *CommandSyncRunner) enqueue(
 	requestedDate *time.Time,
 	encodedParameters []byte,
 ) error {
-	transaction, err := runner.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = transaction.Rollback(ctx) }()
-	if _, err = transaction.Exec(ctx, `
+	if _, err := runner.pool.Exec(ctx, `
 		UPDATE football.product_sync_runs
 		SET status = 'FAILED', finished_at = clock_timestamp(),
 		    error_message = 'worker lease expired; safe to retry'
@@ -278,6 +273,11 @@ func (runner *CommandSyncRunner) enqueue(
 	`, syncLane(request.Type), int64(syncRunLease/time.Second)); err != nil {
 		return err
 	}
+	transaction, err := runner.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = transaction.Rollback(ctx) }()
 	_, err = transaction.Exec(ctx, `
 		INSERT INTO football.product_sync_runs (
 			run_id, sync_type, status, requested_date, parameters, log_path,

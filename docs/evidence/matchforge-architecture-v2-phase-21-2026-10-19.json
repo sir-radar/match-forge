@@ -1,0 +1,81 @@
+{
+  "acceptance": {
+    "champion_artifact_checksum_unchanged": "PASS",
+    "external_context_eligible_provenance_and_nested_known_times": "PASS",
+    "immutable_export_and_independent_model_projections": "PASS",
+    "independent_football_and_knowledge_cutoffs": "PASS",
+    "missingness_unknown_quality_and_unavailable_resources_explicit": "PASS",
+    "sample_champion_distributions_and_legacy_input_hashes_unchanged": "PASS",
+    "shared_training_replay_production_rolling_arithmetic": "PASS",
+    "target_same_kickoff_future_and_late_known_history_exclusion": "PASS",
+    "typed_provider_neutral_snapshot_and_json_schema": "PASS"
+  },
+  "additional_live_provider_requests": 0,
+  "authoritative_evaluations_run": 0,
+  "branch": "ft/matchforge-architecture-v2",
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-21-gate",
+  "code_commit_sha": "13fe3eb7684b6ce09e87592a28be91db657674ca",
+  "compatibility": {
+    "feature_export_has_independent_checksum": true,
+    "fitted_model_bytes_changed": false,
+    "legacy_model_input_projection_preserved": true,
+    "published_forecast_rows_rewritten": false,
+    "retained_fixture_champion_parity": "PHASE_22_PENDING",
+    "synthetic_test_fixture_correction": "The former target UUID 5 collided with a historical fixture UUID; the synthetic target now has a separate stable UUID. Existing intended feature assertions remain."
+  },
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/check-integration.log",
+    "log_sha256": "d79706d9369d32f97d6f981ad5df5dca7d45d535c68633adc5f367b3c6e677a8",
+    "postgres_storage_cases_passed": 647,
+    "python_unit_tests_passed": 1480,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "data_preservation": {
+    "fresh_full_table_rehash_performed": false,
+    "inherited_verified_evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-19-2026-10-19.json",
+    "inherited_verified_evidence_sha256": "d649967c262564bdd77421518084f9526ed60f4f2a7c5113ebe622c3e93844f1",
+    "new_database_migration_required": false,
+    "reason": "Only feature construction, source query selection, validation and tests changed. Database verification ran on disposable databases; all 93 migration bytes and prior preservation evidence remain unchanged.",
+    "retained_shadow_written": false
+  },
+  "feature_contract_version": "fixture-features-v1",
+  "finished_at": "2026-10-19T08:44:11.750512+00:00",
+  "focused_validation": {
+    "dependency_log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/features-final-focused.log",
+    "dependency_model_cases_passed": 103,
+    "final_contract_cases_passed": 20,
+    "final_contract_log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/feature-contract-final.log",
+    "postgres_boundary_stress_cases_passed": 24,
+    "postgres_log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/target-query-green.log",
+    "timing": "Dependency suite preceded final context/export additions; final comprehensive validation covers every final source file."
+  },
+  "mf_aud_0009_status": "OPEN_ACCEPTANCE_NOT_MET",
+  "non_test_model_fit_or_promotion_executions": 0,
+  "observation_v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+  "phase": 21,
+  "phase_gate_complete": true,
+  "pre_existing_migrations_verified": 93,
+  "r3_disposition": "R3_DEFERRED_ARCHITECTURE_MIGRATION",
+  "remaining_work_inside_phase_21": [],
+  "reproduced_target_exposure": {
+    "disposition": "Builder excludes target IDs before calculations; production SQL excludes all batch target IDs before returning result columns; low-level publication rejects target history.",
+    "scope": "Synthetic earlier-kickoff revisions of the target canonical fixture. No claim that retained production forecasts were affected.",
+    "snapshot_builder_before_ref": "f89fb3e",
+    "snapshot_builder_log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/target-builder-red-confirmation.log",
+    "sql_query_log_ref": ".local/remediation/matchforge-architecture-v2/phase-21/target-query-red.log"
+  },
+  "runtime_cutover": false,
+  "schema_ref": "schemas/contracts/fixture-feature-snapshot-v1.schema.json",
+  "schema_sha256": "3eabe3c2c48e9c5e8097c0ac92a49c859b539dbef541914d3c9e23251f7035da",
+  "status": "PASS_WITH_WARNINGS",
+  "warnings": [
+    "Existing retained missing/unverifiable source bytes remain explicitly classified.",
+    "Existing Python/web warnings remain unchanged.",
+    "The Phase 20 existing Go cancellation timeout remains recorded; Phase 21 comprehensive serving/API integration passed unchanged."
+  ]
+}

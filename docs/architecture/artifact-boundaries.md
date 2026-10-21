@@ -24,3 +24,27 @@ A candidate is internally complete at **SEAL** but not yet public under simulati
 A public response is a **projection**, not the immutable stored artifact. Request IDs, cache headers, selected latest enrichment and temporary unavailable states may vary while the immutable forecast bytes and forecast-related hashes remain stable. Public/provenance fields are contract-controlled; no raw diagnostics are automatically exposed.
 
 See [forecast schema](../contracts/forecast-artifact-v1.md), [simulation schema](../contracts/simulation-validation-v1.md), [enrichment](../contracts/forecast-enrichment-v1.md), [hashing](../contracts/canonical-hashing-v1.md) and [publication algorithm](../simulation/publication-state-machine.md).
+
+## Existing implementation during Architecture V2
+
+The named future contracts above retain their proposed status. Architecture V2
+does not re-encode historical forecasts using the proposed precision/hash policy,
+replace existing schemas, or activate mandatory Rust production validation.
+
+`BaselineForecastV1` remains the executable baseline publication contract.
+Goal score labels/rows, model artifact references and competition-rule source
+references are copied to immutable tuples when their contracts are constructed.
+Their canonical bytes and existing hash rules are unchanged. The forecast store
+verifies the complete serialized payload against its sealed checksum before
+creating an immutable file, then verifies the stored checksum. Invalid bytes
+cannot occupy the forecast's immutable path and prevent a correct retry.
+The existing registry transaction publishes exact model/calibrator dependencies;
+identical retries retain the published identity and timestamp.
+
+Authorized research Rust runners consume already computed score distributions
+and record separate validation receipts. They do not fit, calibrate, alter model
+probabilities or promote models. There is no production enrichment publisher:
+`ForecastEnrichmentV1` remains a separate proposed post-publication sidecar, with
+no probability or forecast hash ownership. Implementing that proposal requires
+its own compatible codec and publication integration; it is not inferred from
+this migration or from the existence of a Rust executable.

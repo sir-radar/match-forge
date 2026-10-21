@@ -10,10 +10,11 @@ from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 from uuid import UUID
 
-Severity = Literal["FATAL", "QUARANTINE", "WARNING", "INFO"]
+from football.validation.findings import Severity as Severity
+from football.validation.findings import ValidationFinding as ValidationFinding
 
 _TIMESTAMP = re.compile(r"^([0-9]+):([0-5][0-9]):([0-5][0-9](?:\.[0-9]+)?)$")
 
@@ -84,20 +85,6 @@ class EventFileValidationInput:
     relative_path: str
     match: MatchValidationContext
     rows: tuple[Mapping[str, Any], ...]
-
-
-@dataclass(frozen=True)
-class ValidationFinding:
-    rule_code: str
-    severity: Severity
-    action: str
-    scope_type: str
-    message: str
-    evidence: dict[str, Any]
-    dataset_file_id: UUID | None = None
-    source_resource_id: UUID | None = None
-    provider_entity_id: str | None = None
-    field_path: str | None = None
 
 
 def validate_statsbomb_dataset(

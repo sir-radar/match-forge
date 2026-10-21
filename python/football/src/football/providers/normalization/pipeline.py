@@ -1,0 +1,145 @@
+"""Checksum-verified, offline resource normalization; no canonical admission or I/O."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+from collections.abc import Callable
+from typing import Any
+from urllib.parse import parse_qs, urlsplit
+
+from football.providers.native.reader import _validate_json
+from football.providers.normalization import (
+    api_football,
+    files,
+    football_data_org,
+    fotmob,
+    pitchapi,
+    statsbomb,
+)
+from football.providers.normalization.common import (
+    NormalizationContext,
+    NormalizationResult,
+    ObservationCollector,
+)
+
+NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("openfootball", "fixtures"): files.openfootball,
+    ("openfootball", "results"): files.openfootball,
+    ("football_data_uk", "fixtures"): files.football_data_uk,
+    ("football_data_uk", "results"): files.football_data_uk,
+    ("football_data_uk", "statistics"): files.football_data_uk,
+    ("football_data_uk", "odds"): files.football_data_uk,
+    ("statsbomb_open_data", "competitions"): statsbomb.competitions,
+    ("statsbomb_open_data", "results"): statsbomb.results,
+    ("statsbomb_open_data", "lineups"): statsbomb.lineups,
+    ("statsbomb_open_data", "events"): statsbomb.events,
+    ("statsbomb_open_data", "shots"): statsbomb.shots,
+    ("api_football", "fixtures"): api_football.fixtures,
+    ("api_football", "results"): api_football.fixtures,
+    ("api_football", "competitions"): api_football.competitions,
+    ("api_football", "lineups"): api_football.lineups,
+    ("api_football", "availability"): api_football.availability,
+    ("football_data_org", "fixtures"): football_data_org.fixtures,
+    ("football_data_org", "results"): football_data_org.fixtures,
+    ("football_data_org", "standings"): football_data_org.standings,
+    ("fotmob", "fixtures"): fotmob.fixtures,
+    ("fotmob", "results"): fotmob.fixtures,
+    ("fotmob", "lineups"): fotmob.lineups,
+    ("fotmob", "shots"): fotmob.shots,
+    ("fotmob", "statistics"): fotmob.statistics,
+    ("fotmob", "player_statistics"): fotmob.player_statistics,
+    ("fotmob", "events"): fotmob.events,
+    ("pitchapi", "fixtures"): pitchapi.fixtures,
+    ("pitchapi", "results"): pitchapi.fixtures,
+    ("pitchapi", "lineups"): pitchapi.lineups,
+    ("pitchapi", "shots"): pitchapi.shots,
+    ("pitchapi", "statistics"): pitchapi.statistics,
+    ("pitchapi", "player_statistics"): pitchapi.player_statistics,
+    ("pitchapi", "events"): pitchapi.events,
+}
+
+
+def _pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate source JSON key")
+        result[key] = value
+    return result
+
+
+def _constant(value: str) -> None:
+    raise ValueError(f"nonfinite source JSON number: {value}")
+
+
+def normalize_resource(
+    context: NormalizationContext, resource: str, raw: bytes
+) -> NormalizationResult:
+    if hashlib.sha256(raw).hexdigest() != context.provenance.source_sha256:
+        raise ValueError("source checksum does not match registered provenance")
+    output = ObservationCollector(context, resource)
+    normalizer = NORMALIZERS.get((context.provenance.provider, resource))
+    if normalizer is None:
+        output.finding(
+            "RESOURCE_UNSUPPORTED",
+            "resource",
+            "No normalizer for this provider resource",
+            evidence={"provider": context.provenance.provider, "resource": resource},
+        )
+        return output.result()
+    if context.provenance.provider == "football_data_uk":
+        payload = raw
+    else:
+        payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
+        _validate_json(payload, "source")
+    try:
+        _validate_scope(context, payload)
+        normalizer(output, payload)
+    except ValueError as error:
+        output.finding("RESOURCE_INVALID", "json:/", str(error))
+    return output.result()
+
+
+def _validate_scope(context: NormalizationContext, payload: object) -> None:
+    if context.fixture_native_id is None:
+        return
+    payload = payload if isinstance(payload, dict) else {}
+    if context.provenance.provider == "pitchapi":
+        data = payload.get("data")
+        native_id = data.get("match_id", data.get("id")) if isinstance(data, dict) else None
+    elif context.provenance.provider == "fotmob":
+        general = payload.get("general")
+        native_id = general.get("matchId") if isinstance(general, dict) else None
+    else:
+        native_id = None
+    if native_id is not None and str(native_id) != context.fixture_native_id:
+        raise ValueError("source fixture conflicts with requested scope")
+    requested = _request_fixture(context)
+    if requested is not None and requested != context.fixture_native_id:
+        raise ValueError("registered request fixture conflicts with requested scope")
+    if native_id is None and requested is None:
+        raise ValueError("fixture scope has no matching source or registered request evidence")
+
+
+def _request_fixture(context: NormalizationContext) -> str | None:
+    key = context.resource_key
+    patterns = {
+        "statsbomb_open_data": r"^(?:data/)?(?:events|lineups)/(\d+)\.json$",
+        "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
+        "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
+    }
+    match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
+    if match is not None:
+        return match[1]
+    request = urlsplit(key)
+    if context.provenance.provider == "api_football":
+        values = parse_qs(request.query).get("fixture", [])
+        return values[0] if len(values) == 1 else None
+    if context.provenance.provider == "pitchapi":
+        match = re.fullmatch(
+            r"/v1/matches/(m_[A-Za-z0-9]+)/(?:shots|lineups|stats|players|events)", request.path
+        )
+        return match[1] if match is not None else None
+    return None

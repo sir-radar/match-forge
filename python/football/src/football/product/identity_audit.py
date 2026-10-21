@@ -132,8 +132,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             providers = connection.execute(
                 "SELECT code FROM football.providers ORDER BY code"
             ).fetchall()
+            connection.commit()
             for (provider,) in providers:
-                admit_provider_mappings(connection, args.data_root, provider)
+                admit_provider_mappings(connection, args.data_root, provider, commit_each=True)
             connection.commit()
         report = audit_report(connection, args.data_root)
     print(json.dumps(report, sort_keys=True, separators=(",", ":")))

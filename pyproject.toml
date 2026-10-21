@@ -37,6 +37,7 @@ packages = ["python/football/src/football"]
 [tool.hatch.build.targets.wheel.force-include]
 "schemas/quality/statsbomb-quality-policy-v1.json" = "football/validation/statsbomb-quality-policy-v1.json"
 "schemas/contracts/historical-source-manifest-v1.schema.json" = "football/product/historical-source-manifest-v1.schema.json"
+"schemas/contracts/fixture-feature-snapshot-v1.schema.json" = "football/observability/fixture-feature-snapshot-v1.schema.json"
 
 [tool.pytest.ini_options]
 addopts = "-q"

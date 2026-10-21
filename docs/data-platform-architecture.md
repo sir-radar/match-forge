@@ -137,8 +137,14 @@ Validation never rewrites source or normalized dataset artifacts.
 | --- | --- | --- |
 | PostgreSQL | Provider namespaces, source registration, MatchForge IDs, provider mappings, temporal observations, lineups, event catalogue, dataset registry, validation runs/findings, artifact/forecast registrations | Raw provider payloads, full analytical event facts, opaque model binaries |
 | Immutable filesystem/object storage | Raw provider bytes, source manifests, Parquet files, dataset manifests, report files, model artifact files where applicable | Relational identity and temporal query state |
-| Redis | Operational readiness, cache, ephemeral job state | Data truth, model registry, forecast history, lineage |
+| Redis | Operational readiness, cache, ephemeral progress | Durable work status/leases/retries, data truth, model registry, forecast history, lineage |
 | DuckDB | Local analytical inspection | Authoritative persisted state |
+
+Durable work orchestration remains in PostgreSQL. The event catalogue and
+temporal relational references stay there too; complete analytical event and
+shot rows, feature matrices, evaluation corpora, and simulation archives use
+immutable files or Parquet. Redis and DuckDB do not replace those owners. The
+current runtime uses Redis for readiness and does not require a DuckDB runtime.
 
 An object-storage adapter must preserve:
 

@@ -1,0 +1,708 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "FixtureFeatureSnapshotV1",
+  "title": "FixtureFeatureSnapshotV1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract": {
+      "const": "FixtureFeatureSnapshotV1"
+    },
+    "feature_contract_version": {
+      "const": "fixture-features-v1"
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fixture_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "competition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "home_team_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "away_team_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kickoff_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "competition_context": {
+          "enum": [
+            "LEAGUE",
+            "DOMESTIC_CUP",
+            "CONTINENTAL_CUP",
+            "INTERNATIONAL",
+            "FRIENDLY",
+            "OTHER",
+            "UNKNOWN"
+          ]
+        },
+        "season_label": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "fixture_id",
+        "competition_id",
+        "home_team_id",
+        "away_team_id",
+        "kickoff_at",
+        "competition_context",
+        "season_label"
+      ]
+    },
+    "football_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "knowledge_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "knowledge_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goals_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fixture_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "competition_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "home_team_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "away_team_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kickoff_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "competition_context": {
+            "enum": [
+              "LEAGUE",
+              "DOMESTIC_CUP",
+              "CONTINENTAL_CUP",
+              "INTERNATIONAL",
+              "FRIENDLY",
+              "OTHER",
+              "UNKNOWN"
+            ]
+          },
+          "known_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "home_goals": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "away_goals": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "home_xg": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "away_xg": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "required": [
+          "fixture_id",
+          "competition_id",
+          "home_team_id",
+          "away_team_id",
+          "kickoff_at",
+          "competition_context",
+          "known_at",
+          "home_goals",
+          "away_goals",
+          "home_xg",
+          "away_xg"
+        ]
+      }
+    },
+    "team_strength": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "home": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "away": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "home",
+        "away"
+      ]
+    },
+    "rest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "home": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "days_since_last_match": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "matches_last_7_days": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "matches_last_14_days": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "days_since_last_match",
+            "matches_last_7_days",
+            "matches_last_14_days"
+          ]
+        },
+        "away": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "days_since_last_match": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "matches_last_7_days": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "matches_last_14_days": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "days_since_last_match",
+            "matches_last_7_days",
+            "matches_last_14_days"
+          ]
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        }
+      },
+      "required": [
+        "home",
+        "away",
+        "context"
+      ]
+    },
+    "congestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "home_last_7_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "home_last_14_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "away_last_7_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "away_last_14_days": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "home_last_7_days",
+        "home_last_14_days",
+        "away_last_7_days",
+        "away_last_14_days"
+      ]
+    },
+    "travel": {
+      "$ref": "#/$defs/context"
+    },
+    "manager_context": {
+      "$ref": "#/$defs/context"
+    },
+    "lineup_context": {
+      "$ref": "#/$defs/context"
+    },
+    "availability_context": {
+      "$ref": "#/$defs/context"
+    },
+    "league_strength": {
+      "const": null
+    },
+    "home_advantage": {
+      "const": null
+    },
+    "tactical_context": {
+      "const": null
+    },
+    "corners_context": {
+      "const": null
+    },
+    "cards_context": {
+      "const": null
+    },
+    "player_context": {
+      "const": null
+    },
+    "missingness": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "quality": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_references": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context"
+          }
+        }
+      },
+      "required": [
+        "source_references",
+        "context"
+      ]
+    },
+    "model_input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "model_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fixture_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "competition_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "competition_context": {
+          "enum": [
+            "LEAGUE",
+            "DOMESTIC_CUP",
+            "CONTINENTAL_CUP",
+            "INTERNATIONAL",
+            "FRIENDLY",
+            "OTHER",
+            "UNKNOWN"
+          ]
+        },
+        "season_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kickoff_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "home_team_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "away_team_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "football_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "knowledge_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "knowledge_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "qualified_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "fixture_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "competition_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "home_team_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "away_team_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "kickoff_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "competition_context": {
+                "enum": [
+                  "LEAGUE",
+                  "DOMESTIC_CUP",
+                  "CONTINENTAL_CUP",
+                  "INTERNATIONAL",
+                  "FRIENDLY",
+                  "OTHER",
+                  "UNKNOWN"
+                ]
+              },
+              "known_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "home_goals": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "away_goals": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "home_xg": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "away_xg": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            },
+            "required": [
+              "fixture_id",
+              "competition_id",
+              "home_team_id",
+              "away_team_id",
+              "kickoff_at",
+              "competition_context",
+              "known_at",
+              "home_goals",
+              "away_goals",
+              "home_xg",
+              "away_xg"
+            ]
+          }
+        },
+        "home_form_5": {
+          "$ref": "#/$defs/context"
+        },
+        "home_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "away_form_5": {
+          "$ref": "#/$defs/context"
+        },
+        "away_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "home_home_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "away_away_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "home_league_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "away_league_form_10": {
+          "$ref": "#/$defs/context"
+        },
+        "rating": {
+          "$ref": "#/$defs/context"
+        },
+        "home_rest": {
+          "$ref": "#/$defs/context"
+        },
+        "away_rest": {
+          "$ref": "#/$defs/context"
+        },
+        "h2h": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context"
+          }
+        },
+        "availability_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_references": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "missingness": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "home_promoted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "away_promoted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "availability": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context"
+          }
+        },
+        "predicted_lineup": {
+          "$ref": "#/$defs/context"
+        },
+        "confirmed_lineup": {
+          "$ref": "#/$defs/context"
+        },
+        "coach_context": {
+          "$ref": "#/$defs/context"
+        },
+        "rest_context": {
+          "$ref": "#/$defs/context"
+        },
+        "context_missingness": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "context_provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context"
+          }
+        },
+        "travel_context": {
+          "$ref": "#/$defs/context"
+        },
+        "predictive_context_families": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "AVAILABILITY_LINEUP",
+              "REST_CONGESTION",
+              "MANAGER",
+              "TRAVEL"
+            ]
+          }
+        }
+      },
+      "required": [
+        "fixture_id",
+        "competition_id",
+        "competition_context",
+        "season_label",
+        "kickoff_at",
+        "home_team_id",
+        "away_team_id",
+        "football_cutoff",
+        "knowledge_cutoff",
+        "knowledge_mode",
+        "qualified_history",
+        "home_form_5",
+        "home_form_10",
+        "away_form_5",
+        "away_form_10",
+        "home_home_form_10",
+        "away_away_form_10",
+        "home_league_form_10",
+        "away_league_form_10",
+        "rating",
+        "home_rest",
+        "away_rest",
+        "h2h",
+        "availability_status",
+        "source_references",
+        "missingness",
+        "home_promoted",
+        "away_promoted",
+        "availability",
+        "predicted_lineup",
+        "confirmed_lineup",
+        "coach_context",
+        "rest_context",
+        "context_missingness",
+        "context_provenance",
+        "travel_context",
+        "predictive_context_families"
+      ]
+    }
+  },
+  "required": [
+    "contract",
+    "feature_contract_version",
+    "fixture",
+    "football_cutoff",
+    "knowledge_cutoff",
+    "knowledge_mode",
+    "goals_history",
+    "team_strength",
+    "rest",
+    "congestion",
+    "travel",
+    "manager_context",
+    "lineup_context",
+    "availability_context",
+    "league_strength",
+    "home_advantage",
+    "tactical_context",
+    "corners_context",
+    "cards_context",
+    "player_context",
+    "missingness",
+    "quality",
+    "provenance",
+    "model_input_sha256",
+    "model_input"
+  ],
+  "$defs": {
+    "context": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "propertyNames": {
+        "not": {
+          "enum": [
+            "home_score",
+            "away_score",
+            "home_goals",
+            "away_goals",
+            "result",
+            "score",
+            "corners",
+            "shots",
+            "possession",
+            "post_match_statistics"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/value"
+      }
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "$ref": "#/$defs/context"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/value"
+          }
+        }
+      ]
+    }
+  }
+}

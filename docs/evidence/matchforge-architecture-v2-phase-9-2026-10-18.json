@@ -1,0 +1,40 @@
+{
+  "additional_live_provider_requests": 0,
+  "capability_postgres_cases_passed": 17,
+  "capability_states_recorded_in_shadow": 0,
+  "capability_unit_tests_passed": 22,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "570e5685e963deede37993e40d8c81e63f8b8d30",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-9-check-integration.log",
+    "python_unit_tests_passed": 1384,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "database": "football_architecture_v2_shadow_20261016",
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 105,
+  "limitations": [
+    "No runtime production states are inferred from static declarations, retained observations or roadmap documents. Explicit evidenced scope registrations are required before new acquisition is allowed.",
+    "Existing serving and synchronization remain active until the controlled cutover; full retained replay and parity remain later gates.",
+    "Rate, entitlement and retention metadata do not override existing access, quota or retention policies."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180300_provider_resource_capabilities.sql",
+  "migration_seconds": 0.255546,
+  "migration_sha256": "a44a9c2c3c2044f007c39d9323e0e853bcfcd1cb30e160eda9eb151a5b9185b9",
+  "phase": 9,
+  "pre_existing_migrations_verified": 73,
+  "provider_callbacks_executed": 0,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T07:35:05.832882+00:00",
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-9-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-9/upgrade-verification.json",
+  "shadow_verification_sha256": "0b17d27445e2537b6f502331eb9a7b075cf778ea957fd9899f464b4aa751026c",
+  "status": "PASS_WITH_WARNINGS",
+  "unregistered_scope_planning": "UNKNOWN_BLOCKED",
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}

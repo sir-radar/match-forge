@@ -1,0 +1,40 @@
+{
+  "additional_live_provider_requests": 0,
+  "canonical_coverage_snapshots_in_shadow": 0,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "code_commit_sha": "5534604fe71bd1dc01ca1b19ecffadf8593e5278",
+  "code_worktree_clean": true,
+  "comprehensive_validation": {
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-11-check-integration.log",
+    "python_unit_tests_passed": 1408,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "coverage_postgres_cases_passed": 15,
+  "coverage_unit_tests_passed": 14,
+  "database": "football_architecture_v2_shadow_20261016",
+  "existing_table_hashes_preserved": true,
+  "existing_tables_verified": 107,
+  "limitations": [
+    "Coverage requires explicit expected unit sets and already-qualified inputs from the existing eligibility owners; no qualification or denominator is inferred during schema upgrade.",
+    "R3 provider-specific historical truth remains unchanged. New summaries are separate immutable measurements and are not active production read models.",
+    "Complete retained replay and shadow parity remain later gates. Unknown or empty expectations never claim complete coverage."
+  ],
+  "migration_ref": "infrastructure/migrations/202610180500_resource_coverage.sql",
+  "migration_seconds": 0.195641,
+  "migration_sha256": "88088f0c858d3957958f51039cc31af16c9b4f499bcd547762c6b33484437ea8",
+  "phase": 11,
+  "pre_existing_migrations_verified": 75,
+  "provider_coverage_snapshots_in_shadow": 0,
+  "r3_original_migrations_verified": 70,
+  "recorded_at": "2026-10-18T08:25:36.561425+00:00",
+  "runtime_cutover": false,
+  "shadow_upgrade_log_ref": ".local/remediation/matchforge-architecture-v2/validation/phase-11-shadow-upgrade.log",
+  "shadow_verification_ref": ".local/remediation/matchforge-architecture-v2/phase-11/upgrade-verification.json",
+  "shadow_verification_sha256": "5543ce8ef7b3f5e01c8ea3ffcf7504a035a3706c73a6e8384c7de2f519884a00",
+  "status": "PASS_WITH_WARNINGS",
+  "unregistered_scope_reports": 0,
+  "v1_schema_sha256": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14"
+}

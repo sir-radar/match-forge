@@ -1,0 +1,66 @@
+{
+  "acceptance": {
+    "caller_owned_score_sequences_and_references_sealed": "PASS",
+    "checksum_verified_before_immutable_file_creation": "PASS",
+    "correct_retry_after_rejected_payload": "PASS",
+    "legacy_wire_probabilities_and_identity_unchanged": "PASS",
+    "named_future_contract_proposals_preserved": "PASS",
+    "no_unapproved_production_simulation_gate": "PASS",
+    "rust_source_and_research_evidence_unchanged": "PASS"
+  },
+  "additional_live_provider_requests": 0,
+  "authoritative_evaluations_run": 0,
+  "boundary_regressions_passed": 5,
+  "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+  "checkpoint": "phase-26-gate",
+  "code_commit_sha": "17c261a87457afec605be61c583b0afae4f793a6",
+  "comprehensive_validation": {
+    "command": "make check integration",
+    "lint_typing_build_migrations_storage_api": "PASS",
+    "log_ref": ".local/remediation/matchforge-architecture-v2/phase-26/check-integration.log",
+    "log_sha256": "5de374a9402a36fb8d4d5e9583b486f7dad91b342ffdda19a93067f51a470a7a",
+    "postgres_storage_cases_passed": 658,
+    "python_unit_tests_passed": 1544,
+    "rust_tests_passed": 16,
+    "status": "PASS",
+    "web_tests_passed": 56
+  },
+  "executable_publication_contract": "BaselineForecastV1",
+  "focused_cases_passed": 21,
+  "historical_forecasts_reencoded": 0,
+  "mutation_count_scope": "Retained/shadow and operational databases only; disposable verification databases are excluded.",
+  "non_test_fits": 0,
+  "preserved_proposed_contracts": [
+    "ForecastArtifactV1",
+    "SimulationValidationArtifactV1",
+    "ForecastEnrichmentV1"
+  ],
+  "promotions": 0,
+  "remaining_work_inside_phase": [],
+  "retained_database_mutations": 0,
+  "runtime_cutover": false,
+  "rust_production_gate_activated": false,
+  "status": "PASS_WITH_WARNINGS",
+  "synthetic_legacy_wire_pairs_exactly_equal": 5,
+  "tested_source_files": {
+    "docs/architecture/artifact-boundaries.md": "8f859a0bedba21ac8c3939c1d661cb8674782b33c0e864a5bd6748f036693be1",
+    "python/football/src/football/contracts/competition.py": "b04be5e3aec98008b188ab045606ba27349754762427e98aed9ee86ce2af8290",
+    "python/football/src/football/forecasting/contracts.py": "c3321c3a3eb0d8a7c946cbf2ebe6908ecfbc52a1f71562302a3a578e61794172",
+    "python/football/src/football/forecasting/publication.py": "3560de676bd2dd43413c629fa5daedddeda9f58c0dc2d989bf86c6d211e3dd41",
+    "python/football/tests/test_forecast_artifact_boundaries.py": "c66eeea0e853ac64103b099cabf43eb15f10ad515be05997f02b6c68de3712f6"
+  },
+  "unchanged_contract_files": {
+    "docs/contracts/canonical-hashing-v1.md": "becd839f1e4811b82f844b95fbe95dbfcbb518fd1bad8743cada4c894548abb3",
+    "docs/contracts/forecast-artifact-v1.md": "5e283aa7f9b7aba136abe28d600e9582b7578749855dad1a1fe2c1c0ea5a5f75",
+    "docs/contracts/forecast-enrichment-v1.md": "5a7832efc0c64b9e505d3d6a7cadddecac23d046f05f7d59b03ce0859880d0ec",
+    "docs/contracts/simulation-validation-v1.md": "37925efab99daeb914d6631e4ff0811459820370e91900a7fd389f3cd18761be",
+    "schemas/contracts/baseline-forecast-v1.schema.json": "ebdfbef71f6164e6a9de7104bf4aa673a802e7ecb996ef9d970ab7eec0557e0a"
+  },
+  "unchanged_migration_files": 94,
+  "warnings": [
+    "The general ForecastArtifactV1 codec, production simulation state machine and ForecastEnrichmentV1 publisher remain proposed; this phase preserves their contracts and strengthens the existing publication boundary without inferring activation.",
+    "Existing Python/web warnings and the 59 retained generic-snapshot Elo conflicts remain recorded."
+  ],
+  "wire_parity_ref": ".local/remediation/matchforge-architecture-v2/phase-26/wire-parity.json",
+  "wire_parity_sha256": "2286815383f5ad546dcff073736f25bdf84f07ca44926e1c6a854a44b6869af8"
+}
