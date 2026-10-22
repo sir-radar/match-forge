@@ -872,6 +872,7 @@ class OperationalProviderSync:
                     else:
                         matched = 1
                         updated = self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                        self._reconcile_retained_members(row, fixture_id, snapshot_id)
                         history_inserted = self._insert_qualified_history(
                             row, fixture_id, snapshot_id
                         )
@@ -1303,6 +1304,10 @@ class OperationalProviderSync:
                 (self.provider_code, row.provider_match_id),
             )
             direct = cursor.fetchall()
+            if len(direct) == 1:
+                representative = self._trusted_duplicate_representative(direct[0][0], row)
+                if representative is not None:
+                    return representative
             if (
                 len(direct) == 1
                 and self._trusted_direct_fixture(direct[0][0], row)
@@ -1384,8 +1389,13 @@ class OperationalProviderSync:
             )
             candidates = cursor.fetchall()
         if len(candidates) == 1:
+            fixture_id = cast(UUID, candidates[0][0])
             self._materialize_history_fixture(candidates[0][0], row.observed_at)
             if snapshot_id is not None:
+                if len(direct) == 1 and self._reconcile_direct_mapping_candidate(
+                    row, snapshot_id, direct[0][0], fixture_id
+                ):
+                    return fixture_id
                 self._persist_deterministic_mapping(
                     row, snapshot_id, candidates[0], mapping_method="explicit_crosswalk"
                 )
@@ -1397,7 +1407,7 @@ class OperationalProviderSync:
                     "verified provider IDs and kickoff matched",
                     {"rule": "verified_competition_team_ids_unique_kickoff_or_date_score"},
                 )
-            return cast(UUID, candidates[0][0])
+            return fixture_id
         if snapshot_id is None:
             return None
         reconciled = self._reconcile_exact_fixture(row, snapshot_id)
@@ -1424,6 +1434,48 @@ class OperationalProviderSync:
             ),
         ).fetchone()
         return candidate is not None and self._candidate_mapping_conflict(row, candidate) is None
+
+    def _reconcile_direct_mapping_candidate(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID,
+        member_fixture_id: UUID,
+        representative_fixture_id: UUID,
+    ) -> bool:
+        if member_fixture_id == representative_fixture_id:
+            return False
+        self._reconcile_retained_members(row, representative_fixture_id, snapshot_id)
+        return (
+            self._trusted_duplicate_representative(member_fixture_id, row)
+            == representative_fixture_id
+        )
+
+    def _trusted_duplicate_representative(
+        self, member_fixture_id: UUID, row: FixtureObservation
+    ) -> UUID | None:
+        candidate = self.connection.execute(
+            """SELECT fixture.fixture_id,fixture.competition_id,
+                      fixture.home_team_id,fixture.away_team_id
+                 FROM football.fixture_identity_resolutions resolution
+                 JOIN football.product_effective_fixtures fixture
+                   ON fixture.fixture_id=resolution.representative_fixture_id
+                WHERE resolution.member_fixture_id=%s AND resolution.active
+                  AND resolution.resolution_status='DUPLICATE_RESOLVED'
+                  AND fixture.identity_status='VERIFIED'
+                  AND fixture.kickoff_at BETWEEN %s AND %s""",
+            (
+                member_fixture_id,
+                row.kickoff_at - self.kickoff_tolerance,
+                row.kickoff_at + self.kickoff_tolerance,
+            ),
+        ).fetchone()
+        if (
+            candidate is None
+            or not self._verified_provider_entities(row)
+            or self._candidate_mapping_conflict(row, candidate) is not None
+        ):
+            return None
+        return cast(UUID, candidate[0])
 
     def _verified_provider_entities(self, row: FixtureObservation) -> bool:
         with self.connection.cursor() as cursor:
