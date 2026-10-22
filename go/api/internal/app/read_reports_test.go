@@ -29,6 +29,30 @@ func TestReadReportChecksumAndAbsence(t *testing.T) {
 	}
 }
 
+func TestAttachComparisonWithoutCurrentReportKeepsPredictionAvailable(t *testing.T) {
+	forecastID := "forecast-id"
+	digest := "report-digest"
+	payload := []byte(`{"prediction_id":"prediction-id"}`)
+	for _, test := range []struct {
+		name    string
+		payload []byte
+		digest  *string
+	}{
+		{name: "missing payload", digest: &digest},
+		{name: "missing digest", payload: payload},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			item := ExternalPrediction{ID: "prediction-id"}
+			if err := attachComparison(&item, &forecastID, test.payload, test.digest); err != nil {
+				t.Fatalf("attachComparison() error = %v", err)
+			}
+			if item.Agreement != "UNABLE_TO_EVALUATE" || item.MatchForgeProbability != nil {
+				t.Fatalf("missing comparison report changed result: %+v", item)
+			}
+		})
+	}
+}
+
 func TestPerformanceReportIdentityAndVerifiedEmptyState(t *testing.T) {
 	empty, err := decodePerformanceReport("test", "LATEST", 0, nil, nil)
 	if err != nil || empty.Rating != "UNRATED" || empty.Brier != nil {
