@@ -2,6 +2,9 @@ SHELL := /bin/sh
 
 UV := .tools/bin/uv
 TOOL_ENV := . ./scripts/toolchain.sh
+MATCHFORGE_PYTHON_COMMAND ?= $(PYTHON_COMMAND)
+MATCHFORGE_RUST_COMMAND ?= $(RUST_COMMAND)
+export MATCHFORGE_PYTHON_COMMAND MATCHFORGE_RUST_COMMAND
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
@@ -10,9 +13,9 @@ CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
-.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate model-fit model-forecast model-evaluate probability-benchmark dev mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
+.PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
-	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate
+	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
 
 bootstrap:
 	./scripts/bootstrap.sh
@@ -206,3 +209,12 @@ external-predictions:
 
 dev: migrate
 	./scripts/dev.sh
+
+dev-go:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run --locked python scripts/dev_watch.py --watch go/api --suffix .go --suffix go.mod --suffix go.sum --cwd go/api -- go run ./cmd/api
+
+dev-python:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run --locked python scripts/dev_watch.py --watch python/football/src --watch scripts --suffix .py --suffix pyproject.toml --suffix uv.lock --command-env MATCHFORGE_PYTHON_COMMAND
+
+dev-rust:
+	@set -a; test ! -f .env || . ./.env; set +a; $(TOOL_ENV); uv run --locked python scripts/dev_watch.py --watch rust --watch Cargo.toml --watch Cargo.lock --suffix .rs --suffix Cargo.toml --suffix Cargo.lock --command-env MATCHFORGE_RUST_COMMAND
