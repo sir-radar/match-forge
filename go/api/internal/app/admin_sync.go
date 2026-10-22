@@ -210,6 +210,9 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
+	if err = requireProviderSyncSchema(ctx, runner.pool, request.Type); err != nil {
+		return SyncRun{}, err
+	}
 	encodedParameters, err := json.Marshal(syncParameters(request))
 	if err != nil {
 		return SyncRun{}, err
@@ -477,7 +480,7 @@ func syncCompletion(summary map[string]interface{}) (string, *string) {
 	if summary["status"] != "COMPLETED_WITH_ERRORS" {
 		return "SUCCEEDED", nil
 	}
-	message := "one or more data synchronization operations failed; see summary.errors"
+	message := "one or more data synchronization operations failed; see the run summary for details"
 	return "FAILED", &message
 }
 

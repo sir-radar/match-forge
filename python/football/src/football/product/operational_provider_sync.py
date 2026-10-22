@@ -549,7 +549,23 @@ class OperationalProviderSync:
             {"rule": "admitted_competition_home_away_exact_kickoff_native_fixture_id"},
         )
         for member in members:
-            self._resolve_reviewed_member(member, target, row, snapshot, decision)
+            try:
+                self._resolve_reviewed_member(member, target, row, snapshot, decision)
+            except ValueError as error:
+                reason = str(error).splitlines()[0]
+                if reason != "retained fixture member contradicts reviewed context":
+                    raise
+                self._record_mapping_decision(
+                    row,
+                    snapshot,
+                    fixture_id,
+                    "CONTRADICTORY",
+                    reason,
+                    {
+                        "member_fixture_id": str(member),
+                        "rule": "retained_provider_observation_context_review",
+                    },
+                )
         if quarantine is not None:
             evidence = {
                 "provider_mapping_decision_id": str(decision),
@@ -872,6 +888,7 @@ class OperationalProviderSync:
                     else:
                         matched = 1
                         updated = self._update_canonical_fixture(row, fixture_id, snapshot_id)
+                        self._reconcile_retained_members(row, fixture_id, snapshot_id)
                         history_inserted = self._insert_qualified_history(
                             row, fixture_id, snapshot_id
                         )
@@ -1292,7 +1309,7 @@ class OperationalProviderSync:
         with self.connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT mapping.match_id
+                SELECT mapping.match_id, mapping.mapping_method
                 FROM football.match_provider_mappings mapping
                 JOIN football.providers provider ON provider.id = mapping.provider_id
                 WHERE provider.code = %s AND mapping.provider_match_id = %s
@@ -1303,6 +1320,10 @@ class OperationalProviderSync:
                 (self.provider_code, row.provider_match_id),
             )
             direct = cursor.fetchall()
+            if len(direct) == 1:
+                representative = self._trusted_duplicate_representative(direct[0][0], row)
+                if representative is not None:
+                    return representative
             if (
                 len(direct) == 1
                 and self._trusted_direct_fixture(direct[0][0], row)
@@ -1384,8 +1405,28 @@ class OperationalProviderSync:
             )
             candidates = cursor.fetchall()
         if len(candidates) == 1:
+            fixture_id = cast(UUID, candidates[0][0])
             self._materialize_history_fixture(candidates[0][0], row.observed_at)
             if snapshot_id is not None:
+                if len(direct) == 1 and direct[0][0] != fixture_id:
+                    if self._reconcile_direct_mapping_candidate(
+                        row, snapshot_id, direct[0][0], fixture_id
+                    ):
+                        return fixture_id
+                    self._record_mapping_decision(
+                        row,
+                        snapshot_id,
+                        fixture_id,
+                        "CONTRADICTORY",
+                        "existing match mapping conflicts with exact fixture candidate",
+                        {
+                            "rule": "verified_provider_ids_unique_exact_kickoff",
+                            "existing_fixture_id": str(direct[0][0]),
+                            "existing_mapping_method": direct[0][1],
+                            "candidate_fixture_id": str(fixture_id),
+                        },
+                    )
+                    return None
                 self._persist_deterministic_mapping(
                     row, snapshot_id, candidates[0], mapping_method="explicit_crosswalk"
                 )
@@ -1397,7 +1438,7 @@ class OperationalProviderSync:
                     "verified provider IDs and kickoff matched",
                     {"rule": "verified_competition_team_ids_unique_kickoff_or_date_score"},
                 )
-            return cast(UUID, candidates[0][0])
+            return fixture_id
         if snapshot_id is None:
             return None
         reconciled = self._reconcile_exact_fixture(row, snapshot_id)
@@ -1424,6 +1465,48 @@ class OperationalProviderSync:
             ),
         ).fetchone()
         return candidate is not None and self._candidate_mapping_conflict(row, candidate) is None
+
+    def _reconcile_direct_mapping_candidate(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID,
+        member_fixture_id: UUID,
+        representative_fixture_id: UUID,
+    ) -> bool:
+        if member_fixture_id == representative_fixture_id:
+            return False
+        self._reconcile_retained_members(row, representative_fixture_id, snapshot_id)
+        return (
+            self._trusted_duplicate_representative(member_fixture_id, row)
+            == representative_fixture_id
+        )
+
+    def _trusted_duplicate_representative(
+        self, member_fixture_id: UUID, row: FixtureObservation
+    ) -> UUID | None:
+        candidate = self.connection.execute(
+            """SELECT fixture.fixture_id,fixture.competition_id,
+                      fixture.home_team_id,fixture.away_team_id
+                 FROM football.fixture_identity_resolutions resolution
+                 JOIN football.product_effective_fixtures fixture
+                   ON fixture.fixture_id=resolution.representative_fixture_id
+                WHERE resolution.member_fixture_id=%s AND resolution.active
+                  AND resolution.resolution_status='DUPLICATE_RESOLVED'
+                  AND fixture.identity_status='VERIFIED'
+                  AND fixture.kickoff_at BETWEEN %s AND %s""",
+            (
+                member_fixture_id,
+                row.kickoff_at - self.kickoff_tolerance,
+                row.kickoff_at + self.kickoff_tolerance,
+            ),
+        ).fetchone()
+        if (
+            candidate is None
+            or not self._verified_provider_entities(row)
+            or self._candidate_mapping_conflict(row, candidate) is not None
+        ):
+            return None
+        return cast(UUID, candidate[0])
 
     def _verified_provider_entities(self, row: FixtureObservation) -> bool:
         with self.connection.cursor() as cursor:
@@ -1912,6 +1995,19 @@ class OperationalProviderSync:
         season_label = self._usable_provider_season_label(row, snapshot_id, season_label, metadata)
         if season_label is None:
             return None
+        existing_mapping = self.connection.execute(
+            """SELECT mapping.match_id
+                 FROM football.match_provider_mappings mapping
+                 JOIN football.providers provider ON provider.id=mapping.provider_id
+                WHERE provider.code=%s AND mapping.provider_match_id=%s
+                  AND mapping.valid_to IS NULL""",
+            (self.provider_code, row.provider_match_id),
+        ).fetchone()
+        provisional_id = self._provider_scoped_identity(
+            "match_provider_mappings", row.provider_match_id
+        )
+        if existing_mapping is not None and existing_mapping[0] != provisional_id:
+            return None
         self._load_geographic_scopes()
         assert self._geographic_scopes is not None
         geographic_scope = self._geographic_scopes.get(row.provider_competition_id)
@@ -1930,35 +2026,12 @@ class OperationalProviderSync:
             )
             return None
         source_season_label = season_label
-        crosswalk = OPERATIONAL_COMPETITION_CROSSWALKS.get(
-            (self.provider_code, row.provider_competition_id)
-        )
-        if (
-            metadata is not None
-            and metadata[1] == "VERIFIED"
-            and crosswalk is not None
-            and crosswalk[0] == "api_football"
-            and re.fullmatch(r"\d{4}/\d{4}", season_label)
-        ):
-            start, end = (int(year) for year in season_label.split("/"))
-            if end != start + 1:
-                raise ValueError("crosswalk league season years must be consecutive")
-            season_label = str(start)
+        season_label = self._canonical_crosswalk_season_label(row, metadata, season_label)
         season_id = stable_id("season", competition_id, season_label)
         home_id = self._mapped_or_scoped_team(row.provider_home_team_id)
         away_id = self._mapped_or_scoped_team(row.provider_away_team_id)
-        verified = (
-            metadata is not None
-            and metadata[1] == "VERIFIED"
-            and competition_id
-            != stable_id(
-                "provider-scoped-competition", self.provider_code, row.provider_competition_id
-            )
-            and season_label != "Unknown"
-            and home_id
-            != stable_id("provider-scoped-team", self.provider_code, row.provider_home_team_id)
-            and away_id
-            != stable_id("provider-scoped-team", self.provider_code, row.provider_away_team_id)
+        verified = self._fixture_identity_is_verified(
+            row, competition_id, metadata, season_label, home_id, away_id
         )
         fixture_id = (
             fixture_identity(competition_id, season_label, row.kickoff_at, home_id, away_id)
@@ -2086,6 +2159,51 @@ class OperationalProviderSync:
             },
         )
         return fixture_id if created else fixture_id
+
+    def _fixture_identity_is_verified(
+        self,
+        row: FixtureObservation,
+        competition_id: UUID,
+        metadata: Sequence[Any] | None,
+        season_label: str,
+        home_id: UUID,
+        away_id: UUID,
+    ) -> bool:
+        return (
+            metadata is not None
+            and metadata[1] == "VERIFIED"
+            and competition_id
+            != stable_id(
+                "provider-scoped-competition", self.provider_code, row.provider_competition_id
+            )
+            and season_label != "Unknown"
+            and home_id
+            != stable_id("provider-scoped-team", self.provider_code, row.provider_home_team_id)
+            and away_id
+            != stable_id("provider-scoped-team", self.provider_code, row.provider_away_team_id)
+        )
+
+    def _canonical_crosswalk_season_label(
+        self,
+        row: FixtureObservation,
+        metadata: Sequence[Any] | None,
+        season_label: str,
+    ) -> str:
+        crosswalk = OPERATIONAL_COMPETITION_CROSSWALKS.get(
+            (self.provider_code, row.provider_competition_id)
+        )
+        if (
+            metadata is None
+            or metadata[1] != "VERIFIED"
+            or crosswalk is None
+            or crosswalk[0] != "api_football"
+            or not re.fullmatch(r"\d{4}/\d{4}", season_label)
+        ):
+            return season_label
+        start, end = (int(year) for year in season_label.split("/"))
+        if end != start + 1:
+            raise ValueError("crosswalk league season years must be consecutive")
+        return str(start)
 
     def _set_verified_league_season(
         self, row: FixtureObservation, fixture_id: UUID, season_label: str

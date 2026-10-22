@@ -27,7 +27,7 @@ func decodeReadReport(payload []byte, digest *string, target any) error {
 
 func attachComparison(item *ExternalPrediction, forecastID *string, payload []byte, digest *string) error {
 	item.Agreement = "UNABLE_TO_EVALUATE"
-	if forecastID == nil {
+	if forecastID == nil || payload == nil || digest == nil {
 		return nil
 	}
 	var report comparisonReport
