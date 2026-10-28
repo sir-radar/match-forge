@@ -41,16 +41,17 @@ function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const contextRetryCount = useRef(0);
-  const { errorStatus: contextErrorStatus, retry: retryContext } = context;
+  const { data: contextData, errorStatus: contextErrorStatus, loading: contextLoading, retry: retryContext } = context;
+  const contextRetryDelay = Math.min(5_000 * 2 ** Math.min(contextRetryCount.current, 4), 60_000);
   useEffect(() => { contextRetryCount.current = 0; }, [fixture.id]);
   useEffect(() => {
-    if (contextErrorStatus !== 503 || contextRetryCount.current >= 12) return;
-    const timer = window.setTimeout(() => {
-      contextRetryCount.current += 1;
-      retryContext();
-    }, 5_000);
+    if (contextErrorStatus !== 503) {
+      if (!contextLoading && contextData !== null) contextRetryCount.current = 0;
+      return;
+    }
+    const timer = window.setTimeout(() => { contextRetryCount.current += 1; retryContext(); }, contextRetryDelay);
     return () => window.clearTimeout(timer);
-  }, [contextErrorStatus, retryContext]);
+  }, [contextData, contextErrorStatus, contextLoading, contextRetryDelay, retryContext]);
   const forecastId = fixture.forecast?.id ?? null;
   const forecastLoad = useCallback((signal: AbortSignal) => forecastId ? api.forecast(fixture.id, forecastId, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, forecastId]);
   const forecast = useResource(`forecast-${fixture.id}-${forecastId ?? "none"}`, forecastLoad);
