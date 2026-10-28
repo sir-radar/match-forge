@@ -319,7 +319,7 @@ components:
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { type: object }, description: Selected metadata from the named existing domain owner. Model records wrap the unchanged registration under registration; experiment records are shared execution work. }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
     SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object

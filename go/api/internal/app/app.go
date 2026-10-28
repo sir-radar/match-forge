@@ -95,6 +95,9 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
 		go application.runForecastRefreshSchedule(ctx)
 	}
+	if _, ok := application.syncRunner.(pendingContextReportsRunner); ok {
+		go application.runContextReportSchedule(ctx)
+	}
 	server := application.httpServer()
 
 	errorsChannel := make(chan error, 1)
@@ -190,6 +193,30 @@ func (application *App) runForecastRefreshSchedule(ctx context.Context) {
 			})
 			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
 				application.logger.Warn("scheduled forecast refresh failed to start", "error", err)
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (application *App) runContextReportSchedule(ctx context.Context) {
+	runner := application.syncRunner.(pendingContextReportsRunner)
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		pending, err := runner.PendingContextReports(ctx)
+		if err != nil {
+			if ctx.Err() == nil {
+				application.logger.Warn("check pending context reports", "error", err)
+			}
+		} else if pending {
+			_, err = application.syncRunner.Start(ctx, SyncRequest{Type: SyncContextReports})
+			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
+				application.logger.Warn("scheduled context report refresh failed to start", "error", err)
 			}
 		}
 		select {

@@ -157,6 +157,16 @@ func TestOperationalCommandArgsIncludeRangeAndProviderCompetition(t *testing.T) 
 	}
 }
 
+func TestContextReportCommandUsesDedicatedCLI(t *testing.T) {
+	args, err := syncCommandArgs(SyncRequest{Type: SyncContextReports})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(args, " "); !strings.Contains(got, "refresh-context-reports") {
+		t.Fatalf("context report command = %q", got)
+	}
+}
+
 func TestCommandFailureIncludesLastLogLine(t *testing.T) {
 	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
 	if err != nil {

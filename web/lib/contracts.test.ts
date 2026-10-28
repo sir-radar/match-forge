@@ -71,16 +71,18 @@ describe("API contract boundary", () => {
   });
 
   it("keeps queue progress separate from top-level sync status", () => {
-    const run = parseSyncRun({
+    const payload = {
       run_id: "run", sync_type: "MVP_SYNC", status: "RUNNING",
       requested_at: "2026-10-04T10:00:00Z", started_at: null, finished_at: null,
       requested_date: "2026-10-04", parameters: {}, summary: {},
       error_message: null, log_path: null,
       history_queue: { total: 227, pending: 184, running: 3, succeeded: 40, failed: 0 },
-    });
+    };
+    const run = parseSyncRun(payload);
 
     expect(run.status).toBe("RUNNING");
     expect(run.history_queue).toEqual({ total: 227, pending: 184, running: 3, succeeded: 40, failed: 0 });
+    expect(parseSyncRun({ ...payload, sync_type: "CONTEXT_REPORTS" }).sync_type).toBe("CONTEXT_REPORTS");
   });
   it("requires versioned analytics and fixed horizon metadata", () => {
     const item = { competition_id: "c", league: "League", country: "Test", continent: "Other", rating: "UNRATED", forecasts: 0,
