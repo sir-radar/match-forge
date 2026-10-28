@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import threading
 from collections.abc import Iterable, Mapping, Sequence
@@ -67,6 +68,7 @@ from football.work.storage import WorkLeaseLost
 PROVIDER_CODE = "api_football"
 FALLBACK_PROVIDER_CODE = "football_data_org"
 PRODUCT_FORECAST_ALGORITHM_VERSION = "transferable-rolling-goals-poisson-v1-rolling10-v2"
+LOGGER = logging.getLogger(__name__)
 
 
 HISTORY_JOB_LEASE = timedelta(minutes=30)
@@ -105,6 +107,41 @@ def _history_sync_candidates(
             item,
         ),
     )
+
+
+def _season_date_bounds(
+    start_value: object,
+    end_value: object,
+    provider_competition_id: str,
+    season: int,
+    snapshot_id: UUID,
+) -> tuple[date | None, date | None]:
+    try:
+        start_date = date.fromisoformat(str(start_value)) if start_value is not None else None
+    except ValueError:
+        start_date = None
+    try:
+        end_date = date.fromisoformat(str(end_value)) if end_value is not None else None
+    except ValueError:
+        end_date = None
+
+    invalid_value = (start_value is not None and start_date is None) or (
+        end_value is not None and end_date is None
+    )
+    invalid_range = start_date is not None and end_date is not None and end_date < start_date
+    if invalid_value or invalid_range:
+        LOGGER.warning(
+            "API-Football returned invalid season bounds for league %s season %s "
+            "(start=%r end=%r snapshot=%s)",
+            provider_competition_id,
+            season,
+            start_value,
+            end_value,
+            snapshot_id,
+        )
+    if invalid_range:
+        return None, None
+    return start_date, end_date
 
 
 @dataclass(frozen=True)
@@ -1114,6 +1151,9 @@ class ProductSync:
             competition_id = self._competition_id(provider_id, snapshot_id)
             season = int(str(current["year"]))
             season_id = stable_id("season", competition_id, season)
+            season_start, season_end = _season_date_bounds(
+                current.get("start"), current.get("end"), provider_id, season, snapshot_id
+            )
             country = str(country_data.get("name") or league.get("country") or "World")
             competition_type = str(league.get("type") or "Cup")
             name = str(league["name"])
@@ -1127,7 +1167,7 @@ class ProductSync:
                     INSERT INTO football.seasons (id, competition_id, start_date, end_date)
                     VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING
                     """,
-                    (season_id, competition_id, current.get("start"), current.get("end")),
+                    (season_id, competition_id, season_start, season_end),
                 )
                 cursor.execute(
                     """

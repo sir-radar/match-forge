@@ -1,11 +1,12 @@
 import argparse
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 import pytest
 from football.product import cli
 from football.product.api_football import ApiFootballError
+from football.product.history_requests import HistoryDeferred
 
 
 def test_country_refresh_is_explicit_and_does_not_request_acquisition() -> None:
@@ -55,6 +56,55 @@ def test_sync_step_preserves_structured_failures(result: dict[str, object]) -> N
     errors: dict[str, str] = {}
     assert cli._run_sync_step(cast(Any, Connection()), "provider", lambda: result, errors) == result
     assert "provider" in errors
+
+
+@pytest.mark.parametrize(
+    ("reason", "expected", "expected_errors"),
+    (
+        (
+            "LIVE_SYNC_HAS_PRIORITY",
+            {
+                "status": "DEFERRED",
+                "reason": "LIVE_SYNC_HAS_PRIORITY",
+                "until": "2026-10-28T00:00:00+00:00",
+            },
+            {},
+        ),
+        ("PROVIDER_BUDGET_EXHAUSTED", None, {"fotmob": "PROVIDER_BUDGET_EXHAUSTED"}),
+    ),
+)
+def test_sync_step_records_only_live_priority_as_deferred(
+    reason: str,
+    expected: object,
+    expected_errors: dict[str, str],
+) -> None:
+    class Connection:
+        def __init__(self) -> None:
+            self.rollbacks = 0
+
+        def commit(self) -> None:
+            pass
+
+        def rollback(self) -> None:
+            self.rollbacks += 1
+
+    connection = Connection()
+    errors: dict[str, str] = {}
+    deferred_until = datetime(2026, 10, 28, tzinfo=UTC)
+
+    def defer() -> NoReturn:
+        raise HistoryDeferred(reason, deferred_until)
+
+    result = cli._run_sync_step(
+        cast(Any, connection),
+        "fotmob",
+        lambda: cli._with_live_priority_deferral(cast(Any, connection), defer),
+        errors,
+    )
+
+    assert result == expected
+    assert connection.rollbacks == 1
+    assert errors == expected_errors
 
 
 def test_sync_all_continues_after_api_football_quota_failure(
