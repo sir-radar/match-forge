@@ -710,12 +710,15 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         operational["pitchapi"] = _run_sync_step(
             connection,
             "pitchapi",
-            lambda: OperationalProviderSync(
-                connection, args.data_root, provider_code="pitchapi"
-            ).sync_pitchapi(
-                _live_pitchapi_client(connection, yield_to_live=True),
-                args.from_date or args.date,
-                args.date,
+            lambda: _with_live_priority_deferral(
+                connection,
+                lambda: OperationalProviderSync(
+                    connection, args.data_root, provider_code="pitchapi"
+                ).sync_pitchapi(
+                    _live_pitchapi_client(connection, yield_to_live=True),
+                    args.from_date or args.date,
+                    args.date,
+                ),
             ),
             errors,
         )
@@ -723,12 +726,15 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         operational["fotmob"] = _run_sync_step(
             connection,
             "fotmob",
-            lambda: OperationalProviderSync(
-                connection, args.data_root, provider_code="fotmob"
-            ).sync_fotmob(
-                _live_fotmob_client(connection, yield_to_live=True),
-                args.from_date or args.date,
-                args.date,
+            lambda: _with_live_priority_deferral(
+                connection,
+                lambda: OperationalProviderSync(
+                    connection, args.data_root, provider_code="fotmob"
+                ).sync_fotmob(
+                    _live_fotmob_client(connection, yield_to_live=True),
+                    args.from_date or args.date,
+                    args.date,
+                ),
             ),
             errors,
         )
@@ -776,6 +782,23 @@ def _run_sync_step[T](
         connection.rollback()
         errors[name] = str(error)
         return None
+
+
+def _with_live_priority_deferral(
+    connection: psycopg.Connection[Any],
+    operation: Callable[[], dict[str, object]],
+) -> dict[str, object]:
+    try:
+        return operation()
+    except HistoryDeferred as deferred:
+        if str(deferred) != "LIVE_SYNC_HAS_PRIORITY":
+            raise
+        connection.rollback()
+        return {
+            "status": "DEFERRED",
+            "reason": str(deferred),
+            "until": deferred.until.isoformat(),
+        }
 
 
 def _structured_failures(value: object) -> list[str]:
