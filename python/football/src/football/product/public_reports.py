@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import math
 import re
+import subprocess
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -26,6 +30,7 @@ from football.work.contracts import RetryClassification, RetryPolicy, WorkReques
 from football.work.storage import WorkLeaseLost, WorkRegistry
 
 REPORT_KINDS = ("PERFORMANCE", "CONTEXT", "COMPARISON")
+CONTEXT_REPORT_BATCH_LIMIT = 32
 
 
 def _snapshot(connection: Connection[Any], kind: str, scope: UUID, horizon: str) -> dict[str, Any]:
@@ -213,6 +218,120 @@ def run_public_reports(
         "policy_version": POLICY_VERSION,
         **counts,
     }
+
+
+def report_provenance(environment: Mapping[str, str]) -> tuple[str, str]:
+    """Resolve the committed code and lockfile identities used by read reports."""
+    root = Path(__file__).resolve().parents[5]
+    code_commit_sha = environment.get("FOOTBALL_CODE_COMMIT_SHA", "")
+    if not code_commit_sha:
+        try:
+            code_commit_sha = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                capture_output=True,
+                check=True,
+                text=True,
+            ).stdout.strip()
+        except (OSError, subprocess.CalledProcessError) as error:
+            raise ValueError("code Git SHA is required; set FOOTBALL_CODE_COMMIT_SHA") from error
+    dependency_lock_sha256 = environment.get("FOOTBALL_DEPENDENCY_LOCK_SHA256", "")
+    if not dependency_lock_sha256:
+        try:
+            dependency_lock_sha256 = hashlib.sha256((root / "uv.lock").read_bytes()).hexdigest()
+        except OSError as error:
+            raise ValueError(
+                "dependency lock SHA256 is required; set FOOTBALL_DEPENDENCY_LOCK_SHA256"
+            ) from error
+    return code_commit_sha, dependency_lock_sha256
+
+
+def run_pending_context_reports(
+    connection: Connection[Any],
+    *,
+    limit: int = CONTEXT_REPORT_BATCH_LIMIT,
+    lease_duration: timedelta = timedelta(minutes=2),
+    code_commit_sha: str,
+    dependency_lock_sha256: str,
+) -> dict[str, Any]:
+    """Publish queued context projections, then complete only current generations."""
+    if connection.info.transaction_status != TransactionStatus.IDLE:
+        raise ValueError("context report refresh requires an idle connection")
+    if type(limit) is not int or limit <= 0 or limit > CONTEXT_REPORT_BATCH_LIMIT:
+        raise ValueError("context report refresh limit must be between 1 and 32")
+    if lease_duration <= timedelta():
+        raise ValueError("context report refresh requires a positive lease")
+
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        cursor.execute(
+            """SELECT work.fixture_id,work.generation
+            FROM football.product_context_report_refresh_work work
+            JOIN football.product_fixtures fixture USING (fixture_id)
+            WHERE work.generation>work.completed_generation
+            ORDER BY work.requested_at,fixture.kickoff_at,work.fixture_id
+            LIMIT %s""",
+            (limit,),
+        )
+        selected = cursor.fetchall()
+
+    if selected:
+        result = run_public_reports(
+            connection,
+            report_kind="CONTEXT",
+            scope_ids=tuple(row[0] for row in selected),
+            horizon="LATEST",
+            limit=len(selected),
+            lease_duration=lease_duration,
+            code_commit_sha=code_commit_sha,
+            dependency_lock_sha256=dependency_lock_sha256,
+        )
+        fixture_ids = [row[0] for row in selected]
+        generations = [row[1] for row in selected]
+        with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+            cursor.execute("SELECT football.authorize_worker_publication()")
+            cursor.execute(
+                """WITH selected AS (
+                    SELECT * FROM unnest(%s::uuid[],%s::bigint[]) AS item(fixture_id,generation)
+                ), source AS (
+                    SELECT fixture.fixture_id,
+                           encode(sha256(convert_to(
+                               football.public_context_source(fixture.fixture_id)::text,'UTF8'
+                           )),'hex') AS fingerprint
+                    FROM football.product_fixtures fixture
+                    JOIN selected USING (fixture_id)
+                )
+                UPDATE football.product_context_report_refresh_work work
+                SET completed_generation=selected.generation,completed_at=clock_timestamp()
+                FROM selected JOIN source USING (fixture_id)
+                WHERE work.fixture_id=selected.fixture_id
+                  AND work.generation=selected.generation
+                  AND EXISTS (
+                    SELECT 1 FROM football.product_read_reports report
+                    WHERE report.report_kind='CONTEXT' AND report.scope_id=work.fixture_id
+                      AND report.horizon='LATEST' AND report.source_fingerprint=source.fingerprint
+                  )""",
+                (fixture_ids, generations),
+            )
+    else:
+        result = {
+            "status": "COMPLETED",
+            "selected": 0,
+            "published": 0,
+            "busy_or_complete": 0,
+            "lease_lost": 0,
+            "failed": 0,
+        }
+
+    with connection.cursor(row_factory=tuple_row) as cursor:
+        cursor.execute(
+            """SELECT count(*) FROM football.product_context_report_refresh_work
+            WHERE generation>completed_generation"""
+        )
+        row = cursor.fetchone()
+    result["context_reports_pending"] = row[0] if row is not None else 0
+    result["context_reports_published"] = result.pop("published")
+    return result
 
 
 def _validate(

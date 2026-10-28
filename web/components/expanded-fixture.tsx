@@ -30,7 +30,7 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
   </div>;
 }
 
-type Resource<T> = { data: T | null; loading: boolean; error: string | null; retry: () => void };
+type Resource<T> = { data: T | null; loading: boolean; error: string | null; errorStatus: number | null; retry: () => void };
 type AnalysisResources = {
   context: Resource<MatchContext>;
   forecast: Resource<Forecast>;
@@ -40,6 +40,17 @@ type AnalysisResources = {
 function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const contextLoad = useCallback((signal: AbortSignal) => api.context(fixture.id, signal), [fixture.id]);
   const context = useResource(`context-${fixture.id}`, contextLoad);
+  const contextRetryCount = useRef(0);
+  const { errorStatus: contextErrorStatus, retry: retryContext } = context;
+  useEffect(() => { contextRetryCount.current = 0; }, [fixture.id]);
+  useEffect(() => {
+    if (contextErrorStatus !== 503 || contextRetryCount.current >= 12) return;
+    const timer = window.setTimeout(() => {
+      contextRetryCount.current += 1;
+      retryContext();
+    }, 5_000);
+    return () => window.clearTimeout(timer);
+  }, [contextErrorStatus, retryContext]);
   const forecastId = fixture.forecast?.id ?? null;
   const forecastLoad = useCallback((signal: AbortSignal) => forecastId ? api.forecast(fixture.id, forecastId, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, forecastId]);
   const forecast = useResource(`forecast-${fixture.id}-${forecastId ?? "none"}`, forecastLoad);
@@ -85,7 +96,7 @@ function MatchAnalysisTabs({ fixture, resources }: { fixture: Fixture; resources
 function TabContent({ tab, fixture, resources }: { tab: Tab; fixture: Fixture; resources: AnalysisResources }) {
   const content: Record<Tab, ReactNode> = {
     "Live Match": resources.live.error && resources.live.data === null ? null : <LiveMatchPanel fixture={fixture} live={resources.live.data} />,
-    "Overview": <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context.data} />,
+    "Overview": <Overview fixture={fixture} forecast={resources.forecast.data} context={resources.context} />,
     "Markets": <Markets forecast={resources.forecast.data} />,
     "Score matrix": <ScoreMatrix forecast={resources.forecast.data} />,
     "H2H context": <H2H fixture={fixture} context={resources.context.data} />,
@@ -136,16 +147,23 @@ function eventOrder(left: LiveMatch["events"][number], right: LiveMatch["events"
 function eventLabel(value: string) { return value.replaceAll("_", " ").toLocaleLowerCase(); }
 function sourceLabel(source: LiveMatch["score_source"]) { return source ? `${source.provider} · ${source.stale ? "stale" : "fresh"} · fetched ${formatDateTime(source.last_fetched_at)}` : "Unavailable"; }
 
-function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: Forecast | null; context: MatchContext | null }) {
-  if (!fixture.forecast) return <EmptyState title={availabilityCopy(fixture.forecast_availability)} detail="Fixture remains visible. MatchForge does not fabricate probabilities when history or source data is insufficient." />;
-  if (!forecast) return null;
-  const likely = [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 3);
+function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: Forecast | null; context: Resource<MatchContext> }) {
+  const likely = forecast ? [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 3) : [];
   return <div className="overview-grid">
-    <MatchInterpretation fixture={fixture} forecast={forecast} />
-    <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact scores and aggregate categories</small></header><div className="score-cards">{likely.map((cell, index) => <div key={scoreLabel(cell)} className={index === 0 ? "modal" : ""}><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong><small>{isExactScore(cell) ? index === 0 ? "Modal score" : "Supporting outcome" : "Aggregate score category"}</small></div>)}</div></section>
-    <section className="panel"><header><h4>Recent form</h4><small>Qualified completed matches</small></header><TeamForm name={fixture.home.name} values={context?.home_form ?? []} /><TeamForm name={fixture.away.name} values={context?.away_form ?? []} /></section>
-    <section className="panel provenance"><header><h4>Forecast record</h4><small>Immutable pre-match snapshot</small></header><dl><div><dt>Model</dt><dd>MatchForge Forecast</dd></div><div><dt>Algorithm</dt><dd>{forecast.model_algorithm_version}</dd></div><div><dt>Knowledge cutoff</dt><dd>{formatDateTime(forecast.knowledge_cutoff)}</dd></div><div><dt>Publication</dt><dd>Owner-authorized MVP</dd></div></dl></section>
+    {forecast ? <>
+      <MatchInterpretation fixture={fixture} forecast={forecast} />
+      <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact scores and aggregate categories</small></header><div className="score-cards">{likely.map((cell, index) => <div key={scoreLabel(cell)} className={index === 0 ? "modal" : ""}><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong><small>{isExactScore(cell) ? index === 0 ? "Modal score" : "Supporting outcome" : "Aggregate score category"}</small></div>)}</div></section>
+      <section className="panel provenance"><header><h4>Forecast record</h4><small>Immutable pre-match snapshot</small></header><dl><div><dt>Model</dt><dd>MatchForge Forecast</dd></div><div><dt>Algorithm</dt><dd>{forecast.model_algorithm_version}</dd></div><div><dt>Knowledge cutoff</dt><dd>{formatDateTime(forecast.knowledge_cutoff)}</dd></div><div><dt>Publication</dt><dd>Owner-authorized MVP</dd></div></dl></section>
+    </> : <EmptyState title={availabilityCopy(fixture.forecast_availability)} detail="Fixture remains visible. MatchForge does not fabricate probabilities when history or source data is insufficient." />}
+    <section className="panel"><header><h4>Recent form</h4><small>Qualified completed matches</small></header><TeamForm name={fixture.home.name} values={context.data?.home_form ?? null} placeholder={contextPlaceholder(context)} /><TeamForm name={fixture.away.name} values={context.data?.away_form ?? null} placeholder={contextPlaceholder(context)} /></section>
   </div>;
+}
+
+function contextPlaceholder(context: Resource<MatchContext>) {
+  if (context.loading) return "Loading recent form";
+  if (context.errorStatus === 503) return "Recent form is refreshing";
+  if (context.error) return "Recent form unavailable";
+  return "No qualified match history";
 }
 
 function Markets({ forecast }: { forecast: Forecast | null }) {
@@ -239,7 +257,7 @@ function UnavailablePanel({ title, detail }: { title: string; detail: string }) 
 
 function Metric({ label, value, tone = "draw" }: { label: string; value: string; tone?: string }) { return <div className={`metric ${tone}`}><small>{label}</small><b>{value}</b></div>; }
 function MarketBar({ label, value, tone }: { label: string; value: number | undefined; tone: string }) { const valid = value !== undefined && Number.isFinite(value) && value >= 0 && value <= 1; return <div className="market-bar"><div><span>{label}</span><b>{valid ? percent(value) : "Unavailable"}</b></div><i><span className={tone} style={{ width: valid ? `${value * 100}%` : "0%" }} /></i></div>; }
-function TeamForm({ name, values }: { name: string; values: MatchContext["home_form"] }) { return <div className="team-form"><span>{name}</span><div>{values.length ? values.map((match, index) => <b key={formMatchKey(match, index)} className={match.result}>{match.result}</b>) : <small>No form data</small>}</div></div>; }
+function TeamForm({ name, values, placeholder = "No qualified match history" }: { name: string; values: MatchContext["home_form"] | null; placeholder?: string }) { return <div className="team-form"><span>{name}</span><div>{values?.length ? values.map((match, index) => <b key={formMatchKey(match, index)} className={match.result}>{match.result}</b>) : <small>{placeholder}</small>}</div></div>; }
 function formMatchKey(match: MatchContext["home_form"][number], index: number) { return [match.kickoff_at, match.opponent, match.venue, match.goals_for, match.goals_against, match.result, index].join("|"); }
 function TeamStatCard({ name, form, stats }: { name: string; form: MatchContext["home_form"]; stats: MatchContext["home_team_statistics"] }) { return <section className="panel team-stat"><header><h4>{name}</h4><TeamForm name="Recent form" values={form} /></header>{stats ? <div className="stat-pair"><Metric label={`Goals scored (${stats.recent_matches})`} value={String(stats.goals_for)} tone="home" /><Metric label={`Goals conceded (${stats.recent_matches})`} value={String(stats.goals_against)} tone="away" /><Metric label="Average goals scored" value={stats.average_goals_for.toFixed(2)} tone="home" /><Metric label="Average goals conceded" value={stats.average_goals_against.toFixed(2)} tone="away" /></div> : <EmptyState title="Team statistics unavailable" detail="No qualified completed-match sample is stored for this team." />}<div className="unavailable-block"><b>Advanced team metrics unavailable</b><span>xG, field tilt, lineup, and player availability are shown only when a qualified source provides them.</span></div></section>; }
 function dateLabel(value: string) { return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(value)); }

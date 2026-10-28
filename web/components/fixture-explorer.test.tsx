@@ -207,6 +207,43 @@ describe("FixtureExplorer", () => {
     expect(screen.getByText("Arsenal")).toBeInTheDocument();
   });
 
+  it("shows recent form for fixtures without a forecast", async () => {
+    const unavailable = { ...fixture, id: "fixture-no-forecast", forecast: null, forecast_availability: "NOT_ENOUGH_HISTORY" };
+    const availableContext = {
+      ...context,
+      fixture_id: unavailable.id,
+      home_form: [{ kickoff_at: "2026-09-20T15:00:00Z", opponent: "Liverpool", venue: "HOME", goals_for: 2, goals_against: 0, result: "W" }],
+      away_form: [{ kickoff_at: "2026-09-20T15:00:00Z", opponent: "Manchester City", venue: "AWAY", goals_for: 1, goals_against: 1, result: "D" }],
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(String(input).includes("/context") ? availableContext : liveMatch), { status: 200 })));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [unavailable] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    expect(await screen.findByRole("heading", { name: "Recent form" })).toBeInTheDocument();
+    expect(screen.getByText("W")).toBeInTheDocument();
+    expect(screen.getByText("D")).toBeInTheDocument();
+    expect(screen.getAllByText("Not enough qualified match history")).toHaveLength(2);
+  });
+
+  it("retries context after a temporary report miss", async () => {
+    vi.useFakeTimers();
+    let contextRequests = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes("/context") && ++contextRequests === 1) return new Response(JSON.stringify({ error: "Resource unavailable" }), { status: 503 });
+      return new Response(JSON.stringify(String(input).includes("/context") ? context : liveMatch), { status: 200 });
+    }));
+    try {
+      const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+      render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+      await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+      expect(screen.getAllByText("Recent form is refreshing")).toHaveLength(2);
+      await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+      expect(contextRequests).toBe(2);
+      expect(screen.getAllByText("No qualified match history")).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("renders live score, clock, stale state, and live-only filter", async () => {
     const live = {
       ...fixture,

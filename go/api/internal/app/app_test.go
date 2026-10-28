@@ -21,7 +21,16 @@ type forecastScheduleRunner struct {
 	pending bool
 }
 
+type contextReportScheduleRunner struct {
+	scheduleRunner
+	pending bool
+}
+
 func (runner forecastScheduleRunner) PendingForecastRefresh(context.Context) (bool, error) {
+	return runner.pending, nil
+}
+
+func (runner contextReportScheduleRunner) PendingContextReports(context.Context) (bool, error) {
 	return runner.pending, nil
 }
 
@@ -141,6 +150,30 @@ func TestPendingForecastScheduleUsesDurableBoundedJob(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("pending forecast work did not progress without browser traffic")
+	}
+}
+
+func TestPendingContextReportScheduleUsesDurableJob(t *testing.T) {
+	requests := make(chan SyncRequest, 1)
+	application := NewWithSyncRunner(
+		Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)),
+		readinessStub{}, unavailableProductStore{},
+		contextReportScheduleRunner{scheduleRunner: scheduleRunner{requests: requests}, pending: true},
+	)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go application.runContextReportSchedule(ctx)
+	select {
+	case request := <-requests:
+		if request.Type != SyncContextReports {
+			t.Fatalf("scheduled context report request = %+v", request)
+		}
+		args, err := syncCommandArgs(request)
+		if err != nil || !strings.Contains(strings.Join(args, " "), "refresh-context-reports") {
+			t.Fatalf("scheduled command = %v, error = %v", args, err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("pending context reports did not progress without browser traffic")
 	}
 }
 

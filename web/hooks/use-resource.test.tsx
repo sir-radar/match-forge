@@ -29,4 +29,12 @@ describe("keyed resources", () => {
     resource.unmount(); expect(signal.aborted).toBe(true);
     await act(async () => second.resolve("after unmount"));
   });
+
+  it("preserves HTTP status for retryable resource failures", async () => {
+    const load = () => Promise.reject(Object.assign(new Error("temporarily unavailable"), { status: 503 }));
+    const resource = renderHook(() => useResource("context", load));
+    await act(async () => { await Promise.resolve(); });
+    expect(resource.result.current.error).toBe("temporarily unavailable");
+    expect(resource.result.current.errorStatus).toBe(503);
+  });
 });
