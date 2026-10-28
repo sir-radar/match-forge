@@ -18,6 +18,7 @@ from football.product.sync import (
     _fixture_sync_dates,
     _football_data_score_basis,
     _history_sync_candidates,
+    _season_date_bounds,
 )
 
 
@@ -43,6 +44,31 @@ def test_fixture_sync_dates_limit_explicit_backfill_to_live_provider_window() ->
 def test_fixture_sync_dates_reject_backfill_start_after_end() -> None:
     with pytest.raises(ValueError, match="fixture backfill start date"):
         _fixture_sync_dates(date(2026, 10, 3), date(2026, 10, 4))
+
+
+def test_api_football_season_bounds_preserve_valid_dates() -> None:
+    assert _season_date_bounds("2026-07-01", "2027-06-30", "39", 2026, UUID(int=1)) == (
+        date(2026, 7, 1),
+        date(2027, 6, 30),
+    )
+
+
+def test_api_football_season_bounds_reject_malformed_bound(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    assert _season_date_bounds("not-a-date", "2027-06-30", "39", 2026, UUID(int=1)) == (
+        None,
+        date(2027, 6, 30),
+    )
+    assert "invalid season bounds" in caplog.text
+
+
+def test_api_football_season_bounds_reject_inverted_range(caplog: pytest.LogCaptureFixture) -> None:
+    assert _season_date_bounds("2027-07-01", "2026-06-30", "39", 2026, UUID(int=1)) == (
+        None,
+        None,
+    )
+    assert "invalid season bounds" in caplog.text
 
 
 @pytest.mark.parametrize(

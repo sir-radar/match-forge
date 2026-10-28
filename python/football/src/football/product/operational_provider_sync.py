@@ -2405,13 +2405,14 @@ class OperationalProviderSync:
     def _store_observation(
         self, row: FixtureObservation, snapshot_id: UUID, fixture_id: UUID | None
     ) -> bool:
+        provider_status = row.provider_status or None
         semantic = sha256_json(
             {
                 "provider": self.provider_code,
                 "match_id": row.provider_match_id,
                 "canonical_fixture_id": str(fixture_id) if fixture_id else None,
                 "status": row.status,
-                "provider_status": row.provider_status,
+                "provider_status": provider_status,
                 "scores": [row.home_score, row.away_score],
                 "result_score_basis": row.result_score_basis,
                 "clock": [row.minute, row.added_time, row.period],
@@ -2474,7 +2475,7 @@ class OperationalProviderSync:
                     snapshot_id,
                     row.kickoff_at,
                     row.status,
-                    row.provider_status,
+                    provider_status,
                     row.home_score,
                     row.away_score,
                     row.minute,
