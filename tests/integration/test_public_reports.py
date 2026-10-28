@@ -133,6 +133,24 @@ def test_pending_context_report_worker_publishes_and_completes_current_queue(rep
         ).fetchone() == (True,)
 
 
+def test_fixture_deletion_cascades_to_context_refresh_work(report_database):
+    deleted_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, deleted_fixture)
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (deleted_fixture,),
+        ).fetchone() == (1,)
+        connection.execute(
+            "DELETE FROM football.product_fixtures WHERE fixture_id=%s",
+            (deleted_fixture,),
+        )
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (deleted_fixture,),
+        ).fetchone() == (0,)
+
+
 def test_eligible_history_change_requeues_later_fixture_context(report_database):
     prior_fixture = uuid4()
     with psycopg.connect(report_database) as connection:

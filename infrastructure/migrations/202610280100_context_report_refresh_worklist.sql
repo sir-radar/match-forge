@@ -12,7 +12,7 @@ ALTER TABLE football.product_sync_runs
     );
 
 CREATE TABLE football.product_context_report_refresh_work (
-    fixture_id uuid PRIMARY KEY REFERENCES football.product_fixtures (fixture_id),
+    fixture_id uuid PRIMARY KEY REFERENCES football.product_fixtures (fixture_id) ON DELETE CASCADE,
     requested_at timestamptz NOT NULL DEFAULT clock_timestamp(),
     generation bigint NOT NULL DEFAULT 1 CHECK (generation > 0),
     completed_generation bigint NOT NULL DEFAULT 0
