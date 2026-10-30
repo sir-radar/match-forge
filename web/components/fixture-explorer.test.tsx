@@ -244,6 +244,21 @@ describe("FixtureExplorer", () => {
     }
   });
 
+  it("distinguishes unknown freshness and unresolved lifecycle from timed incidents", async () => {
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).endsWith("/live")
+      ? Promise.resolve(new Response(JSON.stringify({ ...liveMatch, status: "SCHEDULED", home_score: null, away_score: null, score_source: null, partial: true }), { status: 200 }))
+      : original(input, options)));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    expect(await screen.findByText("Freshness unknown")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Arsenal.*Chelsea/s }));
+    fireEvent.click(await screen.findByRole("tab", { name: "Live Match" }));
+    expect(await screen.findByText(/Match status unresolved: timed incidents/)).toBeInTheDocument();
+    expect(screen.getByText("Score unavailable")).toBeInTheDocument();
+    expect(screen.getAllByText(/pitchapi · freshness unknown/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/pitchapi · fresh ·/)).not.toBeInTheDocument();
+  });
+
   it("renders live score, clock, stale state, and live-only filter", async () => {
     const live = {
       ...fixture,

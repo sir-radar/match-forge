@@ -30,7 +30,7 @@ func (runner forecastScheduleRunner) PendingForecastRefresh(context.Context) (bo
 	return runner.pending, nil
 }
 
-func (runner contextReportScheduleRunner) PendingContextReports(context.Context) (bool, error) {
+func (runner contextReportScheduleRunner) PendingPublicReports(context.Context) (bool, error) {
 	return runner.pending, nil
 }
 
@@ -162,18 +162,18 @@ func TestPendingContextReportScheduleUsesDurableJob(t *testing.T) {
 	)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go application.runContextReportSchedule(ctx)
+	go application.runPublicReportSchedule(ctx)
 	select {
 	case request := <-requests:
-		if request.Type != SyncContextReports {
+		if request.Type != SyncPublicReports {
 			t.Fatalf("scheduled context report request = %+v", request)
 		}
 		args, err := syncCommandArgs(request)
-		if err != nil || !strings.Contains(strings.Join(args, " "), "refresh-context-reports") {
+		if err != nil || !strings.Contains(strings.Join(args, " "), "refresh-public-reports") {
 			t.Fatalf("scheduled command = %v, error = %v", args, err)
 		}
 	case <-time.After(time.Second):
-		t.Fatal("pending context reports did not progress without browser traffic")
+		t.Fatal("pending public reports did not progress without browser traffic")
 	}
 }
 

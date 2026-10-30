@@ -135,7 +135,7 @@ function FixtureRow({ fixture, competition, expanded, toggle }: { fixture: Fixtu
   const active = isActive(fixture);
   return <article className={`fixture ${expanded ? "expanded" : ""}`}>
     <button className="fixture-summary" aria-expanded={expanded} aria-controls={`fixture-panel-${fixture.id}`} onClick={toggle}>
-      <span className="kickoff"><b>{active ? <span className="live-indicator">LIVE</span> : timeLabel(fixture.kickoff_at)}</b><small>{fixtureStateLabel(fixture)}</small></span>
+      <span className="kickoff"><b>{active ? <span className="live-indicator">LIVE</span> : timeLabel(fixture.kickoff_at)}</b><small>{fixtureStateLabel(fixture)}</small>{!fixture.stale && fixture.freshness !== "FRESH" && <small>Freshness unknown</small>}</span>
       <span className="teams"><strong>{fixture.home.name}<Scorers fixture={fixture} side="HOME" /></strong><i>vs</i><strong>{fixture.away.name}<Scorers fixture={fixture} side="AWAY" /></strong></span>
       <span className="score">{fixtureScore(fixture)}</span>
       <span className="forecast-cell">{forecast ? <ProbabilityBar values={forecast.probabilities} /> : <span className="availability">{availabilityLabel(fixture.forecast_availability)}</span>}</span>
@@ -172,7 +172,7 @@ function fixtureStateLabel(fixture: Fixture) {
   else if (fixture.match_minute !== null) {
     label = `${fixture.match_minute}${fixture.added_time ? `+${fixture.added_time}` : ""}′`;
   }
-  return `${label}${fixture.stale ? " · stale" : ""}`;
+  return `${label}${fixture.stale || fixture.freshness === "STALE" ? " · stale" : ""}`;
 }
 
 function fixtureScore(fixture: Fixture) {

@@ -54,6 +54,7 @@ export type Fixture = {
   added_time: number | null;
   period: string | null;
   last_successful_update: string | null;
+  freshness?: "UNKNOWN" | "FRESH" | "STALE";
   stale: boolean;
   goal_scorers: LiveEvent[];
 };
@@ -87,7 +88,7 @@ export type LiveStatistic = {
   available: boolean;
 };
 
-export type LiveSource = { provider: string; provider_match_id: string; observed_at: string; last_fetched_at: string; stale: boolean };
+export type LiveSource = { freshness?: "UNKNOWN" | "FRESH" | "STALE"; provider: string; provider_match_id: string; observed_at: string; last_fetched_at: string; stale: boolean };
 
 export type LiveMatch = {
   fixture_id: string;
@@ -185,6 +186,7 @@ export type MatchContext = {
 };
 
 export type Performance = {
+  report_status?: "READY" | "EMPTY" | "PENDING" | "FAILED";
   analytics_policy_version: "pre-match-revisions-v2";
   analytics_horizon: "LATEST" | "7D" | "3D" | "24H" | "6H" | "1H" | "15M";
   competition_id: string;
@@ -220,6 +222,7 @@ export type PerformancePage = {
 };
 
 export type ExternalPrediction = {
+  comparison_status?: "READY" | "PENDING" | "FAILED" | "UNSUPPORTED" | "NO_FORECAST" | "UNMATCHED";
   id: string;
   source: string;
   source_page: string;
@@ -263,7 +266,7 @@ export type ExternalSource = {
   matchforge_agreement_rate: number | null;
 };
 
-export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "EXTERNAL_PREDICTIONS" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA";
+export type SyncType = "MVP_SYNC" | "OPENFOOTBALL" | "FOOTBALL_DATA_UK" | "HISTORY_BACKFILL" | "FORECAST_REFRESH" | "CONTEXT_REPORTS" | "PUBLIC_REPORTS" | "EXTERNAL_PREDICTIONS" | "FOTMOB_SYNC" | "PITCHAPI_SYNC" | "ALL_DATA";
 export type SyncStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 export type HistoryQueueProgress = {
   total: number;
@@ -467,12 +470,15 @@ export function parseContext(value: unknown): MatchContext {
 
 export function parsePerformance(value: unknown): Performance {
   const item = object(value, "performance");
+  const reportStatus = item.report_status === undefined ? undefined : text(item.report_status, "report_status");
+  if (reportStatus && !["READY", "EMPTY", "PENDING", "FAILED"].includes(reportStatus)) throw new Error("invalid report_status");
   const rating = text(item.rating, "rating") as Performance["rating"];
   if (!["UNRATED", "WATCH", "GOOD", "STRONG"].includes(rating)) throw new Error("invalid rating");
   if (item.analytics_policy_version !== "pre-match-revisions-v2") throw new Error("unsupported analytics policy");
   const horizon = text(item.analytics_horizon, "analytics_horizon") as Performance["analytics_horizon"];
   if (!["LATEST", "7D", "3D", "24H", "6H", "1H", "15M"].includes(horizon)) throw new Error("invalid analytics horizon");
   return {
+    report_status: reportStatus as Performance["report_status"],
     analytics_policy_version: "pre-match-revisions-v2", analytics_horizon: horizon,
     competition_id: text(item.competition_id, "competition_id"),
     league: text(item.league, "league"),
@@ -527,6 +533,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
   const envelope = object(value, "external predictions response");
   return array(envelope.predictions, "predictions").map((entry) => {
     const item = object(entry, "external prediction");
+    const comparisonStatus = parseComparisonStatus(item.comparison_status);
     const agreement = text(item.agreement, "agreement");
     if (!["AGREES", "WEAK_SUPPORT", "DISAGREES", "UNABLE_TO_EVALUATE"].includes(agreement)) throw new Error("invalid agreement");
     const settlement = item.settlement_state === undefined ? "PENDING" : text(item.settlement_state, "settlement_state");
@@ -547,6 +554,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       selection: text(item.selection, "selection"),
       match_status: text(item.match_status, "match_status"),
       matchforge_probability: item.matchforge_probability === null ? null : probability(item.matchforge_probability, "matchforge_probability"),
+      comparison_status: comparisonStatus as ExternalPrediction["comparison_status"],
       agreement: agreement as ExternalPrediction["agreement"],
       settlement_state: settlement as ExternalPrediction["settlement_state"],
       actual_home_score: item.actual_home_score === undefined ? null : nullableNumber(item.actual_home_score, "actual_home_score"),
@@ -587,7 +595,7 @@ export function parseSyncRun(value: unknown): SyncRun {
   const item = object(value, "sync run");
   const syncType = text(item.sync_type, "sync_type") as SyncType;
   const status = text(item.status, "status") as SyncStatus;
-  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "EXTERNAL_PREDICTIONS", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
+  if (!["MVP_SYNC", "OPENFOOTBALL", "FOOTBALL_DATA_UK", "HISTORY_BACKFILL", "FORECAST_REFRESH", "CONTEXT_REPORTS", "PUBLIC_REPORTS", "EXTERNAL_PREDICTIONS", "FOTMOB_SYNC", "PITCHAPI_SYNC", "ALL_DATA"].includes(syncType)) throw new Error("invalid sync_type");
   if (!["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"].includes(status)) throw new Error("invalid sync status");
   const historyQueue = item.history_queue === undefined ? undefined : object(item.history_queue, "history_queue");
   return {
@@ -743,6 +751,7 @@ function parseFixture(value: unknown): Fixture {
     added_time: item.added_time === undefined ? null : nullableNumber(item.added_time, "added_time"),
     period: item.period === undefined ? null : nullableText(item.period, "period"),
     last_successful_update: item.last_successful_update === undefined ? null : nullableTimestamp(item.last_successful_update, "last_successful_update"),
+    freshness: parseFreshness(item.freshness),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
     goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
   };
@@ -770,7 +779,7 @@ function parseLiveStatistic(value: unknown): LiveStatistic {
 
 function parseLiveSource(value: unknown): LiveSource {
   const item = object(value, "live source");
-  return { provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: timestamp(item.observed_at, "observed_at"), last_fetched_at: timestamp(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
+  return { freshness: parseFreshness(item.freshness), provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: timestamp(item.observed_at, "observed_at"), last_fetched_at: timestamp(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
 }
 
 function parseTeam(value: unknown): Team {
@@ -874,4 +883,17 @@ export function parseForecastHistory(value: unknown): ForecastRevision[] {
         created_at: issued, football_cutoff: football, knowledge_cutoff: knowledge, knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED" }),
     };
   });
+}
+
+function parseFreshness(value: unknown): "UNKNOWN" | "FRESH" | "STALE" {
+  if (value === undefined) return "UNKNOWN";
+  if (value !== "UNKNOWN" && value !== "FRESH" && value !== "STALE") throw new Error("invalid freshness");
+  return value;
+}
+
+function parseComparisonStatus(value: unknown): ExternalPrediction["comparison_status"] {
+  if (value === undefined) return undefined;
+  const status = text(value, "comparison_status");
+  if (!["READY", "PENDING", "FAILED", "UNSUPPORTED", "NO_FORECAST", "UNMATCHED"].includes(status)) throw new Error("invalid comparison_status");
+  return status as ExternalPrediction["comparison_status"];
 }

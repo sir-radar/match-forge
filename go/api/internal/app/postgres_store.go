@@ -67,6 +67,8 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       observation.provider_code, NULLIF(observation.provider_status, ''),
 		       observation.match_minute, observation.added_time, observation.period,
 		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
+               CASE WHEN observation.stale_after IS NULL THEN 'UNKNOWN'
+                 WHEN observation.stale_after < clock_timestamp() THEN 'STALE' ELSE 'FRESH' END,
 		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code
 		FROM football.product_serving_fixtures pf
 		JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
@@ -214,7 +216,14 @@ func liveSource(provider, matchID *string, observed, fetched *time.Time, stale *
 	if provider == nil || matchID == nil || observed == nil || fetched == nil {
 		return nil
 	}
-	return &LiveSource{Provider: *provider, ProviderMatchID: *matchID, ObservedAt: *observed, LastFetchedAt: *fetched, Stale: stale != nil && *stale}
+	freshness := "UNKNOWN"
+	if stale != nil {
+		freshness = "FRESH"
+		if *stale {
+			freshness = "STALE"
+		}
+	}
+	return &LiveSource{Freshness: freshness, Provider: *provider, ProviderMatchID: *matchID, ObservedAt: *observed, LastFetchedAt: *fetched, Stale: stale != nil && *stale}
 }
 
 func valueOrEmpty(value *string) string {
@@ -444,7 +453,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 		       ep.away_team_text, ep.market, ep.selection, ep.match_status,
 		       comparison.record_bytes,comparison.record_sha256,source.value->>'forecast_id', COALESCE(result.settlement_state, 'PENDING'),
 		       result.home_score, result.away_score, result.score_basis, result.provider_code,
-		       result.provider_updated_at
+		       result.provider_updated_at, report_work.last_error
 		FROM football.external_predictions ep
 		JOIN football.external_prediction_sources eps ON eps.source_code = ep.source_code
 		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
@@ -456,6 +465,9 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
               AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
             ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
         ) comparison ON true
+        LEFT JOIN football.product_report_refresh_work report_work
+          ON report_work.report_kind='COMPARISON' AND report_work.scope_id=ep.prediction_id
+          AND report_work.horizon='LATEST'
 		LEFT JOIN LATERAL (
 			SELECT settlement_state, home_score, away_score, score_basis, provider_code,
 			       provider_updated_at
@@ -486,7 +498,7 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 	for rows.Next() {
 		var item ExternalPrediction
 		var comparison []byte
-		var digest, forecastID *string
+		var digest, forecastID, comparisonError *string
 		if err := rows.Scan(
 			&item.ID, &item.Source, &item.SourcePage, &item.PredictionDate,
 			&item.OriginalDateText, &item.CollectedAt, &item.FixtureID, &item.KickoffAt,
@@ -494,12 +506,15 @@ func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filt
 			&item.Selection, &item.MatchStatus, &comparison, &digest, &forecastID, &item.SettlementState,
 			&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis,
 			&item.ResultProvider,
-			&item.ResultUpdatedAt,
+			&item.ResultUpdatedAt, &comparisonError,
 		); err != nil {
 			return nil, err
 		}
 		if err := attachComparison(&item, forecastID, comparison, digest); err != nil {
 			return nil, err
+		}
+		if item.ComparisonStatus == "PENDING" && comparisonError != nil {
+			item.ComparisonStatus = "FAILED"
 		}
 		if filters.Agreement != "" && item.Agreement != filters.Agreement {
 			continue
@@ -784,7 +799,7 @@ func scanFixture(row pgx.Row) (Competition, Fixture, error) {
 		&fixture.HomeScore, &fixture.AwayScore, &fixture.Venue, &fixture.Round,
 		&fixture.ForecastAvailability, &forecastID, &homeMean, &awayMean, &probabilities,
 		&fixture.Provider, &fixture.ProviderStatus, &fixture.MatchMinute, &fixture.AddedTime,
-		&fixture.Period, &fixture.LastSuccessfulUpdate, &fixture.Stale,
+		&fixture.Period, &fixture.LastSuccessfulUpdate, &fixture.Stale, &fixture.Freshness,
 		&eventJSON, &eventProvider,
 	)
 	if err != nil {

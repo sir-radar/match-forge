@@ -134,6 +134,7 @@ type FixtureGroup struct {
 }
 
 type Fixture struct {
+	Freshness            string           `json:"freshness,omitempty"`
 	ID                   string           `json:"id"`
 	KickoffAt            time.Time        `json:"kickoff_at"`
 	Status               string           `json:"status"`
@@ -183,6 +184,7 @@ type LiveStatistic struct {
 }
 
 type LiveSource struct {
+	Freshness       string    `json:"freshness,omitempty"`
 	Provider        string    `json:"provider"`
 	ProviderMatchID string    `json:"provider_match_id"`
 	ObservedAt      time.Time `json:"observed_at"`
@@ -390,6 +392,7 @@ type StandingRow struct {
 }
 
 type Performance struct {
+	ReportStatus           string   `json:"report_status,omitempty"`
 	CompetitionID          string   `json:"competition_id"`
 	AnalyticsPolicyVersion string   `json:"analytics_policy_version"`
 	AnalyticsHorizon       string   `json:"analytics_horizon"`
@@ -427,6 +430,7 @@ type PerformancePage struct {
 }
 
 type ExternalPrediction struct {
+	ComparisonStatus      string     `json:"comparison_status,omitempty"`
 	ID                    string     `json:"id"`
 	Source                string     `json:"source"`
 	SourcePage            string     `json:"source_page"`

@@ -67,6 +67,7 @@ func (readiness DependencyReadiness) Ready(ctx context.Context) error {
    to_regclass('football.product_forecasts') IS NOT NULL
    AND to_regclass('football.product_serving_fixtures') IS NOT NULL
    AND to_regclass('football.product_context_report_refresh_work') IS NOT NULL
+   AND to_regclass('football.product_report_refresh_work') IS NOT NULL
    AND to_regclass('football.product_sync_runs') IS NOT NULL
    AND to_regprocedure('football.product_performance_forecasts(uuid[],integer)') IS NOT NULL
    AND to_regprocedure('football.product_eligible_team_history_at(timestamptz,uuid[])') IS NOT NULL`).Scan(&ready)

@@ -319,7 +319,7 @@ components:
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { type: object }, description: Selected metadata from the named existing domain owner. Model records wrap the unchanged registration under registration; experiment records are shared execution work. }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; public/context reports share a separate report lane; other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, PUBLIC_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
     SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object
@@ -436,6 +436,7 @@ components:
         added_time: { type: [integer, 'null'] }
         period: { type: [string, 'null'] }
         last_successful_update: { type: [string, 'null'], format: date-time }
+        freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: { type: boolean }
         goal_scorers: { type: array, items: { $ref: '#/components/schemas/LiveEvent' } }
     FixtureGroup:
@@ -511,6 +512,7 @@ components:
       type: object
       required: [competition_id, league, country, continent, rating, forecasts, analytics_policy_version, analytics_horizon]
       properties:
+        report_status: { type: string, enum: [READY, EMPTY, PENDING, FAILED] }
         competition_id: { type: string, format: uuid }
         analytics_policy_version: { type: string, const: pre-match-revisions-v2 }
         analytics_horizon: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M] }
@@ -736,6 +738,7 @@ components:
         provider_match_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
         observed_at: {"type": "string", "format": "date-time"}
         last_fetched_at: {"type": "string", "format": "date-time"}
+        freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: {"type": "boolean"}
     LiveMatch:
       type: object
@@ -778,6 +781,7 @@ components:
         selection: {"type": "string"}
         match_status: {"type": "string"}
         matchforge_probability: {"type": ["number", "null"]}
+        comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED]}
         agreement: {"type": "string"}
         settlement_state: {"type": "string"}
         actual_home_score: {"type": ["integer", "null"]}

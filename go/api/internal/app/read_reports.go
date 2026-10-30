@@ -27,6 +27,13 @@ func decodeReadReport(payload []byte, digest *string, target any) error {
 
 func attachComparison(item *ExternalPrediction, forecastID *string, payload []byte, digest *string) error {
 	item.Agreement = "UNABLE_TO_EVALUATE"
+	item.ComparisonStatus = "NO_FORECAST"
+	if item.FixtureID == nil {
+		item.ComparisonStatus = "UNMATCHED"
+	}
+	if forecastID != nil {
+		item.ComparisonStatus = "PENDING"
+	}
 	if forecastID == nil || payload == nil || digest == nil {
 		return nil
 	}
@@ -38,5 +45,9 @@ func attachComparison(item *ExternalPrediction, forecastID *string, payload []by
 		return errors.New("stored comparison identity mismatch")
 	}
 	item.MatchForgeProbability, item.Agreement = report.Probability, report.Agreement
+	item.ComparisonStatus = "READY"
+	if report.Probability == nil {
+		item.ComparisonStatus = "UNSUPPORTED"
+	}
 	return nil
 }

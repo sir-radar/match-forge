@@ -10,7 +10,10 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestReadReportChecksumAndAbsence(t *testing.T) {
@@ -58,8 +61,8 @@ func TestPerformanceReportIdentityAndVerifiedEmptyState(t *testing.T) {
 	if err != nil || empty.Rating != "UNRATED" || empty.Brier != nil {
 		t.Fatalf("%+v %v", empty, err)
 	}
-	if _, err := decodePerformanceReport("test", "LATEST", 1, nil, nil); !errors.Is(err, errProductUnavailable) {
-		t.Fatal(err)
+	if item, err := decodePerformanceReport("test", "LATEST", 1, nil, nil); err != nil || item.ReportStatus != "PENDING" || item.Forecasts != 1 || item.Brier != nil {
+		t.Fatalf("missing report is not pending: %+v %v", item, err)
 	}
 	payload := []byte(`{"competition_id":"other","forecasts":1}`)
 	sum := sha256.Sum256(payload)
@@ -78,6 +81,65 @@ func TestUnknownEventSideCannotResolveToAwayTeam(t *testing.T) {
 	}
 	if *events[1].TeamID != "home-id" || *events[2].TeamID != "away-id" {
 		t.Fatal("canonical side hydration failed")
+	}
+}
+
+func TestLiveSourceFreshnessRetainsUnknownDeadline(t *testing.T) {
+	provider, match := "test", "fixture"
+	now := time.Now()
+	fresh, stale := false, true
+	for _, test := range []struct {
+		stale *bool
+		want  string
+	}{{nil, "UNKNOWN"}, {&fresh, "FRESH"}, {&stale, "STALE"}} {
+		source := liveSource(&provider, &match, &now, &now, test.stale)
+		if source.Freshness != test.want {
+			t.Fatalf("freshness = %q, want %q", source.Freshness, test.want)
+		}
+	}
+}
+
+func TestScheduledPublicReportsDatabase(t *testing.T) {
+	store, _ := performanceDatabaseStore(t)
+	root, err := filepath.Abs("../../../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("DATABASE_URL", os.Getenv("TEST_DATABASE_URL"))
+	t.Setenv("PYTHONPATH", filepath.Join(root, "python", "football", "src"))
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	runner := NewCommandSyncRunner(ctx, store.pool, root, logger)
+	defer runner.Shutdown(context.Background())
+	application := NewWithSyncRunner(Config{}, logger, readinessStub{}, store, runner)
+	go application.runPublicReportSchedule(ctx)
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			t.Fatal("scheduled public report worker did not complete")
+		case <-ticker.C:
+			runs, err := runner.List(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, run := range runs {
+				if run.Type != SyncPublicReports {
+					continue
+				}
+				if run.Status == "SUCCEEDED" {
+					verifyPublicPerformance(t, store, "00000000-0000-0000-0000-000000001fa4")
+					verifyPublicContext(t, store, "00000000-0000-0000-0000-000000001fa8")
+					verifyPublicComparison(t, store, "00000000-0000-0000-0000-000000001fa8")
+					return
+				}
+				if run.Status == "FAILED" {
+					t.Fatalf("scheduled worker failed: %+v; %v", run.Summary, run.ErrorMessage)
+				}
+			}
+		}
 	}
 }
 

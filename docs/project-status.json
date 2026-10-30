@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-20T23:58:22.043400Z",
+  "updated_at": "2026-10-30T23:09:29.437126Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2588,5 +2588,40 @@
       "decision_ref": "docs/evidence/owner-decision-retain-sprint2-fail-close-shared-pace-phase3-research-2026-09-20.md",
       "scope": "RESEARCH ONLY: one bounded minimal leakage-safe xG goal-model hypothesis; no promotion, no authoritative Evaluation V2 run"
     }
+  },
+  "codebase_remediation": {
+    "status": "IN_PROGRESS",
+    "audit_ref": "docs/CODEBASE_AUDIT_REPORT.md",
+    "report_ref": "docs/CODEBASE_REMEDIATION_REPORT.md",
+    "branch": "ft/codebase-remediation-2026-10-30",
+    "current_work": "Phase A report lifecycle implemented and focused verification passed; phases B\u2013E and final acceptance remain open.",
+    "operating_runtime_updated": false,
+    "remaining_findings": [
+      "MF26-01",
+      "MF26-02",
+      "MF26-03",
+      "MF26-04",
+      "MF26-05",
+      "MF26-06",
+      "MF26-07",
+      "MF26-08",
+      "MF26-09",
+      "MF26-10",
+      "MF26-11",
+      "MF26-12",
+      "MF26-13",
+      "MF26-14",
+      "MF26-15",
+      "MF26-16",
+      "MF26-17",
+      "MF26-18",
+      "MF26-19",
+      "MF26-20",
+      "MF26-21",
+      "MF26-22",
+      "MF26-23",
+      "MF26-24",
+      "MF26-25"
+    ]
   }
 }

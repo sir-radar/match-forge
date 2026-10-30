@@ -407,7 +407,7 @@ function Results({ day, items, refreshing }: { day: string; items: ExternalPredi
                 <TD className="text-center"><span title={item.result_score_basis ? `Score basis: ${item.result_score_basis}` : undefined}>{item.actual_home_score === null ? "—" : `${item.actual_home_score}–${item.actual_away_score}`}</span></TD>
                 <TD className="text-center"><span title={item.result_provider && item.result_updated_at ? `${item.result_provider} · ${item.result_updated_at}` : undefined}>{item.settlement_state}</span></TD>
                 <TD className={`text-right font-bold ${tone(item.agreement)}`}>{probability(item.matchforge_probability)}</TD>
-                <TD className="text-center"><Badge value={item.agreement} /></TD>
+                <TD className="text-center"><Badge value={item.comparison_status && item.comparison_status !== "READY" ? item.comparison_status : item.agreement} /></TD>
               </tr>
             ))}
           </tbody>
@@ -461,7 +461,7 @@ function PredictionsFooter() {
   return <footer className={`flex w-full flex-col items-center justify-between gap-1 border-t border-[#262a34] bg-[#0a0e17] px-4 py-2 text-[9px] text-[#86948a] sm:flex-row ${mono}`}><span>MatchForge Quantitative Football Engine. Institutional Analytical Terminal.</span><span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#4edea3]" />External evidence isolated</span></footer>;
 }
 
-function Badge({ value }: { value: ExternalPrediction["agreement"] }) {
+function Badge({ value }: { value: ExternalPrediction["agreement"] | NonNullable<ExternalPrediction["comparison_status"]> }) {
   const classes = value === "AGREES" ? "border-[#4edea3]/35 bg-emerald-950/30 text-[#4edea3]" : value === "WEAK_SUPPORT" ? "border-amber-400/35 bg-amber-950/20 text-amber-300" : value === "DISAGREES" ? "border-[#ffb4ab]/35 bg-rose-950/20 text-[#ffb4ab]" : "border-[#86948a]/40 bg-[#262a34] text-[#bbcabf]";
   return <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[9px] font-semibold ${classes} ${mono}`}><span aria-hidden="true">●</span>&nbsp;{agreement(value)}</span>;
 }
@@ -553,7 +553,7 @@ function kickoffTime(value: string | null) {
   return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
-function agreement(value: ExternalPrediction["agreement"]) {
+function agreement(value: ExternalPrediction["agreement"] | NonNullable<ExternalPrediction["comparison_status"]>) {
   return value === "UNABLE_TO_EVALUATE" ? "Unable to eval" : status(value);
 }
 

@@ -161,7 +161,7 @@ Before finalizing prose, ask:
 
 If a shorter normal word preserves the technical meaning, use it.
 
-For detailed writing rules and examples, read `docs/engineering/writing-style.md` when producing substantial plans, research, ADRs, PR descriptions, or durable documentation.
+For detailed writing rules and examples, read `docs/writing-style.md` when producing substantial plans, research, ADRs, PR descriptions, or durable documentation.
 
 ---
 
@@ -461,7 +461,7 @@ Do not disable checks, hide branches in meaningless helpers, or split code mecha
 
 Decision-heavy code requires branch-oriented tests.
 
-Read `docs/engineering/testing.md` for the detailed test matrix, artifact tests, leakage tests, migration tests, concurrency tests, and final verification expectations.
+Read `docs/testing.md` for the detailed test matrix, artifact tests, leakage tests, migration tests, concurrency tests, and final verification expectations.
 
 ---
 
@@ -536,9 +536,9 @@ If the task's delivery mode requires a PR, implementation is not fully delivered
 
 Never claim a command ran unless it actually ran.
 
-For the complete branch, commit, push, PR, blocker, and handoff procedure, read `docs/engineering/git-delivery.md`.
+For the complete branch, commit, push, PR, blocker, and handoff procedure, read `docs/git-delivery.md`.
 
-For PR structure, read `docs/engineering/pr-template.md`.
+For PR structure, read `docs/pr-template.md`.
 
 ---
 
@@ -563,7 +563,7 @@ Do not declare completion until applicable items are true:
 
 Never claim "tests passed", "migration succeeded", "model reproduced", or "evaluation passed" without evidence.
 
-Before final handoff on substantial engineering work, use `docs/engineering/review-checklist.md`.
+Before final handoff on substantial engineering work, use `docs/review-checklist.md`.
 
 ---
 
@@ -707,12 +707,12 @@ Load these only when relevant to the current task:
 docs/architecture.md
 docs/backtesting.md
 docs/model-governance.md
-docs/engineering/git-delivery.md
+docs/git-delivery.md
 docs/engineering/model-routing.md
-docs/engineering/pr-template.md
-docs/engineering/review-checklist.md
-docs/engineering/testing.md
-docs/engineering/writing-style.md
+docs/pr-template.md
+docs/review-checklist.md
+docs/testing.md
+docs/writing-style.md
 ```
 
 ## Token-Efficient Validation Policy

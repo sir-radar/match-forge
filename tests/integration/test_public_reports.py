@@ -10,7 +10,11 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
-from football.product.public_reports import run_pending_context_reports, run_public_reports
+from football.product.public_reports import (
+    run_pending_context_reports,
+    run_pending_public_reports,
+    run_public_reports,
+)
 from psycopg.errors import RaiseException
 
 from tests.integration.test_live_context import (
@@ -131,6 +135,102 @@ def test_pending_context_report_worker_publishes_and_completes_current_queue(rep
             FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
             (FIXTURE,),
         ).fetchone() == (True,)
+
+
+def test_normal_report_worker_builds_every_kind_and_horizon_and_corrects_results(report_database):
+    with psycopg.connect(report_database) as connection:
+        _revision(connection, 8 * 24)
+        _revision(connection, 24)
+        _revision(connection, 6)
+        connection.commit()
+        result = run_pending_public_reports(
+            connection, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["status"] == "COMPLETED", connection.execute(
+            "SELECT report_kind,horizon,last_error FROM football.product_report_refresh_work "
+            "WHERE last_error IS NOT NULL"
+        ).fetchall()
+        assert connection.execute(
+            "SELECT horizon FROM football.product_read_reports "
+            "WHERE report_kind='PERFORMANCE' ORDER BY horizon"
+        ).fetchall() == [
+            (horizon,) for horizon in sorted(("LATEST", "7D", "3D", "24H", "6H", "1H", "15M"))
+        ]
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_read_reports WHERE report_kind='COMPARISON'"
+        ).fetchone() == (1,)
+        connection.execute(
+            "UPDATE football.product_fixtures SET home_score=0,away_score=3 WHERE fixture_id=%s",
+            (FIXTURE,),
+        )
+        connection.commit()
+        result = run_pending_public_reports(
+            connection, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["status"] == "COMPLETED", connection.execute(
+            "SELECT report_kind,horizon,last_error FROM football.product_report_refresh_work "
+            "WHERE last_error IS NOT NULL"
+        ).fetchall()
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_report_refresh_work "
+            "WHERE generation>completed_generation"
+        ).fetchone() == (0,)
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_read_reports WHERE report_kind='PERFORMANCE' "
+            "AND horizon='LATEST'"
+        ).fetchone() == (2,)
+
+
+def test_snapshot_failure_does_not_abort_other_report_scopes(report_database, monkeypatch):
+    from football.product import public_reports
+
+    other_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, other_fixture)
+    original = public_reports._snapshot
+
+    def snapshot(connection, kind, scope, horizon):
+        if scope == FIXTURE:
+            raise ValueError("synthetic malformed scope")
+        return original(connection, kind, scope, horizon)
+
+    monkeypatch.setattr(public_reports, "_snapshot", snapshot)
+    result = build(report_database, "CONTEXT", FIXTURE, scope_ids=(FIXTURE, other_fixture), limit=2)
+    assert result["failed"] == 1 and result["published"] == 1
+    assert result["status"] == "COMPLETED_WITH_ERRORS"
+
+
+def test_context_selection_reserves_capacity_for_current_and_historical_work(report_database):
+    current_fixture = uuid4()
+    old_fixtures = [uuid4() for _ in range(40)]
+    with psycopg.connect(report_database) as connection:
+        for fixture in old_fixtures:
+            clone_fixture(connection, fixture, KICKOFF - timedelta(days=400))
+        now = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        clone_fixture(connection, current_fixture, now + timedelta(hours=1))
+        connection.execute(
+            "UPDATE football.product_context_report_refresh_work "
+            "SET requested_at=clock_timestamp()-interval '5 days' WHERE fixture_id=ANY(%s)",
+            (old_fixtures,),
+        )
+        connection.commit()
+        result = run_pending_context_reports(
+            connection, limit=4, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["selected"] == 4
+        assert connection.execute(
+            "SELECT generation=completed_generation "
+            "FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (current_fixture,),
+        ).fetchone() == (True,)
+        assert (
+            connection.execute(
+                "SELECT count(*) FROM football.product_context_report_refresh_work "
+                "WHERE fixture_id=ANY(%s) AND generation=completed_generation",
+                (old_fixtures,),
+            ).fetchone()[0]
+            >= 2
+        )
 
 
 def test_fixture_deletion_cascades_to_context_refresh_work(report_database):
@@ -566,3 +666,28 @@ def test_current_product_bucket_contract_publishes_a_performance_report(report_d
         == "compact-buckets-v2"
     )
     assert json.loads(bytes(payload))["forecasts"] == 1
+
+
+def test_normal_go_scheduler_launches_report_worker_without_browser_or_manual_cli(report_database):
+    with psycopg.connect(report_database) as connection:
+        _revision(connection, 24)
+        _revision(connection, 6)
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestScheduledPublicReportsDatabase$",
+            "-count=1",
+            "-v",
+        ],
+        cwd="go/api",
+        env={**os.environ, "TEST_DATABASE_URL": report_database},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "--- PASS: TestScheduledPublicReportsDatabase" in result.stdout

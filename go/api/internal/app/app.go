@@ -95,8 +95,8 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingForecastRefreshRunner); ok {
 		go application.runForecastRefreshSchedule(ctx)
 	}
-	if _, ok := application.syncRunner.(pendingContextReportsRunner); ok {
-		go application.runContextReportSchedule(ctx)
+	if _, ok := application.syncRunner.(pendingPublicReportsRunner); ok {
+		go application.runPublicReportSchedule(ctx)
 	}
 	server := application.httpServer()
 
@@ -203,20 +203,20 @@ func (application *App) runForecastRefreshSchedule(ctx context.Context) {
 	}
 }
 
-func (application *App) runContextReportSchedule(ctx context.Context) {
-	runner := application.syncRunner.(pendingContextReportsRunner)
+func (application *App) runPublicReportSchedule(ctx context.Context) {
+	runner := application.syncRunner.(pendingPublicReportsRunner)
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
-		pending, err := runner.PendingContextReports(ctx)
+		pending, err := runner.PendingPublicReports(ctx)
 		if err != nil {
 			if ctx.Err() == nil {
-				application.logger.Warn("check pending context reports", "error", err)
+				application.logger.Warn("check pending public reports", "error", err)
 			}
 		} else if pending {
-			_, err = application.syncRunner.Start(ctx, SyncRequest{Type: SyncContextReports})
+			_, err = application.syncRunner.Start(ctx, SyncRequest{Type: SyncPublicReports})
 			if err != nil && !errors.Is(err, errSyncAlreadyRunning) {
-				application.logger.Warn("scheduled context report refresh failed to start", "error", err)
+				application.logger.Warn("scheduled public report refresh failed to start", "error", err)
 			}
 		}
 		select {

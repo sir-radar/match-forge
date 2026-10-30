@@ -250,7 +250,17 @@ rights before recording its terminal state.
 
 Public fixture-context reports use a durable per-fixture refresh queue. Fixture,
 eligible history, identity, coach and lineup changes enqueue affected fixtures;
-the Go service schedules a bounded Python projection job. The API serves only immutable
+the Go service schedules a bounded Python projection job in a separate public-report lane.
+Each minute the worker can attempt at most 32 scopes per report kind. Half of
+context capacity is reserved for oldest eligible backlog work; the rest prefers
+fixtures from the preceding 24 hours through the next 72 hours. Attempts rotate
+by last-attempt time, and unsuccessful scopes wait at least one minute. This is
+a scheduling policy, not a measured production latency guarantee. Performance
+and comparison work is enqueued transactionally by forecast, fixture/result,
+selection and fixture-resolution changes. All seven Performance horizons are
+queued independently. Successful completion still requires the captured
+generation and the current source fingerprint; failures remain pending with
+a last error and do not abort sibling scopes. The API serves only immutable
 reports whose source fingerprint still matches current eligible context. While
 a refreshed report is pending, the context endpoint reports temporary
 unavailability instead of serving stale form.
@@ -1107,7 +1117,14 @@ runs. Repeated inputs converge; corrected facts create new report versions.
 
 Go selects only reports matching the current SQL source fingerprint, verifies their
 bytes and scope, and retrieves existing normalized availability, lineups and
-standings. Missing or stale required reports return 503. A verified zero selected
+standings. Missing or stale fixture-context reports return 503. Performance pages keep
+available leagues and expose READY, EMPTY, PENDING or FAILED per league; pending
+rows retain the selected forecast count and have null metrics. A missing report
+never establishes zero samples. Individual unavailable Performance requests
+retain 503. External comparisons expose READY, PENDING, FAILED, UNSUPPORTED,
+NO_FORECAST or UNMATCHED independently of the existing agreement value. Score
+freshness is UNKNOWN without a deadline; the legacy boolean alone never proves
+freshness. A verified zero selected
 forecast count retains the empty UNRATED performance state; missing reports never
 become zero samples. Source fingerprints invalidate derived data and do not replace
 canonical model/artifact checksums. Context history excludes the target fixture ID,

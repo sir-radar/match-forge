@@ -38,7 +38,11 @@ from football.product.identity_admission import RetainedEvidenceChanged
 from football.product.openfootball import run_backfill as run_openfootball_backfill
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.provider_history_scopes import discover_fotmob, discover_pitchapi, run_scopes
-from football.product.public_reports import report_provenance, run_pending_context_reports
+from football.product.public_reports import (
+    report_provenance,
+    run_pending_context_reports,
+    run_pending_public_reports,
+)
 from football.product.sync import HistoryWorkerFactory, ProductSync
 from football.providers.base import ProviderFetchError, UrllibHttpTransport
 from football.providers.fotmob import FotmobClient
@@ -93,10 +97,16 @@ def build_parser() -> argparse.ArgumentParser:
     refresh = commands.add_parser("refresh-forecasts")
     refresh.add_argument("--pending-only", action="store_true")
     context_reports = commands.add_parser(
-        "refresh-context-reports", help="publish queued public fixture-context reports"
+        "refresh-context-reports",
+        help="publish queued public fixture-context reports",
     )
     context_reports.add_argument("--limit", type=int, default=32)
     context_reports.add_argument("--lease-seconds", type=int, default=120)
+    public_reports = commands.add_parser(
+        "refresh-public-reports", help="publish queued public reports"
+    )
+    public_reports.add_argument("--limit", type=int, default=32)
+    public_reports.add_argument("--lease-seconds", type=int, default=120)
     commands.add_parser("history-coverage")
     commands.add_parser("work-metrics")
     domain_metrics = commands.add_parser("domain-metrics")
@@ -199,6 +209,7 @@ def main(argv: list[str] | None = None) -> int:
         "backfill-history",
         "refresh-forecasts",
         "refresh-context-reports",
+        "refresh-public-reports",
         "history-coverage",
         "sync-all",
     }:
@@ -375,9 +386,14 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                 result = _football_data_uk(connection, args)
             elif args.command == "history-coverage":
                 result = history_coverage(connection)
-            elif args.command == "refresh-context-reports":
+            elif args.command in ("refresh-context-reports", "refresh-public-reports"):
                 code_commit_sha, dependency_lock_sha256 = report_provenance(os.environ)
-                result = run_pending_context_reports(
+                worker = (
+                    run_pending_public_reports
+                    if args.command == "refresh-public-reports"
+                    else run_pending_context_reports
+                )
+                result = worker(
                     connection,
                     limit=args.limit,
                     lease_duration=timedelta(seconds=args.lease_seconds),

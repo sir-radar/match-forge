@@ -17,7 +17,7 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
 
   return <div className="expanded-panel">
     <div className="match-identity">
-      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.stale ? "stale" : "fresh"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
+      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.freshness === "FRESH" ? "fresh" : fixture.stale || fixture.freshness === "STALE" ? "stale" : "freshness unknown"}{fixture.last_successful_update ? ` · updated ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
       <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
     </div>
     {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">
@@ -42,16 +42,16 @@ function useMatchAnalysisResources(fixture: Fixture): AnalysisResources {
   const context = useResource(`context-${fixture.id}`, contextLoad);
   const contextRetryCount = useRef(0);
   const { data: contextData, errorStatus: contextErrorStatus, loading: contextLoading, retry: retryContext } = context;
-  const contextRetryDelay = Math.min(5_000 * 2 ** Math.min(contextRetryCount.current, 4), 60_000);
   useEffect(() => { contextRetryCount.current = 0; }, [fixture.id]);
   useEffect(() => {
     if (contextErrorStatus !== 503) {
       if (!contextLoading && contextData !== null) contextRetryCount.current = 0;
       return;
     }
+    const contextRetryDelay = Math.min(5_000 * 2 ** Math.min(contextRetryCount.current, 4), 60_000);
     const timer = window.setTimeout(() => { contextRetryCount.current += 1; retryContext(); }, contextRetryDelay);
     return () => window.clearTimeout(timer);
-  }, [contextData, contextErrorStatus, contextLoading, contextRetryDelay, retryContext]);
+  }, [contextData, contextErrorStatus, contextLoading, retryContext]);
   const forecastId = fixture.forecast?.id ?? null;
   const forecastLoad = useCallback((signal: AbortSignal) => forecastId ? api.forecast(fixture.id, forecastId, signal) : Promise.reject(new Error("Forecast unavailable")), [fixture.id, forecastId]);
   const forecast = useResource(`forecast-${fixture.id}-${forecastId ?? "none"}`, forecastLoad);
@@ -121,17 +121,25 @@ function AnalysisStatus({ tab, hasForecast, context, forecast }: { tab: Tab; has
 
 function LiveMatchPanel({ fixture, live }: { fixture: Fixture; live: LiveMatch | null }) {
   if (!live) return <ResourceLoading label="Loading live match" />;
-  const score = live.home_score === null || live.away_score === null ? "Score unavailable" : `${live.home_score}–${live.away_score}`;
-  const clock = live.status === "HALF_TIME" ? "HT" : live.status === "FINISHED" ? "FT" : live.match_minute === null ? live.status : `${live.match_minute}${live.added_time ? `+${live.added_time}` : ""}′`;
-  const homeGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "HOME");
-  const awayGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "AWAY");
   const fullMatch = live.statistics.filter((stat) => stat.period === "FULL_MATCH");
   return <div className="live-match-grid">
-    <section className="panel live-score-panel"><header><h4>Live score</h4><span className={`status-badge ${live.status === "LIVE" ? "live" : "muted"}`}>{clock}</span></header><div className="live-score"><span>{live.home.name}</span><b>{score}</b><span>{live.away.name}</span></div><div className="live-scorers"><GoalList name={live.home.name} goals={homeGoals} /><GoalList name={live.away.name} goals={awayGoals} /></div></section>
+    <LiveScorePanel live={live} />
     <section className="panel"><header><h4>Match incidents</h4><small>Chronological provider events</small></header>{live.events.length ? <ol className="incident-list">{[...live.events].sort(eventOrder).map((event) => <li key={event.id}><time>{event.minute === null ? "—" : `${event.minute}${event.added_time ? `+${event.added_time}` : ""}′`}</time><b>{eventLabel(event.type)}</b><span>{event.player_name ?? "Player unavailable"}{event.penalty ? " · penalty" : ""}{event.own_goal ? " · own goal" : ""}{event.disallowed ? " · disallowed" : ""}</span></li>)}</ol> : <EmptyState title="Incidents unavailable" detail="The provider has not supplied a verified incident feed for this match." />}</section>
     <section className="panel live-stats"><header><h4>Current match statistics</h4><small>Provider-reported · not model λ</small></header>{fullMatch.length ? fullMatch.map((stat) => <LiveStat key={`${stat.period}-${stat.metric}`} label={stat.label} home={stat.home} away={stat.away} unit={stat.unit} />) : <EmptyState title="Statistics unavailable" detail="No current match-statistics resource is available. Missing values are not treated as zero." />}</section>
     <section className="panel provenance"><header><h4>Live data provenance</h4><small>{live.partial ? "Partial coverage" : "Complete available coverage"}</small></header><dl><div><dt>Score</dt><dd>{sourceLabel(live.score_source)}</dd></div><div><dt>Events</dt><dd>{sourceLabel(live.event_source)}</dd></div><div><dt>Statistics</dt><dd>{sourceLabel(live.statistics_source)}</dd></div><div><dt>Fixture</dt><dd>{fixture.id}</dd></div></dl></section>
   </div>;
+}
+
+function LiveScorePanel({ live }: { live: LiveMatch }) {
+  const score = live.home_score === null || live.away_score === null ? "Score unavailable" : `${live.home_score}–${live.away_score}`;
+  const clock = live.status === "HALF_TIME" ? "HT" : live.status === "FINISHED" ? "FT" : live.match_minute === null ? live.status : `${live.match_minute}${live.added_time ? `+${live.added_time}` : ""}′`;
+  const homeGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "HOME");
+  const awayGoals = live.events.filter((event) => event.type === "GOAL" && !event.disallowed && event.team_side === "AWAY");
+  const lifecycleConflict = live.status === "SCHEDULED" && live.events.some((event) => event.minute !== null && event.minute > 0);
+  return <>
+    {lifecycleConflict && <p role="status">Match status unresolved: timed incidents are available while the fixture is listed as scheduled. Score and lifecycle data may be missing or inconsistent. Incidents do not establish a result or confirm fixture identity.</p>}
+    <section className="panel live-score-panel"><header><h4>Live score</h4><span className={`status-badge ${live.status === "LIVE" ? "live" : "muted"}`}>{clock}</span></header><div className="live-score"><span>{live.home.name}</span><b>{score}</b><span>{live.away.name}</span></div><div className="live-scorers"><GoalList name={live.home.name} goals={homeGoals} /><GoalList name={live.away.name} goals={awayGoals} /></div></section>
+  </>;
 }
 
 function GoalList({ name, goals }: { name: string; goals: LiveMatch["events"] }) {
@@ -146,7 +154,7 @@ function LiveStat({ label, home, away, unit }: { label: string; home: number | n
 
 function eventOrder(left: LiveMatch["events"][number], right: LiveMatch["events"][number]) { return (left.minute ?? 999) - (right.minute ?? 999) || (left.added_time ?? 0) - (right.added_time ?? 0); }
 function eventLabel(value: string) { return value.replaceAll("_", " ").toLocaleLowerCase(); }
-function sourceLabel(source: LiveMatch["score_source"]) { return source ? `${source.provider} · ${source.stale ? "stale" : "fresh"} · fetched ${formatDateTime(source.last_fetched_at)}` : "Unavailable"; }
+function sourceLabel(source: LiveMatch["score_source"]) { return source ? `${source.provider} · ${source.freshness === "FRESH" ? "fresh" : source.stale || source.freshness === "STALE" ? "stale" : "freshness unknown"} · fetched ${formatDateTime(source.last_fetched_at)}` : "Unavailable"; }
 
 function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: Forecast | null; context: Resource<MatchContext> }) {
   const likely = forecast ? [...forecast.score_matrix].sort((a, b) => b.probability - a.probability).slice(0, 3) : [];

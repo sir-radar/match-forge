@@ -47,6 +47,7 @@ const (
 	SyncHistoryBackfill     SyncType = "HISTORY_BACKFILL"
 	SyncForecastRefresh     SyncType = "FORECAST_REFRESH"
 	SyncContextReports      SyncType = "CONTEXT_REPORTS"
+	SyncPublicReports       SyncType = "PUBLIC_REPORTS"
 	SyncExternalPredictions SyncType = "EXTERNAL_PREDICTIONS"
 	SyncFotMob              SyncType = "FOTMOB_SYNC"
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
@@ -154,8 +155,8 @@ type pendingForecastRefreshRunner interface {
 	PendingForecastRefresh(context.Context) (bool, error)
 }
 
-type pendingContextReportsRunner interface {
-	PendingContextReports(context.Context) (bool, error)
+type pendingPublicReportsRunner interface {
+	PendingPublicReports(context.Context) (bool, error)
 }
 
 type unavailableSyncRunner struct{}
@@ -258,11 +259,13 @@ func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bo
 	return pending, err
 }
 
-func (runner *CommandSyncRunner) PendingContextReports(ctx context.Context) (bool, error) {
+func (runner *CommandSyncRunner) PendingPublicReports(ctx context.Context) (bool, error) {
 	var pending bool
 	err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
 		SELECT 1 FROM football.product_context_report_refresh_work
-		WHERE generation > completed_generation
+		WHERE generation > completed_generation AND retry_at <= clock_timestamp()
+	) OR EXISTS (SELECT 1 FROM football.product_report_refresh_work
+		WHERE generation > completed_generation AND retry_at <= clock_timestamp()
 	)`).Scan(&pending)
 	return pending, err
 }
@@ -283,6 +286,7 @@ func (runner *CommandSyncRunner) enqueue(
 		  AND (CASE
 		      WHEN sync_type = 'FOTMOB_SYNC' THEN 'LIVE_FOTMOB'
 		      WHEN sync_type = 'PITCHAPI_SYNC' THEN 'LIVE_PITCHAPI'
+		      WHEN sync_type IN ('CONTEXT_REPORTS','PUBLIC_REPORTS') THEN 'PUBLIC_REPORTS'
 		      ELSE 'BULK'
 		  END) = $1
 		  AND COALESCE(heartbeat_at, requested_at) <
@@ -313,6 +317,8 @@ func syncLane(syncType SyncType) string {
 		return "LIVE_FOTMOB"
 	case SyncPitchAPI:
 		return "LIVE_PITCHAPI"
+	case SyncContextReports, SyncPublicReports:
+		return "PUBLIC_REPORTS"
 	default:
 		return "BULK"
 	}
@@ -932,6 +938,7 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 		SyncHistoryBackfill:     "backfill-history",
 		SyncForecastRefresh:     "refresh-forecasts",
 		SyncContextReports:      "refresh-context-reports",
+		SyncPublicReports:       "refresh-public-reports",
 		SyncExternalPredictions: "external-predictions",
 		SyncFotMob:              "fotmob-sync",
 		SyncPitchAPI:            "pitchapi-sync",
