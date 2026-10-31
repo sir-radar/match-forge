@@ -2734,7 +2734,7 @@
   },
   "identity_resolution": {
     "status": "IN_PROGRESS",
-    "current_phase": 8,
+    "current_phase": 9,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2840,6 +2840,27 @@
         13
       ],
       "live_mutations": 0
+    },
+    "phase_9": "PASS_WITH_WARNINGS",
+    "phase_9_verification": {
+      "database_scope": "DISPOSABLE_DRIVER_AND_PER_TEST_DATABASES",
+      "focused_tests": 22,
+      "retirement_inventory_tests": 3,
+      "domain_owner_regressions": 14,
+      "parity_regressions": 5,
+      "live_retirement": "BLOCKED",
+      "schedulers_retired": 0,
+      "legacy_code_removed": false
+    },
+    "validation_incident": {
+      "phase": 9,
+      "configured_database_touched": true,
+      "terminal_synthetic_work_records_retained": 2,
+      "synthetic_fixtures_remaining": 0,
+      "failed_test_forecast_transaction": "ROLLED_BACK",
+      "test_forecasts_persisted": 0,
+      "test_isolation_corrected": true,
+      "unrelated_background_publications_preserved": true
     }
   }
 }

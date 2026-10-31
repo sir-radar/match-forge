@@ -275,3 +275,34 @@ Gate: PASS_WITH_WARNINGS for verified controls and isolated preparation. Full
 production routing and complete per-stage production rehearsals remain BLOCKED
 until source/identity/parity gaps, qualified runtime bindings and independent owner
 acceptance are supplied. No production switch or scheduler retirement was executed.
+
+## Phase 9 — Conditional retirement preparation
+
+Stage13 details expose current operator/history/provider-scope queues, forecast
+generations, shared leases, expired claims, blocked work and unfinished dependencies.
+Current owner/adaptor source hashes are recorded; deployed binaries and remaining
+production readers are explicitly unverified. Unbound pre-migration in-flight rows
+retain their compatibility path. A generation awaiting registration on claim is not
+labeled an orphan. The same inventory joins durable parity verification history.
+No scheduler, queue record, compatibility path or legacy code was retired.
+
+Verification:22 isolated checks passed, covering3 new inventory/upgrade tests,
+14 existing domain-owner regressions and5 parity regressions. They verify read-only
+snapshots, preservation of active shared ownership, cancellation/publication fences,
+pre-adapter in-flight compatibility and unchanged source/history/artifacts. Ruff,
+format, mypy445, architecture and project-status checks passed.
+
+Validation incident: the first regression command incorrectly pointed
+TEST_DATABASE_URL at the configured local database. Two older tests used that URL
+directly. Their synthetic fixtures were cleaned up; two canceled synthetic work
+records remain as operational evidence. The failed test's forecast transaction
+rolled back before commit. Read-only timing and code audit distinguishes the32
+committed forecasts from separate concurrent background work; no genuine records
+were removed or rewritten. Both tests now use the existing disposable database
+fixture, with every assertion preserved. The successful rerun additionally isolated
+both DATABASE_URL and TEST_DATABASE_URL and used a temporary data root. Raw audit
+records are retained locally in .local/phase9-validation-audit*.json.
+
+Gate: PASS_WITH_WARNINGS for isolated preparation. Live retirement remains BLOCKED
+by incomplete Phase35, unverified deployed consumers and missing stabilization/
+rollback acceptance. Queue counts and repository source do not establish those gates.

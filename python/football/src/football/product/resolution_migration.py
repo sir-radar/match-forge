@@ -255,6 +255,10 @@ def migration_detail(connection: Connection[Any], repo: Path, key: str) -> dict[
             raise ValueError("unknown migration stage")
         if result["order"] == 8:
             result["current_projection"] = projection_digest(connection, "product_serving_fixtures")
+        if result["order"] == 13:
+            from football.product.resolution_retirement import legacy_inventory
+
+            result["legacy_retirement_preparation"] = legacy_inventory(connection, repo)
         return result
     report = parity_report(connection, repo)
     result = next((item.copy() for item in report["items"] if item["case_key"] == key), {})

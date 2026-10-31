@@ -177,6 +177,9 @@ def verify_parity(
     report = migration_report(repo)
     retained = retained_comparisons(repo, report)
     current = current_diagnostics(connection, root)
+    from football.product.resolution_retirement import legacy_inventory
+
+    current["legacy_retirement_preparation"] = legacy_inventory(connection, repo)
     checked_at = datetime.now(UTC).isoformat()
     for item in report["items"]:
         item["source_recorded_at"] = item.get("verified_at")

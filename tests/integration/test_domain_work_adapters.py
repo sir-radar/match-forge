@@ -200,9 +200,9 @@ def test_expired_scope_rolls_back_its_uncommitted_publication(
         ).fetchone() == (0,)
 
 
-def test_cancelled_forecast_work_cannot_complete_its_source_generation(tmp_path: Path) -> None:
-    import os
-
+def test_cancelled_forecast_work_cannot_complete_its_source_generation(
+    tmp_path: Path, domain_database: str
+) -> None:
     from football.product.api_football import ApiFootballClient
     from football.product.domain import MODEL_ARTIFACT_PATH
     from football.product.forecast_work import claim_forecast_generations
@@ -210,7 +210,7 @@ def test_cancelled_forecast_work_cannot_complete_its_source_generation(tmp_path:
 
     from tests.integration.test_product_forecast_worklist import _forecast_fixture
 
-    database_url = os.environ["TEST_DATABASE_URL"]
+    database_url = domain_database
     with (
         _forecast_fixture(database_url) as (_, _, _, fixture),
         psycopg.connect(database_url) as connection,
@@ -333,9 +333,8 @@ def test_terminal_operator_records_keep_nullable_legacy_fields(
 def test_superseded_forecast_generation_is_cancelled_without_losing_new_work(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    domain_database: str,
 ) -> None:
-    import os
-
     from football.product.api_football import ApiFootballClient
     from football.product.domain import MODEL_ARTIFACT_PATH
     from football.product.forecast_work import claim_forecast_generations
@@ -343,7 +342,7 @@ def test_superseded_forecast_generation_is_cancelled_without_losing_new_work(
 
     from tests.integration.test_product_forecast_worklist import _forecast_fixture
 
-    database_url = os.environ["TEST_DATABASE_URL"]
+    database_url = domain_database
     original_enqueue = WorkRegistry.enqueue
     identities = []
     with (

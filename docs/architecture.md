@@ -1299,3 +1299,11 @@ leases select legacy automatically; explicit rollback can clear stale trial meta
 Go fixture serving accepts only the closed legacy/V2 relation mapping and rechecks
 a V2 route before returning its response. These controls do not enable production
 cutover, replace unbound stages, or authorize scheduler retirement.
+
+Stage13 details and parity verification include read-only retirement preparation:
+operator/history/provider-scope ownership, forecast generations registered on claim,
+active/expired shared leases, unfinished dependencies and current source bindings.
+Unbound pre-migration in-flight rows retain their compatibility consumers. Queue
+emptiness does not prove deployed readers are retired or grant code removal.
+Live retirement requires accepted Phase35 cutover, a deployed-scheduler inventory,
+owned pending work, stabilization/rollback approval and separate authorization.
