@@ -56,6 +56,30 @@ request validation remain governed by their existing contracts. Historical
 decisions and frozen evaluation scopes are preserved; this decision applies
 prospectively and does not reopen closed scientific routes.
 
+## Auditing retained provider data
+
+Run a read-only inventory against the configured database:
+
+```sh
+set -a; . ./.env; set +a
+. ./scripts/toolchain.sh
+uv run --locked python -m football.providers.data_audit --artifact-root .local/provider-audits
+```
+
+The command writes a content-addressed diagnostic report through the existing
+immutable file store. It reads existing registrations, observation tables and
+registry counts; it makes no provider requests or qualification decisions.
+Native statistic fields are measured separately by provider, stored competition
+and season IDs, and period. Current competition display labels never supply a
+historical season. Missing scope IDs remain unknown.
+
+Resource revisions, repeated measurements and distinct stored fixtures have
+separate counts. Numeric zero remains distinct from an unreported value. A
+recognized normalizer field does not prove physical raw-byte retention,
+semantic/identity/PIT qualification or model support. Those unknown states remain
+null. Use existing capability, authority and coverage owners for qualification;
+this diagnostic report is not another registry or a historical feature reader.
+
 ## Provider capability registry
 
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration

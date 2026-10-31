@@ -319,3 +319,64 @@ of these affected cases remains blocked.
 Phase 02 verification: read-only case review, impact ranking and retained previews
 exited 0. `make project-status-check` and `git diff --check` exited 0. Existing
 workflow regression suites passed in Phase 00; executable code is unchanged.
+
+## Phase 03 — existing-provider capability and market-data audit
+
+Status: PASS_WITH_WARNINGS. Phase 02 blocker checkpoint commit:
+`956d0f7950c89cc1b7bdbacc1605cbd75435bc66` (parent
+`6331628f66951b995ce690121558ac26f23d7003`). Identity-qualified use of its
+affected cases remains blocked; this audit is independent.
+
+The new `football.providers.data_audit` command reads the existing source,
+operational observation and capability/authority/coverage tables in one read-only
+repeatable-read transaction. It streams native statistic rows and writes an
+immutable diagnostic report through the current file store. It does not create
+a registry, acquire data, decide eligibility or fit a model. The documented
+operator command is in `docs/source-acquisition.md`.
+
+The final operating snapshot contains 8,838 source-field/competition/season/period
+groups and 1,305 recorded resource scopes. FotMob reports 46 distinct statistic
+keys and PitchAPI 41. Recorded statistic fixture dates span 2–31 October 2026;
+this does not establish finalized labels, qualified historical coverage or matching
+depth for the much older fixture-history corpus. Current competition display
+labels never substitute for stored canonical season IDs. Unknown IDs stay null.
+
+Measured gaps include Offsides, blocked/off-target shots, passing, tackling,
+interceptions, woodwork and xGOT outside the current named statistic vocabulary.
+Nonnumeric headings remain distinguishable from usable numeric measurements.
+A byte-verified current Football-Data.co.uk archive contains 2,027 rows with
+non-null HT scores/results and 934 referee fields. It has no offsides, woodwork
+or free-kick columns; none are fabricated. One retained resource from each of
+the seven existing providers passed its registered checksum check. StatsBomb
+verification used only its competition catalog, without protected match/events.
+
+[Phase 03 evidence](evidence/matchforge-v4-phase-03-2026-10-31.json) contains the
+seven-provider inventory, all 18 requested resource-family gaps, unused decoder
+paths, field-depth summaries, exact sample hashes, access route classes and the
+prioritized existing-provider expansion. The full local immutable report is
+`4ace1ff3681e7aeff46ffbd1f3fc93e5d86d345a197b83d35654937bd23a4e89`.
+Registrations and sampled bytes are separate from whole-scope access/retention.
+Legacy AVAILABLE/ELIGIBLE flags are retained as recorded facts, not relabelled
+as new identity, target-semantic, PIT or model qualification.
+
+Priority: preserve/use already retained numeric fields, observed CSV HT/referee
+data and existing routes before additional requests; then measure existing-source
+entitlements and rich historical depth. New provider phases follow that measured
+work. API-Football standings already has a source method but lacks a V2 decoder;
+football-data.org standings already has both and must not be rebuilt. Existing
+coach/context, raw-file, normalizer and work owners remain in place.
+
+Verification: the focused unit and PostgreSQL suite passed 9 tests in a disposable
+database/data root. Tests prove revision/fixture separation, repeated-measurement
+counts, zero versus missing, rejection of nonfinite measurements, unknown-field
+and unknown-provider reporting, no qualification invention, read-only operation
+and preservation of caller transactions. Ruff/format, strict mypy on the changed
+Python files, architecture checks and shell syntax passed. Existing storage
+integration now includes the new transaction tests. The final operating audit,
+seven checksum samples and CSV measurement each exited 0. No operating mutation,
+provider request, identity approval, scientific evaluation or promotion occurred.
+
+Python sdist/wheel build also exited 0. Archive inspection confirms the exact new
+audit module is packaged and credentials, local caches and Git metadata are
+excluded. The build emitted a cache-location warning; exclusion was checked
+directly. Final project-status and diff checks passed.

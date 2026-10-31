@@ -49,6 +49,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_identity_history.py \
 	tests/integration/test_canonical_resource_resolutions.py \
 	tests/integration/test_provider_resource_capabilities.py \
+	tests/integration/test_provider_data_audit_storage.py \
 	tests/integration/test_provider_resource_authority.py \
 	tests/integration/test_resource_coverage_storage.py \
 	tests/integration/test_fixture_read_model.py \

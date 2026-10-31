@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T20:57:33.777613Z",
+  "updated_at": "2026-10-31T21:23:51.223996Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "02",
+    "current_phase": "03",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2907,7 +2907,8 @@
     "model_promotions": 0,
     "completed_phases": [
       "00",
-      "01"
+      "01",
+      "03"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2918,6 +2919,9 @@
     "phase_02_ref": "docs/evidence/matchforge-v4-phase-02-2026-10-31.json",
     "blocked_phases": [
       "02"
-    ]
+    ],
+    "phase_02_commit_sha": "956d0f7950c89cc1b7bdbacc1605cbd75435bc66",
+    "phase_03_status": "PASS_WITH_WARNINGS",
+    "phase_03_ref": "docs/evidence/matchforge-v4-phase-03-2026-10-31.json"
   }
 }
