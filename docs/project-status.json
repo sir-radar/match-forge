@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-21T00:08:41.449214Z",
+  "updated_at": "2026-10-31T03:51:54.254729Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2608,7 +2608,16 @@
         "This phase completes the parity audit and records exact supported comparisons; it does not establish parity for unresolved identities or authorize cutover.",
         "Existing source-byte, missing-dataset, history, and generic Elo restrictions remain unchanged.",
         "Work parity is demonstrated on controlled legacy/shared cases, PostgreSQL retry stress, and the complete retained canonical replay; it is not a claim that every production workload has been switched."
-      ]
+      ],
+      "source_identifier_audit_ref": "docs/evidence/matchforge-architecture-v2-phase-34-source-identifiers-2026-10-31.json",
+      "source_identifier_audit_sha256": "4280b1d1402d886f78477bf3685dd58ae6cba938e888a15e1d10438fe03bf4dc",
+      "unique_source_resource_ids": 10373,
+      "provider_path_values_verified": 10373,
+      "source_identity_values_verified": 10373,
+      "distinct_provider_values": 37,
+      "standalone_provider_id_field": "NOT_PRESENT_IN_SOURCE_REGISTRATION_INVENTORY",
+      "provider_payload_ids_byte_verified": 10340,
+      "provider_payload_ids_unverifiable": 33
     }
   },
   "phase_1b": {
