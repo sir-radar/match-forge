@@ -246,3 +246,40 @@ and storage/API integration passed. Seven upstream NumPy deprecations and one
 pre-existing ESLint unused-parameter warning remain. The 111-section coverage,
 original-reference checksum and unchanged prior project-status fields were also
 checked. `git diff --check` passed. No production schema migration was executed.
+
+## Phase 01 — development data-access policy
+
+Phase 00 commit: `bfb581e14f2a97917e5f7da87919b88aec479bf1` (parent
+`8b82dd637449a18ea6086853344e8bc7b0e0f2e2`). Pushed to the programme branch;
+review: https://github.com/sir-radar/match-forge/pull/178.
+
+The new append-only owner decision records public JSON/browser/HTML, embedded
+state, feeds, datasets and community wrapper/scraper routes as valid development
+options. `docs/source-acquisition.md` owns the current policy and README links it.
+An official API is not required; empirical access, source use conditions, retained
+bytes, identity, semantics and PIT qualification still apply. Already-authorized
+V4 requests need a documented budget within that scope, not repeated routine
+approval. Frozen evaluations, production cutover and promotion remain gated.
+
+Policy review searched AGENTS.md, README.md, local PLAN.md, current docs, provider
+clients, capability/configuration/credential contracts, source transports and
+scripts for official-only, undocumented/public/browser-endpoint and scraping
+restrictions. Existing FotMob acquisition already uses public endpoints. No
+production code rejects a source solely for being unofficial. The bounded
+PitchAPI/FotMob development preview allowlist reflects implemented feature
+compatibility and stays unchanged. The older blanket live-call approval wording
+in the current source policy now distinguishes an already-authorized V4 scope
+from separately frozen scientific scopes.
+
+Historical owner decisions, source/evaluation evidence, ADR 0003, the original
+reference, internal admin contracts/code and authentication tests are unchanged.
+MVP operational-provider documentation already permits ordinary public FotMob
+requests with explicit technical restrictions; no contradictory change was
+needed there. No adapter, authentication flag, environment variable, migration,
+production model, provider request or operating data changed in this phase.
+
+Phase 01 verification: `make project-status-check` exited 0;
+`. ./scripts/toolchain.sh; uv run --locked --no-sync pytest python/football/tests/test_project_status.py`
+exited 0 (21 passed); `git diff --check` passed. No executable code or
+API/authentication tests changed. Baseline aggregate checks from Phase 00 remain
+applicable; no additional build/integration run was needed for policy metadata.

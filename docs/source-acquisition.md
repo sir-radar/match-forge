@@ -27,6 +27,35 @@ in force. Third-party source data must not be published unless its terms permit
 publication. A publicly viewable source is not eligible for automated or bulk
 acquisition when its terms prohibit that use or permission remains unresolved.
 
+### Development acquisition routes
+
+The [current owner decision](evidence/owner-decision-public-development-data-access-2026-10-31.json)
+authorizes investigation and use of technically viable public football-data
+routes for private development and research. Official API documentation or a
+commercial integration is not required. Routes may include official APIs,
+undocumented public JSON and browser endpoints, public HTML and embedded state,
+CSV/JSON feeds, open datasets, maintained community wrappers/scrapers, and normal
+public request formats implemented directly in MatchForge.
+
+Record the actual access route separately from resource capability and
+qualification. Inspect the source, make a bounded request, preserve exact bytes
+and acquisition time, then measure coverage. An unofficial endpoint, wrapper or
+scraper is not by itself an unavailable source. A failed request is evidence for
+that tested route and scope, not proof that every resource is inaccessible.
+
+Use the existing cache, immutable storage, request budgets, quotas, cooldowns,
+schema validation and shared work orchestration. Do not defeat authentication,
+CAPTCHAs, paywalls or explicit technical access restrictions. Applicable source
+use conditions above still apply. Identity, semantic and point-in-time
+qualification remain prerequisites for canonical/model use; public access alone
+does not qualify data or establish earlier historical knowledge.
+
+This decision concerns external football data. MatchForge's own admin/API
+authentication, private-local checks, browser Origin checks, owner approvals and
+request validation remain governed by their existing contracts. Historical
+decisions and frozen evaluation scopes are preserved; this decision applies
+prospectively and does not reopen closed scientific routes.
+
 ## Provider capability registry
 
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
@@ -54,8 +83,11 @@ Ordinary private research may use a provider only where published terms and
 the current account entitlement explicitly permit the intended access and use.
 Public accessibility is not permission. If automation, retention, attribution,
 or another needed activity is unclear, exclude that activity rather than infer
-authority. Additional live API calls require a documented request budget and
-explicit owner approval.
+authority. Live API calls require a documented request budget within an
+owner-authorized scope. The V4 programme already authorizes bounded provider
+investigation and acquisition; routine requests within that scope do not require
+another approval. Frozen research/evaluation acquisition budgets and separate
+scientific or production-cutover approvals remain binding.
 
 Research contract fixtures and sanitized, bounded technical checks do not
 qualify a provider for Evaluation V2. Evaluation qualification additionally
