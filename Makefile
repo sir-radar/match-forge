@@ -16,7 +16,7 @@ export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
 .PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
 	prototype-bootstrap prototype-up prototype-down prototype-test prototype-run \
-	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol
+	prototype-gate-a prototype-clean codex-luna codex-terra codex-sol architecture-check
 
 bootstrap:
 	./scripts/bootstrap.sh
@@ -82,7 +82,10 @@ integration: build
 postgres-restore-test: up
 	./scripts/storage-integration.sh
 
-check: format-check lint test build project-status-check web-lint web-test web-build
+check: format-check lint test architecture-check build project-status-check web-lint web-test web-build
+
+architecture-check:
+	@$(TOOL_ENV); uv run --locked python -m scripts.check_architecture_boundaries
 
 project-status-check:
 	@$(TOOL_ENV); uv run python -m football.project_status docs/project-status.json

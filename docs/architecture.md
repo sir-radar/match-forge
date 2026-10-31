@@ -14,6 +14,12 @@ Current implementation, gate, and authorization state must be read from the repo
 
 Where these sources disagree, the newer explicit owner/Wayfinder decision takes precedence over a stale architectural or planning checkpoint.
 
+### Automated dependency boundaries
+
+`make architecture-check` runs as part of `make check`, which is the check command used by CI. It checks that identity, canonical-resource and observation modules do not import provider adapters; features do not import raw stores or provider normalizers; forecasting does not import provider adapters or access raw provider payload fields; and provider adapters do not import forecasting. The general experiment runner cannot directly import protected evaluation readers or database clients. Frontend source cannot import provider-native parser schemas. Go and Rust source cannot add named model-fitting functions or known model-fitting library dependencies. Python worker classes and Go ticker schedules must have registered shared-work contracts; registered production worker paths must retain their Work Orchestrator calls and SQL adapters.
+
+These source checks guard direct dependencies and known entrypoints. They do not verify deployed production routing, Phase 35 cutover, or Phase 36 scheduler retirement.
+
 ### Architecture V2 baseline
 
 Architecture V2 starts from the final R3 head, `c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365`, merged through PR #167. Phase 0 preserves the existing runtime before any schema or worker cutover. The remaining phases require implementation and acceptance evidence.

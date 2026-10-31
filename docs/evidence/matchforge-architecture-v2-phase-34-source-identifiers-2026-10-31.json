@@ -1,0 +1,82 @@
+{
+  "cutover_readiness": "NOT_READY",
+  "limitation": "This proves exact retained source registration identifiers and raw payload bytes for verifiable resources. It does not infer a separate native provider ID where the source contract has none, and the 33 unavailable payloads remain unverifiable.",
+  "phase": 34,
+  "preserved_source_relation_hashes": {
+    "football.source_resources": {
+      "rows": 10373,
+      "sha256": "1e2e54cacb3532143c9a5b455c74e2146731ce9791def19c2120d5b2ac52bc9b"
+    },
+    "football.source_snapshots": {
+      "rows": 8565,
+      "sha256": "8a96907668f9da24bd3230c0681236786e5953ea1d5d1f1212ca26e974fbdc7e"
+    }
+  },
+  "primary_phase_evidence": {
+    "ref": "docs/evidence/matchforge-architecture-v2-phase-34-2026-10-21.json",
+    "sha256": "fe820aee62ce10a7f3bee79b9f8b7a1f6d9594c733ffc47b67d4a3383779e657"
+  },
+  "provider_identifier_result": {
+    "inferred_or_fabricated_provider_ids": 0,
+    "raw_provider_payload_ids": "BYTE_VERIFIED_WHERE_SOURCE_BYTES_ARE_AVAILABLE; byte equality preserves embedded source IDs without interpreting or rewriting them.",
+    "source_registration_identity_fields": "PASS: provider, source_resource_id, source_snapshot_id, provider_path, source_identity, source_revision, and registered hashes are present and unchanged in the frozen source inventory/table proof.",
+    "standalone_provider_id_field": "NOT_PRESENT_IN_SOURCE_REGISTRATION_INVENTORY",
+    "unverifiable_raw_resources": 33,
+    "verified_raw_resources": 10340
+  },
+  "provider_requests": 0,
+  "recorded_at": "2026-10-31T03:51:54.248665+00:00",
+  "retained_database_mutations": 0,
+  "runtime_cutover": false,
+  "source_inventory": {
+    "distinct_provider_values": 37,
+    "non_null_provider_paths": 10373,
+    "non_null_source_identities": 10373,
+    "non_null_source_revisions": 10373,
+    "provider_registrations": {
+      "api_football": 178,
+      "football_data_org": 30,
+      "football_data_uk": 50,
+      "fotmob": 5360,
+      "openfootball": 291,
+      "pitchapi": 2905,
+      "provider_00bff669480149e7b91dc1d20a4cc12c": 1,
+      "provider_1a354d1eefa649f49216abb819cff1e8": 1,
+      "provider_1f735332c8eb40c5baca64964f5604c1": 1,
+      "provider_2051331c15f2492884684c80e0377c14": 1,
+      "provider_28c6caad9f464e25a68877601d8b9042": 1,
+      "provider_2bd50b91ff8949868a31cfa8dcefe474": 1,
+      "provider_39604579cb914b4fa4f295b6e7a2cb9c": 1,
+      "provider_3dcb065087ef421e9c26b1d0d1ac311a": 1,
+      "provider_4b74f681ac5f467b9b8df9eac9761a82": 1,
+      "provider_6692cfbe364b4b25ac20fa9c73cedff8": 3,
+      "provider_6f46fd95d285431287b92002a4b17966": 1,
+      "provider_8141a80d60c44158afab0b7430402741": 1,
+      "provider_8452b3e702ea4bb99961c51662f547c9": 1,
+      "provider_96a8f9a8ee03400089d588105abff609": 1,
+      "provider_990c6d0a7a3141a39de2e0f6ff961efb": 1,
+      "provider_9acc6a649ddf4d978310c11da7f183fa": 1,
+      "provider_addc7ed89b204d3e92091a11723e854c": 1,
+      "provider_c00c9a7c76674177bf22918cbe1704ae": 1,
+      "provider_c0917715e3964511a5f8a1ada10498d3": 1,
+      "provider_c630d2162497442c86e92e81cf71b595": 1,
+      "provider_cd4a6890ebe447d5a52f7f7a3a61ddb5": 1,
+      "provider_d28943a771fa43448dbcc5f0b101bf39": 2,
+      "provider_d4bf2c1ddd60449aab3354529619697c": 1,
+      "provider_d8abdad398f040bbb4a28afb315d8644": 1,
+      "provider_ec6d18f493cd43a5a454f4655dae702f": 1,
+      "provider_f34c429bbb564454a8cb8ffe7820f569": 1,
+      "provider_f5b1d447028746ccb27cd73704bea457": 1,
+      "provider_f857530a87a74b9b9f2e793dad0dc60a": 1,
+      "provider_sprint2_058a02e982c541a89c951c281bf25592": 1,
+      "provider_sprint2_66320d12a11743cfa83e0997882f64e0": 1,
+      "statsbomb_open_data": 1526
+    },
+    "ref": ".local/remediation/matchforge-architecture-v2/phase-33/resource-inventory.json",
+    "rows": 10373,
+    "sha256": "9c6de17fb7abe2c450c1356f443f84e169dc2d7792783daa0ff5a805ddc2f46e",
+    "unique_source_resource_ids": 10373
+  },
+  "status": "PASS_WITH_WARNINGS",
+  "supplement": "source and provider identifier provenance"
+}

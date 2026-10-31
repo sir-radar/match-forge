@@ -1,0 +1,279 @@
+{
+  "phase": 35,
+  "checkpoint": "blocker-resolution-and-safe-cutover",
+  "recorded_at": "2026-10-31T04:22:27Z",
+  "status": "BLOCKED",
+  "phase_gate_complete": false,
+  "preflight_status": "BLOCKED",
+  "cutover_readiness": "NOT_READY",
+  "cutover_rehearsal_run": false,
+  "runtime_cutover": false,
+  "additional_live_provider_requests": 0,
+  "retained_database_mutations": 0,
+  "authoritative_evaluations_run": 0,
+  "non_test_model_fits": 0,
+  "model_promotions": 0,
+  "evidence_basis": [
+    {
+      "ref": "docs/evidence/matchforge-architecture-v2-phase-34-2026-10-21.json",
+      "sha256": "fe820aee62ce10a7f3bee79b9f8b7a1f6d9594c733ffc47b67d4a3383779e657"
+    },
+    {
+      "ref": "docs/evidence/matchforge-architecture-v2-phase-34-source-identifiers-2026-10-31.json",
+      "sha256": "4280b1d1402d886f78477bf3685dd58ae6cba938e888a15e1d10438fe03bf4dc"
+    },
+    {
+      "ref": "docs/evidence/matchforge-architecture-v2-phase-35-preflight-2026-10-31.json",
+      "sha256": "deaab731d14c3379d0cf06e8b4ae7488647a6f3e956a80e559b51f818ce003b6"
+    }
+  ],
+  "phase_35a_blocker_resolution": {
+    "identity": {
+      "frozen_preflight_mappings_without_owner_proof": 4253,
+      "resolved_by_authoritative_existing_rules": 0,
+      "legitimately_excluded": 0,
+      "still_requires_owner_decision": 4253,
+      "read_only_recheck_result": "STILL_NOT_ADMITTED",
+      "active_mapping_audit_status": "FAIL",
+      "automatic_admission_candidates": 0,
+      "scope_note": "The frozen preflight proof-availability set and the current active-mapping audit have different denominators and must not be compared as if they were the same mapping set.",
+      "root_cause": "The retained evidence contains no owner proof at the frozen cutoff for these mappings. The current shadow recheck found no new admissible proof. Names or similarity cannot establish identity.",
+      "existing_resolution_path": "Use the existing identity audit and crosswalk review/admission workflows with retained source evidence and explicit owner decisions. No separate Resolution Center or parallel decision store was found or created.",
+      "next_action": "An accountable identity owner must provide source-backed mapping decisions or retained proof through the existing workflow.",
+      "current_active_mapping_audit": {
+        "audit": "ProviderIdentityAuditV2 / ProductIdentityTrustV1",
+        "status": "FAIL",
+        "current_admitted_mappings": 13325,
+        "active_mapping_classifications": {
+          "ORIGIN_ANCHOR": 11769,
+          "CROSSWALK": 1556,
+          "UNRESOLVED": 4160,
+          "CONTRADICTORY": 108,
+          "REVOKED": 1
+        },
+        "unsafe_shared_identity_groups": 984,
+        "verified_shared_identity_groups": 1329,
+        "source_resources_checked": 744,
+        "admission_writes": 0,
+        "scope_note": "These counts describe the current active mapping audit and are not the frozen 4,253-mapping proof-availability set."
+      }
+    },
+    "source_payloads": {
+      "unverifiable_registered_resources": 33,
+      "unique_missing_payload_hashes": 2,
+      "retained_file_entries_checked": 82067,
+      "exact_size_and_sha256_matches_found": 0,
+      "recovered": 0,
+      "root_cause": "No authentic retained bytes matching either registered payload were found. The recorded repository locator was unavailable through the connected repository lookup.",
+      "next_action": "The source owner must provide authentic bytes or a correct accessible source locator, or issue an explicit disposition."
+    },
+    "datasets": {
+      "unavailable_dataset_file_rows": 3,
+      "published_dataset_versions": 3,
+      "dataset_files_recovered_or_rebuilt": 0,
+      "dataset_inputs_registered": 0,
+      "manifests_present": 0,
+      "parent_source_resources": 3,
+      "parent_resources_with_unverified_bytes": 3,
+      "root_cause": "The registered dataset files and manifests are absent, no dataset input lineage is registered, and each dataset depends on a source resource whose bytes remain unavailable.",
+      "next_action": "Recover and verify the authentic source bytes and lineage before creating a new immutable dataset version; do not overwrite the registered versions."
+    },
+    "engineering_vs_owner_blockers": {
+      "automatable_identity_or_source_repairs_found": 0,
+      "remaining_external_or_owner_actions": 2,
+      "items": [
+        "Identity owners must resolve mappings without retained owner proof.",
+        "The source owner must restore authentic payloads or provide a justified disposition."
+      ]
+    }
+  },
+  "phase_35b_parity": {
+    "status": "INCOMPLETE",
+    "provider_acquisition_and_source_bytes": {
+      "status": "PARTIAL_WITH_EXPLICIT_GAPS",
+      "registered_resources": 10373,
+      "byte_verified_resources": 10340,
+      "unverifiable_resources": 33
+    },
+    "provider_native_parsing_and_normalization": {
+      "status": "SHADOW_EVIDENCE_ONLY",
+      "parity_gate": "NOT_COMPLETE",
+      "reason": "Retained parsing and normalization evidence does not provide complete old/new parity for all required provider resources and unresolved inputs."
+    },
+    "identity_and_canonical_state": {
+      "status": "BLOCKED",
+      "unproved_mappings": 4253,
+      "canonical_review_decisions": 10192,
+      "canonical_values_selected": 0
+    },
+    "coverage_and_quality": {
+      "status": "NOT_COMPLETE",
+      "reason": "Required complete coverage and quality parity for production scopes is not established by the bounded Phase 34 evidence."
+    },
+    "serving_and_read_models": {
+      "status": "PARTIAL",
+      "fixture_projection_rows": 192481,
+      "fixture_projection_sha256": "cde3022099f3e1d8b95c7bb40f89d32e77996965fae36787a2a542cbfe2416ec",
+      "fixture_projection_parity": "EXACT_FOR_RETAINED_PROJECTION",
+      "required_runtime_scopes_complete": false
+    },
+    "api_and_consumer_contracts": {
+      "status": "PARTIAL",
+      "response_pairs_compared": 11,
+      "leaf_comparisons": 13218,
+      "required_runtime_scopes_complete": false
+    },
+    "feature_and_forecast_inputs": {
+      "status": "PASS_WITH_WARNINGS",
+      "typed_champion_pairs_exact": 2352,
+      "generic_elo_conflicts": 59,
+      "insufficient_history_targets": 327
+    },
+    "work_orchestration": {
+      "status": "PASS_FOR_CONTROLLED_AND_REPLAY_WORKLOADS",
+      "all_production_work_routed": false
+    },
+    "parity_gate": "FAIL_CLOSED",
+    "reason": "Identity, source, canonical, coverage/quality, and complete serving/API parity gates remain unmet."
+  },
+  "phase_35c_stage_controls": {
+    "inventory_status": "RECORDED",
+    "per_stage_v2_production_switches_found": false,
+    "existing_provider_and_model_flags_are_v2_cutover_switches": false,
+    "automated_stage_rollback_implemented": false,
+    "fallback": "Keep the current production paths active; V2 acquisition, parsing, normalization, canonical replay and read-model work remain explicit shadow/offline operations.",
+    "stages": [
+      {
+        "order": 1,
+        "stage": "acquisition",
+        "current_state": "LEGACY_PRODUCTION_WITH_PROVIDER_GATES; V2 RETAINED-SOURCE OPERATIONS ARE EXPLICIT",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Leave current provider routes enabled as configured and keep V2 operations offline."
+      },
+      {
+        "order": 2,
+        "stage": "provider-native parsing",
+        "current_state": "EXPLICIT RETAINED-RESOURCE PARSING; NO V2 PRODUCTION ROUTE",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Stop the shadow parser invocation and retain its immutable source and output evidence."
+      },
+      {
+        "order": 3,
+        "stage": "normalization",
+        "current_state": "EXPLICIT SHADOW NORMALIZATION",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Do not publish or consume shadow outputs; preserve registered source and observation history."
+      },
+      {
+        "order": 4,
+        "stage": "work orchestration for those stages",
+        "current_state": "SHARED ORCHESTRATOR EXISTS; CONTROLLED AND REPLAY WORKLOADS ARE PROVEN; LEGACY SCHEDULERS REMAIN",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep existing production schedulers in service; do not transfer their claims to V2 until stage parity and dependency checks pass."
+      },
+      {
+        "order": 5,
+        "stage": "identity",
+        "current_state": "EXISTING PRODUCTION IDENTITY PATH; SHADOW AUDIT AND EXPLICIT ADMISSION WORKFLOWS",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Do not switch identity consumers while owner proofs or required canonical selections are missing."
+      },
+      {
+        "order": 6,
+        "stage": "canonical state",
+        "current_state": "SHADOW DECISIONS AND REPLAY; ZERO CANONICAL VALUES SELECTED",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep canonical shadow results out of production reads and preserve append-only decision history."
+      },
+      {
+        "order": 7,
+        "stage": "coverage and quality",
+        "current_state": "BOUNDED EVIDENCE; COMPLETE PRODUCTION-SCOPE PARITY NOT ESTABLISHED",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep existing coverage and quality consumers on their current implementation until complete parity passes."
+      },
+      {
+        "order": 8,
+        "stage": "read models",
+        "current_state": "REBUILDABLE SHADOW FIXTURE PROJECTION; CURRENT SERVING PROJECTION REMAINS BASELINE",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep production reads on product_serving_fixtures. A shadow materialized-view refresh can be rolled back within its transaction."
+      },
+      {
+        "order": 9,
+        "stage": "API",
+        "current_state": "CURRENT API CONTRACTS; BOUNDED V2 RESPONSE COMPARISONS",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep the current API routing and contracts active; do not expose incomplete shadow scopes."
+      },
+      {
+        "order": 10,
+        "stage": "feature platform",
+        "current_state": "SHADOW SNAPSHOT PARITY; PRODUCTION CHAMPION INPUTS PRESERVED",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep production forecasts bound to their existing inputs and champion artifact."
+      },
+      {
+        "order": 11,
+        "stage": "model routing",
+        "current_state": "EXISTING CHAMPION ROUTING; RESEARCH MODEL FLAGS ARE SEPARATE",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep current champion routing; do not interpret research model flags as V2 cutover controls."
+      },
+      {
+        "order": 12,
+        "stage": "forecasting",
+        "current_state": "EXISTING CHAMPION REMAINS PRODUCTION; V2 PAIR PARITY IS BOUNDED",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep the existing champion and published forecasts unchanged."
+      },
+      {
+        "order": 13,
+        "stage": "remaining background work",
+        "current_state": "LEGACY PRODUCTION SCHEDULERS REMAIN; RETIREMENT IS PHASE 36",
+        "cutover_state": "BLOCKED",
+        "rollback_control": "Keep current schedulers active until a separately gated transfer and retirement."
+      }
+    ],
+    "prepared_rollback_triggers": [
+      "Any upstream dependency or required parity gate is not PASS.",
+      "Any unexplained source, identity, canonical, serving, API, feature or forecast discrepancy appears.",
+      "Any target-outcome leakage, lost or duplicated work, lineage loss, or forecast compatibility failure appears."
+    ],
+    "rollback_action": "Stop the affected V2 stage and keep or restore the existing production path; preserve immutable source, decisions, observations, datasets, and published forecasts.",
+    "rollback_policy_status": "DOCUMENTED_PREPARATION_ONLY; NO PRODUCTION_STAGE_HAS_BEEN_SWITCHED"
+  },
+  "phase_35d_conditional_cutover": {
+    "eligible_to_rehearse": false,
+    "rehearsal": "NOT_RUN",
+    "reason": "The Phase 34 required precondition PHASE_34_SHADOW_PARITY_READY is not satisfied.",
+    "production_stages_completed": 0
+  },
+  "phase_35e_verification": {
+    "retained_database_mutations": 0,
+    "read_only_investigations": [
+      "Rechecked the frozen proof-availability mappings against the current shadow admission state.",
+      "Ran the existing identity trust audit without admission writes.",
+      "Searched retained files for exact registered source size and SHA-256 matches.",
+      "Checked dataset version, manifest, file, input-lineage, and parent-source availability in the read-only shadow database.",
+      "Inspected runtime and deployment configuration for V2 stage switches and existing fallback controls."
+    ],
+    "automated_test_suites_run": 0,
+    "reason_tests_not_run": "No code or runtime behavior changed; the required project-status and diff checks are run for this evidence/status update."
+  },
+  "remaining_blockers": [
+    "4,253 frozen-scope mappings still require explicit source-backed owner decisions; none were safely auto-admitted or excluded.",
+    "The current active identity audit also remains FAIL, with unresolved, contradictory, and revoked classifications and unsafe shared identity groups; its scope differs from the frozen proof-availability set.",
+    "33 registered source resources remain unverifiable across two missing payload hashes; no exact retained match was found.",
+    "Three immutable dataset versions remain unavailable and have no registered input lineage; reconstruction depends on authentic missing source bytes.",
+    "Canonical selection, complete coverage/quality parity, and complete serving/API/read-report parity are not established.",
+    "The 59 generic Elo conflicts and 327 insufficient-history targets remain explicit exclusions from the bounded comparison.",
+    "No per-stage V2 production routing switches or automated rollback controls exist; production cutover controls must be implemented and validated after parity readiness."
+  ],
+  "next_required_actions": [
+    "Obtain explicit identity-owner decisions or source-backed proofs through the existing workflows.",
+    "Obtain authentic missing source bytes or an accessible source locator and owner disposition; then create any restored datasets as new immutable versions with verified lineage.",
+    "Complete and rerun all required production-scope parity comparisons, including canonical values, coverage/quality, serving, API and read reports.",
+    "Only after the parity gate passes, implement and validate independent stage routing and rollback controls, then perform a controlled rehearsal before any production cutover."
+  ]
+}
