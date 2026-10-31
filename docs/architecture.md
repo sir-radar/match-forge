@@ -771,6 +771,15 @@ competition, season, orientation and conflict checks.
 The typed correction operation and deployment procedure are documented in
 [MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
 
+`product.resolution_identity.mapping_detail` provides read-only diagnostics for
+current operational mappings. It reuses retained-source qualification, existing
+admissions, effective team corrections, explicit crosswalks and alias normalization.
+`VERIFIED` requires both current qualification and a trusted admission. Missing
+source proof and revocations remain blocked; contradictions remain explicit.
+Alias candidates never authorize admission. The result includes bounded fixture
+impacts, retained correction contexts and an evidence hash for later operator
+review. Historical reads continue to use the cutoff-aware identity owners above.
+
 ## Decision records
 
 `football.contracts.decisions.DecisionRecordV1` gives future identity, canonical-resolution, authority, capability, promotion and suspension decisions common semantics. The schema is `schemas/contracts/decision-record-v1.schema.json`. Domain owners supply stable subject and predecessor references, their disposition and reason, decision time, optional effective time and JSON evidence. Decision and effective time remain separate; future effective times are valid. Stored clocks normalize to UTC, and evidence is an immutable copy containing finite JSON values.

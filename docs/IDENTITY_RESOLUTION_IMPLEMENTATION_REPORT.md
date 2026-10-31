@@ -19,6 +19,26 @@ Phase order: (1) identity diagnostics; (2) read-only queue; (3) protected previe
 
 Production Phase 35 cutover and Phase 36 retirement remain blocked by missing identity proof, authentic source bytes/lineage, complete production-scope parity, and explicit acceptance. The 59 generic Elo conflicts and 327 insufficient-history targets remain explicit limitations. No provider requests, authoritative evaluation, model fitting or promotion is authorized by the review interface.
 
-## Verification
+## Phase 1 — Identity diagnostics
 
-Implementation in progress. Only commands with executed results will be recorded here.
+`resolution_identity.py` reuses existing trust and effective-dated identity owners.
+It reports the five requested review statuses, retains explicit contradictions and
+revocations, discovers native-ID and exact-alias candidates without admitting them,
+and returns retained correction contexts, bounded fixture impacts and evidence
+versions. No identity table, admission rule, model input or historical query changed.
+
+Verification: seven focused unit tests and five PostgreSQL acceptance tests passed.
+The database tests migrate disposable databases only through `202610310300`, before
+any Resolution Center migration. They prove read-only operation, stable evidence
+hashes, explicit crosswalk discovery, protected alias-only candidates, missing-byte
+blocking, and prospective correction/revocation without changing earlier cutoffs.
+The exact staged commit was also tested separately from later-phase drafts:
+
+```sh
+uv run --locked --no-sync pytest tests/test_resolution_identity.py tests/integration/test_resolution_identity_database.py
+```
+
+Result: 12 passed. Ruff, format checks, mypy, architecture checks and
+`make project-status-check` passed for this phase.
+
+Later phases remain in progress; their drafts are excluded from the Phase 1 commit.
