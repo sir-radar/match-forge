@@ -2880,13 +2880,16 @@
       "remaining_api_integration": "PASS",
       "desktop_mobile_browser_tests_passed": 36,
       "default_runner_conditional_skips": 24,
-      "conditional_backend_journeys": "COVERED_BY_STORAGE_INTEGRATION_HARNESS",
+      "conditional_backend_journeys": "SIX_RESOLUTION_CENTER_DESKTOP_JOURNEYS_VERIFIED_IN_STORAGE_HARNESS",
       "fresh_migrations": "PASS_THROUGH_202610310800_AND_IDEMPOTENT_UP",
       "database_scope": "DISPOSABLE_VALIDATION_AND_READ_ONLY_FROZEN_SHADOW_METRICS",
       "baseline_counts_changed": false,
       "authoritative_evaluations": 0,
       "model_fits": 0,
-      "model_promotions": 0
+      "model_promotions": 0,
+      "default_runner_backend_skips": 22,
+      "default_runner_platform_skips": 2,
+      "real_backend_resolution_journeys_passed": 6
     },
     "production_readiness": "BLOCKED"
   }

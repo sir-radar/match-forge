@@ -357,8 +357,11 @@ Verification completed across the original aggregate and focused repairs:
 - The initial aggregate exited 2 at those failures and did not reach its remaining
   commands. `./scripts/integration.sh` then passed independently with disposable
   PostgreSQL 18.6, Redis 8.10 and real Go API checks. `pnpm test:e2e` in `web` passed
-  36 desktop/mobile tests in 46.9s. Its 24 conditional real-backend cases were skipped
-  by that runner; those journeys use the disposable storage integration harness.
+  36 desktop/mobile tests in 46.9s, with 24 skips: 22 conditional backend project
+  cases and two mobile-only tests skipped on desktop. All six Resolution Center
+  backend journeys were separately verified in the desktop disposable storage
+  harness. The default skips do not establish mobile backend coverage or results
+  for the other pre-existing conditional journeys.
   Successful core/build/storage tests were not needlessly repeated.
 - The storage runner now sets both database variables to its disposable database,
   uses its own temporary data root and includes all Phases 6–9 acceptance modules.
