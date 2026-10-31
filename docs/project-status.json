@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T03:53:15.376310Z",
+  "updated_at": "2026-10-31T04:22:27Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2632,15 +2632,23 @@
       "additional_live_provider_requests": 0,
       "retained_database_mutations": 0,
       "remaining_work_inside_phase": [
-        "Cutover remains unstarted until Phase 34 parity readiness is established."
+        "Obtain explicit source-backed identity decisions or proof for the 4,253 mappings still without owner proof.",
+        "Recover authentic bytes for the 33 unavailable source resources or obtain an owner disposition; restore datasets only as new immutable versions with verified lineage.",
+        "Complete canonical, coverage/quality, serving, API, and read-report parity for required production scopes, then rerun the Phase 35 readiness gate.",
+        "After the parity gate passes, implement and validate per-stage routing and rollback controls, then rehearse cutover before changing production routes."
       ],
       "blocking_conditions": [
-        "Identity shadow parity remains incomplete: 4,253 existing mapping rows lack an owner proof at the frozen cutoff; 10,192 canonical review decisions intentionally select no value.",
-        "33 registered resources lack verifiable source bytes and three retained dataset files remain unavailable; dispositions are preserved.",
-        "Only the existing 192,481-row serving projection and bounded fixture/API contracts are proven; no canonical-value cutover is supported by zero selected canonical values.",
-        "The same 59 generic Elo team/timestamp snapshot conflicts and 327 insufficient-history targets remain explicit.",
-        "Serving read-report acceptance is bounded to 11 response pairs; required runtime scopes are not fully populated."
-      ]
+        "4,253 frozen-scope mappings still require explicit source-backed owner decisions; none were safely auto-admitted or excluded.",
+        "The current active identity audit also remains FAIL, with unresolved, contradictory, and revoked classifications and unsafe shared identity groups; its scope differs from the frozen proof-availability set.",
+        "33 registered source resources remain unverifiable across two missing payload hashes; no exact retained match was found.",
+        "Three immutable dataset versions remain unavailable and have no registered input lineage; reconstruction depends on authentic missing source bytes.",
+        "Canonical selection, complete coverage/quality parity, and complete serving/API/read-report parity are not established.",
+        "The 59 generic Elo conflicts and 327 insufficient-history targets remain explicit exclusions from the bounded comparison.",
+        "No per-stage V2 production routing switches or automated rollback controls exist; production cutover controls must be implemented and validated after parity readiness."
+      ],
+      "progress_status": "BLOCKED",
+      "blocker_resolution_ref": "docs/evidence/matchforge-architecture-v2-phase-35-blocker-resolution-2026-10-31.json",
+      "blocker_resolution_sha256": "2b2ff0f61fa1a06f5af980a7378b9ee87e0a7109f78c1f0f5e75d9ad7180c7af"
     }
   },
   "phase_1b": {
