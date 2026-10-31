@@ -283,3 +283,39 @@ Phase 01 verification: `make project-status-check` exited 0;
 exited 0 (21 passed); `git diff --check` passed. No executable code or
 API/authentication tests changed. Baseline aggregate checks from Phase 00 remain
 applicable; no additional build/integration run was needed for policy metadata.
+
+## Phase 02 — retained identity review
+
+Status: BLOCKED_WITH_EVIDENCE. Phase 01 commit:
+`6331628f66951b995ce690121558ac26f23d7003` (parent
+`bfb581e14f2a97917e5f7da87919b88aec479bf1`).
+
+Read-only operating Resolution Center queries found 108 recorded contradictions
+and zero recorded NEEDS_REVIEW cases; these are current review classifications,
+not a replacement for the separate frozen audit populations. The three largest
+pending competition impacts cover 287/263/255 upcoming stored fixtures and
+7,823/3,602/2,714 total stored fixtures respectively. Their existing admission
+previews reject `UNSUPPORTED_ORIGIN_ALGORITHM`. The three largest contradictory
+team impacts cover 301/293/243 stored fixtures; their previews reject
+`ORIGIN_UUID_MISMATCH`. Two retained correction previews additionally reject the
+source pair because the current correction owner requires retained FDO and
+API-Football mappings. Counts describe per-case stored impacts and are not summed
+or relabelled as newly qualified history.
+
+[Exact case/source/hash evidence](evidence/matchforge-v4-phase-02-2026-10-31.json)
+records read-only preview versions and resume points. No exact independent target
+proof or owner case approval was supplied. No new identity algorithm, name-only
+merge, admission, file recovery or history replay was invented. Task changes:
+zero qualified identities, corrected contradictions, unlocked history rows or
+forecastability changes. These are task deltas, not a global population delta
+while ordinary synchronization continues. R3 remains partial.
+
+Resume: obtain source-backed origin/crosswalk evidence for the exact listed native
+IDs, refresh the existing previews, obtain the required case approval, then run
+existing scoped recovery and remeasure eligibility. Raw/provider capability
+investigation in Phase 03 is independent and can continue. Canonical/model use
+of these affected cases remains blocked.
+
+Phase 02 verification: read-only case review, impact ranking and retained previews
+exited 0. `make project-status-check` and `git diff --check` exited 0. Existing
+workflow regression suites passed in Phase 00; executable code is unchanged.
