@@ -1,369 +1,394 @@
 # MatchForge codebase remediation
 
-Status: IN PROGRESS. Started 30 October 2026 (Africa/Lagos).
+Status: PASS_WITH_WARNINGS — authorized implementation verified; external identity/evidence limits and operating rollout remain open. Completed verification 31 October 2026 (Africa/Lagos).
 
-Source: `docs/CODEBASE_AUDIT_REPORT.md`, audited commit `1cbc69a20a6f15a7e4f00e242a35c6d2569c3617`. Startup HEAD is identical. Branch: `ft/codebase-remediation-2026-10-30`. Implementation checkout: `/private/tmp/matchforge-remediation-20261030`; the original checkout has an active watcher and remains unchanged apart from its task branch pointer. The untracked audit report was supplied by the owner and is preserved unchanged.
+Disposition: **24 FIXED_VERIFIED, 1 ALREADY_RESOLVED_VERIFIED, 1 BLOCKED_WITH_EVIDENCE**. All 26 findings, four KB items and eight risks are recorded separately below. This is a code-delivery result, not certification that the operating instance has been upgraded.
 
-## Authorization and limits
+Source: `docs/CODEBASE_AUDIT_REPORT.md`, audited/startup commit `1cbc69a20a6f15a7e4f00e242a35c6d2569c3617`. Branch: `ft/codebase-remediation-2026-10-30`. Isolated checkout: `/private/tmp/matchforge-remediation-20261030`. The owner's audit is preserved unchanged. The original checkout's source and operating service were not edited/restarted by this task; its task-branch pointer was set during startup. Background owner processes continued independently.
 
-This task authorizes remediation across phases A–E. It does not advance Architecture V2 beyond phase 33, authorize cutover, reopen a terminal Wayfinder route, admit held identities, call external providers, change the champion, or access protected scientific outcomes. No active Wayfinder tool/map is available. Existing phase gates and owner decisions remain authoritative. Engineering classification: L3 (identity, immutable histories, eligibility, concurrent publication).
+## Scope and execution
 
-## Execution plan and checkpoint
+The owner authorized phases A–E of this remediation. No active Wayfinder map was available; no terminal route was reclaimed. L3 classification applies to identity, historical eligibility, immutable revisions and concurrent publication. No external football-provider requests, operating data mutations, forced mappings, protected scientific runs, champion changes or Architecture V2 cutover were performed.
 
-1. A: repair report scheduling/invalidation and isolate failures (MF26-01–05, R-02). Test normal worker entry points, all horizons, correction, fairness and partial states.
-2. B: current-revision/prospective metrics and exact source dates; append-only binding; bounded settlement triggered by imports/results; paginated reads and distinct-source consensus (MF26-06–12,16–17).
-3. C: scoped acquisition/recovery health, safe retry and lease recovery, independent daily stages (MF26-13–15, R-01,03–04).
-4. D: mobile navigation, matrix, clocks, scoped request states, refresh and filters (MF26-18–25 plus 04–05,16–17).
-5. E: guidance paths, runtime identity, isolated restore/integrity/security/accessibility evidence, final end-to-end and repository gates (MF26-26, R-05–08, KB-01–04).
+Dependency order and commits:
 
-Current phase: B final verification, then C. Phase A committed as ccd424f. Exact date parsing and honest collection aggregate statuses are implemented; bounded binding/date/settlement recovery is being verified. Next: validate the new migration and correction/concurrency cases, then switch both API readers to current eligible revisions, filtered aggregates and paginated records. Browser acceptance, remaining findings and final comprehensive gates remain open.
+1. A — normal report production, invalidation, fairness and failure isolation: `ccd424f`.
+2. B — append-only external recovery, exact dates, current eligible metrics and bounded reads: `a87e1d3`.
+3. C — scoped sync health, daily retry cooldown and independent wrapper stages: `d93db6b`.
+4. D/E integration — reviewed bindings, conflicting-resource protection, pre-match serving, frontend behavior, runtime identity and real-backend browser acceptance: `c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e`.
+5. E security — patched dependency/toolchain locks and matching CI/bootstrap pins: `596714bb8bde58b4d386ef87edfb02de764f78e3`.
 
-Validation: inspect the Makefile dependency graph; use focused tests during implementation; execute `make check integration` once after final code changes. Do not run provider acquisition or scientific evaluation targets. Keep verbose logs in ignored `.local/remediation/codebase-2026-10-30/`.
+The pre-existing related context-polling follow-up `1cbc69a` remains intact above the original main base. No commit was amended or rewritten. Full validation ran in the isolated checkout with disposable databases and provider schedules disabled.
 
 ## Finding ledger
 
-Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Final dispositions are restricted to FIXED_VERIFIED, ALREADY_RESOLVED_VERIFIED, NOT_REPRODUCIBLE or BLOCKED_WITH_EVIDENCE. Unexecuted checks never count as success.
+Every verification below is also covered by the final quality-graph results. Files named without directories are the existing product modules in `python/football/src/football/product/`, `go/api/internal/app/` or `web/components/`; migrations are under `infrastructure/migrations/`. The commits above identify exact changed paths.
 
 ### MF26-01 — Performance report production is disconnected from normal operation
 
 - Original severity: High.
-- Status: VERIFICATION_PENDING.
+- Status: FIXED_VERIFIED.
 - Root cause: Current source fingerprints were required by serving without scheduled Performance production.
-- Changes/files/commits: Transactional invalidation for all seven horizons; bounded scheduled report production; per-league pending/failed states retain available leagues. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
+- Changes/files/commits: Transactional invalidation for all seven horizons; bounded scheduled report production; per-league pending/failed states retain available leagues. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f; final integration follow-ups: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 - Verification: 21 disposable PostgreSQL report cases passed, including the actual Go scheduler launching the Python worker, corrections and report retrieval; Performance mixed-state component regression passed.
 - Before/after: Missing reports previously failed the entire page; available leagues now remain visible while missing scopes are pending.
-- Remaining action: final browser/end-to-end acceptance and repository gates.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-02 — Context backlog prevents timely Recent Form, H2H, and team statistics
 
 - Original severity: High.
-- Status: VERIFICATION_PENDING.
+- Status: FIXED_VERIFIED.
 - Root cause: Bootstrap FIFO ordering and the bulk lane starved relevant context.
-- Changes/files/commits: Separate public-report lane; bounded capacity per kind; half context capacity reserved for old work and half for fixtures in the preceding 24 hours through the next 72 hours; retries rotate by attempt time. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
-- Verification: Disposable backlog test proves current fixture and historical work both progress in a bounded batch. Generation completion and PIT tests pass.
+- Changes/files/commits: Separate public-report lane; bounded capacity per kind; half context capacity reserved for old work and half for fixtures in the preceding 24 hours through the next 72 hours; retries rotate by attempt time. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f; final integration follow-ups: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
+- Verification: Disposable backlog test proves current fixture and historical work both progress in a bounded batch. Generation completion and PIT tests pass; the final real-backend browser consumes scheduled context while provider acquisition is disabled.
 - Before/after: Current fixtures behind bootstrap history now receive reserved capacity; no production drain/latency measurement is claimed.
-- Remaining action: final browser/end-to-end acceptance and repository gates.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-03 — External MatchForge agreement silently loses its report producer
 
 - Original severity: High.
-- Status: VERIFICATION_PENDING.
+- Status: FIXED_VERIFIED.
 - Root cause: Comparison serving had no scheduled producer and collapsed missing reports into unsupported agreement.
-- Changes/files/commits: Selection/forecast changes enqueue comparison reports. Explicit comparison_status distinguishes READY/PENDING/FAILED/UNSUPPORTED/NO_FORECAST/UNMATCHED. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
+- Changes/files/commits: Selection/forecast changes enqueue comparison reports. Explicit comparison_status distinguishes READY/PENDING/FAILED/UNSUPPORTED/NO_FORECAST/UNMATCHED. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f; final integration follow-ups: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 - Verification: Actual Go scheduler launches worker and verifies comparison probability through the Go store; immutable retry and stale-source tests pass.
 - Before/after: Supported matched selections now obtain comparisons through the normal scheduler.
-- Remaining action: final browser/end-to-end acceptance and repository gates.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-04 — Missing score provenance is encoded as fresh
 
 - Original severity: Medium.
-- Status: VERIFICATION_PENDING.
+- Status: FIXED_VERIFIED.
 - Root cause: The legacy boolean encoded absent freshness deadlines as false.
-- Changes/files/commits: Additive freshness enum preserves UNKNOWN/FRESH/STALE through SQL, Go and frontend parsing; unknown is never labelled fresh. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
-- Verification: Three-state Go live-source regression and UI missing-source/lifecycle regression pass; final browser checks remain.
+- Changes/files/commits: Additive freshness enum preserves UNKNOWN/FRESH/STALE through SQL, Go and frontend parsing; unknown is never labelled fresh. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f; final integration follow-ups: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
+- Verification: Three-state Go live-source regression and UI missing-source/lifecycle regression pass; desktop/mobile browser checks passed.
 - Before/after: Unknown sources now display freshness unknown; legacy boolean remains for wire compatibility.
-- Remaining action: final browser/end-to-end acceptance and repository gates.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-05 — Score/status and incident feeds can present contradictory match state
 
 - Original severity: Medium.
-- Status: VERIFICATION_PENDING.
-- Root cause: Independent timed incidents may be present while lifecycle remains SCHEDULED and score provenance is absent; incorrect identity is not established.
-- Changes/files/commits: Display an explicit unresolved-lifecycle warning; retain separate source clocks and missing score. No identity or result inferred. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
-- Verification: Partial-feed UI regression passes. Investigation of the named retained fixture remains open.
-- Before/after: Conflicting timed incidents now have an explicit warning; native identity evidence is still required for adjudication.
-- Remaining action: final browser/end-to-end acceptance and repository gates.
+- Status: BLOCKED_WITH_EVIDENCE.
+- Revalidated cause: read-only operating evidence retains SCHEDULED fixture `dffecb0c-fdff-5811-a276-5ddebc9a71c2`, a normalized resource attached there, and native FotMob `5989865` mapped to `264ccd72-e939-520b-b7b1-0f049ecea19d`. Later FINISHED observations remain unbound; contradictory mapping and absent-season decisions prevent automatic adjudication.
+- Changes/files/commits: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e, plus ccd424f. `operational_provider_sync.py` rejects a conflicting snapshotless detail candidate. Migration `202610310200_uncontested_live_resources.sql` excludes retained resources that contradict a verified native mapping. `postgres_store.go`, `product.go`, OpenAPI and `expanded-fixture.tsx` expose withheld identity data, partial state, unknown score freshness and unresolved lifecycle. Original bytes/mappings remain unchanged.
+- Verification: disposable conflicting-candidate and actual Go LiveFixture tests passed; UI partial/lifecycle tests passed in the final suites.
+- Before/after: unrelated timed incidents could appear as ordinary scheduled-match data; conflicting resources are now withheld with an explicit explanation. This mitigates the code defect without declaring a result or selecting the disputed identity.
+- Remaining blocker / next action: obtain independently admissible native season/fixture evidence in a newly authorized identity-review route. Do not force a mapping, infer a score from incidents or reuse a terminal route. No operating mapping was changed.
 
 ### MF26-06 — Source accuracy reads obsolete first settlements
 
 - Original severity: High.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Source summaries joined obsolete first-result rows.
+- Changes/files/commits: Current settlement-revision views, pending-generation exclusion and one filtered source aggregate query. Files: external_prediction_store.go, external_prediction_recovery.py, recovery migration; commit a87e1d3.
+- Verification: Correction sequence WON→LOST→PENDING→VOID→WON and actual Go reader metrics passed.
+- Before/after: Corrections now replace the current metric contribution without changing old rows.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-07 — External parsers accept the wrong prediction day
 
 - Original severity: High.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Source day matching used partial/sub-string date text.
+- Changes/files/commits: Locale-independent complete day/month/year parsing, source-date mismatch rejection and append-only retained-date reviews. Files: external_prediction_sources.py, recovery migration; commit a87e1d3.
+- Verification: Wrong day, malformed dates, December/January and February boundaries passed in 43 source/CLI cases.
+- Before/after: Contradictory dates are rejected or quarantined, with original text preserved.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-08 — Identical reimports cannot recover an unmatched fixture binding
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Immutable source revisions had no independent binding correction record.
+- Changes/files/commits: Append-only binding chains backed only by existing verified exact native mappings; an explicit evidence/reason-backed review CLI supports captures without native IDs. Mapping revocation appends unmatched state; post-kickoff review receives no prospective credit. Original capture and source rows remain immutable. Final follow-up: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e. Files: external_prediction_recovery.py, external_predictions.py, recovery migration; commit a87e1d3.
+- Verification: Import before mapping, verified later binding, identical retry and refusal to match native-ID failure by names passed.
+- Before/after: A later verified mapping repairs the effective binding through new evidence.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-09 — Collection failures can be reported as successful synchronization
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Collection aggregate status ignored per-source errors and disabled/out-of-window outcomes.
+- Changes/files/commits: Truthful attempted/successful/partial/failed/skipped statuses and immutable collection attempts, separate from static qualification. Files: cli.py, external_prediction_sources.py, admin_sync.go; commit a87e1d3.
+- Verification: Aggregate status unit matrix, retained attempts and per-source persistence failures passed.
+- Before/after: Successful sources remain committed; partial/failing collection exits nonzero and retains its exact source status.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-10 — Settlement repeatedly scans all mapped selections
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Every settlement call scanned all mapped selections.
+- Changes/files/commits: Generation checkpoint queue, 128-selection cap, short per-item transactions, consistent lock order and skip-locked ownership. Files: external_prediction_recovery.py, recovery migration; commit a87e1d3.
+- Verification: Bounded concurrent workers, transaction rollback, unchanged retry and repeated correction cases passed.
+- Before/after: Imports, binding changes and result changes enqueue only affected work.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-11 — Source accuracy includes selections first captured after kickoff
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Settlement denominators did not distinguish retrospective captures.
+- Changes/files/commits: Current verified bindings, exact source dates, first capture and current revision-start strictly before kickoff; future observations and same-time conflicting picks excluded. Files: external_prediction_store.go and capture views; commit a87e1d3.
+- Verification: Real Go source counts exclude kickoff-time capture; A→B→A capture history and same-time conflict cases passed.
+- Before/after: Late captures remain visible under a separate denominator and receive no prospective credit.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-12 — Collection does not itself settle newly imported completed fixtures
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Only provider synchronization called settlement.
+- Changes/files/commits: Selection/result invalidation and bounded settlement at the start of normal public-report work. Files: public_reports.py, recovery migration; commit a87e1d3.
+- Verification: Late import against an already stored verified final result settles without a provider fetch.
+- Before/after: Normal local scheduling processes imports even while provider schedules are disabled.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-13 — Repeated unresolved recovery contaminates routine sync health
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Missing historical targets incremented the current acquisition failure counter and retried on the short freshness cooldown.
+- Changes/files/commits: Separate current_acquisition and historical_recovery summaries; truthful aggregate error; one-day missing-native-ID cooldown. Files: operational_provider_sync.py and architecture.md; commit d93db6b.
+- Verification: Successful current acquisition plus absent historical target, immediate cooldown skip and later native recovery passed.
+- Before/after: Useful acquisition stays visible while unresolved evidence and actual aggregate failures remain explicit.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-14 — Worker ownership failures and expired history claims need recovery verification
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: ALREADY_RESOLVED_VERIFIED.
+- Root cause: Ownership-fence incidents are retained; initiating heartbeat/process cause is not in available logs.
+- Changes/files/commits: No lease or publication rule relaxed. Real killed/restarted worker exercise supplements existing shared-work and fencing cases. Files: test_operational_recovery.py; commit d93db6b.
+- Verification: Committed checkpoint survived process kill, new generation reclaimed, old heartbeat rejected and replacement published once.
+- Before/after: Recovery works under the existing contract; original host incident cause remains unknown, with no confirmed code defect to repair.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-15 — Daily refresh skips independent external collection after sync failure
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Shell fail-fast sequencing prevented the independent collection stage after sync failure.
+- Changes/files/commits: Capture both stage exits, attempt both once and return aggregate failure. Files: mvp-refresh.sh, test_mvp_refresh.py; commit d93db6b.
+- Verification: Four independent-stage wrapper cases passed, including both failure directions and both stages failing.
+- Before/after: Collection runs after sync failure, and the wrapper reports both exit codes.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-16 — External read endpoints do unbounded per-source comparison work
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Archive retrieval was unbounded and source agreement repeated full retrieval per source.
+- Changes/files/commits: Bounded 20/50/100-row pages, repeatable-read filtered counts/consensus, one source aggregate query and cancellation. Files: external_prediction_store.go, product.go, web contracts/components; commit a87e1d3.
+- Verification: Actual 20/8-row API pages, stable identity coverage, query count and cancellation passed. A 5,001-current-selection benchmark passed in final integration.
+- Before/after: Page size no longer grows with retained archive size; denominators remain independent of the visible page.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-17 — External “consensus” counts records as independent sources
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Client grouped raw rows by names/fixture without independent-source or market rules.
+- Changes/files/commits: Server consensus uses verified effective fixture/market, distinct enabled public sources, current prospective selections and a strict majority of at least two. Files: external_prediction_store.go, predictions-page.tsx and contracts.ts; commit a87e1d3.
+- Verification: Real two-source consensus, same-time conflict exclusion, independent page consensus and single-source/minority rejection passed.
+- Before/after: Duplicate revisions, different markets and unmatched names cannot manufacture source agreement.
+- Remaining blocker: none for this implementation; live adoption is separate.
 
 ### MF26-18 — Predictions has no mobile navigation
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Predictions bypassed the shell containing mobile navigation while its own header hid primary navigation.
+- Changes/files/commits: Shared mobile navigation is rendered by both shell paths, including the 761–767px gap. Files: app-shell.tsx, globals.css.
+- Verification: Browser checks at 320, 765 and 1024 pixels passed in final acceptance.
+- Before/after: All four routes remain keyboard reachable at narrow widths.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-19 — Score matrix has incorrect alignment, table semantics, and contrast
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Nested grid columns misaligned scores and an incomplete ARIA table omitted row/cell semantics.
+- Changes/files/commits: Native table with caption, scoped row/column headers, fixed readable cells, internal scrolling and forced-color borders. Files: expanded-fixture.tsx, globals.css.
+- Verification: Matrix tab component cases passed; 320px native relationships, keyboard scrolling, axe and forced-color browser checks passed in final acceptance.
+- Before/after: Home-goal rows and away-goal columns align; relationships no longer depend on visual placement.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-20 — External time labels disagree with the formatter
 
 - Original severity: Low.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Capture/kickoff used the configured display timezone while labels claimed UTC/London.
+- Changes/files/commits: Label first capture and kickoff with DISPLAY_TIME_ZONE; keep the source prediction partition separate. File: predictions-page.tsx.
+- Verification: 08:15 UTC renders 09:15 Africa/Lagos and both column labels identify that zone; component regression passed.
+- Before/after: Source day, original capture and kickoff are distinct concepts.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-21 — Healthy feed indicators are not connected to health
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Feed Live and Cluster Synced were static assertions.
+- Changes/files/commits: Selections show actual loading/refreshing/unavailable/loaded request state; the shared shell describes stored forecasts. Files: predictions-page.tsx, app-shell.tsx.
+- Verification: Component regression confirms scoped loaded state and absence of hardcoded healthy claims.
+- Before/after: No request result claims cluster-wide operational health.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-22 — Production Predictions exposes simulated empty/loading controls
 
 - Original severity: Low.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Simulated empty/loading buttons changed the production data view.
+- Changes/files/commits: Remove ViewMode, StateBar and StateButton; render only actual resource states. File: predictions-page.tsx.
+- Verification: Component regression confirms production controls are absent and normal error/empty/populated cases pass.
+- Before/after: Users cannot replace actual data with simulated states.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-23 — Successfully loaded context does not refresh while the fixture stays open
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Context retried temporary misses but never refreshed after success.
+- Changes/files/commits: Visibility-aware completed-request context refresh at 60/120 seconds, preserving immutable forecast ID; repeated 503 misses after success advance retry/backoff on each completed request. File: expanded-fixture.tsx.
+- Verification: Open-panel context changed without reopening or another forecast request; unmount stops refresh. Repeated misses after a successful load continue retrying with backoff. Regressions passed.
+- Before/after: Already loaded form/context can update while the panel stays open.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-24 — Admin stops observing schedules when no job is active
 
 - Original severity: Medium.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Admin polling required an already active run.
+- Changes/files/commits: Idle discovery at 60 seconds, active 2.5 seconds, hidden 120 seconds and visibility refresh; sequential and abort-safe. File: use-sync-admin.ts.
+- Verification: Idle→scheduled job, visibility refresh, no overlapping poll and terminal-response race regressions passed.
+- Before/after: A page opened idle discovers background work without manual reload.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-25 — Competition rail can create contradictory filters
 
 - Original severity: Low.
-- Status: INVESTIGATING.
-- Root cause: audit finding pending current-code revalidation.
-- Changes/files/commits: none yet.
-- Verification: not run.
-- Before/after: audit behavior retained until verified.
-- Remaining action: implement and demonstrate the acceptance recorded in the audit.
+- Status: FIXED_VERIFIED.
+- Root cause: Rail selection changed competition without clearing incompatible geography.
+- Changes/files/commits: Clear country/continent when selecting another rail competition, retaining other independent filters. File: fixture-explorer.tsx.
+- Verification: England→Serie A regression checks query has the selected competition and no country restriction.
+- Before/after: The requested competition cannot be silently excluded by stale geography.
+- Remaining blocker: none for this implementation; live adoption is separate.
+- Commit: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 
 ### MF26-26 — Agent guidance references missing supporting documents
 
 - Original severity: Low.
 - Status: FIXED_VERIFIED.
 - Root cause: supporting documents moved to docs/ while guidance retained docs/engineering/ paths; the PR template path was also stale.
-- Changes/files/commits: repaired AGENTS.md and docs/git-delivery.md to reference the existing documents; no duplicate guidance created. Commit: ccd424f (phase A).
+- Changes/files/commits: repaired AGENTS.md and docs/git-delivery.md to reference the existing documents; no duplicate guidance created. Commit: ccd424f; final integration follow-ups: c9d8fe7ea70076f08efb25e672abdf6ba1f0c06e.
 - Verification: Python path validator checked all ten distinct document references in AGENTS.md; all exist. git diff --check passed.
 - Before/after: required guidance reads failed; every referenced supporting document now resolves.
 - Remaining blocker: none for this finding. Historical project PASS records are explicitly not current runtime certification.
 
-## Blockers and risks
+## Known blockers and risks
 
-| ID | Disposition | Evidence / next action |
+| ID | Final disposition | Evidence and required next action |
 | --- | --- | --- |
-| KB-01 | INVESTIGATING; High · Known blocker | Project status retains R3 identity/history acceptance failure: 605 original FotMob team IDs, 108 origin declarations, and 210 original competition IDs held at that recorded checkpoint. Runtime sync still reports absent season labels and explicit cross-provider evidence requirements. These historical cohort counts were not re-audited as today's totals. Next: Resume only a newly authorized, evidence-based mapping route. Resolve native scopes and disputes prospectively; preserve denied and historical decisions. |
-| KB-02 | INVESTIGATING; Medium · Known blocker | API-Football season entitlements, football-data.org CL2020 access, incomplete PitchAPI proof, unsupported/cancelled scopes, and Forebet technical access restrictions are documented. Some cannot be solved in code alone. Next: Check exact entitlement/evidence under approved budgets; classify supported, deferred, denied, and terminal scopes. Do not bypass access controls or substitute another provider as proof for a provider-specific scope. |
-| KB-03 | INVESTIGATING; Medium · Intentional incomplete phase | Architecture V2 phases 34–48 and cutover are not complete. Shadow registries/projections are not proof that every production consumer/worker has moved. The Performance/comparison gaps are actual existing public-workflow failures, distinct from optional future migration work. Next: Repair current public workflows within explicit authorization; do not use this audit as permission for wholesale cutover. |
-| KB-04 | INVESTIGATING; High impact if ignored · Intentional governance stop | Sprint 2 failure, closed challengers, spent/protected targets, and final reevaluation integrity block remain authoritative. No new model promotion is justified by UI repair or larger raw history counts. Next: Retain champion and frozen criteria; any new scientific execution needs its own owner decision and admissible corpus. |
-| R-01 | INVESTIGATING; Medium · Suspected operational cause | DNS errors on FotMob and PitchAPI transport failures occurred; recent provider jobs also succeeded. Historical invalid-season-bound failures predate a source fix already in HEAD. Next: Correlate exact timestamps, network/process logs, and deployed revision before filing duplicate parser/season defects. |
-| R-02 | INVESTIGATING; Medium · Suspected batch recovery weakness | `run_public_reports` calls `_snapshot` outside `_publish`'s failure-recording block. A malformed/invalid scope can abort the selected batch before later scopes are attempted; FIFO context selection can repeatedly revisit it. No poisoned scope was demonstrated. Next: Add isolated failure-injection coverage and per-scope disposition without weakening report validation; measure starvation under a failing head item. |
-| R-03 | INVESTIGATING; Medium · Unverified recovery | Six expired history leases were observed, but no reclaim/restart exercise was authorized. Existing fences are protective, not evidence of a bug by themselves. Next: Perform the disposable-database recovery acceptance in MF26-14. |
-| R-04 | INVESTIGATING; Medium · Unverified deployment/monitoring | Work/domain metrics and administrative endpoints exist. Current alert delivery, automatic daily scheduling on this host, retention/rotation of accumulating `.local/sync-runs` logs, disk-pressure behavior, and operator response were not established. Next: Inventory deployed schedules, owners, metrics consumers, retention and alerts; test age/failure alarms without provider traffic. |
-| R-05 | INVESTIGATING; High consequence · Unverified restore | Prior Architecture V2 backup/restore evidence exists. This audit did not reproduce restoration of today's database together with raw/model files, test RPO/RTO, or verify every retained file checksum. Earlier status explicitly records unverifiable raw samples and unavailable datasets. Next: Run an authorized isolated restore and manifest verification; retain missing-source findings rather than filling them with invented bytes. |
-| R-06 | INVESTIGATING; High consequence · Unverified scientific integrity | Static review found separate cutoffs, label-free target contracts, artifact checksum checks, and same-kickoff batching. The audit did not reproduce every fitted artifact, backtest, calibration, SQL historical reconstruction, or Rust parity run. Next: Preserve frozen experiments; schedule permitted reproduction/invariant checks against isolated, approved inputs. A unit test's presence is not proof of live integrity. |
-| R-07 | INVESTIGATING; Medium · Unverified capacity/security | Local loopback admin checks and bounded HTTP deadlines exist; no remote deployment, adversarial security assessment, dependency vulnerability scan, provider flood, or sustained load test was performed. `/version` only returns `dev`. Next: Establish deployed build identity and supported trust boundary; test capacity and security in an isolated environment without consuming provider quotas. |
-| R-08 | INVESTIGATING; Medium · Unverified accessibility coverage | Four initial route states passed the executed axe scan, but expanded matrix failed. VoiceOver/Safari, zoom/text spacing, forced colors, reduced motion, full keyboard journeys and every responsive state remain unchecked. Next: Complete manual accessibility verification after MF26-18/19 and retest representative loading/error/populated states. |
+| KB-01 | BLOCKED_WITH_EVIDENCE — identity/history admission | Retained R3 holds and current read-only missing-season/contradictory-mapping decisions remain. Historical counts (605 team IDs, 108 origins, 210 competition IDs) are checkpoint counts, not refreshed totals. Resolve only through a newly authorized evidence-based route; no name-only merge or historical decision rewrite. |
+| KB-02 | BLOCKED_WITH_EVIDENCE — provider entitlement/access | API-Football season entitlement, football-data.org CL2020, incomplete PitchAPI proof and Forebet restrictions were not bypassed or retested with live traffic. Code distinguishes disabled, outside-window and failed collection. Owner must authorize exact entitlement/evidence checks under provider budgets. |
+| KB-03 | INTENTIONAL_INCOMPLETE_PHASE — preserved | Architecture V2 phases 34–48/cutover remain unauthorized. Current public report workflows were repaired within existing ownership; shadow infrastructure was not presented as a completed runtime migration. A separate owner decision is required for later phases. |
+| KB-04 | GOVERNANCE_STOP_PRESERVED | Sprint 2 FAIL, closed challengers, protected targets and reevaluation integrity stops remain unchanged. Champion retained; no promotion or protected outcome access. Future scientific execution requires its own admissible-input/owner decision. |
+| R-01 | BLOCKED_WITH_EVIDENCE — original transport cause | Retained DNS/transport incidents coexist with successful later acquisitions; the initiating network/process traces are absent. No new provider request was made to manufacture a reproduction. Obtain timestamped host/network/heartbeat logs before attributing a new provider defect. |
+| R-02 | FIXED_VERIFIED — poisoned batch isolation | Snapshot/report failures are recorded per scope; unrelated reports continue and retry ordering rotates. Disposable failure injection and bounded fairness cases passed through the normal worker implementation. |
+| R-03 | ALREADY_RESOLVED_VERIFIED for recovery; cause still unknown | Real child-process interruption preserved its committed checkpoint. A replacement reclaimed a new generation, rejected the expired heartbeat and published once. Six operating expired leases were observed read-only; this task did not reclaim them. Original incident cause still needs host traces; no fencing rule was relaxed. |
+| R-04 | PARTIALLY_VERIFIED; deployment evidence blocked | Metrics age/state and administrative tests pass. Repository systemd timer specifies 06:00 Africa/Lagos; no MatchForge launch-agent entry was found on this host. Installed daily scheduling, alert consumers/recipients, retention ownership and disk-pressure response are not established. Owner/operator must confirm deployment and an alert delivery/retention drill. |
+| R-05 | PARTIALLY_VERIFIED — current isolated restore passed | Current database backup/restore and copied-file checksums passed (details below). These timings do not establish an approved RPO/RTO or prove every registered resource exists. Previously missing/unverifiable bytes remain evidence gaps. Owner must approve recovery targets and disposition unavailable resources. |
+| R-06 | PARTIALLY_VERIFIED — invariants passed; research stops retained | Final suites exercise cutoff isolation, same-kickoff ordering, artifact tamper/round-trip checks, deterministic simulation, immutable publication and historical storage. Champion checksum is unchanged. This does not reproduce every fitted artifact/calibration/backtest or authorize frozen scientific evaluation. Remaining reproductions require approved inputs and a separate owner decision. |
+| R-07 | PARTIALLY_VERIFIED — security/build/bounded capacity | Four advisory scans report no security vulnerabilities after patches; Rust has one informational unmaintained dependency. Actual API build identity and 5,001-selection bounded reads passed. Loopback/auth/deadline/cancellation tests passed. Remote deployment, sustained SLO/load, independent penetration testing and provider flood behavior are not certified. |
+| R-08 | PARTIALLY_VERIFIED — automated/manual code review scope | Desktop Chromium and mobile WebKit, 320/765/1024px navigation, matrix native semantics/keyboard scrolling, representative states, normal-color axe, forced-color border/focus and reduced motion passed. Forced-color screenshots were inspected. VoiceOver with Safari, native browser zoom and complete text-spacing/assistive-technology journeys remain unverified; no full WCAG 2.2 AA claim. |
 
-## API states and contract verification
+## Final verification
 
-The existing OpenAPI specification owns wire fields. Record endpoint changes and state/contract tests here as implementation proceeds. Pending, failed, unsupported, empty and partial states must remain distinct. Immutable report/source hashes continue to select current data.
+The final `make check integration web-e2e` run passed backend formatting/lint/strict typing/complexity, migration validation, 1,708 Python unit cases, 16 Rust cases, Go tests and all backend builds. It then stopped at two unsupported Testing Library `exact` options in new tests. Removing those options changed test queries only. The continuation reused the successful backend build and ran:
 
-## Verification log
+```sh
+MATCHFORGE_REAL_PROVIDER_E2E=false make -o build web-lint web-test web-build integration web-e2e
+```
 
-Phase A: 20 PostgreSQL report integration cases passed (exit 0), including all seven horizons, correction, immutable report bytes, source invalidation, snapshot failure isolation, and current/history scheduling. The actual Go-to-Python scheduled-worker case now passes after fixing a task-introduced parser registration error. Final report integration suite: 21 passed; separate public-report/CLI unit suite: 17 passed. One attempted combined unit/integration invocation failed collection because of duplicate test module basenames; the repository normally runs those suites separately, and the separate runs passed. Focused Go report/scheduler unit tests and strict mypy on public_reports.py passed. Frontend contract/Performance/fixture tests: 54 passed; expanded fixture suite exposed a changed status-label expectation, since corrected. Ten AGENTS document paths now resolve. Full final gates have not run. Prior PASS evidence in project status is historical and does not establish current runtime readiness.
+This continuation passed (exit 0). Successful backend tests were not rerun without a relevant code change. Combined, the two commands cover the complete Make dependency graph; the first failed invocation is not recorded as a successful aggregate.
 
-## Delivery
+| Gate | Actual result |
+| --- | --- |
+| Ruff format/lint, strict mypy | PASS; 501 formatted files, 432 typed source files |
+| Clippy, Go vet/golangci-lint/complexity, shell syntax, Goose validate | PASS; no checks weakened |
+| Python unit suite | 1,708 passed; seven existing upstream penaltyblog/NumPy deprecation warnings |
+| Rust workspace | 16 passed; repeat/parallel deterministic cases included |
+| Go unit suite | PASS; database cases additionally run inside disposable integration |
+| Frontend ESLint/typecheck | PASS; one pre-existing unused `_input` test-argument warning |
+| Frontend Vitest | 96 passed across 12 files |
+| Python wheel/sdist, Rust/Go, Next production build | PASS |
+| ProjectStatusV2 validator | PASS |
+| Storage/migration/API/real-backend browser integration | 738 passed; fresh/repeated migrations and API integration PASS |
+| Deterministic browser suite | 32 passed (41.9s); 12 skipped (live-provider, harness-only or device-specific cases; real-backend desktop case passed separately inside integration) |
+| Diff whitespace and staged secret/local-file review | PASS; `.env`, backups, provider bytes, local tools/logs and node_modules excluded |
 
-Required: reviewable dependency-aware commits, push and PR under `docs/git-delivery.md`. No implementation commits yet. No readiness or completion claim.
+The normal Go application scheduler launched the actual Python command runner, recorded a successful PUBLIC_REPORTS root run and produced CONTEXT, COMPARISON and all seven PERFORMANCE horizons. The real browser consumed Performance, Recent Form, H2H, Team Statistics, Markets, Score Matrix, Diagnostics and Predictions through the real API/SQL implementation. Its routing forwards requests to the disposable API without synthesizing response data. Representative provider acquisition/result fixtures elsewhere in the same integration graph cover postponed/finished/corrected/unmatched/partial states, retries, concurrency and process interruption. No live provider acquisition was performed.
 
-### Phase A static-analysis disposition
+Real scheduler evidence: fixture `6358574b-5c44-4cc0-9aa7-2bfdfdaaaca7`; CONTEXT record SHA-256 `1d5fc722ee53fa0b526d8ebdd42d693f7cfd5fad688c3d5068c4bd9cb591bd14`. Full nine-report identities/source fingerprints are in ignored `.local/remediation-browser-evidence.json`.
 
-Fallow 3.38.0 was installed only in ignored local tooling. Full root analysis: valid combined envelope, one pre-existing unused-file finding (the explicit playwright.real.config.ts CLI configuration), six moderate estimated-health findings and no unresolved imports. An exact HEAD baseline has the same six categories; live-panel complexity improved from 12 to 10. New/changed units respect the repository threshold of 10. Added partial-feed and mixed-report-state tests exercise the changed branches. No suppressions, baselines or analyzer configuration were changed. Preview proposed zero auto-fixes; none applied. Staged security scan: zero candidates and zero unresolved edge files. Fourteen changed-file dynamic-dispatch diagnostics comprise three static array includes() calls in enum validators and eleven Testing Library/Vitest response/assertion calls, all inspected directly; none conceals an application security sink. Global unresolved-callee count is a conservative JS graph limitation, not a claim about backend code. Root node_modules warning is expected for this Python/Go repository with its frontend package in web/; web dependencies are installed and imported paths resolve. Other pre-existing findings remain in scope only when a later fix touches their behavior.
+Additional regressions found during remediation and fixed before handoff:
 
-### Phase B checkpoint
+- Queuing a new external validation generation immediately hides the old comparison and eligible aggregate contribution until that generation completes.
+- A corrected kickoff excludes post-kickoff or future-cutoff immutable forecasts from both active summaries and comparisons, with SOURCE_DATA_INCOMPLETE when none qualifies. Retrieval by historical ID remains unchanged.
+- Reviewed bindings without native IDs require retained verified mapping evidence, exact source revision hash and reason. Revocation appends unmatched state; late review gets no prospective credit.
+- Repeated identical context misses after a successful load keep retrying with backoff. Successful context refresh never silently swaps the immutable forecast.
+- Mobile WebKit keyboard scrolling is explicitly supported by the shared named TableScroll region. Nested controls keep their own arrow keys.
+- Test fixtures preserve old-schema upgrade compatibility, valid public UUIDs, coherent matrix payloads and database capture clocks. No production validator or assertion was relaxed.
 
-New uncommitted migration: 202610310100_external_prediction_recovery.sql. New recovery worker: external_prediction_recovery.py. Legacy settlement entry point now delegates to a bounded queue. The normal public-report job processes settlement before comparisons. Immutable bindings accept independently verified native provider mappings only; unmatched records without such evidence remain unresolved. Correction sequences preserve return-to-earlier-state events; pending generations must hide obsolete settlement metrics. Parser regression: the original implementation failed five of ten new wrong/malformed-date cases; all ten now pass. Source parser/CLI focused suite: 31 passed before the recovery changes. Further verification and API/frontend migration remain open; no Phase B issue is marked fixed yet.
+### Security and runtime identity
 
-Phase B evidence so far: five disposable recovery cases passed (WON→LOST→PENDING→VOID→WON, immutable capture, import-before-mapping, bounded concurrent processing/rollback, wrong-date quarantine). A sixth real-Go reader case passed: 20/8 row pages over 28 current selections, no duplicate IDs, a 2-of-2 source consensus, one source-summary SQL query, a late-capture exclusion, immediate pending-correction exclusion, corrected hit rate and request cancellation. Frontend prediction/contract cases: 32 passed, including independent backend consensus and rejection of single-source/minority claims. Strict mypy passed for the four changed external/CLI modules; Go lint/complexity passed after cohesive test helpers. New native-mapping refusal and collection-attempt cases plus final related regressions still require a run after the last changes. No external provider requests or operating-database writes were made.
+Security scans used the final lock files: `pnpm audit --json` (zero vulnerabilities), pip-audit over 91 locked runtime packages (zero), `govulncheck -json ./...` (zero finding objects), and `cargo audit --json` (zero security vulnerabilities). JSON contents were checked; Go JSON exit status alone previously concealed findings and is not the acceptance criterion.
 
-Final focused Phase B run: 29 disposable PostgreSQL report/recovery cases passed (8 recovery/reader cases plus 21 existing report cases); 43 external parser/import/CLI unit cases passed; mypy passed for five changed production modules. Frontend prediction/contract suite: 32 passed before the final page-count normalization change; final component checks remain pending. The larger test command first failed to start because automatic approval review timed out; retrying a database-only command succeeded. The original operating checkout and database were not changed. Exact logs: `.local/remediation/codebase-2026-10-30/b-focused-integration.log`, `external-reader-metrics.log`, `source-dates-red.log`, `source-dates-green.log` and `external-web.log`. Do not treat historical project-status PASS entries as current acceptance.
+Patched versions: Next/ESLint config 16.4.1, Vitest 4.1.12, Vite override 7.3.7, certifi 2026.10.23, Pillow 13.0.0, Go 1.27.3 and x/text 0.41.0. No modelling-library replacement or numerical configuration change. Existing artifact dependency hashes remain immutable. The exact CI-pinned pnpm 10.19.0 accepted the final frozen lock offline without changing its checksum. The package manager's lifecycle-script restrictions were preserved; no build-script allowlist was relaxed.
 
-Phase B Fallow review: root envelope valid; no unresolved imports; all changed functions are at or below cyclomatic complexity 10. Estimated-health recommendations at that threshold are addressed with current pagination/state/contract cases; no suppression or rule change was made. The staged scanner's one SSRF candidate is a false positive: api.predictions appends a URLSearchParams-encoded query to a literal /v1/external-predictions path under the build-configured API origin. Neither filter content nor returned source URLs control the request origin or path, and this executes as a browser request, not a server-side fetch. A hostile-filter origin/path regression was added. Remaining dynamic-dispatch diagnostics are inspected array operations, promise/Testing Library calls and test assertions, with zero unresolved edge files. Auto-fix preview proposed zero edits. Final scans still required after restaging the review fixes.
+Published patch evidence: [Next.js advisory](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw), [Vitest advisory](https://github.com/vitest-dev/vitest/security/advisories/GHSA-qxg6-89mg-rqv8), [Pillow release](https://pillow.readthedocs.io/en/stable/releasenotes/13.0.0.html), [certifi release](https://github.com/certifi/python-certifi/releases/tag/2026.10.18). RustSec RUSTSEC-2024-0436 identifies transitive nalgebra dependency paste 1.0.15 as unmaintained, without a security vulnerability. It is retained explicitly rather than suppressed or replaced through an unauthorized numerical change.
 
-Review found and addressed two integration edges before the Phase B commit: date-review decisions must invalidate already completed comparisons, and repeated source captures must represent A→B→A pick changes without overwriting first-capture clocks. Added immutable external_prediction_captures, current selection ordering by latest observation, and conservative current-revision timing eligibility. Current-revision selection uses set-based grouping rather than a per-record full-archive scan. New capture-transition and same-time conflict tests are pending; earlier 29-case results predate this final change. The date-review invalidation and binding-provenance follow-ups passed two disposable tests.
+`make build` links the exact Git commit, uv.lock SHA-256 and source clean/dirty state. `/version` returns these values independently of the moving runtime checkout; unidentified direct builds say unknown. Actual binary HTTP verification is included in API integration. Final clean-commit build identity is checked after the evidence commit and reported in the PR/handoff.
 
-Capture-observation review: all 11 external recovery integration cases passed after the append-only capture extension. An unchanged reimport preserves its first capture; A→B→A follows observations without rewriting source rows. Conflicting picks at the same observation time are quarantined.
+### Restore and artifact evidence
 
-Phase B checkpoint: 11 recovery integration cases, 21 report cases (before the capture-only extension), 43 source/import/CLI unit cases and 33 frontend cases passed. Go app tests passed with disposable loopback access; sandbox-only listener failures were rerun successfully. Ruff, mypy, TypeScript, ESLint (one pre-existing unused test argument warning), go vet and golangci-lint passed. Final Fallow root/security/preview were read: no auto-fixes, unresolved imports or edge files; the unchanged fixed-origin candidate and estimated coverage advisories retain the dispositions above. Phase B findings remain verification-pending until final normal-scheduler/browser acceptance. Next phase C: scope recovery health, independent daily stages and disposable worker interruption.
+A read-only repeatable-read operating snapshot was dumped and restored only to a unique disposable database. Migration version plus full-row digests/counts matched for fixtures, forecasts, external captures, first results, result revisions and native mappings. The restored database was removed.
 
+- Backup: 1,044,602,477 bytes; SHA-256 `30ab91539be33d64425bb15753dea4d35f5192260a9387ed830cfa9f79a3301c`; capture 119.53 seconds; isolated restore 397.12 seconds.
+- Retained raw-file copy: 76,189 files, 8,179,985,091 bytes; every copied file matched its source. Path/hash manifest SHA-256 `0d26da931cc0d7d2b86a1c4ad2a5f19258e71c3888920f6becda7a50ac3fe6f5`.
+- Champion copied and verified unchanged: `e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
 
-### Phase C implementation and retained operational evidence
+These are observed exercise results, not approved recovery objectives or proof that missing registered resources exist. Opaque dumps/raw copies remain ignored, access-restricted local evidence; they are not published in Git. Background operating workers continued independently; this task made no operating-record writes.
 
-- Current acquisition and historical recovery now have separate count/status
-  objects; aggregate failures remain failures. Missing supported historical IDs
-  wait one day instead of the normal three-minute freshness interval. Existing
-  held/unsupported exclusion and request bounds remain intact.
-- `mvp-refresh.sh` attempts each independent stage once and prints both exit
-  codes. Four wrapper cases passed: both successful, either failed, both failed.
-- Two disposable native-recovery cases passed, including successful current
-  acquisition plus missing historical recovery, daily cooldown, unchanged fixture
-  evidence and subsequent supported recovery. A real child worker was killed
-  after committing a checkpoint; a replacement reclaimed the same historical
-  work with a new generation, preserved the checkpoint and published once. The
-  old owner's heartbeat was rejected. Initial test harness credential omission
-  was corrected; the killed-worker case then passed.
-- Read-only operating-data inspection (transaction_read_only=on, 15-second
-  timeout) still finds six expired historical leases. The two named logs retain
-  only publication-fence errors, without heartbeat or process lifecycle traces.
-  Thus their initiating cause cannot be reconstructed; no fence defect was
-  reproduced. No operating work item was reclaimed or edited by this task.
-- Native FotMob 5989865 has later FINISHED observations with no canonical binding,
-  whereas older observations bind a different fixture and say CANCELLED. The
-  named SCHEDULED fixture remains unchanged. This is insufficient evidence to
-  force a lifecycle/identity correction; the UI explicitly warns about timed
-  incidents on a scheduled fixture and unknown score freshness.
-- This host has no MatchForge launch-agent entry; the repository has a systemd
-  timer for 06:00 Africa/Lagos. Installation, alert recipients, heartbeat history
-  and log retention ownership are not recorded. Existing sync logs total 37 MB.
-  Alert delivery and host scheduling remain externally unverified, not passing.
+### Static analysis and frontend review
 
-Next: complete frontend behavior and runtime/build evidence, then run the full
-repository graph once. External provider requests, operating writes, protected
-scientific execution and model changes remain prohibited.
+Fallow 3.38.0 complete root analysis and staged security/preview ran before each code commit. Root envelopes are valid. Final measured-coverage analysis reports zero health findings, zero clone groups and zero unresolved imports. The one pre-existing unused-file report, `web/playwright.real.config.ts`, is a verified explicit CLI configuration (`--config playwright.real.config.ts --list` succeeds); it was retained without suppression or configuration changes. Root node_modules/boundary/policy diagnostics are limitations: dependencies live in web/, and no architecture rule pack is configured. Zero policy findings therefore does not imply measured architecture conformance.
+
+Coverage command: `pnpm exec vitest run --coverage --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportsDirectory=../.local/remediation/codebase-2026-10-30/coverage`. All 96 cases passed. Instrumented frontend files: 92.75% lines, 78.16% branches. Supplying measured coverage resolves six moderate estimated-health recommendations at complexity 10; no threshold, baseline or rule was weakened. Python/Go complexity gates pass. An existing response-fixture decision chain was replaced with a response table to reduce cognitive complexity while preserving routes.
+
+Application staged security: zero candidates and zero unresolved edge files; 83 changed-line dynamic-dispatch diagnostics consist of test/request/assertion APIs and the inspected DOM preventDefault call in TableScroll. Earlier Phase B fixed-origin SSRF candidate was ruled out with a hostile-filter test: URLSearchParams under a literal path/configured browser API origin cannot change origin/path. Auto-fix previews proposed zero edits; none applied. No secret/local/generated artifacts are staged.
+
+Shared UI review inventoried the existing shell navigation and two native table-scroll consumers. MobileNavigation reuses the existing route/current-page contract; TableScroll preserves labels, semantic tables and CSS tokens. No Figma, shared variant, token or package API changes. Read-only frontend review covered touched routes, accessibility, request cancellation/stale responses, error/empty/partial states, API parsing, immutability and unrelated diff contamination. No unresolved actionable implementation finding remains; assistive-technology/deployment risks above remain explicit. This was the implementing agent's review, not a claim of independent human review.
+
+## Evidence files and delivery
+
+Verbose evidence remains under ignored `.local/remediation/codebase-2026-10-30/`; committed tests and this ledger provide reproducible scope. Relevant local records: `final-gates.log`, `final-continuation.log`, `final-suite.xml`, `application-fallow.json`, `application-security.json`, `security-fallow.json`, `security-security.json`, the four advisory scan JSON files, coverage JSON, read-only operating JSON and `current-restore/report.json`/`raw-copy-report.json`.
+
+Local evidence SHA-256:
+
+- `final-gates.log`: `40f6a5fd53c0c4662fcfdbd556cf9412123ba3ee512a1cbff7690b09753a0215`
+- `final-continuation.log`: `3c5255bdc3f5af678504e1b2240409a4a691780a610dfcc16ba17f71184aeff2`
+- `final-suite.xml`: `fbe14dddea800ec1e0b028a10c34dbe9a7257c12f55ae5899bfb14351c9e2f2a`
+- `npm-audit-final.json`: `902485ba571e1c2dcbb444dc04dc0acdafb1a81c0b5a18c0c584e9090ab59df7`
+- `python-audit-final.json`: `a12e70c50a6ff2b9ce1426abde441c5915159c4d4501752fc6739e4db39003c3`
+- `go-vuln-final.json`: `483c76491dd351282acf67aebc0883e626f7f84f2f21a72e217f25085dba4474`
+- `rust-audit.json`: `c010164417756a4e25192470149f4114aa08c2d5a04d0ebb8cbddeda8212073f`
+
+The branch must be reviewed through its PR before applying the four roll-forward migrations and installing/restarting the reviewed build through normal operations. Existing migration history, immutable source rows and scientific stops remain intact. The operating instance was not upgraded by this task and is not certified ready from this isolated proof alone. Authorized application workflows pass in isolation; MF26-05/KB-01–04 and the unverified operational/assistive-technology limits remain the precise handoff conditions. No later phase or feature work begins here.
