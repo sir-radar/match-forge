@@ -1,0 +1,257 @@
+{
+  "database": "football_architecture_v2_shadow_20261016",
+  "database_mutations": 0,
+  "datasets": {
+    "items": [
+      {
+        "dataset_version_id": "04841642-3bf2-49ff-8bca-4d8285d31296",
+        "file_id": "01a04db4-fb6f-7f0d-9140-fec0f2472d6d",
+        "registered_inputs": 0,
+        "relative_path": "normalized/second.parquet",
+        "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      {
+        "dataset_version_id": "55607513-725b-4a4f-86a8-6460248c62f5",
+        "file_id": "01a04db8-2445-733b-9656-06be47a77de3",
+        "registered_inputs": 0,
+        "relative_path": "normalized/second.parquet",
+        "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      {
+        "dataset_version_id": "258ebad5-e836-43b8-aa56-fc5d2fa16adc",
+        "file_id": "01a06fc4-d7e7-76fe-8498-02fea40aed2e",
+        "registered_inputs": 0,
+        "relative_path": "normalized/second.parquet",
+        "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      }
+    ],
+    "unavailable_files": 3
+  },
+  "fixture_identity_counts": [
+    [
+      "PROVISIONAL",
+      59903
+    ],
+    [
+      "VERIFIED",
+      149844
+    ]
+  ],
+  "fixture_resolution_counts": [
+    [
+      "AMBIGUOUS_QUARANTINED",
+      2540
+    ],
+    [
+      "DUPLICATE_RESOLVED",
+      17530
+    ],
+    [
+      "IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED",
+      11806
+    ],
+    [
+      "UNIQUE",
+      318425
+    ]
+  ],
+  "identity": {
+    "contract": "ProviderIdentityAuditV2",
+    "currently_admitted_mapping_count": 13325,
+    "legacy_manifest_unverified_snapshots": {
+      "football_data_uk": 48,
+      "openfootball": 1
+    },
+    "manifest_classifications": {
+      "BYTE_VERIFIED": 15312,
+      "LEGACY_MANIFEST_UNVERIFIED": 2192,
+      "NOT_VERIFIED": 90
+    },
+    "mapping_classifications": {
+      "CONTRADICTORY": 108,
+      "CROSSWALK": 1556,
+      "ORIGIN_ANCHOR": 11769,
+      "REVOKED": 1,
+      "UNRESOLVED": 4160
+    },
+    "policy_version": "ProductIdentityTrustV1",
+    "resources_checked": 744,
+    "source_bytes_verified": 230252480,
+    "status": "FAIL",
+    "unsafe_shared_identity_count": 984,
+    "verified_shared_identity_count": 1329
+  },
+  "recorded_at": "2026-10-31T09:47:27.272032+00:00",
+  "sources": {
+    "items": [
+      {
+        "provider": "provider_f5b1d447028746ccb27cd73704bea457",
+        "resource_id": "01a04db4-fb69-7f6d-921b-4ee6615ca179",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_39604579cb914b4fa4f295b6e7a2cb9c",
+        "resource_id": "01a04db4-fb6d-719e-8ecc-5c8411bdd3bc",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_addc7ed89b204d3e92091a11723e854c",
+        "resource_id": "01a04db8-2440-76a7-87bb-bacd660f7e38",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_1f735332c8eb40c5baca64964f5604c1",
+        "resource_id": "01a04db8-2442-78d8-8e17-2a06e5e00cde",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_990c6d0a7a3141a39de2e0f6ff961efb",
+        "resource_id": "01a04fc0-1018-774c-89b1-fa3285959dc7",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_96a8f9a8ee03400089d588105abff609",
+        "resource_id": "01a04fc8-2e55-7896-8e30-96d893fa2879",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_c0917715e3964511a5f8a1ada10498d3",
+        "resource_id": "01a04fc8-d210-7af0-bdab-f51b0a6a2d2b",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_cd4a6890ebe447d5a52f7f7a3a61ddb5",
+        "resource_id": "01a04fd2-a0a2-7f5b-955d-094aa6b85041",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_ec6d18f493cd43a5a454f4655dae702f",
+        "resource_id": "01a051c0-2b85-7eda-8826-6118450cedeb",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_2051331c15f2492884684c80e0377c14",
+        "resource_id": "01a051c0-2bba-79ad-bce2-e8e4ac91fcbb",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_c00c9a7c76674177bf22918cbe1704ae",
+        "resource_id": "01a051c0-2be1-7ffe-abf8-509643d03ee0",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_f34c429bbb564454a8cb8ffe7820f569",
+        "resource_id": "01a051c4-88aa-7535-b639-b2d79100cc42",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_d4bf2c1ddd60449aab3354529619697c",
+        "resource_id": "01a051c4-88dc-742c-9c9d-5e416bffa63b",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_4b74f681ac5f467b9b8df9eac9761a82",
+        "resource_id": "01a051c4-8905-7609-885a-63bbf6c1e5c1",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_sprint2_66320d12a11743cfa83e0997882f64e0",
+        "resource_id": "01a05718-f3e5-709d-8b73-96ac7b2e7a63",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_8141a80d60c44158afab0b7430402741",
+        "resource_id": "01a06fc4-d554-7482-900b-c671252fddb5",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_d28943a771fa43448dbcc5f0b101bf39",
+        "resource_id": "01a06fc4-d583-7c57-a31b-a6c09db2e8d5",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_d28943a771fa43448dbcc5f0b101bf39",
+        "resource_id": "01a06fc4-d584-7f0e-be0b-9d67f1f4c7f1",
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      {
+        "provider": "provider_6692cfbe364b4b25ac20fa9c73cedff8",
+        "resource_id": "01a06fc4-d5a7-7e0f-ac42-65ff4b9c883b",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_6692cfbe364b4b25ac20fa9c73cedff8",
+        "resource_id": "01a06fc4-d5b5-7386-bd19-1c972e3df61d",
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      {
+        "provider": "provider_6692cfbe364b4b25ac20fa9c73cedff8",
+        "resource_id": "01a06fc4-d5b8-74c5-be3d-bd8d81361eb8",
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      {
+        "provider": "provider_9acc6a649ddf4d978310c11da7f183fa",
+        "resource_id": "01a06fc4-d5ed-740f-abb0-ced7684f41c1",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_2bd50b91ff8949868a31cfa8dcefe474",
+        "resource_id": "01a06fc4-d5fd-7e1f-97e6-e64caa810ac5",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_8452b3e702ea4bb99961c51662f547c9",
+        "resource_id": "01a06fc4-d623-7d0d-98fa-5507c99deb1a",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_f857530a87a74b9b9f2e793dad0dc60a",
+        "resource_id": "01a06fc4-d649-75fd-aecf-3902bbb0542d",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_6f46fd95d285431287b92002a4b17966",
+        "resource_id": "01a06fc4-d64a-71f0-8e93-ed297ced8c56",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_1a354d1eefa649f49216abb819cff1e8",
+        "resource_id": "01a06fc4-d65c-7d59-87b5-942f9b2c01ec",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_3dcb065087ef421e9c26b1d0d1ac311a",
+        "resource_id": "01a06fc4-d67b-7663-b440-26ad852f6c56",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_sprint2_058a02e982c541a89c951c281bf25592",
+        "resource_id": "01a06fc4-d6af-747f-abbd-132e26237aae",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_00bff669480149e7b91dc1d20a4cc12c",
+        "resource_id": "01a06fc4-d746-7342-9f1a-59d48d423e0d",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_c630d2162497442c86e92e81cf71b595",
+        "resource_id": "01a06fc4-d7e5-7138-8611-f031e2d83326",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_d8abdad398f040bbb4a28afb315d8644",
+        "resource_id": "01a06fc4-d7e6-7356-bf4c-cdf19d9838ba",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "provider": "provider_28c6caad9f464e25a68877601d8b9042",
+        "resource_id": "01a06fc4-d801-71c9-b388-0d26a491e9e2",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    ],
+    "registered": 10373,
+    "unverifiable": 33,
+    "verification": "Retained identity manifests plus existing raw-resource layout verifier (StatsBomb and Football-Data.co.uk). Exact registered size and SHA-256 required."
+  }
+}

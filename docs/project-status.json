@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T05:16:42Z",
+  "updated_at": "2026-10-31T10:19:00Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2731,5 +2731,16 @@
     },
     "verified_code_commit_sha": "596714bb8bde58b4d386ef87edfb02de764f78e3",
     "verification_command": "make check integration web-e2e; test-only TypeScript correction followed by make -o build web-lint web-test web-build integration web-e2e"
+  },
+  "identity_resolution": {
+    "status": "IN_PROGRESS",
+    "current_phase": 1,
+    "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
+    "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
+    "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
+    "phase_0": "PASS",
+    "phase_1": "IN_PROGRESS",
+    "production_cutover": false,
+    "legacy_retirement": false
   }
 }

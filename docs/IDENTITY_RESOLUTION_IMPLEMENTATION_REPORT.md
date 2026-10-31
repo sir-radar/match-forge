@@ -1,0 +1,24 @@
+# Identity Resolution Center implementation
+
+## Phase 0 baseline and implementation map
+
+The read-only audit on `football_architecture_v2_shadow_20261016` revalidated 4,160 unresolved mappings, 108 contradictory mappings, one revoked mapping, 984 unsafe shared identity groups, 33 unavailable source resources, and three unavailable dataset files. There are 59,903 provisional fixtures. The audit used existing identity qualification and both supported raw-file verification owners; the frozen 4,253 proof-availability set has a different denominator and is not relabeled as the current mapping backlog. See `docs/evidence/identity-resolution-baseline-2026-10-31.json`.
+
+Reuse:
+
+- Existing crosswalks, alias normalization, admissions and effective-dated team corrections own identity. Review candidates never authorize admission.
+- Existing operational mapping qualification and fixture reconciliation own fixture decisions and retained observations.
+- Existing immutable file store and integrity verifier own source/dataset verification and publication.
+- Existing Work Orchestrator owns downstream leases, fencing, retries and completion.
+- Existing Go Admin private-local checks and owner credential protect the new routes; Python retains domain decisions.
+- Existing Next.js shell, tables, form styling and resource states provide navigation and presentation.
+
+Gaps: unified case discovery, bounded review, evidence-version previews, authenticated decision endpoints, review audit history, retained-file recovery controls, actionable parity views, and isolated migration preparation. One additive append-only review log records workflow state without duplicating domain decisions.
+
+Phase order: (1) identity diagnostics; (2) read-only queue; (3) protected preview/apply; (4) independent bounded batches; (5) qualified fixture/recovery integration; (6) source recovery/disposition; (7) existing evidence-backed parity; (8) isolated controls/rehearsal; (9) retirement preparation; (10) final verification and delivery. Each checkpoint is recorded in local ignored `CURRENT_TASK_STATUS.md`.
+
+Production Phase 35 cutover and Phase 36 retirement remain blocked by missing identity proof, authentic source bytes/lineage, complete production-scope parity, and explicit acceptance. The 59 generic Elo conflicts and 327 insufficient-history targets remain explicit limitations. No provider requests, authoritative evaluation, model fitting or promotion is authorized by the review interface.
+
+## Verification
+
+Implementation in progress. Only commands with executed results will be recorded here.
