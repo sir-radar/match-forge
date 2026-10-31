@@ -11,6 +11,10 @@ type resolutionRecoveryRunner interface {
 }
 
 func (application *App) runResolutionRecoverySchedule(ctx context.Context) {
+	var wake <-chan struct{}
+	if runner, ok := application.syncRunner.(interface{ ResolutionRecoveryWake() <-chan struct{} }); ok {
+		wake = runner.ResolutionRecoveryWake()
+	}
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
@@ -25,6 +29,7 @@ func (application *App) runResolutionRecoverySchedule(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+		case <-wake:
 		}
 	}
 }
@@ -38,8 +43,17 @@ func (runner *CommandSyncRunner) RecoverResolution(ctx context.Context) (bool, e
 		return false, nil
 	}
 	var pending bool
+	var filesReady bool
+	if err := runner.pool.QueryRow(ctx, `SELECT to_regclass('football.resolution_file_recovery_work') IS NOT NULL`).Scan(&filesReady); err != nil {
+		return false, err
+	}
+	owned := "SELECT work_id FROM football.resolution_recovery_work"
+	if filesReady {
+		owned += " UNION ALL SELECT work_id FROM football.resolution_file_recovery_work"
+	}
 	if err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
-  SELECT 1 FROM football.resolution_recovery_work b JOIN football.work_items w USING(work_id)
+  SELECT 1 FROM (`+owned+`) b
+  JOIN football.work_items w USING(work_id)
   WHERE w.state IN ('PENDING','RETRY_WAIT') AND w.available_at<=clock_timestamp()
      OR w.state='RUNNING' AND w.lease_until<=clock_timestamp()
  )`).Scan(&pending); err != nil {
@@ -56,6 +70,17 @@ func (runner *CommandSyncRunner) RecoverResolution(ctx context.Context) (bool, e
 		return false, errProductUnavailable
 	}
 	return resolutionRecoveryContinues(result.Data)
+}
+
+func (runner *CommandSyncRunner) ResolutionRecoveryWake() <-chan struct{} {
+	return runner.resolutionWake
+}
+
+func (runner *CommandSyncRunner) WakeResolutionRecovery() {
+	select {
+	case runner.resolutionWake <- struct{}{}:
+	default:
+	}
 }
 
 func resolutionRecoveryContinues(data json.RawMessage) (bool, error) {

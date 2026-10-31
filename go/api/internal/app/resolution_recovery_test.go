@@ -52,3 +52,41 @@ func TestResolutionRecoveryRejectsUnknownOutcomes(t *testing.T) {
 		t.Fatal("failed step would spin")
 	}
 }
+
+type wakingRecoveryStub struct {
+	syncRunnerStub
+	wake  chan struct{}
+	calls chan struct{}
+}
+
+func (runner *wakingRecoveryStub) RecoverResolution(context.Context) (bool, error) {
+	runner.calls <- struct{}{}
+	return false, nil
+}
+func (runner *wakingRecoveryStub) ResolutionRecoveryWake() <-chan struct{} { return runner.wake }
+func TestResolutionRecoveryWakesWithoutWaitingForPoll(t *testing.T) {
+	runner := &wakingRecoveryStub{wake: make(chan struct{}, 1), calls: make(chan struct{}, 2)}
+	application := newAdminTestApp(runner)
+	application.config.ShutdownTimeout = time.Second
+	stop := application.startResolutionRecovery(context.Background())
+	defer stop()
+	select {
+	case <-runner.calls:
+	case <-time.After(time.Second):
+		t.Fatal("initial recovery missing")
+	}
+	runner.wake <- struct{}{}
+	select {
+	case <-runner.calls:
+	case <-time.After(time.Second):
+		t.Fatal("approved recovery waited for poll")
+	}
+}
+func TestResolutionRecoveryWakeCoalesces(t *testing.T) {
+	runner := &CommandSyncRunner{resolutionWake: make(chan struct{}, 1)}
+	runner.WakeResolutionRecovery()
+	runner.WakeResolutionRecovery()
+	if len(runner.resolutionWake) != 1 {
+		t.Fatal("wake was lost or duplicated")
+	}
+}

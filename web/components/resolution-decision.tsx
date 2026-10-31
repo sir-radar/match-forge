@@ -12,6 +12,7 @@ function objectList(value: unknown): RecordValue[] {
 }
 function actionsFor(key: string, data: RecordValue): string[] {
   const kind = key.split(":")[0];
+  if (["resource", "dataset"].includes(kind)) return ["VERIFY", "RECOVER", "EXCLUDE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];
   const actions = ["REVALIDATE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];
   if (["team", "competition"].includes(kind)) actions.push("APPROVE", "QUARANTINE", "REJECT");
   if (kind === "team" && objectList(data.correction_options).length) actions.push("CORRECT");
@@ -20,7 +21,7 @@ function actionsFor(key: string, data: RecordValue): string[] {
 }
 
 export function ResolutionDecisionForm({ caseKey, data, onApplied }: { caseKey: string; data: RecordValue; onApplied: () => void }) {
-  const [action, setAction] = useState("REVALIDATE"), [reason, setReason] = useState("");
+  const [action, setAction] = useState(actionsFor(caseKey, data)[0]), [reason, setReason] = useState("");
   const [candidate, setCandidate] = useState<Record<string, string>>({});
   const [prepared, setPrepared] = useState<Prepared>(), [error, setError] = useState<string>();
   const [token, setToken] = useState(""), [approved, setApproved] = useState(false), [busy, setBusy] = useState(false);
@@ -50,6 +51,7 @@ export function ResolutionDecisionForm({ caseKey, data, onApplied }: { caseKey: 
   return <section aria-label="Decision workflow">
     <form className="resolution-form" onSubmit={(event) => { event.preventDefault(); void preview(); }}>
       <label>Action<select disabled={busy} value={action} onChange={(event) => { invalidate(); setCandidate({}); setAction(event.target.value); }}>{actionsFor(caseKey, data).map((value) => <option key={value}>{value}</option>)}</select></label>
+      <DataRecoveryFields action={action} caseKey={caseKey} data={data} candidate={candidate} disabled={busy} update={(value) => { invalidate(); setCandidate(value); }} />
       <CandidateFields action={action} data={data} candidate={candidate} disabled={busy} update={(value) => { invalidate(); setCandidate(value); }} />
       <label>Reason<textarea required maxLength={2000} disabled={busy} value={reason} onChange={(event) => { invalidate(); setReason(event.target.value); }} /></label>
       <button disabled={busy || !reason.trim()} type="submit">Preview impact and evidence</button>
@@ -78,4 +80,13 @@ function CandidateFields({ action, data, candidate, disabled, update }: { action
     return <label>Retained fixture candidate<select required disabled={disabled} value={candidate.fixture_id ?? ""} onChange={(event) => update({ fixture_id: event.target.value, source_snapshot_id: text(observation?.source_snapshot_id) })}><option value="">Choose retained fixture</option><option value={text(decision?.candidate_fixture_id)}>{text(decision?.candidate_fixture_id)}</option></select></label>;
   }
   return null;
+}
+
+function DataRecoveryFields({ action, caseKey, data, candidate, disabled, update }: { action: string; caseKey: string; data: RecordValue; candidate: Record<string, string>; disabled: boolean; update: (value: Record<string, string>) => void }) {
+  if (action === "EXCLUDE") return <label>Accepted exclusion scope<input required disabled={disabled} value={candidate.exclusion_scope ?? ""} placeholder={caseKey} onChange={(event) => update({ exclusion_scope: event.target.value })} /><span>Enter this exact case ID. Unavailable data remains counted; full-data parity remains blocked.</span></label>;
+  if (action !== "RECOVER") return null;
+  return <>
+    <label>Original registered target<select required disabled={disabled} value={candidate.target_path ?? ""} onChange={(event) => update({ ...candidate, target_path: event.target.value })}><option value="">Choose original path and checksum</option>{objectList(data.registered_files).map((item) => <option key={text(item.path)} value={text(item.path)}>{text(item.kind)} · {text(item.path)} · {text(item.sha256)}</option>)}</select></label>
+    <label>Retained recovery path<input required maxLength={256} disabled={disabled} value={candidate.recovery_path ?? ""} onChange={(event) => update({ ...candidate, recovery_path: event.target.value })} /><span>Relative file within the retained data directory. Bytes must match the original checksum; existing different bytes cannot be overwritten.</span></label>
+  </>;
 }

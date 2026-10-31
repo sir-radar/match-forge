@@ -59,3 +59,29 @@ def test_bulk_raw_verification_accepts_relative_roots_without_weakening_hash_che
     assert verify_raw_resource_file(*arguments).status == "CHECKSUM_MISMATCH"
     path.unlink()
     assert verify_raw_resource_file(*arguments).status == "MISSING"
+
+
+def test_football_data_uk_recovery_uses_content_addressed_native_path(tmp_path):
+    import hashlib
+
+    from football.product.resolution_data import resource_files
+
+    payload = b"Date,HomeTeam,AwayTeam\n31/10/2026,Home,Away\n"
+    digest = hashlib.sha256(payload).hexdigest()
+    row = (
+        "football_data_uk",
+        "source-manifest.json",
+        "b" * 64,
+        "fixture-source",
+        "revision",
+        None,
+        "resource",
+        "mmz4281/2627/E0.csv",
+        digest,
+        len(payload),
+    )
+    registered = resource_files(tmp_path, row)
+    assert len(registered) == 1
+    assert registered[0]["path"].startswith("raw/provider=football_data_uk/source_path_sha256=")
+    assert registered[0]["path"].endswith(f"/sha256={digest}/E0.csv")
+    assert registered[0]["sha256"] == digest

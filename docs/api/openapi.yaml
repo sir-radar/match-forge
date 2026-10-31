@@ -406,7 +406,7 @@ components:
       required: [case_key, action, reason]
       properties:
         case_key: { type: string, maxLength: 256 }
-        action: { type: string, enum: [APPROVE, REJECT, CORRECT, QUARANTINE, REQUEST_EVIDENCE, BLOCK, REVALIDATE, RESOLVE_DUPLICATE, DEFER] }
+        action: { type: string, enum: [APPROVE, REJECT, CORRECT, QUARANTINE, REQUEST_EVIDENCE, BLOCK, REVALIDATE, RESOLVE_DUPLICATE, DEFER, VERIFY, RECOVER, EXCLUDE] }
         reason: { type: string, minLength: 1, maxLength: 2000 }
         candidate: { type: object, additionalProperties: { type: string, maxLength: 256 } }
         evidence_version: { type: string, pattern: '^[a-f0-9]{64}$' }

@@ -114,7 +114,7 @@ function CaseReview({ caseKey, close, history, onApplied }: { onApplied: () => v
     <h2 tabIndex={-1} ref={heading}>Review {caseKey}</h2><button onClick={close}>Close case</button><button onClick={() => setRetry((value) => value + 1)}>Recheck case evidence</button><button onClick={() => history(caseKey)}>Show resolution history</button>
     {error && <ResourceError message={error} retry={() => { setError(undefined); setRetry((value) => value + 1); }} />}
     {!data && !error && <ResourceLoading label="Loading retained evidence" />}
-    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
+    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record", "resource", "dataset"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
   </section>;
 }
 

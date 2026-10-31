@@ -74,11 +74,17 @@ def recovery_scope(prepared: dict[str, Any]) -> dict[str, Any]:
         "kind": kind,
         "provider": provider,
         "native": native,
+        "snapshots": [detail["registration"]["source_snapshot_id"]]
+        if detail.get("registration", {}).get("source_snapshot_id")
+        else [],
     }
 
 
 def enqueue_recovery(
-    connection: Connection[Any], request_id: str, prepared: dict[str, Any]
+    connection: Connection[Any],
+    request_id: str,
+    prepared: dict[str, Any],
+    parent: UUID | None = None,
 ) -> UUID:
     """Join the approved decision transaction; snapshot only its affected target IDs."""
     scope = recovery_scope(prepared)
@@ -89,8 +95,18 @@ def enqueue_recovery(
         + """
            FROM football.product_fixtures f WHERE f.home_team_id=ANY(%s::uuid[])
              OR f.away_team_id=ANY(%s::uuid[]) OR f.competition_id=ANY(%s::uuid[])
-             OR f.fixture_id=ANY(%s::uuid[]) ON CONFLICT DO NOTHING""",
-        (request_id, scope["entities"], scope["entities"], scope["entities"], scope["fixtures"]),
+             OR f.fixture_id=ANY(%s::uuid[]) OR EXISTS (
+                SELECT 1 FROM football.product_provider_fixture_observations o
+                WHERE o.canonical_fixture_id=f.fixture_id
+                  AND o.source_snapshot_id=ANY(%s::uuid[])) ON CONFLICT DO NOTHING""",
+        (
+            request_id,
+            scope["entities"],
+            scope["entities"],
+            scope["entities"],
+            scope["fixtures"],
+            scope["snapshots"],
+        ),
     )
     connection.execute(
         """INSERT INTO football.resolution_recovery_targets
@@ -99,6 +115,7 @@ def enqueue_recovery(
              EXISTS (SELECT 1 FROM football.resolution_recovery_targets t
                 WHERE t.request_id=%s AND t.target_kind='FIXTURE'
                   AND t.target_id=o.canonical_fixture_id)
+             OR o.source_snapshot_id=ANY(%s::uuid[])
              OR (o.provider_code=%s AND CASE %s WHEN 'team' THEN %s IN
                     (o.provider_home_team_id,o.provider_away_team_id)
                 WHEN 'competition' THEN o.provider_competition_id=%s
@@ -111,6 +128,7 @@ def enqueue_recovery(
         (
             request_id,
             request_id,
+            scope["snapshots"],
             scope["provider"],
             scope["kind"],
             scope["native"],
@@ -118,7 +136,9 @@ def enqueue_recovery(
             scope["native"],
         ),
     )
-    return enqueue_page(connection, request_id, inventory_digest(connection, request_id), "", ZERO)
+    return enqueue_page(
+        connection, request_id, inventory_digest(connection, request_id), "", ZERO, parent
+    )
 
 
 def inventory_digest(connection: Connection[Any], request_id: str) -> str:
@@ -456,8 +476,18 @@ def publish_page(
 def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, Any]:
     registry = WorkRegistry(connection)
     with connection.transaction():
+        ready = connection.execute(
+            "SELECT to_regclass('football.resolution_file_recovery_work')"
+        ).fetchone()
+        file_work = (
+            " UNION ALL SELECT work_id FROM football.resolution_file_recovery_work"
+            if ready and ready[0]
+            else ""
+        )
         rows = connection.execute(
-            """SELECT b.work_id FROM football.resolution_recovery_work b
+            """SELECT b.work_id FROM (SELECT work_id FROM football.resolution_recovery_work"""
+            + file_work
+            + """) b
                JOIN football.work_items w USING(work_id)
                WHERE w.state IN ('PENDING','RETRY_WAIT','RUNNING')
                ORDER BY w.priority DESC,w.available_at,w.work_id"""
@@ -467,11 +497,15 @@ def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, A
     claim = registry.claim(
         f"resolution-recovery:{uuid4()}",
         HISTORY_JOB_LEASE,
-        (WorkType.CANONICAL_RECONCILIATION,),
+        (WorkType.CANONICAL_RECONCILIATION, WorkType.PROVIDER_ACQUISITION),
         work_ids=tuple(row[0] for row in rows),
     )
     if claim is None:
         return {"status": "BUSY"}
+    if claim.work_type == WorkType.PROVIDER_ACQUISITION:
+        from football.product.resolution_files import publish_file
+
+        return publish_file(connection, root, claim)
     try:
         with connection.transaction():
             binding = connection.execute(

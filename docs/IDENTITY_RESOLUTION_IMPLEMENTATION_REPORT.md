@@ -181,3 +181,37 @@ review also corrected the shared form hook; its earlier Phase 4 lint-pass statem
 was inaccurate. No lint rule or worker-registration gate was bypassed.
 
 No live identity changes, recovery, evaluation, cutover or retirement were executed.
+
+## Phase 6 — Missing-data recovery and dispositions
+
+Missing-data details expose original registrations, manifests, checksums, retained
+locations, dependent datasets, file recovery attempts and full integrity results.
+Recovery freezes the exact registered target and authentic retained input in an
+approved `PROVIDER_ACQUISITION` job. Files publish exclusively before a fenced
+receipt; retries reconcile authentic bytes published before a database interruption.
+Native StatsBomb and Football-Data-UK layouts, source wrapper manifests, legacy raw
+files, dataset manifests and Parquet files retain their original paths and hashes.
+A missing wrapper must be recovered before its raw path can be discovered.
+
+Admin supports original-evidence verification, retained-file recovery, explicit
+case exclusions, evidence requests, deferral and blocked dispositions. All require
+an exact preview, owner credential, reason and append-only approval. Exclusions
+retain unavailable counts and do not waive complete-data parity. File verification
+is separate from full dataset verification; only a passing case requests scoped
+canonical recovery. Approval wakes the existing recovery scheduler immediately.
+Dependent parity remains explicitly due for the Phase 7 verifier.
+
+Verification: 20 disposable-database recovery/disposition tests, 11 contract tests,
+24 identity/batch/recovery regressions, 107 frontend tests, and two real Admin
+browser journeys passed. Coverage includes changed inputs, traversal, symlinks,
+wrong checksums, conflicting existing bytes, source manifests, native and dataset
+paths, concurrent claims, cancellation fencing, interrupted publication and retries.
+Go tests/lint, Ruff/format, mypy (442 files), migration validation, architecture
+checks, frontend lint/types and production build passed. Browser checks include axe;
+formal screen-reader certification was not performed.
+
+Gate: PASS_WITH_WARNINGS. New-version reconstruction remains operationally blocked
+without independently approved source-backed build inputs, complete lineage and
+an eligible trusted change set. The existing dataset publisher remains the owner;
+this workflow grants no replacement-version or historical-cutoff exception. No live
+recovery, exclusion, identity decision, model fit, evaluation or migration occurred.

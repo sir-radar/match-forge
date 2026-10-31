@@ -2790,6 +2790,17 @@
       "maximum_fixture_neighborhood": 100,
       "shared_work_type": "CANONICAL_RECONCILIATION",
       "live_mutations": 0
+    },
+    "phase_6": "PASS_WITH_WARNINGS",
+    "phase_6_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "file_recovery_tests": 20,
+      "contract_tests": 11,
+      "related_regression_tests": 24,
+      "frontend_tests": 107,
+      "real_browser_journeys": 2,
+      "source_backed_new_version_rebuild": "BLOCKED_PENDING_INDEPENDENT_BUILD_APPROVAL_AND_LINEAGE",
+      "live_mutations": 0
     }
   }
 }

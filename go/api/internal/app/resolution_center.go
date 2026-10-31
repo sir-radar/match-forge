@@ -69,6 +69,11 @@ func (application *App) runResolution(response http.ResponseWriter, request *htt
 		return
 	}
 	if result.StatusCode == http.StatusOK && json.Valid(result.Data) {
+		if input.Operation == "apply" || input.Operation == "batch_apply" {
+			if notifier, ok := application.syncRunner.(interface{ WakeResolutionRecovery() }); ok {
+				notifier.WakeResolutionRecovery()
+			}
+		}
 		application.writeJSON(response, http.StatusOK, result.Data)
 		return
 	}

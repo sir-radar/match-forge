@@ -57,3 +57,18 @@ it("binds a correction to retained target and fixture IDs", async () => {
   expect(screen.queryByLabelText("Owner credential")).not.toBeInTheDocument();
   expect(screen.queryByLabelText("Retained contradiction")).not.toBeInTheDocument();
 });
+it("requires the original recovery target and clears approval when retained input changes", async () => {
+  const fileKey = "resource:00000000-0000-4000-8000-000000000003";
+  const fetch = vi.fn(async (_url: string, options: RequestInit) => new Response(JSON.stringify({ ...JSON.parse(String(options.body)), detail: { case_key: fileKey }, allowed: true, qualification: { status: "QUALIFIED", reason: "EXACT_BYTES" }, evidence_version: "a".repeat(64) })));
+  vi.stubGlobal("fetch", fetch);
+  render(<ResolutionDecisionForm caseKey={fileKey} data={{ registered_files: [{ path: "raw/original.json", kind: "SOURCE_RESOURCE", sha256: "a".repeat(64) }] }} onApplied={vi.fn()} />);
+  fireEvent.change(screen.getByRole("combobox", { name: "Action" }), { target: { value: "RECOVER" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Original registered target" }), { target: { value: "raw/original.json" } });
+  fireEvent.change(screen.getByRole("textbox", { name: /Retained recovery path/ }), { target: { value: "recovery/exact.json" } });
+  fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "Verify original source" } });
+  fireEvent.click(screen.getByRole("button", { name: "Preview impact and evidence" }));
+  await screen.findByLabelText("Owner credential");
+  expect(JSON.parse(String(fetch.mock.calls[0][1].body)).candidate).toEqual({ target_path: "raw/original.json", recovery_path: "recovery/exact.json" });
+  fireEvent.change(screen.getByRole("textbox", { name: /Retained recovery path/ }), { target: { value: "recovery/changed.json" } });
+  expect(screen.queryByLabelText("Owner credential")).not.toBeInTheDocument();
+});

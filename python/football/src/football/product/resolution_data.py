@@ -13,6 +13,7 @@ from football.integrity import PostgresIntegrityVerifier, verify_raw_resource_fi
 from football.product.domain import sha256_json
 from football.product.historical_manifest import verify_manifest
 from football.product.identity_admission import _retained_payload
+from football.storage.raw import ImmutableFileStore
 
 RESOURCE_SELECT = """SELECT p.code,s.manifest_path,s.manifest_sha256,s.source_identity,
     s.source_revision,s.git_sha,r.id,r.provider_path,r.sha256,r.size_bytes,r.acquired_at,
@@ -89,11 +90,13 @@ def data_detail(connection: Connection[Any], root: Path, case_key: str) -> dict[
                WHERE source_resource_id=%s ORDER BY id""",
             (row[11], key),
         ).fetchall()
+        files = resource_files(root, row)
         result = {
             "case_key": case_key,
             "registration": registered,
             "verification": check,
             "dependent_datasets": [str(item[0]) for item in datasets],
+            "registered_files": files,
             "next_action": "Supply exact registered bytes or record an explicit disposition.",
         }
     elif kind == "dataset":
@@ -101,8 +104,36 @@ def data_detail(connection: Connection[Any], root: Path, case_key: str) -> dict[
     else:
         raise ValueError("unsupported missing-data case")
     result["status"] = result["verification"]["status"]
+    result["recovery_methods"] = [
+        "VERIFY_ORIGINAL_EVIDENCE",
+        "RESTORE_EXACT_RETAINED_BYTES",
+        "EXPLICIT_CASE_EXCLUSION",
+        "DEFER_WITH_REASON",
+    ]
+    result["parity_status"] = "RECHECK_REQUIRED; EXCLUSION_DOES_NOT_ESTABLISH_FULL_DATA_PARITY"
     result["evidence_version"] = sha256_json(result)
     return result
+
+
+def resource_files(root: Path, row: tuple[Any, ...]) -> list[dict[str, Any]]:
+    raw = verify_raw_resource_file(root, row[6], row[0], row[4], row[7], row[8], row[9])
+    files = []
+    if row[4].startswith("manifest-v1:"):
+        files.append(
+            {"kind": "SOURCE_MANIFEST", "path": row[1], "sha256": row[2], "size_bytes": None}
+        )
+    try:
+        path = raw.path if raw.path is not None else resource_path(root, row)
+        # A wrapper manifest's entries, rather than a guessed provider path, own its layout.
+        if row[4].startswith("manifest-v1:"):
+            path = resource_path(root, row)
+        ImmutableFileStore(root).path_for(path)
+        files.append(
+            {"kind": "SOURCE_RESOURCE", "path": path, "sha256": row[8], "size_bytes": row[9]}
+        )
+    except (OSError, ValueError, KeyError, TypeError, ValidationError):
+        pass  # Only the registered manifest can reveal the raw path; never guess it.
+    return files
 
 
 def dataset_detail(connection: Connection[Any], root: Path, key: UUID) -> dict[str, Any]:
@@ -117,10 +148,35 @@ def dataset_detail(connection: Connection[Any], root: Path, key: UUID) -> dict[s
         (key,),
     ).fetchall()
     check = PostgresIntegrityVerifier(connection, root).verify_dataset(key).to_dict()
+    files = connection.execute(
+        "SELECT relative_path,physical_sha256,size_bytes FROM football.dataset_files "
+        "WHERE dataset_version_id=%s ORDER BY relative_path",
+        (key,),
+    ).fetchall()
     return {
         "case_key": f"dataset:{key}",
         "registration": row[0],
         "inputs": [i[0] for i in inputs],
+        "registered_files": [
+            {
+                "kind": "DATASET_MANIFEST",
+                "path": row[0]["manifest_path"],
+                "sha256": row[0]["manifest_sha256"],
+                "size_bytes": None,
+            },
+            *[
+                {"kind": "DATASET_FILE", "path": path, "sha256": digest, "size_bytes": size}
+                for path, digest, size in files
+            ],
+        ],
+        "reconstruction": {
+            "status": "BLOCKED",
+            "input_lineage_registered": bool(inputs),
+            "build_spec_sha256": row[0].get("build_spec_sha256"),
+            "reason": "A new immutable version requires independently approved source-backed "
+            "build inputs and the existing dataset publisher; missing bytes alone "
+            "do not authorize replacement or a changed historical cutoff.",
+        },
         "verification": {**check, "status": "PASS" if check["status"] == "PASS" else "BLOCKED"},
         "next_action": "Recover original bytes and lineage; rebuilt outputs require a new "
         "immutable version. No automatic rebuild is permitted by this review.",
@@ -168,6 +224,9 @@ def missing_page(connection: Connection[Any], root: Path, query: dict[str, Any])
                     "reason": dataset_check.failure_reason,
                 }
             )
+    dispositions = data_dispositions(connection)
+    for item in items:
+        item["disposition"] = dispositions.get(item["case_key"], "UNREVIEWED")
     filtered = [item for item in items if matches(item, query)]
     page, size = query.get("page", 1), query.get("page_size", 20)
     return {
@@ -179,6 +238,19 @@ def missing_page(connection: Connection[Any], root: Path, query: dict[str, Any])
         "groups": [],
         "scope": "REGISTERED_FILE_BYTES; full logical dataset integrity is checked in case details",
     }
+
+
+def data_dispositions(connection: Connection[Any]) -> dict[str, str]:
+    ready = connection.execute("SELECT to_regclass('football.resolution_review_events')").fetchone()
+    if not ready or not ready[0]:
+        return {}
+    return dict(
+        connection.execute(
+            "SELECT DISTINCT ON(case_key) case_key,action FROM football.resolution_review_events "
+            "WHERE case_key LIKE 'resource:%' OR case_key LIKE 'dataset:%' "
+            "ORDER BY case_key,recorded_at DESC,event_id DESC"
+        ).fetchall()
+    )
 
 
 def matches(item: dict[str, Any], query: dict[str, Any]) -> bool:

@@ -16,7 +16,8 @@ from football.product.identity_correction import (
     qualify_team_correction,
 )
 from football.product.operational_provider_sync import OperationalProviderSync
-from football.product.resolution_cases import append_event, case_detail
+from football.product.resolution_cases import append_event, case_detail, latest_review
+from football.product.resolution_files import enqueue_file_recovery, recovery_plan
 from football.product.resolution_recovery import enqueue_recovery
 from football.storage.locks import (
     FIXTURE_CROSSWALK_LOCK,
@@ -54,8 +55,10 @@ def preview(
         "competition",
         "fixture",
         "fixture_record",
+        "resource",
+        "dataset",
     }:
-        raise ValueError("identity or fixture case required")
+        raise ValueError("unsupported resolution case")
     qualification: dict[str, Any] = {"status": "QUALIFIED", "reason": "REVIEW_WORKFLOW_ONLY"}
     if action == "REJECT" and not any(
         item["mapping_id"] == request.get("candidate", {}).get("target_mapping_id")
@@ -65,7 +68,7 @@ def preview(
     if action not in REVIEW_ACTIONS:
         try:
             qualification = qualify_action(connection, root, request, detail, verifier)
-        except ValueError as error:
+        except (ValueError, OSError) as error:
             qualification = {"status": "BLOCKED", "reason": str(error)}
     result = {
         "case_key": request["case_key"],
@@ -91,6 +94,8 @@ def qualify_action(
 ) -> dict[str, Any]:
     action, kind = request["action"], request["case_key"].split(":", 1)[0]
     candidate = request.get("candidate", {})
+    if kind in {"resource", "dataset"}:
+        return qualify_data(root, request, detail)
     if kind not in {"team", "competition", "fixture", "fixture_record"}:
         raise ValueError("identity review requires an identity or fixture case")
     if action == "REVALIDATE":
@@ -127,6 +132,33 @@ def qualify_action(
     }
 
 
+def qualify_data(root: Path, request: dict[str, Any], detail: dict[str, Any]) -> dict[str, Any]:
+    action = request["action"]
+    if action == "VERIFY":
+        return {
+            "status": "QUALIFIED",
+            "reason": "RECHECK_ORIGINAL_EVIDENCE_ONLY",
+            "verification": detail["verification"],
+        }
+    if action == "RECOVER":
+        return {
+            "status": "QUALIFIED",
+            "reason": "EXACT_REGISTERED_BYTES_ONLY",
+            "plan": recovery_plan(root, detail, request.get("candidate", {})),
+        }
+    if action == "EXCLUDE":
+        if request.get("candidate", {}).get("exclusion_scope") != request["case_key"]:
+            raise ValueError("exclusion must name this exact case; no parity exception is granted")
+        return {
+            "status": "QUALIFIED",
+            "reason": "CASE_SCOPE_ONLY; FULL_DATA_PARITY_REMAINS_BLOCKED",
+            "accepted_scope": request["case_key"],
+            "dependent_datasets": detail.get("dependent_datasets", []),
+            "verification": detail["verification"],
+        }
+    raise ValueError("unsupported missing-data action")
+
+
 def _quarantine(connection: Connection[Any], detail: dict[str, Any]) -> None:
     admission = detail.get("admission")
     if not admission or admission["disposition"] == "REVOKED":
@@ -154,6 +186,15 @@ def apply_domain(
     kind, identifier = request["case_key"].split(":", 1)
     action = request["action"]
     detail = prepared["detail"]
+    if kind in {"resource", "dataset"}:
+        return {
+            "status": "QUEUED" if action == "RECOVER" else "RECORDED",
+            "case_status": detail["status"],
+            "domain_mutated": False,
+            "accepted_scope": request["case_key"] if action == "EXCLUDE" else None,
+            "verification": detail["verification"],
+            "parity_status": "RECHECK_REQUIRED; DISPOSITION_IS_NOT_FULL_DATA_PARITY",
+        }
     if action in REVIEW_ACTIONS or action == "REVALIDATE":
         return {
             "status": "RECORDED",
@@ -209,7 +250,7 @@ def apply_one(
     if previous:
         return previous
     verifier = RetainedIdentityVerifier(root)
-    preview(connection, root, request, verifier)
+    prepared = preview(connection, root, request, verifier)
     verifier.seal()
     with connection.transaction():
         acquire_locks(
@@ -221,7 +262,7 @@ def apply_one(
         # Domain owners acquire the same identity lock; stale previews cannot slip between checks.
         if request["case_key"].split(":", 1)[0] in {"team", "competition", "fixture"}:
             acquire_locks(connection, (IDENTITY_ADMISSION_LOCK, FIXTURE_CROSSWALK_LOCK))
-        current = preview(connection, root, request, verifier)
+        current = recheck_preview(connection, root, request, prepared, verifier)
         if current["evidence_version"] != request["evidence_version"]:
             raise ValueError("evidence or review changed; preview again before approval")
         if not current["allowed"]:
@@ -242,8 +283,7 @@ def apply_one(
         event = append_event(
             connection, request, actor, request_hash, {"preview": current, "result": result}
         )
-        if recovering:
-            enqueue_recovery(connection, request["request_id"], current)
+        enqueue_followup(connection, request, current, recovering)
         return event
 
 
@@ -264,3 +304,30 @@ def replayed_decision(
     if previous and previous[0] != request_hash:
         raise ValueError("request ID is already bound to different approved inputs")
     return cast(dict[str, Any], previous[1]) if previous else None
+
+
+def recheck_preview(
+    connection: Connection[Any],
+    root: Path,
+    request: dict[str, Any],
+    prepared: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
+) -> dict[str, Any]:
+    if not request["case_key"].startswith(("resource:", "dataset:")):
+        return preview(connection, root, request, verifier)
+    # Registrations are immutable. Read bytes before coordination; the durable worker also
+    # checks them before exclusive publication. Only review metadata needs a control lock.
+    review = latest_review(connection, request["case_key"])
+    latest = {k: v for k, v in review.items() if k != "detail"} if review else None
+    if latest != prepared["detail"]["latest_review"]:
+        raise ValueError("review changed; preview again before approval")
+    return prepared
+
+
+def enqueue_followup(
+    connection: Connection[Any], request: dict[str, Any], current: dict[str, Any], recovering: bool
+) -> None:
+    if recovering or (request["action"] == "VERIFY" and current["detail"]["status"] == "PASS"):
+        enqueue_recovery(connection, request["request_id"], current)
+    if request["action"] == "RECOVER":
+        enqueue_file_recovery(connection, request["request_id"], current["qualification"]["plan"])

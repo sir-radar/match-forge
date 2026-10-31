@@ -265,6 +265,8 @@ def case_detail(
     else:
         raise ValueError("unsupported resolution case")
     result["recovery_work"] = recovery_work(connection, key)
+    if kind in {"resource", "dataset"}:
+        result["file_recovery_work"] = file_recovery_work(connection, key)
     result["downstream_work"] = downstream_progress(connection, key)
     result.pop("evidence_version", None)
     review = latest_review(connection, key)
@@ -282,6 +284,27 @@ def latest_review(connection: Connection[Any], key: str) -> dict[str, Any] | Non
         (key,),
     ).fetchone()
     return cast(dict[str, Any], row[0]) if row else None
+
+
+def file_recovery_work(connection: Connection[Any], key: str) -> list[dict[str, Any]]:
+    ready = connection.execute(
+        "SELECT to_regclass('football.resolution_file_recovery_work')"
+    ).fetchone()
+    if not ready or not ready[0]:
+        return []
+    return [
+        row[0]
+        for row in connection.execute(
+            """SELECT jsonb_build_object('work_id',w.work_id,'state',w.state,
+           'request_id',b.request_id,'attempt_count',w.attempt_count,
+           'error_code',w.last_error_code,'error',w.last_error_message,'outcome',b.outcome,
+           'plan',b.plan,'total_attempts',count(*) OVER())
+           FROM football.resolution_file_recovery_work b JOIN football.work_items w USING(work_id)
+           JOIN football.resolution_review_events e ON e.request_id=b.request_id
+           WHERE e.case_key=%s ORDER BY w.requested_at DESC,w.work_id DESC LIMIT 100""",
+            (key,),
+        )
+    ]
 
 
 def append_event(

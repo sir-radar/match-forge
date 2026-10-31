@@ -33,6 +33,9 @@ ACTIONS = {
     "REVALIDATE",
     "RESOLVE_DUPLICATE",
     "DEFER",
+    "VERIFY",
+    "RECOVER",
+    "EXCLUDE",
 }
 FIELDS = {"case_key", "action", "reason", "candidate", "evidence_version", "request_id", "approved"}
 
@@ -59,6 +62,9 @@ def validate_case(request: dict[str, Any], *, applying: bool = False) -> None:
         "orientation",
         "fixture_id",
         "source_snapshot_id",
+        "target_path",
+        "recovery_path",
+        "exclusion_scope",
     }:
         raise ValueError("unsupported candidate fields")
     if applying:

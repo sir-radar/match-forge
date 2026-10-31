@@ -1263,3 +1263,14 @@ external settlement generations. Immutable receipts record what was requested;
 current case details separately report pending work in affected scopes. Neither a
 completed recovery page nor an empty queue establishes identity or migration parity.
 The original no-argument unknown-season SQL API delegates to the shared scoped rule.
+
+Missing-data decisions in the Admin Resolution Center retain original registrations.
+Exact retained-byte restoration queues approved `PROVIDER_ACQUISITION` work before
+publishing to the original registered path. Immutable publication rejects different
+existing bytes; a retry reconciles an authentic file whose receipt did not commit.
+A fenced receipt records file verification separately from full dataset integrity.
+Only a passing case queues scoped canonical recovery. Source clocks, old dataset
+versions and published forecasts are preserved. Case exclusions name their exact
+accepted scope and never waive complete-data migration parity. Source-backed
+new-version reconstruction requires independent build approval and the existing
+dataset publisher, complete source lineage and unchanged historical cutoffs.

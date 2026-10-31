@@ -181,12 +181,13 @@ func (unavailableSyncRunner) Coverage(context.Context) (Coverage, error) {
 }
 
 type CommandSyncRunner struct {
-	ctx      context.Context
-	pool     *pgxpool.Pool
-	repoRoot string
-	logger   *slog.Logger
-	mu       sync.Mutex
-	active   map[string]*syncRunControl
+	ctx            context.Context
+	pool           *pgxpool.Pool
+	repoRoot       string
+	logger         *slog.Logger
+	mu             sync.Mutex
+	active         map[string]*syncRunControl
+	resolutionWake chan struct{}
 }
 
 type syncRunControl struct {
@@ -207,7 +208,8 @@ func NewCommandSyncRunner(
 ) *CommandSyncRunner {
 	return &CommandSyncRunner{
 		ctx: ctx, pool: pool, repoRoot: repoRoot, logger: logger,
-		active: make(map[string]*syncRunControl),
+		active:         make(map[string]*syncRunControl),
+		resolutionWake: make(chan struct{}, 1),
 	}
 }
 
