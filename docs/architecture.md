@@ -1274,3 +1274,15 @@ versions and published forecasts are preserved. Case exclusions name their exact
 accepted scope and never waive complete-data migration parity. Source-backed
 new-version reconstruction requires independent build approval and the existing
 dataset publisher, complete source lineage and unchanged historical cutoffs.
+
+Resolution Center parity rechecks use shared `READ_MODEL_PROJECTION` work and an
+immutable verification history. Current source/identity/dataset diagnostics run in
+a repeatable-read read-only transaction before fenced report publication. Retained
+comparison artifacts and original arithmetic are checked against their registered
+hashes and sizes; this does not extend their original comparison scope. Reports
+bind the database identity, snapshot, source evidence and verification time. Copied
+or outdated reports cannot establish current readiness. Missing required checks,
+incomplete runtime scopes, unavailable data, identity failures and unresolved
+59/327 discrepancies prevent full parity. Recovery/disposition requests retain the
+cause and request dependent rechecks; a successful verifier job can report a
+blocked parity gate.

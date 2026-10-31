@@ -94,7 +94,8 @@ def test_dispositions_preserve_missing_counts_and_history(tmp_path, action):
         assert "FULL_DATA_PARITY" in event["detail"]["result"]["parity_status"]
         assert not (tmp_path / path).exists()
         c.commit()
-        assert run_pending_recovery(c, tmp_path)["status"] == "IDLE"
+        result = run_pending_recovery(c, tmp_path)
+        assert result["status"] == "PROCESSED" and result["parity_status"] != "PASS"
 
 
 @pytest.mark.parametrize(

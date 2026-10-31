@@ -465,6 +465,17 @@ def publish_page(
                     connection, str(binding[0]), binding[1], last[0], last[1], claim.work_id
                 )
             )
+        if not has_more:
+            from football.product.resolution_parity import enqueue_parity
+
+            case = connection.execute(
+                "SELECT case_key FROM football.resolution_review_events WHERE request_id=%s",
+                (binding[0],),
+            ).fetchone()
+            assert case is not None
+            outcome["parity_work_id"] = str(
+                enqueue_parity(connection, str(binding[0]), case[0], claim.work_id)
+            )
         with registry.publication(claim, result_hash=sha256_json(outcome)):
             connection.execute(
                 "UPDATE football.resolution_recovery_work SET outcome=%s WHERE work_id=%s",
@@ -484,6 +495,11 @@ def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, A
             if ready and ready[0]
             else ""
         )
+        parity_ready = connection.execute(
+            "SELECT to_regclass('football.resolution_parity_work')"
+        ).fetchone()
+        if parity_ready and parity_ready[0]:
+            file_work += " UNION ALL SELECT work_id FROM football.resolution_parity_work"
         rows = connection.execute(
             """SELECT b.work_id FROM (SELECT work_id FROM football.resolution_recovery_work"""
             + file_work
@@ -497,11 +513,19 @@ def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, A
     claim = registry.claim(
         f"resolution-recovery:{uuid4()}",
         HISTORY_JOB_LEASE,
-        (WorkType.CANONICAL_RECONCILIATION, WorkType.PROVIDER_ACQUISITION),
+        (
+            WorkType.CANONICAL_RECONCILIATION,
+            WorkType.PROVIDER_ACQUISITION,
+            WorkType.READ_MODEL_PROJECTION,
+        ),
         work_ids=tuple(row[0] for row in rows),
     )
     if claim is None:
         return {"status": "BUSY"}
+    if claim.work_type == WorkType.READ_MODEL_PROJECTION:
+        from football.product.resolution_parity import publish_parity
+
+        return publish_parity(connection, Path.cwd(), root, claim)
     if claim.work_type == WorkType.PROVIDER_ACQUISITION:
         from football.product.resolution_files import publish_file
 

@@ -215,3 +215,31 @@ without independently approved source-backed build inputs, complete lineage and
 an eligible trusted change set. The existing dataset publisher remains the owner;
 this workflow grants no replacement-version or historical-cutoff exception. No live
 recovery, exclusion, identity decision, model fit, evaluation or migration occurred.
+
+## Phase 7 — Recorded parity rechecks
+
+Admin can preview and approve a parity recheck, inspect current diagnostics and
+review prior verification results. Shared projection work retains immutable inputs,
+leases, fencing and checksum-bound reports. Verification reads source availability,
+full dataset integrity, identity audit, canonical decisions and fixture counts in
+a repeatable-read read-only snapshot. It rechecks retained comparison artifacts,
+original arithmetic hashes and registered file sizes. Missing retained artifacts
+block verification; changed evidence fails it. No model fit or evaluation is run.
+
+The dashboard covers all 11 required check groups, including historical coverage,
+performance/external reports, artifacts and model routing. It distinguishes exact
+bounded comparisons from complete production scopes, retains the 59 Elo conflicts
+and 327 insufficient-history targets, and requires every mandatory check before
+full PASS. Historical results retain expected/actual results, scopes, source hashes,
+verification time, operator/reason and report checksum. Database/evidence bindings
+prevent a copied or outdated report from claiming current readiness. Missing-data
+dispositions and completed scoped recovery request dependent parity rechecks;
+a successful worker job does not imply a passing migration gate.
+
+Verification: 44 parity/recovery checks passed, followed by final focused gate,
+receipt and copied-database checks. The real Admin parity browser journey passed
+with axe and durable blocked-result inspection. Frontend 107 tests, Go tests/lint,
+Ruff/format, mypy (443 files), migration validation, architecture checks and pinned
+production build passed. Full production-scope old/new comparisons remain BLOCKED
+or NOT_RUN where the required evidence does not exist. Phase35/36 remain blocked;
+no live recovery, exception, cutover, evaluation or fitting was executed.

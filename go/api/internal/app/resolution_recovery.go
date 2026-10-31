@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 )
 
@@ -35,22 +36,14 @@ func (application *App) runResolutionRecoverySchedule(ctx context.Context) {
 }
 
 func (runner *CommandSyncRunner) RecoverResolution(ctx context.Context) (bool, error) {
-	var ready bool
-	if err := runner.pool.QueryRow(ctx, `SELECT to_regclass('football.resolution_recovery_work') IS NOT NULL`).Scan(&ready); err != nil {
+	owned, err := runner.resolutionOwnedWork(ctx)
+	if err != nil {
 		return false, err
 	}
-	if !ready {
+	if owned == "" {
 		return false, nil
 	}
 	var pending bool
-	var filesReady bool
-	if err := runner.pool.QueryRow(ctx, `SELECT to_regclass('football.resolution_file_recovery_work') IS NOT NULL`).Scan(&filesReady); err != nil {
-		return false, err
-	}
-	owned := "SELECT work_id FROM football.resolution_recovery_work"
-	if filesReady {
-		owned += " UNION ALL SELECT work_id FROM football.resolution_file_recovery_work"
-	}
 	if err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
   SELECT 1 FROM (`+owned+`) b
   JOIN football.work_items w USING(work_id)
@@ -70,6 +63,20 @@ func (runner *CommandSyncRunner) RecoverResolution(ctx context.Context) (bool, e
 		return false, errProductUnavailable
 	}
 	return resolutionRecoveryContinues(result.Data)
+}
+
+func (runner *CommandSyncRunner) resolutionOwnedWork(ctx context.Context) (string, error) {
+	clauses := []string{}
+	for _, table := range []string{"football.resolution_recovery_work", "football.resolution_file_recovery_work", "football.resolution_parity_work"} {
+		var ready bool
+		if err := runner.pool.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, table).Scan(&ready); err != nil {
+			return "", err
+		}
+		if ready {
+			clauses = append(clauses, "SELECT work_id FROM "+table)
+		}
+	}
+	return strings.Join(clauses, " UNION ALL "), nil
 }
 
 func (runner *CommandSyncRunner) ResolutionRecoveryWake() <-chan struct{} {

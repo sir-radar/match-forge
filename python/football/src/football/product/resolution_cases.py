@@ -262,9 +262,19 @@ def case_detail(
         result = fixture_record_detail(connection, key)
     elif kind in {"resource", "dataset"}:
         result = data_detail(connection, root, key)
+    elif kind == "parity":
+        from football.product.resolution_migration import parity_report
+
+        report = parity_report(connection, Path.cwd())
+        result = next((item.copy() for item in report["items"] if item["case_key"] == key), {})
+        if not result:
+            raise ValueError("unknown required parity check")
+        result["overall_status"] = report["status"]
+        result["exceptions"] = report["exceptions"]
     else:
         raise ValueError("unsupported resolution case")
     result["recovery_work"] = recovery_work(connection, key)
+    result["parity_work"] = parity_work(connection, key)
     if kind in {"resource", "dataset"}:
         result["file_recovery_work"] = file_recovery_work(connection, key)
     result["downstream_work"] = downstream_progress(connection, key)
@@ -284,6 +294,26 @@ def latest_review(connection: Connection[Any], key: str) -> dict[str, Any] | Non
         (key,),
     ).fetchone()
     return cast(dict[str, Any], row[0]) if row else None
+
+
+def parity_work(connection: Connection[Any], key: str) -> list[dict[str, Any]]:
+    ready = connection.execute("SELECT to_regclass('football.resolution_parity_work')").fetchone()
+    if not ready or not ready[0]:
+        return []
+    return [
+        row[0]
+        for row in connection.execute(
+            """SELECT jsonb_build_object('work_id',w.work_id,'state',w.state,
+        'requested_at',w.requested_at,'finished_at',w.finished_at,
+        'error',w.last_error_message,'report_sha256',b.outcome->>'report_sha256',
+        'parity_status',b.outcome->'report'->>'status',
+        'next_action','Inspect Migration Parity for exact checks and retained discrepancies')
+        FROM football.resolution_parity_work b JOIN football.work_items w USING(work_id)
+        JOIN football.resolution_review_events e USING(request_id)
+        WHERE e.case_key=%s ORDER BY w.requested_at DESC,w.work_id DESC LIMIT 20""",
+            (key,),
+        )
+    ]
 
 
 def file_recovery_work(connection: Connection[Any], key: str) -> list[dict[str, Any]]:

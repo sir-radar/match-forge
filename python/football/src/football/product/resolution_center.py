@@ -36,6 +36,7 @@ ACTIONS = {
     "VERIFY",
     "RECOVER",
     "EXCLUDE",
+    "RECHECK_PARITY",
 }
 FIELDS = {"case_key", "action", "reason", "candidate", "evidence_version", "request_id", "approved"}
 
@@ -118,7 +119,7 @@ def read_view(
     if view == "missing":
         return missing_page(connection, root, query)
     if view in {"parity", "cutover"}:
-        return migration_page(repo, view, query)
+        return migration_page(repo, view, query, connection)
     return case_detail(connection, root, query.get("case_key", ""))
 
 

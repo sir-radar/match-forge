@@ -91,6 +91,8 @@ def test_approval_freezes_inventory_and_preserves_source_history(tmp_path):
         assert identity(c, home, before) == retained
         assert c.execute("SELECT count(*) FROM football.product_forecasts").fetchone() == (1,)
         c.commit()
+        parity = recovery.run_pending_recovery(c, tmp_path)
+        assert parity["status"] == "PROCESSED" and parity["parity_status"] != "PASS"
         assert recovery.run_pending_recovery(c, tmp_path)["status"] == "IDLE"
         with pytest.raises(psycopg.errors.RaiseException), c.transaction():
             c.execute("DELETE FROM football.resolution_recovery_results WHERE work_id=%s", (work,))
@@ -160,6 +162,9 @@ def test_continuations_checkpoint_more_than_one_page_without_full_reprocessing(t
             if result["status"] == "IDLE":
                 break
             assert result["status"].startswith("PROCESSED"), result
+            if "parity_status" in result:
+                assert result["parity_status"] != "PASS"
+                continue
             assert result["outcome"]["processed"] <= recovery.BATCH_SIZE
             pages.append(result)
         assert len(pages) == (total + recovery.BATCH_SIZE - 1) // recovery.BATCH_SIZE

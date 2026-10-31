@@ -8,6 +8,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, cast
 
+from psycopg import Connection
+
 from football.product.domain import sha256_json
 
 STAGES = (
@@ -51,7 +53,7 @@ def migration_report(repo: Path) -> dict[str, Any]:
     for basis in evidence["evidence_basis"]:
         verified_document(repo, basis["ref"], basis["sha256"])
     comparisons = evidence["phase_35b_parity"]
-    items = []
+    items: list[dict[str, Any]] = []
     for key, result in comparisons.items():
         if not isinstance(result, dict):
             continue
@@ -63,7 +65,14 @@ def migration_report(repo: Path) -> dict[str, Any]:
             {
                 "case_key": "parity:" + key,
                 "name": key.replace("_", " "),
-                "status": "PASS" if exact_pass else "BLOCKED",
+                "status": "PASS"
+                if exact_pass
+                else (
+                    result.get("status")
+                    if result.get("status") in {"FAIL", "NOT_RUN"}
+                    else "BLOCKED"
+                ),
+                "required_runtime_scopes_complete": exact_pass,
                 "reported_status": result.get("status", "NOT_RUN"),
                 "expected": "Complete production scopes; disposition every difference",
                 "actual": result,
@@ -72,6 +81,28 @@ def migration_report(repo: Path) -> dict[str, Any]:
                 "source_sha256": digest,
                 "verified_at": evidence["recorded_at"],
                 "next_action": "Resolve blockers, then run the full-scope comparison.",
+            }
+        )
+    for key, label in (
+        ("history_coverage", "Fixture and historical coverage"),
+        ("performance_external_reports", "Performance and external comparison reports"),
+        ("forecast_artifacts_and_routing", "Forecast artifacts and model routing"),
+    ):
+        if any(item["case_key"] == "parity:" + key for item in items):
+            continue
+        items.append(
+            {
+                "case_key": "parity:" + key,
+                "name": label,
+                "status": "NOT_RUN",
+                "expected": "Complete production scopes with exact source and artifact lineage",
+                "actual": "No complete old/new production-scope comparison registered",
+                "required_runtime_scopes_complete": False,
+                "reason": "Complete required scopes exceed the existing bounded comparisons",
+                "next_action": "Run all required scopes; preserve cutoffs and known discrepancies",
+                "dependencies": ["identity_and_canonical_state", "coverage_and_quality"],
+                "source_ref": reference,
+                "source_sha256": digest,
             }
         )
     controls = evidence["phase_35c_stage_controls"]
@@ -112,8 +143,83 @@ def migration_report(repo: Path) -> dict[str, Any]:
     return result
 
 
-def migration_page(repo: Path, view: str, query: dict[str, Any]) -> dict[str, Any]:
+def parity_report(connection: Connection[Any], repo: Path) -> dict[str, Any]:
     report = migration_report(repo)
+    ready = connection.execute("SELECT to_regclass('football.resolution_parity_work')").fetchone()
+    if not ready or not ready[0]:
+        return report
+    rows = connection.execute(
+        """SELECT b.work_id,b.outcome,w.state,w.requested_at,e.actor,e.reason
+           FROM football.resolution_parity_work b JOIN football.work_items w USING(work_id)
+           JOIN football.resolution_review_events e USING(request_id)
+           ORDER BY w.requested_at DESC,w.work_id DESC LIMIT 20"""
+    ).fetchall()
+    latest = connection.execute(
+        "SELECT outcome FROM football.resolution_parity_work b "
+        "JOIN football.work_items w USING(work_id) "
+        "WHERE outcome IS NOT NULL ORDER BY w.finished_at DESC,w.work_id DESC LIMIT 1"
+    ).fetchone()
+    completed = [row for row in rows if row[1] is not None]
+    for row in completed:
+        if sha256_json(row[1]["report"]) != row[1]["report_sha256"]:
+            raise ValueError("parity verification receipt checksum mismatch")
+    if latest:
+        if sha256_json(latest[0]["report"]) != latest[0]["report_sha256"]:
+            raise ValueError("parity verification receipt checksum mismatch")
+        database = connection.execute(
+            "SELECT current_database(),oid FROM pg_database WHERE datname=current_database()"
+        ).fetchone()
+        assert database is not None
+        bound = latest[0]["report"].get("current_diagnostics", {}).get("database_identity")
+        fresh = latest[0]["report"]["source_sha256"] == report["source_sha256"] and bound == {
+            "name": database[0],
+            "oid": database[1],
+        }
+        report.update(latest[0]["report"])
+        report["fresh_for_tracked_evidence"] = fresh
+        if not fresh:
+            report["status"] = "BLOCKED"
+            report["blockers"] = [
+                *report["blockers"],
+                "Verification is for different evidence or database; recheck parity",
+            ]
+    for item in report["items"]:
+        item["verification_history"] = [
+            {
+                "work_id": str(row[0]),
+                "state": row[2],
+                "requested_at": str(row[3]),
+                "actor": row[4],
+                "reason": row[5],
+                "report_sha256": row[1]["report_sha256"] if row[1] else None,
+                "verified_at": row[1]["report"]["verified_at"] if row[1] else None,
+                "check": historical_check(row[1], item["case_key"]),
+            }
+            for row in rows
+        ]
+    report["evidence_version"] = sha256_json(report)
+    return report
+
+
+def historical_check(outcome: dict[str, Any] | None, key: str) -> dict[str, Any] | None:
+    if outcome is None:
+        return None
+    check = next((item for item in outcome["report"]["items"] if item["case_key"] == key), None)
+    return (
+        {
+            k: v
+            for k, v in check.items()
+            if k not in {"current_diagnostics", "retained_verification"}
+        }
+        if check
+        else None
+    )
+
+
+def migration_page(
+    repo: Path, view: str, query: dict[str, Any], connection: Connection[Any] | None = None
+) -> dict[str, Any]:
+    report = parity_report(connection, repo) if connection is not None else migration_report(repo)
     items = report["stages"] if view == "cutover" else report["items"]
     if query.get("provider") or query.get("kind"):
         raise ValueError("provider and entity filters do not apply to migration evidence")

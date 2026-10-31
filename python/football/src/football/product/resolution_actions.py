@@ -18,6 +18,7 @@ from football.product.identity_correction import (
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.resolution_cases import append_event, case_detail, latest_review
 from football.product.resolution_files import enqueue_file_recovery, recovery_plan
+from football.product.resolution_parity import enqueue_parity
 from football.product.resolution_recovery import enqueue_recovery
 from football.storage.locks import (
     FIXTURE_CROSSWALK_LOCK,
@@ -57,6 +58,7 @@ def preview(
         "fixture_record",
         "resource",
         "dataset",
+        "parity",
     }:
         raise ValueError("unsupported resolution case")
     qualification: dict[str, Any] = {"status": "QUALIFIED", "reason": "REVIEW_WORKFLOW_ONLY"}
@@ -94,6 +96,11 @@ def qualify_action(
 ) -> dict[str, Any]:
     action, kind = request["action"], request["case_key"].split(":", 1)[0]
     candidate = request.get("candidate", {})
+    if kind == "parity" and action == "RECHECK_PARITY":
+        return {
+            "status": "QUALIFIED",
+            "reason": "READ_ONLY_DIAGNOSTICS_AND_RETAINED_PARITY_RECHECK",
+        }
     if kind in {"resource", "dataset"}:
         return qualify_data(root, request, detail)
     if kind not in {"team", "competition", "fixture", "fixture_record"}:
@@ -186,13 +193,13 @@ def apply_domain(
     kind, identifier = request["case_key"].split(":", 1)
     action = request["action"]
     detail = prepared["detail"]
-    if kind in {"resource", "dataset"}:
+    if kind in {"resource", "dataset", "parity"}:
         return {
             "status": "QUEUED" if action == "RECOVER" else "RECORDED",
             "case_status": detail["status"],
             "domain_mutated": False,
             "accepted_scope": request["case_key"] if action == "EXCLUDE" else None,
-            "verification": detail["verification"],
+            "verification": detail.get("verification", {"status": detail["status"]}),
             "parity_status": "RECHECK_REQUIRED; DISPOSITION_IS_NOT_FULL_DATA_PARITY",
         }
     if action in REVIEW_ACTIONS or action == "REVALIDATE":
@@ -313,7 +320,7 @@ def recheck_preview(
     prepared: dict[str, Any],
     verifier: RetainedIdentityVerifier,
 ) -> dict[str, Any]:
-    if not request["case_key"].startswith(("resource:", "dataset:")):
+    if not request["case_key"].startswith(("resource:", "dataset:", "parity:")):
         return preview(connection, root, request, verifier)
     # Registrations are immutable. Read bytes before coordination; the durable worker also
     # checks them before exclusive publication. Only review metadata needs a control lock.
@@ -331,3 +338,8 @@ def enqueue_followup(
         enqueue_recovery(connection, request["request_id"], current)
     if request["action"] == "RECOVER":
         enqueue_file_recovery(connection, request["request_id"], current["qualification"]["plan"])
+    if request["action"] == "RECHECK_PARITY" or (
+        request["case_key"].startswith(("resource:", "dataset:"))
+        and request["action"] in {"EXCLUDE", "DEFER", "BLOCK", "REQUEST_EVIDENCE", "VERIFY"}
+    ):
+        enqueue_parity(connection, request["request_id"], request["case_key"])

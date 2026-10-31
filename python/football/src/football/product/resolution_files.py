@@ -153,6 +153,12 @@ def publish_file(connection: Connection[Any], root: Path, claim: WorkClaim) -> d
                         claim.work_id,
                     )
                 )
+            else:
+                from football.product.resolution_parity import enqueue_parity
+
+                outcome["parity_work_id"] = str(
+                    enqueue_parity(connection, str(request_id), plan["case_key"], claim.work_id)
+                )
             with registry.publication(claim, result_hash=sha256_json(outcome)):
                 connection.execute(
                     "UPDATE football.resolution_file_recovery_work SET outcome=%s WHERE work_id=%s",

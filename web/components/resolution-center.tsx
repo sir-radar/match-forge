@@ -85,7 +85,7 @@ function CaseResults({ data, view, page, loading, inspect, changePage, selected,
     {data.scope && <p className="resolution-scope">{data.scope.replaceAll("_", " ")}</p>}
     {!!data.blockers?.length && <details><summary>Required migration blockers ({data.blockers.length})</summary><ul>{data.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></details>}
     {!!data.groups.length && <CaseGroups groups={data.groups} />}
-    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "missing"].includes(view)} inspect={inspect} />}
+    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "missing", "parity"].includes(view)} inspect={inspect} />}
     <div className="resolution-pagination"><button disabled={page <= 1 || loading} onClick={() => changePage(page - 1)}>Previous page</button><span>Page {page}</span><button disabled={page * data.page_size >= data.total || loading} onClick={() => changePage(page + 1)}>Next page</button></div>
   </>;
 }
@@ -114,7 +114,7 @@ function CaseReview({ caseKey, close, history, onApplied }: { onApplied: () => v
     <h2 tabIndex={-1} ref={heading}>Review {caseKey}</h2><button onClick={close}>Close case</button><button onClick={() => setRetry((value) => value + 1)}>Recheck case evidence</button><button onClick={() => history(caseKey)}>Show resolution history</button>
     {error && <ResourceError message={error} retry={() => { setError(undefined); setRetry((value) => value + 1); }} />}
     {!data && !error && <ResourceLoading label="Loading retained evidence" />}
-    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record", "resource", "dataset"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
+    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record", "resource", "dataset", "parity"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
   </section>;
 }
 
