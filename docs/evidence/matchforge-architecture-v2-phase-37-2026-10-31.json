@@ -1,0 +1,72 @@
+{
+  "phase": 37,
+  "checkpoint": "architecture-enforcement",
+  "recorded_at": "2026-10-31T05:16:42Z",
+  "status": "PASS_WITH_WARNINGS",
+  "phase_gate_complete": true,
+  "verification": {
+    "ci_workflow": ".github/workflows/ci.yml",
+    "ci_command": "make check integration web-e2e",
+    "local_aggregate_command": "make check integration",
+    "local_aggregate_status": "PASS",
+    "architecture_check_command": "make architecture-check",
+    "architecture_check_status": "PASS",
+    "python_tests": {
+      "status": "PASS",
+      "passed": 1693
+    },
+    "rust_tests": {
+      "status": "PASS",
+      "passed": 16
+    },
+    "go_tests": {
+      "status": "PASS",
+      "packages": 1
+    },
+    "web_tests": {
+      "status": "PASS",
+      "files": 12,
+      "passed": 97
+    },
+    "database_integration": "PASS",
+    "source_distribution_and_wheel_build": "PASS",
+    "project_status_validation": "PASS"
+  },
+  "enforced_rules": [
+    "Identity, canonical-resource, observation, and product-domain code cannot import provider adapters.",
+    "Forecasting feature code cannot import provider schemas, normalizers, validators, or raw storage.",
+    "Forecasting cannot import provider adapters or directly reference raw provider payload fields; StatsBomb corner payload decoding is owned by normalization.",
+    "Provider adapters cannot import forecasting.",
+    "The general experiment runner cannot import protected evaluation readers or direct database clients.",
+    "Production frontend TypeScript cannot import provider-native parser schemas.",
+    "Go and Rust serving/simulation source cannot add named model-fitting functions, known fitting-library dependencies, or prohibited model package directories.",
+    "Python worker classes and Go ticker schedules must be registered with the checker; registered production worker adapters must retain shared Work Orchestrator bindings and SQL adapters. The test-only generic provider worker cannot be constructed from production source."
+  ],
+  "worker_contract_paths": [
+    "python/football/src/football/product/forecast_work.py",
+    "python/football/src/football/product/history_work.py",
+    "python/football/src/football/product/history_worker.py",
+    "python/football/src/football/product/provider_history_scopes.py",
+    "python/football/src/football/product/public_reports.py",
+    "python/football/src/football/forecasting/postmatch_storage.py",
+    "go/api/internal/app/app.go",
+    "go/api/internal/app/admin_sync.go",
+    "infrastructure/migrations/202610182000_domain_work_adapters.sql"
+  ],
+  "runtime_state": {
+    "production_cutover": false,
+    "phase_35_status": "BLOCKED",
+    "phase_36_status": "NOT_RUN_BLOCKED",
+    "scheduler_retirement_started": false,
+    "production_runtime_routing_verified": false,
+    "external_provider_requests": 0,
+    "production_model_fits": 0,
+    "model_promotions": 0
+  },
+  "warnings": [
+    "These checks enforce direct source dependencies, named fitting entrypoints, known fitting dependencies, recognized Python worker classes, Go ticker schedules, and registered worker paths; they do not prove deployed runtime routing or detect arbitrary model mathematics hidden behind unrelated names or unrecognized function-based loops.",
+    "Phase 35 remains blocked on owner identity decisions, unavailable authentic source bytes and datasets, incomplete parity, and cutover controls. Phase 36 remains blocked until Phase 35 runtime cutover is complete.",
+    "The aggregate emitted seven upstream NumPy deprecation warnings, one pre-existing ESLint unused-parameter warning, and a Next.js warning about an outer package-lock.json. No warning caused a check failure.",
+    "The local aggregate did not invoke web-e2e; the CI workflow continues to include that target."
+  ]
+}

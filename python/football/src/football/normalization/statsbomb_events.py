@@ -103,6 +103,36 @@ def logical_sha256(rows: tuple[dict[str, Any], ...]) -> str:
     return digest.hexdigest()
 
 
+def is_statsbomb_corner_pass(row: Mapping[str, Any]) -> bool:
+    """Resolve the StatsBomb pass-type vocabulary from one retained event row."""
+    raw = row.get("provider_payload_json")
+    if not isinstance(raw, str):
+        raise EventNormalizationError("corner row lacks provider payload JSON")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise EventNormalizationError("corner row has malformed provider payload") from error
+    if not isinstance(payload, dict):
+        raise EventNormalizationError("corner row provider payload must be an object")
+
+    pass_value = payload.get("pass")
+    pass_payload = pass_value if isinstance(pass_value, dict) else {}
+    type_value = pass_payload.get("type")
+    pass_type = type_value if isinstance(type_value, dict) else {}
+    pass_type_id = pass_type.get("id")
+    pass_type_name = pass_type.get("name")
+    has_corner_vocabulary = pass_type_id == 61 or pass_type_name == "Corner"
+    is_corner = (
+        row.get("provider_event_type_id") == "30"
+        and row.get("provider_event_type_name") == "Pass"
+        and pass_type_id == 61
+        and pass_type_name == "Corner"
+    )
+    if has_corner_vocabulary and not is_corner:
+        raise EventNormalizationError("StatsBomb corner vocabulary conflicts with exact rule")
+    return is_corner
+
+
 def _normalize_event(
     event: dict[str, object],
     provider_match_id: str,

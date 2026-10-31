@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T04:26:16Z",
+  "updated_at": "2026-10-31T05:16:42Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1205,7 +1205,7 @@
   },
   "architecture_v2": {
     "status": "IN_PROGRESS",
-    "current_phase": 35,
+    "current_phase": 37,
     "completed_phases": [
       0,
       1,
@@ -1241,7 +1241,8 @@
       31,
       32,
       33,
-      34
+      34,
+      37
     ],
     "starting_sha": "c46fa44f4fdae16f0dbff7c4dd7cd8a19f3dc365",
     "branch": "ft/matchforge-architecture-v2",
@@ -2667,6 +2668,20 @@
         "After cutover, inventory deployed production schedulers and prove which tables/functions still independently select, claim, lease, retry, or schedule work.",
         "Convert remaining legacy scheduler records to domain detail, compatibility projections, historical evidence, or deprecation; preserve explicit exceptions with reason, owner, and removal condition.",
         "Run the required database, concurrency, retry, cancellation, and production-workflow acceptance checks before recording Phase 36 completion."
+      ]
+    },
+    "phase_37": {
+      "status": "PASS_WITH_WARNINGS",
+      "phase_gate_complete": true,
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-37-2026-10-31.json",
+      "evidence_sha256": "cce33b7b171ce8a8cd65eb53e57fcb9ac24ccd6c90a9bb88c9cd39d882ce4995",
+      "ci_enforcement": "make check -> architecture-check",
+      "local_verification": "make check integration",
+      "phase_35_runtime_cutover": false,
+      "phase_36_status": "NOT_RUN_BLOCKED",
+      "warnings": [
+        "Source checks cover direct dependencies, named fitting entrypoints, known fitting dependencies, Python worker classes, Go ticker schedules, and registered worker paths; they do not verify deployed routing or every possible function-based loop.",
+        "Phase 35 cutover remains blocked; Phase 36 scheduler retirement has not started."
       ]
     }
   },
