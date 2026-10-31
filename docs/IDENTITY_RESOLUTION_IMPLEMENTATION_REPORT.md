@@ -78,4 +78,36 @@ pinned Next.js 16.4.1 production build, Ruff, mypy (438 files), Go tests and Go 
 passed before the final contract-drift assertion; the final focused checks cover
 that assertion. Manual VoiceOver and full WCAG conformance were not evaluated.
 
-Phase 3 has not begun. Production cutover and retirement remain blocked.
+Production cutover and retirement remain blocked.
+
+
+## Phase 3 — Interactive identity decisions
+
+The Admin workflow now supports independently qualified admission, retained team
+correction, reviewed fixture mapping, prospective quarantine, exact-candidate
+rejection, evidence requests, blocked/deferred review and revalidation. The
+existing domain owners retain admission authority. One append-only workflow log
+records approved inputs, actor fingerprint, exact preview, result and pending
+work; original identity/fixture decisions are not rewritten.
+
+Preview is read-only. Apply requires the private-local checks plus the configured
+owner credential, explicit approval and a request UUID. The backend prepares
+source bytes before ordered locks, rechecks current evidence and review versions
+under those locks, and atomically records the domain result and audit event.
+Repeated clicks return the same event; changed inputs cannot reuse a UUID.
+
+Verification: six disposable PostgreSQL tests passed, covering correction/retry,
+stale mappings, alias-only rejection, prospective quarantine, concurrent repeated
+approval and tampered bytes. A separate real browser journey passed through
+Next.js, Go and Python: it selected retained correction evidence, reviewed a
+qualified preview, supplied owner approval and found the correction in history.
+The original published forecast remained present. Eight initial focused frontend
+tests and three final decision-form tests passed; focused Go tests, Go lint,
+Ruff/format, mypy (439 files), architecture/status checks, migration validation
+and the pinned production build passed. Fallow removed one unused task export;
+its remaining client fetch candidate has a fixed build-time origin and encoded
+query values. No scanner suppression or dependency was added.
+
+Downstream fixture reconciliation is explicitly pending until Phase 5 integrates
+the scoped workflow. No live identity decisions, cutover, retirement, evaluation
+or model fitting were executed by these acceptance tests.

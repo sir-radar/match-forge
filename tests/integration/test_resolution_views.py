@@ -89,7 +89,7 @@ def test_python_bridge_rejects_mutation_requests(tmp_path: Path) -> None:
     with (
         isolated_database("202610310300") as url,
         psycopg.connect(url) as connection,
-        pytest.raises(ValueError, match="read-only"),
+        pytest.raises((ValueError, KeyError)),
     ):
         execute(connection, Path.cwd(), tmp_path, {"operation": "apply", "view": "identity"})
 

@@ -26,3 +26,8 @@
 CSS variables. Share AdminNavigation across its two current consumers. Keep case
 review and evidence presentation local; no generic schema-driven form or shared
 component API is needed for the read-only workflow.
+
+Phase 3 keeps the single-case decision form local to Resolution Center. Native
+selects expose only retained candidates and contradiction contexts. Backend
+qualification is mandatory even when a candidate is visible. Owner credentials
+stay in form memory and never enter URLs, storage, audit details or Python stdin.

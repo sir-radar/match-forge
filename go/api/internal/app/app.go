@@ -59,6 +59,8 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
 	mux.HandleFunc("GET /v1/admin/operations/{domain}", application.operations)
 	mux.HandleFunc("GET /v1/admin/resolution/{view}", application.resolutionRead)
+	mux.HandleFunc("POST /v1/admin/resolution/preview", application.resolutionPreview)
+	mux.HandleFunc("POST /v1/admin/resolution/apply", application.resolutionApply)
 	mux.HandleFunc("GET /v1/admin/work", application.listWork)
 	mux.HandleFunc("GET /v1/admin/work/{work_id}", application.getWork)
 	mux.HandleFunc("POST /v1/admin/work/{work_id}/cancel", application.controlWork("cancel"))
@@ -266,7 +268,7 @@ func (application *App) cors(next http.Handler) http.Handler {
 		if request.Header.Get("Origin") == application.config.AllowedOrigin {
 			response.Header().Set("Access-Control-Allow-Origin", application.config.AllowedOrigin)
 			response.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			response.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type")
+			response.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization")
 			response.Header().Set("Vary", "Origin")
 		}
 		if request.Method == http.MethodOptions {

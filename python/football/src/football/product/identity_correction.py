@@ -439,6 +439,7 @@ def correct_team_identity(
     request: TeamIdentityCorrection,
     *,
     reviewed_revalidation: bool = False,
+    verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
     """Append one qualified correction atomically; callers control outer transaction commit."""
     ready = connection.execute(
@@ -446,7 +447,7 @@ def correct_team_identity(
     ).fetchone()
     if not ready or not ready[0]:
         raise ValueError("team identity correction requires migration 202610140100")
-    verifier = RetainedIdentityVerifier(root)
+    verifier = verifier or RetainedIdentityVerifier(root)
     qualify_team_correction(connection, root, request, verifier=verifier)
     verifier.seal()
     with connection.transaction():

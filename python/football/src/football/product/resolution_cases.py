@@ -7,6 +7,7 @@ from typing import Any, Literal, cast
 from uuid import UUID
 
 from psycopg import Connection
+from psycopg.types.json import Jsonb
 
 from football.product.domain import sha256_json
 from football.product.identity_admission import RetainedIdentityVerifier
@@ -115,6 +116,12 @@ WITH cases AS (
 
 def case_page(connection: Connection[Any], view: str, query: dict[str, Any]) -> dict[str, Any]:
     cte = {"identity": MAPPING_CASES, "fixtures": FIXTURE_CASES, "history": HISTORY_CASES}[view]
+    if view == "history" and review_ready(connection):
+        review_sql = """ UNION ALL SELECT case_key,event_id::text,'',split_part(case_key,':',1),
+            action,action,reason,recorded_at,'resolution_review_events',to_jsonb(e)
+            FROM football.resolution_review_events e WHERE recorded_at<=transaction_timestamp()
+        """
+        cte = cte.replace("), filtered AS (", review_sql + "), filtered AS (")
     params = {key: query.get(key, "") for key in ("provider", "status", "kind", "q", "case_key")}
     page, size = query.get("page", 1), query.get("page_size", 20)
     params.update(limit=size, offset=(page - 1) * size)
@@ -240,5 +247,49 @@ def case_detail(
     else:
         raise ValueError("unsupported resolution case")
     result.pop("evidence_version", None)
+    review = latest_review(connection, key)
+    result["latest_review"] = {k: v for k, v in review.items() if k != "detail"} if review else None
     result["evidence_version"] = sha256_json(result)
     return result
+
+
+def latest_review(connection: Connection[Any], key: str) -> dict[str, Any] | None:
+    if not review_ready(connection):
+        return None
+    row = connection.execute(
+        """SELECT to_jsonb(e) FROM football.resolution_review_events e WHERE case_key=%s
+           ORDER BY recorded_at DESC,event_id DESC LIMIT 1""",
+        (key,),
+    ).fetchone()
+    return cast(dict[str, Any], row[0]) if row else None
+
+
+def append_event(
+    connection: Connection[Any],
+    request: dict[str, Any],
+    actor: str,
+    request_hash: str,
+    detail: dict[str, Any],
+) -> dict[str, Any]:
+    row = connection.execute(
+        """INSERT INTO football.resolution_review_events
+           (request_id,case_key,action,actor,reason,evidence_version,request_sha256,detail)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING to_jsonb(resolution_review_events)""",
+        (
+            request["request_id"],
+            request["case_key"],
+            request["action"],
+            actor,
+            request["reason"],
+            request["evidence_version"],
+            request_hash,
+            Jsonb(detail),
+        ),
+    ).fetchone()
+    assert row is not None
+    return cast(dict[str, Any], row[0])
+
+
+def review_ready(connection: Connection[Any]) -> bool:
+    row = connection.execute("SELECT to_regclass('football.resolution_review_events')").fetchone()
+    return bool(row and row[0])

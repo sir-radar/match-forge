@@ -45,25 +45,15 @@ func TestResolutionReadProtectionAndStrictInputs(t *testing.T) {
 		t.Fatal("private response is cacheable")
 	}
 }
-func TestResolutionInputsAndReadOnlyRoutes(t *testing.T) {
+func TestResolutionStrictReadInputs(t *testing.T) {
 	runner := &resolutionStub{}
 	application := newAdminTestApp(runner)
-	var request *http.Request
 	var response *httptest.ResponseRecorder
 	for _, path := range []string{"/v1/admin/resolution/not-supported", "/v1/admin/resolution/identity?page_size=101", "/v1/admin/resolution/identity?q=" + strings.Repeat("a", 257)} {
 		response = httptest.NewRecorder()
 		application.Handler().ServeHTTP(response, localAdminTestRequest("GET", path, nil))
 		if response.Code != http.StatusBadRequest || runner.calls != 0 {
 			t.Fatalf("input accepted %s", path)
-		}
-	}
-	for _, path := range []string{"/v1/admin/resolution/apply", "/v1/admin/resolution/preview"} {
-		request = localAdminTestRequest("POST", path, strings.NewReader(`{}`))
-		request.Header.Set("Content-Type", "application/json")
-		response = httptest.NewRecorder()
-		application.Handler().ServeHTTP(response, request)
-		if response.Code != http.StatusMethodNotAllowed || runner.calls != 0 {
-			t.Fatalf("read-only route accepted POST: %d", response.Code)
 		}
 	}
 }
@@ -95,5 +85,30 @@ func TestResolutionDatabaseBridge(t *testing.T) {
 	result, err := runner.Resolution(ctx, resolutionRequest{Operation: "read", View: "identity", Query: map[string]any{"page": 1, "page_size": 20}})
 	if err != nil || result.StatusCode != 200 || !json.Valid(result.Data) {
 		t.Fatalf("real bridge: %v status=%d", err, result.StatusCode)
+	}
+}
+
+func TestResolutionWritesRequireOwnerCredentialBeyondOrigin(t *testing.T) {
+	runner := &resolutionStub{}
+	application := newAdminTestApp(runner)
+	body := `{"case_key":"team:00000000-0000-4000-8000-000000000001","action":"REJECT","reason":"reviewed","approved":true,"request_id":"00000000-0000-4000-8000-000000000002","evidence_version":"` + strings.Repeat("a", 64) + `"}`
+	request := localAdminTestRequest("POST", "/v1/admin/resolution/apply", strings.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusForbidden || runner.calls != 0 {
+		t.Fatalf("origin authorized sensitive write: %d", response.Code)
+	}
+	application.config.AdminCLIToken = "owner-secret"
+	request = localAdminTestRequest("POST", "/v1/admin/resolution/apply", strings.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer owner-secret")
+	response = httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != 200 || runner.calls != 1 || !strings.HasPrefix(runner.input.Actor, "owner:") {
+		t.Fatalf("owner request: %d %s", response.Code, response.Body)
+	}
+	if strings.Contains(runner.input.Actor, "secret") {
+		t.Fatal("credential exposed")
 	}
 }

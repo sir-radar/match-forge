@@ -70,7 +70,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_postmatch.py tests/integration/test_domain_metrics.py \
 	tests/integration/test_admin_operations.py \
 	tests/integration/test_resolution_identity_database.py \
-	tests/integration/test_resolution_views.py \
+	tests/integration/test_resolution_views.py tests/integration/test_resolution_decisions.py \
 	tests/integration/test_live_context.py \
 	tests/integration/test_operational_provider_sync.py \
 	tests/integration/test_worker_publication_fencing.py \

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ResolutionDecisionForm } from "@/components/resolution-decision";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { TableScroll } from "@/components/table-scroll";
@@ -54,12 +55,12 @@ export function ResolutionCenter() {
     <AdminNavigation />
     <header className="page-heading"><div><small>Local operations</small><h1>Resolution Center</h1><p>Inspect identity cases, retained evidence, and migration blockers.</p></div></header>
     <nav aria-label="Resolution sections" className="resolution-nav">{resolutionViews.map((key) => <button key={key} aria-pressed={key === view} onClick={() => changeView(key)}>{VIEW_LABELS[key]}</button>)}</nav>
-    <p className="resolution-notice">This view is read-only. Production cutover and legacy retirement require complete parity and explicit owner acceptance. A recorded exception does not establish parity.</p>
+    <p className="resolution-notice">Inspect retained evidence and preview qualified identity decisions. Production cutover and legacy retirement require complete parity and explicit owner acceptance. A recorded exception does not establish parity.</p>
     <CaseFilters view={view} filters={filters} update={changeFilter} loading={resource.loading} reload={resource.reload} />
     {resource.error && <ResourceError message={resource.error} retry={resource.reload} />}
     {resource.loading && <ResourceLoading label={resource.data ? "Refreshing cases" : "Loading cases"} />}
     {resource.data && <CaseResults data={resource.data} view={view} page={page} loading={resource.loading} inspect={inspect} changePage={(value) => { setDetail(null); setPage(value); }} />}
-    {detail && <CaseReview key={detail} caseKey={detail} close={() => { setDetail(null); opener.current?.focus(); }} history={history} />}
+    {detail && <CaseReview key={detail} caseKey={detail} onApplied={resource.reload} close={() => { setDetail(null); opener.current?.focus(); }} history={history} />}
   </div>;
 }
 
@@ -96,7 +97,7 @@ function CaseTable({ items, inspectable, inspect }: { items: RecordValue[]; insp
   })}</tbody></table></TableScroll>;
 }
 
-function CaseReview({ caseKey, close, history }: { caseKey: string; close: () => void; history: (key: string) => void }) {
+function CaseReview({ caseKey, close, history, onApplied }: { onApplied: () => void; caseKey: string; close: () => void; history: (key: string) => void }) {
   const [data, setData] = useState<RecordValue>(), [error, setError] = useState<string>();
   const [retry, setRetry] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -109,7 +110,7 @@ function CaseReview({ caseKey, close, history }: { caseKey: string; close: () =>
     <h2 tabIndex={-1} ref={heading}>Review {caseKey}</h2><button onClick={close}>Close case</button><button onClick={() => history(caseKey)}>Show resolution history</button>
     {error && <ResourceError message={error} retry={() => { setError(undefined); setRetry((value) => value + 1); }} />}
     {!data && !error && <ResourceLoading label="Loading retained evidence" />}
-    {data && <><p>Status: {text(data.status)}</p><p>Read-only inspection. Decisions stay with the existing identity and fixture owners.</p><Evidence value={data} /></>}
+    {data && <><p>Status: {text(data.status)}</p><Evidence value={data} />{["team", "competition", "fixture", "fixture_record"].includes(caseKey.split(":")[0]) && <ResolutionDecisionForm caseKey={caseKey} data={data} onApplied={() => { onApplied(); setRetry((value) => value + 1); }} />}</>}
   </section>;
 }
 

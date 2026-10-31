@@ -143,19 +143,39 @@ class OperationalProviderSync:
         self.pacer = RequestPacer(minimum_interval_seconds)
         self._geographic_scopes: dict[str, str | None] | None = None
 
-    def apply_reviewed_mapping(
+    def preview_reviewed_mapping(
         self,
         provider_match_id: str,
         fixture_id: UUID,
         *,
         source_snapshot_id: UUID | None = None,
-        competition_only: bool = False,
-    ) -> None:
-        """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
+        verifier: RetainedIdentityVerifier | None = None,
+    ) -> dict[str, Any]:
+        """Qualify the exact same retained inputs as apply without publishing a decision."""
+        source, candidate, _, verifier = self._prepare_reviewed_mapping(
+            provider_match_id, fixture_id, source_snapshot_id, verifier=verifier
+        )
+        return {
+            "provider": self.provider_code,
+            "provider_match_id": provider_match_id,
+            "fixture_id": str(fixture_id),
+            "source_snapshot_id": str(source[16]),
+            "input_sha256": sha256_json([list(map(str, source)), list(map(str, candidate))]),
+            "source_bytes_verified": verifier.source_bytes_verified,
+        }
+
+    def _prepare_reviewed_mapping(
+        self,
+        provider_match_id: str,
+        fixture_id: UUID,
+        source_snapshot_id: UUID | None,
+        *,
+        verifier: RetainedIdentityVerifier | None = None,
+    ) -> tuple[tuple[Any, ...], tuple[Any, ...], PitchApiFixture, RetainedIdentityVerifier]:
         source, candidate = self._reviewed_mapping_inputs(
             provider_match_id, fixture_id, source_snapshot_id
         )
-        verifier = RetainedIdentityVerifier(self.data_root)
+        verifier = verifier or RetainedIdentityVerifier(self.data_root)
         row = PitchApiFixture(
             provider_match_id=provider_match_id,
             provider_competition_id=source[0],
@@ -198,6 +218,22 @@ class OperationalProviderSync:
             ):
                 raise ValueError("reviewed mapping requires verified retained provider identifiers")
         verifier.seal()
+        return source, candidate, row, verifier
+
+    def apply_reviewed_mapping(
+        self,
+        provider_match_id: str,
+        fixture_id: UUID,
+        *,
+        source_snapshot_id: UUID | None = None,
+        competition_only: bool = False,
+        verifier: RetainedIdentityVerifier | None = None,
+    ) -> None:
+        """Apply an explicit operator-reviewed fixture mapping using stored evidence."""
+        source, candidate, row, verifier = self._prepare_reviewed_mapping(
+            provider_match_id, fixture_id, source_snapshot_id, verifier=verifier
+        )
+        snapshot_id = cast(UUID, source[16])
         acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         if self._reviewed_mapping_inputs(provider_match_id, fixture_id, source_snapshot_id) != (
             source,

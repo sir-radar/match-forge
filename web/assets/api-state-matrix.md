@@ -88,3 +88,9 @@ All six read views and case details have loading, success, empty, invalid-respon
 failure and retry states. Same-query refresh failures retain rows; changed queries
 hide earlier rows immediately. Abort and generation checks reject stale results.
 Case detail focus returns to its opener. Phase 2 exposes no mutations.
+
+Phase 3 identity decisions: proposal edits invalidate previews; preview failures
+leave no approval. Approval requires qualified proof, owner credential and explicit
+checkbox. A local pending guard prevents overlapping clicks. Unknown outcomes
+retain the request UUID for idempotent retry; success clears the credential and
+refreshes case detail/history. No optimistic admission or completion is displayed.

@@ -1225,5 +1225,16 @@ source and distinguishes mutable current fixture resolutions from append-only
 records. The Missing Data list checks registered file bytes in bulk; dataset
 details retain full logical integrity verification. File checks cannot establish
 publication eligibility. Migration views verify the hashes of tracked readiness
-evidence and do not claim to have rerun parity. The initial interface permits
-inspection only, with private responses marked `no-store`.
+evidence and do not claim to have rerun parity. Private responses are marked `no-store`.
+
+
+Identity review writes use `/v1/admin/resolution/preview` followed by `/apply`.
+Origin trust permits preview; apply additionally requires the existing owner
+Bearer credential. The browser keeps this credential only in form state. Go
+passes a credential fingerprint as actor, never the credential, to Python.
+The apply transaction serializes the case, rechecks the preview under existing
+identity locks, delegates to the existing domain owner and appends one immutable
+review event. A request UUID binds the exact approved inputs and actor. Retries
+return that event; stale versions and changed requests fail. Review-only actions
+never imply admission, recovery or parity. Correction and revocation remain
+prospective, with original provider observations and published forecasts retained.

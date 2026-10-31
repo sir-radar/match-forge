@@ -168,6 +168,35 @@ paths:
         '500': { $ref: '#/components/responses/AdminInternalError' }
         '503': { $ref: '#/components/responses/Unavailable' }
         '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/resolution/preview:
+    post:
+      operationId: previewResolutionDecision
+      description: Read-only qualification and exact source/impact preview. No domain decision is published.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionDecision' } } } }
+      responses:
+        '200': { description: Qualification, exact inputs and evidence_version; approval_required is true. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Invalid or unavailable decision inputs; preview again. }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/resolution/apply:
+    post:
+      operationId: applyResolutionDecision
+      description: >-
+        Requires private-local access and the configured owner Bearer credential,
+        including for trusted browser Origins. Applies one explicitly approved
+        preview after requalification under ordered locks. request_id binds exact
+        approved inputs and actor; retries return the original append-only event.
+        Domain history remains prospective. Pending downstream work stays explicit.
+      security: [ { AdminCLI: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionDecision' } } } }
+      responses:
+        '200': { description: Durable review event and domain result with downstream status. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Stale, conflicting or unqualified approval; no decision applied. }
+        '503': { $ref: '#/components/responses/Unavailable' }
   /v1/admin/resolution/{view}:
     get:
       operationId: getResolutionView
@@ -339,6 +368,18 @@ components:
         observed_at: { type: string, format: date-time }
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/WorkItem' } }
+    ResolutionDecision:
+      type: object
+      additionalProperties: false
+      required: [case_key, action, reason]
+      properties:
+        case_key: { type: string, maxLength: 256 }
+        action: { type: string, enum: [APPROVE, REJECT, CORRECT, QUARANTINE, REQUEST_EVIDENCE, BLOCK, REVALIDATE, RESOLVE_DUPLICATE, DEFER] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        candidate: { type: object, additionalProperties: { type: string, maxLength: 256 } }
+        evidence_version: { type: string, pattern: '^[a-f0-9]{64}$' }
+        request_id: { type: string, format: uuid }
+        approved: { type: boolean, description: Must be true when applying. }
     ResolutionPage:
       type: object
       required: [items, page, page_size, total, counts, groups]

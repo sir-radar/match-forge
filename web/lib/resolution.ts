@@ -1,5 +1,7 @@
 import { ApiError } from "@/lib/api";
 
+export type Decision = { case_key: string; action: string; reason: string; candidate?: Record<string, string>; evidence_version?: string; request_id?: string; approved?: boolean };
+export type Preview = { case_key: string; action: string; detail: RecordValue; candidate: Record<string, string>; reason: string; allowed: boolean; evidence_version: string; qualification: RecordValue };
 export type RecordValue = Record<string, unknown>;
 export type ResolutionPage = { items: RecordValue[]; page: number; page_size: number; total: number; counts: Record<string, number>; groups: RecordValue[]; scope?: string; blockers?: string[] };
 export const resolutionViews = ["identity", "fixtures", "missing", "parity", "cutover", "history"] as const;
@@ -54,8 +56,15 @@ export function parseResolutionPage(value: unknown): ResolutionPage {
   if (data.scope !== undefined && typeof data.scope !== "string") throw new Error("Invalid verification scope");
   return { items, page, page_size: size, total, counts, groups: parseGroups(data.groups, total), scope: data.scope, blockers: parseBlockers(data.blockers) };
 }
-async function request<T>(path: string, parse: (value: unknown) => T, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(`${base}/v1/admin/resolution/${path}`, { cache: "no-store", signal, headers: { Accept: "application/json" } });
+function parsePreview(value: unknown): Preview {
+  const data = record(value);
+  if (typeof data.allowed !== "boolean" || typeof data.case_key !== "string" || typeof data.action !== "string" || typeof data.reason !== "string") throw new Error("Invalid approval preview");
+  const candidate = record(data.candidate);
+  if (Object.values(candidate).some((value) => typeof value !== "string")) throw new Error("Invalid candidate");
+  return { case_key: data.case_key, action: data.action, reason: data.reason, candidate: candidate as Record<string, string>, detail: record(data.detail), allowed: data.allowed, qualification: record(data.qualification), evidence_version: digest(data.evidence_version) };
+}
+async function request<T>(path: string, parse: (value: unknown) => T, signal?: AbortSignal, body?: unknown, token?: string): Promise<T> {
+  const response = await fetch(`${base}/v1/admin/resolution/${path}`, { cache: "no-store", signal, method: body === undefined ? undefined : "POST", headers: { Accept: "application/json", ...(body === undefined ? {} : { "Content-Type": "application/json" }), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
   if (!response.ok) {
     let message = `Resolution request failed (${response.status})`;
     try { const error = record(await response.json()); if (typeof error.error === "string") message = error.error; } catch { /* Preserve the HTTP status when no JSON error is available. */ }
@@ -66,4 +75,6 @@ async function request<T>(path: string, parse: (value: unknown) => T, signal?: A
 export const resolutionApi = {
   page: (view: ResolutionView, query: URLSearchParams, signal?: AbortSignal) => request(`${view}?${query}`, parseResolutionPage, signal),
   detail: (key: string, signal?: AbortSignal) => request(`detail?case_key=${encodeURIComponent(key)}`, (value) => { const data = record(value); if (data.case_key !== key) throw new Error("Case identity mismatch"); digest(data.evidence_version); return data; }, signal),
+  preview: (decision: Decision, signal?: AbortSignal) => request("preview", (value) => { const data = parsePreview(value); if (data.case_key !== decision.case_key || data.action !== decision.action || data.reason !== decision.reason || Object.keys(data.candidate).length !== Object.keys(decision.candidate ?? {}).length || Object.entries(data.candidate).some(([key, value]) => decision.candidate?.[key] !== value)) throw new Error("Preview inputs mismatch"); return data; }, signal, decision),
+  apply: (decision: Decision, token: string) => request("apply", (value) => { const data = record(value); if (data.request_id !== decision.request_id || data.case_key !== decision.case_key || data.action !== decision.action) throw new Error("Decision result mismatch; recheck history"); record(data.detail); return data; }, undefined, decision, token),
 };

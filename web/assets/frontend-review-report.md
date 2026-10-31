@@ -45,3 +45,13 @@ host is fixed and user input only enters encoded query values. No source suppres
 or scanner configuration was added. The existing playwright.real.config.ts unused
 file finding is outside this diff. Manual VoiceOver and full WCAG conformance
 remain unverified. Phase 2 enables no decisions or cutover controls.
+
+Phase 3 review: no actionable blocking finding remains. Actual browser correction
+exercised the owner credential and append-only event through Go/Python. Preview
+changes cancel pending reads and invalidate approval; repeat clicks are guarded,
+and unknown outcomes retain request identity for retry. The credential is absent
+from JSON bodies, URLs and storage and is cleared after success. Existing private
+access, runtime validation, focus and reflow contracts remain. Fallow estimated
+coverage recommendations for apply/CandidateFields are covered by decision-form
+branch tests and the real correction browser flow; both units have cyclomatic 10.
+No optimistic completion or live cutover is claimed.

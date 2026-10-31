@@ -257,6 +257,45 @@ def admit_provider_mappings(
     return decisions
 
 
+def admit_reviewed_mapping(
+    connection: Connection[Any],
+    data_root: Path,
+    entity_type: Literal["team", "competition"],
+    mapping_id: UUID,
+    *,
+    verifier: RetainedIdentityVerifier | None = None,
+) -> dict[str, Any]:
+    """Admit exactly one independently qualified current mapping, prospectively."""
+    rows = mapping_rows(connection, entity_type, mapping_id=mapping_id)
+    if len(rows) != 1:
+        raise ValueError("current mapping not found")
+    verifier = verifier or RetainedIdentityVerifier(data_root)
+    classify_mapping(connection, entity_type, rows[0], data_root, verifier)
+    verifier.seal()
+    with connection.transaction():
+        acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
+        rows = mapping_rows(connection, entity_type, mapping_id=mapping_id)
+        if len(rows) != 1:
+            raise ValueError("current mapping changed; preview again")
+        decision = classify_mapping(connection, entity_type, rows[0], data_root, verifier)
+        if decision["disposition"] not in {"ORIGIN_ANCHOR", "CROSSWALK"}:
+            raise ValueError(decision["reason"])
+        previous = connection.execute(
+            """SELECT disposition FROM football.product_identity_admissions
+               WHERE entity_type=%s AND mapping_id=%s
+               ORDER BY decided_at DESC,decision_id DESC LIMIT 1""",
+            (entity_type, mapping_id),
+        ).fetchone()
+        if previous and previous[0] == "REVOKED":
+            raise ValueError("revoked mapping requires a separately qualified correction")
+        if len(rows[0]) > 9 and rows[0][9] is not None:
+            raise ValueError(
+                "linked correction requires the existing reviewed revalidation workflow"
+            )
+        _record_decision(connection, decision, rows[0])
+    return decision
+
+
 def fixture_identity_blockers(
     connection: Connection[Any],
     fixture_ids: list[UUID],

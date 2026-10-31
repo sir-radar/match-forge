@@ -14,9 +14,11 @@ import (
 )
 
 type resolutionRequest struct {
-	Operation string         `json:"operation"`
-	View      string         `json:"view"`
-	Query     map[string]any `json:"query"`
+	Operation string              `json:"operation"`
+	View      string              `json:"view"`
+	Query     map[string]any      `json:"query,omitempty"`
+	Request   *resolutionDecision `json:"request,omitempty"`
+	Actor     string              `json:"actor,omitempty"`
 }
 
 type resolutionResult struct {
@@ -69,8 +71,8 @@ func (application *App) runResolution(response http.ResponseWriter, request *htt
 		application.writeJSON(response, http.StatusOK, result.Data)
 		return
 	}
-	if result.StatusCode == http.StatusBadRequest {
-		application.publicError(response, http.StatusBadRequest, result.Error)
+	if result.StatusCode == http.StatusBadRequest || result.StatusCode == http.StatusConflict {
+		application.publicError(response, result.StatusCode, result.Error)
 		return
 	}
 	application.respondOperation(response, nil, errProductUnavailable)
