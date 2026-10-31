@@ -107,6 +107,7 @@ export type LiveMatch = {
   statistics_source: LiveSource | null;
   availability: Record<string, boolean>;
   partial: boolean;
+  resource_identity_conflict?: boolean;
 };
 
 export type Forecast = ForecastSummary & {
@@ -379,6 +380,7 @@ export function parseLiveMatch(value: unknown): LiveMatch {
     statistics_source: item.statistics_source === null ? null : parseLiveSource(item.statistics_source),
     availability: booleanRecord(item.availability, "availability"),
     partial: boolean(item.partial, "partial"),
+    resource_identity_conflict: item.resource_identity_conflict === undefined ? false : boolean(item.resource_identity_conflict, "resource_identity_conflict"),
   };
 }
 

@@ -763,6 +763,7 @@ components:
         statistics_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
         availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
         partial: {"type": "boolean"}
+        resource_identity_conflict: {type: boolean, description: Retained incident or statistics data is withheld because a verified native mapping identifies another effective fixture.}
     ExternalPrediction:
       type: object
       additionalProperties: false

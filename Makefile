@@ -11,6 +11,7 @@ MIGRATIONS_DIR := infrastructure/migrations
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
+BUILD_WORKTREE_STATE := $(shell test -z "$$(git status --porcelain)" && echo clean || echo dirty)
 export UV_CACHE_DIR := $(CURDIR)/.local/uv-cache
 
 .PHONY: bootstrap doctor up down clean migrate migration-status format format-check lint test test-coverage build integration check project-status-check identity-check entity-crosswalk-review entity-crosswalk-apply canonical-history-audit pretraining-snapshot-check pretraining-check postgres-restore-test sprint2-evaluate h2h-context-evaluate full-coverage-v2-reevaluate full-coverage-v2-replacement-evaluate v2-final-readiness v2-final-evaluate model-fit model-forecast model-evaluate probability-benchmark dev dev-go dev-python dev-rust mvp-sync fotmob-sync pitchapi-sync openfootball-sync football-data-uk-sync history-backfill forecast-refresh all-data-sync external-predictions web-install web-lint web-test web-build web-e2e \
@@ -71,7 +72,7 @@ build:
 	@mkdir -p .local/dist .local/bin
 	@$(TOOL_ENV); UV_CACHE_DIR="$${TMPDIR:-/tmp}/football-forecasting-uv-build-cache" uv build --no-build-isolation --out-dir .local/dist
 	@$(TOOL_ENV); cargo build --workspace --all-targets --all-features
-	@$(TOOL_ENV); cd go/api && go build -o $(CURDIR)/.local/bin/football-api ./cmd/api
+	@$(TOOL_ENV); cd go/api && go build -ldflags "-X football-forecasting/go/api/internal/app.buildCommitSHA=$(CODE_COMMIT_SHA) -X football-forecasting/go/api/internal/app.buildDependencyLockSHA256=$(DEPENDENCY_LOCK_SHA256) -X football-forecasting/go/api/internal/app.buildWorktreeState=$(BUILD_WORKTREE_STATE)" -o $(CURDIR)/.local/bin/football-api ./cmd/api
 
 integration: build
 	docker compose up -d --wait

@@ -1432,27 +1432,10 @@ class OperationalProviderSync:
             candidates = cursor.fetchall()
         if len(candidates) == 1:
             fixture_id = cast(UUID, candidates[0][0])
+            if len(direct) == 1 and direct[0][0] != fixture_id:
+                return self._resolve_conflicting_candidate(row, snapshot_id, direct[0], fixture_id)
             self._materialize_history_fixture(candidates[0][0], row.observed_at)
             if snapshot_id is not None:
-                if len(direct) == 1 and direct[0][0] != fixture_id:
-                    if self._reconcile_direct_mapping_candidate(
-                        row, snapshot_id, direct[0][0], fixture_id
-                    ):
-                        return fixture_id
-                    self._record_mapping_decision(
-                        row,
-                        snapshot_id,
-                        fixture_id,
-                        "CONTRADICTORY",
-                        "existing match mapping conflicts with exact fixture candidate",
-                        {
-                            "rule": "verified_provider_ids_unique_exact_kickoff",
-                            "existing_fixture_id": str(direct[0][0]),
-                            "existing_mapping_method": direct[0][1],
-                            "candidate_fixture_id": str(fixture_id),
-                        },
-                    )
-                    return None
                 self._persist_deterministic_mapping(
                     row, snapshot_id, candidates[0], mapping_method="explicit_crosswalk"
                 )
@@ -1476,6 +1459,33 @@ class OperationalProviderSync:
         return reconciled or (
             provisional_id if any(item[0] == provisional_id for item in direct) else None
         )
+
+    def _resolve_conflicting_candidate(
+        self,
+        row: FixtureObservation,
+        snapshot_id: UUID | None,
+        direct: tuple[UUID, str],
+        fixture_id: UUID,
+    ) -> UUID | None:
+        """Only an evidence-backed reconciliation may replace a conflicting native binding."""
+        if snapshot_id is None:
+            return None
+        if self._reconcile_direct_mapping_candidate(row, snapshot_id, direct[0], fixture_id):
+            return fixture_id
+        self._record_mapping_decision(
+            row,
+            snapshot_id,
+            fixture_id,
+            "CONTRADICTORY",
+            "existing match mapping conflicts with exact fixture candidate",
+            {
+                "rule": "verified_provider_ids_unique_exact_kickoff",
+                "existing_fixture_id": str(direct[0]),
+                "existing_mapping_method": direct[1],
+                "candidate_fixture_id": str(fixture_id),
+            },
+        )
+        return None
 
     def _trusted_direct_fixture(self, fixture_id: UUID, row: FixtureObservation) -> bool:
         if not self._verified_provider_entities(row):

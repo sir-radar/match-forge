@@ -41,8 +41,9 @@ not fail successful sources. Each configured page is fetched once per source run
 that source parser.
 
 An optional `MVP_EXTERNAL_PREDICTIONS_IMPORT_FILE` still invokes the append-only manual import
-path. `scripts/mvp-refresh.sh` invokes automated collection after the product sync. The systemd
-timer runs the script daily at 06:00 `Africa/Lagos`.
+path. `scripts/mvp-refresh.sh` invokes automated collection after the product sync. The repository's
+systemd timer schedules the script daily at 06:00 `Africa/Lagos`; installation and alert delivery
+on the operating host require separate verification.
 
 ## Current records, timing and correction policy
 
@@ -99,3 +100,33 @@ verified fixtures, matching supported markets/selections, pre-kickoff capture,
 admissible dates and current comparison reports. A strict majority is required;
 ties and single-source revisions do not create consensus. No external selection
 changes MatchForge model inputs, fitted artifacts or published probabilities.
+
+### Reviewed bindings for captures without native IDs
+
+Automated recovery never invents a provider fixture ID from team names. When a
+source capture has no native ID, an operator may explicitly review that immutable
+capture against an existing verified native mapping with retained source evidence:
+
+```sh
+uv run python -m football.product.cli --database-url "$DATABASE_URL" \
+  external-binding-review --prediction-id <capture-uuid> \
+  --mapping-id <verified-mapping-uuid> --reason '<retained evidence and review rationale>'
+```
+
+The command requires a verified fixture and native mapping, confidence one,
+compatible validity dates and a retained source snapshot. The binding records the
+original source revision hash, mapping, snapshot and review reason. A retry leaves
+one binding; a mapping revocation queues recovery and appends an unmatched state.
+The original prediction, source text and capture times never change. Review after
+kickoff receives no prospective accuracy or consensus credit, even if the original
+capture was earlier. The source table labels these selections retrospective.
+A held, ambiguous or missing native mapping remains unresolved until independent
+evidence is available; this command does not approve identity mappings.
+
+
+Comparisons, prospective aggregates and consensus wait for the current external
+validation generation to complete. A newly queued correction hides the old
+comparison immediately; settlement and comparison output cannot disagree about
+which validation checkpoint is current. Standalone report generation does not
+bypass this checkpoint. The normal public-report worker processes validation
+before report work.

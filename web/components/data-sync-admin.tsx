@@ -2,6 +2,7 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { api } from "@/lib/api";
+import { TableScroll } from "@/components/table-scroll";
 import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
 import { syncLane, useSyncAdminState, type SyncFilters as Filters } from "@/hooks/use-sync-admin";
 
@@ -132,7 +133,7 @@ function HistoryAcquisitionPanel({ coverage, configuration, loading }: { coverag
 
 function RunHistory({ runs, loading, clock, canRetry, onRetry }: { runs: SyncRun[]; loading: boolean; clock: number; canRetry: (run: SyncRun) => boolean; onRetry: (run: SyncRun) => void }) {
   return <section className="run-history" aria-labelledby="run-history-title"><header><small>Audit log</small><h2 id="run-history-title">Recent sync runs</h2></header>
-    {loading ? <p>Loading sync history…</p> : runs.length === 0 ? <p>No manual sync runs yet.</p> : <div className="table-scroll" tabIndex={0} role="region" aria-label="Recent sync runs table"><table><caption className="sr-only">Recent data synchronization runs</caption><thead><tr><th>Started</th><th>Type</th><th>Status</th><th>Duration</th><th>Matches added</th><th>Forecasts created</th><th>Conflicts</th><th>Details</th><th>Actions</th></tr></thead><tbody>{runs.map((run) => <tr key={run.run_id}><td>{formatTime(run.started_at ?? run.requested_at)}</td><th scope="row">{label(run.sync_type)}</th><td><span className={`run-status ${run.status.toLowerCase()}`}>{run.status}</span></td><td>{duration(run, clock)}</td><td>{shortMetric(run, "matches_inserted")}</td><td>{shortMetric(run, "forecasts_created")}</td><td>{shortMetric(run, "result_conflicts")}</td><td><details><summary>View</summary><pre>{JSON.stringify(run.summary, null, 2)}</pre>{run.error_message && <p>{run.error_message}</p>}</details></td><td>{(run.status === "FAILED" || run.status === "CANCELLED") && <button type="button" onClick={() => onRetry(run)} disabled={!canRetry(run)}>Retry</button>}</td></tr>)}</tbody></table></div>}
+    {loading ? <p>Loading sync history…</p> : runs.length === 0 ? <p>No manual sync runs yet.</p> : <TableScroll label="Recent sync runs table"><table><caption className="sr-only">Recent data synchronization runs</caption><thead><tr><th>Started</th><th>Type</th><th>Status</th><th>Duration</th><th>Matches added</th><th>Forecasts created</th><th>Conflicts</th><th>Details</th><th>Actions</th></tr></thead><tbody>{runs.map((run) => <tr key={run.run_id}><td>{formatTime(run.started_at ?? run.requested_at)}</td><th scope="row">{label(run.sync_type)}</th><td><span className={`run-status ${run.status.toLowerCase()}`}>{run.status}</span></td><td>{duration(run, clock)}</td><td>{shortMetric(run, "matches_inserted")}</td><td>{shortMetric(run, "forecasts_created")}</td><td>{shortMetric(run, "result_conflicts")}</td><td><details><summary>View</summary><pre>{JSON.stringify(run.summary, null, 2)}</pre>{run.error_message && <p>{run.error_message}</p>}</details></td><td>{(run.status === "FAILED" || run.status === "CANCELLED") && <button type="button" onClick={() => onRetry(run)} disabled={!canRetry(run)}>Retry</button>}</td></tr>)}</tbody></table></TableScroll>}
   </section>;
 }
 

@@ -297,7 +297,7 @@ def test_collection_source_filter_fetches_only_requested_source() -> None:
         ("malformed", date(2026, 10, 30)),
     ],
 )
-def test_r2bet_rejects_wrong_or_malformed_full_source_date(displayed, target):
+def test_r2bet_rejects_wrong_or_malformed_full_source_date(displayed: str, target: date) -> None:
     html = (
         f"<section><h2>Best Picks</h2><p>{displayed}</p>"
         "<article><p>League</p><p>Home</p><p>Away</p>"
@@ -318,7 +318,7 @@ def test_r2bet_rejects_wrong_or_malformed_full_source_date(displayed, target):
         ("unknown", date(2026, 10, 1)),
     ],
 )
-def test_1960tips_rejects_wrong_or_malformed_full_source_date(displayed, target):
+def test_1960tips_rejects_wrong_or_malformed_full_source_date(displayed: str, target: date) -> None:
     html = (
         f"<h1>Predictions {displayed}</h1><div class='table-row'>"
         "<span class='tb-league'>L</span><span class='tb-match'>H vs A</span>"

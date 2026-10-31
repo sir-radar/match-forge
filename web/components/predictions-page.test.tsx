@@ -56,6 +56,15 @@ describe("PredictionsPage", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
+  it("labels actual request state and capture/kickoff clocks without simulated controls", async () => {
+    render(<PredictionsPage initialDate="2026-09-28" />);
+    expect(await screen.findByText("Records: Loaded")).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /First capture \(Africa\/Lagos\)/ })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Kickoff \(Africa\/Lagos\)/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Cluster Synced|Feed: Live|UTC\+0 London/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Empty State|Ingestion Skeleton/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "2026-09-28 09:15" })).toBeInTheDocument();
+  });
   it("renders API-backed metrics, consensus, selections, and source audit", async () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
 
@@ -79,7 +88,7 @@ describe("PredictionsPage", () => {
     );
   });
 
-  it("renders every selection for the selected day without pagination", async () => {
+  it("keeps a small selected-day result on one bounded page", async () => {
     const dailyPredictions = Array.from({ length: 9 }, (_, index) => ({
       ...prediction,
       id: `prediction-${index + 1}`,

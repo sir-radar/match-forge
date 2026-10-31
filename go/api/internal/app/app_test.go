@@ -212,7 +212,7 @@ func TestOperationalEndpoints(t *testing.T) {
 		{name: "health", path: "/healthz", statusCode: http.StatusOK, body: `{"status":"ok"}`},
 		{name: "ready", path: "/readyz", statusCode: http.StatusOK, body: `{"status":"ready"}`},
 		{name: "not ready", path: "/readyz", readiness: errors.New("offline"), statusCode: http.StatusServiceUnavailable, body: `{"status":"unavailable"}`},
-		{name: "version", path: "/version", statusCode: http.StatusOK, body: `{"version":"test-version"}`},
+		{name: "version", path: "/version", statusCode: http.StatusOK, body: `{"code_commit_sha":"unknown","dependency_lock_sha256":"unknown","version":"test-version","worktree_state":"unknown"}`},
 	}
 
 	for _, test := range tests {

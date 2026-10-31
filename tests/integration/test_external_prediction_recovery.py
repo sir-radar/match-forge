@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import psycopg
+import pytest
 from football.product.external_prediction_recovery import settle_pending_predictions
 from football.product.external_predictions import (
     ImportedPrediction,
@@ -229,12 +230,13 @@ def test_paginated_go_reader_and_source_aggregates_share_current_settlement_poli
 
     from tests.integration.test_product_analytics import _revision
 
-    captured = datetime.now(UTC)
     r2_date = f"{KICKOFF.day}th, {KICKOFF:%a %b %Y}"
     tips_date = KICKOFF.strftime("Predictions %d %b %Y")
     with psycopg.connect(report_database) as c:
         _revision(c, 24)
         _revision(c, 6)
+        c.commit()
+        captured = c.execute("SELECT clock_timestamp()").fetchone()[0]
         c.commit()
         import_predictions(
             c,
@@ -269,7 +271,10 @@ def test_paginated_go_reader_and_source_aggregates_share_current_settlement_poli
             tuple(selection(home_team=f"Unknown {index}") for index in range(25)),
             collected_at=captured,
         )
-        run_pending_public_reports(c, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64)
+        outcome = run_pending_public_reports(
+            c, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert outcome["failed"] == 0
 
     def go(name):
         result = subprocess.run(
@@ -433,3 +438,133 @@ def test_same_time_conflicting_source_picks_never_create_consensus_or_accuracy_c
             "SELECT count(*) FROM football.external_prediction_current WHERE "
             "source_code='r2bet' AND NOT source_revision_conflict"
         ).fetchone() == (0,)
+
+
+def test_large_current_archive_retains_bounded_api_pages(report_database):
+    import os
+    import subprocess
+
+    with psycopg.connect(report_database) as c:
+        c.execute("""INSERT INTO football.external_predictions
+            (prediction_id,revision_sha256,source_code,source_page,prediction_date,original_date_text,
+             collected_at,competition_text,home_team_text,away_team_text,market,selection,match_status)
+            SELECT uuidv7(),md5(n::text)||md5(n::text),'manual_import','archive-'||n,CURRENT_DATE,
+             CURRENT_DATE::text,clock_timestamp(),'Synthetic','Home '||n,'Away '||n,
+             'RESULT_1X2','HOME_WIN','UNMATCHED' FROM generate_series(1,5000) n""")
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestExternalPredictionArchiveBoundDatabase$",
+            "-count=1",
+            "-v",
+        ],
+        cwd="go/api",
+        env=os.environ | {"TEST_DATABASE_URL": report_database},
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    print(result.stdout)
+
+
+def test_reviewed_capture_without_native_ids_can_bind_and_revoke_append_only(report_database):
+    import os
+    import subprocess
+    import sys
+
+    from football.product.external_prediction_recovery import bind_reviewed_prediction
+
+    captured = datetime.now(UTC) - timedelta(hours=2)
+    with psycopg.connect(report_database) as c:
+        row = selection(home_team="Unresolved source label", prediction_date=captured.date())
+        import_predictions(c, (row,), collected_at=captured)
+        original = c.execute(
+            "SELECT to_jsonb(ep) FROM football.external_predictions ep "
+            "WHERE source_code='manual_import'"
+        ).fetchone()[0]
+        prediction = original["prediction_id"]
+        mapping = uuid4()
+        c.execute(
+            """UPDATE football.product_fixtures SET kickoff_at=clock_timestamp()-interval '1 hour'
+            WHERE fixture_id=%s""",
+            (FIXTURE,),
+        )
+        c.execute(
+            """INSERT INTO football.match_provider_mappings
+            (id,match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,
+             mapping_method,mapping_confidence,source_snapshot_id)
+            VALUES(%s,%s,%s,'reviewed-native-match',clock_timestamp(),clock_timestamp(),'manual',1,%s)""",
+            (mapping, FIXTURE, PROVIDER, SNAPSHOT),
+        )
+        c.commit()
+        command = [
+            sys.executable,
+            "-m",
+            "football.product.cli",
+            "--database-url",
+            report_database,
+            "external-binding-review",
+            "--prediction-id",
+            prediction,
+            "--mapping-id",
+            str(mapping),
+            "--reason",
+            "synthetic retained native-ID review",
+        ]
+        for state in ("BOUND", "UNCHANGED"):
+            result = subprocess.run(
+                command, capture_output=True, text=True, timeout=30, env=os.environ
+            )
+            assert result.returncode == 0, result.stderr
+            assert f'"status": "{state}"' in result.stdout
+        run_pending_public_reports(c, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64)
+        assert c.execute(
+            "SELECT effective_fixture_id FROM football.external_prediction_effective "
+            "WHERE prediction_id=%s",
+            (prediction,),
+        ).fetchone() == (FIXTURE,)
+        c.commit()
+        result = subprocess.run(
+            [
+                "go",
+                "test",
+                "./internal/app",
+                "-run",
+                "^TestReviewedExternalAccuracyDatabase$",
+                "-count=1",
+            ],
+            cwd="go/api",
+            env=os.environ | {"TEST_DATABASE_URL": report_database},
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        c.execute(
+            "UPDATE football.match_provider_mappings SET mapping_confidence=0 WHERE id=%s",
+            (mapping,),
+        )
+        c.commit()
+        with pytest.raises(ValueError), c.transaction():
+            bind_reviewed_prediction(c, prediction, mapping, reason="revoked mapping cannot bind")
+        run_pending_public_reports(c, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64)
+        assert c.execute(
+            "SELECT effective_fixture_id FROM football.external_prediction_effective "
+            "WHERE prediction_id=%s",
+            (prediction,),
+        ).fetchone() == (None,)
+        assert (
+            c.execute(
+                "SELECT to_jsonb(ep) FROM football.external_predictions ep WHERE prediction_id=%s",
+                (prediction,),
+            ).fetchone()[0]
+            == original
+        )
+        assert c.execute(
+            "SELECT count(*) FROM football.external_prediction_bindings WHERE prediction_id=%s",
+            (prediction,),
+        ).fetchone() == (2,)

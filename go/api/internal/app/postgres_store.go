@@ -61,7 +61,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       at.team_id::text, at.name, at.crest_url,
 		       COALESCE(observation.home_score, pf.home_score),
 		       COALESCE(observation.away_score, pf.away_score), pf.venue, pf.round_name,
-		       pf.forecast_availability,
+		       availability.forecast_availability,
 		       forecast.forecast_id::text, forecast.expected_home_goals,
 		       forecast.expected_away_goals, forecast.probabilities,
 		       observation.provider_code, NULLIF(observation.provider_status, ''),
@@ -76,9 +76,13 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		JOIN football.product_teams at ON at.team_id = pf.away_team_id
 		LEFT JOIN LATERAL (
 			SELECT f.forecast_id, f.expected_home_goals, f.expected_away_goals, f.probabilities
-			FROM football.product_forecasts f WHERE f.fixture_id = pf.fixture_id
-			ORDER BY f.created_at DESC LIMIT 1
+			FROM football.product_prematch_forecasts f WHERE f.fixture_id = pf.fixture_id
+			ORDER BY f.created_at DESC,f.forecast_id DESC LIMIT 1
 		) forecast ON true
+        CROSS JOIN LATERAL (
+            SELECT CASE WHEN forecast.forecast_id IS NULL AND pf.forecast_availability='FORECAST_AVAILABLE'
+                THEN 'SOURCE_DATA_INCOMPLETE' ELSE pf.forecast_availability END AS forecast_availability
+        ) availability
 		LEFT JOIN LATERAL (
 			SELECT live.provider_code, live.provider_status, live.canonical_status,
 			       live.home_score, live.away_score, live.match_minute, live.added_time,
@@ -96,7 +100,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		) observation ON true
 		LEFT JOIN LATERAL (
 			SELECT resource.payload, resource.provider_code
-			FROM football.product_provider_resource_observations resource
+			FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id
 			  AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
@@ -108,7 +112,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "pf.forecast_availability", filters.ForecastAvailability)
+	query = addFilter(query, &args, "availability.forecast_availability", filters.ForecastAvailability)
 	query += " ORDER BY pc.continent, COALESCE(pc.geographic_scope, pc.country), pc.name, pf.kickoff_at, pf.fixture_id"
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
@@ -152,7 +156,12 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		       CASE WHEN events.last_fetched_at IS NULL THEN NULL ELSE events.last_fetched_at < clock_timestamp() - interval '3 minutes' END,
 		       COALESCE(stats.payload->'statistics', '[]'::jsonb),
 		       stats.provider_code, stats.provider_match_id, stats.observed_at, stats.last_fetched_at,
-		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END
+		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END,
+            EXISTS (SELECT 1 FROM football.product_provider_resource_observations held
+                WHERE held.canonical_fixture_id=pf.fixture_id
+                AND held.resource_type IN ('NORMALIZED_EVENTS','NORMALIZED_STATISTICS')
+                AND NOT EXISTS (SELECT 1 FROM football.product_uncontested_provider_resources eligible
+                    WHERE eligible.resource_observation_id=held.resource_observation_id))
 		FROM football.product_effective_fixtures pf
 		JOIN football.product_teams home ON home.team_id = pf.home_team_id
 		JOIN football.product_teams away ON away.team_id = pf.away_team_id
@@ -168,12 +177,12 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 			         live.observed_at DESC, live.observation_id DESC LIMIT 1
 		) score ON true
 		LEFT JOIN LATERAL (
-			SELECT resource.* FROM football.product_provider_resource_observations resource
+			SELECT resource.* FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) events ON true
 		LEFT JOIN LATERAL (
-			SELECT resource.* FROM football.product_provider_resource_observations resource
+			SELECT resource.* FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_STATISTICS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) stats ON true
@@ -186,6 +195,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		&scoreProvider, &scoreMatchID, &scoreObserved, &scoreFetched, &scoreStale,
 		&eventsJSON, &eventProvider, &eventMatchID, &eventObserved, &eventFetched, &eventStale,
 		&statisticsJSON, &statsProvider, &statsMatchID, &statsObserved, &statsFetched, &statsStale,
+		&item.ResourceIdentityConflict,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return LiveMatch{}, errProductNotFound
@@ -208,7 +218,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		"events":     len(item.Events) > 0,
 		"statistics": len(item.Statistics) > 0,
 	}
-	item.Partial = !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
+	item.Partial = item.ResourceIdentityConflict || !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
 	return item, nil
 }
 

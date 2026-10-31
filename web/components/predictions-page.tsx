@@ -20,7 +20,6 @@ type FacetFilters = {
   agreement: string;
 };
 
-type ViewMode = "live" | "empty" | "loading";
 
 const EMPTY_FILTERS: FacetFilters = {
   source: "",
@@ -49,7 +48,6 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
   const [filters, setFilters] = useState<FacetFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20);
-  const [viewMode, setViewMode] = useState<ViewMode>("live");
 
   const predictionQuery = useMemo(() => buildPredictionQuery(day, filters, page, pageSize), [day, filters, page, pageSize]);
   const sourceQuery = useMemo(() => buildSourceQuery(day, filters), [day, filters]);
@@ -84,23 +82,20 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
   const changeDay = (nextDay: string) => {
     setPage(1);
     setDay(nextDay);
-    setViewMode("live");
   };
   const updateFilter = (key: keyof FacetFilters, value: string) => {
     setPage(1);
     setFilters((current) => ({ ...current, [key]: value }));
-    setViewMode("live");
   };
   const resetFilters = () => {
     setPage(1);
     setFilters(EMPTY_FILTERS);
-    setViewMode("live");
   };
 
   return (
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ef] antialiased">
-      <PredictionsHeader />
-      <main id="main" className="min-h-[calc(100vh-3.5rem)] pt-14">
+      <PredictionsHeader status={requestState(predictions)} />
+      <main id="main" tabIndex={-1} className="min-h-[calc(100vh-3.5rem)] pt-14">
         <Intro day={day} />
         <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={totalSelections} />
         <FiltersBar
@@ -110,6 +105,7 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
           sources={sourceItems}
           count={totalSelections}
           refreshing={sources.refreshing || predictions.refreshing}
+          status={requestState(predictions)}
           onDayChange={changeDay}
           onFilterChange={updateFilter}
           onReset={resetFilters}
@@ -122,14 +118,12 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
         <SourceFailure error={sources.error} retry={sources.retry} />
         <ConsensusResource loading={predictions.loading} error={predictions.error} items={predictionItems} rows={consensus} />
 
-        <StateBar count={totalSelections} value={viewMode} onChange={setViewMode} />
         <PredictionTableResource
           day={day}
           items={predictionItems}
           loading={predictions.loading}
           refreshing={predictions.refreshing}
           error={predictions.error}
-          viewMode={viewMode}
           retry={predictions.retry}
           reset={resetFilters}
         />
@@ -170,22 +164,21 @@ function ConsensusResource({ loading, error, rows }: {
   return <Consensus rows={rows} />;
 }
 
-function PredictionTableResource({ day, items, loading, refreshing, error, viewMode, retry, reset }: {
+function PredictionTableResource({ day, items, loading, refreshing, error, retry, reset }: {
   day: string;
   items: ExternalPrediction[];
   loading: boolean;
   refreshing: boolean;
   error: string | null;
-  viewMode: ViewMode;
   retry: () => void;
   reset: () => void;
 }) {
   let content: ReactNode;
-  if (loading || viewMode === "loading") {
+  if (loading) {
     content = <Loading />;
   } else if (error) {
     content = <ErrorState label="External selections unavailable" message={error} retry={retry} />;
-  } else if (items.length === 0 || viewMode === "empty") {
+  } else if (items.length === 0) {
     content = <EmptyState reset={reset} />;
   } else {
     content = <Results day={day} items={items} refreshing={refreshing} />;
@@ -193,7 +186,7 @@ function PredictionTableResource({ day, items, loading, refreshing, error, viewM
   return <section className="w-full bg-[#0f131c] px-4 py-3" aria-label="External prediction records"><div className="mx-auto max-w-[1720px]">{content}</div></section>;
 }
 
-function PredictionsHeader() {
+function PredictionsHeader({ status }: { status: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[#262a34] bg-[#0a0e17]">
       <div className="flex h-full w-full items-center justify-between px-4">
@@ -211,8 +204,8 @@ function PredictionsHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <div className={`hidden items-center gap-2 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-1 text-[9px] uppercase tracking-wider sm:flex ${mono}`}><span className="h-2 w-2 rounded-full bg-[#4edea3]" />Feed: Live</div>
-          <div className={`hidden items-center gap-1 text-[10px] text-[#bbcabf] lg:flex ${mono}`}><span aria-hidden="true">◷</span> UTC+0 London</div>
+          <div className={`hidden items-center gap-2 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-1 text-[9px] uppercase tracking-wider sm:flex ${mono}`}>Selections: {status}</div>
+          <div className={`hidden items-center gap-1 text-[10px] text-[#bbcabf] lg:flex ${mono}`}><span aria-hidden="true">◷</span> {DISPLAY_TIME_ZONE}</div>
           <div className="hidden h-4 w-px bg-[#262a34] lg:block" />
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#4edea3] text-[#003824]"><Icon name="person" className="h-[18px] w-[18px]" /><span className="sr-only">Operator profile</span></span>
         </div>
@@ -298,13 +291,14 @@ function Metric({ icon, label, value, detail, footerLabel, footerValue, accent =
   );
 }
 
-function FiltersBar({ day, today, filters, sources, count, refreshing, onDayChange, onFilterChange, onReset, onRefresh }: {
+function FiltersBar({ day, today, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
   day: string;
   today: string;
   filters: FacetFilters;
   sources: ExternalSource[];
   count: number;
   refreshing: boolean;
+  status: string;
   onDayChange: (day: string) => void;
   onFilterChange: (key: keyof FacetFilters, value: string) => void;
   onReset: () => void;
@@ -348,7 +342,7 @@ function FiltersBar({ day, today, filters, sources, count, refreshing, onDayChan
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections for {day}</span>
-            <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />{refreshing ? "Refreshing" : "Cluster Synced"}</span>
+            <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />Records: {status}</span>
           </div>
         </div>
       </div>
@@ -382,7 +376,7 @@ function Consensus({ rows }: { rows: ExternalConsensus[] }) {
             const ratio = Math.round((row.count / row.total) * 100);
             return (
               <article key={row.id} className="rounded-sm border border-[#262a34] bg-[#181b25] p-1.5 hover:border-[#86948a]/40">
-                <div className="mb-2 flex items-center justify-between gap-2 border-b border-[#262a34]/60 pb-1"><h3 className="text-[15px] font-semibold">{row.fixture}</h3><span className={`text-[9px] text-[#86948a] ${mono}`}>{kickoff(row.kickoff)} UTC</span></div>
+                <div className="mb-2 flex items-center justify-between gap-2 border-b border-[#262a34]/60 pb-1"><h3 className="text-[15px] font-semibold">{row.fixture}</h3><span className={`text-[9px] text-[#86948a] ${mono}`}>{kickoff(row.kickoff)} {DISPLAY_TIME_ZONE}</span></div>
                 <dl className="space-y-1.5 text-[11px]">
                   <div className="flex items-center justify-between gap-2"><dt className="text-[#bbcabf]">{market(row.market)} pick:</dt><dd className={`rounded-sm bg-[#1c1f29] px-1.5 py-0.5 font-semibold text-[#7bd0ff] ${mono}`}>{row.selection}</dd></div>
                   <div className="flex items-center justify-between gap-2"><dt className="text-[#bbcabf]">Consensus Ratio:</dt><dd className={`flex items-center gap-1.5 ${mono}`}><span className="h-1.5 w-16 overflow-hidden rounded-full bg-[#1c1f29]"><span className={`block h-full ${row.agreement === "AGREES" ? "bg-[#4edea3]" : "bg-amber-400"}`} style={{ width: `${ratio}%` }} /></span>{row.count} of {row.total} sources ({ratio}%)</dd></div>
@@ -397,27 +391,12 @@ function Consensus({ rows }: { rows: ExternalConsensus[] }) {
   );
 }
 
-function StateBar({ count, value, onChange }: { count: number; value: ViewMode; onChange: (mode: ViewMode) => void }) {
-  return (
-    <section className={`w-full border-b border-[#262a34] bg-[#1c1f29] px-4 py-1 text-[9px] ${mono}`} aria-label="Table state">
-      <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2"><span className="uppercase tracking-wider text-[#86948a]">Terminal State View:</span><StateButton active={value === "live"} onClick={() => onChange("live")}>Live Feed ({fmt(count)})</StateButton><StateButton active={value === "empty"} onClick={() => onChange("empty")}>Empty State</StateButton><StateButton active={value === "loading"} onClick={() => onChange("loading")}>Ingestion Skeleton</StateButton></div>
-        <div className="flex items-center gap-2 text-[#86948a]"><span>Display density: <strong>Compact 40px</strong></span><span>•</span><span>Deterministic sorting: <strong>Date DESC</strong></span></div>
-      </div>
-    </section>
-  );
-}
-
-function StateButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return <button type="button" aria-pressed={active} onClick={onClick} className={`rounded-sm border px-2 py-0.5 ${active ? "border-[#4edea3]/40 bg-[#262a34] font-semibold text-[#4edea3]" : "border-[#262a34] bg-[#1c1f29] text-[#bbcabf] hover:text-[#dfe2ef]"}`}>{children}</button>;
-}
-
 function Results({ items, refreshing }: { day: string; items: ExternalPrediction[]; refreshing: boolean }) {
   return (
     <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#0a0e17]" aria-busy={refreshing}>
       <div className="overflow-x-auto" tabIndex={0} aria-label="External selection records table">
         <table className={`w-full min-w-[1180px] border-collapse text-left text-[10px] ${mono}`}>
-          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">Date (UTC)<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-center">Result</TH><TH className="text-center">Settlement</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
+          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">First capture ({DISPLAY_TIME_ZONE})<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff ({DISPLAY_TIME_ZONE})</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-center">Result</TH><TH className="text-center">Settlement</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
           <tbody>
             {items.map((item, index) => (
               <tr key={item.id} className={`h-11 border-b border-[#262a34]/50 transition-colors hover:bg-[#262a34]/60 ${index % 2 ? "bg-[#181b25]/40" : "bg-[#0a0e17]"}`}>
@@ -460,7 +439,7 @@ function SourceAudit({ sources }: { sources: ExternalSource[] }) {
         <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#181b25]">
           <div className="overflow-x-auto" tabIndex={0} aria-label="Source adapter performance table">
             <table className={`w-full min-w-[1100px] border-collapse text-[10px] ${mono}`}>
-              <thead><tr className="h-9 border-b border-[#262a34] bg-[#1c1f29] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH>Source Provider</TH><TH>Access Status</TH><TH>Latest collection</TH><TH className="text-right">Tracked</TH><TH className="text-right">Pre-kickoff capture</TH><TH className="text-right">Late capture</TH><TH className="text-right">Prospective settled</TH><TH className="text-right">Correct</TH><TH className="text-right">Hit Rate</TH><TH className="text-right">MF Agreement</TH><TH>Known Issue / Advisory</TH></tr></thead>
+              <thead><tr className="h-9 border-b border-[#262a34] bg-[#1c1f29] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH>Source Provider</TH><TH>Access Status</TH><TH>Latest collection</TH><TH className="text-right">Tracked</TH><TH className="text-right">Pre-kickoff capture</TH><TH className="text-right">Retrospective</TH><TH className="text-right">Prospective settled</TH><TH className="text-right">Correct</TH><TH className="text-right">Hit Rate</TH><TH className="text-right">MF Agreement</TH><TH>Known Issue / Advisory</TH></tr></thead>
               <tbody>
                 {sources.map((item, index) => (
                   <tr key={item.code} className={`h-10 border-b border-[#262a34]/50 hover:bg-[#262a34]/50 ${index % 2 ? "bg-[#0a0e17]" : "bg-[#181b25]"}`}>
@@ -586,4 +565,10 @@ function tone(value: ExternalPrediction["agreement"]) {
   if (value === "WEAK_SUPPORT") return "text-amber-300";
   if (value === "DISAGREES") return "text-[#ffb4ab]";
   return "text-[#86948a]";
+}
+
+function requestState(resource: { loading: boolean; refreshing: boolean; error: string | null }): string {
+  if (resource.error) return "Unavailable";
+  if (resource.loading) return "Loading";
+  return resource.refreshing ? "Refreshing" : "Loaded";
 }

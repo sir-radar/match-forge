@@ -240,8 +240,16 @@ func (application *App) ready(response http.ResponseWriter, request *http.Reques
 	application.writeJSON(response, http.StatusOK, map[string]string{"status": "ready"})
 }
 
+// Set by the repository build, never inferred from a mutable runtime checkout.
+var buildCommitSHA = "unknown"
+var buildDependencyLockSHA256 = "unknown"
+var buildWorktreeState = "unknown"
+
 func (application *App) version(response http.ResponseWriter, _ *http.Request) {
-	application.writeJSON(response, http.StatusOK, map[string]string{"version": application.config.Version})
+	application.writeJSON(response, http.StatusOK, map[string]string{
+		"version": application.config.Version, "code_commit_sha": buildCommitSHA,
+		"dependency_lock_sha256": buildDependencyLockSHA256, "worktree_state": buildWorktreeState,
+	})
 }
 
 func (application *App) writeJSON(response http.ResponseWriter, status int, value any) {

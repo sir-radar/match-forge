@@ -107,6 +107,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     public_reports.add_argument("--limit", type=int, default=32)
     public_reports.add_argument("--lease-seconds", type=int, default=120)
+    binding = commands.add_parser("external-binding-review")
+    binding.add_argument("--prediction-id", type=UUID, required=True)
+    binding.add_argument("--mapping-id", type=UUID, required=True)
+    binding.add_argument("--reason", required=True)
     commands.add_parser("history-coverage")
     commands.add_parser("work-metrics")
     domain_metrics = commands.add_parser("domain-metrics")
@@ -197,8 +201,11 @@ def main(argv: list[str] | None = None) -> int:
         return _run_external_predictions(args)
     if args.command == "refresh-competition-geography":
         return _run_competition_geography(args)
-    if args.command == "provider-mapping-review":
-        return _run_provider_mapping_review(args)
+    if args.command in {"provider-mapping-review", "external-binding-review"}:
+        return {
+            "provider-mapping-review": _run_provider_mapping_review,
+            "external-binding-review": _run_external_binding_review,
+        }[args.command](args)
     if args.command == "development-provider-preview":
         return _run_development_provider_preview(args)
     if args.command in {"fotmob-sync", "pitchapi-sync"}:
@@ -1008,6 +1015,21 @@ def _collection_payload(result: SourceCollection) -> dict[str, object]:
         "parsed": len(result.rows),
         "error": result.error,
     }
+
+
+def _run_external_binding_review(args: argparse.Namespace) -> int:
+    from football.product.external_prediction_recovery import bind_reviewed_prediction
+
+    try:
+        with psycopg.connect(args.database_url) as connection:
+            created = bind_reviewed_prediction(
+                connection, args.prediction_id, args.mapping_id, reason=args.reason
+            )
+    except (psycopg.Error, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps({"status": "BOUND" if created else "UNCHANGED"}, sort_keys=True))
+    return 0
 
 
 def _run_external_import(args: argparse.Namespace) -> int:

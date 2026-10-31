@@ -62,13 +62,23 @@ function useSyncStatus() {
   const active = runs.filter(runActive);
   const hasActive = active.length > 0;
   useEffect(() => {
-    if (!hasActive) return;
+    if (loading) return;
     let stopped = false;
-    let timer = window.setTimeout(poll, 2500);
-    async function poll() { await reload(); if (!stopped) timer = window.setTimeout(poll, 2500); }
-    const clockTimer = window.setInterval(() => setClock(Date.now()), 1000);
-    return () => { stopped = true; window.clearTimeout(timer); window.clearInterval(clockTimer); invalidate(); };
-  }, [hasActive, invalidate, reload]);
+    let polling = false;
+    const delay = () => document.hidden ? 120_000 : hasActive ? 2500 : 60_000;
+    let timer = window.setTimeout(poll, delay());
+    async function poll() {
+      if (stopped || polling) return;
+      polling = true;
+      await reload();
+      polling = false;
+      if (!stopped) timer = window.setTimeout(poll, delay());
+    }
+    const visible = () => { if (!document.hidden) { window.clearTimeout(timer); void poll(); } };
+    document.addEventListener("visibilitychange", visible);
+    const clockTimer = hasActive ? window.setInterval(() => setClock(Date.now()), 1000) : undefined;
+    return () => { stopped = true; window.clearTimeout(timer); window.clearInterval(clockTimer); document.removeEventListener("visibilitychange", visible); invalidate(); };
+  }, [hasActive, loading, invalidate, reload]);
 
   return { active, clock, coverage, error, loading, providerConfiguration, runs, latestRuns, mounted, publish, reload, invalidate, setClock };
 }

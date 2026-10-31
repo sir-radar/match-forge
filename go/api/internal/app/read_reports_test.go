@@ -212,3 +212,42 @@ func verifyPublicReportHTTP(t *testing.T, store *PostgresProductStore) {
 		fmt.Printf("OPENAPI %s %s", item.schema, response.Body.String())
 	}
 }
+
+func TestConflictingLiveResourceDatabase(t *testing.T) {
+	id := os.Getenv("TEST_CONFLICT_FIXTURE_ID")
+	if id == "" {
+		t.Skip("requires disposable conflicting resource fixture")
+	}
+	store, _ := performanceDatabaseStore(t)
+	live, err := store.LiveFixture(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !live.ResourceIdentityConflict || !live.Partial || len(live.Events) != 0 || live.EventSource != nil {
+		t.Fatalf("conflicting resources presented as verified: %+v", live)
+	}
+}
+
+func TestPrematchFixtureEligibilityDatabase(t *testing.T) {
+	store, _ := performanceDatabaseStore(t)
+	groups, err := store.Fixtures(context.Background(), FixtureFilters{
+		Start: time.Date(2029, 12, 31, 0, 0, 0, 0, time.UTC), End: time.Date(2030, 1, 2, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(groups) != 1 || len(groups[0].Fixtures) != 1 {
+		t.Fatalf("unexpected fixture groups: %+v", groups)
+	}
+	forecast := groups[0].Fixtures[0].Forecast
+	expected := os.Getenv("TEST_EXPECTED_FORECAST_ID")
+	if expected == "" {
+		if forecast != nil || groups[0].Fixtures[0].ForecastAvailability != "SOURCE_DATA_INCOMPLETE" {
+			t.Fatalf("ineligible forecast availability is misleading: %+v", groups[0].Fixtures[0])
+		}
+		return
+	}
+	if forecast == nil || forecast.ID != expected {
+		t.Fatalf("ineligible active forecast selected: %+v expected=%s", forecast, expected)
+	}
+}

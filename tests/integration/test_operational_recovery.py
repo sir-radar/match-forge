@@ -251,3 +251,73 @@ with psycopg.connect(os.environ["INTERRUPTION_DATABASE_URL"]) as c:
         publisher.execute("INSERT INTO interruption_result VALUES (%s)", (identity,))
     assert connection.execute("SELECT count(*) FROM interruption_result").fetchone() == (1,)
     assert asdict(replacement)["attempt_count"] == 2
+
+
+def test_conflicting_native_mapping_cannot_attach_or_serve_resource(
+    recovery_connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from tests.integration.test_live_context import FIXTURE, _seed_fixture
+
+    connection = recovery_connection
+    sync, target, _provisional, snapshot, live, _kickoff, _acquired = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
+    _seed_fixture(connection)
+    raw = b'{"events":[]}'
+    response = PitchApiResponse(
+        path="/synthetic/events",
+        fetched_at=datetime.now(UTC),
+        sha256=hashlib.sha256(raw).hexdigest(),
+        raw=raw,
+        data=json.loads(raw),
+    )
+    sync._store_resource(
+        live.provider_match_id,
+        FIXTURE,
+        "NORMALIZED_EVENTS",
+        response.data,
+        response,
+        snapshot,
+        eligibility="ELIGIBLE",
+    )
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_provider_resource_observations "
+        "WHERE canonical_fixture_id=%s",
+        (FIXTURE,),
+    ).fetchone() == (1,)
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_uncontested_provider_resources "
+        "WHERE canonical_fixture_id=%s",
+        (FIXTURE,),
+    ).fetchone() == (0,)
+    import subprocess
+
+    connection.commit()
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestConflictingLiveResourceDatabase$",
+            "-count=1",
+        ],
+        cwd="go/api",
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=os.environ
+        | {
+            "TEST_DATABASE_URL": make_conninfo(
+                os.environ["TEST_DATABASE_URL"], dbname=connection.info.dbname
+            ),
+            "TEST_CONFLICT_FIXTURE_ID": str(FIXTURE),
+        },
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    connection.execute(
+        "UPDATE football.match_provider_mappings SET match_id=%s WHERE match_id=%s "
+        "AND provider_match_id=%s",
+        (FIXTURE, target, live.provider_match_id),
+    )
+    assert sync._resolve_fixture(live) is None

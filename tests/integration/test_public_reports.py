@@ -426,6 +426,12 @@ def test_context_source_seals_target_outcomes_even_after_earlier_revision(report
 
 
 def test_go_retrieves_python_reports_and_rejects_missing_stale_versions(report_database):
+    from datetime import UTC, datetime
+
+    from football.product.external_prediction_recovery import settle_pending_predictions
+
+    with psycopg.connect(report_database) as connection:
+        settle_pending_predictions(connection, datetime.now(UTC))
     url = report_database
     canonical_fixture = UUID("00000000-0000-4000-8000-000000001fa8")
     with psycopg.connect(url) as connection:
@@ -616,7 +622,7 @@ def test_context_input_retains_coach_lineup_and_upcoming_fixture_references(repo
     )
 
 
-def test_current_product_bucket_contract_publishes_a_performance_report(report_database):
+def _publish_current_bucket_forecast(report_database):
     from pathlib import Path
 
     from football.product.domain import FinishedMatch, forecast_from_history
@@ -664,6 +670,10 @@ def test_current_product_bucket_contract_publishes_a_performance_report(report_d
                 Jsonb(list(forecast.score_matrix)),
             ),
         )
+
+
+def test_current_product_bucket_contract_publishes_a_performance_report(report_database):
+    _publish_current_bucket_forecast(report_database)
     assert build(report_database, "PERFORMANCE", COMPETITION)["published"] == 1
     with psycopg.connect(report_database) as connection:
         inputs, payload = connection.execute(
@@ -699,3 +709,87 @@ def test_normal_go_scheduler_launches_report_worker_without_browser_or_manual_cl
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "--- PASS: TestScheduledPublicReportsDatabase" in result.stdout
+
+
+def test_comparison_excludes_postkickoff_and_future_cutoff_forecast_revisions(report_database):
+    with psycopg.connect(report_database) as connection:
+        eligible = connection.execute(
+            "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+        ).fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (KICKOFF + timedelta(hours=2), FIXTURE),
+        )
+        _revision(connection, -1)
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (KICKOFF, FIXTURE),
+        )
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            == eligible
+        )
+        connection.commit()
+        _verify_prematch_reader(report_database, eligible)
+        invalid = uuid4()
+        connection.execute(
+            """INSERT INTO football.product_forecasts
+            SELECT (jsonb_populate_record(NULL::football.product_forecasts,to_jsonb(f)||
+                jsonb_build_object('forecast_id',%s::uuid,'semantic_sha256',%s::text,
+                    'payload_sha256',%s::text,'predictive_input_snapshot_sha256',%s::text,
+                    'created_at',%s::timestamptz,'football_cutoff',%s::timestamptz,
+                    'knowledge_cutoff',%s::timestamptz))).*
+            FROM football.product_forecasts f ORDER BY created_at LIMIT 1""",
+            (
+                invalid,
+                invalid.hex * 2,
+                invalid.hex * 2,
+                invalid.hex * 2,
+                KICKOFF - timedelta(minutes=1),
+                KICKOFF,
+                KICKOFF,
+            ),
+        )
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            == eligible
+        )
+
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s,"
+            "forecast_availability='FORECAST_AVAILABLE' "
+            "WHERE fixture_id=%s",
+            (KICKOFF - timedelta(hours=26), FIXTURE),
+        )
+        connection.commit()
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            is None
+        )
+        connection.commit()
+        _verify_prematch_reader(report_database, "")
+
+
+def _verify_prematch_reader(database_url, expected):
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestPrematchFixtureEligibilityDatabase$",
+            "-count=1",
+        ],
+        cwd="go/api",
+        env=os.environ | {"TEST_DATABASE_URL": database_url, "TEST_EXPECTED_FORECAST_ID": expected},
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

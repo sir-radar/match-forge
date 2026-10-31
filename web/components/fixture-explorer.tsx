@@ -65,7 +65,7 @@ function CompetitionRail({ state, filters, setFilters }: { state: ReturnType<typ
     {state.error && <ResourceError message={state.error} retry={state.retry} />}
     <small className="rail-section">Available leagues</small>
     {(state.data ?? []).slice(0, 18).map((item) => (
-      <button key={item.id} className={filters.competition === item.id ? "active" : ""} onClick={() => setFilters((old) => ({ ...old, competition: old.competition === item.id ? "" : item.id }))}>
+      <button key={item.id} className={filters.competition === item.id ? "active" : ""} onClick={() => setFilters((old) => ({ ...old, continent: "", country: "", competition: old.competition === item.id ? "" : item.id }))}>
         <span>{metadataLabel(item.country, "Country")} – {item.name}</span><small>{item.division ? `D${item.division}` : metadataLabel(item.type, "Type")}</small>
       </button>
     ))}

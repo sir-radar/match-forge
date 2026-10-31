@@ -11,18 +11,24 @@ const externalAgreementSQL = `COALESCE(convert_from(comparison.record_bytes,'UTF
 const externalEligibleSQL = `(pf.identity_status='VERIFIED' AND ep.effective_match_status='MATCHED'
     AND ep.date_status IN ('VERIFIED','NOT_APPLICABLE') AND NOT ep.source_revision_conflict
     AND ep.collected_at<pf.kickoff_at AND ep.revision_started_at<pf.kickoff_at
-    AND ep.last_observed_at<=statement_timestamp())`
+    AND ep.last_observed_at<=statement_timestamp()
+    AND validation.generation=validation.completed_generation
+    AND (binding.evidence->>'method' IS DISTINCT FROM 'REVIEWED_VERIFIED_PROVIDER_ID'
+         OR binding.decided_at<pf.kickoff_at))`
 const externalPredictionFromSQL = `
     FROM football.external_prediction_current ep
     JOIN football.external_prediction_sources eps ON eps.source_code=ep.source_code
+    LEFT JOIN football.external_prediction_bindings binding ON binding.binding_id=ep.binding_id
     LEFT JOIN football.product_fixtures pf ON pf.fixture_id=ep.effective_fixture_id
     LEFT JOIN football.product_competitions pc ON pc.competition_id=pf.competition_id
     LEFT JOIN football.product_teams home ON home.team_id=pf.home_team_id
     LEFT JOIN football.product_teams away ON away.team_id=pf.away_team_id
+    LEFT JOIN football.external_prediction_refresh_work validation ON validation.prediction_id=ep.prediction_id
     CROSS JOIN LATERAL (SELECT football.public_comparison_source(ep.prediction_id) AS value) source
     LEFT JOIN LATERAL (
         SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
         WHERE r.report_kind='COMPARISON' AND r.scope_id=ep.prediction_id AND r.horizon='LATEST'
+          AND validation.generation=validation.completed_generation
           AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
         ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
     ) comparison ON true
@@ -168,14 +174,16 @@ func externalConsensus(ctx context.Context, tx pgx.Tx, query string, args []any)
 func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPredictionSource, error) {
 	query, args := filteredExternalPredictions(filters)
 	statement := `WITH filtered AS (SELECT ep.source_code,` + externalEligibleSQL + ` AS prospective,
-        ep.collected_at,ep.revision_started_at,pf.kickoff_at,result.settlement_state,` + externalAgreementSQL + ` AS agreement ` + query + `),
+        ep.collected_at,ep.revision_started_at,pf.kickoff_at,
+        (binding.evidence->>'method'='REVIEWED_VERIFIED_PROVIDER_ID' AND binding.decided_at>=pf.kickoff_at) AS reviewed_late,
+        result.settlement_state,` + externalAgreementSQL + ` AS agreement ` + query + `),
     metrics AS (SELECT source_code,count(*)::int AS tracked,
         count(*) FILTER(WHERE prospective AND settlement_state IN ('WON','LOST'))::int AS settled,
         count(*) FILTER(WHERE prospective AND settlement_state='WON')::int AS correct,
         avg((settlement_state='WON')::int) FILTER(WHERE prospective AND settlement_state IN ('WON','LOST'))::float8 AS hit_rate,
         avg((agreement='AGREES')::int) FILTER(WHERE prospective AND agreement<>'UNABLE_TO_EVALUATE')::float8 AS agreement_rate,
         count(*) FILTER(WHERE prospective)::int AS prospective_count,
-        count(*) FILTER(WHERE collected_at>=kickoff_at OR revision_started_at>=kickoff_at)::int AS retrospective_count
+        count(*) FILTER(WHERE collected_at>=kickoff_at OR revision_started_at>=kickoff_at OR reviewed_late)::int AS retrospective_count
         FROM filtered GROUP BY source_code)
     SELECT source.source_code,source.name,source.base_url,source.public_predictions,
         source.prediction_date_available,source.login_required,source.paid_content,

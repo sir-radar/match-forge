@@ -23,8 +23,6 @@ def refresh_prediction_binding(connection: Connection[Any], prediction_id: UUID)
             "SELECT * FROM football.external_predictions WHERE prediction_id=%s", (prediction_id,)
         ).fetchone()
         assert prediction is not None
-        if prediction["provider_code"] is None:
-            return
         previous = cursor.execute(
             """SELECT binding.* FROM football.external_prediction_bindings binding
             WHERE prediction_id=%s AND NOT EXISTS (
@@ -32,20 +30,31 @@ def refresh_prediction_binding(connection: Connection[Any], prediction_id: UUID)
                 WHERE successor.previous_binding_id=binding.binding_id)""",
             (prediction_id,),
         ).fetchone()
+        if prediction["provider_code"] is None and (
+            previous is None or previous["mapping_id"] is None
+        ):
+            return
         matches = cursor.execute(
             """SELECT mapping.id,fixture.fixture_id,
                 mapping.source_snapshot_id,mapping.mapping_method
             FROM football.match_provider_mappings mapping
             JOIN football.providers provider ON provider.id=mapping.provider_id
             JOIN football.product_fixtures fixture ON fixture.fixture_id=mapping.match_id
-            WHERE provider.code=%s AND mapping.provider_match_id=%s
+            WHERE ((%s::text IS NOT NULL AND provider.code=%s AND mapping.provider_match_id=%s)
+                OR (%s::text IS NULL AND mapping.id=%s))
                 AND mapping.mapping_confidence=1
                 AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
                 AND fixture.identity_status='VERIFIED'
                 AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
                 AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
                 AND mapping.first_seen_at<=statement_timestamp()""",
-            (prediction["provider_code"], prediction["provider_fixture_id"]),
+            (
+                prediction["provider_code"],
+                prediction["provider_code"],
+                prediction["provider_fixture_id"],
+                prediction["provider_code"],
+                previous["mapping_id"] if previous else None,
+            ),
         ).fetchall()
         target = matches[0] if len(matches) == 1 else None
         if target is None and previous is None and prediction["fixture_id"] is None:
@@ -79,6 +88,66 @@ def refresh_prediction_binding(connection: Connection[Any], prediction_id: UUID)
                 ),
             ),
         )
+
+
+def bind_reviewed_prediction(
+    connection: Connection[Any], prediction_id: UUID, mapping_id: UUID, *, reason: str
+) -> bool:
+    """Record an explicit review; never infer a missing native ID from source names."""
+    if not reason.strip():
+        raise ValueError("external binding review requires retained evidence and a reason")
+    with connection.transaction(), connection.cursor(row_factory=dict_row) as cursor:
+        cursor.execute("SELECT football.authorize_worker_publication()")
+        cursor.execute("SELECT football.enqueue_external_prediction_refresh(%s)", (prediction_id,))
+        prediction = cursor.execute(
+            "SELECT revision_sha256 FROM football.external_predictions WHERE prediction_id=%s",
+            (prediction_id,),
+        ).fetchone()
+        mapping = cursor.execute(
+            """SELECT mapping.match_id,mapping.source_snapshot_id
+            FROM football.match_provider_mappings mapping
+            JOIN football.product_fixtures fixture ON fixture.fixture_id=mapping.match_id
+            WHERE mapping.id=%s AND mapping.mapping_confidence=1
+                AND mapping.mapping_method IN ('explicit_crosswalk','manual','deterministic')
+                AND fixture.identity_status='VERIFIED'
+                AND (mapping.valid_from IS NULL OR mapping.valid_from<=fixture.kickoff_at)
+                AND (mapping.valid_to IS NULL OR mapping.valid_to>fixture.kickoff_at)
+                AND mapping.first_seen_at<=statement_timestamp()""",
+            (mapping_id,),
+        ).fetchone()
+        if prediction is None or mapping is None or mapping["source_snapshot_id"] is None:
+            raise ValueError(
+                "review requires an existing source capture and retained native mapping"
+            )
+        previous = cursor.execute(
+            """SELECT binding.* FROM football.external_prediction_bindings binding
+            WHERE prediction_id=%s AND NOT EXISTS (
+                SELECT 1 FROM football.external_prediction_bindings successor
+                WHERE successor.previous_binding_id=binding.binding_id)""",
+            (prediction_id,),
+        ).fetchone()
+        if previous and previous["mapping_id"] == mapping_id:
+            return False
+        cursor.execute(
+            """INSERT INTO football.external_prediction_bindings
+            (prediction_id,previous_binding_id,fixture_id,mapping_id,match_status,evidence)
+            VALUES(%s,%s,%s,%s,'MATCHED',%s::jsonb)""",
+            (
+                prediction_id,
+                previous["binding_id"] if previous else None,
+                mapping["match_id"],
+                mapping_id,
+                json.dumps(
+                    {
+                        "method": "REVIEWED_VERIFIED_PROVIDER_ID",
+                        "review_reason": reason.strip(),
+                        "source_revision_sha256": prediction["revision_sha256"],
+                        "source_snapshot_id": str(mapping["source_snapshot_id"]),
+                    }
+                ),
+            ),
+        )
+    return True
 
 
 def _review_date(connection: Connection[Any], prediction_id: UUID) -> None:

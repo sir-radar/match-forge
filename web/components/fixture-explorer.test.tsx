@@ -33,13 +33,13 @@ describe("FixtureExplorer", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      const payload = url.includes("/v1/competitions?") ? { competitions: [competition] }
-        : url.includes("/v1/fixtures?") ? { date: "2026-09-29", groups: [{ competition, fixtures: [fixture] }] }
-        : url.includes("/context") ? context
-        : url.includes("/live") ? liveMatch
-        : url.includes("/forecasts/") ? forecast
-        : url.includes("external-predictions") ? { predictions: [] }
-        : {};
+      const responses = [
+        ["/v1/competitions?", { competitions: [competition] }],
+        ["/v1/fixtures?", { date: "2026-09-29", groups: [{ competition, fixtures: [fixture] }] }],
+        ["/context", context], ["/live", liveMatch], ["/forecasts/", forecast],
+        ["external-predictions", { predictions: [] }],
+      ] as const;
+      const payload = responses.find(([path]) => url.includes(path))?.[1] ?? {};
       return new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } });
     }));
   });
@@ -224,6 +224,74 @@ describe("FixtureExplorer", () => {
     expect(screen.getAllByText("Not enough qualified match history")).toHaveLength(2);
   });
 
+  it("refreshes successful context while open without refetching its immutable forecast", async () => {
+    vi.useFakeTimers();
+    let contextRequests = 0;
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => {
+      if (String(input).endsWith("/context")) {
+        contextRequests++;
+        return Promise.resolve(new Response(JSON.stringify({ ...context,
+          home_form: contextRequests < 2 ? [] : [{ kickoff_at: "2026-09-20T15:00:00Z", opponent: "Liverpool", venue: "HOME", goals_for: 2, goals_against: 0, result: "W" }],
+        })));
+      }
+      return original(input, options);
+    }));
+    try {
+      const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+      const view = render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+      await act(async () => { await Promise.resolve(); });
+      expect(contextRequests).toBe(1);
+      await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+      expect(contextRequests).toBe(2);
+      expect(screen.getByText("W")).toBeInTheDocument();
+      expect(vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/forecasts/")).length).toBe(1);
+      view.unmount();
+      await act(async () => { await vi.advanceTimersByTimeAsync(120_000); });
+      expect(contextRequests).toBe(2);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("backs off repeated report misses after successful context instead of restarting at five seconds", async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => {
+      if (!String(input).endsWith("/context")) return original(input, options);
+      calls++;
+      return Promise.resolve(new Response(JSON.stringify(calls === 1 ? context : { error: "Report pending" }), { status: calls === 1 ? 200 : 503 }));
+    }));
+    try {
+      const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+      const view = render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+      await act(async () => { await Promise.resolve(); });
+      await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+      expect(calls).toBe(2);
+      await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+      expect(calls).toBe(3);
+      await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+      expect(calls).toBe(3);
+      await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+      expect(calls).toBe(4);
+      view.unmount();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("clears conflicting geography when selecting another competition from the rail", async () => {
+    const other = { ...competition, id: "league-2", name: "Serie A", country: "Italy" };
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).includes("/competitions?")
+      ? Promise.resolve(new Response(JSON.stringify({ competitions: [competition, other] }))) : original(input, options)));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    await screen.findByRole("option", { name: "England" });
+    fireEvent.change(screen.getByLabelText("Country"), { target: { value: "England" } });
+    fireEvent.click(screen.getByRole("button", { name: /Serie A/ }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("competition=league-2"), expect.anything()));
+    const last = vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/fixtures?" )).at(-1)!;
+    expect(new URL(String(last[0])).searchParams.has("country")).toBe(false);
+    expect(screen.getByLabelText("Country")).toHaveValue("");
+  });
+
   it("retries context after a temporary report miss", async () => {
     vi.useFakeTimers();
     let contextRequests = 0;
@@ -316,6 +384,45 @@ describe("FixtureExplorer", () => {
     expect(screen.getByText("1–1")).toBeInTheDocument();
     expect(screen.queryByText("LIVE", { selector: ".live-indicator" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Live 0/ })).toBeInTheDocument();
+  });
+
+  it("renders stored market probabilities with their declared labels", async () => {
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Markets" }));
+    expect(await screen.findByText("51.0%")).toBeInTheDocument();
+    expect(screen.getByText("55.0%")).toBeInTheDocument();
+    expect(screen.getByText("33.0%")).toBeInTheDocument();
+    expect(screen.getByText("22.0%")).toBeInTheDocument();
+  });
+
+  it("orders incidents by time and added time, preserves tied provider order and keeps unknown times last", async () => {
+    const original = fetch;
+    const events = [
+      { ...liveMatch.events[0], id: "z", minute: null, added_time: null, player_name: "Unknown" },
+      { ...liveMatch.events[0], id: "added", added_time: 2, player_name: "Added" },
+      { ...liveMatch.events[0], id: "b", player_name: "Tie" },
+      { ...liveMatch.events[0], id: "a", player_name: "Later" },
+      { ...liveMatch.events[0], id: "early", minute: 3, player_name: "Early" },
+    ];
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).endsWith("/live")
+      ? Promise.resolve(new Response(JSON.stringify({ ...liveMatch, events }))) : original(input, options)));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Live Match" }));
+    await screen.findByText("Early");
+    const names = [...document.querySelectorAll(".incident-list li > span")].map((node) => node.textContent);
+    expect(names).toEqual(["Early", "Tie", "Later", "Added", "Unknown"]);
+  });
+
+  it("explains withheld resources when native fixture identity conflicts", async () => {
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).endsWith("/live")
+      ? Promise.resolve(new Response(JSON.stringify({ ...liveMatch, events: [], statistics: [], partial: true, resource_identity_conflict: true }))) : original(input, options)));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Live Match" }));
+    expect(await screen.findByText(/incidents or statistics are withheld/)).toBeInTheDocument();
   });
 
   it("renders confirmed live 0-0, compact scorers, and provider statistics", async () => {

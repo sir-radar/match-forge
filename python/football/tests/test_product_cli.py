@@ -268,7 +268,7 @@ def test_sync_all_enables_operational_providers_independently(
         (("NO_DATE_PAGE",), "OUTSIDE_WINDOW"),
     ],
 )
-def test_source_collection_completion_is_truthful(statuses, expected):
+def test_source_collection_completion_is_truthful(statuses: tuple[str, ...], expected: str) -> None:
     from football.product.external_prediction_sources import SourceCollection
 
     results = [
@@ -279,7 +279,7 @@ def test_source_collection_completion_is_truthful(statuses, expected):
     assert cli._collection_status(results) == expected
 
 
-def test_intentionally_disabled_forebet_is_not_a_failed_attempt():
+def test_intentionally_disabled_forebet_is_not_a_failed_attempt() -> None:
     from football.product.external_prediction_sources import SourceCollection
 
     assert (

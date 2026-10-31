@@ -195,22 +195,23 @@ type LiveSource struct {
 }
 
 type LiveMatch struct {
-	FixtureID    string          `json:"fixture_id"`
-	Status       string          `json:"status"`
-	Home         Team            `json:"home"`
-	Away         Team            `json:"away"`
-	HomeScore    *int            `json:"home_score"`
-	AwayScore    *int            `json:"away_score"`
-	MatchMinute  *int            `json:"match_minute"`
-	AddedTime    *int            `json:"added_time"`
-	Period       *string         `json:"period"`
-	Events       []LiveEvent     `json:"events"`
-	Statistics   []LiveStatistic `json:"statistics"`
-	ScoreSource  *LiveSource     `json:"score_source"`
-	EventSource  *LiveSource     `json:"event_source"`
-	StatsSource  *LiveSource     `json:"statistics_source"`
-	Availability map[string]bool `json:"availability"`
-	Partial      bool            `json:"partial"`
+	FixtureID                string          `json:"fixture_id"`
+	Status                   string          `json:"status"`
+	Home                     Team            `json:"home"`
+	Away                     Team            `json:"away"`
+	HomeScore                *int            `json:"home_score"`
+	AwayScore                *int            `json:"away_score"`
+	MatchMinute              *int            `json:"match_minute"`
+	AddedTime                *int            `json:"added_time"`
+	Period                   *string         `json:"period"`
+	Events                   []LiveEvent     `json:"events"`
+	Statistics               []LiveStatistic `json:"statistics"`
+	ScoreSource              *LiveSource     `json:"score_source"`
+	EventSource              *LiveSource     `json:"event_source"`
+	StatsSource              *LiveSource     `json:"statistics_source"`
+	Availability             map[string]bool `json:"availability"`
+	Partial                  bool            `json:"partial"`
+	ResourceIdentityConflict bool            `json:"resource_identity_conflict,omitempty"`
 }
 
 type Team struct {

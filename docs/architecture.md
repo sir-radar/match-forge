@@ -1173,3 +1173,30 @@ its exact owner/token/generation checks. After interruption, a new claim may
 recover committed progress; an expired claim cannot renew or publish. Missing
 host heartbeat/process evidence must not be interpreted as permission to extend
 or bypass these checks.
+
+
+Current live-resource serving excludes a retained resource when its provider's
+verified native mapping points to a different effective fixture. The original
+resource remains available for review. Detail acquisition cannot attach a
+conflicting candidate through the read-only resolver. This does not choose which
+fixture is correct or change a mapping decision.
+
+`make build` embeds the code commit, uv.lock SHA-256 and clean/dirty source state
+in the Go binary. `/version` returns these fields beside the existing version.
+Direct builds without those linker settings report `unknown`; serving never
+reads a moving checkout to infer a deployed revision. Operators can compare this
+endpoint to the reviewed commit before starting work.
+
+Open fixture panels refresh context after a completed request (60 seconds while
+visible, 120 seconds while hidden); existing temporary-unavailability backoff
+remains. Forecasts stay bound to their immutable ID. Admin discovers idle jobs
+at 60 seconds, active jobs at 2.5 seconds, hidden pages at 120 seconds and refreshes
+on visibility restoration. Polls remain sequential and superseded requests abort.
+
+
+Active fixture summaries and external comparisons select from
+`product_prematch_forecasts`: issue time must precede the current kickoff and
+football/knowledge cutoffs cannot follow issue. A corrected kickoff can therefore
+make a retained revision ineligible. That revision remains retrievable by ID in
+history, while current consumers select an earlier eligible revision or expose
+missing source data. No published forecast is changed or deleted.

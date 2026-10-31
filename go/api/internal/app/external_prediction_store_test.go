@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 )
 
 func TestExternalPredictionReadersDatabase(t *testing.T) {
@@ -95,6 +96,7 @@ func verifyExternalPendingCorrection(t *testing.T, store *PostgresProductStore) 
 	if len(sources) != 1 || sources[0].SettledSelections != 0 || sources[0].SettledHitRate != nil {
 		t.Fatalf("pending correction counted obsolete settlement: %+v", sources)
 	}
+	verifyExternalPendingReports(t, store)
 	cancelled, cancel := context.WithCancel(ctx)
 	cancel()
 	if _, err := store.ExternalPredictions(cancelled, ExternalPredictionFilters{}); !errors.Is(err, context.Canceled) {
@@ -110,5 +112,56 @@ func TestExternalPredictionCorrectedMetricsDatabase(t *testing.T) {
 	}
 	if len(sources) != 1 || sources[0].SettledSelections != 1 || sources[0].CorrectSelections != 0 || sources[0].SettledHitRate == nil || *sources[0].SettledHitRate != 0 {
 		t.Fatalf("source accuracy ignored current correction: %+v", sources)
+	}
+}
+
+func TestExternalPredictionArchiveBoundDatabase(t *testing.T) {
+	store, counter := performanceDatabaseStore(t)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultHandlerTimeout)
+	defer cancel()
+	counter.queries.Store(0)
+	started := time.Now()
+	page, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{PageSize: 100})
+	if err != nil {
+		t.Fatal(err)
+	}
+	elapsed := time.Since(started)
+	if len(page.Predictions) != 100 || page.Pagination.TotalItems != 5001 {
+		t.Fatalf("archive page is not bounded: %+v rows=%d", page.Pagination, len(page.Predictions))
+	}
+	t.Logf("5001 current selections: page/aggregate latency=%s queries=%d rows=%d", elapsed, counter.queries.Load(), len(page.Predictions))
+	sources, err := store.ExternalPredictionSources(ctx, ExternalPredictionFilters{Source: "manual_import"})
+	if err != nil || len(sources) != 1 || sources[0].TrackedSelections != 5000 {
+		t.Fatalf("archive source aggregate: %+v %v", sources, err)
+	}
+}
+
+func TestReviewedExternalAccuracyDatabase(t *testing.T) {
+	store, _ := performanceDatabaseStore(t)
+	sources, err := store.ExternalPredictionSources(context.Background(), ExternalPredictionFilters{Source: "manual_import"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sources) != 1 || sources[0].SettledSelections != 0 || sources[0].RetrospectiveSelections != 1 {
+		t.Fatalf("post-kickoff identity review received prospective credit: %+v", sources)
+	}
+}
+
+func verifyExternalPendingReports(t *testing.T, store *PostgresProductStore) {
+	t.Helper()
+	page, err := store.ExternalPredictions(context.Background(), ExternalPredictionFilters{Source: "r2bet"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Predictions) != 2 {
+		t.Fatalf("pending selections disappeared: %+v", page.Pagination)
+	}
+	for _, prediction := range page.Predictions {
+		if prediction.ComparisonStatus != "PENDING" || prediction.MatchForgeProbability != nil {
+			t.Fatalf("pending validation exposed an obsolete comparison: %+v", prediction)
+		}
+	}
+	if len(page.Consensus) != 0 {
+		t.Fatalf("pending validation contributed consensus: %+v", page.Consensus)
 	}
 }
