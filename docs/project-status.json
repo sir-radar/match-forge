@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T04:22:27Z",
+  "updated_at": "2026-10-31T04:26:16Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2649,6 +2649,25 @@
       "progress_status": "BLOCKED",
       "blocker_resolution_ref": "docs/evidence/matchforge-architecture-v2-phase-35-blocker-resolution-2026-10-31.json",
       "blocker_resolution_sha256": "2b2ff0f61fa1a06f5af980a7378b9ee87e0a7109f78c1f0f5e75d9ad7180c7af"
+    },
+    "phase_36": {
+      "status": "NOT_RUN",
+      "progress_status": "BLOCKED",
+      "evidence_ref": "docs/evidence/matchforge-architecture-v2-phase-36-preflight-2026-10-31.json",
+      "evidence_sha256": "d407f893030c0004c5a6bcc7a11efd834fcb101f1f79e914d59cc05b86708e91",
+      "phase_gate_complete": false,
+      "required_precondition": "PHASE_35_RUNTIME_CUTOVER_COMPLETE",
+      "precondition_satisfied": false,
+      "phase_35_gate_complete": false,
+      "runtime_cutover": false,
+      "independent_scheduler_retirement_started": false,
+      "database_mutations": 0,
+      "remaining_work": [
+        "Resolve Phase 35 identity, source, dataset, and complete parity blockers; complete the gated cutover before Phase 36 execution.",
+        "After cutover, inventory deployed production schedulers and prove which tables/functions still independently select, claim, lease, retry, or schedule work.",
+        "Convert remaining legacy scheduler records to domain detail, compatibility projections, historical evidence, or deprecation; preserve explicit exceptions with reason, owner, and removal condition.",
+        "Run the required database, concurrency, retry, cancellation, and production-workflow acceptance checks before recording Phase 36 completion."
+      ]
     }
   },
   "phase_1b": {

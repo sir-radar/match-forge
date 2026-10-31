@@ -1,0 +1,62 @@
+{
+  "phase": 36,
+  "checkpoint": "scheduler-retirement-preflight",
+  "recorded_at": "2026-10-31T04:26:16Z",
+  "status": "NOT_RUN",
+  "progress_status": "BLOCKED",
+  "phase_gate_complete": false,
+  "required_precondition": "PHASE_35_RUNTIME_CUTOVER_COMPLETE",
+  "precondition_satisfied": false,
+  "phase_35_runtime_cutover": false,
+  "phase_35_gate_complete": false,
+  "independent_scheduler_retirement_started": false,
+  "database_mutations": 0,
+  "evidence_basis": [
+    {
+      "ref": "docs/evidence/matchforge-architecture-v2-phase-35-blocker-resolution-2026-10-31.json",
+      "sha256": "2b2ff0f61fa1a06f5af980a7378b9ee87e0a7109f78c1f0f5e75d9ad7180c7af"
+    },
+    {
+      "ref": "docs/evidence/matchforge-architecture-v2-phase-17-2026-10-19.json",
+      "sha256": "176dd5c108d8e763bc0bee29770cb716cfad8213f043b1f3c509550515dc7190"
+    }
+  ],
+  "read_only_source_inventory": {
+    "status": "PARTIAL_PRE_CUTOVER",
+    "work_orchestrator_contract": "infrastructure/migrations/202610180700_work_orchestration.sql",
+    "domain_adapters": "infrastructure/migrations/202610182000_domain_work_adapters.sql",
+    "adapters_previously_verified_in_phase_17": {
+      "product_forecast_refresh_work": "Shared work binds captured generations; completion preserves newer pending generations.",
+      "product_history_sync_queue": "Shared claim, heartbeat, retry and completion drive queue detail; the independent history scheduler was removed in the shadow path.",
+      "product_provider_history_scopes": "SQL adapter delegates ownership, retry, expiry and cancellation to shared work; scope detail and compatibility paths remain.",
+      "product_sync_runs": "New operator-run state transitions delegate to shared work; logs, summaries, lanes, manual retry and in-flight compatibility behavior remain."
+    },
+    "provider_scope_claim_path": {
+      "source": "python/football/src/football/product/provider_history_scopes.py",
+      "observed_behavior": "The scope worker selects and updates domain detail rows. The update trigger creates or claims the matching shared work item and projects its lease into scope detail.",
+      "compatibility_behavior": "The claim query retains stale-claim recovery for scopes without a shared-work binding; the adapter also permits an in-flight compatibility path.",
+      "phase_36_disposition": "REQUIRES_POST_CUTOVER_REVIEW",
+      "reason": "Removing this selection and compatibility behavior before production cutover could strand existing or in-flight scope work."
+    },
+    "phase_17_shadow_upgrade_counts": {
+      "registered_work_items": 0,
+      "registered_history_requests": 0,
+      "registered_provider_scope_bindings": 0,
+      "production_runtime_cutover": false
+    },
+    "production_scheduler_inventory": "NOT_PERFORMED",
+    "scope_limit": "This source review does not prove the current production binaries, deployed migrations, scheduler configuration, or database queue state."
+  },
+  "retirement": {
+    "production_schedulers_retired": 0,
+    "scheduler_tables_or_functions_changed": 0,
+    "temporary_compatibility_exceptions_approved": 0,
+    "reason": "Phase 36 requires a completed Phase 35 production cutover. The Phase 35 readiness gate remains blocked, and production has not switched to V2."
+  },
+  "next_required_actions": [
+    "Resolve Phase 35 identity, source, dataset, and complete parity blockers; complete the gated cutover before Phase 36 execution.",
+    "After cutover, inventory deployed production schedulers and prove which tables/functions still independently select, claim, lease, retry, or schedule work.",
+    "Convert remaining legacy scheduler records to domain detail, compatibility projections, historical evidence, or deprecation; preserve explicit exceptions with reason, owner, and removal condition.",
+    "Run the required database, concurrency, retry, cancellation, and production-workflow acceptance checks before recording Phase 36 completion."
+  ]
+}
