@@ -12,32 +12,32 @@ export function ResolutionBatch({ keys, onApplied }: { keys: string[]; onApplied
   const [prepared, setPrepared] = useState<Prepared[]>([]), [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState(false), [approved, setApproved] = useState(false), [token, setToken] = useState("");
   const [result, setResult] = useState<RecordValue[]>();
-  const { pending, mounted, controller } = useResolutionOperation();
-  const invalidate = () => { controller.current?.abort(); setPrepared([]); setApproved(false); setErrors([]); setResult(undefined); };
+  const operation = useResolutionOperation();
+  const invalidate = () => { operation.cancelRead(); setPrepared([]); setApproved(false); setErrors([]); setResult(undefined); };
   const actions = batchActions(keys);
   const preview = async () => {
-    if (pending.current) return;
-    pending.current = true; setBusy(true); invalidate();
-    const abort = new AbortController(); controller.current = abort;
+    if (!operation.begin()) return;
+    setBusy(true); invalidate();
+    const abort = operation.newRead();
     try {
       const requests = keys.map((case_key): Decision => ({ case_key, action, reason, candidate: action === "REJECT" && targets[case_key] ? { target_mapping_id: targets[case_key] } : {} }));
       const response = await resolutionApi.batchPreview(requests, abort.signal);
-      if (mounted.current && !abort.signal.aborted) {
+      if (operation.isMounted() && !abort.signal.aborted) {
         setPrepared(response.previews.map((item) => ({ ...item, request_id: crypto.randomUUID() })));
         setErrors(response.errors);
         setCandidates(Object.fromEntries(response.previews.map((item) => [item.case_key, Array.isArray(item.detail.candidates) ? item.detail.candidates as RecordValue[] : []])));
       }
-    } catch (cause) { if (mounted.current && !abort.signal.aborted) setErrors([message(cause)]); }
-    finally { pending.current = false; if (mounted.current) setBusy(false); }
+    } catch (cause) { if (operation.isMounted() && !abort.signal.aborted) setErrors([message(cause)]); }
+    finally { operation.finish(); if (operation.isMounted()) setBusy(false); }
   };
   const qualified = prepared.filter((item) => item.allowed);
   const apply = async () => {
-    if (pending.current || !approved || !token || !qualified.length) return;
-    pending.current = true; setBusy(true); setErrors([]);
+    if (!approved || !token || !qualified.length || !operation.begin()) return;
+    setBusy(true); setErrors([]);
     const requests: Decision[] = qualified.map((item) => ({ case_key: item.case_key, action: item.action, reason: item.reason, candidate: item.candidate, evidence_version: item.evidence_version, request_id: item.request_id, approved: true }));
-    try { const response = await resolutionApi.batchApply(requests, token); if (mounted.current) { setResult(response.items); setToken(""); setApproved(false); onApplied(); } }
-    catch (cause) { if (mounted.current) { setErrors([message(cause)]); setApproved(false); } }
-    finally { pending.current = false; if (mounted.current) setBusy(false); }
+    try { const response = await resolutionApi.batchApply(requests, token); if (operation.isMounted()) { setResult(response.items); setToken(""); setApproved(false); onApplied(); } }
+    catch (cause) { if (operation.isMounted()) { setErrors([message(cause)]); setApproved(false); } }
+    finally { operation.finish(); if (operation.isMounted()) setBusy(false); }
   };
   return <section aria-label="Batch review" className="resolution-review">
     <h2>Review {keys.length} selected cases (maximum 20)</h2><p>Selection spans pages. Each case requires independent proof; overlapping effects require separate reviews.</p>

@@ -1016,48 +1016,61 @@ class OperationalProviderSync:
         self.connection.commit()
         reconciled = 0
         for source in stored:
-            basis = source[18]
-            if basis == "UNKNOWN" and self.provider_code == "fotmob":
-                label = (source[8] or "").upper()
-                if label in {"FT", "FULL TIME", "FULL-TIME"}:
-                    basis = "REGULATION_90"
-            row = PitchApiFixture(
-                provider_match_id=source[0],
-                provider_competition_id=source[1],
-                provider_home_team_id=source[2],
-                provider_away_team_id=source[3],
-                home_team_name=source[4],
-                away_team_name=source[5],
-                kickoff_at=source[6],
-                status=source[7],
-                provider_status=source[8] or "",
-                home_score=source[9],
-                away_score=source[10],
-                minute=source[11],
-                added_time=source[12],
-                period=source[13],
-                source_updated_at=source[14],
-                observed_at=source[15],
-                provider_competition_name=source[16],
-                result_score_basis=basis,
-            )
-            snapshot_id = cast(UUID, source[17])
             try:
                 with self.connection.transaction():
-                    acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
-                    fixture_id = self._resolve_fixture(row, snapshot_id)
-                    if fixture_id is None and create_missing:
-                        fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
-                    if fixture_id is None:
-                        continue
-                    reconciled += 1
-                    self._store_observation(row, snapshot_id, fixture_id)
-                    self._update_canonical_fixture(row, fixture_id, snapshot_id)
-                    self._reconcile_retained_members(row, fixture_id, snapshot_id)
-                    self._insert_qualified_history(row, fixture_id, snapshot_id)
+                    reconciled += int(
+                        self.reconcile_retained_observation(source, create_missing=create_missing)
+                        is not None
+                    )
             except (Error, ValueError) as failure:
-                self._record_failed_observation(row, snapshot_id, str(failure).splitlines()[0])
+                row = self._retained_fixture(source)
+                self._record_failed_observation(row, source[17], str(failure).splitlines()[0])
         return reconciled
+
+    def _retained_fixture(self, source: tuple[Any, ...]) -> PitchApiFixture:
+        basis = source[18]
+        if basis == "UNKNOWN" and self.provider_code == "fotmob":
+            label = (source[8] or "").upper()
+            if label in {"FT", "FULL TIME", "FULL-TIME"}:
+                basis = "REGULATION_90"
+        return PitchApiFixture(
+            provider_match_id=source[0],
+            provider_competition_id=source[1],
+            provider_home_team_id=source[2],
+            provider_away_team_id=source[3],
+            home_team_name=source[4],
+            away_team_name=source[5],
+            kickoff_at=source[6],
+            status=source[7],
+            provider_status=source[8] or "",
+            home_score=source[9],
+            away_score=source[10],
+            minute=source[11],
+            added_time=source[12],
+            period=source[13],
+            source_updated_at=source[14],
+            observed_at=source[15],
+            provider_competition_name=source[16],
+            result_score_basis=basis,
+        )
+
+    def reconcile_retained_observation(
+        self, source: tuple[Any, ...], *, create_missing: bool = False
+    ) -> UUID | None:
+        """Replay one retained observation; caller owns proof, locks and commit."""
+        row = self._retained_fixture(source)
+        snapshot_id = cast(UUID, source[17])
+        acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
+        fixture_id = self._resolve_fixture(row, snapshot_id)
+        if fixture_id is None and create_missing:
+            fixture_id = self._create_provider_scoped_fixture(row, snapshot_id)
+        if fixture_id is None:
+            return None
+        self._store_observation(row, snapshot_id, fixture_id)
+        self._update_canonical_fixture(row, fixture_id, snapshot_id)
+        self._reconcile_retained_members(row, fixture_id, snapshot_id)
+        self._insert_qualified_history(row, fixture_id, snapshot_id)
+        return fixture_id
 
     def _restore_legacy_pitchapi_identity(self) -> None:
         if self.provider_code != "pitchapi":

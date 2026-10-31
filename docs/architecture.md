@@ -1247,3 +1247,19 @@ or fixture effects cannot be bulk-approved together. Per-case results and UUIDs
 survive partial failures; a retry never substitutes a new approval. Queue grouping
 uses known current competition/season memberships only and never grants identity
 trust. Distinct case totals remain separate from overlapping group counts.
+
+
+Resolution recovery freezes target IDs and source hashes in the approval transaction.
+The existing Work Orchestrator owns its `CANONICAL_RECONCILIATION` leases, fencing,
+retries and scheduling. Targets publish separate immutable receipts under a valid
+lease; each page has at most 32 targets and a dependent continuation. All retained
+byte reads precede identity/publication locks. Existing native fixture and identity
+rules are rechecked using prepared bytes before publication. Scoped reconciliation
+keeps complete competing-candidate neighborhoods; excessive neighborhoods remain
+blocked rather than being split in a way that changes uniqueness.
+
+Recovery requests existing context, eligible future forecast, performance and
+external settlement generations. Immutable receipts record what was requested;
+current case details separately report pending work in affected scopes. Neither a
+completed recovery page nor an empty queue establishes identity or migration parity.
+The original no-argument unknown-season SQL API delegates to the shared scoped rule.

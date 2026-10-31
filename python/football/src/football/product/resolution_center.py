@@ -19,6 +19,7 @@ from football.product.resolution_batches import apply_batch, preview_batch, vali
 from football.product.resolution_cases import case_detail, case_page
 from football.product.resolution_data import missing_page
 from football.product.resolution_migration import migration_page
+from football.product.resolution_recovery import run_pending_recovery
 
 VIEWS = {"identity", "fixtures", "missing", "parity", "cutover", "history", "detail"}
 
@@ -119,6 +120,8 @@ def execute(
     connection: Connection[Any], repo: Path, root: Path, request: dict[str, Any]
 ) -> dict[str, Any]:
     operation = request.get("operation")
+    if operation == "recover_work":
+        return run_pending_recovery(connection, root)
     if operation == "read":
         connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         return read_view(connection, repo, root, request)

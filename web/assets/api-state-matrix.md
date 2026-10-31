@@ -96,3 +96,5 @@ retain the request UUID for idempotent retry; success clears the credential and
 refreshes case detail/history. No optimistic admission or completion is displayed.
 
 Batch review preserves selection across pages. Proposal edits invalidate approval. Per-case blocked outcomes coexist with committed successes; unknown outcomes retain per-case UUIDs. Counts are refreshed from the backend after approval and never decremented optimistically.
+
+Phase 5 case evidence has an explicit recheck control. Recovery/checkpoint results and current pending downstream counts are shown separately. Both approval forms use shared begin/finish/read-cancellation methods, preserving request UUIDs and preventing duplicate writes.

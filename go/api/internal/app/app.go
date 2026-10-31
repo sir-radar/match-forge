@@ -102,6 +102,8 @@ func (application *App) Run(ctx context.Context) error {
 	if _, ok := application.syncRunner.(pendingPublicReportsRunner); ok {
 		go application.runPublicReportSchedule(ctx)
 	}
+	stopRecovery := application.startResolutionRecovery(ctx)
+	defer stopRecovery()
 	server := application.httpServer()
 
 	errorsChannel := make(chan error, 1)

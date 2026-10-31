@@ -2734,7 +2734,7 @@
   },
   "identity_resolution": {
     "status": "IN_PROGRESS",
-    "current_phase": 5,
+    "current_phase": 6,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2778,6 +2778,18 @@
       "database_scope": "DISPOSABLE_ONLY",
       "live_mapping_decisions": 0,
       "shadow_identity_cases": 17594
+    },
+    "phase_5": "PASS",
+    "phase_5_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "recovery_acceptance_tests": 13,
+      "focused_progress_test": 1,
+      "related_regression_tests": 72,
+      "real_approval_browser_journeys": 2,
+      "batch_size": 32,
+      "maximum_fixture_neighborhood": 100,
+      "shared_work_type": "CANONICAL_RECONCILIATION",
+      "live_mutations": 0
     }
   }
 }

@@ -17,6 +17,7 @@ from football.product.identity_correction import (
 )
 from football.product.operational_provider_sync import OperationalProviderSync
 from football.product.resolution_cases import append_event, case_detail
+from football.product.resolution_recovery import enqueue_recovery
 from football.storage.locks import (
     FIXTURE_CROSSWALK_LOCK,
     IDENTITY_ADMISSION_LOCK,
@@ -204,15 +205,9 @@ def apply_one(
     if request.get("approved") is not True:
         raise ValueError("explicit operator approval is required")
     request_hash = sha256_json({"request": request, "actor": actor})
-    previous = connection.execute(
-        "SELECT request_sha256,to_jsonb(e) FROM football.resolution_review_events e "
-        "WHERE request_id=%s",
-        (request["request_id"],),
-    ).fetchone()
+    previous = replayed_decision(connection, request["request_id"], request_hash)
     if previous:
-        if previous[0] != request_hash:
-            raise ValueError("request ID is already bound to different approved inputs")
-        return cast(dict[str, Any], previous[1])
+        return previous
     verifier = RetainedIdentityVerifier(root)
     preview(connection, root, request, verifier)
     verifier.seal()
@@ -220,15 +215,9 @@ def apply_one(
         acquire_locks(
             connection, (LockRequest(LockClass.CONTROL, "resolution:" + request["case_key"]),)
         )
-        previous = connection.execute(
-            "SELECT request_sha256,to_jsonb(e) FROM football.resolution_review_events e "
-            "WHERE request_id=%s",
-            (request["request_id"],),
-        ).fetchone()
+        previous = replayed_decision(connection, request["request_id"], request_hash)
         if previous:
-            if previous[0] != request_hash:
-                raise ValueError("request ID is already bound to different approved inputs")
-            return cast(dict[str, Any], previous[1])
+            return previous
         # Domain owners acquire the same identity lock; stale previews cannot slip between checks.
         if request["case_key"].split(":", 1)[0] in {"team", "competition", "fixture"}:
             acquire_locks(connection, (IDENTITY_ADMISSION_LOCK, FIXTURE_CROSSWALK_LOCK))
@@ -240,12 +229,38 @@ def apply_one(
         result = apply_domain(connection, root, request, current, verifier)
         # Serialize domain datetime values before storing the workflow result.
         result = json_safe(result)
-        return append_event(
+        recovering = request["action"] in {
+            "APPROVE",
+            "CORRECT",
+            "QUARANTINE",
+            "RESOLVE_DUPLICATE",
+            "REVALIDATE",
+        }
+        if recovering:
+            result["downstream_status"] = "QUEUED; EXISTING_REFRESH_QUEUES_OWN_PUBLICATION"
+            result["recovery_request_id"] = request["request_id"]
+        event = append_event(
             connection, request, actor, request_hash, {"preview": current, "result": result}
         )
+        if recovering:
+            enqueue_recovery(connection, request["request_id"], current)
+        return event
 
 
 def json_safe(value: dict[str, Any]) -> dict[str, Any]:
     import json
 
     return cast(dict[str, Any], json.loads(json.dumps(value, default=str)))
+
+
+def replayed_decision(
+    connection: Connection[Any], request_id: str, request_hash: str
+) -> dict[str, Any] | None:
+    previous = connection.execute(
+        "SELECT request_sha256,to_jsonb(e) FROM football.resolution_review_events e "
+        "WHERE request_id=%s",
+        (request_id,),
+    ).fetchone()
+    if previous and previous[0] != request_hash:
+        raise ValueError("request ID is already bound to different approved inputs")
+    return cast(dict[str, Any], previous[1]) if previous else None

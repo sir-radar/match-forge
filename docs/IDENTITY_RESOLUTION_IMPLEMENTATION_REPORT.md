@@ -141,3 +141,43 @@ checks cover owner authorization and batch bounds. Ruff/format, mypy (440 files)
 Go tests/lint, frontend lint/types, pinned production build and architecture/status
 checks passed. Shared form lifecycle and browser-backend helpers removed newly
 introduced duplication; no new dependency or admission threshold was added.
+
+
+## Phase 5 — Scoped fixture and downstream recovery
+
+Approved identity changes and revalidation now freeze affected fixture and retained
+observation IDs with their hashes in the approval transaction. Shared
+`CANONICAL_RECONCILIATION` work processes at most 32 targets per page. Each target
+has an immutable, fenced checkpoint; a continuation publishes with the page receipt
+and depends on its parent. Existing claim ordering, leases, retries and cancellation
+remain authoritative. The Go scheduler resumes committed work after restart, drains
+bounded pages fairly and cancels/waits during shutdown.
+
+The existing fixture owner now accepts a scope. It retains every competing match
+in the same competition/kickoff neighborhood before checking uniqueness; more than
+100 neighbors requires separate review. The unknown-season owner shares one rule
+between its original API and a scoped overload. All candidates in the selected
+native-ID family remain visible until uniqueness is measured. A regression first
+proved an unsafe scoped merge, then verified that both global and scoped calls
+block two competing known-season candidates.
+
+Retained observation replay reuses the existing normalization and reconciliation
+owner. Source bytes are checked before coordination locks and rechecked through a
+sealed verifier under the lease. Missing proof blocks new merges. Original provider
+rows, source clocks, canonical IDs and published forecasts remain retained. Requests
+for context, eligible future forecasts, performance and external settlement use the
+existing generation queues. A checked fixture is not relabeled as resolved. Current
+case details distinguish recovery receipts from actual pending downstream queues.
+
+Verification: 13 recovery acceptance tests passed, plus a focused current-progress
+check; 72 fixture/identity/replay/approval regressions passed in a fresh disposable
+database. Tests cover 65 frozen fixtures over three pages, partial checkpoint retry,
+lease expiry, input-hash mismatch, pre-lock byte verification, missing proof,
+retained observation clocks, restart execution and scoped/global ambiguity parity.
+The real single and batch approval browser journeys passed. Go tests/lint,
+Ruff/format, mypy (441 files), architecture/status checks, migration validation,
+frontend tests/types/lint and the pinned production build passed. Final source
+review also corrected the shared form hook; its earlier Phase 4 lint-pass statement
+was inaccurate. No lint rule or worker-registration gate was bypassed.
+
+No live identity changes, recovery, evaluation, cutover or retirement were executed.

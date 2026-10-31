@@ -264,6 +264,8 @@ def case_detail(
         result = data_detail(connection, root, key)
     else:
         raise ValueError("unsupported resolution case")
+    result["recovery_work"] = recovery_work(connection, key)
+    result["downstream_work"] = downstream_progress(connection, key)
     result.pop("evidence_version", None)
     review = latest_review(connection, key)
     result["latest_review"] = {k: v for k, v in review.items() if k != "detail"} if review else None
@@ -311,3 +313,95 @@ def append_event(
 def review_ready(connection: Connection[Any]) -> bool:
     row = connection.execute("SELECT to_regclass('football.resolution_review_events')").fetchone()
     return bool(row and row[0])
+
+
+def recovery_work(connection: Connection[Any], key: str) -> list[dict[str, Any]]:
+    exists = connection.execute(
+        "SELECT to_regclass('football.resolution_recovery_work')"
+    ).fetchone()
+    if not exists or not exists[0]:
+        return []
+    return [
+        row[0]
+        for row in connection.execute(
+            """SELECT jsonb_build_object('work_id',w.work_id,'state',w.state,
+           'request_id',b.request_id,'attempt_count',w.attempt_count,
+           'error_code',w.last_error_code,'outcome',b.outcome,'total_pages',count(*) OVER())
+           FROM football.resolution_recovery_work b JOIN football.work_items w USING(work_id)
+           JOIN football.resolution_review_events e ON e.request_id=b.request_id
+           WHERE e.case_key=%s ORDER BY w.requested_at DESC,w.work_id DESC LIMIT 100""",
+            (key,),
+        )
+    ]
+
+
+def downstream_progress(connection: Connection[Any], key: str) -> dict[str, Any]:
+    exists = connection.execute(
+        "SELECT to_regclass('football.resolution_recovery_work')"
+    ).fetchone()
+    if not exists or not exists[0]:
+        return {"status": "NOT_REQUESTED"}
+    row = connection.execute(
+        """WITH latest AS (
+            SELECT request_id FROM football.resolution_review_events e WHERE case_key=%s
+              AND EXISTS (SELECT 1 FROM football.resolution_recovery_work b
+                          WHERE b.request_id=e.request_id)
+            ORDER BY recorded_at DESC,event_id DESC LIMIT 1
+        ), scopes AS (
+            SELECT target_id AS fixture_id FROM football.resolution_recovery_targets
+            WHERE request_id IN(SELECT request_id FROM latest) AND target_kind='FIXTURE'
+            UNION SELECT (result->>'fixture_id')::uuid FROM football.resolution_recovery_results
+            WHERE request_id IN(SELECT request_id FROM latest) AND result->>'fixture_id' IS NOT NULL
+        ) SELECT jsonb_build_object(
+            'recovery_pending',(SELECT count(*) FROM football.resolution_recovery_work b
+                JOIN football.work_items w USING(work_id) WHERE b.request_id=latest.request_id
+                AND w.state IN('PENDING','RUNNING','RETRY_WAIT')),
+            'recovery_blocked',(SELECT count(*) FROM football.resolution_recovery_work b
+                JOIN football.work_items w USING(work_id) WHERE b.request_id=latest.request_id
+                AND w.state IN('BLOCKED','FAILED','CANCELLED')),
+            'blocked_targets',(SELECT count(*) FROM football.resolution_recovery_results
+                WHERE request_id=latest.request_id AND result->>'status'='BLOCKED'),
+            'forecast_pending',(SELECT count(*) FROM football.product_forecast_refresh_work
+                WHERE fixture_id IN(SELECT fixture_id FROM scopes)
+                  AND generation>completed_generation),
+            'context_pending',(SELECT count(*) FROM football.product_context_report_refresh_work
+                WHERE fixture_id IN(SELECT fixture_id FROM scopes)
+                  AND generation>completed_generation),
+            'report_pending',(SELECT count(*) FROM football.product_report_refresh_work
+                WHERE generation>completed_generation AND
+                  ((report_kind='PERFORMANCE' AND scope_id IN(SELECT competition_id
+                    FROM football.product_fixtures
+                    WHERE fixture_id IN(SELECT fixture_id FROM scopes)))
+                  OR (report_kind='COMPARISON' AND scope_id IN(SELECT prediction_id
+                    FROM football.external_prediction_effective
+                    WHERE effective_fixture_id IN(SELECT fixture_id FROM scopes))))),
+            'external_pending',(SELECT count(*) FROM football.external_prediction_refresh_work
+                WHERE generation>completed_generation AND prediction_id IN(SELECT prediction_id
+                    FROM football.external_prediction_effective
+                    WHERE effective_fixture_id IN(SELECT fixture_id FROM scopes)))
+        ) FROM latest""",
+        (key,),
+    ).fetchone()
+    if row is None:
+        return {"status": "NOT_REQUESTED"}
+    result = cast(dict[str, Any], row[0])
+    result["status"] = (
+        "BLOCKED"
+        if result["blocked_targets"] or result["recovery_blocked"]
+        else (
+            "PENDING"
+            if any(
+                result[name]
+                for name in (
+                    "recovery_pending",
+                    "forecast_pending",
+                    "context_pending",
+                    "report_pending",
+                    "external_pending",
+                )
+            )
+            else "NO_PENDING_WORK_IN_AFFECTED_SCOPES"
+        )
+    )
+    result["scope"] = "Latest recovery request; shared generations may include later requests"
+    return result

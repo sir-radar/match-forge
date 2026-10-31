@@ -33,3 +33,5 @@ qualification is mandatory even when a candidate is visible. Owner credentials
 stay in form memory and never enter URLs, storage, audit details or Python stdin.
 
 Phase 4 shares the approval operation lifecycle between the existing single form and new batch form. Only current cancellation/mount/pending guards are shared; candidate and batch presentation remain local. Browser acceptance tests share one real-backend route helper.
+
+Phase 5 moves mutable operation state behind the existing shared hook methods. Single and batch forms keep their own proposal, credential and result state. No new generic component, token, dependency or disabled lint rule was introduced.

@@ -6,6 +6,7 @@ import json
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from psycopg import Connection
 
@@ -14,8 +15,12 @@ from football.product.identity_crosswalks import OPERATIONAL_TEAM_CROSSWALKS
 from football.storage.locks import FIXTURE_CROSSWALK_LOCK, IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
-def reconcile_product_fixtures(connection: Connection[Any]) -> int:
+def reconcile_product_fixtures(
+    connection: Connection[Any], *, fixture_ids: tuple[UUID, ...] | None = None
+) -> int:
     """Keep source rows; select one display fixture for verified duplicate pairs."""
+    if fixture_ids is not None and (not fixture_ids or len(fixture_ids) > 32):
+        raise ValueError("scoped reconciliation requires 1 to 32 fixture IDs")
     crosswalks = [
         dict(
             source_provider=source[0],
@@ -29,9 +34,22 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
         # Mapping and history-decision triggers use this lock. Acquire it before
         # the fixture crosswalk lock, including when no mapping is being changed.
         acquire_locks(cursor, (IDENTITY_ADMISSION_LOCK, FIXTURE_CROSSWALK_LOCK))
+        if fixture_ids is not None:
+            fixture_ids = fixture_neighborhood(connection, fixture_ids)
         cursor.execute(
             """UPDATE football.fixture_identity_resolutions SET active = false
-               WHERE active AND resolution_version = 'ProductFixtureCrosswalkV1'"""
+               WHERE active AND resolution_version = 'ProductFixtureCrosswalkV1'
+                 AND (%s::uuid[] IS NULL OR member_fixture_id=ANY(%s::uuid[])
+                      OR representative_fixture_id=ANY(%s::uuid[])
+                      OR evidence_json->>'source_fixture_id'=ANY(%s::text[])
+                      OR evidence_json->>'target_fixture_id'=ANY(%s::text[]))""",
+            (
+                list(fixture_ids) if fixture_ids is not None else None,
+                list(fixture_ids or ()),
+                list(fixture_ids or ()),
+                [str(key) for key in fixture_ids or ()],
+                [str(key) for key in fixture_ids or ()],
+            ),
         )
         cursor.execute(
             """WITH links AS (
@@ -70,7 +88,9 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                     OR source.fixture_id::text < target.fixture_id::text)
               JOIN football.matches sm ON sm.id = source.fixture_id
               JOIN football.matches tm ON tm.id = target.fixture_id AND tm.season_id = sm.season_id
-             WHERE NOT EXISTS (
+             WHERE (%s::uuid[] IS NULL OR source.fixture_id=ANY(%s::uuid[])
+                    OR target.fixture_id=ANY(%s::uuid[]))
+               AND NOT EXISTS (
                 SELECT 1 FROM football.product_team_match_history history
                  WHERE history.fixture_id = source.fixture_id)
                AND (source.home_score IS NULL OR target.home_score IS NULL
@@ -87,7 +107,12 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                         OR resolution.resolution_status NOT IN ('UNIQUE', 'DUPLICATE_RESOLVED')
                         OR resolution.representative_fixture_id <> target.fixture_id))
              ORDER BY source.fixture_id, target.fixture_id""",
-            (json.dumps(crosswalks),),
+            (
+                json.dumps(crosswalks),
+                list(fixture_ids) if fixture_ids is not None else None,
+                list(fixture_ids or ()),
+                list(fixture_ids or ()),
+            ),
         )
         pairs = cursor.fetchall()
         membership = Counter(member for pair in pairs for member in pair[:2])
@@ -154,8 +179,30 @@ def reconcile_product_fixtures(connection: Connection[Any]) -> int:
                         datetime.now(UTC),
                     ),
                 )
+        if fixture_ids is not None:
+            repaired = cursor.execute(
+                "SELECT football.reconcile_unknown_season_fixtures(%s::uuid[])",
+                (list(fixture_ids),),
+            ).fetchone()
+            assert repaired is not None
+            return len(pairs) + int(repaired[0])
         cursor.execute("SELECT football.reconcile_unknown_season_fixtures()")
         repaired_unknown_season_result = cursor.fetchone()
         assert repaired_unknown_season_result is not None
         repaired_unknown_season_fixtures = int(repaired_unknown_season_result[0])
     return len(pairs) + repaired_unknown_season_fixtures
+
+
+def fixture_neighborhood(
+    connection: Connection[Any], fixture_ids: tuple[UUID, ...]
+) -> tuple[UUID, ...]:
+    rows = connection.execute(
+        """SELECT f.fixture_id FROM football.product_fixtures f WHERE
+           (f.competition_id,f.kickoff_at) IN (SELECT competition_id,kickoff_at
+              FROM football.product_fixtures WHERE fixture_id=ANY(%s::uuid[]))
+           ORDER BY f.fixture_id LIMIT 101""",
+        (list(fixture_ids),),
+    ).fetchall()
+    if not rows or len(rows) > 100:
+        raise ValueError("fixture neighborhood requires separate bounded review (maximum 100)")
+    return tuple(row[0] for row in rows)

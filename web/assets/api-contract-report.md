@@ -99,3 +99,5 @@ caching and forwards cancellation. No optimistic mutation or credential storage
 is present in this phase.
 
 Phase 4 adds bounded batch-preview/batch-apply routes (20 cases). Runtime guards bind every preview/event to its requested case and approved inputs, reject duplicate/missing result identities and verify per-case status totals. Owner credentials remain headers only.
+
+Phase 5 case detail adds immutable recovery page receipts and current downstream queue counts for the latest recovery request. Shared generations may include later work; an empty queue is not an identity/parity PASS. The existing read route remains no-store and read-only.

@@ -57,3 +57,5 @@ branch tests and the real correction browser flow; both units have cyclomatic 10
 No optimistic completion or live cutover is claimed.
 
 Phase 4 review found no actionable blocker. Cross-page selection, bound proposals, stale/partial outcomes, credential handling and post-approval refresh were checked through component tests and a real two-case browser journey. New lifecycle/proxy duplication was extracted for existing consumers; no changed unit exceeds cyclomatic 10. Browser teardown waits for the required list refresh. No live approvals or parity claims were made.
+
+Phase 5 review: pending recovery and publication remain explicit; no new mutation endpoint was added. Final lint caught the Phase 4 shared-ref API issue and it was corrected without suppression. Seven focused component tests and both real approval browser journeys passed; the pinned production build and lint/types passed. Final Fallow review retains only pre-existing findings and measured-coverage limitations; manual VoiceOver remains unverified.

@@ -25,27 +25,27 @@ export function ResolutionDecisionForm({ caseKey, data, onApplied }: { caseKey: 
   const [prepared, setPrepared] = useState<Prepared>(), [error, setError] = useState<string>();
   const [token, setToken] = useState(""), [approved, setApproved] = useState(false), [busy, setBusy] = useState(false);
   const [result, setResult] = useState<RecordValue>();
-  const { pending, mounted, controller } = useResolutionOperation();
-  const invalidate = () => { controller.current?.abort(); setPrepared(undefined); setApproved(false); setResult(undefined); setError(undefined); };
+  const operation = useResolutionOperation();
+  const invalidate = () => { operation.cancelRead(); setPrepared(undefined); setApproved(false); setResult(undefined); setError(undefined); };
   const preview = async () => {
-    if (pending.current) return;
-    pending.current = true; setBusy(true); invalidate();
-    const abort = new AbortController(); controller.current = abort;
+    if (!operation.begin()) return;
+    setBusy(true); invalidate();
+    const abort = operation.newRead();
     try {
       const value = await resolutionApi.preview({ case_key: caseKey, action, candidate, reason }, abort.signal);
-      if (mounted.current && !abort.signal.aborted) setPrepared({ ...value, request_id: crypto.randomUUID() });
-    } catch (cause) { if (mounted.current && !abort.signal.aborted) setError(errorMessage(cause)); }
-    finally { pending.current = false; if (mounted.current) setBusy(false); }
+      if (operation.isMounted() && !abort.signal.aborted) setPrepared({ ...value, request_id: crypto.randomUUID() });
+    } catch (cause) { if (operation.isMounted() && !abort.signal.aborted) setError(errorMessage(cause)); }
+    finally { operation.finish(); if (operation.isMounted()) setBusy(false); }
   };
   const apply = async () => {
-    if (pending.current || !prepared?.allowed || !approved || !token) return;
-    pending.current = true; setBusy(true); setError(undefined);
+    if (!prepared?.allowed || !approved || !token || !operation.begin()) return;
+    setBusy(true); setError(undefined);
     const decision: Decision = { case_key: prepared.case_key, action: prepared.action, reason: prepared.reason, candidate: prepared.candidate, evidence_version: prepared.evidence_version, request_id: prepared.request_id, approved: true };
     try {
       const value = await resolutionApi.apply(decision, token);
-      if (mounted.current) { setResult(value); setApproved(false); setToken(""); onApplied(); }
-    } catch (cause) { if (mounted.current) { setError(errorMessage(cause)); setApproved(false); } }
-    finally { pending.current = false; if (mounted.current) setBusy(false); }
+      if (operation.isMounted()) { setResult(value); setApproved(false); setToken(""); onApplied(); }
+    } catch (cause) { if (operation.isMounted()) { setError(errorMessage(cause)); setApproved(false); } }
+    finally { operation.finish(); if (operation.isMounted()) setBusy(false); }
   };
   return <section aria-label="Decision workflow">
     <form className="resolution-form" onSubmit={(event) => { event.preventDefault(); void preview(); }}>

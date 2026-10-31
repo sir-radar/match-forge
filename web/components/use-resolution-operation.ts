@@ -2,9 +2,27 @@
 
 import { useEffect, useRef } from "react";
 
-// Shared by single and batch approval forms: cancel reads, never abort approved writes.
+// Single and batch forms share one operation lifecycle. Only reads are cancellable.
 export function useResolutionOperation() {
-  const pending = useRef(false), mounted = useRef(true), controller = useRef<AbortController | null>(null);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; controller.current?.abort(); }; }, []);
-  return { pending, mounted, controller };
+  const operationRef = useRef({ pending: false, mounted: true, controller: null as AbortController | null });
+  useEffect(() => {
+    const operation = operationRef.current;
+    operation.mounted = true;
+    return () => { operation.mounted = false; operation.controller?.abort(); };
+  }, []);
+  const begin = () => {
+    if (operationRef.current.pending) return false;
+    operationRef.current.pending = true;
+    return true;
+  };
+  const finish = () => { operationRef.current.pending = false; };
+  const cancelRead = () => operationRef.current.controller?.abort();
+  const newRead = () => {
+    cancelRead();
+    const controller = new AbortController();
+    operationRef.current.controller = controller;
+    return controller;
+  };
+  const isMounted = () => operationRef.current.mounted;
+  return { begin, finish, cancelRead, newRead, isMounted };
 }
