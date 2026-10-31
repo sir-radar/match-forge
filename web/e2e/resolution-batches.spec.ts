@@ -1,0 +1,24 @@
+import { useResolutionBackend } from "./resolution-backend";
+import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+test("owner reviews a bounded independent batch through the real backend", async ({ page }) => {
+  const backend = process.env.MATCHFORGE_RESOLUTION_BACKEND, keys = process.env.MATCHFORGE_RESOLUTION_BATCH_KEYS?.split(",");
+  test.skip(!backend || !keys, "disposable batch database required");
+  test.setTimeout(90_000); page.setDefaultTimeout(15_000);
+  await useResolutionBackend(page, backend!);
+  await page.goto("/admin/resolution");
+  for (const key of keys!) await page.getByRole("checkbox", { name: `Select ${key}`, exact: true }).check();
+  const batch = page.getByRole("region", { name: "Batch review" });
+  await batch.getByRole("combobox", { name: "Batch action", exact: true }).selectOption("BLOCK");
+  await batch.getByLabel("Batch reason").fill("Owner records each unresolved proof blocker independently");
+  await batch.getByRole("button", { name: "Gather evidence and preview batch" }).click();
+  await expect(batch.getByRole("heading", { level: 3 })).toHaveText("2 qualified; 0 blocked");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await batch.getByLabel("Batch owner credential").fill("resolution-disposable-owner");
+  await batch.getByRole("checkbox").check();
+  const refreshed = page.waitForResponse((response) => response.url().includes("/v1/admin/resolution/identity?") && response.request().method() === "GET");
+  await batch.getByRole("button", { name: "Approve and apply 2 decisions" }).click();
+  await refreshed;
+  await expect(batch.getByRole("status")).toContainText("SUCCEEDED", { timeout: 30_000 });
+  expect(await batch.getByRole("status").getByText(/SUCCEEDED/).count()).toBe(2);
+});

@@ -771,6 +771,15 @@ competition, season, orientation and conflict checks.
 The typed correction operation and deployment procedure are documented in
 [MVP-HISTORICAL-BACKFILL.md](MVP-HISTORICAL-BACKFILL.md#independent-team-identity-corrections).
 
+`product.resolution_identity.mapping_detail` provides read-only diagnostics for
+current operational mappings. It reuses retained-source qualification, existing
+admissions, effective team corrections, explicit crosswalks and alias normalization.
+`VERIFIED` requires both current qualification and a trusted admission. Missing
+source proof and revocations remain blocked; contradictions remain explicit.
+Alias candidates never authorize admission. The result includes bounded fixture
+impacts, retained correction contexts and an evidence hash for later operator
+review. Historical reads continue to use the cutoff-aware identity owners above.
+
 ## Decision records
 
 `football.contracts.decisions.DecisionRecordV1` gives future identity, canonical-resolution, authority, capability, promotion and suspension decisions common semantics. The schema is `schemas/contracts/decision-record-v1.schema.json`. Domain owners supply stable subject and predecessor references, their disposition and reason, decision time, optional effective time and JSON evidence. Decision and effective time remain separate; future effective times are valid. Stored clocks normalize to UTC, and evidence is an immutable copy containing finite JSON values.
@@ -1206,3 +1215,95 @@ football/knowledge cutoffs cannot follow issue. A corrected kickoff can therefor
 make a retained revision ineligible. That revision remains retrievable by ID in
 history, while current consumers select an earlier eligible revision or expose
 missing source data. No published forecast is changed or deleted.
+
+
+The private-local `/v1/admin/resolution/{view}` read route delegates identity,
+fixture and source inspection to the existing Python domain owners. Its
+repeatable-read transactions cannot change domain state. Stable case keys reuse
+mapping, fixture, resource and dataset IDs; history names the original decision
+source and distinguishes mutable current fixture resolutions from append-only
+records. The Missing Data list checks registered file bytes in bulk; dataset
+details retain full logical integrity verification. File checks cannot establish
+publication eligibility. Migration views verify the hashes of tracked readiness
+evidence and do not claim to have rerun parity. Private responses are marked `no-store`.
+
+
+Identity review writes use `/v1/admin/resolution/preview` followed by `/apply`.
+Origin trust permits preview; apply additionally requires the existing owner
+Bearer credential. The browser keeps this credential only in form state. Go
+passes a credential fingerprint as actor, never the credential, to Python.
+The apply transaction serializes the case, rechecks the preview under existing
+identity locks, delegates to the existing domain owner and appends one immutable
+review event. A request UUID binds the exact approved inputs and actor. Retries
+return that event; stale versions and changed requests fail. Review-only actions
+never imply admission, recovery or parity. Correction and revocation remain
+prospective, with original provider observations and published forecasts retained.
+
+
+Batch review is bounded to 20 independent cases per request. Preview shares
+retained-byte verification, while apply requalifies each case under the existing
+locks and commits each case separately. Shared target mappings, canonical entities
+or fixture effects cannot be bulk-approved together. Per-case results and UUIDs
+survive partial failures; a retry never substitutes a new approval. Queue grouping
+uses known current competition/season memberships only and never grants identity
+trust. Distinct case totals remain separate from overlapping group counts.
+
+
+Resolution recovery freezes target IDs and source hashes in the approval transaction.
+The existing Work Orchestrator owns its `CANONICAL_RECONCILIATION` leases, fencing,
+retries and scheduling. Targets publish separate immutable receipts under a valid
+lease; each page has at most 32 targets and a dependent continuation. All retained
+byte reads precede identity/publication locks. Existing native fixture and identity
+rules are rechecked using prepared bytes before publication. Scoped reconciliation
+keeps complete competing-candidate neighborhoods; excessive neighborhoods remain
+blocked rather than being split in a way that changes uniqueness.
+
+Recovery requests existing context, eligible future forecast, performance and
+external settlement generations. Immutable receipts record what was requested;
+current case details separately report pending work in affected scopes. Neither a
+completed recovery page nor an empty queue establishes identity or migration parity.
+The original no-argument unknown-season SQL API delegates to the shared scoped rule.
+
+Missing-data decisions in the Admin Resolution Center retain original registrations.
+Exact retained-byte restoration queues approved `PROVIDER_ACQUISITION` work before
+publishing to the original registered path. Immutable publication rejects different
+existing bytes; a retry reconciles an authentic file whose receipt did not commit.
+A fenced receipt records file verification separately from full dataset integrity.
+Only a passing case queues scoped canonical recovery. Source clocks, old dataset
+versions and published forecasts are preserved. Case exclusions name their exact
+accepted scope and never waive complete-data migration parity. Source-backed
+new-version reconstruction requires independent build approval and the existing
+dataset publisher, complete source lineage and unchanged historical cutoffs.
+
+Resolution Center parity rechecks use shared `READ_MODEL_PROJECTION` work and an
+immutable verification history. Current source/identity/dataset diagnostics run in
+a repeatable-read read-only transaction before fenced report publication. Retained
+comparison artifacts and original arithmetic are checked against their registered
+hashes and sizes; this does not extend their original comparison scope. Reports
+bind the database identity, snapshot, source evidence and verification time. Copied
+or outdated reports cannot establish current readiness. Missing required checks,
+incomplete runtime scopes, unavailable data, identity failures and unresolved
+59/327 discrepancies prevent full parity. Recovery/disposition requests retain the
+cause and request dependent rechecks; a successful verifier job can report a
+blocked parity gate.
+
+Cutover controls retain versioned settings for all 13 established stages. Production
+advance remains blocked by complete parity, dependency order, qualified runtime
+bindings and separate acceptance. Explicit shadow operations are not production
+replacements. The currently wired alternate fixture backend is `fixture_read_model`.
+An owner-approved disposable-database rehearsal binds its exact projection hash and
+configuration generation, rebuilds the real cache and selects its leased V2 route.
+A savepoint restores the prior cache and route before a fenced immutable result.
+Configuration events retain the exact approved stage/request. Lost or revoked trial
+leases select legacy automatically; explicit rollback can clear stale trial metadata.
+Go fixture serving accepts only the closed legacy/V2 relation mapping and rechecks
+a V2 route before returning its response. These controls do not enable production
+cutover, replace unbound stages, or authorize scheduler retirement.
+
+Stage13 details and parity verification include read-only retirement preparation:
+operator/history/provider-scope ownership, forecast generations registered on claim,
+active/expired shared leases, unfinished dependencies and current source bindings.
+Unbound pre-migration in-flight rows retain their compatibility consumers. Queue
+emptiness does not prove deployed readers are retired or grant code removal.
+Live retirement requires accepted Phase35 cutover, a deployed-scheduler inventory,
+owned pending work, stabilization/rollback approval and separate authorization.

@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-10-31T05:16:42Z",
+  "updated_at": "2026-10-31T10:20:46Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2731,5 +2731,166 @@
     },
     "verified_code_commit_sha": "596714bb8bde58b4d386ef87edfb02de764f78e3",
     "verification_command": "make check integration web-e2e; test-only TypeScript correction followed by make -o build web-lint web-test web-build integration web-e2e"
+  },
+  "identity_resolution": {
+    "status": "PASS_WITH_WARNINGS",
+    "current_phase": 10,
+    "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
+    "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
+    "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
+    "phase_0": "PASS",
+    "phase_1": "PASS",
+    "production_cutover": false,
+    "legacy_retirement": false,
+    "phase_1_verification": {
+      "unit_tests": 7,
+      "database_tests": 5,
+      "pre_resolution_center_schema": "202610310300",
+      "database_scope": "DISPOSABLE_ONLY"
+    },
+    "phase_2": "PASS",
+    "phase_2_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "database_tests": 26,
+      "real_browser_journeys": 1,
+      "browser_projects": [
+        "desktop",
+        "mobile"
+      ],
+      "mutations_enabled": false,
+      "migration_parity": "BLOCKED",
+      "migration_stages": 13
+    },
+    "phase_3": "PASS",
+    "phase_3_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "database_tests": 6,
+      "real_browser_journeys": 1,
+      "append_only_review_events": true,
+      "owner_credential_required": true,
+      "downstream_reconciliation": "PHASE_5_PENDING"
+    },
+    "phase_4": "PASS",
+    "phase_4_verification": {
+      "batch_limit": 20,
+      "batch_tests": 5,
+      "real_browser_journeys": 1,
+      "database_scope": "DISPOSABLE_ONLY",
+      "live_mapping_decisions": 0,
+      "shadow_identity_cases": 17594
+    },
+    "phase_5": "PASS",
+    "phase_5_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "recovery_acceptance_tests": 13,
+      "focused_progress_test": 1,
+      "related_regression_tests": 72,
+      "real_approval_browser_journeys": 2,
+      "batch_size": 32,
+      "maximum_fixture_neighborhood": 100,
+      "shared_work_type": "CANONICAL_RECONCILIATION",
+      "live_mutations": 0
+    },
+    "phase_6": "PASS_WITH_WARNINGS",
+    "phase_6_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "file_recovery_tests": 20,
+      "contract_tests": 11,
+      "related_regression_tests": 24,
+      "frontend_tests": 107,
+      "real_browser_journeys": 2,
+      "source_backed_new_version_rebuild": "BLOCKED_PENDING_INDEPENDENT_BUILD_APPROVAL_AND_LINEAGE",
+      "live_mutations": 0
+    },
+    "phase_7": "PASS_WITH_WARNINGS",
+    "phase_7_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "parity_and_recovery_tests": 44,
+      "final_gate_and_receipt_tests": 12,
+      "real_browser_journeys": 1,
+      "required_check_groups": 11,
+      "full_production_parity": "BLOCKED",
+      "known_elo_conflicts": 59,
+      "known_insufficient_history_targets": 327,
+      "live_mutations": 0
+    },
+    "phase_8": "PASS_WITH_WARNINGS",
+    "phase_8_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "stage_database_scenarios": 11,
+      "stage_gate_tests": 14,
+      "real_admin_browser_journeys": 1,
+      "real_go_route_revocation_checks": 1,
+      "qualified_isolated_runtime_stages": [
+        8
+      ],
+      "production_stage_routing": "BLOCKED",
+      "unbound_production_stages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "live_mutations": 0
+    },
+    "phase_9": "PASS_WITH_WARNINGS",
+    "phase_9_verification": {
+      "database_scope": "DISPOSABLE_DRIVER_AND_PER_TEST_DATABASES",
+      "focused_tests": 22,
+      "retirement_inventory_tests": 3,
+      "domain_owner_regressions": 14,
+      "parity_regressions": 5,
+      "live_retirement": "BLOCKED",
+      "schedulers_retired": 0,
+      "legacy_code_removed": false
+    },
+    "validation_incident": {
+      "phase": 9,
+      "configured_database_touched": true,
+      "terminal_synthetic_work_records_retained": 2,
+      "synthetic_fixtures_remaining": 0,
+      "failed_test_forecast_transaction": "ROLLED_BACK",
+      "test_forecasts_persisted": 0,
+      "test_isolation_corrected": true,
+      "unrelated_background_publications_preserved": true
+    },
+    "phase_10": "PASS_WITH_WARNINGS",
+    "implementation_status": "VERIFIED_WITH_OPERATIONAL_BLOCKERS",
+    "final_metrics_ref": "docs/evidence/identity-resolution-final-2026-10-31.json",
+    "final_metrics_sha256": "5f514996e0888f926d09e0ed93d9bcd3b3cdb707acbcf51ff3b7fe5329165b0c",
+    "phase_10_verification": {
+      "aggregate_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration web-e2e",
+      "initial_aggregate_exit_code": 2,
+      "initial_failures": "TWO_STALE_BROWSER_ASSERTIONS",
+      "python_unit_tests_passed": 1758,
+      "rust_tests_passed": 16,
+      "frontend_unit_tests_passed": 107,
+      "storage_cases": 833,
+      "storage_initial_passed": 831,
+      "storage_initial_failed": 2,
+      "repaired_real_backend_journeys_passed": 2,
+      "remaining_api_integration": "PASS",
+      "desktop_mobile_browser_tests_passed": 36,
+      "default_runner_conditional_skips": 24,
+      "conditional_backend_journeys": "SIX_RESOLUTION_CENTER_DESKTOP_JOURNEYS_VERIFIED_IN_STORAGE_HARNESS",
+      "fresh_migrations": "PASS_THROUGH_202610310800_AND_IDEMPOTENT_UP",
+      "database_scope": "DISPOSABLE_VALIDATION_AND_READ_ONLY_FROZEN_SHADOW_METRICS",
+      "baseline_counts_changed": false,
+      "authoritative_evaluations": 0,
+      "model_fits": 0,
+      "model_promotions": 0,
+      "default_runner_backend_skips": 22,
+      "default_runner_platform_skips": 2,
+      "real_backend_resolution_journeys_passed": 6
+    },
+    "production_readiness": "BLOCKED"
   }
 }

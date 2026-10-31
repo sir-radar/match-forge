@@ -81,3 +81,20 @@ produces the scoped error/retry state; empty populations retain nullable metrics
 
 Product requests remain read-only. Presentation filters and selected tabs stay
 local; no additional server-state store or optimistic mutation is introduced.
+
+## Resolution Center, 31 October 2026
+
+All six read views and case details have loading, success, empty, invalid-response,
+failure and retry states. Same-query refresh failures retain rows; changed queries
+hide earlier rows immediately. Abort and generation checks reject stale results.
+Case detail focus returns to its opener. Phase 2 exposes no mutations.
+
+Phase 3 identity decisions: proposal edits invalidate previews; preview failures
+leave no approval. Approval requires qualified proof, owner credential and explicit
+checkbox. A local pending guard prevents overlapping clicks. Unknown outcomes
+retain the request UUID for idempotent retry; success clears the credential and
+refreshes case detail/history. No optimistic admission or completion is displayed.
+
+Batch review preserves selection across pages. Proposal edits invalidate approval. Per-case blocked outcomes coexist with committed successes; unknown outcomes retain per-case UUIDs. Counts are refreshed from the backend after approval and never decremented optimistically.
+
+Phase 5 case evidence has an explicit recheck control. Recovery/checkpoint results and current pending downstream counts are shown separately. Both approval forms use shared begin/finish/read-cancellation methods, preserving request UUIDs and preventing duplicate writes.

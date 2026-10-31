@@ -28,3 +28,11 @@
 
 Manual VoiceOver interaction and formal all-criteria WCAG 2.2 conformance were
 not run, so this report claims only the checks above.
+
+31 October 2026 Resolution Center: desktop/mobile Chromium checks cover all six
+sections, axe, labeled filters, native disclosures, heading focus after inspection,
+opener focus on close, 320px reflow, local keyboard table scrolling, reduced-motion
+and forced-colors presence. A separate browser journey uses the real Go/Python
+backend in a disposable database. No manual screen-reader claim is made.
+
+Phase 4 real desktop browser batch review passed axe with zero violations before approval. Native labeled selection checkboxes and per-case preview disclosures remain keyboard accessible. Cross-page selection and qualified/blocked result announcements are covered by component tests.

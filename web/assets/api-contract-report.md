@@ -88,3 +88,16 @@ replace current data. Failed fixture refreshes display retained same-key rows
 with an alert and retry; changed request keys still hide old rows immediately.
 Context, live and forecast failures remain independent. Simulation evidence
 stays explicitly unavailable because no approved linked artifact is exposed.
+
+## Resolution Center, 31 October 2026
+
+The new OpenAPI read route delegates to Python through the existing Go runner.
+Admin page sizes remain 20, 50 and 100. Runtime checks reject inconsistent counts,
+invalid groups, missing case keys, mismatched detail IDs and invalid evidence
+hashes. A drift assertion binds client view names to OpenAPI. Transport disables
+caching and forwards cancellation. No optimistic mutation or credential storage
+is present in this phase.
+
+Phase 4 adds bounded batch-preview/batch-apply routes (20 cases). Runtime guards bind every preview/event to its requested case and approved inputs, reject duplicate/missing result identities and verify per-case status totals. Owner credentials remain headers only.
+
+Phase 5 case detail adds immutable recovery page receipts and current downstream queue counts for the latest recovery request. Shared generations may include later work; an empty queue is not an identity/parity PASS. The existing read route remains no-store and read-only.

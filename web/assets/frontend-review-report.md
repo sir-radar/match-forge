@@ -31,3 +31,31 @@ and an exact-day table. Both API requests and rendering are day-scoped; previous
 and next-day navigation, complete daily result rendering, loading, empty,
 failure, and refresh states are covered. The unsupported proof-log action is
 present only as a disabled reference control.
+
+## Resolution Center review, 31 October 2026
+
+No actionable blocking frontend finding remains in the Phase 2 read-only diff.
+Review covered private-local access, bounded subprocess output, fixed API origin,
+escaped evidence rendering, abort/stale-response guards, runtime validation,
+keyboard focus, mobile reflow and failure/retry states. Raw tests include the real
+backend browser journey, desktop/mobile Playwright, axe, frontend unit tests and
+pinned production build. The Fallow record is retained in the local phase evidence;
+three client fetch SSRF candidates were manually ruled out because the build-time
+host is fixed and user input only enters encoded query values. No source suppression
+or scanner configuration was added. The existing playwright.real.config.ts unused
+file finding is outside this diff. Manual VoiceOver and full WCAG conformance
+remain unverified. Phase 2 enables no decisions or cutover controls.
+
+Phase 3 review: no actionable blocking finding remains. Actual browser correction
+exercised the owner credential and append-only event through Go/Python. Preview
+changes cancel pending reads and invalidate approval; repeat clicks are guarded,
+and unknown outcomes retain request identity for retry. The credential is absent
+from JSON bodies, URLs and storage and is cleared after success. Existing private
+access, runtime validation, focus and reflow contracts remain. Fallow estimated
+coverage recommendations for apply/CandidateFields are covered by decision-form
+branch tests and the real correction browser flow; both units have cyclomatic 10.
+No optimistic completion or live cutover is claimed.
+
+Phase 4 review found no actionable blocker. Cross-page selection, bound proposals, stale/partial outcomes, credential handling and post-approval refresh were checked through component tests and a real two-case browser journey. New lifecycle/proxy duplication was extracted for existing consumers; no changed unit exceeds cyclomatic 10. Browser teardown waits for the required list refresh. No live approvals or parity claims were made.
+
+Phase 5 review: pending recovery and publication remain explicit; no new mutation endpoint was added. Final lint caught the Phase 4 shared-ref API issue and it was corrected without suppression. Seven focused component tests and both real approval browser journeys passed; the pinned production build and lint/types passed. Final Fallow review retains only pre-existing findings and measured-coverage limitations; manual VoiceOver remains unverified.

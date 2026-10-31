@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -49,6 +50,10 @@ func (store *PostgresProductStore) Competitions(ctx context.Context, filters Com
 }
 
 func (store *PostgresProductStore) Fixtures(ctx context.Context, filters FixtureFilters) ([]FixtureGroup, error) {
+	relation, err := store.fixtureServingRelation(ctx)
+	if err != nil {
+		return nil, err
+	}
 	query := `
 		SELECT pc.competition_id::text, pc.name, COALESCE(pc.geographic_scope, pc.country), pc.continent, pc.division,
 		       pc.competition_type, pc.season_label, pc.fixtures_available,
@@ -108,6 +113,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		WHERE pf.kickoff_at >= $1 AND pf.kickoff_at < $2
 		  AND NULLIF(lower(btrim(pc.season_label)), '') <> 'unknown'
 `
+	query = strings.Replace(query, "FROM football.product_serving_fixtures pf", "FROM "+relation+" pf", 1)
 	args := []any{filters.Start, filters.End}
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
@@ -134,7 +140,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		}
 		groups[index].Fixtures = append(groups[index].Fixtures, fixture)
 	}
-	return groups, rows.Err()
+	return groups, store.validateFixtureRoute(ctx, relation, rows.Err())
 }
 
 func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID string) (LiveMatch, error) {

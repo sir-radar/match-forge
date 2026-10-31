@@ -10,7 +10,7 @@ import { BackToTop } from "@/components/back-to-top";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const current = (href: string) => pathname === href ? "page" as const : undefined;
+  const current = (href: string) => pathname === href ? "page" as const : href === "/admin/data-sync" && pathname.startsWith("/admin/") ? "true" as const : undefined;
 
   if (pathname === "/predictions") {
     return (
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function MobileNavigation({ pathname }: { pathname: string }) {
-  const current = (href: string) => pathname === href ? "page" as const : undefined;
+  const current = (href: string) => pathname === href ? "page" as const : href === "/admin/data-sync" && pathname.startsWith("/admin/") ? "true" as const : undefined;
   return (
       <nav className="mobile-nav" aria-label="Mobile navigation">
         <Link href="/" aria-current={current("/")}><Icon name="analytics" />Fixtures</Link>

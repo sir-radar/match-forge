@@ -113,6 +113,30 @@ _WORKER_SOURCE_CONTRACTS = {
         "def claim_scope(",
         "football.product_provider_scope_work",
     ),
+    "python/football/src/football/product/resolution_recovery.py": (
+        "WorkRegistry(connection)",
+        "WorkType.CANONICAL_RECONCILIATION",
+        "registry.claim(",
+        "registry.heartbeat(",
+        ".progress(claim)",
+        "registry.publication(",
+    ),
+    "python/football/src/football/product/resolution_stages.py": (
+        "WorkRegistry(connection)",
+        "WorkType.READ_MODEL_PROJECTION",
+        "registry.progress(claim)",
+        "registry.publication(",
+    ),
+    "python/football/src/football/product/resolution_parity.py": (
+        "WorkRegistry(connection)",
+        "WorkType.READ_MODEL_PROJECTION",
+        "registry.publication(",
+        "REPEATABLE READ READ ONLY",
+    ),
+    "go/api/internal/app/resolution_recovery.go": (
+        "football.resolution_recovery_work",
+        'Operation: "recover_work"',
+    ),
     "python/football/src/football/product/public_reports.py": (
         "WorkRegistry(connection)",
         "WorkType.",

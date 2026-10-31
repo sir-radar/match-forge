@@ -20,6 +20,7 @@ from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import ProductSync
 
 
+@pytest.mark.parametrize("scoped", [False, True])
 @pytest.mark.parametrize(
     "mismatch",
     [
@@ -35,7 +36,7 @@ from football.product.sync import ProductSync
     ],
 )
 def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
-    tmp_path: Path, mismatch: str | None
+    tmp_path: Path, mismatch: str | None, scoped: bool
 ) -> None:
     now = datetime(2026, 10, 11, 6, tzinfo=UTC)
     with (
@@ -159,8 +160,14 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
                     (now - timedelta(days=1),),
                 )
         expected = 0 if mismatch in ("kickoff", "score", "team") else 1
-        assert reconcile_product_fixtures(connection) == expected
-        assert reconcile_product_fixtures(connection) == expected
+        selected = connection.execute(
+            "SELECT match_id FROM football.match_provider_mappings m JOIN football.providers p "
+            "ON p.id=m.provider_id WHERE p.code='api_football' AND provider_match_id='1557424'"
+        ).fetchone()
+        assert selected is not None
+        scope = (selected[0],) if scoped else None
+        assert reconcile_product_fixtures(connection, fixture_ids=scope) == expected
+        assert reconcile_product_fixtures(connection, fixture_ids=scope) == expected
         persist_resolutions(
             connection,
             audit_canonical_history(load_canonical_history(connection)).identities,

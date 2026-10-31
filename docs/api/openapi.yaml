@@ -168,6 +168,93 @@ paths:
         '500': { $ref: '#/components/responses/AdminInternalError' }
         '503': { $ref: '#/components/responses/Unavailable' }
         '504': { $ref: '#/components/responses/AdminTimeout' }
+  /v1/admin/resolution/batch-preview:
+    post:
+      operationId: previewResolutionBatch
+      description: Read-only retained-evidence gathering for up to 20 cases. Overlapping identity/fixture effects are blocked individually.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionBatch' } } } }
+      responses:
+        '200': { description: Per-case previews or explicit errors; no writes. }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Invalid batch inputs. }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/resolution/batch-apply:
+    post:
+      operationId: applyResolutionBatch
+      description: >-
+        Requires private-local access and the owner Bearer credential. Each of up
+        to 20 independent approvals commits its domain result and audit atomically.
+        Stale/conflicting cases remain blocked without rolling back other cases.
+        Unknown HTTP outcomes can retry the same per-case request UUIDs.
+      security: [ { AdminCLI: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionBatch' } } } }
+      responses:
+        '200': { description: Per-case SUCCEEDED or BLOCKED results and matching totals. }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Invalid batch or approval inputs. }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/resolution/preview:
+    post:
+      operationId: previewResolutionDecision
+      description: Read-only qualification and exact source/impact preview. No domain decision is published.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionDecision' } } } }
+      responses:
+        '200': { description: Qualification, exact inputs and evidence_version; approval_required is true. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Invalid or unavailable decision inputs; preview again. }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/resolution/apply:
+    post:
+      operationId: applyResolutionDecision
+      description: >-
+        Requires private-local access and the configured owner Bearer credential,
+        including for trusted browser Origins. Applies one explicitly approved
+        preview after requalification under ordered locks. request_id binds exact
+        approved inputs and actor; retries return the original append-only event.
+        Domain history remains prospective. Pending downstream work stays explicit.
+      security: [ { AdminCLI: [] } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionDecision' } } } }
+      responses:
+        '200': { description: Durable review event and domain result with downstream status. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '409': { description: Stale, conflicting or unqualified approval; no decision applied. }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/resolution/{view}:
+    get:
+      operationId: getResolutionView
+      description: >-
+        Read-only current cases and recorded decisions from existing identity,
+        fixture, source and migration owners. File listings check registered byte
+        availability; case details retain full dataset integrity checks. Migration
+        results report checksum-verified tracked evidence, not a new parity run.
+        Resolution decisions and cutover actions are not enabled by this route.
+      security: [ { AdminCLI: [] }, { AdminBrowserOrigin: [] } ]
+      parameters:
+        - { name: view, in: path, required: true, schema: { type: string, enum: [identity, fixtures, missing, parity, cutover, history, detail] } }
+        - { $ref: '#/components/parameters/AdminPage' }
+        - { $ref: '#/components/parameters/AdminPageSize' }
+        - { name: q, in: query, schema: { type: string, maxLength: 256 } }
+        - { name: provider, in: query, schema: { type: string, maxLength: 256 } }
+        - { name: status, in: query, schema: { type: string, maxLength: 256 } }
+        - { name: kind, in: query, schema: { type: string, maxLength: 256 } }
+        - { name: case_key, in: query, description: Required for detail; optional history filter., schema: { type: string, maxLength: 256 } }
+      responses:
+        '200':
+          description: A filtered case page, or one case detail when view is detail. Private responses use Cache-Control no-store.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: '#/components/schemas/ResolutionPage' }
+                  - { $ref: '#/components/schemas/ResolutionDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/AdminDenied' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+        '504': { $ref: '#/components/responses/AdminTimeout' }
   /v1/admin/work:
     get:
       operationId: listWork
@@ -307,6 +394,44 @@ components:
         observed_at: { type: string, format: date-time }
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/WorkItem' } }
+    ResolutionBatch:
+      type: object
+      additionalProperties: false
+      required: [requests]
+      properties:
+        requests: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/ResolutionDecision' } }
+    ResolutionDecision:
+      type: object
+      additionalProperties: false
+      required: [case_key, action, reason]
+      properties:
+        case_key: { type: string, maxLength: 256 }
+        action: { type: string, enum: [APPROVE, REJECT, CORRECT, QUARANTINE, REQUEST_EVIDENCE, BLOCK, REVALIDATE, RESOLVE_DUPLICATE, DEFER, VERIFY, RECOVER, EXCLUDE, RECHECK_PARITY, REHEARSE_STAGE, ROLLBACK_STAGE, SWITCH_STAGE] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        candidate: { type: object, additionalProperties: { type: string, maxLength: 256 } }
+        evidence_version: { type: string, pattern: '^[a-f0-9]{64}$' }
+        request_id: { type: string, format: uuid }
+        approved: { type: boolean, description: Must be true when applying. }
+    ResolutionPage:
+      type: object
+      required: [items, page, page_size, total, counts, groups]
+      properties:
+        items: { type: array, maxItems: 100, items: { type: object, required: [case_key, status], properties: { case_key: { type: string }, status: { type: string } } } }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, enum: [20, 50, 100] }
+        total: { type: integer, minimum: 0, description: Full filtered count, including on an empty page past the end. }
+        counts: { type: object, additionalProperties: { type: integer, minimum: 0 }, description: Filtered mutually exclusive status counts whose sum equals total. }
+        groups: { type: array, maxItems: 100, items: { type: object } }
+        groups_has_more: { type: boolean }
+        scope: { type: string }
+        blockers: { type: array, items: { type: string } }
+    ResolutionDetail:
+      type: object
+      required: [case_key, status, evidence_version]
+      properties:
+        case_key: { type: string }
+        status: { type: string }
+        evidence_version: { type: string, pattern: '^[0-9a-f]{64}$' }
     OperationView:
       type: object
       additionalProperties: false

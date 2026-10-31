@@ -19,3 +19,7 @@ predictions, and admin sync.
   buttons have no second consumer or shared-component contract.
 
 No public component API changed. Duplicate search found one owner per role.
+
+Resolution Center reuses AppShell, ResourceLoading, ResourceError, EmptyState and
+TableScroll. AdminNavigation is shared with Data Sync. CaseFilters, CaseResults,
+CaseGroups, CaseTable, CaseReview and Evidence stay local to resolution-center.tsx.
