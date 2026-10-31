@@ -1,0 +1,248 @@
+# MatchForge V4 implementation report
+
+## Phase 00 — current-state reconciliation
+
+Status: PASS. This is a code/runtime inventory checkpoint, not acceptance of later
+feature, scientific, R3 or migration work. The original prompt is a historical
+coverage reference. CURRENT_TASK.md and the owner's latest authority correction
+control implementation; the reference's claim to be the single implementation
+authority is superseded.
+
+Starting branch/SHA: `main` / `8b82dd637449a18ea6086853344e8bc7b0e0f2e2`.
+Task branch: `ft/v4-execution-programme`. Routing: L3 (architecture, historical
+integrity, identity and governance). No active Wayfinder map is recorded in the
+current project status. This programme uses independent phase commits.
+
+### Code and operating database are different evidence
+
+The operating `.env` database is `football`. A read-only repeatable-read
+transaction on 2026-10-31 observed 244,393 product fixtures, 13,067 forecasts,
+53,723 source snapshots, 55,531 resources and 43,448 work items, through migration
+`202610310500`. Seven real football provider namespaces are registered; the 37
+provider rows include test namespaces and must not be counted as 37 integrations.
+V2 resource observation artifacts, scoped capabilities, resource authority,
+provider/canonical coverage, runtime model registrations and post-match
+evaluations each have **zero operating rows**. Do not translate implemented
+schemas/tests or shadow database results into an operating deployment claim.
+PostgreSQL and Redis containers were healthy. No task operating writes occurred.
+A separate 20:39 UTC preservation snapshot hashes 13,067 original forecasts,
+21,759 identity admissions, 1,889,307 mapping decisions, 5,230 artifact
+registrations and 55,653 source resources. Ordinary background acquisition
+continued between snapshots; its new resources are not attributed to this task.
+The exact count receipt is [Phase 00 evidence](evidence/matchforge-v4-phase-00-2026-10-31.json).
+
+The seven-source, 33-route normalizer map is present in
+`providers/normalization/pipeline.py`. The champion remains
+`transferable-rolling-goals-poisson-v1`, artifact
+`e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+`forecasting/products.py` provides 1X2, double chance, BTTS, totals, exact scores,
+team goals and clean sheets. Tail/censored buckets retain explicit semantics.
+`forecasting/corner.py` already supplies Poisson and NB corner baselines.
+`forecasting/postmatch.py` scores categorical results and champion goal CRPS;
+it does not establish broad statistical-market settlement or operating learning.
+
+R3 remains `R3_PARTIAL_REMAINING_BLOCKERS`. Its 2026-10-16 checkpoint reports
+253,098 eligible history rows and 2,409 forecastable fixtures. These are not the
+2026-10-31 Resolution Center population: 4,160 unresolved mappings, 108
+contradictions, 984 unsafe shared groups, 33 missing source resources and three
+missing physical dataset files in `football_architecture_v2_shadow_20261016`.
+The frozen 4,253 owner-proof population is also separate. None was recomputed or
+relabelled by this phase. Existing current-status evidence remains authoritative
+for each dated population.
+
+Architecture V2 has code/evidence for phases 0–34 and 37. Phase 35 production
+cutover and phase 36 retirement remain blocked: authentic evidence, full
+production parity, explicit acceptance, 59 generic Elo conflicts and 327
+insufficient-history targets remain unresolved. The Resolution Center is
+implemented through phase 10 with warnings; its bounded approved workflows are
+the owner for identity review/recovery and isolated migration preparation.
+
+### Sources and tests used by the matrix
+
+Paths below are repository-relative. Python production paths share the prefix
+`python/football/src/football/`; unit tests share `python/football/tests/`.
+Test pointers identify existing regression evidence; phase receipts distinguish
+new executions from prior reports.
+
+| Evidence group | Existing source/contracts | Existing tests/evidence |
+| --- | --- | --- |
+| Baseline | `docs/project-status.json`, `AGENTS.md`, `Makefile`, `docs/git-delivery.md` | `tests/test_architecture_v2_baseline.py`; Phase 00 runtime receipt |
+| Policy | `docs/source-acquisition.md`, `README.md`, `docs/MVP-OPERATIONAL-PROVIDERS.md` | Prior owner-decision records; policy diff review |
+| Governance | `forecasting/governance.py`, `forecasting/evaluation_protocol.py`, `docs/model-governance.md` | `test_forecasting_governance.py`; `docs/project-status.json` closed routes |
+| Acquisition | `providers/sources/http.py`, `ingestion/acquisition.py`, `storage/raw.py`, `providers/runtime_policy.py` | `test_source_acquisition.py`, `test_provider_sources.py`, `test_provider_runtime_policy.py`, `test_provider_sync_policy.py` |
+| Providers | `providers/{fotmob,pitchapi,statsbomb,football_data_uk}.py`, `product/{api_football,football_data_org,openfootball}.py` | Provider-specific unit tests; `tests/integration/test_operational_provider_sync.py` |
+| Normalization | `providers/native/`, `providers/normalization/`, `normalization/football_data_uk.py` | `test_provider_native_records.py`, `test_resource_normalization.py`, `test_football_data_uk_normalization.py` |
+| Observations | `contracts/observations.py`, `contracts/observations_v2.py`, `observations/storage.py` | `test_observation_contracts_v2.py`, `tests/integration/test_resource_observation_artifacts.py` |
+| Identity | `product/{identity_admission,identity_trust,identity_crosswalks,resolution_identity,resolution_recovery}.py`, `identity/repository.py` | `tests/integration/test_product_identity_admission.py`, `tests/integration/test_resolution_recovery.py`; Resolution Center baseline/report |
+| Capability | `providers/{resource_capabilities,capability_registry,resource_authority}.py` | `test_resource_capabilities.py`, `test_resource_authority.py`, `tests/integration/test_provider_resource_capabilities.py` |
+| Coverage | `coverage/resources.py`, `coverage/storage.py`, `product/history_coverage.py` | `test_resource_coverage.py`, `tests/integration/test_resource_coverage_storage.py` |
+| Work | `work/contracts.py`, `work/storage.py`, `product/history_work.py`, `product/provider_history_scopes.py` | `test_work_contracts.py`, `tests/integration/test_work_orchestration.py`, `tests/integration/test_lock_order.py` |
+| Context | `context/live.py`, `context/contextual_features.py`, `context/historical_corpus.py` | `test_live_context.py`, `test_context_research.py`, `test_historical_context_corpus.py` |
+| Live | `product/live_resources.py`, `product/operational_provider_sync.py`, `context/live.py` | `test_live_resources.py`, `test_operational_live_transitions.py`, `tests/integration/test_live_context.py` |
+| Products | `forecasting/products.py`, `forecasting/model_contracts.py` | `test_forecast_products.py`, `test_multi_model_forecasting.py` |
+| Models | `forecasting/{corner,model_runner,runtime_models,experiments,artifacts,snapshot}.py` | `test_corner_model.py`, `test_model_artifacts.py`, `test_feature_snapshots.py`, `tests/integration/test_runtime_model_registry.py` |
+| Monitoring | `forecasting/{postmatch,postmatch_storage,postmatch_contract}.py` | `test_postmatch.py`, `tests/integration/test_postmatch.py` |
+| Admin | `product/resolution_center.py`, `go/api/internal/app/`, `web/components/resolution-center.tsx` | `tests/integration/test_resolution_views.py`, `go/api/internal/app/resolution_center_test.go`, `web/components/resolution-center.test.tsx`, `web/e2e/` |
+| Tests | Existing resource/identity/live/model suites in the groups above | New extensions must add domain-specific coverage; existing tests do not qualify missing providers/models |
+
+### Requirements coverage matrix
+
+Each row covers every functional bullet in the linked original numbered section;
+its remaining work applies to the complete section. Repeated requirements share
+implementation owners/phases rather than becoming duplicate tasks. `PARTIAL`
+means `EXISTS_NEEDS_EXTENSION`; `PARTIAL_WITH_BLOCKER` means an existing
+implementation has an explicit data/owner/scientific blocker; `SUPERSEDED` means the instruction/representation
+is replaced prospectively, while its functional requirements remain mapped.
+`ALREADY_COMPLETE_VERIFIED` is limited to the identified existing primitive/rule,
+not a new operating rollout or a later-phase acceptance claim.
+
+| Original section | Baseline classification | Source/test group | Current phase owner | Remaining work / disposition |
+| --- | --- | --- | --- | --- |
+| [0. CRITICAL OWNER DECISION — DEVELOPMENT DATA ACCESS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Policy | 01 | Public acquisition already exists; record the broader current decision. |
+| [1. IMPORTANT BOUNDARY — DO NOT MISINTERPRET THIS DECISION](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Admin | 01,23 | Internal authentication is separate; preserve existing controls. |
+| [2. EXTERNAL DATA ACCESS — PRACTICAL BOUNDARY](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Acquisition | 01,03,06–13 | Keep explicit access classes and test ordinary public access. |
+| [3. EMPIRICAL ACCESS POLICY](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Capability | 03,05–13 | Measure bounded access; adapter declarations alone are insufficient. |
+| [4. REPOSITORY POLICY RECONCILIATION — MANDATORY](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Policy | 01 | Reconcile current docs/comments; preserve safeguards. |
+| [5. UPDATE CONTRADICTORY REPOSITORY DOCUMENTATION](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Policy | 01 | Update only contradictory current policy. |
+| [6. HISTORICAL DOCUMENTS / EVIDENCE MUST NOT BE REWRITTEN](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Governance | 01,23 | Historical decisions and reference text remain unchanged. |
+| [7. CODE COMMENTS / VALIDATION ASSUMPTIONS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Acquisition | 01 | Search for official-only rejection; retain quota/schema gates. |
+| [8. RECORD THE OWNER DECISION DURABLY](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Governance | 01 | Append the current public development acquisition owner decision. |
+| [9. EXISTING PROVIDERS FIRST](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Normalization | 03–05 | Audit retained and ignored resources before new providers. |
+| [10. EIGHT MANDATED ADDITIONAL SOURCE INTEGRATIONS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06–13 | No adapters for the eight mandated providers exist at this baseline. |
+| [11. MANDATORY DOES NOT MEAN BLIND](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06–13 | Inspect wrappers, direct routes and actual bounded failures separately. |
+| [12. ADDITIONAL PROVIDERS BEYOND THE MANDATED EIGHT](references/matchforge-v4-original-110-section-prompt.md) | NOT_APPLICABLE | Providers | 23 | No ninth provider is justified before the required audit and eight sources. |
+| [13. MISSION](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Observations | 04,14,15 | Extend only measured gaps across all listed resource/context families. |
+| [14. SPORTYBET-STYLE MARKET COVERAGE OBJECTIVE](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Products | 15,17–20,22 | Seven goal groups exist; broad qualified statistical markets do not. |
+| [15. SELF-LEARNING ARCHITECTURE](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Monitoring | 21 | Reuse post-match monitoring and governed experiments for the complete feedback loop. |
+| [16. SELF-CORRECTION](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Identity | 02,14,21 | Existing append-only corrections/recovery; extend qualified outcomes only. |
+| [17. REPOSITORY RECONNAISSANCE](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Baseline | 00 | Startup status, source history, schema and runtime were inspected. |
+| [18. CLASSIFY CURRENT IMPLEMENTATION](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Baseline | 00 | Use CURRENT_TASK.md classifications and this coverage reference, not a second task system. |
+| [19. R3 REMAINS FOUNDATIONAL](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL_WITH_BLOCKER | Identity | 02,14 | R3 remains partial; prospective evidence-backed recovery only. |
+| [20. R3 PRIORITIZATION](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Identity | 02 | Prioritize verified impact; never infer proof from ranking. |
+| [21. PROGRAMME ARTIFACTS](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Baseline | 00–23 | Reuse current status, existing registries and one programme ledger; no parallel authoritative JSON stores. |
+| [22. DATA ACCESS POLICY RECONCILIATION ARTIFACT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Policy | 01 | Record searched policy, changed files, preserved evidence and unchanged auth in the programme report. |
+| [23. PROVIDER CAPABILITY REGISTRY](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Capability | 03 | Existing scoped registry owns capability; attach access route evidence without replacing it. |
+| [24. CAPABILITY STATES](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Capability | 03,15 | Reconcile with current provider availability and market status vocabularies. |
+| [25. PHASE 1 — EXISTING PROVIDER CAPABILITY AUDIT](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Providers | 03 | Seven real provider namespaces exist; test namespaces are not additional football sources. |
+| [26. FOTMOB — DEEP AUDIT](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Normalization | 03,05,14 | Audit every listed FotMob fixture/stat/event/shot/player field and feature-specific season depth. |
+| [27. API-FOOTBALL](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL_WITH_BLOCKER | Providers | 03,05 | API-Football fixture/competition/lineup/availability decode exists; plan access needs current evidence. |
+| [28. FOOTBALL-DATA.CO.UK](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Normalization | 03,05 | CSV FT and six statistic pairs normalize; HT/referee/additional stable fields need gap review. |
+| [29. PITCHAPI](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Normalization | 03,05 | Retained PitchAPI fixtures/shots/xG/events/player/lineup resources; frozen evaluations stay closed. |
+| [30. FOOTBALL-DATA.ORG / OPENFOOTBALL](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Providers | 03,05 | Reuse existing fixture/history/identity and standings owners. |
+| [31. STATSBOMB](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Providers | 03,05 | Pinned StatsBomb resources exist; protected research scopes remain isolated. |
+| [32. EXISTING PROVIDER EXPANSION](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Acquisition | 05 | Measured retained-to-qualified enrichment remains to be executed. |
+| [33. PUBLIC ENDPOINT / SCRAPER ENGINEERING](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Acquisition | 04–13 | Reuse bounded HTTP, cache, pagination, retry and raw retention; no new browser service without need. |
+| [34. WRAPPER POLICY](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06–13 | Review wrapper requests/licences and prefer small direct adapters where appropriate. |
+| [35. EXISTING FIXTURE ENRICHMENT](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Identity | 05,14 | Use qualified fixture IDs, retained checks and shared work before new downloads. |
+| [36. PHASE 2 — UNDERSTAT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06 | Understat results, shots/xG and attacking/defensive context require actual source investigation. |
+| [37. CLUB ELO](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 07 | ClubElo dated ratings require verified native identity and availability times. |
+| [38. SOFASCORE](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 08 | Sofascore rich/history/live resources require actual source investigation. |
+| [39. ESPN](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 09 | ESPN schedules/results/live/events/statistics require actual source investigation. |
+| [40. FBREF](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 10 | FBref team/player tables and histories require actual source investigation. |
+| [41. WHOSCORED](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 11 | WhoScored events/formations/tactics require actual source investigation. |
+| [42. FLASHSCORE](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 12 | Flashscore history/live/statistics require actual source investigation. |
+| [43. SOCCERWAY](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 13 | Soccerway historical and independently proven live capability require actual source investigation. |
+| [44. MANDATED PROVIDER COMPLETION](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06–13 | One evidence-backed functional/partial/blocked disposition per source. |
+| [45. PHASE 3 — CANONICAL IDENTITY / PROVENANCE](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Identity | 02,14 | Team/competition/fixture mappings exist; qualify player/coach/referee evidence without name-only merges. |
+| [46. PLAYER IDENTITY](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Identity | 14 | Native/canonical player references exist; membership, transfer and duplicate-name coverage require measurement. |
+| [47. RAW PROVENANCE](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Acquisition | 04–14,23 | Existing immutable raw manifests retain exact bytes, clocks, hashes and processing versions. |
+| [48. PHASE 4 — FEATURE-AWARE HISTORICAL ACQUISITION](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Capability | 04,14 | ResourceScope already has provider/resource/competition/season; wire missing consumers only. |
+| [49. BACKFILL PIPELINE](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Acquisition | 04,05,14 | Existing acquisition/normalization/identity/coverage owners must compose into resumable enrichment. |
+| [50. HISTORICAL DEPTH](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Coverage | 03,14 | History depth must be measured per feature; operating V2 coverage tables are empty. |
+| [51. POINT-IN-TIME RULES](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Observations | 04–23 | Separate knowledge/acquisition/provider/valid clocks; late old history cannot become earlier knowledge. |
+| [52. CANONICAL RICH DATA](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Observations | 04,14 | Existing resource observations/storage cover most families; investigate rating/referee/manager gaps. |
+| [53. MATCH STATS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Normalization | 04,05 | Existing named team statistics are narrower than all requested fields. |
+| [54. PERIOD STATISTICS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Observations | 04,15,17 | Period strings exist; require explicit observed H1/H2/regulation/ET definitions and qualification. |
+| [55. SHOT OBSERVATIONS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Observations | 04,05,14 | Shots retain IDs/xG/time/coordinates where verified; xGOT/body/situation/relations need measured extension. |
+| [56. PLAYER OBSERVATIONS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Normalization | 04,05,14 | Lineup/limited player statistics exist; all listed minutes/shot/passing/defensive metrics need review. |
+| [57. CONTEXT](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Context | 04,14,18 | Existing coach/availability/lineup/rest/travel features; measure qualified referee/venue/context coverage. |
+| [58. MANAGER INTELLIGENCE](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Context | 04,14,18 | Tenure and coach preferences already exist; tactical/manager-matchup coverage and inputs remain gaps. |
+| [59. LINEUP SEMANTICS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Context | 04,14,15 | Existing predicted/probable/confirmed/fallback semantics must remain time-aware; audit actual starters. |
+| [60. SEMANTIC REGISTRY](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Observations | 15 | Provider resource contracts exist; target-specific compatibility/settlement definitions remain missing. |
+| [61. SPORTYBET / OPTA SEMANTICS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Products | 15 | Do not infer SportyBet/Opta equivalence from provider field names. |
+| [62. MARKET CAPABILITY REGISTRY](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Products | 15 | Market readiness is distinct from existing provider resource capability. |
+| [63. MARKET STATUS](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Products | 15 | Use current plan publication states plus separate diagnostic reasons; do not create competing enums. |
+| [64. GOAL/RESULT MARKETS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Products | 17 | Reuse score_products; audit DNB, ranges, handicaps, result combinations and censored tails. |
+| [65. PERIOD MARKETS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Products | 17 | Qualified half/interval models and period labels are prerequisites; no halved FT intensity. |
+| [66. CORNERS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Models | 18 | Existing Poisson/NB corner engines remain; additional team/period/race/dependence products need qualified labels. |
+| [67. CARDS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Models | 18,19 | Cards/card-points/player bookings require qualified targets and research gates. |
+| [68. SHOTS / SOT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Models | 18,19 | Separate qualified team/player shots/SOT models; preserve SOT<=shots where definitions permit. |
+| [69. OTHER TEAM STATISTICS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Models | 18 | Fouls/offsides/saves/tackles/throw-ins/goal-kicks/woodwork need appropriate data/distributions. |
+| [70. PLAYER PARTICIPATION](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Context | 19 | Lineup prediction exists; calibrated participation/minutes distributions are not established. |
+| [71. PLAYER MARKETS](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Models | 19 | Conditional player performance requires time-aware identity, usage and settlement targets. |
+| [72. JOINT MARKET MODELING](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Products | 20 | Goal score joint distribution exists; cross-statistic dependence requires validated joint models. |
+| [73. LIVE MULTI-PROVIDER SYSTEM](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Live | 16 | Reuse FotMob/PitchAPI live lanes; new providers join only with verified capability. |
+| [74. LIVE OBSERVATIONS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Live | 16 | Audit all requested period/clock/score/event/observation/freshness fields. |
+| [75. LIVE RECONCILIATION](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Live | 16 | Existing lifecycle/conflict handling must extend to verified providers without response-time authority. |
+| [76. PROVIDER FALLBACK](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Capability | 16 | Existing resource authority/quota/cooldown; no universal provider priority. |
+| [77. FEATURE ENGINEERING](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Context | 14,18 | Reuse eligible attack/defence/Elo/rest/congestion/travel/coach features; extend referee/tactics/cup context only with evidence. |
+| [78. INTERACTIONS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL_WITH_BLOCKER | Models | 18–20 | Preregister manager/tactic/referee/availability/rest interactions; no sealed-outcome mining. |
+| [79. FORECAST ARTIFACTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Models | 17–21 | Existing immutable model/forecast snapshots; market-specific target/uncertainty lineage needs extension. |
+| [80. OUTCOME SETTLEMENT](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Monitoring | 21 | Existing corrected result settlement; extend qualified statistical targets and revisions. |
+| [81. SELF-LEARNING REGISTRY](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Monitoring | 21 | Reuse immutable post_match_evaluations rather than a second feedback registry. |
+| [82. METRICS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Monitoring | 21 | Categorical log loss/Brier/RPS and champion-goal CRPS exist; broader count/calibration/participation diagnostics need extension. |
+| [83. DRIFT](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Monitoring | 21 | Current monitoring review limits exist; statistical/feature/source/missingness/coverage drift needs measured extension. |
+| [84. CHALLENGER PIPELINE](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Models | 21 | Existing experiments/governance own candidates; automate reproducible preparation only, never promotion. |
+| [85. SCIENTIFIC FIREWALL](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Governance | 17–21,23 | Existing frozen protocol/firewalls remain binding on every new scientific route. |
+| [86. API / FRONTEND / ADMIN](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Admin | 22 | Extend existing Go/Next fixture panel/Admin with truthful capabilities and version/cutoff/horizon/semantics. |
+| [87. ADMIN DATA OPERATIONS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Admin | 22 | Existing sync/Resolution Center owns controls; add rich-data/market diagnostics without another Admin. |
+| [88. PROVIDER TESTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Tests | 04–14 | Existing cache/schema/retry/quotas/fencing tests; each new source needs its own meaningful regressions. |
+| [89. IDENTITY TESTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Identity | 02,14 | Existing identity/orientation/correction tests; extend for verified player transfers and provider-ID changes. |
+| [90. PIT TESTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Observations | 04–23 | Existing cutoff/correction/same-batch tests must cover new resource consumers. |
+| [91. MARKET DATA TESTS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Tests | 04,14,15,18–21 | Existing missing/zero and period/unknown-value tests; add target-specific semantic/participation/correction tests. |
+| [92. LIVE TESTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Live | 16 | Existing lifecycle tests; cover each new provider transition/conflict/fallback. |
+| [93. MODEL TESTS](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Models | 17–21 | Reuse model/numerical/artifact tests; new qualified products require matching coherence/cold-start tests. |
+| [94. PERFORMANCE](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Work | 04–23 | Reuse cached hashes, scopes, batch work and model loading; verify bounded incremental consumers. |
+| [95. PROVIDER POLITENESS / RESOURCE CONTROL](references/matchforge-v4-original-110-section-prompt.md) | ALREADY_COMPLETE_VERIFIED | Acquisition | 05–16 | Existing runtime policies/accounting provide bounds/cache/cooldown/failure isolation; preserve in new adapters. |
+| [96. REQUIRED PROVIDER REPORT](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Coverage | 03,14,23 | Provider report must use measured access/depth/qualification, not declarations. |
+| [97. REQUIRED MANDATED PROVIDER REPORT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Providers | 06–13,23 | Per-provider report records tests, blockers, incremental value and all requested resource fields. |
+| [98. REQUIRED MARKET REPORT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Products | 15,23 | Per-market readiness report must include semantics, history, model, evaluation and next action. |
+| [99. ADDITIONAL PROVIDER REQUIREMENTS](references/matchforge-v4-original-110-section-prompt.md) | NOT_APPLICABLE | Providers | 23 | Assess additional sources only after existing plus eight-source evidence. |
+| [100. REQUIRED POLICY REPORT](references/matchforge-v4-original-110-section-prompt.md) | NOT_IMPLEMENTED | Policy | 01,23 | Include explicit policy reconciliation and preserved internal auth in delivery report. |
+| [101. PHASE EXECUTION ORDER](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Baseline | 00–23 | CURRENT_TASK.md phases 00–23 and separate commits replace the older A–J ordering. |
+| [102. DO NOT STOP AT PLANNING](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Baseline | 00–23 | Implement unblocked engineering after reconnaissance; ledger alone is not delivery. |
+| [103. FINAL DELIVERABLES](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Baseline | 00–23 | Deliver equivalent evidence through existing registries and concise reports, not duplicate authoritative systems. |
+| [104. FINAL REPORT](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Baseline | 23 | Report actual before/after, commits, evidence, limitations and exact resume actions. |
+| [105. FINAL ACCEPTANCE — DATA ACCESS POLICY](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Policy | 01,23 | Verify every external-access acceptance item and preserved internal authorization. |
+| [106. FINAL ACCEPTANCE — PROVIDERS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Providers | 03–14,23 | Audit existing and eight sources, retain bytes/native IDs and resumable qualification. |
+| [107. FINAL ACCEPTANCE — DATA QUALITY](references/matchforge-v4-original-110-section-prompt.md) | EXISTS_NEEDS_EXTENSION | Observations | 04–23 | Revalidate identity/semantics/PIT/lineage/missingness for new consumers. |
+| [108. FINAL ACCEPTANCE — MARKETS](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL_WITH_BLOCKER | Models | 17–20,23 | Production/statistical qualification cannot be asserted without frozen evaluations and qualified data. |
+| [109. FINAL ACCEPTANCE — SELF-LEARNING](references/matchforge-v4-original-110-section-prompt.md) | PARTIAL | Monitoring | 21,23 | Extend existing immutable scoring/corrections/drift/challenger loop under promotion governance. |
+| [110. EXECUTE NOW](references/matchforge-v4-original-110-section-prompt.md) | SUPERSEDED | Baseline | 00–23 | Execute CURRENT_TASK.md; retain all functional coverage and explicit owner gates from this reference. |
+
+### Requirements carried into existing phases
+
+The reference adds detail to existing phases, without authorizing another system:
+
+- Phase 04/14 includes manager tenure, tactical characteristics, referee/venue
+  observations, dated strength ratings, all requested shot/player/team fields,
+  lineup-state distinctions and time-aware player membership when supported by
+  actual source evidence. Existing coach, lineup, rest and travel builders remain.
+- Phase 15 owns target-level compatibility, nonappearance/void/correction rules,
+  explicit publication status separate from blocker reasons, and every market
+  group in reference sections 64–72.
+- Phase 18 owns evidence-backed manager/tactic/referee/rest/travel/cup-context
+  features and preregistered interactions alongside team-statistic models. This
+  does not authorize training, reopening closed routes or promotion.
+- Phase 21 owns broader calibration/count/participation/tail metrics, versioned
+  settlements, coverage/missingness/provider-definition drift and reproducible
+  challenger preparation through existing monitoring/experiment owners.
+- Phase 23 reports feature depth, provider/player/market/outcome qualification and
+  actual additional-source needs using existing evidence rather than duplicating
+  authoritative capability/work/identity registries.
+
+### Checkpoints
+
+Phase 00 verification and commit are recorded in the phase evidence and local
+`CURRENT_TASK_STATUS.md`. Future phases append receipts here or link their
+existing durable evidence. No phase 01+ feature work, source request, identity
+approval, model fit, evaluation, promotion, production cutover or retirement was
+performed during reconciliation.
+
+Phase 00 verification: `make check integration` exited 0. Python unit tests:
+1,758 passed; Rust: 16 passed; frontend: 107 passed. Format, lint, types,
+architecture, project status, package/Go/frontend builds, fresh-database migrations
+and storage/API integration passed. Seven upstream NumPy deprecations and one
+pre-existing ESLint unused-parameter warning remain. The 111-section coverage,
+original-reference checksum and unchanged prior project-status fields were also
+checked. `git diff --check` passed. No production schema migration was executed.
