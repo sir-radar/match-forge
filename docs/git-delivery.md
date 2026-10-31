@@ -216,7 +216,7 @@ Never generate a generic PR description from the task statement without inspecti
 
 If PR creation is blocked after a fresh push, report the push and PR creation failure as a delivery blocker. Do not mark the task as delivered.
 
-Use `docs/engineering/pr-template.md`.
+Use `docs/pr-template.md`.
 
 ## Final handoff
 

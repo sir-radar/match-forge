@@ -70,7 +70,8 @@ ready_result=$(curl --fail --silent "http://$API_ADDRESS/readyz")
 version_result=$(curl --fail --silent "http://$API_ADDRESS/version")
 [ "$health_result" = '{"status":"ok"}' ] || { printf 'Go API health contract failed\n' >&2; exit 8; }
 [ "$ready_result" = '{"status":"ready"}' ] || { printf 'Go API readiness contract failed\n' >&2; exit 8; }
-[ "$version_result" = '{"version":"dev"}' ] || { printf 'Go API version contract failed\n' >&2; exit 8; }
+export version_result
+uv run python -c 'import json,os,re; v=json.loads(os.environ["version_result"]); assert v["version"]=="dev"; assert re.fullmatch("[0-9a-f]{40}",v["code_commit_sha"]); assert re.fullmatch("[0-9a-f]{64}",v["dependency_lock_sha256"]); assert v["worktree_state"] in ("clean","dirty")'
 
 kill -TERM "$API_PID"
 wait "$API_PID"

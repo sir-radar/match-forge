@@ -96,10 +96,10 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install Go 1.27.0
+      - name: Install Go 1.27.3
         uses: actions/setup-go@v5
         with:
-          go-version: '1.27.0'
+          go-version: '1.27.3'
           # The project cache below owns these paths, including tool builds.
           cache: false
 
@@ -112,10 +112,10 @@ jobs:
             .local/go-cache
             .local/go-mod-cache
             .local/golangci-lint-cache
-          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-${{ github.sha }}
+          key: project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-${{ github.sha }}
           restore-keys: |
-            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-
-            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.0-
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-${{ hashFiles('go/api/go.mod', 'go/api/go.sum') }}-
+            project-go-${{ runner.os }}-${{ runner.arch }}-1.27.3-
 
       - name: Restore pinned Go tools
         id: go-tools-cache
@@ -124,7 +124,7 @@ jobs:
           path: |
             .tools/bin/goose
             .tools/bin/golangci-lint
-          key: go-tools-${{ runner.os }}-${{ runner.arch }}-go-1.27.0-goose-3.27.1-golangci-lint-2.11.4
+          key: go-tools-${{ runner.os }}-${{ runner.arch }}-go-1.27.3-goose-3.27.1-golangci-lint-2.11.4
 
       - name: Install pinned Go tools
         if: steps.go-tools-cache.outputs.cache-hit != 'true'
@@ -197,6 +197,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Background workers use the same repository-local path as bootstrap.
+          uv_binary="$(command -v uv)"
+          mkdir -p .tools/bin
+          ln -s "$uv_binary" .tools/bin/uv
+          .tools/bin/uv --version
           uv python install 3.13.14
           uv sync --locked
 

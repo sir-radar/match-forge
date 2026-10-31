@@ -17,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="min-h-screen bg-[#0f131c]">
         <a className="skip-link" href="#main">Skip to content</a>
         {children}
+        <MobileNavigation pathname={pathname} />
       </div>
     );
   }
@@ -35,21 +36,28 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="shell-tools">
           <label className="global-search" title="Global search is not exposed by the MVP API"><Icon name="search" /><span className="sr-only">Global search unavailable</span><input type="search" placeholder="Search unavailable" disabled /><kbd>Soon</kbd></label>
           <span className="timezone">{DISPLAY_TIME_ZONE}</span>
-          <div className="feed-state"><span aria-hidden="true" /> Feed: Live</div>
+          <div className="feed-state">Stored forecasts</div>
           <Icon name="person" className="profile-mark" />
         </div>
       </header>
       <main id="main" tabIndex={-1}>{children}</main>
       {pathname === "/" && <BackToTop />}
+      <MobileNavigation pathname={pathname} />
+      <footer className="footer-note">
+        MatchForge forecasts are independent probability estimates. No bookmaker odds, betting slips, or guarantees.
+      </footer>
+    </div>
+  );
+}
+
+function MobileNavigation({ pathname }: { pathname: string }) {
+  const current = (href: string) => pathname === href ? "page" as const : undefined;
+  return (
       <nav className="mobile-nav" aria-label="Mobile navigation">
         <Link href="/" aria-current={current("/")}><Icon name="analytics" />Fixtures</Link>
         <Link href="/performance" aria-current={current("/performance")}><Icon name="monitoring" />Performance</Link>
         <Link href="/predictions" aria-current={current("/predictions")}><Icon name="table" />Predictions</Link>
         <Link href="/admin/data-sync" aria-current={current("/admin/data-sync")}><Icon name="science" />Admin</Link>
       </nav>
-      <footer className="footer-note">
-        MatchForge forecasts are independent probability estimates. No bookmaker odds, betting slips, or guarantees.
-      </footer>
-    </div>
   );
 }

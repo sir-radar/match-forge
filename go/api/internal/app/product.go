@@ -32,6 +32,8 @@ type FixtureFilters struct {
 }
 
 type ExternalPredictionFilters struct {
+	Page        int
+	PageSize    int
 	Date        time.Time
 	DateFrom    time.Time
 	DateTo      time.Time
@@ -65,7 +67,7 @@ type ProductStore interface {
 	Standings(context.Context, string) ([]StandingRow, error)
 	Performance(context.Context, string, string) (Performance, error)
 	Performances(context.Context, PerformanceFilters) (PerformancePage, error)
-	ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error)
+	ExternalPredictions(context.Context, ExternalPredictionFilters) (ExternalPredictionPage, error)
 	ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error)
 }
 
@@ -98,8 +100,8 @@ func (unavailableProductStore) Performance(context.Context, string, string) (Per
 func (unavailableProductStore) Performances(context.Context, PerformanceFilters) (PerformancePage, error) {
 	return PerformancePage{}, errProductUnavailable
 }
-func (unavailableProductStore) ExternalPredictions(context.Context, ExternalPredictionFilters) ([]ExternalPrediction, error) {
-	return nil, errProductUnavailable
+func (unavailableProductStore) ExternalPredictions(context.Context, ExternalPredictionFilters) (ExternalPredictionPage, error) {
+	return ExternalPredictionPage{}, errProductUnavailable
 }
 func (unavailableProductStore) ExternalPredictionSources(context.Context, ExternalPredictionFilters) ([]ExternalPredictionSource, error) {
 	return nil, errProductUnavailable
@@ -134,6 +136,7 @@ type FixtureGroup struct {
 }
 
 type Fixture struct {
+	Freshness            string           `json:"freshness,omitempty"`
 	ID                   string           `json:"id"`
 	KickoffAt            time.Time        `json:"kickoff_at"`
 	Status               string           `json:"status"`
@@ -183,6 +186,7 @@ type LiveStatistic struct {
 }
 
 type LiveSource struct {
+	Freshness       string    `json:"freshness,omitempty"`
 	Provider        string    `json:"provider"`
 	ProviderMatchID string    `json:"provider_match_id"`
 	ObservedAt      time.Time `json:"observed_at"`
@@ -191,22 +195,23 @@ type LiveSource struct {
 }
 
 type LiveMatch struct {
-	FixtureID    string          `json:"fixture_id"`
-	Status       string          `json:"status"`
-	Home         Team            `json:"home"`
-	Away         Team            `json:"away"`
-	HomeScore    *int            `json:"home_score"`
-	AwayScore    *int            `json:"away_score"`
-	MatchMinute  *int            `json:"match_minute"`
-	AddedTime    *int            `json:"added_time"`
-	Period       *string         `json:"period"`
-	Events       []LiveEvent     `json:"events"`
-	Statistics   []LiveStatistic `json:"statistics"`
-	ScoreSource  *LiveSource     `json:"score_source"`
-	EventSource  *LiveSource     `json:"event_source"`
-	StatsSource  *LiveSource     `json:"statistics_source"`
-	Availability map[string]bool `json:"availability"`
-	Partial      bool            `json:"partial"`
+	FixtureID                string          `json:"fixture_id"`
+	Status                   string          `json:"status"`
+	Home                     Team            `json:"home"`
+	Away                     Team            `json:"away"`
+	HomeScore                *int            `json:"home_score"`
+	AwayScore                *int            `json:"away_score"`
+	MatchMinute              *int            `json:"match_minute"`
+	AddedTime                *int            `json:"added_time"`
+	Period                   *string         `json:"period"`
+	Events                   []LiveEvent     `json:"events"`
+	Statistics               []LiveStatistic `json:"statistics"`
+	ScoreSource              *LiveSource     `json:"score_source"`
+	EventSource              *LiveSource     `json:"event_source"`
+	StatsSource              *LiveSource     `json:"statistics_source"`
+	Availability             map[string]bool `json:"availability"`
+	Partial                  bool            `json:"partial"`
+	ResourceIdentityConflict bool            `json:"resource_identity_conflict,omitempty"`
 }
 
 type Team struct {
@@ -390,6 +395,7 @@ type StandingRow struct {
 }
 
 type Performance struct {
+	ReportStatus           string   `json:"report_status,omitempty"`
 	CompetitionID          string   `json:"competition_id"`
 	AnalyticsPolicyVersion string   `json:"analytics_policy_version"`
 	AnalyticsHorizon       string   `json:"analytics_horizon"`
@@ -426,48 +432,75 @@ type PerformancePage struct {
 	Pagination  Pagination    `json:"pagination"`
 }
 
+type ExternalPredictionPage struct {
+	Predictions []ExternalPrediction `json:"predictions"`
+	Pagination  Pagination           `json:"pagination"`
+	Consensus   []ExternalConsensus  `json:"consensus"`
+}
+
+type ExternalConsensus struct {
+	ID        string    `json:"id"`
+	Fixture   string    `json:"fixture"`
+	Market    string    `json:"market"`
+	Kickoff   time.Time `json:"kickoff"`
+	Selection string    `json:"selection"`
+	Count     int       `json:"count"`
+	Total     int       `json:"total"`
+	Agreement string    `json:"agreement"`
+}
+
 type ExternalPrediction struct {
-	ID                    string     `json:"id"`
-	Source                string     `json:"source"`
-	SourcePage            string     `json:"source_page"`
-	PredictionDate        string     `json:"prediction_date"`
-	OriginalDateText      string     `json:"original_date_text"`
-	CollectedAt           time.Time  `json:"collected_at"`
-	FixtureID             *string    `json:"fixture_id"`
-	KickoffAt             *time.Time `json:"kickoff_at"`
-	Competition           string     `json:"competition"`
-	HomeTeam              string     `json:"home_team"`
-	AwayTeam              string     `json:"away_team"`
-	Market                string     `json:"market"`
-	Selection             string     `json:"selection"`
-	MatchStatus           string     `json:"match_status"`
-	MatchForgeProbability *float64   `json:"matchforge_probability"`
-	Agreement             string     `json:"agreement"`
-	SettlementState       string     `json:"settlement_state"`
-	ActualHomeScore       *int       `json:"actual_home_score"`
-	ActualAwayScore       *int       `json:"actual_away_score"`
-	ResultScoreBasis      *string    `json:"result_score_basis"`
-	ResultProvider        *string    `json:"result_provider"`
-	ResultUpdatedAt       *time.Time `json:"result_updated_at"`
+	SourceCode             string     `json:"source_code"`
+	FixtureIdentityStatus  *string    `json:"fixture_identity_status"`
+	SourceDateStatus       string     `json:"source_date_status"`
+	SourceRevisionConflict bool       `json:"source_revision_conflict"`
+	ComparisonStatus       string     `json:"comparison_status,omitempty"`
+	ID                     string     `json:"id"`
+	Source                 string     `json:"source"`
+	SourcePage             string     `json:"source_page"`
+	PredictionDate         string     `json:"prediction_date"`
+	OriginalDateText       string     `json:"original_date_text"`
+	CollectedAt            time.Time  `json:"collected_at"`
+	FixtureID              *string    `json:"fixture_id"`
+	KickoffAt              *time.Time `json:"kickoff_at"`
+	Competition            string     `json:"competition"`
+	HomeTeam               string     `json:"home_team"`
+	AwayTeam               string     `json:"away_team"`
+	Market                 string     `json:"market"`
+	Selection              string     `json:"selection"`
+	MatchStatus            string     `json:"match_status"`
+	MatchForgeProbability  *float64   `json:"matchforge_probability"`
+	Agreement              string     `json:"agreement"`
+	SettlementState        string     `json:"settlement_state"`
+	ActualHomeScore        *int       `json:"actual_home_score"`
+	ActualAwayScore        *int       `json:"actual_away_score"`
+	ResultScoreBasis       *string    `json:"result_score_basis"`
+	ResultProvider         *string    `json:"result_provider"`
+	ResultUpdatedAt        *time.Time `json:"result_updated_at"`
 }
 
 type ExternalPredictionSource struct {
-	Code                  string    `json:"code"`
-	Name                  string    `json:"name"`
-	URL                   string    `json:"url"`
-	PublicPredictions     bool      `json:"public_predictions"`
-	PredictionDate        bool      `json:"prediction_date_available"`
-	LoginRequired         bool      `json:"login_required"`
-	PaidContent           bool      `json:"paid_content"`
-	AutomatedAccessStatus string    `json:"automated_access_status"`
-	AdapterStatus         string    `json:"adapter_status"`
-	KnownIssues           string    `json:"known_issues"`
-	CheckedAt             time.Time `json:"checked_at"`
-	TrackedSelections     int       `json:"tracked_selections"`
-	SettledSelections     int       `json:"settled_selections"`
-	CorrectSelections     int       `json:"correct_selections"`
-	SettledHitRate        *float64  `json:"settled_hit_rate"`
-	AgreementRate         *float64  `json:"matchforge_agreement_rate"`
+	ProspectiveSelections   int        `json:"prospectively_captured_selections"`
+	RetrospectiveSelections int        `json:"retrospectively_captured_selections"`
+	LastCollectionAt        *time.Time `json:"last_collection_at"`
+	LastCollectionStatus    *string    `json:"last_collection_status"`
+	CollectionError         *string    `json:"collection_error"`
+	Code                    string     `json:"code"`
+	Name                    string     `json:"name"`
+	URL                     string     `json:"url"`
+	PublicPredictions       bool       `json:"public_predictions"`
+	PredictionDate          bool       `json:"prediction_date_available"`
+	LoginRequired           bool       `json:"login_required"`
+	PaidContent             bool       `json:"paid_content"`
+	AutomatedAccessStatus   string     `json:"automated_access_status"`
+	AdapterStatus           string     `json:"adapter_status"`
+	KnownIssues             string     `json:"known_issues"`
+	CheckedAt               time.Time  `json:"checked_at"`
+	TrackedSelections       int        `json:"tracked_selections"`
+	SettledSelections       int        `json:"settled_selections"`
+	CorrectSelections       int        `json:"correct_selections"`
+	SettledHitRate          *float64   `json:"settled_hit_rate"`
+	AgreementRate           *float64   `json:"matchforge_agreement_rate"`
 }
 
 func (application *App) listCompetitions(response http.ResponseWriter, request *http.Request) {
@@ -644,14 +677,18 @@ func (application *App) externalPredictions(response http.ResponseWriter, reques
 		return
 	}
 	items, err := application.product.ExternalPredictions(request.Context(), filters)
-	application.respondProduct(response, map[string]any{"predictions": items}, err)
+	application.respondProduct(response, items, err)
 }
 
 func (application *App) fixtureExternalPredictions(response http.ResponseWriter, request *http.Request) {
-	items, err := application.product.ExternalPredictions(
-		request.Context(), ExternalPredictionFilters{FixtureID: request.PathValue("fixture_id")},
-	)
-	application.respondProduct(response, map[string]any{"predictions": items}, err)
+	filters, err := externalFilters(request)
+	if err != nil {
+		application.publicError(response, http.StatusBadRequest, err.Error())
+		return
+	}
+	filters.FixtureID = request.PathValue("fixture_id")
+	items, err := application.product.ExternalPredictions(request.Context(), filters)
+	application.respondProduct(response, items, err)
 }
 
 func (application *App) externalPredictionSources(response http.ResponseWriter, request *http.Request) {
@@ -688,6 +725,14 @@ func externalFilters(request *http.Request) (ExternalPredictionFilters, error) {
 			return ExternalPredictionFilters{}, fmt.Errorf("date must use YYYY-MM-DD")
 		}
 		filters.Date = parsed
+	}
+	page, size, err := performancePagination(request)
+	if err != nil {
+		return ExternalPredictionFilters{}, err
+	}
+	filters.Page, filters.PageSize = page, size
+	if !filters.DateFrom.IsZero() && !filters.DateTo.IsZero() && filters.DateFrom.After(filters.DateTo) {
+		return ExternalPredictionFilters{}, errors.New("date_from must not follow date_to")
 	}
 	return filters, nil
 }

@@ -16,7 +16,7 @@ def test_language_toolchains_are_exactly_pinned() -> None:
 
     go_mod = (PROJECT_ROOT / "go" / "api" / "go.mod").read_text(encoding="utf-8")
     assert "go 1.27\n" in go_mod
-    assert "toolchain go1.27.0\n" in go_mod
+    assert "toolchain go1.27.3\n" in go_mod
 
 
 def test_container_images_are_digest_pinned_and_loopback_only() -> None:

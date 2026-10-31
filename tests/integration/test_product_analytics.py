@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 import psycopg
 import pytest
 from football.product.identity_admission import admit_provider_mappings
+from psycopg.types.json import Jsonb
 
 from tests.integration.test_live_context import (
     COMPETITION,
@@ -20,7 +21,11 @@ from tests.integration.test_product_identity_admission import _cutoff, _history
 
 
 def _revision(
-    connection: psycopg.Connection[Any], issued_hours: float, knowledge_lag_seconds: int = 0
+    connection: psycopg.Connection[Any],
+    issued_hours: float,
+    knowledge_lag_seconds: int = 0,
+    *,
+    probabilities: dict[str, float] | None = None,
 ) -> UUID:
     revision = uuid4()
     checksum = revision.hex * 2
@@ -31,11 +36,11 @@ def _revision(
                model_artifact_sha256,created_at,football_cutoff,knowledge_cutoff,knowledge_mode,
                expected_home_goals,expected_away_goals,probabilities,score_matrix,payload_sha256,
                publication_mode,forecast_horizon,predictive_input_snapshot_sha256,
-               context_snapshot_sha256,revision_reason_codes,new_information_ids)
+               context_snapshot_sha256,revision_reason_codes,new_information_ids,score_matrix_version)
            SELECT %s,%s,fixture_id,model_label,model_algorithm_version,model_artifact_sha256,
                   %s,%s,%s,knowledge_mode,expected_home_goals,expected_away_goals,
-                  '{"home":0.6,"draw":0.2,"away":0.2,"total_over_2_5":0.6,"btts_yes":0.6}'::jsonb,score_matrix,%s,publication_mode,forecast_horizon,%s,
-                  context_snapshot_sha256,revision_reason_codes,new_information_ids
+                  %s::jsonb,score_matrix,%s,publication_mode,forecast_horizon,%s,
+                  context_snapshot_sha256,revision_reason_codes,new_information_ids,score_matrix_version
            FROM football.product_forecasts WHERE fixture_id=%s LIMIT 1""",
         (
             revision,
@@ -43,6 +48,17 @@ def _revision(
             issued,
             issued,
             issued - timedelta(seconds=knowledge_lag_seconds),
+            Jsonb(
+                probabilities
+                if probabilities is not None
+                else {
+                    "home": 0.6,
+                    "draw": 0.2,
+                    "away": 0.2,
+                    "total_over_2_5": 0.6,
+                    "btts_yes": 0.6,
+                }
+            ),
             checksum,
             checksum,
             FIXTURE,

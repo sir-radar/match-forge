@@ -103,6 +103,8 @@ paths:
     get:
       operationId: listExternalPredictions
       parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 1, default: 1}}
+        - {name: page_size, in: query, schema: {type: integer, enum: [20, 50, 100], default: 20}}
         - { name: date, in: query, schema: { type: string, format: date } }
         - { name: source, in: query, schema: { type: string } }
         - { name: competition, in: query, schema: { type: string } }
@@ -319,7 +321,7 @@ components:
         has_more: { type: boolean }
         items: { type: array, maxItems: 100, items: { type: object }, description: Selected metadata from the named existing domain owner. Model records wrap the unchanged registration under registration; experiment records are shared execution work. }
     Error: { type: object, required: [error], properties: { error: { type: string } } }
-    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; all other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
+    SyncType: { type: string, description: FotMob and PitchAPI each have an independent live lane; public/context reports share a separate report lane; other types share the bulk lane., enum: [MVP_SYNC, OPENFOOTBALL, FOOTBALL_DATA_UK, HISTORY_BACKFILL, FORECAST_REFRESH, CONTEXT_REPORTS, PUBLIC_REPORTS, EXTERNAL_PREDICTIONS, ALL_DATA, FOTMOB_SYNC, PITCHAPI_SYNC] }
     SyncStatus: { type: string, enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED] }
     SyncRequest:
       type: object
@@ -436,6 +438,7 @@ components:
         added_time: { type: [integer, 'null'] }
         period: { type: [string, 'null'] }
         last_successful_update: { type: [string, 'null'], format: date-time }
+        freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: { type: boolean }
         goal_scorers: { type: array, items: { $ref: '#/components/schemas/LiveEvent' } }
     FixtureGroup:
@@ -511,6 +514,7 @@ components:
       type: object
       required: [competition_id, league, country, continent, rating, forecasts, analytics_policy_version, analytics_horizon]
       properties:
+        report_status: { type: string, enum: [READY, EMPTY, PENDING, FAILED] }
         competition_id: { type: string, format: uuid }
         analytics_policy_version: { type: string, const: pre-match-revisions-v2 }
         analytics_horizon: { type: string, enum: [LATEST, 7D, 3D, 24H, 6H, 1H, 15M] }
@@ -736,6 +740,7 @@ components:
         provider_match_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
         observed_at: {"type": "string", "format": "date-time"}
         last_fetched_at: {"type": "string", "format": "date-time"}
+        freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: {"type": "boolean"}
     LiveMatch:
       type: object
@@ -758,11 +763,16 @@ components:
         statistics_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
         availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
         partial: {"type": "boolean"}
+        resource_identity_conflict: {type: boolean, description: Retained incident or statistics data is withheld because a verified native mapping identifies another effective fixture.}
     ExternalPrediction:
       type: object
       additionalProperties: false
       required: ["id", "source", "source_page", "prediction_date", "original_date_text", "collected_at", "fixture_id", "kickoff_at", "competition", "home_team", "away_team", "market", "selection", "match_status", "matchforge_probability", "agreement", "settlement_state", "actual_home_score", "actual_away_score", "result_score_basis", "result_provider", "result_updated_at"]
       properties:
+        source_code: {type: string}
+        fixture_identity_status: {type: [string, 'null']}
+        source_date_status: {type: string, enum: [VERIFIED, MISMATCH, UNKNOWN, NOT_APPLICABLE]}
+        source_revision_conflict: {type: boolean}
         id: {"type": "string"}
         source: {"type": "string"}
         source_page: {"type": "string"}
@@ -778,6 +788,7 @@ components:
         selection: {"type": "string"}
         match_status: {"type": "string"}
         matchforge_probability: {"type": ["number", "null"]}
+        comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED, QUARANTINED]}
         agreement: {"type": "string"}
         settlement_state: {"type": "string"}
         actual_home_score: {"type": ["integer", "null"]}
@@ -790,6 +801,11 @@ components:
       additionalProperties: false
       required: ["code", "name", "url", "public_predictions", "prediction_date_available", "login_required", "paid_content", "automated_access_status", "adapter_status", "known_issues", "checked_at", "tracked_selections", "settled_selections", "correct_selections", "settled_hit_rate", "matchforge_agreement_rate"]
       properties:
+        prospectively_captured_selections: {type: integer, minimum: 0}
+        retrospectively_captured_selections: {type: integer, minimum: 0}
+        last_collection_at: {type: [string, 'null'], format: date-time}
+        last_collection_status: {type: [string, 'null']}
+        collection_error: {type: [string, 'null']}
         code: {"type": "string"}
         name: {"type": "string"}
         url: {"type": "string"}
@@ -806,12 +822,27 @@ components:
         correct_selections: {"type": "integer"}
         settled_hit_rate: {"type": ["number", "null"]}
         matchforge_agreement_rate: {"type": ["number", "null"]}
+    ExternalConsensus:
+      type: object
+      additionalProperties: false
+      required: [id, fixture, market, kickoff, selection, count, total, agreement]
+      properties:
+        id: {type: string}
+        fixture: {type: string}
+        market: {type: string}
+        kickoff: {type: string, format: date-time}
+        selection: {type: string}
+        count: {type: integer, minimum: 2}
+        total: {type: integer, minimum: 2}
+        agreement: {type: string}
     ExternalPredictionPage:
       type: object
       additionalProperties: false
-      required: [predictions]
+      required: [predictions, pagination, consensus]
       properties:
-        predictions: { type: array, items: { $ref: '#/components/schemas/ExternalPrediction' } }
+        predictions: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/ExternalPrediction'}}
+        pagination: {$ref: '#/components/schemas/Pagination'}
+        consensus: {type: array, maxItems: 3, items: {$ref: '#/components/schemas/ExternalConsensus'}}
     ExternalPredictionSourcePage:
       type: object
       additionalProperties: false

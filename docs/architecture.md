@@ -256,7 +256,17 @@ rights before recording its terminal state.
 
 Public fixture-context reports use a durable per-fixture refresh queue. Fixture,
 eligible history, identity, coach and lineup changes enqueue affected fixtures;
-the Go service schedules a bounded Python projection job. The API serves only immutable
+the Go service schedules a bounded Python projection job in a separate public-report lane.
+Each minute the worker can attempt at most 32 scopes per report kind. Half of
+context capacity is reserved for oldest eligible backlog work; the rest prefers
+fixtures from the preceding 24 hours through the next 72 hours. Attempts rotate
+by last-attempt time, and unsuccessful scopes wait at least one minute. This is
+a scheduling policy, not a measured production latency guarantee. Performance
+and comparison work is enqueued transactionally by forecast, fixture/result,
+selection and fixture-resolution changes. All seven Performance horizons are
+queued independently. Successful completion still requires the captured
+generation and the current source fingerprint; failures remain pending with
+a last error and do not abort sibling scopes. The API serves only immutable
 reports whose source fingerprint still matches current eligible context. While
 a refreshed report is pending, the context endpoint reports temporary
 unavailability instead of serving stale form.
@@ -1113,7 +1123,14 @@ runs. Repeated inputs converge; corrected facts create new report versions.
 
 Go selects only reports matching the current SQL source fingerprint, verifies their
 bytes and scope, and retrieves existing normalized availability, lineups and
-standings. Missing or stale required reports return 503. A verified zero selected
+standings. Missing or stale fixture-context reports return 503. Performance pages keep
+available leagues and expose READY, EMPTY, PENDING or FAILED per league; pending
+rows retain the selected forecast count and have null metrics. A missing report
+never establishes zero samples. Individual unavailable Performance requests
+retain 503. External comparisons expose READY, PENDING, FAILED, UNSUPPORTED,
+NO_FORECAST or UNMATCHED independently of the existing agreement value. Score
+freshness is UNKNOWN without a deadline; the legacy boolean alone never proves
+freshness. A verified zero selected
 forecast count retains the empty UNRATED performance state; missing reports never
 become zero samples. Source fingerprints invalidate derived data and do not replace
 canonical model/artifact checksums. Context history excludes the target fixture ID,
@@ -1143,3 +1160,49 @@ Use the owning document for implementation-level detail:
 - [Engineering testing](testing.md)
 
 Current project state belongs in the tracked project-status authority and applicable Wayfinder/evidence records rather than this document.
+
+
+### Operational acquisition and historical recovery outcomes
+
+Operational provider sync reports `current_acquisition` and `historical_recovery`
+separately. The existing top-level counts still include both, and any failed
+scope keeps the aggregate `COMPLETED_WITH_ERRORS`. A successful HTTP response is
+not proof of identity admission. Held identities remain in lifecycle diagnostics.
+A supported historical fixture absent from its native daily response retains
+`RECOVERY_FIXTURES_MISSING` and waits one day before another request. Transport
+and detail failures retain the existing short cooldown. No retry admits a fixture
+by name or changes an identity decision. Independent daily sync and external
+collection stages both execute; either nonzero exit makes the wrapper fail.
+
+Root sync heartbeats remain 15 seconds with a two-minute lease. Shared work keeps
+its exact owner/token/generation checks. After interruption, a new claim may
+recover committed progress; an expired claim cannot renew or publish. Missing
+host heartbeat/process evidence must not be interpreted as permission to extend
+or bypass these checks.
+
+
+Current live-resource serving excludes a retained resource when its provider's
+verified native mapping points to a different effective fixture. The original
+resource remains available for review. Detail acquisition cannot attach a
+conflicting candidate through the read-only resolver. This does not choose which
+fixture is correct or change a mapping decision.
+
+`make build` embeds the code commit, uv.lock SHA-256 and clean/dirty source state
+in the Go binary. `/version` returns these fields beside the existing version.
+Direct builds without those linker settings report `unknown`; serving never
+reads a moving checkout to infer a deployed revision. Operators can compare this
+endpoint to the reviewed commit before starting work.
+
+Open fixture panels refresh context after a completed request (60 seconds while
+visible, 120 seconds while hidden); existing temporary-unavailability backoff
+remains. Forecasts stay bound to their immutable ID. Admin discovers idle jobs
+at 60 seconds, active jobs at 2.5 seconds, hidden pages at 120 seconds and refreshes
+on visibility restoration. Polls remain sequential and superseded requests abort.
+
+
+Active fixture summaries and external comparisons select from
+`product_prematch_forecasts`: issue time must precede the current kickoff and
+football/knowledge cutoffs cannot follow issue. A corrected kickoff can therefore
+make a retained revision ineligible. That revision remains retrievable by ID in
+history, while current consumers select an earlier eligible revision or expose
+missing source data. No published forecast is changed or deleted.

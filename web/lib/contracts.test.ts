@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseContext, parseFixtureGroups, parseLiveMatch, parsePerformance, parsePerformanceList, parsePredictions, parseSyncRun } from "@/lib/contracts";
+import { parseContext, parseFixtureGroups, parseLiveMatch, parsePerformance, parsePerformanceList, parsePredictions, parsePredictionPage, parseSyncRun } from "@/lib/contracts";
 
 const competition = { id: "c", name: "League", country: "Country", continent: "Europe", division: 1, type: "LEAGUE", season: "2026", availability: { fixtures: true, results: true, standings: true, h2h: true, forecast: false, xg: false, team_stats: false }, availability_status: "FIXTURES_ONLY", sources: {} };
 const fixture = { id: "f", kickoff_at: "2026-01-01T12:00:00Z", status: "SCHEDULED", home: { id: "h", name: "Home", crest_url: null }, away: { id: "a", name: "Away", crest_url: null }, home_score: null, away_score: null, venue: null, round: null, forecast_availability: "UNAVAILABLE", forecast: null };
@@ -94,6 +94,14 @@ describe("API contract boundary", () => {
     expect(() => parsePerformance({ ...item, analytics_policy_version: "unknown" })).toThrow(/policy/);
     expect(() => parsePerformance({ ...item, analytics_horizon: "CONFIRMED_LINEUP" })).toThrow(/horizon/);
     expect(() => parsePerformance({ ...item, rating: "unknown" })).toThrow(/rating/);
+  });
+
+  it("rejects single-source or minority consensus claims", () => {
+    const pagination = { page: 1, page_size: 20, total_items: 0, total_pages: 0 };
+    const consensus = { id: "f:RESULT_1X2", fixture: "Home vs Away", market: "RESULT_1X2", kickoff: "2026-01-01T12:00:00Z", selection: "HOME_WIN", count: 1, total: 1, agreement: "AGREES" };
+    expect(() => parsePredictionPage({ predictions: [], pagination, consensus: [consensus] })).toThrow(/count/);
+    expect(() => parsePredictionPage({ predictions: [], pagination, consensus: [{ ...consensus, count: 2, total: 4 }] })).toThrow(/majority/);
+    expect(parsePredictionPage({ predictions: [], pagination, consensus: [] }).consensus).toEqual([]);
   });
 
 });

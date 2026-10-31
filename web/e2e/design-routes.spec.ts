@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
       : url.includes("/v1/performance?") ? performancePayload(url)
       : url.includes("/v1/fixtures?") ? { date: requestedDay, groups: [{ competition, fixtures }] }
       : url.includes("external-prediction-sources") ? { sources: [source] }
-      : { predictions: predictions.map((prediction) => ({ ...prediction, prediction_date: requestedDay ?? prediction.prediction_date })) };
+      : { predictions: predictions.map((prediction) => ({ ...prediction, prediction_date: requestedDay ?? prediction.prediction_date })), consensus: [{ id: "fixture-8:RESULT_1X2", fixture: "Home 9 vs Away 9", market: "RESULT_1X2", kickoff: "2026-10-02T15:00:00Z", selection: "HOME_WIN", count: 2, total: 2, agreement: "AGREES" }], pagination: {page:1,page_size:20,total_items:predictions.length,total_pages:Math.ceil(predictions.length/20)} };
     await route.fulfill({ json: payload });
   });
 });
@@ -74,7 +74,7 @@ test("predictions matches the approved external terminal design", async ({ page 
   await expect(consensus).toBeVisible();
   await expect(consensus.getByText("Home 9 vs Away 9")).toHaveCount(1);
   await expect(page.getByLabel("External selection records table").locator("tbody tr")).toHaveCount(9);
-  await expect(page.getByText(/Page \d+ of \d+/)).toHaveCount(0);
+  await expect(page.getByText(/Page 1 of 1/)).toBeVisible();
   const selectedDay = await page.getByLabel("Prediction day").inputValue();
   const predictionRequest = await predictionRequestPromise;
   expect(predictionRequest.url()).toContain(`date=${selectedDay}`);
@@ -99,7 +99,7 @@ function performancePayload(url: string) {
 
 test("prediction action computed contrast and forced-colors focus", async ({ page }) => {
   if (test.info().project.name === "mobile") await page.setViewportSize({ width: 320, height: 800 });
-  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [] } }));
+  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [], consensus: [], pagination: {page:1,page_size:20,total_items:0,total_pages:0} } }));
   await page.goto("/predictions");
   const action = page.getByRole("button", { name: "Reset All Filters" });
   await expect(action).toBeVisible();
@@ -125,3 +125,20 @@ function contrastRatio(foreground: string, background: string): number {
   const a = luminance(foreground), b = luminance(background);
   return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
 }
+
+
+test("Predictions navigation remains reachable at narrow and intermediate widths", async ({ page }) => {
+  for (const width of [320, 765, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/predictions");
+    const navigation = width < 768 ? page.getByRole("navigation", { name: "Mobile navigation" }) : page.getByRole("navigation", { name: "Primary navigation" });
+    await expect(navigation).toBeVisible();
+    for (const href of ["/", "/performance", "/predictions", "/admin/data-sync"]) {
+      const link = navigation.locator(`a[href="${href}"]`);
+      await expect(link).toBeVisible();
+      await link.focus(); await expect(link).toBeFocused();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  }
+});

@@ -40,7 +40,7 @@ test.beforeEach(async ({ page }) => {
       : url.includes("/v1/fixtures?") ? { groups: [{ competition, fixtures: [fixture] }] }
       : url.includes("/context") ? { fixture_id: fixture.id, home_form: [duplicateForm, duplicateForm], away_form: [], h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: {} }
       : url.includes("/forecasts/") ? { ...fixture.forecast, fixture_id: fixture.id, model_label: "MVP_FORECAST", model_algorithm_version: "transferable-rolling-goals-poisson-v1", created_at: "2026-09-29T06:00:00Z", football_cutoff: "2026-09-29T06:00:00Z", knowledge_cutoff: "2026-09-29T06:00:00Z", knowledge_mode: "bitemporal", publication_mode: "MVP_OWNER_AUTHORIZED", score_matrix: [{ home_goals: 1, away_goals: 0, probability: .14 }] }
-      : { predictions: [] };
+      : { predictions: [], consensus: [], pagination: {page:1,page_size:20,total_items:0,total_pages:0} };
     await route.fulfill({ json: payload });
   });
 });
@@ -142,4 +142,30 @@ test("tab keys wrap, expose one active panel, and retrieve immutable forecast hi
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.keyboard.press("Home"); await expect(page.getByRole("tab", { name: "Live Match" })).toBeFocused();
   await page.keyboard.press("ArrowLeft"); await expect(page.getByRole("tab", { name: "Forecast history" })).toBeFocused();
+});
+
+
+test("score matrix keeps native row and column relationships at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByRole("button", { name: /Arsenal.*Chelsea/ }).click();
+  await page.getByRole("tab", { name: "Score matrix" }).click();
+  const matrix = page.getByRole("table", { name: /Exact score probabilities/ });
+  await expect(matrix).toBeVisible();
+  await expect(matrix.locator("thead th[scope=col]")).toHaveCount(5);
+  await expect(matrix.locator("tbody th[scope=row]")).toHaveCount(4);
+  await expect(matrix.locator("tbody td")).toHaveCount(16);
+  for (let row = 0; row < 4; row++) for (let col = 0; col < 4; col++) {
+    await expect(matrix.locator("tbody tr").nth(row).locator("td").nth(col)).toContainText(`${row}–${col}:`);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const scroll = page.getByRole("region", { name: "Score matrix scroll area" });
+  await scroll.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => scroll.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+  await page.emulateMedia({ forcedColors: "active" });
+  await expect(matrix.locator("td").first()).toHaveCSS("border-top-style", "solid");
+  await page.emulateMedia({ forcedColors: "none" });
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

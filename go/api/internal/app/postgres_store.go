@@ -61,12 +61,14 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       at.team_id::text, at.name, at.crest_url,
 		       COALESCE(observation.home_score, pf.home_score),
 		       COALESCE(observation.away_score, pf.away_score), pf.venue, pf.round_name,
-		       pf.forecast_availability,
+		       availability.forecast_availability,
 		       forecast.forecast_id::text, forecast.expected_home_goals,
 		       forecast.expected_away_goals, forecast.probabilities,
 		       observation.provider_code, NULLIF(observation.provider_status, ''),
 		       observation.match_minute, observation.added_time, observation.period,
 		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
+               CASE WHEN observation.stale_after IS NULL THEN 'UNKNOWN'
+                 WHEN observation.stale_after < clock_timestamp() THEN 'STALE' ELSE 'FRESH' END,
 		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code
 		FROM football.product_serving_fixtures pf
 		JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
@@ -74,9 +76,13 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		JOIN football.product_teams at ON at.team_id = pf.away_team_id
 		LEFT JOIN LATERAL (
 			SELECT f.forecast_id, f.expected_home_goals, f.expected_away_goals, f.probabilities
-			FROM football.product_forecasts f WHERE f.fixture_id = pf.fixture_id
-			ORDER BY f.created_at DESC LIMIT 1
+			FROM football.product_prematch_forecasts f WHERE f.fixture_id = pf.fixture_id
+			ORDER BY f.created_at DESC,f.forecast_id DESC LIMIT 1
 		) forecast ON true
+        CROSS JOIN LATERAL (
+            SELECT CASE WHEN forecast.forecast_id IS NULL AND pf.forecast_availability='FORECAST_AVAILABLE'
+                THEN 'SOURCE_DATA_INCOMPLETE' ELSE pf.forecast_availability END AS forecast_availability
+        ) availability
 		LEFT JOIN LATERAL (
 			SELECT live.provider_code, live.provider_status, live.canonical_status,
 			       live.home_score, live.away_score, live.match_minute, live.added_time,
@@ -94,7 +100,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		) observation ON true
 		LEFT JOIN LATERAL (
 			SELECT resource.payload, resource.provider_code
-			FROM football.product_provider_resource_observations resource
+			FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id
 			  AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
@@ -106,7 +112,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 	query = addFilter(query, &args, "pc.competition_id::text", filters.CompetitionID)
 	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
 	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "pf.forecast_availability", filters.ForecastAvailability)
+	query = addFilter(query, &args, "availability.forecast_availability", filters.ForecastAvailability)
 	query += " ORDER BY pc.continent, COALESCE(pc.geographic_scope, pc.country), pc.name, pf.kickoff_at, pf.fixture_id"
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
@@ -150,7 +156,12 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		       CASE WHEN events.last_fetched_at IS NULL THEN NULL ELSE events.last_fetched_at < clock_timestamp() - interval '3 minutes' END,
 		       COALESCE(stats.payload->'statistics', '[]'::jsonb),
 		       stats.provider_code, stats.provider_match_id, stats.observed_at, stats.last_fetched_at,
-		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END
+		       CASE WHEN stats.last_fetched_at IS NULL THEN NULL ELSE stats.last_fetched_at < clock_timestamp() - interval '3 minutes' END,
+            EXISTS (SELECT 1 FROM football.product_provider_resource_observations held
+                WHERE held.canonical_fixture_id=pf.fixture_id
+                AND held.resource_type IN ('NORMALIZED_EVENTS','NORMALIZED_STATISTICS')
+                AND NOT EXISTS (SELECT 1 FROM football.product_uncontested_provider_resources eligible
+                    WHERE eligible.resource_observation_id=held.resource_observation_id))
 		FROM football.product_effective_fixtures pf
 		JOIN football.product_teams home ON home.team_id = pf.home_team_id
 		JOIN football.product_teams away ON away.team_id = pf.away_team_id
@@ -166,12 +177,12 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 			         live.observed_at DESC, live.observation_id DESC LIMIT 1
 		) score ON true
 		LEFT JOIN LATERAL (
-			SELECT resource.* FROM football.product_provider_resource_observations resource
+			SELECT resource.* FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_EVENTS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) events ON true
 		LEFT JOIN LATERAL (
-			SELECT resource.* FROM football.product_provider_resource_observations resource
+			SELECT resource.* FROM football.product_uncontested_provider_resources resource
 			WHERE resource.canonical_fixture_id = pf.fixture_id AND resource.resource_type = 'NORMALIZED_STATISTICS'
 			ORDER BY resource.observed_at DESC, resource.resource_observation_id DESC LIMIT 1
 		) stats ON true
@@ -184,6 +195,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		&scoreProvider, &scoreMatchID, &scoreObserved, &scoreFetched, &scoreStale,
 		&eventsJSON, &eventProvider, &eventMatchID, &eventObserved, &eventFetched, &eventStale,
 		&statisticsJSON, &statsProvider, &statsMatchID, &statsObserved, &statsFetched, &statsStale,
+		&item.ResourceIdentityConflict,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return LiveMatch{}, errProductNotFound
@@ -206,7 +218,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		"events":     len(item.Events) > 0,
 		"statistics": len(item.Statistics) > 0,
 	}
-	item.Partial = !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
+	item.Partial = item.ResourceIdentityConflict || !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
 	return item, nil
 }
 
@@ -214,7 +226,14 @@ func liveSource(provider, matchID *string, observed, fetched *time.Time, stale *
 	if provider == nil || matchID == nil || observed == nil || fetched == nil {
 		return nil
 	}
-	return &LiveSource{Provider: *provider, ProviderMatchID: *matchID, ObservedAt: *observed, LastFetchedAt: *fetched, Stale: stale != nil && *stale}
+	freshness := "UNKNOWN"
+	if stale != nil {
+		freshness = "FRESH"
+		if *stale {
+			freshness = "STALE"
+		}
+	}
+	return &LiveSource{Freshness: freshness, Provider: *provider, ProviderMatchID: *matchID, ObservedAt: *observed, LastFetchedAt: *fetched, Stale: stale != nil && *stale}
 }
 
 func valueOrEmpty(value *string) string {
@@ -436,147 +455,6 @@ func paginatePerformances(items []Performance, page, pageSize int) PerformancePa
 	}
 }
 
-func (store *PostgresProductStore) ExternalPredictions(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPrediction, error) {
-	query := `
-		SELECT ep.prediction_id::text, eps.name, ep.source_page,
-		       ep.prediction_date::text, ep.original_date_text, ep.collected_at,
-		       ep.fixture_id::text, pf.kickoff_at, ep.competition_text, ep.home_team_text,
-		       ep.away_team_text, ep.market, ep.selection, ep.match_status,
-		       comparison.record_bytes,comparison.record_sha256,source.value->>'forecast_id', COALESCE(result.settlement_state, 'PENDING'),
-		       result.home_score, result.away_score, result.score_basis, result.provider_code,
-		       result.provider_updated_at
-		FROM football.external_predictions ep
-		JOIN football.external_prediction_sources eps ON eps.source_code = ep.source_code
-		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
-		LEFT JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
-        CROSS JOIN LATERAL (SELECT football.public_comparison_source(ep.prediction_id) AS value) source
-        LEFT JOIN LATERAL (
-            SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
-            WHERE r.report_kind='COMPARISON' AND r.scope_id=ep.prediction_id AND r.horizon='LATEST'
-              AND r.source_fingerprint=encode(sha256(convert_to(source.value::text,'UTF8')),'hex')
-            ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
-        ) comparison ON true
-		LEFT JOIN LATERAL (
-			SELECT settlement_state, home_score, away_score, score_basis, provider_code,
-			       provider_updated_at
-			FROM football.external_prediction_result_revisions revision
-			WHERE revision.prediction_id = ep.prediction_id
-			ORDER BY settled_at DESC, result_revision_id DESC LIMIT 1
-		) result ON true
-		WHERE true`
-	args := []any{}
-	if !filters.Date.IsZero() {
-		args = append(args, filters.Date)
-		query += fmt.Sprintf(" AND ep.prediction_date = $%d", len(args))
-	}
-	query = addPredictionDateRange(query, &args, filters)
-	query = addFilter(query, &args, "ep.source_code", filters.Source)
-	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
-	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
-	query = addFilter(query, &args, "ep.market", filters.Market)
-	query = addFilter(query, &args, "ep.fixture_id::text", filters.FixtureID)
-	query += " ORDER BY ep.prediction_date, ep.collected_at, ep.prediction_id"
-	rows, err := store.pool.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ExternalPrediction{}
-	for rows.Next() {
-		var item ExternalPrediction
-		var comparison []byte
-		var digest, forecastID *string
-		if err := rows.Scan(
-			&item.ID, &item.Source, &item.SourcePage, &item.PredictionDate,
-			&item.OriginalDateText, &item.CollectedAt, &item.FixtureID, &item.KickoffAt,
-			&item.Competition, &item.HomeTeam, &item.AwayTeam, &item.Market,
-			&item.Selection, &item.MatchStatus, &comparison, &digest, &forecastID, &item.SettlementState,
-			&item.ActualHomeScore, &item.ActualAwayScore, &item.ResultScoreBasis,
-			&item.ResultProvider,
-			&item.ResultUpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		if err := attachComparison(&item, forecastID, comparison, digest); err != nil {
-			return nil, err
-		}
-		if filters.Agreement != "" && item.Agreement != filters.Agreement {
-			continue
-		}
-		items = append(items, item)
-	}
-	return items, rows.Err()
-}
-
-func (store *PostgresProductStore) ExternalPredictionSources(ctx context.Context, filters ExternalPredictionFilters) ([]ExternalPredictionSource, error) {
-	query := `
-		SELECT source.source_code, source.name, source.base_url,
-		       source.public_predictions, source.prediction_date_available,
-		       source.login_required, source.paid_content,
-		       source.automated_access_status, source.adapter_status,
-		       source.known_issues, source.checked_at, COUNT(ep.prediction_id)::int,
-		       COUNT(result.prediction_id)::int,
-		       COUNT(result.prediction_id) FILTER (WHERE result.correct)::int,
-		       (AVG(CASE WHEN result.correct THEN 1.0 ELSE 0.0 END)
-		           FILTER (WHERE result.prediction_id IS NOT NULL))::double precision
-		FROM football.external_prediction_sources source
-		LEFT JOIN football.external_predictions ep ON ep.source_code = source.source_code
-		LEFT JOIN football.external_prediction_results result ON result.prediction_id = ep.prediction_id
-		LEFT JOIN football.product_fixtures pf ON pf.fixture_id = ep.fixture_id
-		LEFT JOIN football.product_competitions pc ON pc.competition_id = pf.competition_id
-		WHERE true`
-	args := []any{}
-	query = addFilter(query, &args, "source.source_code", filters.Source)
-	query = addFilter(query, &args, "ep.competition_text", filters.Competition)
-	query = addFilter(query, &args, "ep.market", filters.Market)
-	query = addFilter(query, &args, "pc.continent", filters.Continent)
-	query = addFilter(query, &args, "COALESCE(pc.geographic_scope, pc.country)", filters.Country)
-	query = addPredictionDateRange(query, &args, filters)
-	query += " GROUP BY source.source_code ORDER BY source.name"
-	rows, err := store.pool.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (ExternalPredictionSource, error) {
-		var item ExternalPredictionSource
-		err := row.Scan(
-			&item.Code, &item.Name, &item.URL, &item.PublicPredictions,
-			&item.PredictionDate, &item.LoginRequired, &item.PaidContent,
-			&item.AutomatedAccessStatus, &item.AdapterStatus, &item.KnownIssues,
-			&item.CheckedAt, &item.TrackedSelections, &item.SettledSelections,
-			&item.CorrectSelections, &item.SettledHitRate,
-		)
-		return item, err
-	})
-	if err != nil {
-		return nil, err
-	}
-	for index := range items {
-		sourceFilters := filters
-		sourceFilters.Source = items[index].Code
-		predictions, err := store.ExternalPredictions(ctx, sourceFilters)
-		if err != nil {
-			return nil, err
-		}
-		eligible, agreements := 0, 0
-		for _, prediction := range predictions {
-			if prediction.Agreement == "UNABLE_TO_EVALUATE" {
-				continue
-			}
-			eligible++
-			if prediction.Agreement == "AGREES" {
-				agreements++
-			}
-		}
-		if eligible > 0 {
-			items[index].AgreementRate = floatPointer(float64(agreements) / float64(eligible))
-		}
-	}
-	return items, nil
-}
-
 func (store *PostgresProductStore) addLiveContext(
 	ctx context.Context,
 	item *MatchContext,
@@ -784,7 +662,7 @@ func scanFixture(row pgx.Row) (Competition, Fixture, error) {
 		&fixture.HomeScore, &fixture.AwayScore, &fixture.Venue, &fixture.Round,
 		&fixture.ForecastAvailability, &forecastID, &homeMean, &awayMean, &probabilities,
 		&fixture.Provider, &fixture.ProviderStatus, &fixture.MatchMinute, &fixture.AddedTime,
-		&fixture.Period, &fixture.LastSuccessfulUpdate, &fixture.Stale,
+		&fixture.Period, &fixture.LastSuccessfulUpdate, &fixture.Stale, &fixture.Freshness,
 		&eventJSON, &eventProvider,
 	)
 	if err != nil {

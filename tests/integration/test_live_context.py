@@ -8,7 +8,9 @@ import psycopg
 import pytest
 from football.product.api_football import ApiResponse
 from football.product.context_ingestion import ContextObservationStore
+from football.product.domain import ProductForecast
 from psycopg.errors import RaiseException, UniqueViolation
+from psycopg.types.json import Jsonb
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 COMPETITION = UUID(int=8100)
@@ -133,10 +135,30 @@ def _insert_forecast(
     forecast_id: UUID,
     semantic_sha: str,
     predictive_sha: str,
+    *,
+    forecast: ProductForecast | None = None,
+    artifact_sha256: str = "b" * 64,
 ) -> None:
+    probabilities = (
+        {}
+        if forecast is None
+        else {
+            "home": forecast.home_probability,
+            "draw": forecast.draw_probability,
+            "away": forecast.away_probability,
+            "total_over_2_5": sum(forecast.total_goal_distribution[3:]),
+            "total_under_2_5": sum(forecast.total_goal_distribution[:3]),
+            "btts_yes": forecast.btts_yes,
+            "home_clean_sheet": forecast.home_clean_sheet,
+            "away_clean_sheet": forecast.away_clean_sheet,
+        }
+    )
+    version_column = ", score_matrix_version" if forecast else ""
+    version_placeholder = ", %s" if forecast else ""
+    version_parameters = (forecast.score_matrix_version,) if forecast else ()
     with connection.cursor() as cursor:
         cursor.execute(
-            """
+            f"""
             INSERT INTO football.product_forecasts (
                 forecast_id, semantic_sha256, fixture_id, model_label,
                 model_algorithm_version, model_artifact_sha256, created_at,
@@ -144,25 +166,30 @@ def _insert_forecast(
                 expected_home_goals, expected_away_goals, probabilities,
                 score_matrix, payload_sha256, publication_mode, forecast_horizon,
                 predictive_input_snapshot_sha256, context_snapshot_sha256,
-                revision_reason_codes, new_information_ids
+                revision_reason_codes, new_information_ids{version_column}
             ) VALUES (%s, %s, %s, 'MVP_FORECAST',
                 'transferable-rolling-goals-poisson-v1', %s, %s, %s, %s,
-                'bitemporal', 1.2, 1.1, '{}'::jsonb, '[]'::jsonb, %s,
+                'bitemporal', %s, %s, %s, %s, %s,
                 'MVP_OWNER_AUTHORIZED', '24H', %s, %s,
-                '["INITIAL_FORECAST"]'::jsonb, '[]'::jsonb)
+                '["INITIAL_FORECAST"]'::jsonb, '[]'::jsonb{version_placeholder})
             """,
             (
                 forecast_id,
                 semantic_sha,
                 FIXTURE,
-                "b" * 64,
+                artifact_sha256,
                 OBSERVED,
                 OBSERVED,
                 OBSERVED,
+                forecast.expected_home_goals if forecast else 1.2,
+                forecast.expected_away_goals if forecast else 1.1,
+                Jsonb(probabilities),
+                Jsonb(list(forecast.score_matrix) if forecast else []),
                 "c" * 64,
                 predictive_sha,
                 "e" * 64,
-            ),
+            )
+            + version_parameters,
         )
 
 

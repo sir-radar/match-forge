@@ -2712,5 +2712,24 @@
       "decision_ref": "docs/evidence/owner-decision-retain-sprint2-fail-close-shared-pace-phase3-research-2026-09-20.md",
       "scope": "RESEARCH ONLY: one bounded minimal leakage-safe xG goal-model hypothesis; no promotion, no authoritative Evaluation V2 run"
     }
+  },
+  "codebase_remediation": {
+    "status": "PASS_WITH_WARNINGS",
+    "audit_ref": "docs/CODEBASE_AUDIT_REPORT.md",
+    "report_ref": "docs/CODEBASE_REMEDIATION_REPORT.md",
+    "branch": "ft/codebase-remediation-2026-10-30",
+    "current_work": "Authorized code remediation verified and delivered for review; operating rollout, the retained fixture dispute and separately documented external evidence/governance limits remain open.",
+    "operating_runtime_updated": false,
+    "remaining_findings": [
+      "MF26-05"
+    ],
+    "current_phase": "E",
+    "finding_dispositions": {
+      "FIXED_VERIFIED": 24,
+      "ALREADY_RESOLVED_VERIFIED": 1,
+      "BLOCKED_WITH_EVIDENCE": 1
+    },
+    "verified_code_commit_sha": "596714bb8bde58b4d386ef87edfb02de764f78e3",
+    "verification_command": "make check integration web-e2e; test-only TypeScript correction followed by make -o build web-lint web-test web-build integration web-e2e"
   }
 }

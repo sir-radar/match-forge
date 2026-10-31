@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -37,6 +38,9 @@ func (store *PostgresProductStore) Performance(ctx context.Context, competitionI
 		return Performance{}, err
 	}
 	if len(page.Performance) == 0 {
+		return Performance{}, errProductUnavailable
+	}
+	if page.Performance[0].ReportStatus == "PENDING" || page.Performance[0].ReportStatus == "FAILED" {
 		return Performance{}, errProductUnavailable
 	}
 	return page.Performance[0], nil
@@ -121,7 +125,7 @@ func (store *PostgresProductStore) performanceReports(ctx context.Context, items
 			return nil, err
 		}
 	}
-	rows, err := store.pool.Query(ctx, `SELECT c.id::text,source.record_count,report.record_bytes,report.record_sha256
+	rows, err := store.pool.Query(ctx, `SELECT c.id::text,source.record_count,report.record_bytes,report.record_sha256,work.last_error
         FROM unnest($1::uuid[]) c(id)
         CROSS JOIN LATERAL football.public_performance_source(c.id,$2) source
         LEFT JOIN LATERAL (
@@ -129,31 +133,47 @@ func (store *PostgresProductStore) performanceReports(ctx context.Context, items
             WHERE r.report_kind='PERFORMANCE' AND r.scope_id=c.id AND r.horizon=$3
               AND r.source_fingerprint=source.source_fingerprint
             ORDER BY r.source_observed_at DESC,r.registered_at DESC,r.input_sha256 LIMIT 1
-        ) report ON true`, ids, seconds, horizon)
+        ) report ON true
+        LEFT JOIN football.product_report_refresh_work work
+            ON work.report_kind='PERFORMANCE' AND work.scope_id=c.id AND work.horizon=$3`, ids, seconds, horizon)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id string
-		var count int
-		var payload []byte
-		var digest *string
-		if err := rows.Scan(&id, &count, &payload, &digest); err != nil {
-			return nil, err
-		}
-		item, err := decodePerformanceReport(id, horizon, count, payload, digest)
+		item, err := scanPerformanceReport(rows, horizon)
 		if err != nil {
 			return nil, err
 		}
-		reports[id] = item
+		reports[item.CompetitionID] = item
 	}
 	return reports, rows.Err()
 }
 
+func scanPerformanceReport(row pgx.Row, horizon string) (Performance, error) {
+	var id string
+	var count int
+	var payload []byte
+	var digest, failure *string
+	if err := row.Scan(&id, &count, &payload, &digest, &failure); err != nil {
+		return Performance{}, err
+	}
+	item, err := decodePerformanceReport(id, horizon, count, payload, digest)
+	if err != nil {
+		return Performance{}, err
+	}
+	if item.ReportStatus == "PENDING" && failure != nil {
+		item.ReportStatus = "FAILED"
+	}
+	return item, nil
+}
+
 func decodePerformanceReport(id, horizon string, count int, payload []byte, digest *string) (Performance, error) {
 	if count == 0 && payload == nil {
-		return Performance{CompetitionID: id, AnalyticsPolicyVersion: analyticsPolicyVersion, AnalyticsHorizon: horizon, Rating: "UNRATED"}, nil
+		return Performance{CompetitionID: id, AnalyticsPolicyVersion: analyticsPolicyVersion, AnalyticsHorizon: horizon, Rating: "UNRATED", ReportStatus: "EMPTY"}, nil
+	}
+	if payload == nil || digest == nil {
+		return Performance{CompetitionID: id, AnalyticsPolicyVersion: analyticsPolicyVersion, AnalyticsHorizon: horizon, Rating: "UNRATED", Forecasts: count, ReportStatus: "PENDING"}, nil
 	}
 	var item Performance
 	if err := decodeReadReport(payload, digest, &item); err != nil {
@@ -162,5 +182,6 @@ func decodePerformanceReport(id, horizon string, count int, payload []byte, dige
 	if item.CompetitionID != id || item.Forecasts != count || item.AnalyticsHorizon != horizon || item.AnalyticsPolicyVersion != analyticsPolicyVersion {
 		return Performance{}, errors.New("stored performance report identity mismatch")
 	}
+	item.ReportStatus = "READY"
 	return item, nil
 }

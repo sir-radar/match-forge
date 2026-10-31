@@ -9,6 +9,7 @@ type ResourceState<T> = {
   refreshing: boolean;
   error: string | null;
   errorStatus: number | null;
+  completedRequest: number;
 };
 
 function errorStatus(error: unknown): number | null {
@@ -19,7 +20,7 @@ function errorStatus(error: unknown): number | null {
 
 export function useResource<T>(key: string, load: (signal: AbortSignal) => Promise<T>) {
   const [revision, setRevision] = useState(0);
-  const [state, setState] = useState<ResourceState<T>>({ key, data: null, loading: true, refreshing: false, error: null, errorStatus: null });
+  const [state, setState] = useState<ResourceState<T>>({ key, data: null, loading: true, refreshing: false, error: null, errorStatus: null, completedRequest: 0 });
   const generation = useRef(0);
 
   useEffect(() => {
@@ -27,20 +28,20 @@ export function useResource<T>(key: string, load: (signal: AbortSignal) => Promi
     const current = ++generation.current;
     queueMicrotask(() => {
       if (!controller.signal.aborted && current === generation.current) {
-        setState((previous) => previous.key === key ? ({ ...previous, loading: previous.data === null, refreshing: previous.data !== null, error: null, errorStatus: null }) : ({ key, data: null, loading: true, refreshing: false, error: null, errorStatus: null }));
+        setState((previous) => previous.key === key ? ({ ...previous, loading: previous.data === null, refreshing: previous.data !== null, error: null, errorStatus: null }) : ({ key, data: null, loading: true, refreshing: false, error: null, errorStatus: null, completedRequest: 0 }));
       }
     });
     load(controller.signal)
       .then((data) => {
-        if (!controller.signal.aborted && current === generation.current) setState({ key, data, loading: false, refreshing: false, error: null, errorStatus: null });
+        if (!controller.signal.aborted && current === generation.current) setState({ key, data, loading: false, refreshing: false, error: null, errorStatus: null, completedRequest: current });
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted || current !== generation.current) return;
-        setState((previous) => ({ ...previous, loading: false, refreshing: false, error: error instanceof Error ? error.message : "Request failed", errorStatus: errorStatus(error) }));
+        setState((previous) => ({ ...previous, loading: false, refreshing: false, error: error instanceof Error ? error.message : "Request failed", errorStatus: errorStatus(error), completedRequest: current }));
       });
     return () => controller.abort();
   }, [key, revision, load]);
 
   const retry = useCallback(() => setRevision((value) => value + 1), []);
-  return state.key === key ? { ...state, retry } : { key, data: null, loading: true, refreshing: false, error: null, errorStatus: null, retry };
+  return state.key === key ? { ...state, retry } : { key, data: null, loading: true, refreshing: false, error: null, errorStatus: null, completedRequest: 0, retry };
 }

@@ -30,7 +30,7 @@ func (runner forecastScheduleRunner) PendingForecastRefresh(context.Context) (bo
 	return runner.pending, nil
 }
 
-func (runner contextReportScheduleRunner) PendingContextReports(context.Context) (bool, error) {
+func (runner contextReportScheduleRunner) PendingPublicReports(context.Context) (bool, error) {
 	return runner.pending, nil
 }
 
@@ -162,18 +162,18 @@ func TestPendingContextReportScheduleUsesDurableJob(t *testing.T) {
 	)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go application.runContextReportSchedule(ctx)
+	go application.runPublicReportSchedule(ctx)
 	select {
 	case request := <-requests:
-		if request.Type != SyncContextReports {
+		if request.Type != SyncPublicReports {
 			t.Fatalf("scheduled context report request = %+v", request)
 		}
 		args, err := syncCommandArgs(request)
-		if err != nil || !strings.Contains(strings.Join(args, " "), "refresh-context-reports") {
+		if err != nil || !strings.Contains(strings.Join(args, " "), "refresh-public-reports") {
 			t.Fatalf("scheduled command = %v, error = %v", args, err)
 		}
 	case <-time.After(time.Second):
-		t.Fatal("pending context reports did not progress without browser traffic")
+		t.Fatal("pending public reports did not progress without browser traffic")
 	}
 }
 
@@ -212,7 +212,7 @@ func TestOperationalEndpoints(t *testing.T) {
 		{name: "health", path: "/healthz", statusCode: http.StatusOK, body: `{"status":"ok"}`},
 		{name: "ready", path: "/readyz", statusCode: http.StatusOK, body: `{"status":"ready"}`},
 		{name: "not ready", path: "/readyz", readiness: errors.New("offline"), statusCode: http.StatusServiceUnavailable, body: `{"status":"unavailable"}`},
-		{name: "version", path: "/version", statusCode: http.StatusOK, body: `{"version":"test-version"}`},
+		{name: "version", path: "/version", statusCode: http.StatusOK, body: `{"code_commit_sha":"unknown","dependency_lock_sha256":"unknown","version":"test-version","worktree_state":"unknown"}`},
 	}
 
 	for _, test := range tests {

@@ -48,6 +48,19 @@ describe("PerformancePage", () => {
     ));
   });
 
+  it("keeps ready leagues visible while another report is pending or failed", async () => {
+    const pending = { ...performance, competition_id: "pending", league: "Pending league", report_status: "PENDING", rating: "UNRATED", forecasts: 10, brier: null, log_loss: null };
+    const failed = { ...pending, competition_id: "failed", league: "Failed league", report_status: "FAILED" };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => json(
+      String(input).includes("/v1/competitions") ? { competitions: [competition] } : performancePage([performance, pending, failed]),
+    )));
+    render(<PerformancePage />);
+    expect(await screen.findByRole("rowheader", { name: /Premier League/ })).toBeInTheDocument();
+    expect(screen.getByText("Report pending")).toBeInTheDocument();
+    expect(screen.getByText("Report failed; retry scheduled")).toBeInTheDocument();
+    expect(screen.getByText("0.580")).toBeInTheDocument();
+  });
+
   it("shows the empty state", async () => {
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => json(
       String(input).includes("/v1/competitions") ? { competitions: [] } : performancePage([]),
@@ -145,7 +158,7 @@ describe("PerformancePage", () => {
   });
 });
 
-function performancePage(items: typeof performance[], page = 1, pageSize = 20, totalItems = items.length) {
+function performancePage(items: Record<string, unknown>[], page = 1, pageSize = 20, totalItems = items.length) {
   return {
     performance: items,
     pagination: { page, page_size: pageSize, total_items: totalItems, total_pages: totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize) },

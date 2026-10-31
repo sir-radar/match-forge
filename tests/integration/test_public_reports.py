@@ -10,7 +10,11 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
-from football.product.public_reports import run_pending_context_reports, run_public_reports
+from football.product.public_reports import (
+    run_pending_context_reports,
+    run_pending_public_reports,
+    run_public_reports,
+)
 from psycopg.errors import RaiseException
 
 from tests.integration.test_live_context import (
@@ -47,9 +51,17 @@ def report_database() -> Iterator[str]:
                 (prediction_id,revision_sha256,source_code,source_page,prediction_date,
                  original_date_text,collected_at,fixture_id,competition_text,home_team_text,
                  away_team_text,market,selection,match_status)
-                VALUES(%s,%s,'r2bet','synthetic',CURRENT_DATE,'synthetic',clock_timestamp(),%s,
+                VALUES(%s,%s,'r2bet','synthetic',CURRENT_DATE,
+                 to_char(CURRENT_DATE,'FMDD')||'th, '||to_char(CURRENT_DATE,'Dy Mon YYYY'),
+                 clock_timestamp(),%s,
                  'Test','Home','Away','RESULT_1X2','HOME_WIN','MATCHED')""",
                 (PREDICTION, "e" * 64, FIXTURE),
+            )
+            connection.execute(
+                """INSERT INTO football.external_prediction_date_reviews
+                (prediction_id,source_date,date_status,reason)
+                VALUES(%s,CURRENT_DATE,'VERIFIED','synthetic verified source date')""",
+                (PREDICTION,),
             )
         yield url
 
@@ -131,6 +143,102 @@ def test_pending_context_report_worker_publishes_and_completes_current_queue(rep
             FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
             (FIXTURE,),
         ).fetchone() == (True,)
+
+
+def test_normal_report_worker_builds_every_kind_and_horizon_and_corrects_results(report_database):
+    with psycopg.connect(report_database) as connection:
+        _revision(connection, 8 * 24)
+        _revision(connection, 24)
+        _revision(connection, 6)
+        connection.commit()
+        result = run_pending_public_reports(
+            connection, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["status"] == "COMPLETED", connection.execute(
+            "SELECT report_kind,horizon,last_error FROM football.product_report_refresh_work "
+            "WHERE last_error IS NOT NULL"
+        ).fetchall()
+        assert connection.execute(
+            "SELECT horizon FROM football.product_read_reports "
+            "WHERE report_kind='PERFORMANCE' ORDER BY horizon"
+        ).fetchall() == [
+            (horizon,) for horizon in sorted(("LATEST", "7D", "3D", "24H", "6H", "1H", "15M"))
+        ]
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_read_reports WHERE report_kind='COMPARISON'"
+        ).fetchone() == (1,)
+        connection.execute(
+            "UPDATE football.product_fixtures SET home_score=0,away_score=3 WHERE fixture_id=%s",
+            (FIXTURE,),
+        )
+        connection.commit()
+        result = run_pending_public_reports(
+            connection, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["status"] == "COMPLETED", connection.execute(
+            "SELECT report_kind,horizon,last_error FROM football.product_report_refresh_work "
+            "WHERE last_error IS NOT NULL"
+        ).fetchall()
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_report_refresh_work "
+            "WHERE generation>completed_generation"
+        ).fetchone() == (0,)
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_read_reports WHERE report_kind='PERFORMANCE' "
+            "AND horizon='LATEST'"
+        ).fetchone() == (2,)
+
+
+def test_snapshot_failure_does_not_abort_other_report_scopes(report_database, monkeypatch):
+    from football.product import public_reports
+
+    other_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, other_fixture)
+    original = public_reports._snapshot
+
+    def snapshot(connection, kind, scope, horizon):
+        if scope == FIXTURE:
+            raise ValueError("synthetic malformed scope")
+        return original(connection, kind, scope, horizon)
+
+    monkeypatch.setattr(public_reports, "_snapshot", snapshot)
+    result = build(report_database, "CONTEXT", FIXTURE, scope_ids=(FIXTURE, other_fixture), limit=2)
+    assert result["failed"] == 1 and result["published"] == 1
+    assert result["status"] == "COMPLETED_WITH_ERRORS"
+
+
+def test_context_selection_reserves_capacity_for_current_and_historical_work(report_database):
+    current_fixture = uuid4()
+    old_fixtures = [uuid4() for _ in range(40)]
+    with psycopg.connect(report_database) as connection:
+        for fixture in old_fixtures:
+            clone_fixture(connection, fixture, KICKOFF - timedelta(days=400))
+        now = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        clone_fixture(connection, current_fixture, now + timedelta(hours=1))
+        connection.execute(
+            "UPDATE football.product_context_report_refresh_work "
+            "SET requested_at=clock_timestamp()-interval '5 days' WHERE fixture_id=ANY(%s)",
+            (old_fixtures,),
+        )
+        connection.commit()
+        result = run_pending_context_reports(
+            connection, limit=4, code_commit_sha="f" * 40, dependency_lock_sha256="d" * 64
+        )
+        assert result["selected"] == 4
+        assert connection.execute(
+            "SELECT generation=completed_generation "
+            "FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (current_fixture,),
+        ).fetchone() == (True,)
+        assert (
+            connection.execute(
+                "SELECT count(*) FROM football.product_context_report_refresh_work "
+                "WHERE fixture_id=ANY(%s) AND generation=completed_generation",
+                (old_fixtures,),
+            ).fetchone()[0]
+            >= 2
+        )
 
 
 def test_fixture_deletion_cascades_to_context_refresh_work(report_database):
@@ -318,6 +426,12 @@ def test_context_source_seals_target_outcomes_even_after_earlier_revision(report
 
 
 def test_go_retrieves_python_reports_and_rejects_missing_stale_versions(report_database):
+    from datetime import UTC, datetime
+
+    from football.product.external_prediction_recovery import settle_pending_predictions
+
+    with psycopg.connect(report_database) as connection:
+        settle_pending_predictions(connection, datetime.now(UTC))
     url = report_database
     canonical_fixture = UUID("00000000-0000-4000-8000-000000001fa8")
     with psycopg.connect(url) as connection:
@@ -508,7 +622,7 @@ def test_context_input_retains_coach_lineup_and_upcoming_fixture_references(repo
     )
 
 
-def test_current_product_bucket_contract_publishes_a_performance_report(report_database):
+def _publish_current_bucket_forecast(report_database):
     from pathlib import Path
 
     from football.product.domain import FinishedMatch, forecast_from_history
@@ -556,6 +670,10 @@ def test_current_product_bucket_contract_publishes_a_performance_report(report_d
                 Jsonb(list(forecast.score_matrix)),
             ),
         )
+
+
+def test_current_product_bucket_contract_publishes_a_performance_report(report_database):
+    _publish_current_bucket_forecast(report_database)
     assert build(report_database, "PERFORMANCE", COMPETITION)["published"] == 1
     with psycopg.connect(report_database) as connection:
         inputs, payload = connection.execute(
@@ -566,3 +684,112 @@ def test_current_product_bucket_contract_publishes_a_performance_report(report_d
         == "compact-buckets-v2"
     )
     assert json.loads(bytes(payload))["forecasts"] == 1
+
+
+def test_normal_go_scheduler_launches_report_worker_without_browser_or_manual_cli(report_database):
+    with psycopg.connect(report_database) as connection:
+        _revision(connection, 24)
+        _revision(connection, 6)
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestScheduledPublicReportsDatabase$",
+            "-count=1",
+            "-v",
+        ],
+        cwd="go/api",
+        env={**os.environ, "TEST_DATABASE_URL": report_database},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "--- PASS: TestScheduledPublicReportsDatabase" in result.stdout
+
+
+def test_comparison_excludes_postkickoff_and_future_cutoff_forecast_revisions(report_database):
+    with psycopg.connect(report_database) as connection:
+        eligible = connection.execute(
+            "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+        ).fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (KICKOFF + timedelta(hours=2), FIXTURE),
+        )
+        _revision(connection, -1)
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (KICKOFF, FIXTURE),
+        )
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            == eligible
+        )
+        connection.commit()
+        _verify_prematch_reader(report_database, eligible)
+        invalid = uuid4()
+        connection.execute(
+            """INSERT INTO football.product_forecasts
+            SELECT (jsonb_populate_record(NULL::football.product_forecasts,to_jsonb(f)||
+                jsonb_build_object('forecast_id',%s::uuid,'semantic_sha256',%s::text,
+                    'payload_sha256',%s::text,'predictive_input_snapshot_sha256',%s::text,
+                    'created_at',%s::timestamptz,'football_cutoff',%s::timestamptz,
+                    'knowledge_cutoff',%s::timestamptz))).*
+            FROM football.product_forecasts f ORDER BY created_at LIMIT 1""",
+            (
+                invalid,
+                invalid.hex * 2,
+                invalid.hex * 2,
+                invalid.hex * 2,
+                KICKOFF - timedelta(minutes=1),
+                KICKOFF,
+                KICKOFF,
+            ),
+        )
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            == eligible
+        )
+
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s,"
+            "forecast_availability='FORECAST_AVAILABLE' "
+            "WHERE fixture_id=%s",
+            (KICKOFF - timedelta(hours=26), FIXTURE),
+        )
+        connection.commit()
+        assert (
+            connection.execute(
+                "SELECT football.public_comparison_source(%s)->>'forecast_id'", (PREDICTION,)
+            ).fetchone()[0]
+            is None
+        )
+        connection.commit()
+        _verify_prematch_reader(report_database, "")
+
+
+def _verify_prematch_reader(database_url, expected):
+    result = subprocess.run(
+        [
+            "go",
+            "test",
+            "./internal/app",
+            "-run",
+            "^TestPrematchFixtureEligibilityDatabase$",
+            "-count=1",
+        ],
+        cwd="go/api",
+        env=os.environ | {"TEST_DATABASE_URL": database_url, "TEST_EXPECTED_FORECAST_ID": expected},
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

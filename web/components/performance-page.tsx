@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Competition, Performance, PerformancePage as PerformancePageData } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
@@ -21,6 +21,11 @@ export function PerformancePage() {
     return data;
   }, [query, page]);
   const performance = useResource(`performance-${query}`, performanceLoad);
+  const retryPerformance = performance.retry;
+  useEffect(() => {
+    const timer = window.setInterval(() => { if (!document.hidden) retryPerformance(); }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [retryPerformance]);
   const updateFilters = (value: Filters) => { setPage(1); setFilters(value); };
   const updatePageSize = (value: 20 | 50 | 100) => { setPage(1); setPageSize(value); };
 
@@ -70,7 +75,7 @@ function PerformanceTable({ data, pageSize, refreshing, setPage, setPageSize }: 
   const firstItem = (page - 1) * data.pagination.page_size + 1;
   const lastItem = firstItem + data.performance.length - 1;
   return <section className="panel" aria-busy={refreshing}>
-    <div className="table-scroll" tabIndex={0}><table><caption className="sr-only">League performance results</caption><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Categories</th><th>Top-5 Categories</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{data.performance.map((item: Performance) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div>
+    <div className="table-scroll" tabIndex={0}><table><caption className="sr-only">League performance results</caption><thead><tr><th>League</th><th>Rating</th><th>Forecasts</th><th>1X2</th><th>Top-3 Categories</th><th>Top-5 Categories</th><th>Brier</th><th>Log Loss</th><th>Recent</th></tr></thead><tbody>{data.performance.map((item: Performance) => <tr key={item.competition_id}><th scope="row"><small>{item.continent} · {item.country}</small><br />{item.league}</th><td><span className={`rating ${item.rating.toLowerCase()}`}>{item.report_status === "PENDING" ? "Report pending" : item.report_status === "FAILED" ? "Report failed; retry scheduled" : item.rating}</span></td><td>{item.forecasts}</td><td>{metric(item.outcome_hit_rate, true)}</td><td>{metric(item.top_three_score_rate, true)}</td><td>{metric(item.top_five_score_rate, true)}</td><td>{metric(item.brier)}</td><td>{metric(item.log_loss)}</td><td>{metric(item.latest_fifty_brier)}</td></tr>)}</tbody></table></div>
     <nav className="table-pagination" aria-label="Performance table pagination">
       <label>Rows per page<select disabled={refreshing} value={pageSize} onChange={(event) => setPageSize(Number(event.target.value) as 20 | 50 | 100)}><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></label>
       <p aria-live="polite">Showing {firstItem}–{lastItem} of {totalItems} · Page {page} of {totalPages}</p>

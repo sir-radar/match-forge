@@ -7,7 +7,7 @@ import { Logo } from "@/components/logo";
 import { useResource } from "@/hooks/use-resource";
 import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api } from "@/lib/api";
-import type { ExternalPrediction, ExternalSource } from "@/lib/contracts";
+import type { ExternalPrediction, ExternalSource, ExternalConsensus, ExternalPredictionPage as PredictionPageData } from "@/lib/contracts";
 
 
 
@@ -20,7 +20,6 @@ type FacetFilters = {
   agreement: string;
 };
 
-type ViewMode = "live" | "empty" | "loading";
 
 const EMPTY_FILTERS: FacetFilters = {
   source: "",
@@ -47,59 +46,66 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
   const initialDay = initialDate;
   const [day, setDay] = useState(initialDay);
   const [filters, setFilters] = useState<FacetFilters>(EMPTY_FILTERS);
-  const [viewMode, setViewMode] = useState<ViewMode>("live");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<20 | 50 | 100>(20);
 
-  const predictionQuery = useMemo(() => buildPredictionQuery(day, filters), [day, filters]);
+  const predictionQuery = useMemo(() => buildPredictionQuery(day, filters, page, pageSize), [day, filters, page, pageSize]);
   const sourceQuery = useMemo(() => buildSourceQuery(day, filters), [day, filters]);
   const loadSources = useCallback(
     (signal: AbortSignal) => api.sources(new URLSearchParams(sourceQuery), signal),
     [sourceQuery],
   );
   const loadPredictions = useCallback(
-    (signal: AbortSignal) => api.predictions(new URLSearchParams(predictionQuery), signal),
-    [predictionQuery],
+    async (signal: AbortSignal) => {
+      const data = await api.predictions(new URLSearchParams(predictionQuery), signal);
+      if (!signal.aborted && data.pagination.page !== page) setPage(data.pagination.page);
+      return data;
+    },
+    [predictionQuery, page],
   );
   const sources = useResource(`external-sources-${sourceQuery}`, loadSources);
   const predictions = useResource(`external-predictions-${predictionQuery}`, loadPredictions);
 
   const sourceItems = sources.data ?? [];
   const predictionItems = useMemo(
-    () => (predictions.data ?? [])
+    () => (predictions.data?.predictions ?? [])
       .filter((item) => item.prediction_date === day)
       .sort((left, right) => right.collected_at.localeCompare(left.collected_at)),
     [day, predictions.data],
   );
-  const consensus = useMemo(() => consensusRows(predictionItems).slice(0, 3), [predictionItems]);
+  const consensus = predictions.data?.consensus ?? [];
+  const totalSelections = predictions.data?.pagination.total_items ?? 0;
   const reviewed = sourceItems.length;
   const approved = sourceItems.filter((item) => item.adapter_status === "ENABLED").length;
   const tracked = sourceItems.reduce((sum, item) => sum + item.tracked_selections, 0);
 
   const changeDay = (nextDay: string) => {
+    setPage(1);
     setDay(nextDay);
-    setViewMode("live");
   };
   const updateFilter = (key: keyof FacetFilters, value: string) => {
+    setPage(1);
     setFilters((current) => ({ ...current, [key]: value }));
-    setViewMode("live");
   };
   const resetFilters = () => {
+    setPage(1);
     setFilters(EMPTY_FILTERS);
-    setViewMode("live");
   };
 
   return (
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ef] antialiased">
-      <PredictionsHeader />
-      <main id="main" className="min-h-[calc(100vh-3.5rem)] pt-14">
+      <PredictionsHeader status={requestState(predictions)} />
+      <main id="main" tabIndex={-1} className="min-h-[calc(100vh-3.5rem)] pt-14">
         <Intro day={day} />
-        <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={predictionItems.length} />
+        <MetricStrip reviewed={reviewed} approved={approved} tracked={tracked} count={totalSelections} />
         <FiltersBar
           day={day}
           today={initialDate}
           filters={filters}
           sources={sourceItems}
-          count={predictionItems.length}
+          count={totalSelections}
           refreshing={sources.refreshing || predictions.refreshing}
+          status={requestState(predictions)}
           onDayChange={changeDay}
           onFilterChange={updateFilter}
           onReset={resetFilters}
@@ -112,20 +118,19 @@ export function PredictionsPage({ initialDate }: { initialDate: string }) {
         <SourceFailure error={sources.error} retry={sources.retry} />
         <ConsensusResource loading={predictions.loading} error={predictions.error} items={predictionItems} rows={consensus} />
 
-        <StateBar count={predictionItems.length} value={viewMode} onChange={setViewMode} />
         <PredictionTableResource
           day={day}
           items={predictionItems}
           loading={predictions.loading}
           refreshing={predictions.refreshing}
           error={predictions.error}
-          viewMode={viewMode}
           retry={predictions.retry}
           reset={resetFilters}
         />
 
         <SourceAudit sources={sourceItems} />
       </main>
+      <PredictionsPagination data={predictions.data} refreshing={predictions.refreshing} pageSize={pageSize} setPage={setPage} setPageSize={(size) => { setPage(1); setPageSize(size); }} />
       <PredictionsFooter />
     </div>
   );
@@ -136,32 +141,44 @@ function SourceFailure({ error, retry }: { error: string | null; retry: () => vo
   return <div className="px-4 pt-3"><ErrorState label="Source registry unavailable" message={error} retry={retry} /></div>;
 }
 
-function ConsensusResource({ loading, error, items, rows }: {
+function PredictionsPagination({ data, refreshing, pageSize, setPage, setPageSize }: {
+  data: PredictionPageData | null; refreshing: boolean; pageSize: 20 | 50 | 100;
+  setPage: (page: number) => void; setPageSize: (size: 20 | 50 | 100) => void;
+}) {
+  if (!data || data.pagination.total_items === 0) return null;
+  const { page, total_pages: totalPages, total_items: totalItems } = data.pagination;
+  return <nav className="table-pagination px-4 pb-4" aria-label="External predictions pagination">
+    <label>Rows per page<select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value) as 20 | 50 | 100)}><option value={20}>20</option><option value={50}>50</option><option value={100}>100</option></select></label>
+    <p aria-live="polite">Page {page} of {totalPages} · {totalItems} selections</p>
+    <div><button type="button" disabled={refreshing || page <= 1} onClick={() => setPage(page - 1)}>Previous page</button><button type="button" disabled={refreshing || page >= totalPages} onClick={() => setPage(page + 1)}>Next page</button></div>
+  </nav>;
+}
+
+function ConsensusResource({ loading, error, rows }: {
   loading: boolean;
   error: string | null;
   items: ExternalPrediction[];
-  rows: ReturnType<typeof consensusRows>;
+  rows: ExternalConsensus[];
 }) {
-  if (loading || error || items.length === 0) return null;
+  if (loading || error || rows.length === 0) return null;
   return <Consensus rows={rows} />;
 }
 
-function PredictionTableResource({ day, items, loading, refreshing, error, viewMode, retry, reset }: {
+function PredictionTableResource({ day, items, loading, refreshing, error, retry, reset }: {
   day: string;
   items: ExternalPrediction[];
   loading: boolean;
   refreshing: boolean;
   error: string | null;
-  viewMode: ViewMode;
   retry: () => void;
   reset: () => void;
 }) {
   let content: ReactNode;
-  if (loading || viewMode === "loading") {
+  if (loading) {
     content = <Loading />;
   } else if (error) {
     content = <ErrorState label="External selections unavailable" message={error} retry={retry} />;
-  } else if (items.length === 0 || viewMode === "empty") {
+  } else if (items.length === 0) {
     content = <EmptyState reset={reset} />;
   } else {
     content = <Results day={day} items={items} refreshing={refreshing} />;
@@ -169,7 +186,7 @@ function PredictionTableResource({ day, items, loading, refreshing, error, viewM
   return <section className="w-full bg-[#0f131c] px-4 py-3" aria-label="External prediction records"><div className="mx-auto max-w-[1720px]">{content}</div></section>;
 }
 
-function PredictionsHeader() {
+function PredictionsHeader({ status }: { status: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-[#262a34] bg-[#0a0e17]">
       <div className="flex h-full w-full items-center justify-between px-4">
@@ -187,8 +204,8 @@ function PredictionsHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <div className={`hidden items-center gap-2 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-1 text-[9px] uppercase tracking-wider sm:flex ${mono}`}><span className="h-2 w-2 rounded-full bg-[#4edea3]" />Feed: Live</div>
-          <div className={`hidden items-center gap-1 text-[10px] text-[#bbcabf] lg:flex ${mono}`}><span aria-hidden="true">◷</span> UTC+0 London</div>
+          <div className={`hidden items-center gap-2 rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-1 text-[9px] uppercase tracking-wider sm:flex ${mono}`}>Selections: {status}</div>
+          <div className={`hidden items-center gap-1 text-[10px] text-[#bbcabf] lg:flex ${mono}`}><span aria-hidden="true">◷</span> {DISPLAY_TIME_ZONE}</div>
           <div className="hidden h-4 w-px bg-[#262a34] lg:block" />
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#4edea3] text-[#003824]"><Icon name="person" className="h-[18px] w-[18px]" /><span className="sr-only">Operator profile</span></span>
         </div>
@@ -274,13 +291,14 @@ function Metric({ icon, label, value, detail, footerLabel, footerValue, accent =
   );
 }
 
-function FiltersBar({ day, today, filters, sources, count, refreshing, onDayChange, onFilterChange, onReset, onRefresh }: {
+function FiltersBar({ day, today, filters, sources, count, refreshing, status, onDayChange, onFilterChange, onReset, onRefresh }: {
   day: string;
   today: string;
   filters: FacetFilters;
   sources: ExternalSource[];
   count: number;
   refreshing: boolean;
+  status: string;
   onDayChange: (day: string) => void;
   onFilterChange: (key: keyof FacetFilters, value: string) => void;
   onReset: () => void;
@@ -324,7 +342,7 @@ function FiltersBar({ day, today, filters, sources, count, refreshing, onDayChan
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="rounded-sm border border-[#3c4a42] bg-[#1c1f29] px-2 py-0.5">Showing <strong className="text-[#4edea3]">{fmt(count)}</strong> selections for {day}</span>
-            <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />{refreshing ? "Refreshing" : "Cluster Synced"}</span>
+            <span className="flex items-center gap-1 text-[#86948a]" aria-live="polite"><span className={`h-2 w-2 rounded-full ${refreshing ? "bg-[#7bd0ff]" : "bg-[#4edea3]"}`} />Records: {status}</span>
           </div>
         </div>
       </div>
@@ -341,7 +359,7 @@ function FilterPill({ label, value, onRemove }: { label: string; value: string; 
   );
 }
 
-function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
+function Consensus({ rows }: { rows: ExternalConsensus[] }) {
   return (
     <section className="w-full border-b border-[#262a34] bg-[#0f131c] px-4 py-3" aria-labelledby="consensus-title">
       <div className="mx-auto max-w-[1720px]">
@@ -350,7 +368,7 @@ function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
             <div className="flex items-center gap-2"><h2 id="consensus-title" className="text-[15px] font-semibold">Multi-Source External Consensus</h2><span className={`rounded-sm border border-[#353943] bg-[#262a34] px-1.5 py-0.5 text-[9px] uppercase text-[#7bd0ff] ${mono}`}>Cluster Evaluation</span></div>
             <p className="mt-0.5 text-[11px] text-[#bbcabf]">Informational only · Source concurrence never increments or calibrates MatchForge generative Poisson matrices.</p>
           </div>
-          <span className={`text-[9px] text-[#86948a] ${mono}`}>Threshold: 2+ verified sources</span>
+          <span className={`text-[9px] text-[#86948a] ${mono}`}>Threshold: 2+ eligible sources · strict majority</span>
         </header>
 
         <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-3">
@@ -358,9 +376,9 @@ function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
             const ratio = Math.round((row.count / row.total) * 100);
             return (
               <article key={row.id} className="rounded-sm border border-[#262a34] bg-[#181b25] p-1.5 hover:border-[#86948a]/40">
-                <div className="mb-2 flex items-center justify-between gap-2 border-b border-[#262a34]/60 pb-1"><h3 className="text-[15px] font-semibold">{row.fixture}</h3><span className={`text-[9px] text-[#86948a] ${mono}`}>{kickoff(row.kickoff)} UTC</span></div>
+                <div className="mb-2 flex items-center justify-between gap-2 border-b border-[#262a34]/60 pb-1"><h3 className="text-[15px] font-semibold">{row.fixture}</h3><span className={`text-[9px] text-[#86948a] ${mono}`}>{kickoff(row.kickoff)} {DISPLAY_TIME_ZONE}</span></div>
                 <dl className="space-y-1.5 text-[11px]">
-                  <div className="flex items-center justify-between gap-2"><dt className="text-[#bbcabf]">Dominant Ext. Pick:</dt><dd className={`rounded-sm bg-[#1c1f29] px-1.5 py-0.5 font-semibold text-[#7bd0ff] ${mono}`}>{row.selection}</dd></div>
+                  <div className="flex items-center justify-between gap-2"><dt className="text-[#bbcabf]">{market(row.market)} pick:</dt><dd className={`rounded-sm bg-[#1c1f29] px-1.5 py-0.5 font-semibold text-[#7bd0ff] ${mono}`}>{row.selection}</dd></div>
                   <div className="flex items-center justify-between gap-2"><dt className="text-[#bbcabf]">Consensus Ratio:</dt><dd className={`flex items-center gap-1.5 ${mono}`}><span className="h-1.5 w-16 overflow-hidden rounded-full bg-[#1c1f29]"><span className={`block h-full ${row.agreement === "AGREES" ? "bg-[#4edea3]" : "bg-amber-400"}`} style={{ width: `${ratio}%` }} /></span>{row.count} of {row.total} sources ({ratio}%)</dd></div>
                   <div className="flex items-center justify-between gap-2 border-t border-[#262a34]/40 pt-1"><dt className="text-[#bbcabf]">MatchForge Audit:</dt><dd><Badge value={row.agreement} /></dd></div>
                 </dl>
@@ -373,48 +391,33 @@ function Consensus({ rows }: { rows: ReturnType<typeof consensusRows> }) {
   );
 }
 
-function StateBar({ count, value, onChange }: { count: number; value: ViewMode; onChange: (mode: ViewMode) => void }) {
-  return (
-    <section className={`w-full border-b border-[#262a34] bg-[#1c1f29] px-4 py-1 text-[9px] ${mono}`} aria-label="Table state">
-      <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2"><span className="uppercase tracking-wider text-[#86948a]">Terminal State View:</span><StateButton active={value === "live"} onClick={() => onChange("live")}>Live Feed ({fmt(count)})</StateButton><StateButton active={value === "empty"} onClick={() => onChange("empty")}>Empty State</StateButton><StateButton active={value === "loading"} onClick={() => onChange("loading")}>Ingestion Skeleton</StateButton></div>
-        <div className="flex items-center gap-2 text-[#86948a]"><span>Display density: <strong>Compact 40px</strong></span><span>•</span><span>Deterministic sorting: <strong>Date DESC</strong></span></div>
-      </div>
-    </section>
-  );
-}
-
-function StateButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return <button type="button" aria-pressed={active} onClick={onClick} className={`rounded-sm border px-2 py-0.5 ${active ? "border-[#4edea3]/40 bg-[#262a34] font-semibold text-[#4edea3]" : "border-[#262a34] bg-[#1c1f29] text-[#bbcabf] hover:text-[#dfe2ef]"}`}>{children}</button>;
-}
-
-function Results({ day, items, refreshing }: { day: string; items: ExternalPrediction[]; refreshing: boolean }) {
+function Results({ items, refreshing }: { day: string; items: ExternalPrediction[]; refreshing: boolean }) {
   return (
     <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#0a0e17]" aria-busy={refreshing}>
       <div className="overflow-x-auto" tabIndex={0} aria-label="External selection records table">
         <table className={`w-full min-w-[1180px] border-collapse text-left text-[10px] ${mono}`}>
-          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">Date (UTC)<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-center">Result</TH><TH className="text-center">Settlement</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
+          <thead><tr className="h-10 border-b border-[#262a34] bg-[#181b25] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH><span className="flex items-center justify-between">First capture ({DISPLAY_TIME_ZONE})<span aria-hidden="true">↓</span></span></TH><TH>Source Provider</TH><TH>Competition</TH><TH>Fixture / Match</TH><TH className="text-center">Kickoff ({DISPLAY_TIME_ZONE})</TH><TH>Target Market</TH><TH>External Pick</TH><TH className="text-center">Result</TH><TH className="text-center">Settlement</TH><TH className="text-right">MF Prob. (%)</TH><TH className="text-center">Consensus Status</TH></tr></thead>
           <tbody>
             {items.map((item, index) => (
               <tr key={item.id} className={`h-11 border-b border-[#262a34]/50 transition-colors hover:bg-[#262a34]/60 ${index % 2 ? "bg-[#181b25]/40" : "bg-[#0a0e17]"}`}>
                 <TD className="text-[#86948a]">{collected(item.collected_at)}</TD>
                 <TD><a href={item.source_page} target="_blank" rel="noreferrer" className="font-['Space_Grotesk',system-ui,sans-serif] font-semibold hover:text-[#7bd0ff]">{item.source}<span aria-hidden="true" className="ml-1 text-[#86948a]">↗</span><span className="sr-only"> (opens in new tab)</span></a></TD>
                 <TD className="text-[#bbcabf]">{item.competition}</TD>
-                <TD><strong className="font-['Space_Grotesk',system-ui,sans-serif] text-[15px] font-semibold">{item.home_team} <span className="font-normal text-[#86948a]">vs</span> {item.away_team}</strong></TD>
+                <TD><strong className="font-['Space_Grotesk',system-ui,sans-serif] text-[15px] font-semibold">{item.home_team} <span className="font-normal text-[#86948a]">vs</span> {item.away_team}</strong>{item.source_revision_conflict && <p className="text-amber-300">Conflicting picks at the same capture time</p>}{item.match_status !== "MATCHED" && <p className="text-[#bbcabf]">{status(item.match_status)} fixture</p>}</TD>
                 <TD className="text-center text-[#86948a]">{kickoffTime(item.kickoff_at)}</TD>
                 <TD className="text-[#bbcabf]">{market(item.market)}</TD>
                 <TD><span className={`rounded-sm border border-[#353943] bg-[#1c1f29] px-2 py-0.5 font-semibold ${tone(item.agreement)}`}>{item.selection}</span></TD>
                 <TD className="text-center"><span title={item.result_score_basis ? `Score basis: ${item.result_score_basis}` : undefined}>{item.actual_home_score === null ? "—" : `${item.actual_home_score}–${item.actual_away_score}`}</span></TD>
                 <TD className="text-center"><span title={item.result_provider && item.result_updated_at ? `${item.result_provider} · ${item.result_updated_at}` : undefined}>{item.settlement_state}</span></TD>
                 <TD className={`text-right font-bold ${tone(item.agreement)}`}>{probability(item.matchforge_probability)}</TD>
-                <TD className="text-center"><Badge value={item.agreement} /></TD>
+                <TD className="text-center"><Badge value={item.comparison_status && item.comparison_status !== "READY" ? item.comparison_status : item.agreement} /></TD>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className={`flex flex-col items-center justify-between gap-2 border-t border-[#262a34] bg-[#181b25] px-4 py-1.5 text-[9px] text-[#86948a] sm:flex-row ${mono}`}>
-        <span>All <strong className="text-[#dfe2ef]">{fmt(items.length)}</strong> selections for {day}</span>
+        <span><strong className="text-[#dfe2ef]">{fmt(items.length)}</strong> selections on this page</span>
       </div>
     </div>
   );
@@ -436,21 +439,21 @@ function SourceAudit({ sources }: { sources: ExternalSource[] }) {
         <div className="overflow-hidden rounded-sm border border-[#262a34] bg-[#181b25]">
           <div className="overflow-x-auto" tabIndex={0} aria-label="Source adapter performance table">
             <table className={`w-full min-w-[1100px] border-collapse text-[10px] ${mono}`}>
-              <thead><tr className="h-9 border-b border-[#262a34] bg-[#1c1f29] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH>Source Provider</TH><TH>Access Status</TH><TH>Adapter Health</TH><TH className="text-right">Tracked</TH><TH className="text-right">Settled</TH><TH className="text-right">Correct</TH><TH className="text-right">Hit Rate</TH><TH className="text-right">MF Agreement</TH><TH>Known Issue / Advisory</TH></tr></thead>
+              <thead><tr className="h-9 border-b border-[#262a34] bg-[#1c1f29] text-[9px] font-semibold uppercase tracking-wider text-[#bbcabf]"><TH>Source Provider</TH><TH>Access Status</TH><TH>Latest collection</TH><TH className="text-right">Tracked</TH><TH className="text-right">Pre-kickoff capture</TH><TH className="text-right">Retrospective</TH><TH className="text-right">Prospective settled</TH><TH className="text-right">Correct</TH><TH className="text-right">Hit Rate</TH><TH className="text-right">MF Agreement</TH><TH>Known Issue / Advisory</TH></tr></thead>
               <tbody>
                 {sources.map((item, index) => (
                   <tr key={item.code} className={`h-10 border-b border-[#262a34]/50 hover:bg-[#262a34]/50 ${index % 2 ? "bg-[#0a0e17]" : "bg-[#181b25]"}`}>
-                    <TD><a href={item.url} target="_blank" rel="noreferrer" className="font-['Space_Grotesk',system-ui,sans-serif] font-semibold hover:text-[#7bd0ff]">{item.name}<span className="sr-only"> (opens in new tab)</span></a></TD>
+                    <TD>{item.url ? <a href={item.url} target="_blank" rel="noreferrer" className="font-['Space_Grotesk',system-ui,sans-serif] font-semibold hover:text-[#7bd0ff]">{item.name}<span className="sr-only"> (opens in new tab)</span></a> : item.name}</TD>
                     <TD className="text-[#7bd0ff]">{status(item.automated_access_status)}</TD>
-                    <TD className={item.adapter_status === "ENABLED" ? "text-[#4edea3]" : "text-amber-300"}><span aria-hidden="true">●</span> {status(item.adapter_status)}</TD>
-                    <TD className="text-right">{fmt(item.tracked_selections)}</TD><TD className="text-right">{fmt(item.settled_selections)}</TD><TD className="text-right">{fmt(item.correct_selections)}</TD>
-                    <TD className="text-right font-bold text-[#4edea3]">{probability(item.settled_hit_rate)}</TD><TD className="text-right font-bold text-[#7bd0ff]">{probability(item.matchforge_agreement_rate)}</TD><TD className="max-w-72 whitespace-normal text-[#86948a]">{item.known_issues}</TD>
+                    <TD title={item.last_collection_at ? `Captured ${collected(item.last_collection_at)}` : "No collection attempt recorded"}>{item.last_collection_status ? status(item.last_collection_status) : "Not observed"}</TD>
+                    <TD className="text-right">{fmt(item.tracked_selections)}</TD><TD className="text-right">{item.prospectively_captured_selections ?? "—"}</TD><TD className="text-right">{item.retrospectively_captured_selections ?? "—"}</TD><TD className="text-right">{fmt(item.settled_selections)}</TD><TD className="text-right">{fmt(item.correct_selections)}</TD>
+                    <TD className="text-right font-bold text-[#4edea3]">{probability(item.settled_hit_rate)}</TD><TD className="text-right font-bold text-[#7bd0ff]">{probability(item.matchforge_agreement_rate)}</TD><TD className="max-w-72 whitespace-normal text-[#86948a]">{item.known_issues}{item.collection_error && <p>Latest collection: {item.collection_error}</p>}</TD>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className={`flex flex-col items-center justify-between gap-2 border-t border-[#262a34] bg-[#1c1f29] px-4 py-1.5 text-[9px] text-[#86948a] sm:flex-row ${mono}`}><span>Composite Registry Consensus: <strong>{settled ? probability(correct / settled) : "—"} Mean Hit Rate</strong> across {fmt(settled)} settled records.</span><span className="font-semibold text-[#4edea3]">CURRENT API RESPONSE</span></div>
+          <div className={`flex flex-col items-center justify-between gap-2 border-t border-[#262a34] bg-[#1c1f29] px-4 py-1.5 text-[9px] text-[#86948a] sm:flex-row ${mono}`}><span>Prospective source records: <strong>{settled ? probability(correct / settled) : "—"} Mean Hit Rate</strong> across {fmt(settled)} settled records. Late or unverified captures are excluded.</span><span className="font-semibold text-[#4edea3]">CURRENT API RESPONSE</span></div>
         </div>
       </div>
     </section>
@@ -461,7 +464,7 @@ function PredictionsFooter() {
   return <footer className={`flex w-full flex-col items-center justify-between gap-1 border-t border-[#262a34] bg-[#0a0e17] px-4 py-2 text-[9px] text-[#86948a] sm:flex-row ${mono}`}><span>MatchForge Quantitative Football Engine. Institutional Analytical Terminal.</span><span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#4edea3]" />External evidence isolated</span></footer>;
 }
 
-function Badge({ value }: { value: ExternalPrediction["agreement"] }) {
+function Badge({ value }: { value: ExternalPrediction["agreement"] | NonNullable<ExternalPrediction["comparison_status"]> }) {
   const classes = value === "AGREES" ? "border-[#4edea3]/35 bg-emerald-950/30 text-[#4edea3]" : value === "WEAK_SUPPORT" ? "border-amber-400/35 bg-amber-950/20 text-amber-300" : value === "DISAGREES" ? "border-[#ffb4ab]/35 bg-rose-950/20 text-[#ffb4ab]" : "border-[#86948a]/40 bg-[#262a34] text-[#bbcabf]";
   return <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[9px] font-semibold ${classes} ${mono}`}><span aria-hidden="true">●</span>&nbsp;{agreement(value)}</span>;
 }
@@ -470,8 +473,8 @@ function TH({ children, className = "" }: { children: ReactNode; className?: str
   return <th scope="col" className={`whitespace-nowrap border-r border-[#262a34]/60 px-3 py-2 ${className}`}>{children}</th>;
 }
 
-function TD({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <td className={`whitespace-nowrap border-r border-[#262a34]/40 px-3 py-2 ${className}`}>{children}</td>;
+function TD({ children, className = "", title }: { children: ReactNode; className?: string; title?: string }) {
+  return <td title={title} className={`whitespace-nowrap border-r border-[#262a34]/40 px-3 py-2 ${className}`}>{children}</td>;
 }
 
 function ErrorState({ label, message, retry }: { label: string; message: string; retry: () => void }) {
@@ -486,8 +489,8 @@ function EmptyState({ reset }: { reset: () => void }) {
   return <div className="flex min-h-80 flex-col items-center justify-center rounded-sm border border-[#262a34] bg-[#0a0e17] p-12 text-center"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#262a34]"><Icon name="search" className="h-7 w-7 text-[#86948a]" /></span><h2 className="mt-3 text-lg font-semibold">No approved external selections</h2><p className="mt-1 max-w-lg text-[#bbcabf]">No external selections match the current day and filters. MatchForge collects only sources whose access and reuse conditions have been reviewed.</p><div className="mt-4 flex items-center gap-1.5"><button type="button" onClick={reset} className="rounded-sm bg-[#4edea3] px-3 py-1.5 font-semibold text-[#003824]">Reset All Filters</button><a href="#source-audit" className="rounded-sm bg-[#262a34] px-3 py-1.5 hover:bg-[#353943]">Review Source Registry</a></div></div>;
 }
 
-function buildPredictionQuery(day: string, filters: FacetFilters) {
-  const query = new URLSearchParams({ date: day });
+function buildPredictionQuery(day: string, filters: FacetFilters, page: number, pageSize: number) {
+  const query = new URLSearchParams({ date: day, page: String(page), page_size: String(pageSize) });
   appendFilters(query, filters);
   return query.toString();
 }
@@ -504,20 +507,6 @@ function appendFilters(query: URLSearchParams, filters: FacetFilters) {
   });
 }
 
-function consensusRows(items: ExternalPrediction[]) {
-  const groups = new Map<string, ExternalPrediction[]>();
-  items.forEach((item) => {
-    const key = item.fixture_id ?? `${item.prediction_date}|${item.home_team}|${item.away_team}`;
-    groups.set(key, [...(groups.get(key) ?? []), item]);
-  });
-  return [...groups.values()].map((group) => {
-    const counts = new Map<string, number>();
-    group.forEach((item) => counts.set(item.selection, (counts.get(item.selection) ?? 0) + 1));
-    const [selection, count] = [...counts].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0];
-    const row = group.find((item) => item.selection === selection) ?? group[0];
-    return { id: row.fixture_id ?? `${row.prediction_date}|${row.home_team}|${row.away_team}`, fixture: `${row.home_team} vs ${row.away_team}`, kickoff: row.kickoff_at, selection, count, total: group.length, agreement: row.agreement };
-  });
-}
 
 function addDays(value: string, amount: number) {
   const date = new Date(`${value}T00:00:00Z`);
@@ -553,7 +542,7 @@ function kickoffTime(value: string | null) {
   return new Intl.DateTimeFormat("en-GB", { timeZone: DISPLAY_TIME_ZONE, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
-function agreement(value: ExternalPrediction["agreement"]) {
+function agreement(value: ExternalPrediction["agreement"] | NonNullable<ExternalPrediction["comparison_status"]>) {
   return value === "UNABLE_TO_EVALUATE" ? "Unable to eval" : status(value);
 }
 
@@ -576,4 +565,10 @@ function tone(value: ExternalPrediction["agreement"]) {
   if (value === "WEAK_SUPPORT") return "text-amber-300";
   if (value === "DISAGREES") return "text-[#ffb4ab]";
   return "text-[#86948a]";
+}
+
+function requestState(resource: { loading: boolean; refreshing: boolean; error: string | null }): string {
+  if (resource.error) return "Unavailable";
+  if (resource.loading) return "Loading";
+  return resource.refreshing ? "Refreshing" : "Loaded";
 }

@@ -1,0 +1,3 @@
+# Keep the Vitest peer on the compatible security patch (GHSA-587h-7wmj-h5pm).
+overrides:
+  vite: 7.3.7

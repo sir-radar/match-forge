@@ -187,37 +187,67 @@ def run_public_reports(
     )
     counts = dict.fromkeys(("published", "busy_or_complete", "lease_lost", "failed"), 0)
     owner = f"public-reports:{uuid4()}"
+    outcomes = []
     for scope in scope_ids[:limit]:
-        snapshot = _snapshot(connection, report_kind, scope, horizon)
-        inputs = {
-            "report_kind": report_kind,
-            "scope_id": str(scope),
-            "horizon": horizon,
-            "source_fingerprint": snapshot["source_fingerprint"],
-            "source_manifest": snapshot["source_manifest"],
-            "policy_version": POLICY_VERSION,
-            "code_commit_sha": code_commit_sha,
-            "dependency_lock_sha256": dependency_lock_sha256,
-        }
-        digest = sha256_bytes(canonical_json_bytes(inputs))
-        request = WorkRequest(
-            work_type=WorkType.READ_MODEL_PROJECTION,
-            semantic_key=f"public-report:{digest}",
-            input_hash=digest,
-            priority=0,
-            available_at=snapshot["source_observed_at"],
-            max_attempts=2**31 - 1,
-            retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
-        )
-        counts[_publish(connection, request, snapshot, inputs, lease_duration, owner)] += 1
+        try:
+            state = _run_scope(
+                connection,
+                report_kind,
+                scope,
+                horizon,
+                lease_duration,
+                owner,
+                code_commit_sha,
+                dependency_lock_sha256,
+            )
+            error = None
+        except (Error, ValueError, RuntimeError) as failure:
+            state, error = "failed", str(failure)[:1000]
+        counts[state] += 1
+        outcomes.append({"scope_id": str(scope), "state": state, "error": error})
     return {
         "status": "COMPLETED_WITH_ERRORS"
         if counts["failed"] or counts["lease_lost"]
         else "COMPLETED",
         "selected": min(len(scope_ids), limit),
         "policy_version": POLICY_VERSION,
+        "scopes": outcomes,
         **counts,
     }
+
+
+def _run_scope(
+    connection: Connection[Any],
+    kind: str,
+    scope: UUID,
+    horizon: str,
+    lease: timedelta,
+    owner: str,
+    code: str,
+    dependency: str,
+) -> str:
+    snapshot = _snapshot(connection, kind, scope, horizon)
+    inputs = {
+        "report_kind": kind,
+        "scope_id": str(scope),
+        "horizon": horizon,
+        "source_fingerprint": snapshot["source_fingerprint"],
+        "source_manifest": snapshot["source_manifest"],
+        "policy_version": POLICY_VERSION,
+        "code_commit_sha": code,
+        "dependency_lock_sha256": dependency,
+    }
+    digest = sha256_bytes(canonical_json_bytes(inputs))
+    request = WorkRequest(
+        work_type=WorkType.READ_MODEL_PROJECTION,
+        semantic_key=f"public-report:{digest}",
+        input_hash=digest,
+        priority=0,
+        available_at=snapshot["source_observed_at"],
+        max_attempts=2**31 - 1,
+        retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
+    )
+    return _publish(connection, request, snapshot, inputs, lease, owner)
 
 
 def report_provenance(environment: Mapping[str, str]) -> tuple[str, str]:
@@ -262,76 +292,188 @@ def run_pending_context_reports(
     if lease_duration <= timedelta():
         raise ValueError("context report refresh requires a positive lease")
 
+    # Half the batch is reserved for the oldest eligible backlog. The remainder
+    # prefers the live/pre-match context window. Failed items rotate by attempt
+    # time and wait at least one scheduler tick before another attempt.
     with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
-        cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         cursor.execute(
-            """SELECT work.fixture_id,work.generation
-            FROM football.product_context_report_refresh_work work
-            JOIN football.product_fixtures fixture USING (fixture_id)
-            WHERE work.generation>work.completed_generation
-            ORDER BY work.requested_at,fixture.kickoff_at,work.fixture_id
-            LIMIT %s""",
-            (limit,),
+            """WITH oldest AS (
+                SELECT work.fixture_id,work.generation
+                FROM football.product_context_report_refresh_work work
+                WHERE work.generation>work.completed_generation AND work.retry_at<=clock_timestamp()
+                ORDER BY work.last_attempt_at NULLS FIRST,work.requested_at,work.fixture_id
+                LIMIT %s
+            ), relevant AS (
+                SELECT work.fixture_id,work.generation
+                FROM football.product_context_report_refresh_work work
+                JOIN football.product_fixtures fixture USING (fixture_id)
+                WHERE work.generation>work.completed_generation AND work.retry_at<=clock_timestamp()
+                  AND NOT EXISTS (SELECT 1 FROM oldest WHERE oldest.fixture_id=work.fixture_id)
+                ORDER BY CASE WHEN fixture.kickoff_at BETWEEN
+                    clock_timestamp()-interval '24 hours' AND clock_timestamp()+interval '72 hours'
+                    THEN 0 ELSE 1 END,
+                    work.last_attempt_at NULLS FIRST,work.requested_at,
+                    fixture.kickoff_at,work.fixture_id
+                LIMIT %s
+            ) SELECT * FROM oldest UNION ALL SELECT * FROM relevant""",
+            ((limit + 1) // 2, limit // 2),
         )
-        selected = cursor.fetchall()
-
-    if selected:
-        result = run_public_reports(
-            connection,
-            report_kind="CONTEXT",
-            scope_ids=tuple(row[0] for row in selected),
-            horizon="LATEST",
-            limit=len(selected),
-            lease_duration=lease_duration,
-            code_commit_sha=code_commit_sha,
-            dependency_lock_sha256=dependency_lock_sha256,
-        )
-        fixture_ids = [row[0] for row in selected]
-        generations = [row[1] for row in selected]
-        with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
-            cursor.execute("SELECT football.authorize_worker_publication()")
-            cursor.execute(
-                """WITH selected AS (
-                    SELECT * FROM unnest(%s::uuid[],%s::bigint[]) AS item(fixture_id,generation)
-                ), source AS (
-                    SELECT fixture.fixture_id,
-                           encode(sha256(convert_to(
-                               football.public_context_source(fixture.fixture_id)::text,'UTF8'
-                           )),'hex') AS fingerprint
-                    FROM football.product_fixtures fixture
-                    JOIN selected USING (fixture_id)
-                )
-                UPDATE football.product_context_report_refresh_work work
-                SET completed_generation=selected.generation,completed_at=clock_timestamp()
-                FROM selected JOIN source USING (fixture_id)
-                WHERE work.fixture_id=selected.fixture_id
-                  AND work.generation=selected.generation
-                  AND EXISTS (
-                    SELECT 1 FROM football.product_read_reports report
-                    WHERE report.report_kind='CONTEXT' AND report.scope_id=work.fixture_id
-                      AND report.horizon='LATEST' AND report.source_fingerprint=source.fingerprint
-                  )""",
-                (fixture_ids, generations),
-            )
-    else:
-        result = {
-            "status": "COMPLETED",
-            "selected": 0,
-            "published": 0,
-            "busy_or_complete": 0,
-            "lease_lost": 0,
-            "failed": 0,
-        }
-
-    with connection.cursor(row_factory=tuple_row) as cursor:
-        cursor.execute(
+        selected = [("CONTEXT", row[0], "LATEST", row[1]) for row in cursor.fetchall()]
+    result = _refresh_selected(
+        connection, selected, lease_duration, code_commit_sha, dependency_lock_sha256
+    )
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        row = cursor.execute(
             """SELECT count(*) FROM football.product_context_report_refresh_work
             WHERE generation>completed_generation"""
-        )
-        row = cursor.fetchone()
+        ).fetchone()
     result["context_reports_pending"] = row[0] if row is not None else 0
     result["context_reports_published"] = result.pop("published")
     return result
+
+
+def run_pending_public_reports(
+    connection: Connection[Any],
+    *,
+    limit: int = CONTEXT_REPORT_BATCH_LIMIT,
+    lease_duration: timedelta = timedelta(minutes=2),
+    code_commit_sha: str,
+    dependency_lock_sha256: str,
+) -> dict[str, Any]:
+    """Normal scheduled worker; each report kind has its own bounded capacity."""
+    from football.product.external_prediction_recovery import settle_pending_predictions
+
+    settled = settle_pending_predictions(connection, datetime.now(UTC), limit=limit)
+    context = run_pending_context_reports(
+        connection,
+        limit=limit,
+        lease_duration=lease_duration,
+        code_commit_sha=code_commit_sha,
+        dependency_lock_sha256=dependency_lock_sha256,
+    )
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        selected = []
+        for kind in ("PERFORMANCE", "COMPARISON"):
+            selected.extend(
+                cursor.execute(
+                    """SELECT report_kind,scope_id,horizon,generation
+                FROM football.product_report_refresh_work
+                WHERE report_kind=%s AND generation>completed_generation
+                  AND retry_at<=clock_timestamp()
+                ORDER BY last_attempt_at NULLS FIRST,requested_at,scope_id,horizon LIMIT %s""",
+                    (kind, limit),
+                ).fetchall()
+            )
+    result = _refresh_selected(
+        connection, selected, lease_duration, code_commit_sha, dependency_lock_sha256
+    )
+    result["external_settlement_revisions"] = settled
+    result["selected"] += context["selected"]
+    result["context_reports_published"] = context["context_reports_published"]
+    result["context_reports_pending"] = context["context_reports_pending"]
+    for key in ("failed", "lease_lost", "busy_or_complete"):
+        result[key] += context[key]
+    if context["status"] != "COMPLETED":
+        result["status"] = "COMPLETED_WITH_ERRORS"
+    return result
+
+
+def _refresh_selected(
+    connection: Connection[Any],
+    selected: list[tuple[str, UUID, str, int]],
+    lease: timedelta,
+    code: str,
+    dependency: str,
+) -> dict[str, Any]:
+    counts = dict.fromkeys(("published", "busy_or_complete", "lease_lost", "failed"), 0)
+    for kind, scope, horizon, generation in selected:
+        result = run_public_reports(
+            connection,
+            report_kind=kind,
+            scope_ids=(scope,),
+            horizon=horizon,
+            limit=1,
+            lease_duration=lease,
+            code_commit_sha=code,
+            dependency_lock_sha256=dependency,
+        )
+        outcome = result["scopes"][0]
+        try:
+            _finish_refresh(connection, kind, scope, horizon, generation, outcome)
+        except (Error, ValueError, RuntimeError):
+            # A concurrent malformed source must not abort sibling scopes either.
+            outcome = {"state": "failed", "error": "REPORT_COMPLETION_FAILED"}
+            _finish_refresh(connection, kind, scope, horizon, generation, outcome)
+        counts[outcome["state"]] += 1
+    return {
+        "status": "COMPLETED_WITH_ERRORS"
+        if counts["failed"] or counts["lease_lost"]
+        else "COMPLETED",
+        "selected": len(selected),
+        **counts,
+    }
+
+
+def _finish_refresh(
+    connection: Connection[Any],
+    kind: str,
+    scope: UUID,
+    horizon: str,
+    generation: int,
+    outcome: dict[str, Any],
+) -> None:
+    from psycopg import sql
+
+    table = (
+        "product_context_report_refresh_work"
+        if kind == "CONTEXT"
+        else "product_report_refresh_work"
+    )
+    identity = (
+        "fixture_id=%s" if kind == "CONTEXT" else "scope_id=%s AND report_kind=%s AND horizon=%s"
+    )
+    key = (scope,) if kind == "CONTEXT" else (scope, kind, horizon)
+    error = outcome["error"] or (
+        outcome["state"].upper() if outcome["state"] in ("failed", "lease_lost") else None
+    )
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        cursor.execute("SELECT football.authorize_worker_publication()")
+        complete = False
+        if error is None:
+            if kind == "PERFORMANCE":
+                row = cursor.execute(
+                    "SELECT source_fingerprint FROM football.public_performance_source(%s,%s)",
+                    (scope, MONITORING_HORIZONS[horizon]),
+                ).fetchone()
+            else:
+                function = (
+                    "public_context_source" if kind == "CONTEXT" else "public_comparison_source"
+                )
+                row = cursor.execute(
+                    sql.SQL(
+                        "SELECT encode(sha256(convert_to(football.{}(%s)::text,'UTF8')),'hex')"
+                    ).format(sql.Identifier(function)),
+                    (scope,),
+                ).fetchone()
+            complete = bool(
+                row
+                and cursor.execute(
+                    "SELECT 1 FROM football.product_read_reports "
+                    "WHERE report_kind=%s AND scope_id=%s "
+                    "AND horizon=%s AND source_fingerprint=%s LIMIT 1",
+                    (kind, scope, horizon, row[0]),
+                ).fetchone()
+            )
+        cursor.execute(
+            sql.SQL(
+                "UPDATE football.{} SET last_attempt_at=clock_timestamp(),last_error=%s,"
+                "retry_at=clock_timestamp()+interval '1 minute',"
+                "completed_generation=CASE WHEN %s THEN %s ELSE completed_generation END,"
+                "completed_at=CASE WHEN %s THEN clock_timestamp() ELSE completed_at END "
+                "WHERE " + identity + " AND generation=%s"
+            ).format(sql.Identifier(table)),
+            (error, complete, generation, complete, *key, generation),
+        )
 
 
 def _validate(

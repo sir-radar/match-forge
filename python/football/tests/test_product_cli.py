@@ -255,3 +255,36 @@ def test_sync_all_enables_operational_providers_independently(
     assert calls == [enabled_provider]
     assert disabled_provider not in operational
     assert operational == {enabled_provider: {"provider": enabled_provider}}
+
+
+@pytest.mark.parametrize(
+    ("statuses", "expected"),
+    [
+        (("ENABLED", "NO_PREDICTIONS"), "COMPLETED"),
+        (("ENABLED", "PARSER_BROKEN"), "COMPLETED_WITH_ERRORS"),
+        (("PARTIAL",), "COMPLETED_WITH_ERRORS"),
+        (("PARSER_BROKEN", "TECHNICALLY_UNAVAILABLE"), "FAILED"),
+        (("DATE_MISMATCH",), "FAILED"),
+        (("NO_DATE_PAGE",), "OUTSIDE_WINDOW"),
+    ],
+)
+def test_source_collection_completion_is_truthful(statuses: tuple[str, ...], expected: str) -> None:
+    from football.product.external_prediction_sources import SourceCollection
+
+    results = [
+        SourceCollection(f"source_{index}", "https://example.test", state)
+        for index, state in enumerate(statuses)
+    ]
+    results.append(SourceCollection("forebet", "https://example.test", "TECHNICALLY_UNAVAILABLE"))
+    assert cli._collection_status(results) == expected
+
+
+def test_intentionally_disabled_forebet_is_not_a_failed_attempt() -> None:
+    from football.product.external_prediction_sources import SourceCollection
+
+    assert (
+        cli._collection_status(
+            [SourceCollection("forebet", "https://example.test", "TECHNICALLY_UNAVAILABLE")]
+        )
+        == "DISABLED"
+    )

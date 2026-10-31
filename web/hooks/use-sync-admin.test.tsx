@@ -14,6 +14,20 @@ function deferred<T>() { let resolve!: (value: T) => void; const promise = new P
 
 describe("admin polling", () => {
   afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
+  it("discovers scheduled work after opening idle and refreshes on visibility", async () => {
+    vi.useFakeTimers();
+    const status = vi.spyOn(api, "syncRuns").mockResolvedValue({ ...response, runs: [] });
+    const state = renderHook(() => useSyncAdminState("2026-10-13"));
+    await act(async () => { await Promise.resolve(); });
+    expect(state.result.current.active).toHaveLength(0);
+    status.mockResolvedValue(response);
+    await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+    expect(state.result.current.active).toHaveLength(1);
+    expect(status).toHaveBeenCalledTimes(2);
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); });
+    expect(status).toHaveBeenCalledTimes(3);
+    state.unmount();
+  });
   it("preserves terminal status against delayed RUNNING or QUEUED snapshots", () => {
     for (const status of ["SUCCEEDED", "FAILED", "CANCELLED"] as const) {
       const terminal = { ...completed, status };

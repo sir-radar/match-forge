@@ -21,6 +21,32 @@ class ParserBrokenError(ValueError):
     """The public page loaded but no longer matches its adapter contract."""
 
 
+class SourceDateMismatchError(ParserBrokenError):
+    """A displayed calendar date contradicts the requested source partition."""
+
+
+def source_prediction_date(source: str, text: str) -> date:
+    """Read complete English source dates without substring or locale matching."""
+    if source == "r2bet":
+        pattern = (
+            r"^(\d{1,2})(?:st|nd|rd|th)\s*,\s*(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
+            r"\s+([A-Za-z]{3})\s+(\d{4})$"
+        )
+    elif source == "tips1960":
+        pattern = r"(?<!\d)(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})(?!\d)"
+    else:
+        raise ValueError("source has no supported full-date parser")
+    matches = re.findall(pattern, text.strip(), re.IGNORECASE)
+    if len(matches) != 1:
+        raise ParserBrokenError("source full prediction date was not found uniquely")
+    day, month, year = matches[0]
+    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    try:
+        return date(int(year), months.index(month.title()) + 1, int(day))
+    except ValueError as error:
+        raise ParserBrokenError("source full prediction date is invalid") from error
+
+
 @dataclass(slots=True)
 class Element:
     tag: str
@@ -184,8 +210,12 @@ def parse_r2bet(
         ),
         None,
     )
-    if date_text is None or prediction_date.strftime("%b %Y") not in date_text:
+    if date_text is None:
         raise ParserBrokenError("R2Bet prediction date was not found")
+    if source_prediction_date("r2bet", date_text) != prediction_date:
+        raise SourceDateMismatchError(
+            "R2Bet displayed date does not match requested prediction day"
+        )
     rows: list[ImportedPrediction] = []
     for article in _elements(best_picks, tag="article"):
         values = [_text(item) for item in _elements(article, tag="p")]
@@ -218,9 +248,12 @@ def parse_1960tips(
     heading = next(
         (_text(item) for item in _elements(root, tag="h1") if "Predictions" in _text(item)), None
     )
-    expected = prediction_date.strftime("%-d %b %Y")
-    if heading is None or expected not in heading:
+    if heading is None:
         raise ParserBrokenError("1960Tips prediction date was not found")
+    if source_prediction_date("tips1960", heading) != prediction_date:
+        raise SourceDateMismatchError(
+            "1960Tips displayed date does not match requested prediction day"
+        )
     rows: list[ImportedPrediction] = []
     for item in _elements(root, class_name="table-row"):
         competition = _first(item, class_name="tb-league")
@@ -406,11 +439,13 @@ def _collect_source(
     parsed_pages = 0
     parser_errors: list[str] = []
     transport_errors: list[str] = []
+    date_mismatch = False
     for page in source_pages:
         page_label = f"{page}: " if len(source_pages) > 1 else ""
         try:
             page_rows = adapter.parser(fetcher(page), prediction_date, page)
         except ParserBrokenError as error:
+            date_mismatch = date_mismatch or isinstance(error, SourceDateMismatchError)
             parser_errors.append(f"{page_label}{error}")
         except OSError as error:
             transport_errors.append(f"{page_label}{error}")
@@ -429,7 +464,7 @@ def _collect_source(
             return SourceCollection(
                 adapter.source_code,
                 source_page,
-                "PARSER_BROKEN",
+                "DATE_MISMATCH" if date_mismatch else "PARSER_BROKEN",
                 error="; ".join(parser_errors),
             )
         if parsed_pages > 0:
@@ -437,8 +472,9 @@ def _collect_source(
     return SourceCollection(
         adapter.source_code,
         rows[0].source_page if rows else source_page,
-        "ENABLED" if rows else "NO_PREDICTIONS",
+        "PARTIAL" if rows and (parser_errors or transport_errors) else "ENABLED",
         rows=rows,
+        error="; ".join((*parser_errors, *transport_errors)) or None,
     )
 
 

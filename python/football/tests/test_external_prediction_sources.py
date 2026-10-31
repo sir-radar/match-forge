@@ -1,6 +1,8 @@
 from datetime import date
 
+import pytest
 from football.product.external_prediction_sources import (
+    ParserBrokenError,
     collect_sources,
     parse_1960tips,
     parse_matchoutlook,
@@ -284,3 +286,43 @@ def test_collection_source_filter_fetches_only_requested_source() -> None:
 
     assert [result.source_code for result in results] == ["slybet"]
     assert requested_urls == ["https://slybet.net/", "https://slybet.net/football-predictions/"]
+
+
+@pytest.mark.parametrize(
+    "displayed,target",
+    [
+        ("29th, Thu Oct 2026", date(2026, 10, 30)),
+        ("31st, Thu Dec 2026", date(2027, 1, 1)),
+        ("31st, Tue Feb 2026", date(2026, 2, 28)),
+        ("malformed", date(2026, 10, 30)),
+    ],
+)
+def test_r2bet_rejects_wrong_or_malformed_full_source_date(displayed: str, target: date) -> None:
+    html = (
+        f"<section><h2>Best Picks</h2><p>{displayed}</p>"
+        "<article><p>League</p><p>Home</p><p>Away</p>"
+        "<p>Odds: 1.2</p><p>Pick: 1</p></article></section>"
+    )
+    with pytest.raises(ParserBrokenError):
+        parse_r2bet(html, target, "https://example.test")
+
+
+@pytest.mark.parametrize(
+    "displayed,target",
+    [
+        ("11 Oct 2026", date(2026, 10, 1)),
+        ("21 Oct 2026", date(2026, 10, 1)),
+        ("31 Oct 2026", date(2026, 10, 1)),
+        ("31 Dec 2026", date(2027, 1, 1)),
+        ("31 Feb 2026", date(2026, 2, 28)),
+        ("unknown", date(2026, 10, 1)),
+    ],
+)
+def test_1960tips_rejects_wrong_or_malformed_full_source_date(displayed: str, target: date) -> None:
+    html = (
+        f"<h1>Predictions {displayed}</h1><div class='table-row'>"
+        "<span class='tb-league'>L</span><span class='tb-match'>H vs A</span>"
+        "<span class='tb-tip'>1</span></div>"
+    )
+    with pytest.raises(ParserBrokenError):
+        parse_1960tips(html, target, "https://example.test")
