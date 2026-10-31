@@ -380,3 +380,35 @@ Python sdist/wheel build also exited 0. Archive inspection confirms the exact ne
 audit module is packaged and credentials, local caches and Git metadata are
 excluded. The build emitted a cache-location warning; exclusion was checked
 directly. Final project-status and diff checks passed.
+
+## Phase 04 — rich source observation contracts
+
+Status: PASS (contract/engineering checkpoint). Phase 03 commit:
+`1b431b7fcbdaaa0cc55d146141258a544621e0f1` (parent
+`956d0f7950c89cc1b7bdbacc1605cbd75435bc66`).
+
+Immutable registered V1/V2 schemas cannot be widened. V3 therefore defines rich
+team/player counts, shot context/xGOT, observed period scores, referee assignments
+and source calendar ratings. Existing resource scopes, source references, artifact
+registration, retry/storage and temporal eligibility are reused. No SQL migration,
+provider client, canonical identity, forecasting model or operating routing changed.
+Existing coach, formation, lineup and availability contracts remain in place.
+
+Unknown measurements/semantic versions remain null. Compatible count subsets,
+paired shot context and period/score basis are validated; invalid values are not
+clipped. Referee labels retain exact source references without name-derived IDs.
+Calendar rating dates cannot supply an unknown football event time. Semantic
+version claims are data, not qualification decisions. The owning rules are
+documented in `docs/data-model.md`.
+
+[Phase 04 evidence](evidence/matchforge-v4-phase-04-2026-10-31.json) records the
+six contracts and frozen schema hashes. V1 remains `5028f7b2…40beac14`; V2 remains
+`f1490653…6eecfbc`; V3 is `eeb6e65f…0dfab4b5`. Full hashes are in the receipt.
+The final focused unit/normalizer/PostgreSQL run passed 179 tests in disposable
+storage. Further focused checks passed after pinning V3 and adding count/rating
+boundaries. Integration proves V3 retry/load, unchanged prior V2 bytes/schema, and
+exclusion of calendar ratings with unknown event time from football history.
+Ruff/format, strict mypy on four changed Python files, architecture and shell
+syntax passed. No operating write, provider call, evaluation, fit or promotion ran.
+Phase 05 must supply actual measured decoders; schema support is not source or
+market availability. R3 and production migration gates remain unchanged.
