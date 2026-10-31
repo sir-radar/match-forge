@@ -46,6 +46,7 @@ const (
 	SyncFootballDataUK      SyncType = "FOOTBALL_DATA_UK"
 	SyncHistoryBackfill     SyncType = "HISTORY_BACKFILL"
 	SyncForecastRefresh     SyncType = "FORECAST_REFRESH"
+	SyncContextReports      SyncType = "CONTEXT_REPORTS"
 	SyncExternalPredictions SyncType = "EXTERNAL_PREDICTIONS"
 	SyncFotMob              SyncType = "FOTMOB_SYNC"
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
@@ -153,6 +154,10 @@ type pendingForecastRefreshRunner interface {
 	PendingForecastRefresh(context.Context) (bool, error)
 }
 
+type pendingContextReportsRunner interface {
+	PendingContextReports(context.Context) (bool, error)
+}
+
 type unavailableSyncRunner struct{}
 
 func (unavailableSyncRunner) Start(context.Context, SyncRequest) (SyncRun, error) {
@@ -210,6 +215,9 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
+	if err = requireProviderSyncSchema(ctx, runner.pool, request.Type); err != nil {
+		return SyncRun{}, err
+	}
 	encodedParameters, err := json.Marshal(syncParameters(request))
 	if err != nil {
 		return SyncRun{}, err
@@ -245,6 +253,15 @@ func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bo
 	var pending bool
 	err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
 		SELECT 1 FROM football.product_forecast_refresh_work
+		WHERE generation > completed_generation
+	)`).Scan(&pending)
+	return pending, err
+}
+
+func (runner *CommandSyncRunner) PendingContextReports(ctx context.Context) (bool, error) {
+	var pending bool
+	err := runner.pool.QueryRow(ctx, `SELECT EXISTS (
+		SELECT 1 FROM football.product_context_report_refresh_work
 		WHERE generation > completed_generation
 	)`).Scan(&pending)
 	return pending, err
@@ -477,7 +494,7 @@ func syncCompletion(summary map[string]interface{}) (string, *string) {
 	if summary["status"] != "COMPLETED_WITH_ERRORS" {
 		return "SUCCEEDED", nil
 	}
-	message := "one or more data synchronization operations failed; see summary.errors"
+	message := "one or more data synchronization operations failed; see the run summary for details"
 	return "FAILED", &message
 }
 
@@ -914,6 +931,7 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 		SyncFootballDataUK:      "backfill-football-data-uk",
 		SyncHistoryBackfill:     "backfill-history",
 		SyncForecastRefresh:     "refresh-forecasts",
+		SyncContextReports:      "refresh-context-reports",
 		SyncExternalPredictions: "external-predictions",
 		SyncFotMob:              "fotmob-sync",
 		SyncPitchAPI:            "pitchapi-sync",

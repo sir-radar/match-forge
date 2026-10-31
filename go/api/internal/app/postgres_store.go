@@ -64,7 +64,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 		       pf.forecast_availability,
 		       forecast.forecast_id::text, forecast.expected_home_goals,
 		       forecast.expected_away_goals, forecast.probabilities,
-		       observation.provider_code, observation.provider_status,
+		       observation.provider_code, NULLIF(observation.provider_status, ''),
 		       observation.match_minute, observation.added_time, observation.period,
 		       observation.observed_at, COALESCE(observation.stale_after < clock_timestamp(), false),
 		       COALESCE(event_resource.payload->'events', '[]'::jsonb), event_resource.provider_code

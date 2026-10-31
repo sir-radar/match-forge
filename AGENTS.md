@@ -86,7 +86,7 @@ Never:
 - include unrelated work in a commit;
 - amend or rewrite commits unless explicitly requested.
 
-If the current worktree cannot safely support the task, use an isolated branch or worktree.
+Use the existing checkout for a single task. Use a Git worktree only when two or more tasks are being worked on concurrently and separate checkouts are needed to prevent their changes or branch operations from clashing. Keep each task on its own branch.
 
 ### Keep scope narrow
 

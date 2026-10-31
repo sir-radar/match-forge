@@ -37,7 +37,9 @@ Never:
 - include it in unrelated commits;
 - rewrite existing commits without authorization.
 
-Use a separate branch for task isolation. Do not use Git worktrees.
+Use a separate branch for each task. Use the existing checkout for a single task.
+
+Use a Git worktree only when two or more tasks are being worked on concurrently and separate checkouts are needed to prevent their changes or branch operations from clashing. Do not create a worktree for a single task.
 
 ## One concern per branch
 
@@ -69,7 +71,7 @@ Do not mix tasks.
 
 Create an isolated task branch.
 
-If unrelated uncommitted user changes make switching unsafe, stash them and use a separate branch where practical, then unstash them when new changes are finally pushed.
+If switching branches would interfere with another task in progress, use a Git worktree under the concurrent-task rule above. Preserve uncommitted work and never stash it without authorization.
 
 ## Branch naming
 

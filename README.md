@@ -38,7 +38,28 @@ make migrate
 make dev
 ```
 
-The web app is served at `http://127.0.0.1:3000` and the API at `http://127.0.0.1:8080`. Populate a requested fixture date with:
+The web app is served at `http://127.0.0.1:3000` and the API at `http://127.0.0.1:8080`.
+
+`make dev` restarts the Go API when Go sources or module files change; Next.js
+provides React Fast Refresh. Python and Rust are batch/library code in this
+repository, so they do not start a background server by default. To restart a
+long-running local Python or Rust development command on source changes, pass it
+to `make dev`:
+
+```bash
+make dev PYTHON_COMMAND='uv run python -m your_long_running_module' \
+  RUST_COMMAND='cargo run -p simulation-core --bin your_dev_binary'
+```
+
+The Python and Rust commands are optional and are restarted as separate
+processes. `make dev-python` and `make dev-rust` run those watchers on their own;
+set the corresponding `MATCHFORGE_PYTHON_COMMAND` or
+`MATCHFORGE_RUST_COMMAND` environment variable. These commands should run a local
+development process; one-shot data sync and mutation commands are not suitable
+for automatic restarts. The watcher uses Python's standard library and adds no
+runtime dependency.
+
+Populate a requested fixture date with:
 
 ```bash
 make mvp-sync DATE=YYYY-MM-DD

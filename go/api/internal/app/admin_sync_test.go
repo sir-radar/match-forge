@@ -157,6 +157,16 @@ func TestOperationalCommandArgsIncludeRangeAndProviderCompetition(t *testing.T) 
 	}
 }
 
+func TestContextReportCommandUsesDedicatedCLI(t *testing.T) {
+	args, err := syncCommandArgs(SyncRequest{Type: SyncContextReports})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(args, " "); !strings.Contains(got, "refresh-context-reports") {
+		t.Fatalf("context report command = %q", got)
+	}
+}
+
 func TestCommandFailureIncludesLastLogLine(t *testing.T) {
 	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
 	if err != nil {
@@ -175,13 +185,13 @@ func TestCommandFailureIncludesLastLogLine(t *testing.T) {
 
 func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	status, message := syncCompletion(map[string]interface{}{
-		"status": "COMPLETED_WITH_ERRORS",
-		"errors": map[string]interface{}{"mvp": "API-Football request limit reached"},
+		"status":          "COMPLETED_WITH_ERRORS",
+		"failure_reasons": map[string]interface{}{"mvp": "API-Football request limit reached"},
 	})
 	if status != "FAILED" {
 		t.Fatalf("status = %q", status)
 	}
-	if message == nil || *message != "one or more data synchronization operations failed; see summary.errors" {
+	if message == nil || *message != "one or more data synchronization operations failed; see the run summary for details" {
 		t.Fatalf("message = %v", message)
 	}
 

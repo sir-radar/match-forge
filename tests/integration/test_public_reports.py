@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
-from football.product.public_reports import run_public_reports
+from football.product.public_reports import run_pending_context_reports, run_public_reports
 from psycopg.errors import RaiseException
 
 from tests.integration.test_live_context import (
@@ -114,6 +114,137 @@ def test_reports_retry_exactly_and_leave_forecasts_unchanged(report_database):
             ).fetchone()[0]
             == 3
         )
+
+
+def test_pending_context_report_worker_publishes_and_completes_current_queue(report_database):
+    with psycopg.connect(report_database) as connection:
+        result = run_pending_context_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+        )
+        assert result["selected"] == 1
+        assert result["context_reports_published"] == 1
+        assert result["context_reports_pending"] == 0
+        assert connection.execute(
+            """SELECT generation=completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+
+
+def test_fixture_deletion_cascades_to_context_refresh_work(report_database):
+    deleted_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, deleted_fixture)
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (deleted_fixture,),
+        ).fetchone() == (1,)
+        connection.execute(
+            "DELETE FROM football.product_fixtures WHERE fixture_id=%s",
+            (deleted_fixture,),
+        )
+        assert connection.execute(
+            "SELECT count(*) FROM football.product_context_report_refresh_work WHERE fixture_id=%s",
+            (deleted_fixture,),
+        ).fetchone() == (0,)
+
+
+def test_eligible_history_change_requeues_later_fixture_context(report_database):
+    prior_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        run_pending_context_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+        )
+        clone_fixture(connection, prior_fixture, KICKOFF - timedelta(days=30))
+        connection.commit()
+        run_pending_context_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+        )
+        assert connection.execute(
+            """SELECT generation=completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+            VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                   'synthetic eligible history',clock_timestamp())""",
+            (prior_fixture, COMPETITION, HOME, AWAY, KICKOFF - timedelta(days=30), SNAPSHOT),
+        )
+        assert connection.execute(
+            """SELECT generation>completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+
+
+def test_upcoming_fixture_refresh_change_requeues_earlier_context(report_database):
+    future_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, future_fixture, KICKOFF + timedelta(days=3))
+        connection.commit()
+        run_pending_context_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+        )
+        assert connection.execute(
+            """SELECT generation=completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+        connection.commit()
+        connection.execute(
+            "UPDATE football.product_fixtures SET updated_at=%s WHERE fixture_id=%s",
+            (KICKOFF + timedelta(days=1), future_fixture),
+        )
+        assert connection.execute(
+            """SELECT generation>completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+
+
+def test_historical_team_name_change_requeues_context_with_that_opponent(report_database):
+    prior_fixture = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, prior_fixture, KICKOFF - timedelta(days=30))
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+            VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                   'synthetic eligible history',clock_timestamp())""",
+            (prior_fixture, COMPETITION, HOME, AWAY, KICKOFF - timedelta(days=30), SNAPSHOT),
+        )
+        connection.commit()
+        run_pending_context_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+        )
+        assert connection.execute(
+            """SELECT generation=completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
+        connection.execute(
+            "UPDATE football.product_teams SET name=name || ' United' WHERE team_id=%s",
+            (HOME,),
+        )
+        assert connection.execute(
+            """SELECT generation>completed_generation
+            FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
+            (FIXTURE,),
+        ).fetchone() == (True,)
 
 
 @pytest.mark.parametrize(

@@ -8,7 +8,7 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import psycopg
 import pytest
@@ -21,7 +21,7 @@ from football.product.competition_geography import refresh_competition_geography
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
-from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_provider_sync import OperationalProviderSync, SyncCounts
 from football.product.provider_history_scopes import claim_scope, enqueue_seasons
 from football.product.sync import ProductSync
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse
@@ -401,6 +401,235 @@ def seed_reviewed_operational_fixture(
     ).fetchone() == (1,)
     assert sync._resolve_fixture(live, snapshot_id) == fixture_id
     return sync, fixture_id, original_provisional, snapshot_id, live, kickoff, acquired
+
+
+def test_daily_ingestion_reconciles_retained_history_before_insert(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    sync, member_fixture, provisional_fixture, snapshot_id, live, kickoff, acquired = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
+    target_fixture = uuid4()
+    competition_id, home_team_id, away_team_id = connection.execute(
+        """SELECT competition_id,home_team_id,away_team_id
+             FROM football.product_fixtures WHERE fixture_id=%s""",
+        (member_fixture,),
+    ).fetchone()
+    season_id = connection.execute(
+        "SELECT season_id FROM football.matches WHERE id=%s", (member_fixture,)
+    ).fetchone()[0]
+    connection.execute(
+        "INSERT INTO football.matches (id,competition_id,season_id) VALUES (%s,%s,%s)",
+        (target_fixture, competition_id, season_id),
+    )
+    connection.execute(
+        """INSERT INTO football.product_fixtures (
+               fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+               status,home_score,away_score,forecast_availability,updated_at,
+               result_score_basis,identity_status
+           ) VALUES (%s,%s,%s,%s,%s,'FINISHED',0,0,'NOT_ENOUGH_HISTORY',%s,
+                     'REGULATION_90','VERIFIED')""",
+        (
+            target_fixture,
+            competition_id,
+            home_team_id,
+            away_team_id,
+            kickoff,
+            acquired,
+        ),
+    )
+    connection.execute(
+        "UPDATE football.product_fixtures SET identity_status='PROVISIONAL' WHERE fixture_id=%s",
+        (member_fixture,),
+    )
+    mapping_switch_at = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+    provider_id = connection.execute(
+        "SELECT id FROM football.providers WHERE code='pitchapi'"
+    ).fetchone()[0]
+    assert (
+        connection.execute(
+            """UPDATE football.match_provider_mappings
+              SET valid_to=%s,last_seen_at=GREATEST(last_seen_at,%s)
+            WHERE provider_id=%s AND provider_match_id=%s AND valid_to IS NULL""",
+            (mapping_switch_at, mapping_switch_at, provider_id, live.provider_match_id),
+        ).rowcount
+        == 1
+    )
+    connection.execute(
+        """INSERT INTO football.match_provider_mappings (
+               match_id,provider_id,provider_match_id,valid_from,first_seen_at,last_seen_at,
+               mapping_method,mapping_confidence,source_snapshot_id
+           ) VALUES (%s,%s,%s,%s,%s,%s,'explicit_crosswalk',1,%s)""",
+        (
+            provisional_fixture,
+            provider_id,
+            live.provider_match_id,
+            mapping_switch_at,
+            acquired,
+            mapping_switch_at,
+            snapshot_id,
+        ),
+    )
+    finished = replace(
+        live,
+        status="FINISHED",
+        provider_status="Full Time",
+        home_score=0,
+        away_score=0,
+        minute=90,
+        period="FULL_TIME",
+        source_updated_at=acquired + timedelta(minutes=1),
+        observed_at=acquired + timedelta(minutes=2),
+        result_score_basis="REGULATION_90",
+    )
+    assert sync._store_observation(finished, snapshot_id, member_fixture)
+    counts = SyncCounts()
+
+    resolved = sync._ingest_observations([finished], snapshot_id, counts)
+
+    assert resolved == [(finished, target_fixture)]
+    assert counts.failed == 0
+    assert counts.history_inserted == 1
+    assert sync._resolve_fixture(finished, snapshot_id) == target_fixture
+    assert connection.execute(
+        """SELECT representative_fixture_id,resolution_status
+             FROM football.fixture_identity_resolutions
+            WHERE member_fixture_id=%s AND active""",
+        (member_fixture,),
+    ).fetchone() == (target_fixture, "DUPLICATE_RESOLVED")
+    assert connection.execute(
+        """SELECT representative_fixture_id,resolution_status
+             FROM football.fixture_identity_resolutions
+            WHERE member_fixture_id=%s AND active""",
+        (provisional_fixture,),
+    ).fetchone() == (target_fixture, "DUPLICATE_RESOLVED")
+    assert connection.execute(
+        "SELECT home_goals,away_goals FROM football.product_team_match_history WHERE fixture_id=%s",
+        (target_fixture,),
+    ).fetchone() == (0, 0)
+
+
+def test_daily_ingestion_keeps_conflicting_match_mapping_for_review(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    sync, fixture_id, _, snapshot_id, live, kickoff, acquired = seed_reviewed_operational_fixture(
+        connection, tmp_path
+    )
+    candidate_fixture = uuid4()
+    competition_id, home_team_id, away_team_id = connection.execute(
+        """SELECT competition_id,home_team_id,away_team_id
+             FROM football.product_fixtures WHERE fixture_id=%s""",
+        (fixture_id,),
+    ).fetchone()
+    season_id = connection.execute(
+        "SELECT season_id FROM football.matches WHERE id=%s", (fixture_id,)
+    ).fetchone()[0]
+    candidate_kickoff = kickoff + timedelta(hours=2)
+    connection.execute(
+        "INSERT INTO football.matches (id,competition_id,season_id) VALUES (%s,%s,%s)",
+        (candidate_fixture, competition_id, season_id),
+    )
+    connection.execute(
+        """INSERT INTO football.product_fixtures (
+               fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+               status,forecast_availability,updated_at,result_score_basis,identity_status
+           ) VALUES (%s,%s,%s,%s,%s,'SCHEDULED','NOT_ENOUGH_HISTORY',%s,'UNKNOWN','VERIFIED')""",
+        (
+            candidate_fixture,
+            competition_id,
+            home_team_id,
+            away_team_id,
+            candidate_kickoff,
+            acquired,
+        ),
+    )
+    moved = replace(
+        live,
+        kickoff_at=candidate_kickoff,
+        status="SCHEDULED",
+        provider_status="scheduled",
+        home_score=None,
+        away_score=None,
+        minute=None,
+        period=None,
+        source_updated_at=None,
+        observed_at=acquired + timedelta(minutes=1),
+        result_score_basis="UNKNOWN",
+    )
+    counts = SyncCounts()
+
+    resolved = sync._ingest_observations([moved], snapshot_id, counts)
+
+    assert resolved == [(moved, None)]
+    assert counts.failed == 0
+    assert counts.unmatched == 1
+    assert counts.matched == 0
+    assert connection.execute(
+        """SELECT match_id FROM football.match_provider_mappings mapping
+             JOIN football.providers provider ON provider.id=mapping.provider_id
+            WHERE provider.code='pitchapi' AND mapping.provider_match_id=%s
+              AND mapping.valid_to IS NULL""",
+        (live.provider_match_id,),
+    ).fetchone() == (fixture_id,)
+    assert connection.execute(
+        """SELECT canonical_fixture_id FROM football.product_provider_fixture_observations
+            WHERE provider_code='pitchapi' AND provider_match_id=%s
+              AND source_snapshot_id=%s ORDER BY observed_at DESC LIMIT 1""",
+        (moved.provider_match_id, snapshot_id),
+    ).fetchone() == (None,)
+    assert connection.execute(
+        """SELECT disposition,reason,candidate_fixture_id FROM
+             football.product_provider_mapping_decisions
+            WHERE provider_code='pitchapi' AND provider_match_id=%s
+              AND source_snapshot_id=%s ORDER BY observed_at DESC LIMIT 1""",
+        (moved.provider_match_id, snapshot_id),
+    ).fetchone() == (
+        "CONTRADICTORY",
+        "existing match mapping conflicts with exact fixture candidate",
+        candidate_fixture,
+    )
+
+
+def test_daily_ingestion_continues_when_retained_provisional_context_conflicts(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    sync, fixture_id, provisional_fixture, snapshot_id, live, kickoff, _ = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
+    connection.execute(
+        """UPDATE football.fixture_identity_resolutions SET active=false
+            WHERE member_fixture_id=%s AND active""",
+        (provisional_fixture,),
+    )
+    connection.execute(
+        "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+        (kickoff + timedelta(hours=2), provisional_fixture),
+    )
+    counts = SyncCounts()
+
+    resolved = sync._ingest_observations([live], snapshot_id, counts)
+
+    assert resolved == [(live, fixture_id)]
+    assert counts.failed == 0
+    assert counts.matched == 1
+    assert connection.execute(
+        """SELECT disposition,reason,candidate_fixture_id,evidence::text
+             FROM football.product_provider_mapping_decisions
+            WHERE provider_code='pitchapi' AND provider_match_id=%s
+              AND source_snapshot_id=%s
+              AND disposition='CONTRADICTORY'
+            ORDER BY observed_at DESC LIMIT 1""",
+        (live.provider_match_id, snapshot_id),
+    ).fetchone()[:3] == (
+        "CONTRADICTORY",
+        "retained fixture member contradicts reviewed context",
+        fixture_id,
+    )
+    assert connection.execute(
+        """SELECT count(*) FROM football.fixture_identity_resolutions
+            WHERE member_fixture_id=%s AND active""",
+        (provisional_fixture,),
+    ).fetchone() == (0,)
 
 
 def test_reconciliation_and_lifecycle_precedence_are_deterministic(

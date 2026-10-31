@@ -254,6 +254,13 @@ roll back the published rows and completion together. The work-row lock
 serializes publication, cancellation and replacement. Cancellation clears lease
 rights before recording its terminal state.
 
+Public fixture-context reports use a durable per-fixture refresh queue. Fixture,
+eligible history, identity, coach and lineup changes enqueue affected fixtures;
+the Go service schedules a bounded Python projection job. The API serves only immutable
+reports whose source fingerprint still matches current eligible context. While
+a refreshed report is pending, the context endpoint reports temporary
+unavailability instead of serving stale form.
+
 The shared engine and Phase 17 queue adapters run on the isolated shadow path.
 Operator runs and provider-history scopes retain their existing control/detail
 records behind SQL adapters. Bulk history and pending forecast workers use shared
