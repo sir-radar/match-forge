@@ -37,6 +37,9 @@ ACTIONS = {
     "RECOVER",
     "EXCLUDE",
     "RECHECK_PARITY",
+    "REHEARSE_STAGE",
+    "ROLLBACK_STAGE",
+    "SWITCH_STAGE",
 }
 FIELDS = {"case_key", "action", "reason", "candidate", "evidence_version", "request_id", "approved"}
 

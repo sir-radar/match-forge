@@ -1286,3 +1286,16 @@ incomplete runtime scopes, unavailable data, identity failures and unresolved
 59/327 discrepancies prevent full parity. Recovery/disposition requests retain the
 cause and request dependent rechecks; a successful verifier job can report a
 blocked parity gate.
+
+Cutover controls retain versioned settings for all 13 established stages. Production
+advance remains blocked by complete parity, dependency order, qualified runtime
+bindings and separate acceptance. Explicit shadow operations are not production
+replacements. The currently wired alternate fixture backend is `fixture_read_model`.
+An owner-approved disposable-database rehearsal binds its exact projection hash and
+configuration generation, rebuilds the real cache and selects its leased V2 route.
+A savepoint restores the prior cache and route before a fenced immutable result.
+Configuration events retain the exact approved stage/request. Lost or revoked trial
+leases select legacy automatically; explicit rollback can clear stale trial metadata.
+Go fixture serving accepts only the closed legacy/V2 relation mapping and rechecks
+a V2 route before returning its response. These controls do not enable production
+cutover, replace unbound stages, or authorize scheduler retirement.

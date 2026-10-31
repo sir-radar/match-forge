@@ -67,7 +67,7 @@ func (runner *CommandSyncRunner) RecoverResolution(ctx context.Context) (bool, e
 
 func (runner *CommandSyncRunner) resolutionOwnedWork(ctx context.Context) (string, error) {
 	clauses := []string{}
-	for _, table := range []string{"football.resolution_recovery_work", "football.resolution_file_recovery_work", "football.resolution_parity_work"} {
+	for _, table := range []string{"football.resolution_recovery_work", "football.resolution_file_recovery_work", "football.resolution_parity_work", "football.resolution_stage_work"} {
 		var ready bool
 		if err := runner.pool.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, table).Scan(&ready); err != nil {
 			return "", err

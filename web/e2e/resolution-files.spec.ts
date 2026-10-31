@@ -1,4 +1,4 @@
-import { approveResolutionDecision, useResolutionBackend } from "./resolution-backend";
+import { approveResolutionDecision, recheckResolution, useResolutionBackend } from "./resolution-backend";
 import { expect, test } from "@playwright/test";
 
 test("owner recovers original registered bytes through real Admin", async ({ page }) => {
@@ -17,9 +17,7 @@ test("owner recovers original registered bytes through real Admin", async ({ pag
   await review.getByLabel("Reason", { exact: true }).fill("Owner verified original retained bytes and checksum");
   await approveResolutionDecision(page, review, "resolution-disposable-owner");
   await expect(async () => {
-    const refreshed = page.waitForResponse((response) => response.url().includes("/resolution/missing?") && response.status() === 200);
-    await page.getByRole("button", { name: "Recheck current view" }).click();
-    await refreshed;
+    await recheckResolution(page, page.getByRole("button", { name: "Recheck current view" }), "missing");
     await expect(page.getByRole("row").filter({ hasText: process.env.MATCHFORGE_RESOLUTION_FILE_CASE! })).toHaveCount(0, { timeout: 1500 });
   }).toPass({ timeout: 30_000 });
   await page.unrouteAll({ behavior: "wait" });

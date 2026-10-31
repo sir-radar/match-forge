@@ -243,3 +243,35 @@ Ruff/format, mypy (443 files), migration validation, architecture checks and pin
 production build passed. Full production-scope old/new comparisons remain BLOCKED
 or NOT_RUN where the required evidence does not exist. Phase35/36 remain blocked;
 no live recovery, exception, cutover, evaluation or fitting was executed.
+
+## Phase 8 — Gated controls and real projection rollback
+
+All 13 stages expose versioned configuration, dependencies, approval/execution
+history, rollback capability and actual binding gaps. Production advance is blocked.
+Twelve stages still have explicit shadow operations without qualified production
+replacements; their controls reject switches and rehearsals rather than presenting
+unimplemented routes as ready. The existing read-model backend supports a concrete
+isolated rehearsal. This is controlled preparation, not complete Phase35 routing.
+
+The stage8 worker binds the approved configuration generation, database and exact
+fixture-projection hash. It refreshes the real materialized view, selects its leased
+V2 route and compares exact rows before rolling back. It verifies restored cache
+and fixture hashes before publishing the immutable receipt. Failed refreshes and
+lease loss retain the previous route/cache. Revocation selects legacy automatically;
+an approved rollback can clear stale metadata. Go fixture serving consumes the closed
+SQL route and rejects a revoked V2 response before returning it.
+
+Verification: 11 database scenarios passed across focused runs, including all13
+advance refusals, real projection equality, database-error rollback, stale config,
+stale fixtures, lease fencing, revocation, cross-stage audit rejection and explicit
+approval. Fourteen gate tests passed. The real Admin rehearsal journey passed with
+axe. A real Go fixture request exercised the leased V2 projection and returned an
+identical legacy response after revocation, preserving source/history/artifacts.
+Frontend107 tests, Go tests/lint, Ruff/format, mypy444, migration/architecture checks,
+frontend lint/types/build and Fallow passed. The existing unrelated unused Playwright
+configuration and estimated-coverage advice remain documented.
+
+Gate: PASS_WITH_WARNINGS for verified controls and isolated preparation. Full
+production routing and complete per-stage production rehearsals remain BLOCKED
+until source/identity/parity gaps, qualified runtime bindings and independent owner
+acceptance are supplied. No production switch or scheduler retirement was executed.

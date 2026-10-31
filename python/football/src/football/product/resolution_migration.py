@@ -220,6 +220,10 @@ def migration_page(
     repo: Path, view: str, query: dict[str, Any], connection: Connection[Any] | None = None
 ) -> dict[str, Any]:
     report = parity_report(connection, repo) if connection is not None else migration_report(repo)
+    if view == "cutover" and connection is not None:
+        from football.product.resolution_stages import stage_controls
+
+        report["stages"] = stage_controls(connection, report["stages"])
     items = report["stages"] if view == "cutover" else report["items"]
     if query.get("provider") or query.get("kind"):
         raise ValueError("provider and entity filters do not apply to migration evidence")
@@ -239,3 +243,22 @@ def migration_page(
         "counts": dict(Counter(item["status"] for item in items)),
         "groups": [],
     }
+
+
+def migration_detail(connection: Connection[Any], repo: Path, key: str) -> dict[str, Any]:
+    if key.startswith("stage:"):
+        from football.product.resolution_stages import projection_digest, stage_controls
+
+        stages = stage_controls(connection, migration_report(repo)["stages"])
+        result = next((stage for stage in stages if stage["case_key"] == key), {})
+        if not result:
+            raise ValueError("unknown migration stage")
+        if result["order"] == 8:
+            result["current_projection"] = projection_digest(connection, "product_serving_fixtures")
+        return result
+    report = parity_report(connection, repo)
+    result = next((item.copy() for item in report["items"] if item["case_key"] == key), {})
+    if not result:
+        raise ValueError("unknown required parity check")
+    result.update(overall_status=report["status"], exceptions=report["exceptions"])
+    return result

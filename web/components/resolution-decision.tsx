@@ -12,6 +12,7 @@ function objectList(value: unknown): RecordValue[] {
 }
 function actionsFor(key: string, data: RecordValue): string[] {
   const kind = key.split(":")[0];
+  if (kind === "stage") return ["REHEARSE_STAGE", "ROLLBACK_STAGE", "SWITCH_STAGE"];
   if (kind === "parity") return ["RECHECK_PARITY"];
   if (["resource", "dataset"].includes(kind)) return ["VERIFY", "RECOVER", "EXCLUDE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];
   const actions = ["REVALIDATE", "REQUEST_EVIDENCE", "BLOCK", "DEFER"];

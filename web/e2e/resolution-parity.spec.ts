@@ -1,4 +1,4 @@
-import { approveResolutionDecision, useResolutionBackend } from "./resolution-backend";
+import { approveResolutionDecision, recheckResolution, useResolutionBackend } from "./resolution-backend";
 import { expect, test } from "@playwright/test";
 
 test("owner rechecks parity and inspects durable blocked verification", async ({ page }) => {
@@ -14,9 +14,7 @@ test("owner rechecks parity and inspects durable blocked verification", async ({
   await review.getByLabel("Reason", { exact: true }).fill("Recheck retained evidence; preserve incomplete production scopes and known conflicts");
   await approveResolutionDecision(page, review, "resolution-disposable-owner");
   await expect(async () => {
-    const refreshed = page.waitForResponse((response) => response.url().includes("/resolution/detail?") && response.status() === 200);
-    await review.getByRole("button", { name: "Recheck case evidence" }).click();
-    await refreshed;
+    await recheckResolution(page, review.getByRole("button", { name: "Recheck case evidence" }), "detail");
     const history = review.getByText("Inspect verification history", { exact: true });
     if (await history.getAttribute("aria-expanded") !== "true") {
       const open = await history.evaluate((element) => (element.parentElement as HTMLDetailsElement).open);

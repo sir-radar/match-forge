@@ -20,6 +20,7 @@ from football.product.resolution_cases import append_event, case_detail, latest_
 from football.product.resolution_files import enqueue_file_recovery, recovery_plan
 from football.product.resolution_parity import enqueue_parity
 from football.product.resolution_recovery import enqueue_recovery
+from football.product.resolution_stages import STAGE_LOCK, enqueue_stage, qualify_stage
 from football.storage.locks import (
     FIXTURE_CROSSWALK_LOCK,
     IDENTITY_ADMISSION_LOCK,
@@ -59,6 +60,7 @@ def preview(
         "resource",
         "dataset",
         "parity",
+        "stage",
     }:
         raise ValueError("unsupported resolution case")
     qualification: dict[str, Any] = {"status": "QUALIFIED", "reason": "REVIEW_WORKFLOW_ONLY"}
@@ -67,7 +69,7 @@ def preview(
         for item in detail.get("candidates", [])
     ):
         qualification = {"status": "BLOCKED", "reason": "Select an exact retained candidate"}
-    if action not in REVIEW_ACTIONS:
+    if action not in REVIEW_ACTIONS or request["case_key"].startswith(("stage:", "parity:")):
         try:
             qualification = qualify_action(connection, root, request, detail, verifier)
         except (ValueError, OSError) as error:
@@ -96,15 +98,8 @@ def qualify_action(
 ) -> dict[str, Any]:
     action, kind = request["action"], request["case_key"].split(":", 1)[0]
     candidate = request.get("candidate", {})
-    if kind == "parity" and action == "RECHECK_PARITY":
-        return {
-            "status": "QUALIFIED",
-            "reason": "READ_ONLY_DIAGNOSTICS_AND_RETAINED_PARITY_RECHECK",
-        }
-    if kind in {"resource", "dataset"}:
-        return qualify_data(root, request, detail)
     if kind not in {"team", "competition", "fixture", "fixture_record"}:
-        raise ValueError("identity review requires an identity or fixture case")
+        return qualify_operation(connection, root, request, detail)
     if action == "REVALIDATE":
         return {"status": "QUALIFIED", "reason": "RECHECK_ONLY_NO_NEW_ADMISSION"}
     if kind == "fixture" and action == "RESOLVE_DUPLICATE":
@@ -137,6 +132,22 @@ def qualify_action(
         "reason": detail["decision"]["reason"],
         "decision": detail["decision"],
     }
+
+
+def qualify_operation(
+    connection: Connection[Any], root: Path, request: dict[str, Any], detail: dict[str, Any]
+) -> dict[str, Any]:
+    kind = request["case_key"].split(":", 1)[0]
+    if kind == "stage":
+        return qualify_stage(request, detail)
+    if kind == "parity" and request["action"] == "RECHECK_PARITY":
+        return {
+            "status": "QUALIFIED",
+            "reason": "READ_ONLY_DIAGNOSTICS_AND_RETAINED_PARITY_RECHECK",
+        }
+    if kind in {"resource", "dataset"}:
+        return qualify_data(root, request, detail)
+    raise ValueError("unsupported control action")
 
 
 def qualify_data(root: Path, request: dict[str, Any], detail: dict[str, Any]) -> dict[str, Any]:
@@ -193,7 +204,7 @@ def apply_domain(
     kind, identifier = request["case_key"].split(":", 1)
     action = request["action"]
     detail = prepared["detail"]
-    if kind in {"resource", "dataset", "parity"}:
+    if kind in {"resource", "dataset", "parity", "stage"}:
         return {
             "status": "QUEUED" if action == "RECOVER" else "RECORDED",
             "case_status": detail["status"],
@@ -260,8 +271,10 @@ def apply_one(
     prepared = preview(connection, root, request, verifier)
     verifier.seal()
     with connection.transaction():
+        control = LockRequest(LockClass.CONTROL, "resolution:" + request["case_key"])
         acquire_locks(
-            connection, (LockRequest(LockClass.CONTROL, "resolution:" + request["case_key"]),)
+            connection,
+            (control, STAGE_LOCK) if request["case_key"].startswith("stage:") else (control,),
         )
         previous = replayed_decision(connection, request["request_id"], request_hash)
         if previous:
@@ -320,7 +333,7 @@ def recheck_preview(
     prepared: dict[str, Any],
     verifier: RetainedIdentityVerifier,
 ) -> dict[str, Any]:
-    if not request["case_key"].startswith(("resource:", "dataset:", "parity:")):
+    if not request["case_key"].startswith(("resource:", "dataset:", "parity:", "stage:")):
         return preview(connection, root, request, verifier)
     # Registrations are immutable. Read bytes before coordination; the durable worker also
     # checks them before exclusive publication. Only review metadata needs a control lock.
@@ -328,6 +341,13 @@ def recheck_preview(
     latest = {k: v for k, v in review.items() if k != "detail"} if review else None
     if latest != prepared["detail"]["latest_review"]:
         raise ValueError("review changed; preview again before approval")
+    if request["case_key"].startswith("stage:"):
+        head = connection.execute(
+            "SELECT generation FROM football.resolution_stage_settings WHERE stage=%s",
+            (prepared["detail"]["order"],),
+        ).fetchone()
+        if not head or head[0] != prepared["detail"]["configuration"]["generation"]:
+            raise ValueError("stage configuration changed; preview again before approval")
     return prepared
 
 
@@ -343,3 +363,5 @@ def enqueue_followup(
         and request["action"] in {"EXCLUDE", "DEFER", "BLOCK", "REQUEST_EVIDENCE", "VERIFY"}
     ):
         enqueue_parity(connection, request["request_id"], request["case_key"])
+    if request["case_key"].startswith("stage:"):
+        enqueue_stage(connection, request, current)

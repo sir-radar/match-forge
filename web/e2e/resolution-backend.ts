@@ -19,3 +19,9 @@ export async function approveResolutionDecision(page: Page, review: Locator, tok
   await expect(review.getByRole("status")).toContainText("Decision recorded", { timeout: 30_000 });
   await expect(review.getByLabel("Owner credential")).toHaveValue("");
 }
+
+export async function recheckResolution(page: Page, button: Locator, view: "detail" | "missing") {
+  const refreshed = page.waitForResponse((response) => response.url().includes(`/resolution/${view}?`) && response.status() === 200);
+  await button.click();
+  await refreshed;
+}

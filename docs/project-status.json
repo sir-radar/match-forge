@@ -2734,7 +2734,7 @@
   },
   "identity_resolution": {
     "status": "IN_PROGRESS",
-    "current_phase": 7,
+    "current_phase": 8,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2812,6 +2812,33 @@
       "full_production_parity": "BLOCKED",
       "known_elo_conflicts": 59,
       "known_insufficient_history_targets": 327,
+      "live_mutations": 0
+    },
+    "phase_8": "PASS_WITH_WARNINGS",
+    "phase_8_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "stage_database_scenarios": 11,
+      "stage_gate_tests": 14,
+      "real_admin_browser_journeys": 1,
+      "real_go_route_revocation_checks": 1,
+      "qualified_isolated_runtime_stages": [
+        8
+      ],
+      "production_stage_routing": "BLOCKED",
+      "unbound_production_stages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
       "live_mutations": 0
     }
   }

@@ -121,6 +121,12 @@ _WORKER_SOURCE_CONTRACTS = {
         ".progress(claim)",
         "registry.publication(",
     ),
+    "python/football/src/football/product/resolution_stages.py": (
+        "WorkRegistry(connection)",
+        "WorkType.READ_MODEL_PROJECTION",
+        "registry.progress(claim)",
+        "registry.publication(",
+    ),
     "python/football/src/football/product/resolution_parity.py": (
         "WorkRegistry(connection)",
         "WorkType.READ_MODEL_PROJECTION",

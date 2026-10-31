@@ -487,27 +487,7 @@ def publish_page(
 def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, Any]:
     registry = WorkRegistry(connection)
     with connection.transaction():
-        ready = connection.execute(
-            "SELECT to_regclass('football.resolution_file_recovery_work')"
-        ).fetchone()
-        file_work = (
-            " UNION ALL SELECT work_id FROM football.resolution_file_recovery_work"
-            if ready and ready[0]
-            else ""
-        )
-        parity_ready = connection.execute(
-            "SELECT to_regclass('football.resolution_parity_work')"
-        ).fetchone()
-        if parity_ready and parity_ready[0]:
-            file_work += " UNION ALL SELECT work_id FROM football.resolution_parity_work"
-        rows = connection.execute(
-            """SELECT b.work_id FROM (SELECT work_id FROM football.resolution_recovery_work"""
-            + file_work
-            + """) b
-               JOIN football.work_items w USING(work_id)
-               WHERE w.state IN ('PENDING','RETRY_WAIT','RUNNING')
-               ORDER BY w.priority DESC,w.available_at,w.work_id"""
-        ).fetchall()
+        rows = pending_recovery_ids(connection)
     if not rows:
         return {"status": "IDLE"}
     claim = registry.claim(
@@ -518,14 +498,12 @@ def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, A
             WorkType.PROVIDER_ACQUISITION,
             WorkType.READ_MODEL_PROJECTION,
         ),
-        work_ids=tuple(row[0] for row in rows),
+        work_ids=rows,
     )
     if claim is None:
         return {"status": "BUSY"}
     if claim.work_type == WorkType.READ_MODEL_PROJECTION:
-        from football.product.resolution_parity import publish_parity
-
-        return publish_parity(connection, Path.cwd(), root, claim)
+        return publish_projection_work(connection, root, claim)
     if claim.work_type == WorkType.PROVIDER_ACQUISITION:
         from football.product.resolution_files import publish_file
 
@@ -592,3 +570,44 @@ def run_pending_recovery(connection: Connection[Any], root: Path) -> dict[str, A
             else "RETRY_WAIT",
             "work_id": str(claim.work_id),
         }
+
+
+def publish_projection_work(
+    connection: Connection[Any], root: Path, claim: WorkClaim
+) -> dict[str, Any]:
+    from football.product.resolution_parity import publish_parity
+    from football.product.resolution_stages import publish_stage
+
+    with connection.transaction():
+        ready = connection.execute(
+            "SELECT to_regclass('football.resolution_stage_work')"
+        ).fetchone()
+        stage = (
+            connection.execute(
+                "SELECT 1 FROM football.resolution_stage_work WHERE work_id=%s", (claim.work_id,)
+            ).fetchone()
+            if ready and ready[0]
+            else None
+        )
+    if stage:
+        return publish_stage(connection, claim)
+    return publish_parity(connection, Path.cwd(), root, claim)
+
+
+def pending_recovery_ids(connection: Connection[Any]) -> tuple[UUID, ...]:
+    clauses = ["SELECT work_id FROM football.resolution_recovery_work"]
+    for table in (
+        "resolution_file_recovery_work",
+        "resolution_parity_work",
+        "resolution_stage_work",
+    ):
+        ready = connection.execute("SELECT to_regclass(%s)", ("football." + table,)).fetchone()
+        if ready and ready[0]:
+            clauses.append("SELECT work_id FROM football." + table)
+    rows = connection.execute(
+        "SELECT b.work_id FROM (" + " UNION ALL ".join(clauses) + ") b "
+        "JOIN football.work_items w USING(work_id) "
+        "WHERE w.state IN ('PENDING','RETRY_WAIT','RUNNING') "
+        "ORDER BY w.priority DESC,w.available_at,w.work_id"
+    ).fetchall()
+    return tuple(UUID(str(row[0])) for row in rows)

@@ -262,15 +262,10 @@ def case_detail(
         result = fixture_record_detail(connection, key)
     elif kind in {"resource", "dataset"}:
         result = data_detail(connection, root, key)
-    elif kind == "parity":
-        from football.product.resolution_migration import parity_report
+    elif kind in {"stage", "parity"}:
+        from football.product.resolution_migration import migration_detail
 
-        report = parity_report(connection, Path.cwd())
-        result = next((item.copy() for item in report["items"] if item["case_key"] == key), {})
-        if not result:
-            raise ValueError("unknown required parity check")
-        result["overall_status"] = report["status"]
-        result["exceptions"] = report["exceptions"]
+        result = migration_detail(connection, Path.cwd(), key)
     else:
         raise ValueError("unsupported resolution case")
     result["recovery_work"] = recovery_work(connection, key)
