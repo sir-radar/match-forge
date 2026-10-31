@@ -437,3 +437,34 @@ Ruff/format, strict mypy on changed files and architecture checks passed. Replay
 used a read-only connection and local report files. No operating observations,
 identities, forecasts, artifacts or source bytes were written; no provider calls,
 fits, evaluations or promotions ran. Existing migration gates remain unchanged.
+
+## Phase 05b — retained FotMob/PitchAPI rich measurements
+
+Status: PASS_WITH_WARNINGS. Phase 05a commit: `14ef312`.
+
+Existing decoders now retain measured off-target/blocked shots, offsides, passes,
+accurate passes/crosses, tackles, interceptions, clearances, woodwork and xGOT.
+Player observations add source-reported pass totals, accurate passes, SOT,
+tackles, interceptions, fouls, saves, xG and xA. Shots retain source body-part and
+situation strings and xGOT. V3 is selected only when new fields are present; old
+V2-only payloads remain V2. No existing schema or observation bytes were rewritten.
+
+Count-plus-percentage text is parsed strictly only for the measured passing
+fields. Player pass totals come from the explicit source fraction total, never
+from dividing by a rounded percentage. Conflicting duplicates remove the
+ambiguous field. Missing values, zeroes and unsupported source fields remain
+distinct. Coordinates remain unknown without a verified frame. Category strings
+and source counts do not establish sportsbook equivalence.
+
+Six checksum-verified retained resource/decoder replays produced 12 rich team
+observations across full match/H1/H2, 60 rich player observations and 48 rich
+shots. These fields were previously absent from named outputs. Existing xG and
+participant outputs remain. The samples concern two matches, not whole-provider
+coverage. Unknown measurements and partial-period xG are still reported;
+PitchAPI has 30 pre-existing empty-key Shotmap findings.
+
+[Phase 05b evidence](evidence/matchforge-v4-phase-05b-2026-10-31.json) records exact
+source/report hashes, non-null counts and findings. The existing/rich suite
+passed 52 cases; the expanded boundary suite passed 15. Ruff/format, strict mypy
+on six changed files and architecture checks passed. No provider request,
+operating mutation, fit, evaluation or promotion occurred.

@@ -41,6 +41,9 @@ class PitchApiShot(TypedDict):
     id: NotRequired[str | int]
     expected_goals: NotRequired[float | None]
     is_on_target: NotRequired[bool | None]
+    shot_type: NotRequired[str | None]
+    situation: NotRequired[str | None]
+    expected_goals_on_target: NotRequired[float | None]
 
 
 class PitchApiStatistic(TypedDict):

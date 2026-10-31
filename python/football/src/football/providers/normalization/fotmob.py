@@ -15,6 +15,7 @@ from football.contracts.observations_v2 import (
     PlayerStatisticObservationV2,
     ResultObservationV2,
 )
+from football.contracts.observations_v3 import PlayerStatisticObservationV3
 from football.product.provider_history_scopes import normalize_seasons
 from football.providers.fotmob import _normalize_match, parse_fotmob_fixture
 from football.providers.native.fotmob import (
@@ -42,6 +43,7 @@ from football.providers.normalization.measurements import (
     period_name,
     player_measurements,
     shot_outcome,
+    statistic_contract,
 )
 from football.providers.normalization.participants import (
     emit_lineup,
@@ -300,6 +302,9 @@ def shots(output: ObservationCollector, payload: object) -> None:
                 outcome=shot_outcome(output, row.get("eventType"), path),
                 own_goal=row.get("isOwnGoal"),
                 coordinates="x" in row or "y" in row,
+                body_part=row.get("shotType"),
+                situation=row.get("situation"),
+                expected_goals_on_target=row.get("expectedGoalsOnTarget"),
             )
 
 
@@ -348,7 +353,9 @@ def player_statistics(output: ObservationCollector, payload: object) -> None:
             values = player_measurements(output, row.get("stats"), path)
             if values:
                 output.emit(
-                    PlayerStatisticObservationV2,
+                    statistic_contract(
+                        values, PlayerStatisticObservationV2, PlayerStatisticObservationV3
+                    ),
                     path,
                     row.get("id", native_id),
                     fixture=output.context.fixture(),

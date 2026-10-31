@@ -2910,7 +2910,8 @@
       "01",
       "03",
       "04",
-      "05a"
+      "05a",
+      "05b"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2930,6 +2931,9 @@
     "phase_04_ref": "docs/evidence/matchforge-v4-phase-04-2026-10-31.json",
     "phase_04_commit_sha": "82d9784cf915f7023ec0f9dfb1ed0acc72426ca2",
     "phase_05a_status": "PASS",
-    "phase_05a_ref": "docs/evidence/matchforge-v4-phase-05a-2026-10-31.json"
+    "phase_05a_ref": "docs/evidence/matchforge-v4-phase-05a-2026-10-31.json",
+    "phase_05a_commit_sha": "14ef312",
+    "phase_05b_status": "PASS_WITH_WARNINGS",
+    "phase_05b_ref": "docs/evidence/matchforge-v4-phase-05b-2026-10-31.json"
   }
 }
