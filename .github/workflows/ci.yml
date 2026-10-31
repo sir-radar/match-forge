@@ -197,6 +197,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Background workers use the same repository-local path as bootstrap.
+          uv_binary="$(command -v uv)"
+          mkdir -p .tools/bin
+          ln -s "$uv_binary" .tools/bin/uv
+          .tools/bin/uv --version
           uv python install 3.13.14
           uv sync --locked
 

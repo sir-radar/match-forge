@@ -404,12 +404,14 @@ def test_same_time_conflicting_source_picks_never_create_consensus_or_accuracy_c
 ):
     from tests.integration.test_product_analytics import _revision
 
-    captured = datetime.now(UTC)
     date_text = f"{KICKOFF.day}th, {KICKOFF:%a %b %Y}"
     with psycopg.connect(report_database) as c:
         _revision(c, 24)
         _revision(c, 6)
         c.commit()
+        # Order these captures after the database-seeded fixture without
+        # depending on agreement between the host and PostgreSQL clocks.
+        captured = c.execute("SELECT clock_timestamp()").fetchone()[0]
         import_predictions(
             c,
             (

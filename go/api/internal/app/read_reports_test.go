@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -114,6 +115,21 @@ func TestScheduledPublicReportsDatabase(t *testing.T) {
 	defer runner.Shutdown(context.Background())
 	application := NewWithSyncRunner(Config{}, logger, readinessStub{}, store, runner)
 	go application.runPublicReportSchedule(ctx)
+	run := waitScheduledPublicReport(t, ctx, runner)
+	if run.Status != "SUCCEEDED" {
+		detail, err := json.Marshal(run)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Fatalf("scheduled worker failed: %s", detail)
+	}
+	verifyPublicPerformance(t, store, "00000000-0000-0000-0000-000000001fa4")
+	verifyPublicContext(t, store, "00000000-0000-0000-0000-000000001fa8")
+	verifyPublicComparison(t, store, "00000000-0000-0000-0000-000000001fa8")
+}
+
+func waitScheduledPublicReport(t *testing.T, ctx context.Context, runner *CommandSyncRunner) SyncRun {
+	t.Helper()
 	ticker := time.NewTicker(50 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -129,14 +145,8 @@ func TestScheduledPublicReportsDatabase(t *testing.T) {
 				if run.Type != SyncPublicReports {
 					continue
 				}
-				if run.Status == "SUCCEEDED" {
-					verifyPublicPerformance(t, store, "00000000-0000-0000-0000-000000001fa4")
-					verifyPublicContext(t, store, "00000000-0000-0000-0000-000000001fa8")
-					verifyPublicComparison(t, store, "00000000-0000-0000-0000-000000001fa8")
-					return
-				}
-				if run.Status == "FAILED" {
-					t.Fatalf("scheduled worker failed: %+v; %v", run.Summary, run.ErrorMessage)
+				if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELLED" {
+					return run
 				}
 			}
 		}

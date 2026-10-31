@@ -7,7 +7,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm next start --hostname 127.0.0.1 --port 3009",
     url: "http://127.0.0.1:3009",
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI && !process.env.MATCHFORGE_REMEDIATION_BACKEND,
     timeout: 60_000,
   },
   projects: [
