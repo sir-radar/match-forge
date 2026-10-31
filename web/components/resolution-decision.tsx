@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useResolutionOperation } from "@/components/use-resolution-operation";
 import { resolutionApi, text, type Decision, type Preview, type RecordValue } from "@/lib/resolution";
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : "Decision unavailable";
@@ -24,8 +25,7 @@ export function ResolutionDecisionForm({ caseKey, data, onApplied }: { caseKey: 
   const [prepared, setPrepared] = useState<Prepared>(), [error, setError] = useState<string>();
   const [token, setToken] = useState(""), [approved, setApproved] = useState(false), [busy, setBusy] = useState(false);
   const [result, setResult] = useState<RecordValue>();
-  const pending = useRef(false), mounted = useRef(true), controller = useRef<AbortController | null>(null);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; controller.current?.abort(); }; }, []);
+  const { pending, mounted, controller } = useResolutionOperation();
   const invalidate = () => { controller.current?.abort(); setPrepared(undefined); setApproved(false); setResult(undefined); setError(undefined); };
   const preview = async () => {
     if (pending.current) return;

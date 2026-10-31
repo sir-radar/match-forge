@@ -33,7 +33,7 @@ it("requires exact preview, owner credential and explicit approval; retries reus
   expect(screen.getByLabelText("Owner credential")).toHaveValue("");
 });
 it("invalidates a preview when the reason changes", async () => {
-  vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => new Response(JSON.stringify({ ...JSON.parse(String(options.body)), detail: {}, allowed: false, qualification: { status: "BLOCKED", reason: "MISSING_PROOF" }, evidence_version: "a".repeat(64) }))));
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, options: RequestInit) => new Response(JSON.stringify({ ...JSON.parse(String(options.body)), detail: { case_key: key }, allowed: false, qualification: { status: "BLOCKED", reason: "MISSING_PROOF" }, evidence_version: "a".repeat(64) }))));
   render(<ResolutionDecisionForm caseKey={key} data={{}} onApplied={vi.fn()} />);
   fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "Initial review" } });
   fireEvent.click(screen.getByRole("button", { name: "Preview impact and evidence" }));
@@ -43,7 +43,7 @@ it("invalidates a preview when the reason changes", async () => {
 });
 it("binds a correction to retained target and fixture IDs", async () => {
   const target = "00000000-0000-4000-8000-000000000002";
-  const fetch = vi.fn(async (_url: string, options: RequestInit) => new Response(JSON.stringify({ ...JSON.parse(String(options.body)), detail: {}, allowed: true, qualification: { status: "QUALIFIED", reason: "RETAINED" }, evidence_version: "a".repeat(64) })));
+  const fetch = vi.fn(async (_url: string, options: RequestInit) => new Response(JSON.stringify({ ...JSON.parse(String(options.body)), detail: { case_key: key }, allowed: true, qualification: { status: "QUALIFIED", reason: "RETAINED" }, evidence_version: "a".repeat(64) })));
   vi.stubGlobal("fetch", fetch);
   render(<ResolutionDecisionForm caseKey={key} data={{ candidates: [{ mapping_id: target, name: "Target", provider: "retained" }], correction_options: [{ original_decision_id: "prior", fixture_registration_id: "registration", orientation: "HOME", fixture_id: "fixture" }] }} onApplied={vi.fn()} />);
   fireEvent.change(screen.getByLabelText("Action"), { target: { value: "CORRECT" } });

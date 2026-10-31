@@ -14,11 +14,12 @@ import (
 )
 
 type resolutionRequest struct {
-	Operation string              `json:"operation"`
-	View      string              `json:"view"`
-	Query     map[string]any      `json:"query,omitempty"`
-	Request   *resolutionDecision `json:"request,omitempty"`
-	Actor     string              `json:"actor,omitempty"`
+	Operation string               `json:"operation"`
+	View      string               `json:"view"`
+	Query     map[string]any       `json:"query,omitempty"`
+	Request   *resolutionDecision  `json:"request,omitempty"`
+	Requests  []resolutionDecision `json:"requests,omitempty"`
+	Actor     string               `json:"actor,omitempty"`
 }
 
 type resolutionResult struct {

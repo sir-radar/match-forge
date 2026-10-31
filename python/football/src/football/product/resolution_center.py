@@ -15,6 +15,7 @@ import psycopg
 from psycopg import Connection
 
 from football.product.resolution_actions import apply_one, preview
+from football.product.resolution_batches import apply_batch, preview_batch, validate_batch
 from football.product.resolution_cases import case_detail, case_page
 from football.product.resolution_data import missing_page
 from football.product.resolution_migration import migration_page
@@ -125,6 +126,8 @@ def execute(
         validate_case(request["request"])
         connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         return preview(connection, root, request["request"])
+    if operation in {"batch_preview", "batch_apply"}:
+        return execute_batch(connection, root, request)
     if operation != "apply":
         raise ValueError("unsupported operation")
     actor = request.get("actor")
@@ -132,6 +135,23 @@ def execute(
         raise ValueError("authenticated owner identity is required")
     validate_case(request["request"], applying=True)
     return apply_one(connection, root, request["request"], actor)
+
+
+def execute_batch(
+    connection: Connection[Any], root: Path, request: dict[str, Any]
+) -> dict[str, Any]:
+    requests = request["requests"]
+    validate_batch(requests)
+    applying = request["operation"] == "batch_apply"
+    for item in requests:
+        validate_case(item, applying=applying)
+    if not applying:
+        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        return preview_batch(connection, root, requests)
+    actor = request.get("actor")
+    if not isinstance(actor, str) or not re.fullmatch(r"owner:[a-f0-9]{16}", actor):
+        raise ValueError("authenticated owner identity is required")
+    return apply_batch(connection, root, requests, actor)
 
 
 def main() -> int:

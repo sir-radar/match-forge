@@ -97,3 +97,5 @@ invalid groups, missing case keys, mismatched detail IDs and invalid evidence
 hashes. A drift assertion binds client view names to OpenAPI. Transport disables
 caching and forwards cancellation. No optimistic mutation or credential storage
 is present in this phase.
+
+Phase 4 adds bounded batch-preview/batch-apply routes (20 cases). Runtime guards bind every preview/event to its requested case and approved inputs, reject duplicate/missing result identities and verify per-case status totals. Owner credentials remain headers only.

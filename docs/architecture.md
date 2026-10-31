@@ -1238,3 +1238,12 @@ review event. A request UUID binds the exact approved inputs and actor. Retries
 return that event; stale versions and changed requests fail. Review-only actions
 never imply admission, recovery or parity. Correction and revocation remain
 prospective, with original provider observations and published forecasts retained.
+
+
+Batch review is bounded to 20 independent cases per request. Preview shares
+retained-byte verification, while apply requalifies each case under the existing
+locks and commits each case separately. Shared target mappings, canonical entities
+or fixture effects cannot be bulk-approved together. Per-case results and UUIDs
+survive partial failures; a retry never substitutes a new approval. Queue grouping
+uses known current competition/season memberships only and never grants identity
+trust. Distinct case totals remain separate from overlapping group counts.

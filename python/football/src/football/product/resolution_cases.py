@@ -138,18 +138,7 @@ def case_page(connection: Connection[Any], view: str, query: dict[str, Any]) -> 
             cte + "SELECT status,count(*) FROM filtered GROUP BY status ORDER BY status", params
         ).fetchall()
     )
-    country_value = "country" if view == "identity" else "NULL"
-    country_group = ",country" if view == "identity" else ""
-    groups = [
-        row[0]
-        for row in connection.execute(
-            cte + "SELECT jsonb_build_object('provider',provider,'kind',kind,'status',status,"
-            "'reason',reason,'country'," + country_value + ",'count',count(*)) FROM filtered "
-            "GROUP BY provider,kind,status,reason" + country_group + " "
-            "ORDER BY count(*) DESC,provider,kind,status,reason LIMIT 101",
-            params,
-        )
-    ]
+    groups = case_groups(connection, cte, params, view)
     return {
         "items": [row[0] for row in items],
         "page": page,
@@ -164,6 +153,35 @@ def case_page(connection: Connection[Any], view: str, query: dict[str, Any]) -> 
             else "RECORDED_DOMAIN_DECISIONS; inspect to recheck retained evidence"
         ),
     }
+
+
+def case_groups(
+    connection: Connection[Any], cte: str, params: dict[str, Any], view: str
+) -> list[Any]:
+    if view != "identity":
+        query = """SELECT jsonb_build_object('provider',provider,'kind',kind,'status',status,
+            'reason',reason,'country',NULL,'count',count(*)) FROM filtered
+            GROUP BY provider,kind,status,reason
+            ORDER BY count(*) DESC,provider,kind,status,reason LIMIT 101"""
+    else:
+        cte += """, scopes AS (
+            SELECT DISTINCT 'team' AS kind,f.home_team_id AS canonical_id,
+                            f.competition_id,m.season_id
+            FROM football.product_fixtures f JOIN football.matches m ON m.id=f.fixture_id
+            UNION SELECT DISTINCT 'team',f.away_team_id,f.competition_id,m.season_id
+            FROM football.product_fixtures f JOIN football.matches m ON m.id=f.fixture_id
+            UNION SELECT DISTINCT 'competition',f.competition_id,f.competition_id,m.season_id
+            FROM football.product_fixtures f JOIN football.matches m ON m.id=f.fixture_id
+        ) """
+        query = """SELECT jsonb_build_object('provider',f.provider,'kind',f.kind,'status',f.status,
+            'reason',f.reason,'country',f.country,'competition_id',s.competition_id,
+            'season_id',s.season_id,'count',count(*)) FROM filtered f LEFT JOIN scopes s
+            ON s.kind=f.kind AND s.canonical_id=f.canonical_id
+            GROUP BY f.provider,f.kind,f.status,f.reason,f.country,s.competition_id,s.season_id
+            ORDER BY count(*) DESC,f.provider,f.kind,f.status,f.reason,f.country,
+                     s.competition_id,s.season_id
+            LIMIT 101"""
+    return [row[0] for row in connection.execute(cte + query, params)]
 
 
 def fixture_detail(connection: Connection[Any], key: str) -> dict[str, Any]:

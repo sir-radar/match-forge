@@ -35,7 +35,7 @@ func (application *App) resolutionApply(response http.ResponseWriter, request *h
 	if !application.decodeResolution(response, request, &decision) {
 		return
 	}
-	if !decision.Approved || !canonicalIDPattern.MatchString(decision.RequestID) || !resolutionDigest(decision.EvidenceVersion) {
+	if !validResolutionApproval(decision) {
 		application.publicError(response, http.StatusBadRequest, "explicit approval and preview version required")
 		return
 	}
@@ -48,10 +48,10 @@ func resolutionDigest(value string) bool {
 	return err == nil && len(decoded) == sha256.Size && hex.EncodeToString(decoded) == value
 }
 
-func (application *App) decodeResolution(response http.ResponseWriter, request *http.Request, body *resolutionDecision) bool {
+func (application *App) decodeResolution(response http.ResponseWriter, request *http.Request, body any) bool {
 	decoder := json.NewDecoder(http.MaxBytesReader(response, request.Body, 128*1024))
 	decoder.DisallowUnknownFields()
-	if decoder.Decode(body) != nil || body.CaseKey == "" || body.Action == "" || body.Reason == "" {
+	if decoder.Decode(body) != nil {
 		application.publicError(response, http.StatusBadRequest, "invalid resolution request")
 		return false
 	}
@@ -60,4 +60,44 @@ func (application *App) decodeResolution(response http.ResponseWriter, request *
 		return false
 	}
 	return true
+}
+
+func (application *App) resolutionBatch(response http.ResponseWriter, request *http.Request) {
+	operationName := map[string]string{"batch-preview": "batch_preview", "batch-apply": "batch_apply"}[request.PathValue("operation")]
+	if operationName == "" {
+		application.publicError(response, http.StatusBadRequest, "unsupported batch operation")
+		return
+	}
+	applying := operationName == "batch_apply"
+	if applying && !validAdminToken(application.config.AdminCLIToken, request.Header.Get("Authorization")) {
+		application.publicError(response, http.StatusForbidden, "authenticated owner approval required")
+		return
+	}
+	var body struct {
+		Requests []resolutionDecision `json:"requests"`
+	}
+	if !application.decodeResolution(response, request, &body) {
+		return
+	}
+	if len(body.Requests) < 1 || len(body.Requests) > 20 {
+		application.publicError(response, http.StatusBadRequest, "review between 1 and 20 cases")
+		return
+	}
+	operation, actor := "batch_preview", ""
+	if applying {
+		operation = "batch_apply"
+		for _, decision := range body.Requests {
+			if !validResolutionApproval(decision) {
+				application.publicError(response, http.StatusBadRequest, "explicit per-case approval and preview version required")
+				return
+			}
+		}
+		identity := sha256.Sum256([]byte(application.config.AdminCLIToken))
+		actor = "owner:" + hex.EncodeToString(identity[:8])
+	}
+	application.runResolution(response, request, resolutionRequest{Operation: operation, Requests: body.Requests, Actor: actor})
+}
+
+func validResolutionApproval(decision resolutionDecision) bool {
+	return decision.Approved && canonicalIDPattern.MatchString(decision.RequestID) && resolutionDigest(decision.EvidenceVersion)
 }

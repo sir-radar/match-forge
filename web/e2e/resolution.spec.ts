@@ -1,3 +1,4 @@
+import { useResolutionBackend } from "./resolution-backend";
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -63,10 +64,7 @@ test("retained backend resolves real read-only cases through Go and Python", asy
   const backend = process.env.MATCHFORGE_RESOLUTION_BACKEND;
   test.skip(!backend, "started by the disposable database acceptance harness");
   test.setTimeout(90_000);
-  await page.route("http://127.0.0.1:8080/v1/admin/resolution/**", async (route) => {
-    const response = await route.fetch({ url: route.request().url().replace("http://127.0.0.1:8080", backend!), headers: { ...route.request().headers(), host: new URL(backend!).host } });
-    await route.fulfill({ response });
-  });
+  await useResolutionBackend(page, backend!);
   await page.goto("/admin/resolution");
   await expect(page.getByRole("cell", { name: /^Brentford FC team:/ })).toBeVisible();
   await page.getByLabel("Search", { exact: true }).fill("Brentford FC");

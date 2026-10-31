@@ -1,3 +1,4 @@
+import { useResolutionBackend } from "./resolution-backend";
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -6,10 +7,7 @@ test("owner approves retained correction through real Go and Python", async ({ p
   test.skip(!backend || !process.env.MATCHFORGE_RESOLUTION_TARGET, "disposable decision database required");
   test.setTimeout(90_000);
   page.setDefaultTimeout(15_000);
-  await page.route("http://127.0.0.1:8080/v1/admin/resolution/**", async (route) => {
-    const response = await route.fetch({ url: route.request().url().replace("http://127.0.0.1:8080", backend!), headers: { ...route.request().headers(), host: new URL(backend!).host } });
-    await route.fulfill({ response });
-  });
+  await useResolutionBackend(page, backend!);
   await page.goto("/admin/resolution");
   const row = page.getByRole("row").filter({ hasText: process.env.MATCHFORGE_RESOLUTION_SOURCE! });
   await row.getByRole("button", { name: /Inspect case/ }).click();

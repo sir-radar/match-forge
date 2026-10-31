@@ -94,3 +94,5 @@ leave no approval. Approval requires qualified proof, owner credential and expli
 checkbox. A local pending guard prevents overlapping clicks. Unknown outcomes
 retain the request UUID for idempotent retry; success clears the credential and
 refreshes case detail/history. No optimistic admission or completion is displayed.
+
+Batch review preserves selection across pages. Proposal edits invalidate approval. Per-case blocked outcomes coexist with committed successes; unknown outcomes retain per-case UUIDs. Counts are refreshed from the backend after approval and never decremented optimistically.

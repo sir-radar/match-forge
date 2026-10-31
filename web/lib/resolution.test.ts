@@ -15,7 +15,7 @@ describe("read-only resolution transport", () => {
     vi.stubGlobal("fetch", fetch);
     const controller = new AbortController();
     await resolutionApi.page("identity", new URLSearchParams({ q: "team" }), controller.signal);
-    expect(Object.keys(resolutionApi)).toEqual(["page", "detail", "preview", "apply"]);
+    expect(Object.keys(resolutionApi)).toEqual(["page", "detail", "preview", "apply", "batchPreview", "batchApply"]);
     const options = fetch.mock.calls[0][1];
     expect(options?.signal).toBe(controller.signal);
     expect(options?.cache).toBe("no-store");

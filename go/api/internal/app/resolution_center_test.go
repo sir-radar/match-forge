@@ -112,3 +112,36 @@ func TestResolutionWritesRequireOwnerCredentialBeyondOrigin(t *testing.T) {
 		t.Fatal("credential exposed")
 	}
 }
+
+func TestResolutionBatchRequiresOwnerAndBoundedRequests(t *testing.T) {
+	runner := &resolutionStub{}
+	application := newAdminTestApp(runner)
+	decision := `{"case_key":"team:00000000-0000-4000-8000-000000000001","action":"BLOCK","reason":"review","approved":true,"request_id":"00000000-0000-4000-8000-000000000002","evidence_version":"` + strings.Repeat("a", 64) + `"}`
+	request := localAdminTestRequest("POST", "/v1/admin/resolution/batch-apply", strings.NewReader(`{"requests":[`+decision+`]}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusForbidden || runner.calls != 0 {
+		t.Fatal("Origin authorized a batch")
+	}
+	application.config.AdminCLIToken = "owner-secret"
+	request = localAdminTestRequest("POST", "/v1/admin/resolution/batch-apply", strings.NewReader(`{"requests":[`+decision+`]}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer owner-secret")
+	response = httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK || runner.input.Operation != "batch_apply" || len(runner.input.Requests) != 1 {
+		t.Fatal("owner batch failed")
+	}
+}
+func TestResolutionBatchRejectsOverflow(t *testing.T) {
+	runner := &resolutionStub{}
+	application := newAdminTestApp(runner)
+	request := localAdminTestRequest("POST", "/v1/admin/resolution/batch-preview", strings.NewReader(`{"requests":[`+strings.Repeat(`{},`, 20)+`{}]}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusBadRequest || runner.calls != 0 {
+		t.Fatal("unbounded batch accepted")
+	}
+}

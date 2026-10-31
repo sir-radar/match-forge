@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ResolutionBatch } from "@/components/resolution-batch";
 import { ResolutionDecisionForm } from "@/components/resolution-decision";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
@@ -43,11 +44,13 @@ function useResolutionPage(view: ResolutionView, filters: Filters, page: number)
 
 export function ResolutionCenter() {
   const [view, setView] = useState<ResolutionView>("identity"), [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<string[]>([]);
+  const toggle = (key: string) => setSelected((old) => old.includes(key) ? old.filter((value) => value !== key) : old.length < 20 ? [...old, key] : old);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [detail, setDetail] = useState<string | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
   const resource = useResolutionPage(view, filters, page);
-  const changeView = (value: ResolutionView) => { setDetail(null); setView(value); setPage(1); setFilters(EMPTY_FILTERS); };
+  const changeView = (value: ResolutionView) => { setSelected([]); setDetail(null); setView(value); setPage(1); setFilters(EMPTY_FILTERS); };
   const changeFilter = (key: keyof Filters, value: string) => { setDetail(null); setPage(1); setFilters((current) => ({ ...current, [key]: value })); };
   const inspect = (key: string, button: HTMLButtonElement) => { opener.current = button; setDetail(key); };
   const history = (key: string) => { setView("history"); setPage(1); setFilters({ ...EMPTY_FILTERS, q: key }); setDetail(null); };
@@ -59,7 +62,8 @@ export function ResolutionCenter() {
     <CaseFilters view={view} filters={filters} update={changeFilter} loading={resource.loading} reload={resource.reload} />
     {resource.error && <ResourceError message={resource.error} retry={resource.reload} />}
     {resource.loading && <ResourceLoading label={resource.data ? "Refreshing cases" : "Loading cases"} />}
-    {resource.data && <CaseResults data={resource.data} view={view} page={page} loading={resource.loading} inspect={inspect} changePage={(value) => { setDetail(null); setPage(value); }} />}
+    {resource.data && <CaseResults selected={selected} toggle={toggle} data={resource.data} view={view} page={page} loading={resource.loading} inspect={inspect} changePage={(value) => { setDetail(null); setPage(value); }} />}
+    {!!selected.length && <><button onClick={() => setSelected([])}>Clear selected cases</button><ResolutionBatch key={selected.join(",")} keys={selected} onApplied={resource.reload} /></>}
     {detail && <CaseReview key={detail} caseKey={detail} onApplied={resource.reload} close={() => { setDetail(null); opener.current?.focus(); }} history={history} />}
   </div>;
 }
@@ -75,25 +79,25 @@ function CaseFilters({ view, filters, update, loading, reload }: { view: Resolut
   </form>;
 }
 
-function CaseResults({ data, view, page, loading, inspect, changePage }: { data: ResolutionPage; view: ResolutionView; page: number; loading: boolean; inspect: (key: string, button: HTMLButtonElement) => void; changePage: (page: number) => void }) {
+function CaseResults({ data, view, page, loading, inspect, changePage, selected, toggle }: { selected: string[]; toggle: (key: string) => void; data: ResolutionPage; view: ResolutionView; page: number; loading: boolean; inspect: (key: string, button: HTMLButtonElement) => void; changePage: (page: number) => void }) {
   return <>
     <p role="status">{data.total.toLocaleString()} cases in this scope. {Object.entries(data.counts).map(([status, count]) => `${status}: ${count.toLocaleString()}`).join(" · ")}</p>
     {data.scope && <p className="resolution-scope">{data.scope.replaceAll("_", " ")}</p>}
     {!!data.blockers?.length && <details><summary>Required migration blockers ({data.blockers.length})</summary><ul>{data.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></details>}
     {!!data.groups.length && <CaseGroups groups={data.groups} />}
-    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable items={data.items} inspectable={["identity", "fixtures", "missing"].includes(view)} inspect={inspect} />}
+    {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "missing"].includes(view)} inspect={inspect} />}
     <div className="resolution-pagination"><button disabled={page <= 1 || loading} onClick={() => changePage(page - 1)}>Previous page</button><span>Page {page}</span><button disabled={page * data.page_size >= data.total || loading} onClick={() => changePage(page + 1)}>Next page</button></div>
   </>;
 }
 
 function CaseGroups({ groups }: { groups: RecordValue[] }) {
-  return <details><summary>Grouped backlog (up to 100 groups)</summary><TableScroll label="Case groups"><table><thead><tr><th>Provider</th><th>Entity</th><th>Country</th><th>Status</th><th>Reason</th><th>Count</th></tr></thead><tbody>{groups.map((group, index) => <tr key={index}><td>{text(group.provider)}</td><td>{text(group.kind)}</td><td>{text(group.country)}</td><td>{text(group.status)}</td><td>{text(group.reason)}</td><td>{String(group.count)}</td></tr>)}</tbody></table></TableScroll></details>;
+  return <details><summary>Grouped backlog (up to 100 groups; cases can span seasons)</summary><TableScroll label="Case groups"><table><thead><tr><th>Provider</th><th>Entity</th><th>Country</th><th>Competition / season</th><th>Status</th><th>Reason</th><th>Count</th></tr></thead><tbody>{groups.map((group, index) => <tr key={index}><td>{text(group.provider)}</td><td>{text(group.kind)}</td><td>{text(group.country)}</td><td>{text(group.competition_id)} / {text(group.season_id)}</td><td>{text(group.status)}</td><td>{text(group.reason)}</td><td>{String(group.count)}</td></tr>)}</tbody></table></TableScroll></details>;
 }
 
-function CaseTable({ items, inspectable, inspect }: { items: RecordValue[]; inspectable: boolean; inspect: (key: string, button: HTMLButtonElement) => void }) {
-  return <TableScroll label="Resolution cases"><table><thead><tr><th>Case</th><th>Provider</th><th>Status</th><th>Reason / next action</th><th>Review</th></tr></thead><tbody>{items.map((item, index) => {
+function CaseTable({ items, inspectable, inspect, selected, toggle, selectable }: { selected: string[]; toggle: (key: string) => void; selectable: boolean; items: RecordValue[]; inspectable: boolean; inspect: (key: string, button: HTMLButtonElement) => void }) {
+  return <TableScroll label="Resolution cases"><table><thead><tr>{selectable && <th>Select</th>}<th>Case</th><th>Provider</th><th>Status</th><th>Reason / next action</th><th>Review</th></tr></thead><tbody>{items.map((item, index) => {
     const key = text(item.case_key);
-    return <tr key={`${key}:${text(item.event_id)}`}><td>{typeof item.name === "string" ? item.name : key}{typeof item.name === "string" && <small className="resolution-id">{key}</small>}</td><td>{text(item.provider)}</td><td>{text(item.status)}</td><td>{text(item.reason === undefined ? item.next_action : item.reason)}</td><td>{inspectable ? <button onClick={(event) => inspect(key, event.currentTarget)}>Inspect case {index + 1}</button> : <details><summary>Inspect evidence {index + 1}</summary><Evidence value={item} /></details>}</td></tr>;
+    return <tr key={`${key}:${text(item.event_id)}`}>{selectable && <td><input type="checkbox" aria-label={`Select ${key}`} checked={selected.includes(key)} disabled={!selected.includes(key) && selected.length >= 20} onChange={() => toggle(key)} /></td>}<td>{typeof item.name === "string" ? item.name : key}{typeof item.name === "string" && <small className="resolution-id">{key}</small>}</td><td>{text(item.provider)}</td><td>{text(item.status)}</td><td>{text(item.reason === undefined ? item.next_action : item.reason)}</td><td>{inspectable ? <button onClick={(event) => inspect(key, event.currentTarget)}>Inspect case {index + 1}</button> : <details><summary>Inspect evidence {index + 1}</summary><Evidence value={item} /></details>}</td></tr>;
   })}</tbody></table></TableScroll>;
 }
 

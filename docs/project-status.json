@@ -2734,7 +2734,7 @@
   },
   "identity_resolution": {
     "status": "IN_PROGRESS",
-    "current_phase": 4,
+    "current_phase": 5,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2769,6 +2769,15 @@
       "append_only_review_events": true,
       "owner_credential_required": true,
       "downstream_reconciliation": "PHASE_5_PENDING"
+    },
+    "phase_4": "PASS",
+    "phase_4_verification": {
+      "batch_limit": 20,
+      "batch_tests": 5,
+      "real_browser_journeys": 1,
+      "database_scope": "DISPOSABLE_ONLY",
+      "live_mapping_decisions": 0,
+      "shadow_identity_cases": 17594
     }
   }
 }

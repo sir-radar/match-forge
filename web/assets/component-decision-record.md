@@ -31,3 +31,5 @@ Phase 3 keeps the single-case decision form local to Resolution Center. Native
 selects expose only retained candidates and contradiction contexts. Backend
 qualification is mandatory even when a candidate is visible. Owner credentials
 stay in form memory and never enter URLs, storage, audit details or Python stdin.
+
+Phase 4 shares the approval operation lifecycle between the existing single form and new batch form. Only current cancellation/mount/pending guards are shared; candidate and batch presentation remain local. Browser acceptance tests share one real-backend route helper.

@@ -111,3 +111,33 @@ query values. No scanner suppression or dependency was added.
 Downstream fixture reconciliation is explicitly pending until Phase 5 integrates
 the scoped workflow. No live identity decisions, cutover, retirement, evaluation
 or model fitting were executed by these acceptance tests.
+
+
+## Phase 4 — Bounded batch adjudication
+
+Admin selection now spans pages and is capped at 20 cases, one normal Admin
+page, to bound synchronous proof gathering and response size. A shared retained
+verifier gathers proof for batch previews. Each approval still has its own exact
+preview hash, request UUID, backend qualification, transaction and audit event.
+Overlapping mapping targets, canonical identities or fixture effects require
+separate reviews. Partial failures leave independently committed cases intact;
+retries return original per-case outcomes. Candidate rejection binds the selected
+retained candidate rather than rejecting a name or score.
+
+The queue groups current cases by provider, kind, country, recorded evidence
+status/reason and known canonical competition/season memberships. Unknown
+memberships stay empty; one case may occur in several season groups. Group counts
+do not replace the distinct case denominator. The read-only shadow inventory
+remained 17,594 identity cases; the expanded grouping query completed in 5.6 seconds.
+The frozen 4,253 proof set remains separate and no live backlog was admitted.
+
+Verification: five focused batch tests passed (one bound/duplicate-input test and
+four PostgreSQL tests). They cover read-only proof gathering, shared-fixture
+conflicts, partial stale failures, repeat convergence and competition/season
+cohorts. A real owner-approved two-case browser review passed and recorded two
+independent audit events without changing the published forecast. Frontend tests
+cover cross-page selection, exact candidate binding and per-case failures. Go
+checks cover owner authorization and batch bounds. Ruff/format, mypy (440 files),
+Go tests/lint, frontend lint/types, pinned production build and architecture/status
+checks passed. Shared form lifecycle and browser-backend helpers removed newly
+introduced duplication; no new dependency or admission threshold was added.

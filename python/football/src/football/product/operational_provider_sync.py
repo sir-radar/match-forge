@@ -217,7 +217,6 @@ class OperationalProviderSync:
                 is None
             ):
                 raise ValueError("reviewed mapping requires verified retained provider identifiers")
-        verifier.seal()
         return source, candidate, row, verifier
 
     def apply_reviewed_mapping(
@@ -233,6 +232,7 @@ class OperationalProviderSync:
         source, candidate, row, verifier = self._prepare_reviewed_mapping(
             provider_match_id, fixture_id, source_snapshot_id, verifier=verifier
         )
+        verifier.seal()
         snapshot_id = cast(UUID, source[16])
         acquire_locks(self.connection, (IDENTITY_ADMISSION_LOCK,))
         if self._reviewed_mapping_inputs(provider_match_id, fixture_id, source_snapshot_id) != (

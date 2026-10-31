@@ -61,6 +61,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/admin/resolution/{view}", application.resolutionRead)
 	mux.HandleFunc("POST /v1/admin/resolution/preview", application.resolutionPreview)
 	mux.HandleFunc("POST /v1/admin/resolution/apply", application.resolutionApply)
+	mux.HandleFunc("POST /v1/admin/resolution/{operation}", application.resolutionBatch)
 	mux.HandleFunc("GET /v1/admin/work", application.listWork)
 	mux.HandleFunc("GET /v1/admin/work/{work_id}", application.getWork)
 	mux.HandleFunc("POST /v1/admin/work/{work_id}/cancel", application.controlWork("cancel"))
