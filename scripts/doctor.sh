@@ -43,7 +43,7 @@ expect_contains rustc "rustc 1.97.1 " rustc --version
 expect_contains cargo "cargo 1.97.1 " cargo --version
 expect_contains rustfmt "rustfmt 1.9.0" rustfmt --version
 expect_contains clippy "clippy 0.1.97" cargo clippy --version
-expect_contains go "go version go1.27.0 darwin/arm64" go version
+expect_contains go "go version go1.27.3 darwin/arm64" go version
 expect_contains goose "v3.27.1" goose --version
 expect_contains golangci-lint "2.11.4" golangci-lint --version
 expect_contains docker "Docker version" docker --version
