@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
       : url.includes("/v1/performance?") ? performancePayload(url)
       : url.includes("/v1/fixtures?") ? { date: requestedDay, groups: [{ competition, fixtures }] }
       : url.includes("external-prediction-sources") ? { sources: [source] }
-      : { predictions: predictions.map((prediction) => ({ ...prediction, prediction_date: requestedDay ?? prediction.prediction_date })) };
+      : { predictions: predictions.map((prediction) => ({ ...prediction, prediction_date: requestedDay ?? prediction.prediction_date })), consensus: [], pagination: {page:1,page_size:20,total_items:predictions.length,total_pages:Math.ceil(predictions.length/20)} };
     await route.fulfill({ json: payload });
   });
 });
@@ -99,7 +99,7 @@ function performancePayload(url: string) {
 
 test("prediction action computed contrast and forced-colors focus", async ({ page }) => {
   if (test.info().project.name === "mobile") await page.setViewportSize({ width: 320, height: 800 });
-  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [] } }));
+  await page.route("http://127.0.0.1:8080/v1/external-predictions?**", (route) => route.fulfill({ json: { predictions: [], consensus: [], pagination: {page:1,page_size:20,total_items:0,total_pages:0} } }));
   await page.goto("/predictions");
   const action = page.getByRole("button", { name: "Reset All Filters" });
   await expect(action).toBeVisible();

@@ -51,9 +51,17 @@ def report_database() -> Iterator[str]:
                 (prediction_id,revision_sha256,source_code,source_page,prediction_date,
                  original_date_text,collected_at,fixture_id,competition_text,home_team_text,
                  away_team_text,market,selection,match_status)
-                VALUES(%s,%s,'r2bet','synthetic',CURRENT_DATE,'synthetic',clock_timestamp(),%s,
+                VALUES(%s,%s,'r2bet','synthetic',CURRENT_DATE,
+                 to_char(CURRENT_DATE,'FMDD')||'th, '||to_char(CURRENT_DATE,'Dy Mon YYYY'),
+                 clock_timestamp(),%s,
                  'Test','Home','Away','RESULT_1X2','HOME_WIN','MATCHED')""",
                 (PREDICTION, "e" * 64, FIXTURE),
+            )
+            connection.execute(
+                """INSERT INTO football.external_prediction_date_reviews
+                (prediction_id,source_date,date_status,reason)
+                VALUES(%s,CURRENT_DATE,'VERIFIED','synthetic verified source date')""",
+                (PREDICTION,),
             )
         yield url
 

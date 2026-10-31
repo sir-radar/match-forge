@@ -341,6 +341,9 @@ def run_pending_public_reports(
     dependency_lock_sha256: str,
 ) -> dict[str, Any]:
     """Normal scheduled worker; each report kind has its own bounded capacity."""
+    from football.product.external_prediction_recovery import settle_pending_predictions
+
+    settled = settle_pending_predictions(connection, datetime.now(UTC), limit=limit)
     context = run_pending_context_reports(
         connection,
         limit=limit,
@@ -364,6 +367,7 @@ def run_pending_public_reports(
     result = _refresh_selected(
         connection, selected, lease_duration, code_commit_sha, dependency_lock_sha256
     )
+    result["external_settlement_revisions"] = settled
     result["selected"] += context["selected"]
     result["context_reports_published"] = context["context_reports_published"]
     result["context_reports_pending"] = context["context_reports_pending"]

@@ -16,7 +16,7 @@ This task authorizes remediation across phases A–E. It does not advance Archit
 4. D: mobile navigation, matrix, clocks, scoped request states, refresh and filters (MF26-18–25 plus 04–05,16–17).
 5. E: guidance paths, runtime identity, isolated restore/integrity/security/accessibility evidence, final end-to-end and repository gates (MF26-26, R-05–08, KB-01–04).
 
-Current phase: A implemented; focused checks passed. Next: commit the verified report lifecycle changes, then begin phase B. Browser acceptance, remaining findings and final comprehensive gates remain open.
+Current phase: B final verification, then C. Phase A committed as ccd424f. Exact date parsing and honest collection aggregate statuses are implemented; bounded binding/date/settlement recovery is being verified. Next: validate the new migration and correction/concurrency cases, then switch both API readers to current eligible revisions, filtered aggregates and paginated records. Browser acceptance, remaining findings and final comprehensive gates remain open.
 
 Validation: inspect the Makefile dependency graph; use focused tests during implementation; execute `make check integration` once after final code changes. Do not run provider acquisition or scientific evaluation targets. Keep verbose logs in ignored `.local/remediation/codebase-2026-10-30/`.
 
@@ -29,7 +29,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: High.
 - Status: VERIFICATION_PENDING.
 - Root cause: Current source fingerprints were required by serving without scheduled Performance production.
-- Changes/files/commits: Transactional invalidation for all seven horizons; bounded scheduled report production; per-league pending/failed states retain available leagues. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit pending.
+- Changes/files/commits: Transactional invalidation for all seven horizons; bounded scheduled report production; per-league pending/failed states retain available leagues. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
 - Verification: 21 disposable PostgreSQL report cases passed, including the actual Go scheduler launching the Python worker, corrections and report retrieval; Performance mixed-state component regression passed.
 - Before/after: Missing reports previously failed the entire page; available leagues now remain visible while missing scopes are pending.
 - Remaining action: final browser/end-to-end acceptance and repository gates.
@@ -39,7 +39,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: High.
 - Status: VERIFICATION_PENDING.
 - Root cause: Bootstrap FIFO ordering and the bulk lane starved relevant context.
-- Changes/files/commits: Separate public-report lane; bounded capacity per kind; half context capacity reserved for old work and half for fixtures in the preceding 24 hours through the next 72 hours; retries rotate by attempt time. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit pending.
+- Changes/files/commits: Separate public-report lane; bounded capacity per kind; half context capacity reserved for old work and half for fixtures in the preceding 24 hours through the next 72 hours; retries rotate by attempt time. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
 - Verification: Disposable backlog test proves current fixture and historical work both progress in a bounded batch. Generation completion and PIT tests pass.
 - Before/after: Current fixtures behind bootstrap history now receive reserved capacity; no production drain/latency measurement is claimed.
 - Remaining action: final browser/end-to-end acceptance and repository gates.
@@ -49,7 +49,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: High.
 - Status: VERIFICATION_PENDING.
 - Root cause: Comparison serving had no scheduled producer and collapsed missing reports into unsupported agreement.
-- Changes/files/commits: Selection/forecast changes enqueue comparison reports. Explicit comparison_status distinguishes READY/PENDING/FAILED/UNSUPPORTED/NO_FORECAST/UNMATCHED. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit pending.
+- Changes/files/commits: Selection/forecast changes enqueue comparison reports. Explicit comparison_status distinguishes READY/PENDING/FAILED/UNSUPPORTED/NO_FORECAST/UNMATCHED. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
 - Verification: Actual Go scheduler launches worker and verifies comparison probability through the Go store; immutable retry and stale-source tests pass.
 - Before/after: Supported matched selections now obtain comparisons through the normal scheduler.
 - Remaining action: final browser/end-to-end acceptance and repository gates.
@@ -59,7 +59,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: Medium.
 - Status: VERIFICATION_PENDING.
 - Root cause: The legacy boolean encoded absent freshness deadlines as false.
-- Changes/files/commits: Additive freshness enum preserves UNKNOWN/FRESH/STALE through SQL, Go and frontend parsing; unknown is never labelled fresh. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit pending.
+- Changes/files/commits: Additive freshness enum preserves UNKNOWN/FRESH/STALE through SQL, Go and frontend parsing; unknown is never labelled fresh. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
 - Verification: Three-state Go live-source regression and UI missing-source/lifecycle regression pass; final browser checks remain.
 - Before/after: Unknown sources now display freshness unknown; legacy boolean remains for wire compatibility.
 - Remaining action: final browser/end-to-end acceptance and repository gates.
@@ -69,7 +69,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: Medium.
 - Status: VERIFICATION_PENDING.
 - Root cause: Independent timed incidents may be present while lifecycle remains SCHEDULED and score provenance is absent; incorrect identity is not established.
-- Changes/files/commits: Display an explicit unresolved-lifecycle warning; retain separate source clocks and missing score. No identity or result inferred. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit pending.
+- Changes/files/commits: Display an explicit unresolved-lifecycle warning; retain separate source clocks and missing score. No identity or result inferred. Files: public_reports.py, cli.py, 202610300100_public_report_scheduling.sql, Go report/scheduler stores, web contracts/components and owning architecture/OpenAPI. Commit: ccd424f (phase A).
 - Verification: Partial-feed UI regression passes. Investigation of the named retained fixture remains open.
 - Before/after: Conflicting timed incidents now have an explicit warning; native identity evidence is still required for adjudication.
 - Remaining action: final browser/end-to-end acceptance and repository gates.
@@ -279,7 +279,7 @@ Intermediate states are INVESTIGATING, IMPLEMENTING and VERIFICATION_PENDING. Fi
 - Original severity: Low.
 - Status: FIXED_VERIFIED.
 - Root cause: supporting documents moved to docs/ while guidance retained docs/engineering/ paths; the PR template path was also stale.
-- Changes/files/commits: repaired AGENTS.md and docs/git-delivery.md to reference the existing documents; no duplicate guidance created. Commit pending.
+- Changes/files/commits: repaired AGENTS.md and docs/git-delivery.md to reference the existing documents; no duplicate guidance created. Commit: ccd424f (phase A).
 - Verification: Python path validator checked all ten distinct document references in AGENTS.md; all exist. git diff --check passed.
 - Before/after: required guidance reads failed; every referenced supporting document now resolves.
 - Remaining blocker: none for this finding. Historical project PASS records are explicitly not current runtime certification.
@@ -316,3 +316,19 @@ Required: reviewable dependency-aware commits, push and PR under `docs/git-deliv
 ### Phase A static-analysis disposition
 
 Fallow 3.38.0 was installed only in ignored local tooling. Full root analysis: valid combined envelope, one pre-existing unused-file finding (the explicit playwright.real.config.ts CLI configuration), six moderate estimated-health findings and no unresolved imports. An exact HEAD baseline has the same six categories; live-panel complexity improved from 12 to 10. New/changed units respect the repository threshold of 10. Added partial-feed and mixed-report-state tests exercise the changed branches. No suppressions, baselines or analyzer configuration were changed. Preview proposed zero auto-fixes; none applied. Staged security scan: zero candidates and zero unresolved edge files. Fourteen changed-file dynamic-dispatch diagnostics comprise three static array includes() calls in enum validators and eleven Testing Library/Vitest response/assertion calls, all inspected directly; none conceals an application security sink. Global unresolved-callee count is a conservative JS graph limitation, not a claim about backend code. Root node_modules warning is expected for this Python/Go repository with its frontend package in web/; web dependencies are installed and imported paths resolve. Other pre-existing findings remain in scope only when a later fix touches their behavior.
+
+### Phase B checkpoint
+
+New uncommitted migration: 202610310100_external_prediction_recovery.sql. New recovery worker: external_prediction_recovery.py. Legacy settlement entry point now delegates to a bounded queue. The normal public-report job processes settlement before comparisons. Immutable bindings accept independently verified native provider mappings only; unmatched records without such evidence remain unresolved. Correction sequences preserve return-to-earlier-state events; pending generations must hide obsolete settlement metrics. Parser regression: the original implementation failed five of ten new wrong/malformed-date cases; all ten now pass. Source parser/CLI focused suite: 31 passed before the recovery changes. Further verification and API/frontend migration remain open; no Phase B issue is marked fixed yet.
+
+Phase B evidence so far: five disposable recovery cases passed (WON→LOST→PENDING→VOID→WON, immutable capture, import-before-mapping, bounded concurrent processing/rollback, wrong-date quarantine). A sixth real-Go reader case passed: 20/8 row pages over 28 current selections, no duplicate IDs, a 2-of-2 source consensus, one source-summary SQL query, a late-capture exclusion, immediate pending-correction exclusion, corrected hit rate and request cancellation. Frontend prediction/contract cases: 32 passed, including independent backend consensus and rejection of single-source/minority claims. Strict mypy passed for the four changed external/CLI modules; Go lint/complexity passed after cohesive test helpers. New native-mapping refusal and collection-attempt cases plus final related regressions still require a run after the last changes. No external provider requests or operating-database writes were made.
+
+Final focused Phase B run: 29 disposable PostgreSQL report/recovery cases passed (8 recovery/reader cases plus 21 existing report cases); 43 external parser/import/CLI unit cases passed; mypy passed for five changed production modules. Frontend prediction/contract suite: 32 passed before the final page-count normalization change; final component checks remain pending. The larger test command first failed to start because automatic approval review timed out; retrying a database-only command succeeded. The original operating checkout and database were not changed. Exact logs: `.local/remediation/codebase-2026-10-30/b-focused-integration.log`, `external-reader-metrics.log`, `source-dates-red.log`, `source-dates-green.log` and `external-web.log`. Do not treat historical project-status PASS entries as current acceptance.
+
+Phase B Fallow review: root envelope valid; no unresolved imports; all changed functions are at or below cyclomatic complexity 10. Estimated-health recommendations at that threshold are addressed with current pagination/state/contract cases; no suppression or rule change was made. The staged scanner's one SSRF candidate is a false positive: api.predictions appends a URLSearchParams-encoded query to a literal /v1/external-predictions path under the build-configured API origin. Neither filter content nor returned source URLs control the request origin or path, and this executes as a browser request, not a server-side fetch. A hostile-filter origin/path regression was added. Remaining dynamic-dispatch diagnostics are inspected array operations, promise/Testing Library calls and test assertions, with zero unresolved edge files. Auto-fix preview proposed zero edits. Final scans still required after restaging the review fixes.
+
+Review found and addressed two integration edges before the Phase B commit: date-review decisions must invalidate already completed comparisons, and repeated source captures must represent A→B→A pick changes without overwriting first-capture clocks. Added immutable external_prediction_captures, current selection ordering by latest observation, and conservative current-revision timing eligibility. Current-revision selection uses set-based grouping rather than a per-record full-archive scan. New capture-transition and same-time conflict tests are pending; earlier 29-case results predate this final change. The date-review invalidation and binding-provenance follow-ups passed two disposable tests.
+
+Capture-observation review: all 11 external recovery integration cases passed after the append-only capture extension. An unchanged reimport preserves its first capture; A→B→A follows observations without rewriting source rows. Conflicting picks at the same observation time are quarantined.
+
+Phase B checkpoint: 11 recovery integration cases, 21 report cases (before the capture-only extension), 43 source/import/CLI unit cases and 33 frontend cases passed. Go app tests passed with disposable loopback access; sandbox-only listener failures were rerun successfully. Ruff, mypy, TypeScript, ESLint (one pre-existing unused test argument warning), go vet and golangci-lint passed. Final Fallow root/security/preview were read: no auto-fixes, unresolved imports or edge files; the unchanged fixed-origin candidate and estimated coverage advisories retain the dispositions above. Phase B findings remain verification-pending until final normal-scheduler/browser acceptance. Next phase C: scope recovery health, independent daily stages and disposable worker interruption.

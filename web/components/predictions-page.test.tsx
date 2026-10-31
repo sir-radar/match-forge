@@ -46,7 +46,7 @@ describe("PredictionsPage", () => {
       const url = String(input);
       const payload = url.includes("external-prediction-sources")
         ? { sources: [source] }
-        : { predictions: [prediction] };
+        : predictionPage([prediction]);
       return new Response(JSON.stringify(payload), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -60,7 +60,8 @@ describe("PredictionsPage", () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
 
     expect(screen.getByRole("heading", { name: "External predictions" })).toBeInTheDocument();
-    expect((await screen.findAllByText("Arsenal vs Chelsea")).length).toBeGreaterThan(0);
+    expect(await screen.findByRole("cell", { name: "Arsenal vs Chelsea" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Multi-Source External Consensus" })).not.toBeInTheDocument();
     expect(screen.getByText("43.9%")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /TacticalQuant Lab/ })[0]).toHaveAttribute("href", source.url);
     expect(screen.getByRole("heading", { name: "Source Access & Adapter Performance Audit" })).toBeInTheDocument();
@@ -90,7 +91,7 @@ describe("PredictionsPage", () => {
     vi.mocked(fetch).mockImplementation(async (input: RequestInfo | URL) => {
       const payload = String(input).includes("external-prediction-sources")
         ? { sources: [source] }
-        : { predictions: dailyPredictions };
+        : predictionPage(dailyPredictions);
       return new Response(JSON.stringify(payload), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -101,13 +102,28 @@ describe("PredictionsPage", () => {
 
     const table = await screen.findByLabelText("External selection records table");
     expect(table.querySelectorAll("tbody tr")).toHaveLength(9);
-    expect(table.parentElement).toHaveTextContent("All 9 selections for 2026-09-28");
-    expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    expect(table.parentElement).toHaveTextContent("9 selections on this page");
+    expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
+  });
+
+  it("uses server consensus independently of the visible record page", async () => {
+    vi.mocked(fetch).mockImplementation(async (input: RequestInfo | URL) => {
+      const payload = String(input).includes("external-prediction-sources") ? { sources: [source] } : {
+        ...predictionPage([prediction], 1, 20, 25),
+        consensus: [{ id: "other:RESULT_1X2", fixture: "Verified Home vs Verified Away", market: "RESULT_1X2", kickoff: "2026-09-28T15:00:00Z", selection: "HOME_WIN", count: 2, total: 3, agreement: "AGREES" }],
+      };
+      return new Response(JSON.stringify(payload), { status: 200 });
+    });
+    render(<PredictionsPage initialDate="2026-09-28" />);
+    expect(await screen.findByText("Verified Home vs Verified Away")).toBeInTheDocument();
+    expect(screen.getByText("2 of 3 sources (67%)")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("page=2&page_size=20"), expect.any(Object)));
   });
 
   it("moves one day at a time and keeps the table scoped to that day", async () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
-    await screen.findAllByText("Arsenal vs Chelsea");
+    await screen.findByRole("cell", { name: "Arsenal vs Chelsea" });
 
     fireEvent.click(screen.getByRole("button", { name: "Previous day" }));
 
@@ -125,7 +141,7 @@ describe("PredictionsPage", () => {
 
   it("applies live filters and resets them without removing the daily scope", async () => {
     render(<PredictionsPage initialDate="2026-09-28" />);
-    await screen.findAllByText("Arsenal vs Chelsea");
+    await screen.findByRole("cell", { name: "Arsenal vs Chelsea" });
 
     fireEvent.change(screen.getByLabelText("Competition"), { target: { value: "Premier League" } });
     await waitFor(() => {
@@ -142,3 +158,7 @@ describe("PredictionsPage", () => {
     expect(screen.getByLabelText("Prediction day")).toHaveValue("2026-09-28");
   });
 });
+
+function predictionPage(items: Record<string, unknown>[], page = 1, pageSize = 20, total = items.length) {
+  return { predictions: items, consensus: [], pagination: { page, page_size: pageSize, total_items: total, total_pages: Math.ceil(total / pageSize) } };
+}

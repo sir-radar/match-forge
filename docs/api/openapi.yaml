@@ -103,6 +103,8 @@ paths:
     get:
       operationId: listExternalPredictions
       parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 1, default: 1}}
+        - {name: page_size, in: query, schema: {type: integer, enum: [20, 50, 100], default: 20}}
         - { name: date, in: query, schema: { type: string, format: date } }
         - { name: source, in: query, schema: { type: string } }
         - { name: competition, in: query, schema: { type: string } }
@@ -766,6 +768,10 @@ components:
       additionalProperties: false
       required: ["id", "source", "source_page", "prediction_date", "original_date_text", "collected_at", "fixture_id", "kickoff_at", "competition", "home_team", "away_team", "market", "selection", "match_status", "matchforge_probability", "agreement", "settlement_state", "actual_home_score", "actual_away_score", "result_score_basis", "result_provider", "result_updated_at"]
       properties:
+        source_code: {type: string}
+        fixture_identity_status: {type: [string, 'null']}
+        source_date_status: {type: string, enum: [VERIFIED, MISMATCH, UNKNOWN, NOT_APPLICABLE]}
+        source_revision_conflict: {type: boolean}
         id: {"type": "string"}
         source: {"type": "string"}
         source_page: {"type": "string"}
@@ -781,7 +787,7 @@ components:
         selection: {"type": "string"}
         match_status: {"type": "string"}
         matchforge_probability: {"type": ["number", "null"]}
-        comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED]}
+        comparison_status: {type: string, enum: [READY, PENDING, FAILED, UNSUPPORTED, NO_FORECAST, UNMATCHED, QUARANTINED]}
         agreement: {"type": "string"}
         settlement_state: {"type": "string"}
         actual_home_score: {"type": ["integer", "null"]}
@@ -794,6 +800,11 @@ components:
       additionalProperties: false
       required: ["code", "name", "url", "public_predictions", "prediction_date_available", "login_required", "paid_content", "automated_access_status", "adapter_status", "known_issues", "checked_at", "tracked_selections", "settled_selections", "correct_selections", "settled_hit_rate", "matchforge_agreement_rate"]
       properties:
+        prospectively_captured_selections: {type: integer, minimum: 0}
+        retrospectively_captured_selections: {type: integer, minimum: 0}
+        last_collection_at: {type: [string, 'null'], format: date-time}
+        last_collection_status: {type: [string, 'null']}
+        collection_error: {type: [string, 'null']}
         code: {"type": "string"}
         name: {"type": "string"}
         url: {"type": "string"}
@@ -810,12 +821,27 @@ components:
         correct_selections: {"type": "integer"}
         settled_hit_rate: {"type": ["number", "null"]}
         matchforge_agreement_rate: {"type": ["number", "null"]}
+    ExternalConsensus:
+      type: object
+      additionalProperties: false
+      required: [id, fixture, market, kickoff, selection, count, total, agreement]
+      properties:
+        id: {type: string}
+        fixture: {type: string}
+        market: {type: string}
+        kickoff: {type: string, format: date-time}
+        selection: {type: string}
+        count: {type: integer, minimum: 2}
+        total: {type: integer, minimum: 2}
+        agreement: {type: string}
     ExternalPredictionPage:
       type: object
       additionalProperties: false
-      required: [predictions]
+      required: [predictions, pagination, consensus]
       properties:
-        predictions: { type: array, items: { $ref: '#/components/schemas/ExternalPrediction' } }
+        predictions: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/ExternalPrediction'}}
+        pagination: {$ref: '#/components/schemas/Pagination'}
+        consensus: {type: array, maxItems: 3, items: {$ref: '#/components/schemas/ExternalConsensus'}}
     ExternalPredictionSourcePage:
       type: object
       additionalProperties: false

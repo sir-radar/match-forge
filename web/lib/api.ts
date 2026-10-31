@@ -7,7 +7,7 @@ import {
   parseForecastHistory,
   parsePerformance,
   parsePerformanceList,
-  parsePredictions,
+  parsePredictionPage,
   parseSources,
   parseSyncRun,
   parseSyncRuns,
@@ -68,7 +68,7 @@ export const api = {
     return performance;
   }, { signal }),
   performanceList: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/performance?${query}`, parsePerformanceList, { signal }),
-  predictions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/external-predictions?${query}`, parsePredictions, { signal }),
+  predictions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/external-predictions?${query}`, parsePredictionPage, { signal }),
   sources: (query = new URLSearchParams(), signal?: AbortSignal) => request(`/v1/external-prediction-sources?${query}`, parseSources, { signal }),
   startMvpSync: (body: Record<string, string>) => startSync("mvp", body),
   startOpenFootballSync: (body: Record<string, string>) => startSync("openfootball", body),

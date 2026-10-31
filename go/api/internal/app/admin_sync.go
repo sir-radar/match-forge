@@ -266,7 +266,9 @@ func (runner *CommandSyncRunner) PendingPublicReports(ctx context.Context) (bool
 		WHERE generation > completed_generation AND retry_at <= clock_timestamp()
 	) OR EXISTS (SELECT 1 FROM football.product_report_refresh_work
 		WHERE generation > completed_generation AND retry_at <= clock_timestamp()
-	)`).Scan(&pending)
+	) OR EXISTS (SELECT 1 FROM football.external_prediction_refresh_work
+        WHERE generation > completed_generation
+    )`).Scan(&pending)
 	return pending, err
 }
 
@@ -497,7 +499,7 @@ func (runner *CommandSyncRunner) cancelIfRequested(ctx context.Context, runID st
 }
 
 func syncCompletion(summary map[string]interface{}) (string, *string) {
-	if summary["status"] != "COMPLETED_WITH_ERRORS" {
+	if summary["status"] != "COMPLETED_WITH_ERRORS" && summary["status"] != "FAILED" {
 		return "SUCCEEDED", nil
 	}
 	message := "one or more data synchronization operations failed; see the run summary for details"
@@ -535,7 +537,7 @@ func (runner *CommandSyncRunner) runCommand(
 	summary := map[string]interface{}{}
 	if waitErr != nil {
 		if json.Unmarshal([]byte(lastLine), &summary) == nil &&
-			summary["status"] == "COMPLETED_WITH_ERRORS" {
+			(summary["status"] == "COMPLETED_WITH_ERRORS" || summary["status"] == "FAILED") {
 			return summary, nil
 		}
 		return nil, commandFailure(waitErr, logFile)

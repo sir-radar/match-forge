@@ -187,11 +187,11 @@ func verifyPublicComparison(t *testing.T, store *PostgresProductStore, fixture s
 	t.Helper()
 	ctx := context.Background()
 	predictions, err := store.ExternalPredictions(ctx, ExternalPredictionFilters{FixtureID: fixture})
-	if err != nil || len(predictions) != 1 {
+	if err != nil || len(predictions.Predictions) != 1 {
 		t.Fatalf("%+v %v", predictions, err)
 	}
-	if predictions[0].Agreement != "AGREES" || predictions[0].MatchForgeProbability == nil || *predictions[0].MatchForgeProbability != .6 {
-		t.Fatalf("%+v", predictions[0])
+	if predictions.Predictions[0].Agreement != "AGREES" || predictions.Predictions[0].MatchForgeProbability == nil || *predictions.Predictions[0].MatchForgeProbability != .6 {
+		t.Fatalf("%+v", predictions.Predictions[0])
 	}
 }
 

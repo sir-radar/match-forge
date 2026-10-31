@@ -907,52 +907,101 @@ def _run_external_predictions(args: argparse.Namespace) -> int:
             )
         )
         with psycopg.connect(args.database_url) as connection:
-            results, collected = _persist_collections(connection, results)
+            results, collected = _persist_collections(connection, results, args.date)
     except (psycopg.Error, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     enabled = sum(result.source_code != "forebet" for result in results)
+    status = _collection_status(results)
+    attempted = [result for result in results if _collection_attempted(result)]
     print(
         json.dumps(
             {
                 "collected": collected,
                 "enabled_sources": enabled,
+                "attempted_sources": len(attempted),
+                "successful_sources": sum(
+                    result.status in {"ENABLED", "NO_PREDICTIONS"} for result in attempted
+                ),
+                "partial_sources": sum(result.status == "PARTIAL" for result in attempted),
+                "failed_sources": sum(
+                    result.status not in {"ENABLED", "NO_PREDICTIONS", "PARTIAL"}
+                    for result in attempted
+                ),
+                "skipped_sources": len(results) - len(attempted),
                 "requested_date": args.date.isoformat(),
                 "requested_source": args.source,
                 "sources": [_collection_payload(result) for result in results],
-                "status": "COMPLETED",
+                "status": status,
                 "usage_mode": usage_mode,
             },
             sort_keys=True,
         )
     )
-    return 0
+    return 1 if status in {"FAILED", "COMPLETED_WITH_ERRORS"} else 0
+
+
+def _collection_status(results: list[SourceCollection]) -> str:
+    attempted = [
+        item for item in results if item.source_code != "forebet" and item.status != "NO_DATE_PAGE"
+    ]
+    if not attempted:
+        return (
+            "OUTSIDE_WINDOW"
+            if any(item.status == "NO_DATE_PAGE" for item in results)
+            else "DISABLED"
+        )
+    successful = sum(item.status in {"ENABLED", "NO_PREDICTIONS"} for item in attempted)
+    partial = any(item.status == "PARTIAL" for item in attempted)
+    if successful == len(attempted):
+        return "COMPLETED"
+    return "COMPLETED_WITH_ERRORS" if successful or partial else "FAILED"
 
 
 def _persist_collections(
-    connection: psycopg.Connection[Any], results: list[SourceCollection]
+    connection: psycopg.Connection[Any], results: list[SourceCollection], prediction_date: date
 ) -> tuple[list[SourceCollection], int]:
     collected = 0
     updated: list[SourceCollection] = []
     for result in results:
-        if not result.rows:
-            updated.append(result)
-            continue
         try:
-            inserted = import_predictions(connection, result.rows, source_code=result.source_code)
-        except psycopg.Error as error:
+            if result.rows:
+                collected += import_predictions(
+                    connection, result.rows, source_code=result.source_code
+                )
+            with connection.transaction(), connection.cursor() as cursor:
+                cursor.execute(
+                    """INSERT INTO football.external_prediction_collection_attempts
+                    (source_code,prediction_date,source_page,status,attempted,parsed,error_message)
+                    VALUES(%s,%s,%s,%s,%s,%s,%s)""",
+                    (
+                        result.source_code,
+                        result.rows[0].prediction_date if result.rows else prediction_date,
+                        result.source_page,
+                        result.status,
+                        _collection_attempted(result),
+                        len(result.rows),
+                        result.error[:1000] if result.error else None,
+                    ),
+                )
+        except (psycopg.Error, ValueError) as error:
             connection.rollback()
             updated.append(
                 dataclasses.replace(result, status="PERSISTENCE_FAILED", error=str(error))
             )
             continue
-        collected += inserted
         updated.append(result)
+
     return updated, collected
+
+
+def _collection_attempted(result: SourceCollection) -> bool:
+    return result.source_code != "forebet" and result.status != "NO_DATE_PAGE"
 
 
 def _collection_payload(result: SourceCollection) -> dict[str, object]:
     return {
+        "attempted": _collection_attempted(result),
         "source": result.source_code,
         "source_page": result.source_page,
         "status": result.status,

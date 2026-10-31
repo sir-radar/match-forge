@@ -211,18 +211,19 @@ export type Performance = {
   latest_fifty_baseline_log_loss: number | null;
 };
 
+export type Pagination = { page: number; page_size: 20 | 50 | 100; total_items: number; total_pages: number };
+
 export type PerformancePage = {
   performance: Performance[];
-  pagination: {
-    page: number;
-    page_size: 20 | 50 | 100;
-    total_items: number;
-    total_pages: number;
-  };
+  pagination: Pagination;
 };
 
 export type ExternalPrediction = {
-  comparison_status?: "READY" | "PENDING" | "FAILED" | "UNSUPPORTED" | "NO_FORECAST" | "UNMATCHED";
+  source_code?: string;
+  fixture_identity_status?: string | null;
+  source_date_status?: string;
+  source_revision_conflict?: boolean;
+  comparison_status?: "READY" | "PENDING" | "FAILED" | "UNSUPPORTED" | "NO_FORECAST" | "UNMATCHED" | "QUARANTINED";
   id: string;
   source: string;
   source_page: string;
@@ -248,6 +249,11 @@ export type ExternalPrediction = {
 };
 
 export type ExternalSource = {
+  prospectively_captured_selections?: number;
+  retrospectively_captured_selections?: number;
+  last_collection_at?: string | null;
+  last_collection_status?: string | null;
+  collection_error?: string | null;
   code: string;
   name: string;
   url: string;
@@ -503,9 +509,8 @@ export function parsePerformance(value: unknown): Performance {
   };
 }
 
-export function parsePerformanceList(value: unknown): PerformancePage {
-  const envelope = object(value, "performance response");
-  const pagination = object(envelope.pagination, "pagination");
+function parsePagination(value: unknown): Pagination {
+  const pagination = object(value, "pagination");
   const page = integer(pagination.page, "page", 1);
   const pageSize = integer(pagination.page_size, "page_size", 1);
   const totalItems = integer(pagination.total_items, "total_items", 0);
@@ -513,10 +518,13 @@ export function parsePerformanceList(value: unknown): PerformancePage {
   if (pageSize !== 20 && pageSize !== 50 && pageSize !== 100) throw new Error("page_size must be 20, 50, or 100");
   if (totalItems === 0 && totalPages !== 0) throw new Error("total_pages must be 0 when total_items is 0");
   if (totalItems > 0 && (totalPages < 1 || page > totalPages)) throw new Error("pagination page range is invalid");
-  return {
-    performance: array(envelope.performance, "performance").map(parsePerformance),
-    pagination: { page, page_size: pageSize, total_items: totalItems, total_pages: totalPages },
-  };
+  if (totalPages !== Math.ceil(totalItems / pageSize)) throw new Error("pagination total_pages is inconsistent");
+  return { page, page_size: pageSize, total_items: totalItems, total_pages: totalPages };
+}
+
+export function parsePerformanceList(value: unknown): PerformancePage {
+  const envelope = object(value, "performance response");
+  return { performance: array(envelope.performance, "performance").map(parsePerformance), pagination: parsePagination(envelope.pagination) };
 }
 
 function parseH2HSummary(value: unknown): MatchContext["h2h_summary"] {
@@ -534,19 +542,19 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
   return array(envelope.predictions, "predictions").map((entry) => {
     const item = object(entry, "external prediction");
     const comparisonStatus = parseComparisonStatus(item.comparison_status);
-    const agreement = text(item.agreement, "agreement");
-    if (!["AGREES", "WEAK_SUPPORT", "DISAGREES", "UNABLE_TO_EVALUATE"].includes(agreement)) throw new Error("invalid agreement");
+    const agreement = parseAgreement(item.agreement);
     const settlement = item.settlement_state === undefined ? "PENDING" : text(item.settlement_state, "settlement_state");
     if (!["WON", "LOST", "VOID", "PENDING"].includes(settlement)) throw new Error("invalid settlement_state");
     return {
       id: text(item.id, "id"),
+      ...parseExternalIdentity(item),
       source: text(item.source, "source"),
       source_page: text(item.source_page, "source_page"),
       prediction_date: text(item.prediction_date, "prediction_date"),
       original_date_text: text(item.original_date_text, "original_date_text"),
-      collected_at: text(item.collected_at, "collected_at"),
+      collected_at: timestamp(item.collected_at, "collected_at"),
       fixture_id: nullableText(item.fixture_id, "fixture_id"),
-      kickoff_at: nullableText(item.kickoff_at, "kickoff_at"),
+      kickoff_at: nullableTimestamp(item.kickoff_at, "kickoff_at"),
       competition: text(item.competition, "competition"),
       home_team: text(item.home_team, "home_team"),
       away_team: text(item.away_team, "away_team"),
@@ -561,7 +569,7 @@ export function parsePredictions(value: unknown): ExternalPrediction[] {
       actual_away_score: item.actual_away_score === undefined ? null : nullableNumber(item.actual_away_score, "actual_away_score"),
       result_score_basis: item.result_score_basis === undefined ? null : nullableText(item.result_score_basis, "result_score_basis"),
       result_provider: item.result_provider === undefined ? null : nullableText(item.result_provider, "result_provider"),
-      result_updated_at: item.result_updated_at === undefined ? null : nullableText(item.result_updated_at, "result_updated_at"),
+      result_updated_at: item.result_updated_at === undefined ? null : nullableTimestamp(item.result_updated_at, "result_updated_at"),
     };
   });
 }
@@ -571,6 +579,11 @@ export function parseSources(value: unknown): ExternalSource[] {
   return array(envelope.sources, "sources").map((entry) => {
     const item = object(entry, "external source");
     return {
+      prospectively_captured_selections: item.prospectively_captured_selections === undefined ? undefined : integer(item.prospectively_captured_selections, "prospectively_captured_selections", 0),
+      retrospectively_captured_selections: item.retrospectively_captured_selections === undefined ? undefined : integer(item.retrospectively_captured_selections, "retrospectively_captured_selections", 0),
+      last_collection_at: item.last_collection_at === undefined ? undefined : nullableTimestamp(item.last_collection_at, "last_collection_at"),
+      last_collection_status: item.last_collection_status === undefined ? undefined : nullableText(item.last_collection_status, "last_collection_status"),
+      collection_error: item.collection_error === undefined ? undefined : nullableText(item.collection_error, "collection_error"),
       code: text(item.code, "code"),
       name: text(item.name, "name"),
       url: text(item.url, "url"),
@@ -894,6 +907,39 @@ function parseFreshness(value: unknown): "UNKNOWN" | "FRESH" | "STALE" {
 function parseComparisonStatus(value: unknown): ExternalPrediction["comparison_status"] {
   if (value === undefined) return undefined;
   const status = text(value, "comparison_status");
-  if (!["READY", "PENDING", "FAILED", "UNSUPPORTED", "NO_FORECAST", "UNMATCHED"].includes(status)) throw new Error("invalid comparison_status");
+  if (!["READY", "PENDING", "FAILED", "UNSUPPORTED", "NO_FORECAST", "UNMATCHED", "QUARANTINED"].includes(status)) throw new Error("invalid comparison_status");
   return status as ExternalPrediction["comparison_status"];
+}
+
+export type ExternalConsensus = { id: string; fixture: string; market: string; kickoff: string; selection: string; count: number; total: number; agreement: ExternalPrediction["agreement"] };
+export type ExternalPredictionPage = { predictions: ExternalPrediction[]; pagination: Pagination; consensus: ExternalConsensus[] };
+
+function parseAgreement(value: unknown): ExternalPrediction["agreement"] {
+  const agreement = text(value, "agreement");
+  if (!["AGREES", "WEAK_SUPPORT", "DISAGREES", "UNABLE_TO_EVALUATE"].includes(agreement)) throw new Error("invalid agreement");
+  return agreement as ExternalPrediction["agreement"];
+}
+
+export function parsePredictionPage(value: unknown): ExternalPredictionPage {
+  const envelope = object(value, "prediction page");
+  const predictions = parsePredictions(value);
+  const pagination = parsePagination(envelope.pagination);
+  if (predictions.length > pagination.page_size) throw new Error("prediction page exceeds row bound");
+  const consensus = array(envelope.consensus, "consensus").map((entry) => {
+    const item = object(entry, "consensus item");
+    const count = integer(item.count, "count", 2), total = integer(item.total, "total", 2);
+    if (count > total || count * 2 <= total) throw new Error("invalid consensus majority");
+    return { id: text(item.id, "id"), fixture: text(item.fixture, "fixture"), market: text(item.market, "market"), kickoff: timestamp(item.kickoff, "kickoff"), selection: text(item.selection, "selection"), count, total, agreement: parseAgreement(item.agreement) };
+  });
+  if (consensus.length > 3) throw new Error("consensus exceeds group bound");
+  return { predictions, pagination, consensus };
+}
+
+function parseExternalIdentity(item: Record<string, unknown>) {
+  return {
+    source_code: item.source_code === undefined ? undefined : text(item.source_code, "source_code"),
+    fixture_identity_status: item.fixture_identity_status === undefined ? undefined : nullableText(item.fixture_identity_status, "fixture_identity_status"),
+    source_date_status: item.source_date_status === undefined ? undefined : text(item.source_date_status, "source_date_status"),
+    source_revision_conflict: item.source_revision_conflict === undefined ? undefined : boolean(item.source_revision_conflict, "source_revision_conflict"),
+  };
 }
