@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +14,10 @@ from psycopg.types.json import Jsonb
 from football.contracts.source import canonical_json_bytes
 from football.forecasting.governance import EvaluationCorpusV1
 from football.forecasting.lifecycle import LIFECYCLE_CLAIM_VERSION
+from football.normalization.statsbomb_events import (
+    EventNormalizationError,
+    is_statsbomb_corner_pass,
+)
 from football.storage.locks import LockClass, LockRequest, acquire_locks
 from football.storage.parquet import ImmutableEventParquetStore, ParquetPublicationError
 
@@ -201,24 +204,10 @@ def extract_statsbomb_corner_counts(
     for row in rows:
         if str(row.get("canonical_match_id")) != str(match_id):
             raise CornerLabelError("corner label row belongs to a different canonical match")
-        payload = _provider_payload(row)
-        pass_value = payload.get("pass")
-        pass_payload = pass_value if isinstance(pass_value, dict) else {}
-        type_value = pass_payload.get("type")
-        pass_type = type_value if isinstance(type_value, dict) else {}
-        pass_type_id = pass_type.get("id")
-        pass_type_name = pass_type.get("name")
-        has_corner_vocabulary = (
-            pass_type_id == _CORNER_PASS_TYPE_ID or pass_type_name == _CORNER_PASS_TYPE_NAME
-        )
-        is_corner = (
-            row.get("provider_event_type_id") == _PASS_EVENT_TYPE_ID
-            and row.get("provider_event_type_name") == _PASS_EVENT_TYPE_NAME
-            and pass_type_id == _CORNER_PASS_TYPE_ID
-            and pass_type_name == _CORNER_PASS_TYPE_NAME
-        )
-        if has_corner_vocabulary and not is_corner:
-            raise CornerLabelError("StatsBomb corner vocabulary conflicts with exact rule")
+        try:
+            is_corner = is_statsbomb_corner_pass(row)
+        except EventNormalizationError as error:
+            raise CornerLabelError(str(error)) from error
         if not is_corner:
             continue
         event_id = str(row.get("canonical_event_id") or "")
@@ -457,16 +446,3 @@ def _sha256_path(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _provider_payload(row: Mapping[str, Any]) -> dict[str, object]:
-    raw = row.get("provider_payload_json")
-    if not isinstance(raw, str):
-        raise CornerLabelError("corner row lacks provider payload JSON")
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise CornerLabelError("corner row has malformed provider payload") from error
-    if not isinstance(payload, dict):
-        raise CornerLabelError("corner row provider payload must be an object")
-    return payload
