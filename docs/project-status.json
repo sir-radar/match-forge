@@ -2734,7 +2734,7 @@
   },
   "identity_resolution": {
     "status": "IN_PROGRESS",
-    "current_phase": 2,
+    "current_phase": 3,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2747,6 +2747,19 @@
       "database_tests": 5,
       "pre_resolution_center_schema": "202610310300",
       "database_scope": "DISPOSABLE_ONLY"
+    },
+    "phase_2": "PASS",
+    "phase_2_verification": {
+      "database_scope": "DISPOSABLE_ONLY",
+      "database_tests": 26,
+      "real_browser_journeys": 1,
+      "browser_projects": [
+        "desktop",
+        "mobile"
+      ],
+      "mutations_enabled": false,
+      "migration_parity": "BLOCKED",
+      "migration_stages": 13
     }
   }
 }

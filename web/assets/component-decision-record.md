@@ -21,3 +21,8 @@
   slicing and totals; the route owns page and page-size state. No Figma source
   was supplied, so existing MatchForge tokens and responsive rules remain the
   design source.
+
+31 October 2026: reuse the Admin shell, status resources, TableScroll and existing
+CSS variables. Share AdminNavigation across its two current consumers. Keep case
+review and evidence presentation local; no generic schema-driven form or shared
+component API is needed for the read-only workflow.

@@ -2,6 +2,7 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { api } from "@/lib/api";
+import { AdminNavigation } from "@/components/admin-navigation";
 import { TableScroll } from "@/components/table-scroll";
 import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
 import { syncLane, useSyncAdminState, type SyncFilters as Filters } from "@/hooks/use-sync-admin";
@@ -29,6 +30,7 @@ export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
   const latest = useMemo(() => new Map(ACTIONS.map((action) => [action.type, runs.find((run) => run.sync_type === action.type && run.status === "SUCCEEDED")])), [runs]);
 
   return <div className="page sync-admin">
+    <AdminNavigation />
     <header className="page-heading"><div><small>Local operations</small><h1>Data Sync</h1><p>Manual control of MatchForge provider ingestion and forecast refresh.</p></div></header>
     <SyncControls filters={filters} setFilters={setFilters} />
     {active.length ? active.map((run) => <SyncStatus key={run.run_id} active={run} clock={clock} disabled={submitting[syncLane(run.sync_type)] !== undefined} stopping={submitting[syncLane(run.sync_type)] === `STOP:${run.run_id}`} stopLabel={active.length > 1 ? `Stop ${label(run.sync_type)}` : "Stop sync"} onStop={() => void stop(run)} />) : <SyncStatus active={null} clock={clock} disabled={false} stopping={false} stopLabel="Stop sync" onStop={() => {}} />}

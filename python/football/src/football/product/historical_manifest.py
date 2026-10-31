@@ -83,6 +83,8 @@ def verify_manifest(
     provider: str,
     source_identity: str,
     source_revision: str,
+    *,
+    verify_resources: bool = True,
 ) -> tuple[dict[str, Any], str]:
     files = ImmutableFileStore(root)
     path = files.path_for(relative_path)
@@ -109,6 +111,8 @@ def verify_manifest(
         raw = files.path_for(resource["raw_path"])
         if raw.is_symlink():
             raise ValueError("historical resource must not be a symlink")
+        if not verify_resources:
+            continue
         raw_payload = raw.read_bytes()
         if (
             len(raw_payload) != resource["size_bytes"]

@@ -1215,3 +1215,15 @@ football/knowledge cutoffs cannot follow issue. A corrected kickoff can therefor
 make a retained revision ineligible. That revision remains retrievable by ID in
 history, while current consumers select an earlier eligible revision or expose
 missing source data. No published forecast is changed or deleted.
+
+
+The private-local `/v1/admin/resolution/{view}` read route delegates identity,
+fixture and source inspection to the existing Python domain owners. Its
+repeatable-read transactions cannot change domain state. Stable case keys reuse
+mapping, fixture, resource and dataset IDs; history names the original decision
+source and distinguishes mutable current fixture resolutions from append-only
+records. The Missing Data list checks registered file bytes in bulk; dataset
+details retain full logical integrity verification. File checks cannot establish
+publication eligibility. Migration views verify the hashes of tracked readiness
+evidence and do not claim to have rerun parity. The initial interface permits
+inspection only, with private responses marked `no-store`.

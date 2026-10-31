@@ -58,6 +58,7 @@ func NewWithSyncRunner(
 	mux.HandleFunc("GET /v1/fixtures/{fixture_id}/external-predictions", application.fixtureExternalPredictions)
 	mux.HandleFunc("GET /v1/external-prediction-sources", application.externalPredictionSources)
 	mux.HandleFunc("GET /v1/admin/operations/{domain}", application.operations)
+	mux.HandleFunc("GET /v1/admin/resolution/{view}", application.resolutionRead)
 	mux.HandleFunc("GET /v1/admin/work", application.listWork)
 	mux.HandleFunc("GET /v1/admin/work/{work_id}", application.getWork)
 	mux.HandleFunc("POST /v1/admin/work/{work_id}/cancel", application.controlWork("cancel"))

@@ -40,3 +40,23 @@
 
 @media(min-width:761px) and (max-width:767px){.mobile-nav{position:fixed;z-index:80;inset:auto 0 0;height:62px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--lowest)}.mobile-nav a{display:grid;place-items:center}body{padding-bottom:62px}}
 @media(forced-colors:active){.matrix-cell{border:1px solid CanvasText;background:Canvas;color:CanvasText}}
+
+/* Resolution review uses the existing Admin typography, colors and table primitives. */
+.resolution-nav { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.resolution-nav a, .resolution-nav button { padding: .65rem .85rem; min-height: 44px; }
+.resolution-nav [aria-current="page"], .resolution-nav [aria-pressed="true"] { text-decoration: underline; text-underline-offset: .35rem; }
+.resolution-notice, .resolution-scope { overflow-wrap: anywhere; }
+.resolution-id { display: block; font-size: .75rem; overflow-wrap: anywhere; max-width: 25rem; }
+.resolution-review { border-block-start: 1px solid var(--line); margin-block: 2rem; padding-block: 1.5rem; }
+.resolution-center label { display: flex; flex-direction: column; gap: .4rem; margin-block: .5rem; }
+.resolution-center button, .resolution-center summary { min-height: 44px; }
+.resolution-center button { padding: .6rem .9rem; }
+.resolution-evidence { font-size: .85rem; overflow-wrap: anywhere; }
+.resolution-evidence > div { display: grid; grid-template-columns: minmax(8rem,1fr) minmax(0,3fr); gap: .75rem; padding-block: .45rem; }
+.resolution-evidence dd { margin: 0; min-width: 0; }
+.resolution-pagination { display: flex; gap: 1rem; align-items: center; margin-block: 1rem; }
+@media (max-width: 600px) { .resolution-evidence > div { display: block; } .resolution-evidence dt { font-weight: 600; } }
+
+.resolution-center summary:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+
+.resolution-center input, .resolution-center select { max-width: 100%; min-width: 0; padding: .65rem; color: inherit; background: var(--low); border: 1px solid var(--line); border-radius: .4rem; }

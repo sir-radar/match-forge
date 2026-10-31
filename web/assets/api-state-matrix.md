@@ -81,3 +81,10 @@ produces the scoped error/retry state; empty populations retain nullable metrics
 
 Product requests remain read-only. Presentation filters and selected tabs stay
 local; no additional server-state store or optimistic mutation is introduced.
+
+## Resolution Center, 31 October 2026
+
+All six read views and case details have loading, success, empty, invalid-response,
+failure and retry states. Same-query refresh failures retain rows; changed queries
+hide earlier rows immediately. Abort and generation checks reject stale results.
+Case detail focus returns to its opener. Phase 2 exposes no mutations.

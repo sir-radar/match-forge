@@ -96,24 +96,7 @@ class PostgresIntegrityVerifier:
             ).fetchone()
         if row is None:
             return _not_found("RAW_RESOURCE", resource_id)
-        provider_code, revision, provider_path, expected, size_bytes = row
-        path = _raw_relative_path(
-            str(provider_code), str(revision), str(provider_path), str(expected)
-        )
-        if path is None:
-            return _invalid(
-                "RAW_RESOURCE", resource_id, None, str(expected), "raw storage layout unsupported"
-            )
-        result = _verify_file(self._data_root, path, str(expected), int(size_bytes))
-        return IntegrityVerificationResult(
-            artifact_kind="RAW_RESOURCE",
-            artifact_id=resource_id,
-            path=path,
-            expected_sha256=str(expected),
-            actual_sha256=result.actual_sha256,
-            status=result.status,
-            failure_reason=result.failure_reason,
-        )
+        return verify_raw_resource_file(self._data_root, resource_id, *row)
 
     def verify_dataset(self, dataset_id: UUID) -> IntegrityVerificationResult:
         with self._connection.cursor() as cursor:
@@ -212,6 +195,27 @@ class PostgresIntegrityVerifier:
             "PASS",
             None,
             file_results,
+        )
+
+    def dataset_file_checks(self, dataset_id: UUID) -> tuple[IntegrityFileVerification, ...]:
+        """Check registered file bytes without asserting dataset semantic compatibility."""
+        registration = self._connection.execute(
+            "SELECT manifest_path,manifest_sha256 FROM football.dataset_versions WHERE id=%s",
+            (dataset_id,),
+        ).fetchone()
+        if registration is None:
+            return (
+                IntegrityFileVerification(
+                    str(dataset_id), None, None, "NOT_FOUND", "dataset registration not found"
+                ),
+            )
+        rows = self._connection.execute(
+            """SELECT relative_path,physical_sha256,size_bytes FROM football.dataset_files
+               WHERE dataset_version_id=%s ORDER BY relative_path""",
+            (dataset_id,),
+        ).fetchall()
+        return (_verify_file(self._data_root, *registration),) + tuple(
+            _verify_file(self._data_root, path, digest, size) for path, digest, size in rows
         )
 
     def verify_model_artifact(self, artifact_id: UUID) -> IntegrityVerificationResult:
@@ -359,6 +363,38 @@ class PostgresIntegrityVerifier:
             code_git_sha=code_git_sha,
             dependency_lock_sha256=dependency_lock_sha256,
         )
+
+
+def verify_raw_resource_file(
+    root: Path,
+    resource_id: UUID,
+    provider_code: str,
+    source_revision: str,
+    provider_path: str,
+    expected_sha256: str,
+    size_bytes: int,
+) -> IntegrityVerificationResult:
+    """Verify bytes after the caller has read the authoritative registration.
+
+    Bulk diagnostics can reuse their registered inventory instead of issuing one
+    database lookup per resource. Both paths enforce the same storage contract.
+    """
+    root = root.resolve()
+    path = _raw_relative_path(provider_code, source_revision, provider_path, expected_sha256)
+    if path is None:
+        return _invalid(
+            "RAW_RESOURCE", resource_id, None, expected_sha256, "raw storage layout unsupported"
+        )
+    result = _verify_file(root, path, expected_sha256, size_bytes)
+    return IntegrityVerificationResult(
+        artifact_kind="RAW_RESOURCE",
+        artifact_id=resource_id,
+        path=path,
+        expected_sha256=expected_sha256,
+        actual_sha256=result.actual_sha256,
+        status=result.status,
+        failure_reason=result.failure_reason,
+    )
 
 
 def _raw_relative_path(

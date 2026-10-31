@@ -88,3 +88,12 @@ replace current data. Failed fixture refreshes display retained same-key rows
 with an alert and retry; changed request keys still hide old rows immediately.
 Context, live and forecast failures remain independent. Simulation evidence
 stays explicitly unavailable because no approved linked artifact is exposed.
+
+## Resolution Center, 31 October 2026
+
+The new OpenAPI read route delegates to Python through the existing Go runner.
+Admin page sizes remain 20, 50 and 100. Runtime checks reject inconsistent counts,
+invalid groups, missing case keys, mismatched detail IDs and invalid evidence
+hashes. A drift assertion binds client view names to OpenAPI. Transport disables
+caching and forwards cancellation. No optimistic mutation or credential storage
+is present in this phase.

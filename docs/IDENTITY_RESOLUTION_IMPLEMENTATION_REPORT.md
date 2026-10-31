@@ -42,3 +42,40 @@ Result: 12 passed. Ruff, format checks, mypy, architecture checks and
 `make project-status-check` passed for this phase.
 
 Later phases remain in progress; their drafts are excluded from the Phase 1 commit.
+
+
+## Phase 2 — Read-only Admin Resolution Center
+
+The existing Admin shell now links to Identity Review, Fixture Review, Missing
+Data, Migration Parity, Cutover Controls and Resolution History. Filtered counts,
+pages, bounded groups, stable case keys, source details, candidate hints, reason
+codes and dependent fixtures use existing tables. No migration or write endpoint
+was introduced. Current admission records in queue counts are labeled separately
+from independently requalified proof in case details.
+
+The Python bridge uses read-only repeatable-read transactions. Go retains the
+private-local access checks, cancels the child process group with the request,
+bounds output and disables response caching. The client validates response shapes,
+aborts superseded requests, preserves same-query rows on refresh failure and
+exposes retry. Native tables, controls and disclosures support keyboard review.
+
+A read-only shadow audit returned 17,594 identity rows, 132,776 fixture/native
+cases, 749,680 recorded/current history rows, 55 unavailable source/dataset cases,
+eight blocked parity domains and 13 blocked migration stages. The 55 cases are 33
+resources and 22 dataset versions with unavailable or invalid registered files;
+22 versions must not be confused with the baseline's three missing physical file
+rows. No records were repaired or admitted. Bulk file checks reduced the missing
+inventory scan from 50.44 seconds to 7.07 seconds without weakening full dataset
+integrity checks or publication gates.
+
+Verification: 26 focused PostgreSQL/integrity tests passed, and the separate real
+Go/Python/browser journey passed after correcting its cell selector. The browser
+journey inspected a retained identity, original history, missing source and all
+migration blockers in a disposable pre-Resolution-Center database, with no writes.
+Desktop/mobile synthetic browser journeys passed, including axe, focus return,
+320px reflow and keyboard table scrolling. All 101 existing/new frontend tests,
+pinned Next.js 16.4.1 production build, Ruff, mypy (438 files), Go tests and Go lint
+passed before the final contract-drift assertion; the final focused checks cover
+that assertion. Manual VoiceOver and full WCAG conformance were not evaluated.
+
+Phase 3 has not begun. Production cutover and retirement remain blocked.
