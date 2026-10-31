@@ -2594,7 +2594,7 @@
     "audit_ref": "docs/CODEBASE_AUDIT_REPORT.md",
     "report_ref": "docs/CODEBASE_REMEDIATION_REPORT.md",
     "branch": "ft/codebase-remediation-2026-10-30",
-    "current_work": "Phase B implemented; final focused recovery/reader/UI checks and commit review in progress. Phases C\u2013E and complete end-to-end acceptance remain open.",
+    "current_work": "Frontend mobile navigation, native matrix, scoped request status, context and idle-admin refresh; final end-to-end and risk verification pending.",
     "operating_runtime_updated": false,
     "remaining_findings": [
       "MF26-01",
@@ -2622,6 +2622,7 @@
       "MF26-23",
       "MF26-24",
       "MF26-25"
-    ]
+    ],
+    "current_phase": "D"
   }
 }

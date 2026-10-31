@@ -1154,3 +1154,22 @@ Use the owning document for implementation-level detail:
 - [Engineering testing](testing.md)
 
 Current project state belongs in the tracked project-status authority and applicable Wayfinder/evidence records rather than this document.
+
+
+### Operational acquisition and historical recovery outcomes
+
+Operational provider sync reports `current_acquisition` and `historical_recovery`
+separately. The existing top-level counts still include both, and any failed
+scope keeps the aggregate `COMPLETED_WITH_ERRORS`. A successful HTTP response is
+not proof of identity admission. Held identities remain in lifecycle diagnostics.
+A supported historical fixture absent from its native daily response retains
+`RECOVERY_FIXTURES_MISSING` and waits one day before another request. Transport
+and detail failures retain the existing short cooldown. No retry admits a fixture
+by name or changes an identity decision. Independent daily sync and external
+collection stages both execute; either nonzero exit makes the wrapper fail.
+
+Root sync heartbeats remain 15 seconds with a two-minute lease. Shared work keeps
+its exact owner/token/generation checks. After interruption, a new claim may
+recover committed progress; an expired claim cannot renew or publish. Missing
+host heartbeat/process evidence must not be interpreted as permission to extend
+or bypass these checks.

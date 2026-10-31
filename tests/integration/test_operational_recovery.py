@@ -4,7 +4,7 @@ import os
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import psycopg
 import pytest
@@ -113,3 +113,141 @@ def test_old_fixture_recovers_only_from_retained_source_without_guessed_regulati
            WHERE canonical_fixture_id=%s AND canonical_status='FINISHED'""",
         (kickoff, target),
     ).fetchone() == (True,)
+
+
+def test_current_acquisition_remains_visible_when_historical_recovery_is_missing(
+    recovery_connection: psycopg.Connection[object], tmp_path: Path
+) -> None:
+    from football.product.operational_provider_sync import DetailCounts
+
+    connection = recovery_connection
+    sync, _target, _provisional, _snapshot, _live, kickoff, _acquired = (
+        seed_reviewed_operational_fixture(connection, tmp_path)
+    )
+    connection.commit()
+    requested = kickoff.date() + timedelta(days=3)
+
+    def fetch(day: object) -> PitchApiResponse:
+        raw = b'{"matches":[]}'
+        return PitchApiResponse(
+            path=f"/v1/date/{day}",
+            fetched_at=datetime.now(UTC),
+            sha256=hashlib.sha256(raw).hexdigest(),
+            raw=raw,
+            data=json.loads(raw),
+        )
+
+    result = sync._sync_dates(
+        requested,
+        requested,
+        fetch=fetch,
+        normalize=normalize_pitchapi_matches,
+        detail=lambda _row: DetailCounts(),
+        details_limit=1,
+        live_details_limit=0,
+        competition_id=None,
+    )
+    assert result["status"] == "COMPLETED_WITH_ERRORS"
+    assert result["current_acquisition"]["status"] == "COMPLETED"
+    assert result["current_acquisition"]["successful_requests"] == 1
+    assert result["historical_recovery"]["failed"] == 1
+    assert result["failed"] == 1 and result["successful_requests"] == 2
+    assert connection.execute(
+        "SELECT next_attempt_at > clock_timestamp()+interval '23 hours',last_error "
+        "FROM football.product_provider_refresh_state WHERE provider_code='pitchapi'"
+    ).fetchone() == (True, "RECOVERY_FIXTURES_MISSING")
+
+
+def test_killed_worker_reclaims_committed_checkpoint_and_fences_old_owner(
+    recovery_connection: psycopg.Connection[object],
+) -> None:
+    import select
+    import subprocess
+    import sys
+    from dataclasses import asdict
+
+    from football.work.contracts import RetryPolicy, WorkClaim, WorkRequest, WorkType
+    from football.work.storage import WorkLeaseLost, WorkRegistry
+
+    connection = recovery_connection
+    connection.execute("CREATE TABLE interruption_checkpoint (work_id uuid PRIMARY KEY)")
+    connection.execute("CREATE TABLE interruption_result (work_id uuid PRIMARY KEY)")
+    connection.commit()
+    registry = WorkRegistry(connection)
+    identity = registry.enqueue(
+        WorkRequest(
+            work_type=WorkType.HISTORICAL_ACQUISITION,
+            semantic_key=f"interruption:{uuid4()}",
+            input_hash="a" * 64,
+            priority=0,
+            available_at=datetime.now(UTC),
+            max_attempts=3,
+            retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
+        )
+    )
+    script = """
+import json, os, sys
+from dataclasses import asdict
+from datetime import timedelta
+from uuid import UUID
+import psycopg
+from football.work.contracts import WorkType
+from football.work.storage import WorkRegistry
+with psycopg.connect(os.environ["INTERRUPTION_DATABASE_URL"]) as c:
+    registry = WorkRegistry(c)
+    claim = registry.claim("killed-worker", timedelta(seconds=2),
+        (WorkType.HISTORICAL_ACQUISITION,), work_ids=(UUID(os.environ["INTERRUPTION_WORK_ID"]),))
+    with registry.progress(claim) as publisher:
+        publisher.execute("INSERT INTO interruption_checkpoint VALUES (%s)", (claim.work_id,))
+    print(json.dumps(asdict(claim), default=str), flush=True)
+    sys.stdin.read()
+"""
+    with subprocess.Popen(
+        [sys.executable, "-c", script],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=os.environ
+        | {
+            "INTERRUPTION_DATABASE_URL": make_conninfo(
+                os.environ["TEST_DATABASE_URL"], dbname=connection.info.dbname
+            ),
+            "INTERRUPTION_WORK_ID": str(identity),
+        },
+    ) as process:
+        assert select.select([process.stdout], [], [], 15)[0], "worker did not checkpoint"
+        line = process.stdout.readline()
+        assert line, process.stderr.read()
+        data = json.loads(line)
+        process.kill()
+        process.communicate(timeout=10)
+    data.update(
+        work_id=identity,
+        work_type=WorkType(data["work_type"]),
+        lease_token=UUID(data["lease_token"]),
+        lease_until=datetime.fromisoformat(data["lease_until"]),
+    )
+    old = WorkClaim(**data)
+    connection.execute(
+        "SELECT pg_sleep(GREATEST(0,extract(epoch FROM (%s-clock_timestamp())))+0.01)",
+        (old.lease_until,),
+    )
+    connection.commit()
+    replacement = registry.claim(
+        "restarted-worker",
+        timedelta(minutes=1),
+        (WorkType.HISTORICAL_ACQUISITION,),
+        work_ids=(identity,),
+    )
+    assert replacement is not None and replacement.generation > old.generation
+    assert connection.execute("SELECT work_id FROM interruption_checkpoint").fetchone() == (
+        identity,
+    )
+    connection.commit()
+    with pytest.raises(WorkLeaseLost):
+        registry.heartbeat(old, timedelta(minutes=1))
+    with registry.publication(replacement, result_hash="b" * 64) as publisher:
+        publisher.execute("INSERT INTO interruption_result VALUES (%s)", (identity,))
+    assert connection.execute("SELECT count(*) FROM interruption_result").fetchone() == (1,)
+    assert asdict(replacement)["attempt_count"] == 2

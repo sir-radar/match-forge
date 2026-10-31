@@ -332,3 +332,38 @@ Review found and addressed two integration edges before the Phase B commit: date
 Capture-observation review: all 11 external recovery integration cases passed after the append-only capture extension. An unchanged reimport preserves its first capture; A→B→A follows observations without rewriting source rows. Conflicting picks at the same observation time are quarantined.
 
 Phase B checkpoint: 11 recovery integration cases, 21 report cases (before the capture-only extension), 43 source/import/CLI unit cases and 33 frontend cases passed. Go app tests passed with disposable loopback access; sandbox-only listener failures were rerun successfully. Ruff, mypy, TypeScript, ESLint (one pre-existing unused test argument warning), go vet and golangci-lint passed. Final Fallow root/security/preview were read: no auto-fixes, unresolved imports or edge files; the unchanged fixed-origin candidate and estimated coverage advisories retain the dispositions above. Phase B findings remain verification-pending until final normal-scheduler/browser acceptance. Next phase C: scope recovery health, independent daily stages and disposable worker interruption.
+
+
+### Phase C implementation and retained operational evidence
+
+- Current acquisition and historical recovery now have separate count/status
+  objects; aggregate failures remain failures. Missing supported historical IDs
+  wait one day instead of the normal three-minute freshness interval. Existing
+  held/unsupported exclusion and request bounds remain intact.
+- `mvp-refresh.sh` attempts each independent stage once and prints both exit
+  codes. Four wrapper cases passed: both successful, either failed, both failed.
+- Two disposable native-recovery cases passed, including successful current
+  acquisition plus missing historical recovery, daily cooldown, unchanged fixture
+  evidence and subsequent supported recovery. A real child worker was killed
+  after committing a checkpoint; a replacement reclaimed the same historical
+  work with a new generation, preserved the checkpoint and published once. The
+  old owner's heartbeat was rejected. Initial test harness credential omission
+  was corrected; the killed-worker case then passed.
+- Read-only operating-data inspection (transaction_read_only=on, 15-second
+  timeout) still finds six expired historical leases. The two named logs retain
+  only publication-fence errors, without heartbeat or process lifecycle traces.
+  Thus their initiating cause cannot be reconstructed; no fence defect was
+  reproduced. No operating work item was reclaimed or edited by this task.
+- Native FotMob 5989865 has later FINISHED observations with no canonical binding,
+  whereas older observations bind a different fixture and say CANCELLED. The
+  named SCHEDULED fixture remains unchanged. This is insufficient evidence to
+  force a lifecycle/identity correction; the UI explicitly warns about timed
+  incidents on a scheduled fixture and unknown score freshness.
+- This host has no MatchForge launch-agent entry; the repository has a systemd
+  timer for 06:00 Africa/Lagos. Installation, alert recipients, heartbeat history
+  and log retention ownership are not recorded. Existing sync logs total 37 MB.
+  Alert delivery and host scheduling remain externally unverified, not passing.
+
+Next: complete frontend behavior and runtime/build evidence, then run the full
+repository graph once. External provider requests, operating writes, protected
+scientific execution and model changes remain prohibited.

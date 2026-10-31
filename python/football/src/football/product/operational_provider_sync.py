@@ -89,6 +89,13 @@ class SyncCounts:
             "stored_observations_reconciled": self.stored_observations_reconciled,
         }
 
+    def add(self, other: SyncCounts) -> None:
+        for name, value in other.to_dict().items():
+            if name != "failure_reasons":
+                setattr(self, name, getattr(self, name) + value)
+        for reason, count in other.failure_reasons.items():
+            self.failure_reasons[reason] = self.failure_reasons.get(reason, 0) + count
+
 
 @dataclass(frozen=True, slots=True)
 class DetailCounts:
@@ -728,8 +735,9 @@ class OperationalProviderSync:
             live_limit=live_details_limit,
         )
         self._add_detail_counts(counts, detail_counts)
+        recovery_counts = SyncCounts()
         recovery = self._recover_unresolved(
-            from_date, fetch, normalize, details_limit, counts, competition_id
+            from_date, fetch, normalize, details_limit, recovery_counts, competition_id
         )
         bulk_batch = {
             key: value
@@ -738,14 +746,15 @@ class OperationalProviderSync:
         }
         recovery = [item for item in recovery if item[0].provider_match_id not in resolved_batch]
         bulk_batch.update((row.provider_match_id, (row, fixture)) for row, fixture in recovery)
-        bulk_counts, _, _ = self._fetch_prioritized_details(
+        self._fetch_prioritized_details(
             tuple(bulk_batch.values()),
             detail,
             bulk_limit=details_limit,
             live_limit=0,
             recovery_ids=frozenset(row.provider_match_id for row, _ in recovery),
+            acquisition_counts=counts,
+            recovery_counts=recovery_counts,
         )
-        self._add_detail_counts(counts, bulk_counts)
         settled = settle_external_predictions(self.connection, datetime.now(UTC))
         diagnostics = self._sync_diagnostics(sync_started, from_date)
         self.connection.commit()
@@ -753,7 +762,19 @@ class OperationalProviderSync:
             self.connection, self.data_root, self.provider_code
         )
         self.connection.commit()
+        acquisition = {
+            "status": "COMPLETED_WITH_ERRORS"
+            if counts.failed or geography["invalid_snapshots"]
+            else "COMPLETED",
+            **counts.to_dict(),
+        }
+        counts.add(recovery_counts)
         return {
+            "current_acquisition": acquisition,
+            "historical_recovery": {
+                "status": "COMPLETED_WITH_ERRORS" if recovery_counts.failed else "COMPLETED",
+                **recovery_counts.to_dict(),
+            },
             "status": "COMPLETED_WITH_ERRORS"
             if counts.failed or geography["invalid_snapshots"]
             else "COMPLETED",
@@ -1084,6 +1105,8 @@ class OperationalProviderSync:
         bulk_limit: int,
         live_limit: int,
         recovery_ids: frozenset[str] = frozenset(),
+        acquisition_counts: SyncCounts | None = None,
+        recovery_counts: SyncCounts | None = None,
     ) -> tuple[DetailCounts, int, int]:
         attempted = successful = failed = resources = used_bulk = used_live = 0
         names = [f"match-{row.provider_match_id}-details" for row, _ in resolved]
@@ -1122,6 +1145,9 @@ class OperationalProviderSync:
             used_bulk += int(not is_live)
             item = cast(DetailCounts, detail(row))
             self._complete_refresh(name, claimed, item)
+            scope = recovery_counts if row.provider_match_id in recovery_ids else acquisition_counts
+            if scope is not None:
+                self._add_detail_counts(scope, item)
             attempted += item.attempted_requests
             successful += item.successful_requests
             failed += item.failed_requests
@@ -1154,7 +1180,7 @@ class OperationalProviderSync:
                WHERE provider_code=%s AND resource_name=%s AND last_attempt_at=%s""",
             (
                 item.failed_requests,
-                self.stale_after,
+                timedelta(days=1) if error == "RECOVERY_FIXTURES_MISSING" else self.stale_after,
                 item.fresh_until if item.failed_requests == 0 else None,
                 item.failed_requests,
                 item.failed_requests,
