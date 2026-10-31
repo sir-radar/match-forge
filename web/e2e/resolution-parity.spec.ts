@@ -20,7 +20,7 @@ test("owner rechecks parity and inspects durable blocked verification", async ({
       const open = await history.evaluate((element) => (element.parentElement as HTMLDetailsElement).open);
       if (!open) await history.click();
     }
-    await expect(review.getByText("SUCCEEDED", { exact: true }).first()).toBeVisible({ timeout: 1000 });
+    await expect(history.locator("..").getByText("SUCCEEDED", { exact: true }).first()).toBeVisible({ timeout: 1000 });
   }).toPass({ timeout: 30_000 });
   await expect(review.locator("p").filter({ hasText: /^Status: / })).not.toHaveText("Status: PASS");
   await page.unrouteAll({ behavior: "wait" });

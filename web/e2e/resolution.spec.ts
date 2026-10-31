@@ -83,7 +83,7 @@ test("retained backend resolves real read-only cases through Go and Python", asy
   await page.getByRole("button", { name: "Inspect case 1" }).click();
   await expect(page.getByRole("region", { name: "Case review" }).getByText("Status: BLOCKED", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Migration Parity", exact: true }).click();
-  await expect(page.getByText("8 cases in this scope.", { exact: false })).toBeVisible();
+  await expect(page.getByText("11 cases in this scope.", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Cutover Controls", exact: true }).click();
   await expect(page.getByText("13 cases in this scope.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: /Approve|Execute cutover/ })).toHaveCount(0);

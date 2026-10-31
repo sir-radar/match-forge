@@ -2733,8 +2733,8 @@
     "verification_command": "make check integration web-e2e; test-only TypeScript correction followed by make -o build web-lint web-test web-build integration web-e2e"
   },
   "identity_resolution": {
-    "status": "IN_PROGRESS",
-    "current_phase": 9,
+    "status": "PASS_WITH_WARNINGS",
+    "current_phase": 10,
     "report_ref": "docs/IDENTITY_RESOLUTION_IMPLEMENTATION_REPORT.md",
     "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
     "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
@@ -2861,6 +2861,33 @@
       "test_forecasts_persisted": 0,
       "test_isolation_corrected": true,
       "unrelated_background_publications_preserved": true
-    }
+    },
+    "phase_10": "PASS_WITH_WARNINGS",
+    "implementation_status": "VERIFIED_WITH_OPERATIONAL_BLOCKERS",
+    "final_metrics_ref": "docs/evidence/identity-resolution-final-2026-10-31.json",
+    "final_metrics_sha256": "5f514996e0888f926d09e0ed93d9bcd3b3cdb707acbcf51ff3b7fe5329165b0c",
+    "phase_10_verification": {
+      "aggregate_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration web-e2e",
+      "initial_aggregate_exit_code": 2,
+      "initial_failures": "TWO_STALE_BROWSER_ASSERTIONS",
+      "python_unit_tests_passed": 1758,
+      "rust_tests_passed": 16,
+      "frontend_unit_tests_passed": 107,
+      "storage_cases": 833,
+      "storage_initial_passed": 831,
+      "storage_initial_failed": 2,
+      "repaired_real_backend_journeys_passed": 2,
+      "remaining_api_integration": "PASS",
+      "desktop_mobile_browser_tests_passed": 36,
+      "default_runner_conditional_skips": 24,
+      "conditional_backend_journeys": "COVERED_BY_STORAGE_INTEGRATION_HARNESS",
+      "fresh_migrations": "PASS_THROUGH_202610310800_AND_IDEMPOTENT_UP",
+      "database_scope": "DISPOSABLE_VALIDATION_AND_READ_ONLY_FROZEN_SHADOW_METRICS",
+      "baseline_counts_changed": false,
+      "authoritative_evaluations": 0,
+      "model_fits": 0,
+      "model_promotions": 0
+    },
+    "production_readiness": "BLOCKED"
   }
 }

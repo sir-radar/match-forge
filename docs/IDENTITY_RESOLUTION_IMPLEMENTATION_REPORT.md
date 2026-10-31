@@ -41,7 +41,7 @@ uv run --locked --no-sync pytest tests/test_resolution_identity.py tests/integra
 Result: 12 passed. Ruff, format checks, mypy, architecture checks and
 `make project-status-check` passed for this phase.
 
-Later phases remain in progress; their drafts are excluded from the Phase 1 commit.
+Later-phase drafts were excluded from the Phase 1 commit.
 
 
 ## Phase 2 — Read-only Admin Resolution Center
@@ -306,3 +306,89 @@ records are retained locally in .local/phase9-validation-audit*.json.
 Gate: PASS_WITH_WARNINGS for isolated preparation. Live retirement remains BLOCKED
 by incomplete Phase35, unverified deployed consumers and missing stabilization/
 rollback acceptance. Queue counts and repository source do not establish those gates.
+
+
+## Phase 10 — Final verification and delivery
+
+The Resolution Center implementation and isolated preparation are verified with
+warnings. Production Phase 35 cutover and Phase 36 retirement remain BLOCKED. No live
+identity adjudication or recovery was performed to reduce the baseline counts.
+All phases have separate commits; the final phase includes integration registration,
+two repaired browser assertions, this report and the final read-only metrics.
+
+The final snapshot used the same frozen shadow database in a read-only repeatable
+transaction. Exact inputs and results are retained in
+`docs/evidence/identity-resolution-final-2026-10-31.json`, bound to the baseline hash,
+code revision and dependency lock. Counts are unchanged:
+
+| Metric | Baseline | Final |
+| --- | ---: | ---: |
+| Unresolved mappings | 4,160 | 4,160 |
+| Contradictory mappings | 108 | 108 |
+| Revoked mappings | 1 | 1 |
+| Currently admitted mappings | 13,325 | 13,325 |
+| Unsafe shared identity groups | 984 | 984 |
+| Provisional fixtures | 59,903 | 59,903 |
+| Verified fixtures | 149,844 | 149,844 |
+| Missing original resource payloads | 33 | 33 |
+| Missing physical dataset file rows | 3 | 3 |
+| Dataset versions with unavailable/invalid registered files | 22 | 22 |
+
+The 22-version diagnostic was first measured in Phase 2. It is a different denominator
+from three physical file rows. Missing-data cases remain 55 (33 resources plus 22
+versions). The frozen 4,253 proof set is distinct from current classifications. The
+59 Elo conflicts and 327 insufficient-history targets remain unresolved; no exception
+was approved. A worker success or isolated route comparison cannot waive these gates.
+
+Verification completed across the original aggregate and focused repairs:
+
+- `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration web-e2e`
+  ran once. All `make check` dependencies passed: Ruff/format, mypy (445 files), Go lint/tests,
+  Rust Clippy, 1,758 Python tests (seven third-party NumPy deprecation warnings),
+  16 Rust tests, architecture/status validation, packaging/build, 107 frontend tests,
+  frontend lint/types and the pinned Next.js 16.4.1 production build.
+- Fresh migrations through 202610310800 and repeated migration-up passed. Storage
+  integration executed 833 cases: 831 passed; two browser assertions failed. One still
+  expected eight parity groups after Phase 7 introduced 11; the other selected a hidden
+  diagnostics label instead of the opened verification history. Assertions now check
+  the exact 11 groups and the visible history result. Both affected real Go/Python/
+  Admin journeys passed on rerun (2 passed, 44.91s) in a disposable migrated database.
+  Frontend lint/types passed after these test-only changes.
+- The initial aggregate exited 2 at those failures and did not reach its remaining
+  commands. `./scripts/integration.sh` then passed independently with disposable
+  PostgreSQL 18.6, Redis 8.10 and real Go API checks. `pnpm test:e2e` in `web` passed
+  36 desktop/mobile tests in 46.9s. Its 24 conditional real-backend cases were skipped
+  by that runner; those journeys use the disposable storage integration harness.
+  Successful core/build/storage tests were not needlessly repeated.
+- The storage runner now sets both database variables to its disposable database,
+  uses its own temporary data root and includes all Phases 6–9 acceptance modules.
+  Existing concurrency, forecast, history, migration and leakage assertions remain
+  intact. Final schema review confirmed that composite foreign keys already forbid
+  cross-snapshot dataset inputs; no speculative recovery change was retained.
+- Final staged-diff review, project-status validation, shell syntax, diff checks and
+  Fallow analysis are recorded in the local Phase 10 verification evidence. Previous
+  phase records retain focused failure, retry, authorization and cancellation tests.
+  Automated axe, keyboard, mobile, reduced-motion and forced-colors checks passed;
+  manual VoiceOver and full WCAG certification remain unverified.
+
+Raw logs are local: `.local/phase10-full-check.log`,
+`.local/phase10-fixed-browser-checks.log`, `.local/phase10-api-integration.log`,
+`.local/phase10-web-e2e.log` and `.local/phase10-fallow-*.json`. The initial failure
+log is preserved. The Phase 9 configured-database isolation incident remains recorded
+above: two terminal synthetic work rows remain; no test forecast persisted. The
+final frozen-shadow audit made zero writes. No authoritative evaluation, fitted
+artifact, promotion, live exclusion, cutover or retirement was performed.
+
+Remaining operational prerequisites:
+
+- Independently qualified identity evidence and authentic missing source/dataset
+  bytes, or explicit scoped dispositions that do not claim full-data parity.
+- Complete production old/new comparisons and resolution/disposition of 59/327
+  retained model/history discrepancies.
+- Qualified production runtime bindings and per-stage rollback evidence for the 12
+  currently unbound stages; only stage 8 has an isolated concrete serving rehearsal.
+- Independent acceptance of deployed consumers, operational ownership, rollback and
+  stabilization evidence, followed by explicit owner approval for Phase 35/36.
+
+Gate: PASS_WITH_WARNINGS for authorized tooling and isolated preparation. Operational
+readiness: BLOCKED. No production migration or legacy removal is implied by delivery.

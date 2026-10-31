@@ -1,0 +1,372 @@
+{
+  "baseline_ref": "docs/evidence/identity-resolution-baseline-2026-10-31.json",
+  "baseline_sha256": "6aacd7415165d6649f47c82da1ed8fa2515713be286c48477ce46f90072fd8b5",
+  "captured_at": "2026-10-31T19:19:49.558644+00:00",
+  "code_git_sha": "1b2a305bb2a06cd04a1376972cf9f8687d528a8f",
+  "database": "football_architecture_v2_shadow_20261016",
+  "database_mutations": 0,
+  "database_snapshot": "10678373:10678433:10678373",
+  "dataset_versions_with_unavailable_or_invalid_registered_files": {
+    "count": 22,
+    "items": [
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a04fc0-101b-7125-a6a3-82e611bb0ef8.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a04fc0-101b-7125-a6a3-82e611bb0ef8"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a04fc8-2e57-732a-8cfe-a14064909ca9.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a04fc8-2e57-732a-8cfe-a14064909ca9"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a04fc8-d211-7bf3-91f8-2abe9fed2866.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a04fc8-d211-7bf3-91f8-2abe9fed2866"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a04fd2-a0a9-7b46-a1ab-5321a5bc0f8c.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a04fd2-a0a9-7b46-a1ab-5321a5bc0f8c"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c0-2b89-773f-b7dc-6be22a8290fd.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c0-2b89-773f-b7dc-6be22a8290fd"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c0-2bbb-7439-92c5-dd16c24e7910.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c0-2bbb-7439-92c5-dd16c24e7910"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c0-2be2-75c7-8155-be1a640bb2c5.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c0-2be2-75c7-8155-be1a640bb2c5"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c4-88ab-7952-ab2e-6c2b6b437e6a.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c4-88ab-7952-ab2e-6c2b6b437e6a"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c4-88de-7049-9bf2-9c0a27fd5226.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c4-88de-7049-9bf2-9c0a27fd5226"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a051c4-8906-7261-867c-2f585016229a.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a051c4-8906-7261-867c-2f585016229a"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a05718-f3ee-7378-9eef-12c8b9e1ae62.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a05718-f3ee-7378-9eef-12c8b9e1ae62"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a06fc4-d65d-7437-9f0f-35d0556b599d.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a06fc4-d65d-7437-9f0f-35d0556b599d"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a06fc4-d67b-7cb8-9121-15339add482e.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a06fc4-d67b-7cb8-9121-15339add482e"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a06fc4-d6af-7ba3-b019-86779522f26e.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a06fc4-d6af-7ba3-b019-86779522f26e"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/01a06fc4-d748-718a-8c90-5346138ab6b5.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "01a06fc4-d748-718a-8c90-5346138ab6b5"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/04841642-3bf2-49ff-8bca-4d8285d31296.json",
+            "status": "MISSING"
+          },
+          {
+            "actual_sha256": null,
+            "expected_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+            "failure_reason": "registered bytes are missing",
+            "path": "normalized/second.parquet",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "04841642-3bf2-49ff-8bca-4d8285d31296"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/258ebad5-e836-43b8-aa56-fc5d2fa16adc.json",
+            "status": "MISSING"
+          },
+          {
+            "actual_sha256": null,
+            "expected_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+            "failure_reason": "registered bytes are missing",
+            "path": "normalized/second.parquet",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "258ebad5-e836-43b8-aa56-fc5d2fa16adc"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/55607513-725b-4a4f-86a8-6460248c62f5.json",
+            "status": "MISSING"
+          },
+          {
+            "actual_sha256": null,
+            "expected_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+            "failure_reason": "registered bytes are missing",
+            "path": "normalized/second.parquet",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "55607513-725b-4a4f-86a8-6460248c62f5"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/dataset.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "81e98fea-26cd-4e3c-849b-ae5a189baf98"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/8865f579-de5b-495c-aa0e-f64c1ef8068a.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "8865f579-de5b-495c-aa0e-f64c1ef8068a"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/af194735-3881-4d8e-ad4d-1f7b234950f6.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "af194735-3881-4d8e-ad4d-1f7b234950f6"
+      },
+      {
+        "checks": [
+          {
+            "actual_sha256": null,
+            "expected_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "failure_reason": "registered bytes are missing",
+            "path": "manifests/ca6ad090-c918-4544-90a1-e09299e243a4.json",
+            "status": "MISSING"
+          }
+        ],
+        "dataset_version_id": "ca6ad090-c918-4544-90a1-e09299e243a4"
+      }
+    ]
+  },
+  "dependency_lock_sha256": "c881697f433174ce62daebe1edeb328cbac0f0c287c80baa1ec8d42990719044",
+  "fixture_identity_counts": [
+    [
+      "PROVISIONAL",
+      59903
+    ],
+    [
+      "VERIFIED",
+      149844
+    ]
+  ],
+  "identity": {
+    "contract": "ProviderIdentityAuditV2",
+    "currently_admitted_mapping_count": 13325,
+    "findings_sha256": "4ac152f5daca8d0d0db367787e7f15d1361423813455633ff50b7cbda97d9d51",
+    "legacy_manifest_unverified_snapshots": {
+      "football_data_uk": 48,
+      "openfootball": 1
+    },
+    "manifest_classifications": {
+      "BYTE_VERIFIED": 15312,
+      "LEGACY_MANIFEST_UNVERIFIED": 2192,
+      "NOT_VERIFIED": 90
+    },
+    "mapping_classifications": {
+      "CONTRADICTORY": 108,
+      "CROSSWALK": 1556,
+      "ORIGIN_ANCHOR": 11769,
+      "REVOKED": 1,
+      "UNRESOLVED": 4160
+    },
+    "policy_version": "ProductIdentityTrustV1",
+    "resources_checked": 744,
+    "source_bytes_verified": 230252480,
+    "status": "FAIL",
+    "unsafe_shared_identity_count": 984,
+    "verified_shared_identity_count": 1329
+  },
+  "live_cutover": false,
+  "live_retirement": false,
+  "missing_dataset_file_rows": {
+    "count": 3,
+    "items": [
+      {
+        "dataset_version_id": "04841642-3bf2-49ff-8bca-4d8285d31296",
+        "file_id": "01a04db4-fb6f-7f0d-9140-fec0f2472d6d",
+        "relative_path": "normalized/second.parquet"
+      },
+      {
+        "dataset_version_id": "55607513-725b-4a4f-86a8-6460248c62f5",
+        "file_id": "01a04db8-2445-733b-9656-06be47a77de3",
+        "relative_path": "normalized/second.parquet"
+      },
+      {
+        "dataset_version_id": "258ebad5-e836-43b8-aa56-fc5d2fa16adc",
+        "file_id": "01a06fc4-d7e7-76fe-8498-02fea40aed2e",
+        "relative_path": "normalized/second.parquet"
+      }
+    ]
+  },
+  "missing_resources": {
+    "count": 33,
+    "payload_hashes": {
+      "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc": 30,
+      "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": 3
+    }
+  },
+  "transaction_read_only": "on",
+  "validation_incident": {
+    "configured_database_test_work_records_retained": 2,
+    "not_in_this_frozen_shadow_database": true,
+    "test_forecasts_persisted": 0
+  }
+}

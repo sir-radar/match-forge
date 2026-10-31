@@ -17,6 +17,7 @@ set +a
 
 TEST_DATABASE="football_storage_test_$$"
 DATABASE_CREATED=0
+TEST_DATA_ROOT=
 
 test_database_suffix=${TEST_DATABASE#football_storage_test_}
 case "$test_database_suffix" in
@@ -27,18 +28,23 @@ cleanup() {
 	if [ "$DATABASE_CREATED" -eq 1 ]; then
 		docker compose exec -T postgres dropdb --if-exists --force -U "$POSTGRES_USER" "$TEST_DATABASE" >/dev/null
 	fi
+	if [ -n "$TEST_DATA_ROOT" ]; then
+		rm -rf "$TEST_DATA_ROOT"
+	fi
 }
 
 trap cleanup EXIT HUP INT TERM
 
 docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$TEST_DATABASE"
 DATABASE_CREATED=1
+TEST_DATA_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/matchforge-storage-test.XXXXXX")
 
 TEST_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/$TEST_DATABASE?sslmode=disable"
 export TEST_DATABASE_URL
 
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
 goose -dir infrastructure/migrations postgres "$TEST_DATABASE_URL" up
+DATABASE_URL="$TEST_DATABASE_URL" FOOTBALL_DATA_ROOT="$TEST_DATA_ROOT" \
 uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_identity_history.py \
 	tests/integration/test_canonical_resource_resolutions.py \
@@ -71,6 +77,8 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_admin_operations.py \
 	tests/integration/test_resolution_identity_database.py \
 	tests/integration/test_resolution_views.py tests/integration/test_resolution_decisions.py tests/integration/test_resolution_batches.py tests/integration/test_resolution_recovery.py \
+	tests/integration/test_resolution_files.py tests/integration/test_resolution_parity.py \
+	tests/integration/test_resolution_stages.py tests/integration/test_resolution_retirement.py \
 	tests/integration/test_live_context.py \
 	tests/integration/test_operational_provider_sync.py \
 	tests/integration/test_worker_publication_fencing.py \
