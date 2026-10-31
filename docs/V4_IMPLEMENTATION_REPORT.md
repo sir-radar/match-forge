@@ -412,3 +412,28 @@ Ruff/format, strict mypy on four changed Python files, architecture and shell
 syntax passed. No operating write, provider call, evaluation, fit or promotion ran.
 Phase 05 must supply actual measured decoders; schema support is not source or
 market availability. R3 and production migration gates remain unchanged.
+
+## Phase 05a — retained CSV half-time and referee observations
+
+Status: PASS. Phase 04 commit: `82d9784cf915f7023ec0f9dfb1ed0acc72426ca2`.
+
+The existing statistics decoder now emits observed first-half scores and referee
+assignments using V3. The collector selects the contract's own metadata version;
+existing V2 outputs retain their prior version strings. Invalid or contradictory
+half-time scores are reported independently without deleting valid team/referee
+observations. Referee names retain source references without creating identities.
+No second-half score, missing zero, or historical publication time is inferred.
+
+The checksum-verified registered 2026/27 archive produced 2,027 first-half scores,
+934 referee assignments and the existing 4,054 team-statistic observations, with
+no findings. The prior decoder emitted neither new family. This is measured
+source-normalization improvement; identity, market and PIT qualification remain
+separate. The immutable local replay report is
+`3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed`.
+
+[Phase 05a evidence](evidence/matchforge-v4-phase-05a-2026-10-31.json) records the
+source hash and counts. Focused CSV/existing-normalizer tests passed 49 cases;
+Ruff/format, strict mypy on changed files and architecture checks passed. Replay
+used a read-only connection and local report files. No operating observations,
+identities, forecasts, artifacts or source bytes were written; no provider calls,
+fits, evaluations or promotions ran. Existing migration gates remain unchanged.

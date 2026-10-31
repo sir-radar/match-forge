@@ -1,0 +1,48 @@
+{
+  "phase": "05a",
+  "status": "PASS",
+  "starting_sha": "82d9784cf915f7023ec0f9dfb1ed0acc72426ca2",
+  "recorded_at": "2026-10-31T22:26:49.602184+00:00",
+  "scope": "Football-Data.co.uk retained HT scores/referee normalization through existing resource route",
+  "retained_replay": {
+    "recorded_at": "2026-10-31T22:26:26.688527+00:00",
+    "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+    "source_sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+    "records_seen": 4076,
+    "contracts": {
+      "TeamStatisticObservationV2": 4054,
+      "PeriodScoreObservationV3": 2027,
+      "RefereeObservationV3": 934
+    },
+    "findings": {},
+    "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed.json",
+    "report_sha256": "3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed",
+    "persisted": false,
+    "provider_requests": 0,
+    "operating_mutations": 0,
+    "qualification": "Source normalization only; canonical identity, market semantics and PIT eligibility remain unqualified"
+  },
+  "improvement": {
+    "half_time_observations_before": 0,
+    "half_time_observations_after": 2027,
+    "referee_observations_before": 0,
+    "referee_observations_after": 934,
+    "existing_team_observations_retained": 4054,
+    "canonical_qualification": "NOT_CHANGED",
+    "market_qualification": "NOT_CLAIMED"
+  },
+  "verification": {
+    "red_tests_failed": 8,
+    "focused_tests_passed": 49,
+    "static_type_architecture": "PASS",
+    "database": "READ_ONLY_RETAINED_RESOURCE",
+    "provider_requests": 0,
+    "operating_mutations": 0
+  },
+  "limitations": [
+    "Source referee labels are not canonical identities",
+    "No derived second-half scores or missing-field zeroes",
+    "Unavailable offsides/free-kick/woodwork columns not fabricated",
+    "Existing R3, scientific and production-cutover gates remain"
+  ]
+}

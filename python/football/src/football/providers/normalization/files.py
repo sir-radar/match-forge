@@ -18,6 +18,7 @@ from football.contracts.observations_v2 import (
     ResultObservationV2,
     TeamObservationV2,
 )
+from football.contracts.observations_v3 import PeriodScoreObservationV3, RefereeObservationV3
 from football.product.football_data_uk import _DIVISIONS, _TIMEZONES, _parse_date, csv_members
 from football.product.historical_backfill import date_only_timestamp
 from football.product.openfootball import _COUNTRIES, _kickoff, _team_name
@@ -172,13 +173,7 @@ def _csv_fixture(
             hour=hour, minute=minute, tzinfo=ZoneInfo(_TIMEZONES[country])
         ).astimezone(UTC)
         precision = "EXACT"
-    goals = count(row.get("FTHG")), count(row.get("FTAG"))
-    if (goals[0] is None) != (goals[1] is None):
-        raise ValueError("CSV result requires both scores or neither")
-    if goals[0] is not None and goals[1] is not None:
-        expected = "H" if goals[0] > goals[1] else "A" if goals[1] > goals[0] else "D"
-        if row.get("FTR") not in (None, "", expected):
-            raise ValueError("CSV result label contradicts the score")
+    goals = _csv_score(row, "FT", "result")
     for i, key in enumerate(("HomeTeam", "AwayTeam")):
         output.emit(
             TeamObservationV2, path + "/" + key, team=refs[i], name=row[key], country=country
@@ -245,6 +240,46 @@ def _csv_statistics(
                 period="FULL_MATCH",
                 **values,
             )
+    with output.record(path + "/HT"):
+        _csv_half_time(output, row, path)
+    if row.get("Referee", "").strip():
+        output.emit(
+            RefereeObservationV3,
+            path + "/Referee",
+            fixture=output.context.reference(None, path),
+            referee=output.context.reference(None, path + "/Referee"),
+            name=row["Referee"],
+        )
+
+
+def _csv_score(row: Mapping[str, str], prefix: str, label: str) -> tuple[int | None, int | None]:
+    goals = count(row.get(prefix + "HG")), count(row.get(prefix + "AG"))
+    if (goals[0] is None) != (goals[1] is None):
+        raise ValueError(f"CSV {label} requires both scores or neither")
+    if goals[0] is not None and goals[1] is not None:
+        expected = "H" if goals[0] > goals[1] else "A" if goals[1] > goals[0] else "D"
+        if row.get(prefix + "R") not in (None, "", expected):
+            raise ValueError(f"CSV {label} label contradicts the score")
+    return goals
+
+
+def _csv_half_time(output: ObservationCollector, row: Mapping[str, str], path: str) -> None:
+    half = _csv_score(row, "HT", "half-time result")
+    if half[0] is None:
+        return
+    full = _csv_score(row, "FT", "result")
+    if any(h is not None and f is not None and h > f for h, f in zip(half, full, strict=True)):
+        raise ValueError("CSV half-time score exceeds the full-time score")
+    output.emit(
+        PeriodScoreObservationV3,
+        path + "/HT",
+        fixture=output.context.reference(None, path),
+        period="FIRST_HALF",
+        score_basis="REGULATION_90" if row["Div"] in _DIVISIONS else "UNKNOWN",
+        home_goals=half[0],
+        away_goals=half[1],
+        period_complete=True if full[0] is not None else None,
+    )
 
 
 def _csv_odds(output: ObservationCollector, row: Mapping[str, str], path: str) -> None:

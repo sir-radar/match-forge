@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "04",
+    "current_phase": "05",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2909,7 +2909,8 @@
       "00",
       "01",
       "03",
-      "04"
+      "04",
+      "05a"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2926,6 +2927,9 @@
     "phase_03_ref": "docs/evidence/matchforge-v4-phase-03-2026-10-31.json",
     "phase_03_commit_sha": "1b431b7fcbdaaa0cc55d146141258a544621e0f1",
     "phase_04_status": "PASS",
-    "phase_04_ref": "docs/evidence/matchforge-v4-phase-04-2026-10-31.json"
+    "phase_04_ref": "docs/evidence/matchforge-v4-phase-04-2026-10-31.json",
+    "phase_04_commit_sha": "82d9784cf915f7023ec0f9dfb1ed0acc72426ca2",
+    "phase_05a_status": "PASS",
+    "phase_05a_ref": "docs/evidence/matchforge-v4-phase-05a-2026-10-31.json"
   }
 }
