@@ -1,0 +1,1127 @@
+{
+  "phase": "23",
+  "recorded_at": "2026-11-01T14:19:28.137317+00:00",
+  "reference_sha256": "fac12826b5e44b7c3dba29e8271cfb87228681ee87b35fa0c12523fc097f5734",
+  "reference": "docs/references/matchforge-v4-original-110-section-prompt.md",
+  "authority": "Historical coverage reference only; CURRENT_TASK.md and latest owner corrections remain authoritative.",
+  "scope": "Exit dispositions supplement the immutable Phase 00 baseline matrix; missing/partial requirements are not claimed complete.",
+  "counts": {
+    "already implemented": 26,
+    "partially implemented": 66,
+    "no longer applicable": 2,
+    "superseded": 7,
+    "missing": 10
+  },
+  "requirements": [
+    {
+      "section": 0,
+      "title": "CRITICAL OWNER DECISION \u2014 DEVELOPMENT DATA ACCESS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Public acquisition already exists; record the broader current decision.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 1,
+      "title": "IMPORTANT BOUNDARY \u2014 DO NOT MISINTERPRET THIS DECISION",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01,23",
+      "scope": "Retained completed implementation; baseline evidence: Internal authentication is separate; preserve existing controls.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 2,
+      "title": "EXTERNAL DATA ACCESS \u2014 PRACTICAL BOUNDARY",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "01,03,06\u201313",
+      "scope": "Keep explicit access classes and test ordinary public access.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 3,
+      "title": "EMPIRICAL ACCESS POLICY",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05\u201313",
+      "scope": "Measure bounded access; adapter declarations alone are insufficient.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 4,
+      "title": "REPOSITORY POLICY RECONCILIATION \u2014 MANDATORY",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Reconcile current docs/comments; preserve safeguards.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 5,
+      "title": "UPDATE CONTRADICTORY REPOSITORY DOCUMENTATION",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Update only contradictory current policy.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 6,
+      "title": "HISTORICAL DOCUMENTS / EVIDENCE MUST NOT BE REWRITTEN",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01,23",
+      "scope": "Retained completed implementation; baseline evidence: Historical decisions and reference text remain unchanged.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 7,
+      "title": "CODE COMMENTS / VALIDATION ASSUMPTIONS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Search for official-only rejection; retain quota/schema gates.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 8,
+      "title": "RECORD THE OWNER DECISION DURABLY",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Append the current public development acquisition owner decision.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 9,
+      "title": "EXISTING PROVIDERS FIRST",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03\u201305",
+      "scope": "Retained-field audit and measured expansions implemented; broader eligible historical coverage remains unknown.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 10,
+      "title": "EIGHT MANDATED ADDITIONAL SOURCE INTEGRATIONS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "06\u201313",
+      "scope": "Five scoped partial integrations and three genuine access blockers; no full-provider or live-freshness claim.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 11,
+      "title": "MANDATORY DOES NOT MEAN BLIND",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "06\u201313",
+      "scope": "Retained completed implementation; baseline evidence: Inspect wrappers, direct routes and actual bounded failures separately.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 12,
+      "title": "ADDITIONAL PROVIDERS BEYOND THE MANDATED EIGHT",
+      "baseline_disposition": "NOT_APPLICABLE",
+      "exit_disposition": "no longer applicable",
+      "phase_owners": "23",
+      "scope": "No ninth provider is justified before the required audit and eight sources.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 13,
+      "title": "MISSION",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14,15",
+      "scope": "Extend only measured gaps across all listed resource/context families.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 14,
+      "title": "SPORTYBET-STYLE MARKET COVERAGE OBJECTIVE",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "15,17\u201320,22",
+      "scope": "67 target families; new V4 qualification absent. Existing published goals remain; no new production market approval.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 15,
+      "title": "SELF-LEARNING ARCHITECTURE",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21",
+      "scope": "Existing immutable goal monitor retained; additional settlement, drift and candidate preparation remain blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 16,
+      "title": "SELF-CORRECTION",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "02,14,21",
+      "scope": "Existing append-only corrections/recovery; extend qualified outcomes only.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 17,
+      "title": "REPOSITORY RECONNAISSANCE",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "00",
+      "scope": "Retained completed implementation; baseline evidence: Startup status, source history, schema and runtime were inspected.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 18,
+      "title": "CLASSIFY CURRENT IMPLEMENTATION",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "00",
+      "scope": "Use CURRENT_TASK.md classifications and this coverage reference, not a second task system.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 19,
+      "title": "R3 REMAINS FOUNDATIONAL",
+      "baseline_disposition": "PARTIAL_WITH_BLOCKER",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "02,14",
+      "scope": "R3 remains partial; independent origin/target proof is missing. Existing decisions were retained.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 20,
+      "title": "R3 PRIORITIZATION",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "02",
+      "scope": "Read-only prioritization/previews completed; no unapproved identity mutation.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 21,
+      "title": "PROGRAMME ARTIFACTS",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "00\u201323",
+      "scope": "Reuse current status, existing registries and one programme ledger; no parallel authoritative JSON stores.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 22,
+      "title": "DATA ACCESS POLICY RECONCILIATION ARTIFACT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01",
+      "scope": "Retained completed implementation; baseline evidence: Record searched policy, changed files, preserved evidence and unchanged auth in the programme report.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 23,
+      "title": "PROVIDER CAPABILITY REGISTRY",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "already implemented",
+      "phase_owners": "03",
+      "scope": "Retained completed implementation; baseline evidence: Existing scoped registry owns capability; attach access route evidence without replacing it.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 24,
+      "title": "CAPABILITY STATES",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "03,15",
+      "scope": "Reconcile with current provider availability and market status vocabularies.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 25,
+      "title": "PHASE 1 \u2014 EXISTING PROVIDER CAPABILITY AUDIT",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03",
+      "scope": "Seven real provider namespaces exist; test namespaces are not additional football sources.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 26,
+      "title": "FOTMOB \u2014 DEEP AUDIT",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05,14",
+      "scope": "Audit every listed FotMob fixture/stat/event/shot/player field and feature-specific season depth.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 27,
+      "title": "API-FOOTBALL",
+      "baseline_disposition": "PARTIAL_WITH_BLOCKER",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05",
+      "scope": "API-Football fixture/competition/lineup/availability decode exists; plan access needs current evidence.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 28,
+      "title": "FOOTBALL-DATA.CO.UK",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05",
+      "scope": "CSV FT and six statistic pairs normalize; HT/referee/additional stable fields need gap review.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 29,
+      "title": "PITCHAPI",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05",
+      "scope": "Retained PitchAPI fixtures/shots/xG/events/player/lineup resources; frozen evaluations stay closed.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 30,
+      "title": "FOOTBALL-DATA.ORG / OPENFOOTBALL",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05",
+      "scope": "Reuse existing fixture/history/identity and standings owners.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 31,
+      "title": "STATSBOMB",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,05",
+      "scope": "Pinned StatsBomb resources exist; protected research scopes remain isolated.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 32,
+      "title": "EXISTING PROVIDER EXPANSION",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "05",
+      "scope": "Measured retained-to-qualified enrichment remains to be executed.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 33,
+      "title": "PUBLIC ENDPOINT / SCRAPER ENGINEERING",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04\u201313",
+      "scope": "Reuse bounded HTTP, cache, pagination, retry and raw retention; no new browser service without need.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 34,
+      "title": "WRAPPER POLICY",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "06\u201313",
+      "scope": "Retained completed implementation; baseline evidence: Review wrapper requests/licences and prefer small direct adapters where appropriate.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 35,
+      "title": "EXISTING FIXTURE ENRICHMENT",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "05,14",
+      "scope": "Use qualified fixture IDs, retained checks and shared work before new downloads.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 36,
+      "title": "PHASE 2 \u2014 UNDERSTAT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "06",
+      "scope": "Understat public session/HTML payloads verified for EPL 2024/25; identity, clock and target qualification remain open.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 37,
+      "title": "CLUB ELO",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "07",
+      "scope": "Dated/history ClubElo access returned documented 403/502/timeouts; no dated CSV acquired.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 38,
+      "title": "SOFASCORE",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "08",
+      "scope": "Sofascore returned genuine 403 responses; no bypass or fake adapter.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 39,
+      "title": "ESPN",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "09",
+      "scope": "ESPN public scoreboard/summary verified; live probe returned no fixtures and does not establish freshness.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 40,
+      "title": "FBREF",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "10",
+      "scope": "FBref current/history tables returned 403; wrapper uses the same blocked service.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 41,
+      "title": "WHOSCORED",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "11",
+      "scope": "WhoScored league fixture/card payloads verified; match-detail route blocked and live freshness unverified.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 42,
+      "title": "FLASHSCORE",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "12",
+      "scope": "Flashscore page/feed history, statistics and incidents verified; samples are not complete history or qualified live data.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 43,
+      "title": "SOCCERWAY",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "13",
+      "scope": "Soccerway native page/feed samples verified; upstream dependence retained, not independent confirmation.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 44,
+      "title": "MANDATED PROVIDER COMPLETION",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "06\u201313",
+      "scope": "All eight sources have explicit scoped functional/partial/blocked evidence and resume conditions.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 45,
+      "title": "PHASE 3 \u2014 CANONICAL IDENTITY / PROVENANCE",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "02,14",
+      "scope": "Native lineage and canonical resolution owners reused; new identity/temporal/semantic qualification remains incomplete.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 46,
+      "title": "PLAYER IDENTITY",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "14",
+      "scope": "1,240 exact recorded StatsBomb player mapping claims, not new cross-provider admissions; continuous membership/transfers unknown.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 47,
+      "title": "RAW PROVENANCE",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "04\u201314,23",
+      "scope": "Retained completed implementation; baseline evidence: Existing immutable raw manifests retain exact bytes, clocks, hashes and processing versions.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 48,
+      "title": "PHASE 4 \u2014 FEATURE-AWARE HISTORICAL ACQUISITION",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14",
+      "scope": "Shadow replay covers all retained StatsBomb event/lineup resources without an arbitrary year floor; qualification remains separate.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 49,
+      "title": "BACKFILL PIPELINE",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,05,14",
+      "scope": "Existing acquisition/normalization/identity/coverage owners must compose into resumable enrichment.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 50,
+      "title": "HISTORICAL DEPTH",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03,14",
+      "scope": "Source-season samples and field/period coverage measured. Qualified target historical depth and expected universe remain unknown.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 51,
+      "title": "POINT-IN-TIME RULES",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "04\u201323",
+      "scope": "Retained completed implementation; baseline evidence: Separate knowledge/acquisition/provider/valid clocks; late old history cannot become earlier knowledge.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 52,
+      "title": "CANONICAL RICH DATA",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14",
+      "scope": "Existing resource observations/storage cover most families; investigate rating/referee/manager gaps.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 53,
+      "title": "MATCH STATS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,05",
+      "scope": "Richer observed team counts retained; missing/zero distinctions and unsupported semantics remain explicit.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 54,
+      "title": "PERIOD STATISTICS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,15,17",
+      "scope": "Observed period scores/statistics retained; no unqualified period probability model.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 55,
+      "title": "SHOT OBSERVATIONS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,05,14",
+      "scope": "Shot/xG/context contracts and retained values expanded; coordinate/time/source equivalence unknown where unproven.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 56,
+      "title": "PLAYER OBSERVATIONS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,05,14",
+      "scope": "Native player/event/statistic fields retained; time-aware membership and canonical target qualification remain open.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 57,
+      "title": "CONTEXT",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14,18",
+      "scope": "Existing context owners reused; new tactical/referee/manager modelling requires qualified history and bounded research.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 58,
+      "title": "MANAGER INTELLIGENCE",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14,18",
+      "scope": "Fixture-scoped manager/referee evidence retained; no tenure or interaction model inferred.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 59,
+      "title": "LINEUP SEMANTICS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14,15",
+      "scope": "Observed/predicted lineup semantics preserved; participation and target settlement qualification remain incomplete.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 60,
+      "title": "SEMANTIC REGISTRY",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "15",
+      "scope": "Retained completed implementation; baseline evidence: Provider resource contracts exist; target-specific compatibility/settlement definitions remain missing.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 61,
+      "title": "SPORTYBET / OPTA SEMANTICS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "15",
+      "scope": "Versioned target meanings implemented; SportyBet/Opta equivalence is explicitly unverified.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 62,
+      "title": "MARKET CAPABILITY REGISTRY",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "15",
+      "scope": "Retained completed implementation; baseline evidence: Market readiness is distinct from existing provider resource capability.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 63,
+      "title": "MARKET STATUS",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "15",
+      "scope": "Use current plan publication states plus separate diagnostic reasons; do not create competing enums.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 64,
+      "title": "GOAL/RESULT MARKETS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "17",
+      "scope": "Exact score projections implement DNB, compatible handicaps, ranges, margins and joint goal outcomes; tail bounds remain explicit. No new target publication grant.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 65,
+      "title": "PERIOD MARKETS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "17",
+      "scope": "Period definitions/readiness exist, but no qualified period model or probabilities; no full-time intensity halving.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 66,
+      "title": "CORNERS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "18",
+      "scope": "Existing Poisson/NB corner engine and 760 labels retained; frozen FAIL remains closed; no new qualified corner model.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 67,
+      "title": "CARDS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "18,19",
+      "scope": "Card observations/definitions exist; no qualified model or target rules for new count/points products.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 68,
+      "title": "SHOTS / SOT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "18,19",
+      "scope": "Shots/SOT observations/definitions exist; no qualified team/player model or validated paired dependence.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 69,
+      "title": "OTHER TEAM STATISTICS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "18",
+      "scope": "Team statistic observations/definitions exist; no forced generic Poisson or qualified new model.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 70,
+      "title": "PLAYER PARTICIPATION",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "missing",
+      "phase_owners": "19",
+      "scope": "Participation inputs remain unqualified; no assumed start, minutes or nonappearance distribution.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 71,
+      "title": "PLAYER MARKETS",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "missing",
+      "phase_owners": "19",
+      "scope": "No qualified player model; identity, membership, exposure, settlement and scientific gates remain.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 72,
+      "title": "JOINT MARKET MODELING",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "20",
+      "scope": "Goal-only joint algebra is implemented; aligned non-goal/player outcomes and dependence validation remain blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 73,
+      "title": "LIVE MULTI-PROVIDER SYSTEM",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "16",
+      "scope": "Existing FotMob/PitchAPI reused; no additional source has passed live identity/freshness qualification.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 74,
+      "title": "LIVE OBSERVATIONS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "16",
+      "scope": "Existing score/clock/incidents/statistics remain; source timestamp absence and uncertain ordering stay explicit.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 75,
+      "title": "LIVE RECONCILIATION",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "16",
+      "scope": "Stale/equal-clock score guards and visible conflicts implemented; source/correction/lifecycle qualification remains partial.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 76,
+      "title": "PROVIDER FALLBACK",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "16",
+      "scope": "Deterministic existing-provider serving fallback is tested; new-source eligibility remains blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 77,
+      "title": "FEATURE ENGINEERING",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "14,18",
+      "scope": "Existing features retained and useful source fields expanded; no unqualified historical features admitted.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 78,
+      "title": "INTERACTIONS",
+      "baseline_disposition": "PARTIAL_WITH_BLOCKER",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "18\u201320",
+      "scope": "New interactions are not modelled without preregistration, qualified inputs and bounded research.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 79,
+      "title": "FORECAST ARTIFACTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "17\u201321",
+      "scope": "Existing immutable artifacts/forecasts retained; new product families have no qualified fitted artifacts.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 80,
+      "title": "OUTCOME SETTLEMENT",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21",
+      "scope": "Existing goal correction-safe snapshot/monitor workflow tested; new market outcome contracts remain blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 81,
+      "title": "SELF-LEARNING REGISTRY",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21",
+      "scope": "Existing work/artifact/experiment owners retained; new qualified outcome-to-candidate loop remains incomplete.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 82,
+      "title": "METRICS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21",
+      "scope": "Existing goal proper scores/CRPS/calibration remain; new market scoring lacks qualified forecasts/outcomes.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 83,
+      "title": "DRIFT",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21",
+      "scope": "Existing metric/coverage monitoring remains; new source/feature/missingness drift extension is not complete.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 84,
+      "title": "CHALLENGER PIPELINE",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "missing",
+      "phase_owners": "21",
+      "scope": "No fabricated candidate corpus or training run. Qualified data and explicit frozen research/evaluation authorization required.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 85,
+      "title": "SCIENTIFIC FIREWALL",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "17\u201321,23",
+      "scope": "Retained completed implementation; baseline evidence: Existing frozen protocol/firewalls remain binding on every new scientific route.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 86,
+      "title": "API / FRONTEND / ADMIN",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "22",
+      "scope": "Scoped private-local capability API/Admin implemented; existing goals/live/context UI retained. No new qualified non-goal probabilities.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 87,
+      "title": "ADMIN DATA OPERATIONS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "22",
+      "scope": "Data Sync adds scoped readiness/source/coverage/model/settlement diagnostics; Resolution Center remains identity owner. Acquisition activation remains gated.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 88,
+      "title": "PROVIDER TESTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04\u201314",
+      "scope": "Adapter/contract/source retry checks pass where data was available; inaccessible provider decoding remains untested rather than fabricated.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 89,
+      "title": "IDENTITY TESTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "02,14",
+      "scope": "Identity/history tests and retention checks pass; unresolved live admissions remain blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 90,
+      "title": "PIT TESTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04\u201323",
+      "scope": "Existing cutoff/correction/same-batch tests must cover new resource consumers.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 91,
+      "title": "MARKET DATA TESTS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04,14,15,18\u201321",
+      "scope": "Input/semantic/coverage tests pass; actual qualified statistical market datasets and model acceptance remain unavailable.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 92,
+      "title": "LIVE TESTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "16",
+      "scope": "Clock, stale conflict, lifecycle and current frontend tests pass; no new-source live quality acceptance.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 93,
+      "title": "MODEL TESTS",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "17\u201321",
+      "scope": "Existing/synthetic and coherent algebra tests pass; no new authoritative model evaluation.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 94,
+      "title": "PERFORMANCE",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04\u201323",
+      "scope": "Existing Rust/work/cache boundaries reused and bounded API tested; no unsupported high-volume model/simulation extension.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 95,
+      "title": "PROVIDER POLITENESS / RESOURCE CONTROL",
+      "baseline_disposition": "ALREADY_COMPLETE_VERIFIED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "05\u201316",
+      "scope": "Retained completed implementation; baseline evidence: Existing runtime policies/accounting provide bounds/cache/cooldown/failure isolation; preserve in new adapters.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 96,
+      "title": "REQUIRED PROVIDER REPORT",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "03,14,23",
+      "scope": "Retained completed implementation; baseline evidence: Provider report must use measured access/depth/qualification, not declarations.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 97,
+      "title": "REQUIRED MANDATED PROVIDER REPORT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "06\u201313,23",
+      "scope": "Retained completed implementation; baseline evidence: Per-provider report records tests, blockers, incremental value and all requested resource fields.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 98,
+      "title": "REQUIRED MARKET REPORT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "15,23",
+      "scope": "Retained completed implementation; baseline evidence: Per-market readiness report must include semantics, history, model, evaluation and next action.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 99,
+      "title": "ADDITIONAL PROVIDER REQUIREMENTS",
+      "baseline_disposition": "NOT_APPLICABLE",
+      "exit_disposition": "no longer applicable",
+      "phase_owners": "23",
+      "scope": "Assess additional sources only after existing plus eight-source evidence.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 100,
+      "title": "REQUIRED POLICY REPORT",
+      "baseline_disposition": "NOT_IMPLEMENTED",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01,23",
+      "scope": "Retained completed implementation; baseline evidence: Include explicit policy reconciliation and preserved internal auth in delivery report.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 101,
+      "title": "PHASE EXECUTION ORDER",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "00\u201323",
+      "scope": "Independent phase commits/receipts retained. Earlier production-only type checks missed introduced test typing; Phase 23 records the correction and full gate results without rewriting history.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 102,
+      "title": "DO NOT STOP AT PLANNING",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "already implemented",
+      "phase_owners": "00\u201323",
+      "scope": "Retained completed implementation; baseline evidence: Implement unblocked engineering after reconnaissance; ledger alone is not delivery.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 103,
+      "title": "FINAL DELIVERABLES",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "00\u201323",
+      "scope": "Substantial engineering/data delivery is committed; complete programme acceptance remains blocked by data/scientific/cutover prerequisites.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 104,
+      "title": "FINAL REPORT",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "23",
+      "scope": "Retained completed implementation; baseline evidence: Report actual before/after, commits, evidence, limitations and exact resume actions.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 105,
+      "title": "FINAL ACCEPTANCE \u2014 DATA ACCESS POLICY",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "already implemented",
+      "phase_owners": "01,23",
+      "scope": "Retained completed implementation; baseline evidence: Verify every external-access acceptance item and preserved internal authorization.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 106,
+      "title": "FINAL ACCEPTANCE \u2014 PROVIDERS",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "03\u201314,23",
+      "scope": "All eight source dispositions documented; complete qualified canonical/live/history coverage is not claimed.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 107,
+      "title": "FINAL ACCEPTANCE \u2014 DATA QUALITY",
+      "baseline_disposition": "EXISTS_NEEDS_EXTENSION",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "04\u201323",
+      "scope": "Provenance/immutability/PIT gates preserved; identity, target semantics and historical eligibility remain incomplete.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 108,
+      "title": "FINAL ACCEPTANCE \u2014 MARKETS",
+      "baseline_disposition": "PARTIAL_WITH_BLOCKER",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "17\u201320,23",
+      "scope": "New goal algebra and honest diagnostics delivered; qualified period/count/player/dependence markets remain blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 109,
+      "title": "FINAL ACCEPTANCE \u2014 SELF-LEARNING",
+      "baseline_disposition": "PARTIAL",
+      "exit_disposition": "partially implemented",
+      "phase_owners": "21,23",
+      "scope": "Existing goal monitor retained; new settlement/drift/candidate loop remains blocked.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    },
+    {
+      "section": 110,
+      "title": "EXECUTE NOW",
+      "baseline_disposition": "SUPERSEDED",
+      "exit_disposition": "superseded",
+      "phase_owners": "00\u201323",
+      "scope": "Authorized independent engineering phases executed; no scientific or cutover gate crossed to manufacture completion.",
+      "evidence": "docs/V4_IMPLEMENTATION_REPORT.md; per-phase evidence and Phase 23 final acceptance/preservation records",
+      "qualification_note": "Implementation/preservation of an existing rule is not a new model, provider or production acceptance."
+    }
+  ]
+}

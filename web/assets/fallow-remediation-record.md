@@ -40,3 +40,7 @@ complexity threshold. The frontend health command still fails on three
 pre-existing functions outside this change (`MatchInterpretation`,
 `PerformancePage`, and `DataSyncAdmin`). No suppression or automated
 remediation was applied.
+
+## V4 Phase 23 — final correction review
+
+Final combined root and installed-dependency web scans report no task-introduced cleanup or clone finding. The CSS-module selector finding was corrected with a targeted form selector and computed browser assertions; no automatic deletion, suppression or configuration change. One existing CLI-config discovery finding and ten pre-existing health findings remain. The two full-programme security candidates (validated identifier regex and fixed-origin encoded query) were manually ruled out. Final staged scan has zero candidates. Full envelopes, revision/staged-patch checksum, blind spots and per-finding dispositions: `.local/reports/v4/phase-23/fallow-remediation-record.md`; checksummed by final phase evidence.

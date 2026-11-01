@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T10:37:27.299720Z",
+  "updated_at": "2026-11-01T14:52:23.911577Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2895,8 +2895,8 @@
     "production_readiness": "BLOCKED"
   },
   "v4_programme": {
-    "status": "IN_PROGRESS",
-    "current_phase": "22",
+    "status": "BLOCKED_WITH_EVIDENCE",
+    "current_phase": "23",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2925,7 +2925,8 @@
       "13",
       "15",
       "17",
-      "22"
+      "22",
+      "23"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -3053,6 +3054,40 @@
     "phase_21_ref": "docs/evidence/matchforge-v4-phase-21-2026-11-01.json",
     "phase_21_commit_sha": "e5ca743ebc636e575ea6d89c7578c3d107e25445",
     "phase_22_status": "PASS_WITH_WARNINGS",
-    "phase_22_ref": "docs/evidence/matchforge-v4-phase-22-2026-11-01.json"
+    "phase_22_ref": "docs/evidence/matchforge-v4-phase-22-2026-11-01.json",
+    "full_programme_complete": false,
+    "phase_22_commit_sha": "a895197ddbb830c5a4e3bb59f6b1f9479bf199d5",
+    "phase_23_status": "PASS_WITH_WARNINGS",
+    "phase_23_engineering_gate": "PASS_WITH_WARNINGS",
+    "phase_23_ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json",
+    "phase_23_coverage_ref": "docs/evidence/matchforge-v4-phase-23-coverage-2026-11-01.json",
+    "phase_23_source_correction_commit_sha": "8263ae1f1ba55085d55047132bb5c9fd6a85edc8",
+    "phase_23_final_commit_location": "CURRENT_TASK_STATUS.md; Git history exact final verification subject",
+    "requirements_exit_counts": {
+      "already implemented": 26,
+      "partially implemented": 66,
+      "no longer applicable": 2,
+      "superseded": 7,
+      "missing": 10
+    },
+    "required_next_action": "Qualify a bounded retained source/competition/resource population through the existing identity and coverage owners in an isolated database, starting with independent origin/target proof and explicit time/quantity/settlement semantics. Scientific model work requires the existing bounded frozen research gate after those prerequisites. No further implementation is represented as accepted.",
+    "completed_phase_scope": "Committed scoped engineering/provider checkpoints; individual phase statuses and full_programme_complete govern acceptance. Partial/blocked functionality is not complete.",
+    "verification_corrections": [
+      {
+        "checkpoint": "23",
+        "ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json",
+        "source_commit_sha": "8263ae1f1ba55085d55047132bb5c9fd6a85edc8",
+        "supplements": [
+          "14",
+          "15",
+          "16",
+          "17",
+          "20",
+          "22"
+        ],
+        "correction": "Earlier focused production-file typing missed introduced test typing. Final full checks corrected those errors, two live lifecycle regressions, a CSS-module selector and pre-existing immediate recovery host/database clock races. Original receipts remain historical evidence."
+      }
+    ],
+    "remaining_gates_ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json#remaining_gates"
   }
 }

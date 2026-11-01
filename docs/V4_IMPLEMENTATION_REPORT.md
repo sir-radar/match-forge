@@ -1202,3 +1202,187 @@ pass; one existing desktop-only conditional skip remains. The two final layout
 cases pass after local stylesheet verification. Axe, keyboard controls, 320px
 reflow, reduced motion and forced colors pass on the tested scope. Physical
 screen-reader/zoom checks and an approved pixel baseline are not claimed.
+
+## Phase 23 — final verification and programme disposition
+
+Engineering gate: **PASS_WITH_WARNINGS**. Programme acceptance:
+**BLOCKED_WITH_EVIDENCE — NOT COMPLETE**. These are different conclusions.
+The branch contains independently committed engineering checkpoints through
+Phase 22 and the final Phase 23 corrections and verification. The remaining
+identity, data, model, settlement and migration prerequisites have not passed.
+No new scientific evaluation, model promotion or production cutover was run.
+
+The original coverage reference remains unchanged. The final
+[requirement dispositions](evidence/matchforge-v4-phase-23-coverage-2026-11-01.json)
+supplement the Phase 00 matrix: 26 sections implemented, 66 partial, ten missing,
+seven superseded and two no longer applicable. A retained policy or implemented
+primitive does not mean the broader requested statistical product is qualified.
+All 22 programme acceptance criteria have an explicit outcome in the
+[final evidence](evidence/matchforge-v4-phase-23-2026-11-01.json).
+
+### Verification correction checkpoint
+
+The first final aggregate run found 64 strict-mypy errors in four test files.
+Earlier production-file checks did not cover the full configured test typing.
+Those earlier focused receipts are retained, with this explicit correction;
+they must not be read as a full typing pass at their original commits.
+Annotations and runtime narrowing corrected the tests without suppressions or
+removed assertions. Full mypy now passes all 485 configured files.
+
+The next aggregate run found two existing lifecycle/concurrency regressions:
+`test_operational_mutation_waits_for_identity_before_locking_fixture` and
+`test_provider_observation_changes_target_during_forecast_preparation`.
+A canonical receipt now supplies only a conservative `known_by` bound when no
+prior provider observation exists. An actual native update time can prove that
+it came later; HTTP acquisition time cannot substitute for that native clock.
+Verified SCHEDULED → LIVE/HALF_TIME milestones do not require an optional minute.
+Unknown reversible changes remain unordered and different known providers'
+clocks do not arbitrate each other. Both unchanged integration assertions and
+22 focused disposable database cases pass, with nine live ordering unit cases.
+This correction supplements Phase 16; it does not qualify another live provider.
+
+A later full run exposed fourteen immediate recovery/file/parity queue failures: the host clock could put newly queued work after PostgreSQL’s eligibility clock, returning BUSY or no claim. Three deterministic ahead-host regression cases failed before the fix. Those immediate jobs now take their availability timestamp from PostgreSQL, following the existing stage worker rule. Scheduled deadlines, retry policy, lease expiry and worker fencing are unchanged. Full recovery/file/parity tests and the final aggregate rerun verify the correction. The failed receipt remains available and is not relabelled as a pass.
+
+Final frontend review also found a CSS-module class that could not match the
+form's existing global class. The owning section now scopes those rules to its
+form, with actual computed wrap and button-size browser assertions. No shared
+component, token or dependency was added. The dynamic regular-expression
+candidate is restricted by an earlier identifier character check; the request
+candidate uses a fixed configured origin and URLSearchParams. No verified
+security candidate remains. Fallow reports no task-introduced cleanup or clone
+finding; its existing config-file and ten estimated-health findings are retained
+with explicit dispositions. Root and installed-dependency web scans and staged
+security receipts are kept locally. No scanner rule, ignore or baseline changed.
+
+### Final checks and limits
+
+- `. ./scripts/toolchain.sh; make check integration`: exit 0 after corrections.
+  Python 2,006 tests with seven dependency warnings; strict mypy 485 files;
+  Rust 16 tests; Go checks/tests/build; architecture/status checks; web 126 tests,
+  types/lint/build; 857 disposable storage cases and fresh migration invariants;
+  PostgreSQL/Redis/Go integration. Disposable migrations reached `202610310800`.
+  This is test evidence, not an operating deployment.
+- `. ./scripts/toolchain.sh; cd web; pnpm test:e2e --workers 2`: exit 0,
+  38 passed and 26 conditional skips. Twenty-four skips predate this task; two
+  require the actual-reader harness and passed separately on desktop/mobile in
+  Phase 22. The final CSS correction also has a focused current-build browser
+  rerun, recorded in the final evidence. No failing test was skipped.
+- Final ProjectStatusV2 validation, 24 governance tests and `git diff --check`
+  pass after the durable status/evidence edits. Full command logs and checksums
+  are listed in the final evidence; initial failure logs remain available.
+
+One pre-existing ESLint unused `_input` warning remains. Physical screen-reader
+and browser-zoom interaction were not run; there is no WCAG-conformance or
+approved pixel-baseline claim. Fallow's syntactic analysis does not measure
+unconfigured architecture/policy rules; the existing MatchForge architecture
+check remains in force. The optional identity/crosswalk/history Make targets
+were not run because they depend on migrating the operating database. The
+read-only exact-case review and preservation audit cover this task's safe scope.
+No frozen evaluation population was reopened to manufacture acceptance.
+
+### Before and after
+
+| Area | Before | Verified result and remaining limit |
+| --- | --- | --- |
+| Architecture | Existing V2 registries, Resolution Center, API/Admin, goals/corners, post-match owner | Reused all owners. No replacement orchestrator, capability registry, identity UI, model engine, evaluation framework or Admin/API. |
+| Sources | Seven established sources | Five new verified partial integrations; three actual service-access blockers. 27 unique task-acquired registered resources have verified bytes, manifests, sizes and checksums. |
+| Normalization | Zero operating V2 observation/capability rows at baseline | 12,310 immutable artifacts and 26 decisions registered during Phases 05–13. This violated the required isolation policy and remains an explicit deviation. Phase 14 onward uses isolated normalization: 84,610 artifacts from 1,524 retained resources and 3,044 succeeded work scopes. |
+| Historical coverage | Existing retained history; rich unused fields | 1,305 native coverage scopes measured; 718 operating and 52 shadow field/period rows. Understat EPL 2024/25 has 380 fixtures, 760 team-history rows and source dates 2024-08-16–2025-05-25. Flashscore/Soccerway sample 195 current-season and 109 2024/25 fixture rows; shared upstream data is not independent confirmation or complete history. Expected eligible universes and qualified target depth remain unknown. |
+| Player coverage | Existing mapping claims | 1,240 exact existing StatsBomb native-player claims reconciled; no admissions. Six provider samples of 40 references and 32 sampled Understat player references remain without mapping claims. Qualified continuous membership, transfers and exposure remain unknown. |
+| Live | Existing FotMob/PitchAPI | Retained; football-clock guards and visible conflicts added, HT interpretation corrected. No additional source passed live identity/freshness/correction qualification. |
+| Markets | Existing goal products and research corner baselines | 67 defined target families and scoped readiness API/Admin. Exact-matrix DNB, handicaps, ranges/margins and result × total/BTTS algebra; unresolved tail bounds retained. No new model or publication grant. Current diagnostic: 53 data required, 14 insufficient player data. |
+| Models | Champion and closed/research routes | Champion unchanged. No new qualified period/count/player/dependence model, authoritative fit/evaluation or accepted shadow market. Existing failed research remains closed. |
+| Settlement/learning | Existing immutable correction-safe goal monitoring | Retained and regression-tested. Additional-market settlement, source/feature/missingness drift and reproducible challenger preparation remain incomplete. Automatic promotion remains disabled. |
+| Identity/cutover | R3 partial; V2 phases 35/36 blocked | Still partial/blocked. No production routing change, operating migration or legacy retirement. |
+
+New source routes are source-specific: Understat public session/HTML payloads;
+ESPN public scoreboards/summaries; WhoScored public league fixture/card payloads;
+Flashscore public pages/history/statistics/incident feeds; Soccerway native
+pages/feeds with recorded upstream dependence. ClubElo dated/history access
+returned 403/502/timeouts; Sofascore and FBref returned genuine 403 responses.
+A wrapper around the same blocked service is not another working source.
+Existing source expansions retain observed HT/referee, shot/xG, team/player,
+standings and fixture-scoped manager values without inventing clock precision,
+continuous tenure, provider equivalence or model eligibility.
+
+### Preservation
+
+The final read-only repeatable snapshot at `2026-11-01T14:16:16.010071+00:00`
+retains every baseline row unchanged:
+
+| Relation | Baseline rows retained | Current rows | Changed/missing baseline rows |
+| --- | ---: | ---: | ---: |
+| Forecasts | 13,067 | 13,241 | 0 |
+| Identity admissions | 21,759 | 21,759 | 0 |
+| Provider mapping decisions | 1,889,307 | 2,279,572 | 0 |
+| Model artifacts | 5,230 | 5,230 | 0 |
+| Source resources | 55,653 | 62,130 | 0 |
+
+Background acquisition continued; its additions are not all task acquisitions.
+The champion reload and physical checksum remain
+`e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+V1/V2 observation schemas match the starting commit, V3 matches Phase 04, and
+the reference and original preservation file are unchanged. All 27 task-acquired
+resource files pass exact verification. This does not claim a byte audit of the
+entire legacy raw archive or a rerun of every historical forecast. Historical
+cutoff, same-batch, correction, retry and worker-fence tests pass in disposable
+populations; no new model gained retroactive knowledge.
+
+### Resume points and gates
+
+| Phase | Remaining blocker | Resume condition |
+| --- | --- | --- |
+| 02, 14 | Independent origin/target proof; canonical identity and historical field qualification | Exact retained proof through the existing Resolution Center and coverage owners in an isolated database; retain terminal decisions. |
+| 07 | ClubElo dated/history transport blocked | A genuinely working dated/history route with retained bytes. |
+| 08, 10 | Sofascore/FBref service access blocked | Verified working permitted routes or restored access. |
+| 06, 09, 11–14 | Partial source coverage/identity/time/meaning | Qualify a bounded provider/competition/resource population; source samples alone are insufficient. |
+| 16 | New-source live freshness/identity/lifecycle/correction proof | Repeated actual live observations with football clock and correction evidence. |
+| 17–20 | Qualified period/count/player/paired outcomes and bounded research absent | Exact label, identity, time, participation and settlement proof; then the required new scientific authorization and frozen evaluation. |
+| 21 | Additional-market forecasts/outcomes/settlement and learning contracts absent | Complete those prerequisites, then extend the existing post-match owner with immutable target/correction/void lineage and reproducible candidate work. |
+| V2 35/36 | Authentic evidence, production parity and explicit acceptance; normalization deviation | Owner disposition before destructive remediation or cutover. Preserve immutable Phase 05–13 registrations and isolated normalization until separately accepted cutover. |
+
+**Exact next action:** qualify a bounded retained source/competition/resource
+population through the existing identity and coverage owners in an isolated
+database, starting with independent origin/target proof and explicit time,
+quantity and settlement rules. Model research follows its existing scientific
+gate after these prerequisites. The engineering delivery does not authorize
+production cutover, automatic promotion or reopening failed research.
+
+### Independent phase commits
+
+Provider phases 05 and 12 were split into independently verified checkpoints.
+Statuses below retain the original scoped conclusions; later corrections supplement them.
+
+| Phase | Recorded status | Exact commit SHA |
+| --- | --- | --- |
+| 00 | PASS | `bfb581e14f2a97917e5f7da87919b88aec479bf1` |
+| 01 | PASS | `6331628f66951b995ce690121558ac26f23d7003` |
+| 02 | BLOCKED_WITH_EVIDENCE | `956d0f7950c89cc1b7bdbacc1605cbd75435bc66` |
+| 03 | PASS_WITH_WARNINGS | `1b431b7fcbdaaa0cc55d146141258a544621e0f1` |
+| 04 | PASS | `82d9784cf915f7023ec0f9dfb1ed0acc72426ca2` |
+| 05a | PASS | `14ef3128fd4e0fa455e368275f9700bbab78bf57` |
+| 05b | PASS_WITH_WARNINGS | `3bc0e85b06ccd13e67d00249ba60e91df961367b` |
+| 05c | PASS_WITH_WARNINGS | `a6f2c95a212e23df61646fad3041028a3bb27a50` |
+| 05d | PASS_WITH_WARNINGS | `edfc232d84523e3b63106b0924fd7fdea60977aa` |
+| 06 | PARTIAL_FUNCTIONAL | `88dc6035721074e401334f8c7be8c8742101699f` |
+| 07 | BLOCKED_WITH_EVIDENCE | `bbf9770131bfbe710d37e0f0762a4b626165681d` |
+| 08 | BLOCKED_WITH_EVIDENCE | `1c2e34364fa33bbf5e983be9a4f8e1618f603762` |
+| 09 | PARTIAL_FUNCTIONAL | `ca6c73ea45843a2f97ef205593490b5d74ba1c1e` |
+| 09 verification correction | PASS | `428b1f9162c9ce50027e91987d2079e31432c81b` |
+| 10 | BLOCKED_WITH_EVIDENCE | `92e919b10121bd3f1ceda212ba77a2307b3406b2` |
+| 11 | PARTIAL_FUNCTIONAL | `22cd2d4aefb253c8795cc357825f331bfb91119b` |
+| 12a | PARTIAL_FUNCTIONAL | `27e5dff2388da7a15c002e6ad72f8ad3666278f1` |
+| 12b | PARTIAL_FUNCTIONAL | `b0c03f9ac56cd967bbb9d138d552f33e874a0e0e` |
+| 12c | PARTIAL_FUNCTIONAL | `5e200ca7f098b8902e42d3c23d088e594c44ebcb` |
+| 13 | PARTIAL_FUNCTIONAL | `6d42c2cca0b9376194257a9ce0a3c8a9b1552550` |
+| 14 | PARTIAL_FUNCTIONAL | `e58c9bee0c39b1b45cc2ff943f34478767098672` |
+| 15 | PASS_WITH_WARNINGS | `a9d19a38d3f2a64e4853a15ffd820695a6923b20` |
+| 16 | PARTIAL_FUNCTIONAL | `dc8ffa9f23e8152c5c84895c6b7cc5c1b85c7bbb` |
+| 17 | PASS_WITH_WARNINGS | `bec63abb1102e2b29375a3e1eb92a003670c2b3e` |
+| 18 | BLOCKED_WITH_EVIDENCE | `3ee2a033ec54dd4f0fd80dbd5be5bfa259a930eb` |
+| 19 | BLOCKED_WITH_EVIDENCE | `36510d9c909d821507b090ba6a64a3580d470e23` |
+| 20 | PARTIAL_FUNCTIONAL | `19b4494ad43db2d32f2d293467e3dfaf3b443d4d` |
+| 21 | BLOCKED_WITH_EVIDENCE | `e5ca743ebc636e575ea6d89c7578c3d107e25445` |
+| 22 | PASS_WITH_WARNINGS | `a895197ddbb830c5a4e3bb59f6b1f9479bf199d5` |
+| 23 corrections | PASS_WITH_WARNINGS | `8263ae1f1ba55085d55047132bb5c9fd6a85edc8` |
+| 23 final verification | PASS_WITH_WARNINGS; full programme BLOCKED_WITH_EVIDENCE | This section’s `docs(v4): verify phased implementation and final capability coverage` commit; exact SHA recorded in CURRENT_TASK_STATUS.md and final handoff. |
