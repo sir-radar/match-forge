@@ -843,3 +843,40 @@ history and identity/target/PIT qualification remain unverified. Phase 13 follow
 Phase 12c final review added registered feed-family validation. Three regression
 cases reject cross-family inputs even when fixture IDs agree. A final read-only
 replay confirms all six Flashscore report hashes remain unchanged.
+
+## Phase 13 — Soccerway
+
+Status: PARTIAL_FUNCTIONAL. Phase 12c commit: `5e200ca`.
+
+The old national-league route returns the homepage. Its actual current league
+link and 2024–25 archive returned usable feeds. The site's client modules and
+native feed-definition files exactly match the verified Flashscore files.
+The adapter/parser reuse that format with separate Soccerway provenance, URL
+prefixes and project ID 2020. Flashscore remains project 2. Cross-project pages
+are rejected before a feed request. Both observed feed-assignment quote styles
+are parsed with matching quotes. Existing Flashscore behavior remains verified.
+
+The actual adapter completed seven guarded requests: current/history pages,
+the native match page and four rich feeds. Six fenced normalizations published
+1,183 observations, including 195 current fixtures, 88 current results, 109
+historical fixtures/results, eight statistic/xG observations, sixteen events,
+forty players, two coaches, two lineups, two period scores and a referee label.
+These are partial page/match samples. Live freshness and wider history are not
+independently qualified. Missing minutes, unknown confirmation, anonymous team
+references and target-definition gaps keep their existing conservative meaning.
+
+Four rich sample bodies are byte-identical across Soccerway and Flashscore.
+Distinct registrations and provenance do not make them independent football
+confirmations. No cross-provider identity or data-independence assumption was
+made from shared IDs, names or code. This matters for later source reconciliation
+and statistical evaluation.
+
+[Phase 13 evidence](evidence/matchforge-v4-phase-13-2026-11-01.json) retains exact
+routes, clocks, hashes and publication. All 1,183 artifacts loaded and retried
+without extra rows. Twelve registered reports, including all earlier Flashscore
+reports, retain their hashes. Totals are 12,310 observations and twenty-six
+capability decisions. No identity, forecast/model or routing change occurred.
+Verification: 252 focused disposable tests, static/type/complexity, architecture,
+21 governance tests, status and diff checks passed. All eight additional sources
+now have tested partial capabilities or documented access blockers. Phase 14
+follows; scientific, identity and cutover/retirement gates remain unchanged.

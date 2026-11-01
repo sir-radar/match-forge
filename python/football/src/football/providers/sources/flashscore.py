@@ -24,6 +24,11 @@ FeedTransport = Callable[[str, Mapping[str, str]], HttpResponseV1]
 
 
 class FlashscoreSource:
+    PROVIDER = "flashscore"
+    BASE_URL = "https://www.flashscore.com/"
+    LEAGUE_PREFIX = "football/"
+    PROJECT_ID = 2
+
     def __init__(
         self,
         *,
@@ -43,25 +48,25 @@ class FlashscoreSource:
             re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", part) is None
             for part in (country_slug, competition_slug)
         ):
-            raise ValueError("Flashscore league requires native country/competition URL slugs")
-        key = f"football/{country_slug}/{competition_slug}/results"
+            raise ValueError(f"{self.PROVIDER} league requires native country/competition slugs")
+        key = f"{self.LEAGUE_PREFIX}{country_slug}/{competition_slug}/results"
         if self._guard is not None:
             self._guard()
         response = self._transport.get_response(
-            "https://www.flashscore.com/" + key + "/", timeout_seconds=30, max_bytes=8 * 1024 * 1024
+            self.BASE_URL + key + "/", timeout_seconds=30, max_bytes=8 * 1024 * 1024
         )
-        return _payload(key, response)
+        return _payload(self.PROVIDER, key, response)
 
     def match(self, provider_match_id: str) -> ProviderPayload:
         if re.fullmatch(r"[A-Za-z0-9]+", provider_match_id) is None:
-            raise ValueError("Flashscore match requires its native ID")
+            raise ValueError(f"{self.PROVIDER} match requires its native ID")
         key = "match/" + provider_match_id
         if self._guard is not None:
             self._guard()
         response = self._transport.get_response(
-            "https://www.flashscore.com/" + key + "/", timeout_seconds=30, max_bytes=8 * 1024 * 1024
+            self.BASE_URL + key + "/", timeout_seconds=30, max_bytes=8 * 1024 * 1024
         )
-        return _payload(key, response)
+        return _payload(self.PROVIDER, key, response)
 
     def statistics(self, match_page: ProviderPayload) -> ProviderPayload:
         return self._match_feed(match_page, "st")
@@ -77,20 +82,20 @@ class FlashscoreSource:
 
     def _match_feed(self, match_page: ProviderPayload, suffix: str) -> ProviderPayload:
         scope = re.fullmatch(r"match/([A-Za-z0-9]+)", match_page.resource_key)
-        if match_page.provider != "flashscore" or scope is None:
-            raise ValueError("Flashscore feed requires its retained native match page")
+        if match_page.provider != self.PROVIDER or scope is None:
+            raise ValueError(f"{self.PROVIDER} feed requires its retained native match page")
         page = native_record(FlashscoreMatchPage, native_json(environment_bytes(match_page.raw)))
         app = page["config"]["app"]
         if (page["event_id_c"], page["sport_id"], app["project_type"]["id"]) != (scope[1], 1, 1):
-            raise ValueError("Flashscore match/page or football scope conflicts")
+            raise ValueError(f"{self.PROVIDER} match/page or football scope conflicts")
         if (
             app["feed_resolver"]["default_url"] != "https://global.flashscore.ninja"
-            or app["project"]["id"] <= 0
+            or app["project"]["id"] != self.PROJECT_ID
         ):
-            raise ValueError("Flashscore page has an unverified feed origin/project")
+            raise ValueError(f"{self.PROVIDER} page has an unverified feed origin/project")
         signature = app["feed_sign"]
         if not signature or any(c in signature for c in "\r\n"):
-            raise ValueError("Flashscore page has an invalid public feed header")
+            raise ValueError(f"{self.PROVIDER} page has an invalid public feed header")
         key = "df_" + suffix + "_1_" + scope[1]
         if self._request_guard is not None:
             self._request_guard()
@@ -98,14 +103,14 @@ class FlashscoreSource:
             f"https://global.flashscore.ninja/{app['project']['id']}/x/feed/{key}",
             {"x-fsign": signature, "Accept": "text/plain"},
         )
-        return _payload(key, response)
+        return _payload(self.PROVIDER, key, response)
 
 
-def _payload(key: str, response: HttpResponseV1) -> ProviderPayload:
+def _payload(provider: str, key: str, response: HttpResponseV1) -> ProviderPayload:
     if not 200 <= response.status < 300:
-        raise ProviderFetchError(f"Flashscore returned HTTP {response.status}")
+        raise ProviderFetchError(f"{provider} returned HTTP {response.status}")
     return ProviderPayload(
-        provider="flashscore",
+        provider=provider,
         resource_key=key,
         acquired_at=datetime.now(UTC),
         raw=response.payload,
@@ -129,6 +134,6 @@ def _feed_get(url: str, headers: Mapping[str, str]) -> HttpResponseV1:
             )
     except HTTPError as error:
         error.close()
-        raise ProviderFetchError(f"Flashscore returned HTTP {error.code}") from error
+        raise ProviderFetchError(f"Source feed returned HTTP {error.code}") from error
     except (OSError, URLError) as error:
-        raise ProviderFetchError("Flashscore feed request failed") from error
+        raise ProviderFetchError("Source feed request failed") from error

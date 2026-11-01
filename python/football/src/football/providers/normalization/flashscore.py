@@ -65,11 +65,11 @@ def _json_expression(page: str, start: int) -> str:
 
 
 def _feed(page: str, name: str) -> list[dict[str, str]]:
-    pattern = r"cjs\.initialFeeds\['" + name + r"'\]\s*=\s*\{\s*data:\s*`([^`]*)`"
+    pattern = r"cjs\.initialFeeds\[(['\"])" + name + r"\1\]\s*=\s*\{\s*data:\s*`([^`]*)`"
     matches = re.findall(pattern, page)
-    if len(matches) != 1 or "${" in matches[0]:
+    if len(matches) != 1 or "${" in matches[0][1]:
         raise ValueError("Flashscore feed is absent, ambiguous or contains interpolation")
-    return feed_records(matches[0], _NAMED_KEYS)
+    return feed_records(matches[0][1], _NAMED_KEYS)
 
 
 def league(output: ObservationCollector, payload: object) -> None:

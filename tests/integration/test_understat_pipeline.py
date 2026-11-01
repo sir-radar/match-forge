@@ -20,7 +20,12 @@ from football.work.storage import WorkRegistry
 
 
 def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
-    if provider == "flashscore" and kind in ("statistics", "events", "lineups", "summary"):
+    if provider in ("flashscore", "soccerway") and kind in (
+        "statistics",
+        "events",
+        "lineups",
+        "summary",
+    ):
         suffix, feed = {
             "statistics": ("st", "SE÷Match¬~SD÷34¬SG÷Total shots¬SH÷10¬SI÷0¬~"),
             "events": ("sui", "AC÷1st Half¬~III÷event001¬IA÷1¬IB÷30'¬IE÷3¬IM÷player01¬~"),
@@ -125,7 +130,7 @@ def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
             + json.dumps(block)
             + "--></script>"
         ).encode()
-    if provider == "flashscore":
+    if provider in ("flashscore", "soccerway"):
         path = "football/england/league/results"
         resource_type = "league"
         environment = {
@@ -147,6 +152,10 @@ def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
             "cjs.initialFeeds['results'] = {data: `" + header + match + "`};"
             "cjs.initialFeeds['fixtures'] = {data: `" + header + "`};</script>"
         ).encode()
+    if provider == "soccerway":
+        path = path.removeprefix("football/")
+        raw = raw.replace(b"/football/england/league/", b"/england/league/")
+        raw = raw.replace(b"['results']", b'["results"]').replace(b"['fixtures']", b'["fixtures"]')
     return path, resource_type, raw
 
 
@@ -161,6 +170,11 @@ def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
         ("flashscore", "events"),
         ("flashscore", "lineups"),
         ("flashscore", "summary"),
+        ("soccerway", "league"),
+        ("soccerway", "statistics"),
+        ("soccerway", "events"),
+        ("soccerway", "lineups"),
+        ("soccerway", "summary"),
     ],
 )
 def test_public_source_manifest_normalization_fenced_publication_and_retry(
@@ -168,7 +182,7 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
 ) -> None:
     path, resource_type, raw = _sample(provider, sample_kind)
     assert sample_kind == resource_type
-    scoped = provider == "flashscore" and sample_kind != "league"
+    scoped = provider in ("flashscore", "soccerway") and sample_kind != "league"
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)
     identity = "https://example.test/" + provider + "/" + path

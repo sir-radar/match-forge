@@ -32,6 +32,11 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("soccerway", "league"): flashscore.league,
+    ("soccerway", "statistics"): flashscore_statistics.statistics,
+    ("soccerway", "events"): flashscore_events.events,
+    ("soccerway", "lineups"): flashscore_lineups.lineups,
+    ("soccerway", "summary"): flashscore_summary.summary,
     ("flashscore", "league"): flashscore.league,
     ("flashscore", "statistics"): flashscore_statistics.statistics,
     ("flashscore", "events"): flashscore_events.events,
@@ -99,7 +104,7 @@ def normalize_resource(
         return output.result()
     payload: object
     if context.provenance.provider == "football_data_uk" or (
-        context.provenance.provider == "flashscore"
+        context.provenance.provider in {"flashscore", "soccerway"}
         and resource in {"statistics", "events", "lineups", "summary"}
     ):
         payload = raw
@@ -108,12 +113,13 @@ def normalize_resource(
             "understat": understat.json_bytes,
             "whoscored": whoscored.json_bytes,
             "flashscore": flashscore.json_bytes,
+            "soccerway": flashscore.json_bytes,
         }
         decoder = decoders.get(context.provenance.provider)
         decoded = decoder(raw) if decoder is not None else raw
         payload = native_json(decoded)
     try:
-        if context.provenance.provider == "flashscore":
+        if context.provenance.provider in {"flashscore", "soccerway"}:
             flashscore.validate_resource_scope(context, resource)
         _validate_scope(context, payload)
         normalizer(output, payload)
@@ -157,6 +163,7 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
         "understat": r"^getMatchData/([1-9][0-9]*)$",
         "flashscore": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
+        "soccerway": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
     }
     match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
     if match is not None:
