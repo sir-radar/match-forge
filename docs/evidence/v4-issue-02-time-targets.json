@@ -1,0 +1,128 @@
+{
+  "phase": "R02-C",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "59cd60cb7b45f992188e3292624c3c6ae6bedef7",
+  "report": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/pilot/54cba9d611b4e548e2bb2165c1a7f7fb98a0140803864fc42f0d559bb873e8e5.json",
+    "sha256": "54cba9d611b4e548e2bb2165c1a7f7fb98a0140803864fc42f0d559bb873e8e5"
+  },
+  "population": {
+    "distinct_native_fixtures": 380,
+    "native_result_pairs": 380,
+    "verified_event_resources": 380,
+    "native_event_occurrences": 1313773,
+    "native_shots": 9908,
+    "native_periods": {
+      "1": 664826,
+      "2": 648947
+    },
+    "verified_utc_kickoffs": 0,
+    "verified_provider_update_times": 0
+  },
+  "qualified_canonical_outcomes": 0,
+  "qualified_market_labels": 0,
+  "unqualified_result_pairs": 380,
+  "timestamp_rules": [
+    "380 local kickoff clocks have no independently verified timezone; date-only or local clocks never become exact UTC timestamps.",
+    "Relative period clocks are source evidence, not absolute event/publication times.",
+    "Identity, native-to-market meanings, completeness, corrections and settlement remain unqualified. No missing measurement is treated as zero.",
+    "Later acquisition does not become pre-match knowledge. Historical labels require a separately approved chronological use; own-target feature use stays prohibited."
+  ],
+  "period_definition": "Native periods 1 and 2 and relative clocks are retained; no absolute event timestamp or settlement-compatible score is inferred.",
+  "target_semantic_checks": [
+    {
+      "target": "FT score",
+      "native_field": "match-index /home_score and /away_score",
+      "unit": "goals per native home/away team",
+      "basis": "UNQUALIFIED; source pairs do not by themselves bind regulation versus extra time",
+      "completeness": "380 paired source values; no canonical qualification"
+    },
+    {
+      "target": "HT score",
+      "native_field": "No verified selected period-score field",
+      "unit": "goals per native team/first half",
+      "basis": "MISSING_PROOF; no score reconstructed from incomplete event meanings"
+    },
+    {
+      "target": "shots",
+      "native_field": "events /type/name = Shot; /team/id and /player/id; /period",
+      "unit": "native event occurrence",
+      "basis": "Native Shot count only; target completeness and inclusion rules unqualified"
+    },
+    {
+      "target": "SOT",
+      "native_field": "events /shot/outcome/name",
+      "unit": "native shot outcome",
+      "basis": "MISSING_PROOF; Saved Off Target cannot establish on-target settlement equivalence"
+    },
+    {
+      "target": "cards",
+      "native_field": "events /foul_committed/card and /bad_behaviour/card",
+      "unit": "native card event",
+      "basis": "MISSING_PROOF; second-yellow/red and team/player settlement meanings unqualified"
+    },
+    {
+      "target": "corners",
+      "native_field": "No complete selected market count",
+      "unit": "team/period corner count",
+      "basis": "MISSING_PROOF"
+    }
+  ],
+  "source_independence": [
+    {
+      "independent_confirmations": 1,
+      "providers": [
+        "flashscore",
+        "soccerway"
+      ],
+      "resource_occurrences": 2,
+      "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a"
+    },
+    {
+      "independent_confirmations": 1,
+      "providers": [
+        "flashscore",
+        "soccerway"
+      ],
+      "resource_occurrences": 2,
+      "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d"
+    },
+    {
+      "independent_confirmations": 1,
+      "providers": [
+        "flashscore",
+        "soccerway"
+      ],
+      "resource_occurrences": 2,
+      "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3"
+    },
+    {
+      "independent_confirmations": 1,
+      "providers": [
+        "flashscore",
+        "soccerway"
+      ],
+      "resource_occurrences": 2,
+      "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4"
+    }
+  ],
+  "correction_handling": "Original source hashes stay frozen; a corrected score requires new retained bytes and an append-only source/identity/target decision. No later value overwrites the original.",
+  "missingness": "Absent/unknown/unsupported counts remain absent. Native observed zero is distinct from missing.",
+  "historical_use": "Later-acquired labels are not previously known features; own-target post-event use is prohibited. No chronological training/evaluation protocol is granted.",
+  "verification": {
+    "focused_normalizer_and_audit_tests": {
+      "passed": 58,
+      "exit_code": 0
+    },
+    "final_clock_boundary_tests": {
+      "passed": 4,
+      "exit_code": 0
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS",
+    "read_only_event_inspection_exit_code": 0,
+    "diff_check": "PASS"
+  },
+  "operating_writes": 0,
+  "provider_requests": 0
+}

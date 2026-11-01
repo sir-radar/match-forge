@@ -101,3 +101,36 @@ def test_audit_serializes_postgres_numeric_byte_totals(tmp_path):
 
     report = audit_database(Connection(), tmp_path, tmp_path)
     assert b'"bytes":123' in canonical_json_bytes(report)
+
+
+def test_pilot_clocks_keep_local_dates_and_late_knowledge_separate():
+    from scripts.inspect_v4_pilot import match_clocks
+
+    clock = datetime(2026, 11, 1, tzinfo=UTC)
+    context = NormalizationContext(
+        provenance=ObservationProvenance(
+            "statsbomb_open_data", None, UUID(int=1), UUID(int=2), "a" * 64, "json:/0"
+        ),
+        time=ObservationTime(observed_at=clock, acquired_at=clock, known_at=clock),
+        resource_key="data/matches/2/27.json",
+    )
+    match = {
+        "match_id": 1,
+        "match_date": "2015-08-08",
+        "kick_off": "15:00:00.000",
+        "last_updated": "2024-01-01T12:00:00",
+    }
+    report = match_clocks(match, context)
+    assert report["verified_utc_kickoff"] is None
+    assert report["provider_observation_time"] is None
+    assert report["source_publication_time"] is None
+    assert report["provider_update_raw"] == match["last_updated"]
+    assert report["matchforge_acquisition_time"] == clock.isoformat()
+    assert report["own_target_feature_use_allowed"] is False
+    match.pop("kick_off")
+    match["last_updated"] = "2024-01-01T12:00:00Z"
+    report = match_clocks(match, context)
+    assert report["native_local_kickoff"] is None
+    assert report["verified_utc_kickoff"] is None
+    assert report["provider_observation_time"] is None
+    assert report["provider_updated_at"] == "2024-01-01T12:00:00+00:00"

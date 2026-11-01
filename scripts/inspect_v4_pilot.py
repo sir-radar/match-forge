@@ -5,7 +5,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from collections.abc import Sequence
+from collections import Counter
+from collections.abc import Iterator, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,7 @@ from uuid import UUID
 import psycopg
 from football.contracts.source import canonical_json_bytes
 from football.identity.repository import IdentityRepository
+from football.ingestion.statsbomb_contracts import _parse_events
 from football.product.identity_admission import (
     RetainedIdentityVerifier,
     classify_mapping,
@@ -21,6 +23,7 @@ from football.product.identity_admission import (
 )
 from football.product.resolution_actions import preview
 from football.providers.normalization.cli import registered_resource
+from football.providers.normalization.common import NormalizationContext, timestamp
 from football.storage.raw import ImmutableFileStore
 from psycopg import Connection
 
@@ -141,12 +144,131 @@ def identity_report(
     }
 
 
+def native_resources(
+    connection: Connection[Any], root: Path, matches: list[dict[str, Any]], kind: str
+) -> Iterator[tuple[str, NormalizationContext, bytes]]:
+    paths = {f"data/{kind}/{match['match_id']}.json": str(match["match_id"]) for match in matches}
+    rows = connection.execute(
+        """SELECT r.provider_path,r.id FROM football.source_resources r
+        JOIN football.source_snapshots s ON s.id=r.source_snapshot_id
+        JOIN football.providers p ON p.id=s.provider_id
+        WHERE p.code='statsbomb_open_data' AND r.provider_path=ANY(%s)
+        ORDER BY r.provider_path,r.id""",
+        (list(paths),),
+    ).fetchall()
+    if len(rows) != len(paths) or len({row[0] for row in rows}) != len(paths):
+        raise ValueError(
+            "pilot requires one exact retained resource per fixture; revisions need review"
+        )
+    for path, key in rows:
+        context, raw = registered_resource(connection, root, key)
+        yield paths[path], context, raw
+
+
+def match_clocks(match: dict[str, Any], context: NormalizationContext) -> dict[str, Any]:
+    raw = match.get("last_updated")
+    try:
+        updated = timestamp(raw).isoformat() if raw is not None else None
+    except ValueError:
+        updated = None
+    return {
+        "native_fixture_id": str(match["match_id"]),
+        "native_match_date": match["match_date"],
+        "native_local_kickoff": match.get("kick_off"),
+        "football_event_time": None,
+        "verified_utc_kickoff": None,
+        "provider_update_raw": raw,
+        "provider_observation_time": None,
+        "provider_updated_at": updated,
+        "source_publication_time": None,
+        "matchforge_acquisition_time": context.time.acquired_at.isoformat(),
+        "canonical_admission_time": None,
+        "forecast_knowledge_cutoff": None,
+        "own_target_feature_use_allowed": False,
+        "kickoff_time_status": "MISSING_PROOF",
+    }
+
+
+def time_report(
+    connection: Connection[Any], root: Path, matches: list[dict[str, Any]], resource: UUID
+) -> dict[str, Any]:
+    context, _ = registered_resource(connection, root, resource)
+    clocks = [match_clocks(match, context) for match in matches]
+    counts: Counter[str] = Counter()
+    periods: Counter[str] = Counter()
+    resources = []
+    for native, source, raw in native_resources(connection, root, matches, "events"):
+        parsed = _parse_events(raw, source.resource_key, native)
+        counts.update(event.provider_event_type for event in parsed.events)
+        periods.update(str(event.period) for event in parsed.events)
+        resources.append(
+            {
+                "native_fixture_id": native,
+                "source_resource_id": str(source.provenance.source_resource_id),
+                "source_sha256": source.provenance.source_sha256,
+                "events": len(parsed.events),
+                "relative_event_clocks": "VERIFIED_NATIVE_ONLY",
+                "absolute_event_time": None,
+            }
+        )
+    duplicates = connection.execute(
+        """SELECT r.sha256,array_agg(DISTINCT p.code),count(*) FROM football.source_resources r
+        JOIN football.source_snapshots s ON s.id=r.source_snapshot_id
+        JOIN football.providers p ON p.id=s.provider_id
+        WHERE p.code IN ('flashscore','soccerway') GROUP BY r.sha256
+        HAVING count(DISTINCT p.code)>1 ORDER BY r.sha256"""
+    ).fetchall()
+    return {
+        "phase": "R02-C",
+        "status": "BLOCKED_WITH_EVIDENCE",
+        "fixtures": len(matches),
+        "clocks": clocks,
+        "event_resources": resources,
+        "native_event_types": dict(sorted(counts.items())),
+        "native_periods": dict(sorted(periods.items())),
+        "native_result_pairs": sum(
+            row.get("home_score") is not None and row.get("away_score") is not None
+            for row in matches
+        ),
+        "qualified_canonical_outcomes": 0,
+        "qualified_market_labels": 0,
+        "shared_upstream_groups": [
+            {
+                "sha256": digest,
+                "providers": providers,
+                "resource_occurrences": total,
+                "independent_confirmations": 1,
+            }
+            for digest, providers, total in duplicates
+        ],
+        "target_semantics": {
+            "FT_score": "Native pairs retained; regulation/extra-time basis not qualified",
+            "HT_score": "No verified period score selected; no event-derived score invented",
+            "shots": "Native Shot events counted; target definition and completeness unqualified",
+            "SOT": "No settlement equivalence; Saved Off Target must not establish SOT",
+            "cards": "Native events only; second-yellow/red and settlement rules unqualified",
+            "corners": "No complete target/period/settlement binding established",
+            "player_appearances": "Lineup/participation audit is independent of minute exposure",
+        },
+        "blockers": [
+            "380 local kickoff clocks have no independently verified timezone; date-only or "
+            "local clocks never become exact UTC timestamps.",
+            "Relative period clocks are source evidence, not absolute event/publication times.",
+            "Identity, native-to-market meanings, completeness, corrections and settlement "
+            "remain unqualified. No missing measurement is treated as zero.",
+            "Later acquisition does not become pre-match knowledge. Historical labels require "
+            "a separately approved chronological use; own-target feature use stays prohibited.",
+        ],
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database-url", required=True)
     parser.add_argument("--source-root", required=True, type=Path)
     parser.add_argument("--match-resource-id", required=True, type=UUID)
     parser.add_argument("--artifact-root", required=True, type=Path)
+    parser.add_argument("--section", choices=("identity", "time"), default="identity")
     args = parser.parse_args(argv)
     with (
         psycopg.connect(
@@ -158,10 +280,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         snapshot = connection.execute("SELECT transaction_timestamp()").fetchone()
         assert snapshot is not None
         matches = pilot_matches(connection, args.source_root, args.match_resource_id)
-        report = identity_report(connection, args.source_root, matches, snapshot[0])
+        if args.section == "identity":
+            report = identity_report(connection, args.source_root, matches, snapshot[0])
+            report["phase"] = "R02-B"
+        else:
+            report = time_report(connection, args.source_root, matches, args.match_resource_id)
         report.update(
             {
-                "phase": "R02-B",
                 "knowledge_cutoff": snapshot[0].isoformat(),
                 "match_resource_id": str(args.match_resource_id),
                 "operating_writes": 0,
