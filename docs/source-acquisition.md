@@ -56,6 +56,16 @@ request validation remain governed by their existing contracts. Historical
 decisions and frozen evaluation scopes are preserved; this decision applies
 prospectively and does not reopen closed scientific routes.
 
+### Scoped Flashscore/Soccerway research exception
+
+The [R03 owner decision](evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json)
+allows the pending experimental tasks to use available Flashscore and Soccerway
+data despite unresolved provider permission and their automated-acquisition
+restrictions. This is an exception to MatchForge's internal eligibility policy;
+it is not provider permission. Record that compliance limitation with the source
+evidence. Request bounds, isolation, identity/PIT qualification and the prohibition
+on bypassing authentication, access controls or anti-bot protections still apply.
+
 ## WhoScored historical requests
 
 `WhoScoredSource.season` accepts the native region, tournament, season and slug
