@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T02:16:06.906402Z",
+  "updated_at": "2026-11-01T02:27:02.003326Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "07",
+    "current_phase": "08",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2926,7 +2926,8 @@
     "phase_02_ref": "docs/evidence/matchforge-v4-phase-02-2026-10-31.json",
     "blocked_phases": [
       "02",
-      "07"
+      "07",
+      "08"
     ],
     "phase_02_commit_sha": "956d0f7950c89cc1b7bdbacc1605cbd75435bc66",
     "phase_03_status": "PASS_WITH_WARNINGS",
@@ -2954,11 +2955,15 @@
     "phase_06_ref": "docs/evidence/matchforge-v4-phase-06-2026-11-01.json",
     "provider_status": {
       "understat": "PARTIAL_FUNCTIONAL",
-      "clubelo": "BLOCKED_WITH_EVIDENCE"
+      "clubelo": "BLOCKED_WITH_EVIDENCE",
+      "sofascore": "BLOCKED_WITH_EVIDENCE"
     },
     "phase_06_commit_sha": "88dc6035721074e401334f8c7be8c8742101699f",
     "phase_07_status": "BLOCKED_WITH_EVIDENCE",
     "phase_07_ref": "docs/evidence/matchforge-v4-phase-07-2026-11-01.json",
-    "bounded_api_football_requests": 7
+    "bounded_api_football_requests": 7,
+    "phase_07_commit_sha": "bbf9770131bfbe710d37e0f0762a4b626165681d",
+    "phase_08_status": "BLOCKED_WITH_EVIDENCE",
+    "phase_08_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json"
   }
 }

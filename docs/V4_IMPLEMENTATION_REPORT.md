@@ -616,3 +616,29 @@ aggregate request total.
 
 Verification: diagnostic bytes/hashes, project-status validation, 21 governance
 tests and the final diff check passed. No executable repository code changed.
+
+## Phase 08 — Sofascore access checkpoint
+
+Status: BLOCKED_WITH_EVIDENCE. Phase 07 commit: `bbf9770`.
+
+Both public fixture JSON hosts and the ordinary public football page returned
+HTTP 403 with the same explicit Forbidden response. The operating registry has
+zero Sofascore retained resources, and no nonempty Sofascore access configuration
+was found. No football bytes were obtained, no functional adapter is fabricated,
+and live/statistical/history support remains unassessed rather than labelled
+unsupported by a competition or plan. No challenge, proxy or TLS bypass was used.
+
+[Phase 08 evidence](evidence/matchforge-v4-phase-08-2026-11-01.json) records exact
+URLs, clocks, verified error hashes and read-only inventory. The same bounded
+inventory confirms zero registered retained resources for ClubElo and the other
+remaining mandated sources at this checkpoint. This is not a claim about every
+unregistered file or future access.
+
+Resume when permitted source access or verified retained bytes become available;
+then validate actual fixture/score/clock/statistics/player payloads and existing
+qualification/work controls before enabling the source. No operating mutation,
+identity admission, fitting, evaluation or promotion occurred. Independent
+Phase 09 proceeds; scientific and cutover/retirement gates remain unchanged.
+
+Verification: all diagnostic byte/hash checks, project-status validation and
+the final diff check passed. No executable repository code changed.
