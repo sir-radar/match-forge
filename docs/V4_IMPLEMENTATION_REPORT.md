@@ -951,3 +951,53 @@ provider/contract/period scopes rather than adding incompatible measurements.
 Verification: 187 disposable tests, formatting/lint/complexity, mypy and
 architecture checks passed. Project-status and governance checks are recorded
 in the final phase receipt before commit.
+
+## Phase 15 — market targets and diagnostic readiness
+
+The phase checkpoint is `PASS_WITH_WARNINGS`. Sixty-four target families now
+cover goals/results, periods, corners, cards, team statistics, players and joint
+products. Each definition declares its quantity, period, required input fields,
+selection/line/rule parameters and versioned semantics. Extra time, shootouts,
+nonappearance, card counting, incomplete outcomes and corrections remain explicit.
+Unverified source definitions do not acquire SportyBet or Opta equivalence.
+
+The existing models CLI adds `market-capabilities`. Its product-package reader
+uses the existing provider capability and canonical coverage registries in one
+repeatable, read-only transaction. Target coverage binds the exact semantics,
+parameters, input, canonical competition/season and knowledge cutoff. A line of
+zero is distinct from a missing line. Component inputs require common eligible
+fixtures; two providers supporting one fixture do not make two fixtures.
+Generic resource coverage cannot qualify an individual target field.
+
+Readiness includes all nine requested statuses. Existing owner references are
+required for sufficiency, semantic compatibility, evaluation and publication
+claims. No new sample threshold or promotion rule was introduced. Research-only
+compatibility and research/retired models cannot create public support. The
+implementation inventory is separate from target semantic identity. Provider
+registry orchestration belongs to product; the architecture check rejected its
+initial placement in forecasting, and that placement was corrected.
+
+The actual read-only report for the existing StatsBomb 2/27 season mapping claim
+contains 51 `DATA_COLLECTION_REQUIRED` and 13 `INSUFFICIENT_PLAYER_DATA` targets.
+It exposes 24 candidate native provider scopes and no registered coverage for
+these exact target/input keys. Eligible fixture counts stay unknown, rather than
+being fabricated as zero. Native scopes are not silently mapped to the canonical
+scope. The unchanged champion metadata is visible for score-distribution targets;
+its presence does not establish a new target evaluation or publication approval.
+
+Diagnostic status and current publication status are separate. Unknown current
+publication does not mean existing forecasts were withdrawn or unpublished.
+These family diagnostics grant no new publication and do not replace existing
+forecast owners, model routing, scientific gates or per-forecast numerical
+checks. This phase produced no probabilities, provider requests, model fits,
+forecasts, promotions or operating writes.
+
+[Phase 15 evidence](evidence/matchforge-v4-phase-15-2026-11-01.json) records every
+target's semantic hashes, input requirements, implementation/model metadata,
+status, blocker and next action, plus the complete report receipt. Verification
+covers registered source/coverage knowledge boundaries, immutable unit-based
+coverage reconstruction, target/parameter binding, shared-fixture requirements,
+model roles and publication separation. Formatting, lint/complexity, mypy,
+architecture, focused disposable tests, status/governance and diff checks are
+recorded in the final receipt. Phase 16 follows independently; Phase 14's data
+qualification remains partial.

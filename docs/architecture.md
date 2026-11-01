@@ -938,6 +938,35 @@ and simulation inputs. Context features retain structured competition type, home
 splits, missingness, rest, opponent-adjusted form, and recency-weighted head-to-head data.
 External provider predictions are benchmark-only and require exact fixture mapping.
 
+## Market targets and readiness
+
+`football.forecasting.market_catalogue` defines versioned statistical targets,
+periods, required fields and explicit selection/line/participation/rule parameters.
+Targets exclude extra time and shootouts unless separately defined. Unknown
+source meaning, card rules, player nonappearance or incomplete settlement stays
+unqualified. A provider label does not establish SportyBet or Opta equivalence.
+
+`football.product.market_capabilities` describes readiness without granting
+publication. It reuses provider capability and canonical coverage contracts.
+Coverage binds the target definition and exact parameters, input, canonical
+competition/season and knowledge cutoff. Qualified component sets must share
+canonical fixtures; multiple providers do not add independent fixtures. Generic
+resource counts cannot qualify a target field. Sufficiency and evaluation come
+from existing owner evidence, rather than a new sample-size threshold.
+
+Diagnostic status and current publication status are separate. Research or
+retired models cannot become public support; shadow eligibility is not public
+eligibility. Even a complete diagnostic grants no new publication and does not
+withdraw an existing forecast. Model loading, fitting, evaluation, promotion and
+per-forecast numerical checks retain their existing owners.
+
+The existing `models market-capabilities` command reads one repeatable, read-only
+snapshot of the capability/coverage registries. It reports all target families,
+required semantics, candidate native source scopes, unknown coverage and model
+metadata. Native competition/season scopes are not silently joined to canonical
+ones. Target families without bound parameters and qualification proof remain
+unqualified; the command creates no probability, HTTP request or operating write.
+
 ## Runtime model registration
 
 `ModelRegistration` records model/family/version, feature contract, the content
