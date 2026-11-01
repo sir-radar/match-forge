@@ -1,6 +1,7 @@
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -22,7 +23,7 @@ COMPETITION, SEASON, FIXTURE = UUID(int=1), UUID(int=2), UUID(int=3)
 CATALOGUE = {item.market_id: item for item in market_catalogue()}
 
 
-def qualified(market_id="RESULT_1X2"):
+def qualified(market_id: str = "RESULT_1X2") -> MarketQualification:
     market = CATALOGUE[market_id]
     parameters = tuple(
         (name, "HOME_WIN" if name == "selection" else "test:explicit-parameter")
@@ -62,7 +63,7 @@ def qualified(market_id="RESULT_1X2"):
     )
 
 
-def test_catalogue_covers_requested_groups_and_named_targets_without_probabilities():
+def test_catalogue_covers_requested_groups_and_named_targets_without_probabilities() -> None:
     rows = market_catalogue()
     assert len(rows) == len(CATALOGUE)
     assert {row.group for row in rows} == {
@@ -89,6 +90,7 @@ def test_catalogue_covers_requested_groups_and_named_targets_without_probabiliti
     for row in rows:
         assert row.requirements and set(row.requirements) <= set(INPUTS)
         contract = row.to_dict()["semantic_contract"]
+        assert isinstance(contract, dict)
         assert contract["extra_time"] == contract["shootout"] == "EXCLUDED"
         assert "UNSCORABLE" in contract["incomplete_or_void"]
         assert contract["sportsbook_equivalence"].startswith("UNVERIFIED")
@@ -96,7 +98,7 @@ def test_catalogue_covers_requested_groups_and_named_targets_without_probabiliti
         assert "probabilities" not in row.to_dict()
 
 
-def test_provider_support_does_not_create_history_semantics_or_player_identity():
+def test_provider_support_does_not_create_history_semantics_or_player_identity() -> None:
     source = MarketSource(
         ResourceScope(
             provider="fotmob", resource_type="statistics", competition="native", season="2026"
@@ -134,7 +136,9 @@ def test_provider_support_does_not_create_history_semantics_or_player_identity()
         ({"blocker": "existing-owner-blocker"}, "BLOCKED"),
     ],
 )
-def test_readiness_preserves_current_publication_and_never_grants_new_activation(changes, status):
+def test_readiness_preserves_current_publication_and_never_grants_new_activation(
+    changes: dict[str, Any], status: str
+) -> None:
     evidence = replace(qualified(), **changes)
     result = assess_market(CATALOGUE["RESULT_1X2"], evidence)
     assert result["diagnostic_status"] == status
@@ -147,15 +151,16 @@ def test_readiness_preserves_current_publication_and_never_grants_new_activation
     )
 
 
-def test_research_registration_cannot_support_declared_public_publication():
+def test_research_registration_cannot_support_declared_public_publication() -> None:
     evidence = qualified()
+    assert evidence.model is not None
     evidence = replace(evidence, model=replace(evidence.model, lifecycle_state="RESEARCH"))
     result = assess_market(CATALOGUE["RESULT_1X2"], evidence)
     assert result["diagnostic_status"] == "RESEARCH_REQUIRED"
     assert not result["publication"]["eligible_under_declared_evidence"]
 
 
-def test_joint_inputs_require_common_eligible_fixtures_not_independent_counts():
+def test_joint_inputs_require_common_eligible_fixtures_not_independent_counts() -> None:
     evidence = qualified("GOALS_CORNERS")
     other = replace(
         evidence.history[1],
@@ -169,7 +174,7 @@ def test_joint_inputs_require_common_eligible_fixtures_not_independent_counts():
 
 
 @pytest.mark.parametrize("change", ["competition", "knowledge", "input", "duplicate"])
-def test_coverage_cannot_cross_canonical_scope_knowledge_target_or_input(change):
+def test_coverage_cannot_cross_canonical_scope_knowledge_target_or_input(change: str) -> None:
     evidence = qualified()
     report = evidence.history[0]
     if change == "competition":
@@ -185,7 +190,7 @@ def test_coverage_cannot_cross_canonical_scope_knowledge_target_or_input(change)
         assess_market(CATALOGUE["RESULT_1X2"], replace(evidence, history=history))
 
 
-def test_unknown_sufficiency_and_semantics_cannot_be_inferred_from_coverage_size():
+def test_unknown_sufficiency_and_semantics_cannot_be_inferred_from_coverage_size() -> None:
     evidence = qualified()
     result = assess_market(CATALOGUE["RESULT_1X2"], replace(evidence, history_sufficient=None))
     assert result["diagnostic_status"] == "RESEARCH_REQUIRED"
@@ -199,7 +204,7 @@ def test_unknown_sufficiency_and_semantics_cannot_be_inferred_from_coverage_size
         replace(evidence, history_policy_ref=None)
 
 
-def test_implementation_inventory_does_not_change_target_semantics_or_coverage_identity():
+def test_implementation_inventory_does_not_change_target_semantics_or_coverage_identity() -> None:
     market = CATALOGUE["RESULT_1X2"]
     changed = replace(market, implementation="another.implementation")
     assert changed.sha256 == market.sha256
@@ -208,7 +213,7 @@ def test_implementation_inventory_does_not_change_target_semantics_or_coverage_i
     )
 
 
-def test_target_parameters_are_bound_to_coverage_and_zero_is_not_missing():
+def test_target_parameters_are_bound_to_coverage_and_zero_is_not_missing() -> None:
     market = CATALOGUE["TOTAL_GOALS"]
     zero = (("line", 0), ("selection", "OVER"))
     another = (("line", 0.5), ("selection", "OVER"))
@@ -227,7 +232,7 @@ def test_target_parameters_are_bound_to_coverage_and_zero_is_not_missing():
 
 
 @pytest.mark.parametrize("value", [True, None, float("nan"), float("inf"), ""])
-def test_invalid_target_parameter_values_are_rejected(value):
+def test_invalid_target_parameter_values_are_rejected(value: Any) -> None:
     with pytest.raises(ValueError):
         MarketQualification(
             competition_id=COMPETITION,
@@ -237,7 +242,7 @@ def test_invalid_target_parameter_values_are_rejected(value):
         )
 
 
-def test_provider_evidence_from_future_knowledge_is_rejected():
+def test_provider_evidence_from_future_knowledge_is_rejected() -> None:
     source = MarketSource(
         ResourceScope(provider="fotmob", resource_type="results", competition=None, season=None),
         RegisteredCapability(
@@ -252,14 +257,16 @@ def test_provider_evidence_from_future_knowledge_is_rejected():
         assess_market(CATALOGUE["RESULT_1X2"], qualified(), (source,))
 
 
-def test_coverage_deserialization_checks_unit_evidence_instead_of_trusting_metrics():
+def test_coverage_deserialization_checks_unit_evidence_instead_of_trusting_metrics() -> None:
     from football.coverage.resources import CoverageError
 
     report = qualified().history[0]
     assert CanonicalCoverage.from_dict(report.to_dict()) == report
     assert report.metrics.qualified == 1  # Two sources support one canonical fixture.
     changed = report.to_dict()
-    changed["metrics"]["qualified_canonical_units"] = 2
+    metrics = changed["metrics"]
+    assert isinstance(metrics, dict)
+    metrics["qualified_canonical_units"] = 2
     with pytest.raises(CoverageError, match="unit evidence"):
         CanonicalCoverage.from_dict(changed)
     changed = report.to_dict()
@@ -268,14 +275,14 @@ def test_coverage_deserialization_checks_unit_evidence_instead_of_trusting_metri
         CanonicalCoverage.from_dict(changed)
 
 
-def test_research_only_compatibility_never_becomes_public_support():
+def test_research_only_compatibility_never_becomes_public_support() -> None:
     evidence = replace(qualified(), compatibility=SourceCompatibility.RESEARCH_COMPATIBLE_ONLY)
     report = assess_market(CATALOGUE["RESULT_1X2"], evidence)
     assert report["diagnostic_status"] == "RESEARCH_REQUIRED"
     assert not report["publication"]["eligible_under_declared_evidence"]
 
 
-def test_phase_15_semantic_identities_stay_frozen_as_implementations_expand():
+def test_phase_15_semantic_identities_stay_frozen_as_implementations_expand() -> None:
     import json
 
     baseline = json.loads(Path("docs/evidence/matchforge-v4-phase-15-2026-11-01.json").read_bytes())
@@ -284,7 +291,7 @@ def test_phase_15_semantic_identities_stay_frozen_as_implementations_expand():
     assert CATALOGUE["RESULT_BTTS"].implementation == "football.forecasting.products.score_products"
 
 
-def test_remaining_joint_targets_declare_required_paired_inputs_without_a_model():
+def test_remaining_joint_targets_declare_required_paired_inputs_without_a_model() -> None:
     for key, requirements in (
         ("FOULS_CARDS", {"fouls", "cards"}),
         (
@@ -307,7 +314,9 @@ def test_remaining_joint_targets_declare_required_paired_inputs_without_a_model(
         assert not report["publication"]["eligible_under_declared_evidence"]
 
 
-def test_operator_summary_keeps_unknown_source_access_and_does_not_export_database_details():
+def test_operator_summary_keeps_unknown_source_access_and_does_not_export_database_details() -> (
+    None
+):
     from football.product.market_capability_cli import market_capability_summary
 
     market = assess_market(

@@ -31,6 +31,8 @@ test("market readiness stays diagnostic with keyboard disclosures and local retr
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await expect(goals).toHaveCSS("min-height", "36px");
   await expect(page.locator(".market-readiness > p")).toHaveCSS("padding", "12px");
+  await expect(page.locator(".market-readiness form")).toHaveCSS("flex-wrap", "wrap");
+  await expect(page.locator(".market-readiness form button")).toHaveCSS("min-height", "36px");
   await page.evaluate(() => document.fonts.ready);
   const viewport = page.viewportSize()!;
   const name = `admin-market-readiness--diagnostic--${viewport.width}x${viewport.height}--dark--${info.project.name}.png`;

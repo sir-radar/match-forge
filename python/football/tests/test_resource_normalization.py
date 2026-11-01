@@ -9,6 +9,8 @@ from uuid import UUID
 
 import pytest
 from football.contracts.observations import ObservationProvenance, ObservationTime
+from football.contracts.observations_v2 import CoachObservationV2, EventObservationV2
+from football.contracts.observations_v3 import RefereeObservationV3
 from football.providers.normalization.common import NormalizationContext, NormalizationResult, count
 from football.providers.normalization.pipeline import normalize_resource
 
@@ -873,6 +875,7 @@ def test_statsbomb_unbooked_foul_does_not_require_optional_card_metadata() -> No
     assert result.findings[0].rule_code == "MF_NORM_SOURCE_RECORD_INVALID"
     row["foul_committed"] = {"card": {"name": "Yellow Card"}}
     result = normalize("statsbomb_open_data", "events", [row], fixture_native_id="42")
+    assert isinstance(result.observations[0], EventObservationV2)
     assert result.observations[0].event_type == "YELLOW_CARD"
     assert not result.findings
 
@@ -909,10 +912,14 @@ def test_statsbomb_retained_match_context_keeps_referee_and_fixture_scoped_manag
         v3_contracts=("RefereeObservationV3",),
     )
     referee = next(o for o in result.observations if o.CONTRACT == "RefereeObservationV3")
+    assert isinstance(referee, RefereeObservationV3)
     assert referee.fixture.provider_native_id == "42"
     assert referee.referee.provider_native_id == "223"
     assert referee.name == "Reported referee" and referee.time.event_time is None
-    managers = [o for o in result.observations if o.CONTRACT == "CoachObservationV2"]
+    managers = [o for o in result.observations if isinstance(o, CoachObservationV2)]
+    assert len(managers) == len(
+        [o for o in result.observations if o.CONTRACT == "CoachObservationV2"]
+    )
     assert [(o.coach.provider_native_id, o.team.provider_native_id) for o in managers] == [
         ("12", "1"),
         ("13", "2"),

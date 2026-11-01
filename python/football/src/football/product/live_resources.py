@@ -22,7 +22,7 @@ class LiveUpdate:
     minute: int | None
     added_time: int | None
     source_updated_at: datetime | None
-    first_known_at: datetime | None
+    known_by: datetime | None  # Conservative bound, not a substituted football timestamp.
 
 
 def _football_clock_order(current: LiveUpdate, incoming: LiveUpdate) -> int | None:
@@ -40,23 +40,23 @@ def _live_facts(update: LiveUpdate) -> tuple[object, ...]:
 
 
 def _source_clock_order(current: LiveUpdate, incoming: LiveUpdate) -> int | None:
-    if current.provider != incoming.provider:
+    if current.provider and current.provider != incoming.provider:
         return None
     old, new = _valid_source_clock(current), _valid_source_clock(incoming)
     if old is not None and new is not None:
         return (new > old) - (new < old)
-    # First observation is an upper bound on when those facts could have changed.
+    # Retained acquisition or a canonical receipt bounds when those facts could change.
     # It is never substituted for a missing provider update timestamp.
-    if old is not None and incoming.first_known_at is not None and incoming.first_known_at < old:
+    if old is not None and incoming.known_by is not None and incoming.known_by < old:
         return -1
-    if new is not None and current.first_known_at is not None and new > current.first_known_at:
+    if new is not None and current.known_by is not None and new > current.known_by:
         return 1
     return None
 
 
 def _valid_source_clock(update: LiveUpdate) -> datetime | None:
     value = update.source_updated_at
-    if value is None or update.first_known_at is None or value > update.first_known_at:
+    if value is None or update.known_by is None or value > update.known_by:
         return None
     return value
 
@@ -88,7 +88,7 @@ def live_update_order(
         "AWARDED",
     }:
         return "NEWER"
-    if current.status == "SCHEDULED" and incoming.status == "LIVE" and incoming.minute is not None:
+    if current.status == "SCHEDULED" and incoming.status in {"LIVE", "HALF_TIME"}:
         return "NEWER"
     if (
         current.minute is not None

@@ -1,4 +1,4 @@
 .root>p,.root [aria-label="Scoped market readiness"]>p{padding:12px;margin:0;overflow-wrap:anywhere}
 .root details>summary{min-height:36px;padding:8px 12px;cursor:pointer}
-.root .sync-controls{flex-wrap:wrap}.root .sync-controls label{font-size:10px;flex:1;min-width:0}.root .sync-controls button{min-height:36px}
+.root form{flex-wrap:wrap}.root form label{font-size:10px;flex:1;min-width:0}.root form button{min-height:36px}
 .root table td{min-width:14rem;max-width:28rem;white-space:normal;vertical-align:top;overflow-wrap:anywhere}.root th[scope="row"]{min-width:12rem;max-width:16rem;white-space:normal;overflow-wrap:anywhere}.root code{overflow-wrap:anywhere}

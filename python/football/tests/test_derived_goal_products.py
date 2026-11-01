@@ -4,22 +4,24 @@ import io
 import json
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 from football.cli.main import run
+from football.forecasting.model_contracts import ModelForecast
 from football.forecasting.multimodel_cli import _forecast_dict
 from football.forecasting.products import score_products
 from test_forecast_products import MATRIX
 from test_multi_model_forecasting import _forecast
 
 
-def exact_forecast(matrix=MATRIX):
+def exact_forecast(matrix: tuple[tuple[float, ...], ...] = MATRIX) -> ModelForecast:
     return replace(
         _forecast("score-model", matrix), score_labels=tuple(map(str, range(len(matrix))))
     )
 
 
-def test_draw_no_bet_margin_and_result_btts_share_the_exact_matrix():
+def test_draw_no_bet_margin_and_result_btts_share_the_exact_matrix() -> None:
     forecast = exact_forecast()
     before = _forecast_dict(forecast)
     value = score_products(forecast)["derived_goals"]
@@ -47,7 +49,9 @@ def test_draw_no_bet_margin_and_result_btts_share_the_exact_matrix():
         (1, -0.5, "FULL_WIN"),
     ],
 )
-def test_signed_asian_lines_split_stake_at_adjacent_half_lines(margin, handicap, outcome):
+def test_signed_asian_lines_split_stake_at_adjacent_half_lines(
+    margin: int, handicap: float, outcome: str
+) -> None:
     matrix = tuple(tuple(float(h == margin and a == 0) for a in range(3)) for h in range(3))
     value = score_products(exact_forecast(matrix), asian_handicaps=(handicap,))["derived_goals"]
     home = value["asian_handicaps"][0]["home"]["resolved"]
@@ -64,7 +68,7 @@ def test_signed_asian_lines_split_stake_at_adjacent_half_lines(margin, handicap,
     assert sum(home.values()) == sum(away.values()) == 1
 
 
-def test_totals_team_ranges_and_joint_conditions_are_coherent():
+def test_totals_team_ranges_and_joint_conditions_are_coherent() -> None:
     value = score_products(
         exact_forecast(), goal_lines=(2.25,), european_handicaps=(-1,), goal_ranges=((1, 2),)
     )["derived_goals"]
@@ -85,7 +89,7 @@ def test_totals_team_ranges_and_joint_conditions_are_coherent():
     assert joint["HOME_OVER"] != pytest.approx(0.25 * 0.25)
 
 
-def test_censored_buckets_do_not_become_exact_handicap_or_margin_atoms():
+def test_censored_buckets_do_not_become_exact_handicap_or_margin_atoms() -> None:
     value = score_products(_forecast("legacy", MATRIX), asian_handicaps=(0,))["derived_goals"]
     assert value["status"] == "UNSUPPORTED_CENSORED_SUPPORT"
     assert "draw_no_bet" not in value
@@ -106,12 +110,12 @@ def test_censored_buckets_do_not_become_exact_handicap_or_margin_atoms():
         {"goal_ranges": ((0, 1.5),)},
     ],
 )
-def test_invalid_line_and_range_parameters_are_rejected(kwargs):
+def test_invalid_line_and_range_parameters_are_rejected(kwargs: dict[str, Any]) -> None:
     with pytest.raises(ValueError):
         score_products(exact_forecast(), **kwargs)
 
 
-def test_cli_lines_are_explicit_and_projection_remains_read_only(tmp_path: Path):
+def test_cli_lines_are_explicit_and_projection_remains_read_only(tmp_path: Path) -> None:
     forecast = exact_forecast()
     source = tmp_path / "forecast.json"
     source.write_text(json.dumps(_forecast_dict(forecast)))
@@ -151,7 +155,7 @@ def test_cli_lines_are_explicit_and_projection_remains_read_only(tmp_path: Path)
     assert source.read_bytes() == before
 
 
-def test_request_order_and_duplicates_do_not_change_projections():
+def test_request_order_and_duplicates_do_not_change_projections() -> None:
     forecast = exact_forecast()
     left = score_products(forecast, goal_lines=(3.5, 0, 2.5, 2.5), asian_handicaps=(0, -0.25, 0))
     right = score_products(forecast, goal_lines=(0, 2.5, 3.5), asian_handicaps=(-0.25, 0))

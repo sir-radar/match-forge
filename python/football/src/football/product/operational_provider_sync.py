@@ -2643,6 +2643,8 @@ class OperationalProviderSync:
                 self.provider_code,
             ),
         ).fetchone()
+        # Without a retained source, the canonical receipt is only an upper bound.
+        # It never stands in for a provider football update timestamp.
         previous = LiveUpdate(
             provider=source[0] if source else "",
             status=current[0],
@@ -2651,7 +2653,7 @@ class OperationalProviderSync:
             minute=source[4] if source else None,
             added_time=source[5] if source else None,
             source_updated_at=source[6] if source else None,
-            first_known_at=source[7] if source else None,
+            known_by=source[7] if source else current[1],
         )
         # Earlier FotMob rows retained the explicit HT marker but called its status LIVE.
         # Reconcile that interpretation without claiming a newer football timestamp.
@@ -2665,7 +2667,7 @@ class OperationalProviderSync:
             minute=row.minute,
             added_time=row.added_time,
             source_updated_at=row.source_updated_at,
-            first_known_at=incoming_known[0] if incoming_known else row.observed_at,
+            known_by=incoming_known[0] if incoming_known else row.observed_at,
         )
         return previous, incoming
 
