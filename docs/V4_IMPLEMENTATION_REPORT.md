@@ -1095,3 +1095,21 @@ no source sample, generic V4 implementation authorization or legacy failed model
 is treated as permission to fit or evaluate a production candidate. No new model,
 operating write, authoritative fit, evaluation or probability is produced. The
 next independent work is Phase 19's participation prerequisites.
+
+## Phase 19 — player participation prerequisites
+
+`BLOCKED_WITH_EVIDENCE`. Phase 14's retained native-player claim report passed
+its checksum recheck. Its 1,240 unique StatsBomb mapping claims remain claims;
+there were no new cross-provider admissions. Six sampled providers have 40 native
+player references each and Understat has 32; none has a recorded player mapping in
+that sampled inventory. These bounded samples are not a complete player census.
+
+Qualified continuous membership, transfers, pre-match participation and exposure
+remain unknown. An observed lineup or appearance does not prove who could start
+at a historical prediction cutoff. The 13 participation-dependent target reports
+retain `INSUFFICIENT_PLAYER_DATA`. Nonappearance and void semantics also need exact
+target qualification. No model assumes starts, converts missing data to zero or
+uses a goal model to manufacture player forecasts. A bounded research and frozen
+chronological evaluation decision remains required after the data prerequisites.
+No player model, authoritative fit/evaluation, operating write or publication is
+performed. Phase 20's independent joint-data review follows the verified commit.
