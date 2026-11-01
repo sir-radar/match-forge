@@ -1,0 +1,103 @@
+from datetime import UTC, datetime
+from uuid import UUID
+
+from football.contracts.observations import ObservationProvenance, ObservationTime
+from football.providers.normalization.common import NormalizationContext
+from football.providers.normalization.pipeline import normalize_resource
+
+from scripts.audit_v4_qualification import resource_matrix
+
+
+def test_matrix_keeps_native_counts_separate_from_qualification():
+    context = NormalizationContext(
+        provenance=ObservationProvenance(
+            "espn", None, UUID(int=1), UUID(int=2), "a" * 64, "json:/players"
+        ),
+        time=ObservationTime(
+            observed_at=datetime(2026, 11, 1, tzinfo=UTC),
+            acquired_at=datetime(2026, 11, 1, tzinfo=UTC),
+            known_at=datetime(2026, 11, 1, tzinfo=UTC),
+        ),
+        resource_key="scoreboard",
+    )
+    import hashlib
+    from dataclasses import replace
+
+    raw = b'{"leagues":[],"events":[]}'
+    context = replace(
+        context,
+        provenance=replace(context.provenance, source_sha256=hashlib.sha256(raw).hexdigest()),
+    )
+    result = normalize_resource(context, "scoreboard", raw)
+    row = resource_matrix("scoreboard", context, result.observations)
+    assert row["normalized_records"] == 0
+    assert row["historical_eligibility"] == "MISSING_PROOF"
+    assert row["market_target_eligibility"] == "MISSING_PROOF"
+    assert row["native_fixtures"] == 0
+    assert row["player_identity_status"] == "NOT_APPLICABLE"
+
+
+def test_matrix_does_not_merge_resource_scoped_anonymous_references():
+    from football.contracts.observations_v2 import (
+        EntityReferenceV2,
+        ObservationVersionsV2,
+        PlayerObservationV2,
+    )
+
+    clock = datetime(2026, 11, 1, tzinfo=UTC)
+    context = NormalizationContext(
+        provenance=ObservationProvenance(
+            "espn", None, UUID(int=1), UUID(int=2), "a" * 64, "json:/players"
+        ),
+        time=ObservationTime(observed_at=clock, acquired_at=clock, known_at=clock),
+        resource_key="players",
+    )
+    players = tuple(
+        PlayerObservationV2(
+            provenance=context.provenance,
+            time=context.time,
+            versions=ObservationVersionsV2(adapter_version="test", normalizer_version="test"),
+            player=EntityReferenceV2(native, source_record_key=str(i)),
+            name="Same Name",
+        )
+        for i, native in enumerate(["one", "two", None])
+    )
+    row = resource_matrix("players", context, players)
+    assert row["native_players"] == 2
+    assert row["anonymous_player_references"] == 1
+    assert row["player_identity_status"] == "MISSING_PROOF"
+
+
+def test_audit_serializes_postgres_numeric_byte_totals(tmp_path):
+    from contextlib import nullcontext
+    from decimal import Decimal
+
+    from football.contracts.source import canonical_json_bytes
+
+    from scripts.audit_v4_qualification import audit_database
+
+    class Cursor:
+        def __init__(self, rows):
+            self.rows = rows
+
+        def fetchall(self):
+            return self.rows
+
+        def fetchone(self):
+            return self.rows[0]
+
+    class Connection:
+        def transaction(self):
+            return nullcontext()
+
+        def execute(self, query):
+            if isinstance(query, str) and "current_database()" in query:
+                return Cursor([("test", datetime(2026, 11, 1, tzinfo=UTC), "on")])
+            if isinstance(query, str) and "sum(r.size_bytes)" in query:
+                return Cursor([("api_football", 1, Decimal("123"))])
+            if isinstance(query, str) and "array_agg" in query:
+                return Cursor([])
+            return Cursor([(0,)])
+
+    report = audit_database(Connection(), tmp_path, tmp_path)
+    assert b'"bytes":123' in canonical_json_bytes(report)
