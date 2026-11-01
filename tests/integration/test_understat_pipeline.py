@@ -12,10 +12,10 @@ import pytest
 from football.observations.storage import ObservationArtifactStore
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.historical_manifest import publish_manifest
-from football.providers.normalization.cli import registered_resource
+from football.providers.normalization.cli import persist_normalization, registered_resource
 from football.providers.normalization.pipeline import normalize_resource
 from football.temporal.repository import PointInTimeRepository
-from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkType
+from football.work.contracts import RetryPolicy, WorkState
 from football.work.storage import WorkRegistry
 
 
@@ -227,33 +227,19 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
         else:
             assert not result.findings
         store = ObservationArtifactStore(c, tmp_path)
-        prepared = [store.prepare(o) for o in result.observations]
-        output_hash = hashlib.sha256(
-            json.dumps([o.sha256 for o in result.observations]).encode()
-        ).hexdigest()
-        request = WorkRequest(
-            work_type=WorkType.NORMALIZATION,
-            semantic_key=f"{provider}-test:{digest}",
-            input_hash=digest,
-            priority=0,
-            available_at=now,
-            max_attempts=1,
-            retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
-        )
         work = WorkRegistry(c)
-        identifier = work.enqueue(request)
-        claim = work.claim(
-            provider + "-test",
-            timedelta(minutes=1),
-            (WorkType.NORMALIZATION,),
-            work_ids=(identifier,),
+        policy = dict(
+            worker=provider + "-test",
+            lease=timedelta(minutes=1),
+            retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
+            max_attempts=1,
         )
-        assert claim is not None
-        with work.publication(claim, result_hash=output_hash):
-            for prepared_item in prepared:
-                store.register_prepared(prepared_item)
+        identifier = persist_normalization(c, tmp_path, context, resource_type, result, **policy)
         assert work.state(identifier) == WorkState.SUCCEEDED
-        assert work.enqueue(request) == identifier
+        assert (
+            persist_normalization(c, tmp_path, context, resource_type, result, **policy)
+            == identifier
+        )
         for observation in result.observations:
             assert store.load(observation.observation_id) == observation
             assert store.publish(observation) == observation.observation_id

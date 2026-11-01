@@ -8,6 +8,7 @@ import json
 import os
 from collections.abc import Sequence
 from dataclasses import asdict
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -25,6 +26,8 @@ from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.normalization.common import NormalizationContext, NormalizationResult
 from football.providers.normalization.pipeline import normalize_resource
 from football.storage.raw import ImmutableFileStore, ImmutableRawStore
+from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkType
+from football.work.storage import WorkRegistry
 
 
 def registered_resource(
@@ -163,6 +166,50 @@ def report_bytes(
     return canonical_json_bytes(report) + b"\n"
 
 
+def persist_normalization(
+    connection: Connection[Any],
+    artifact_root: Path,
+    context: NormalizationContext,
+    resource: str,
+    result: NormalizationResult,
+    *,
+    worker: str,
+    lease: timedelta,
+    retry_policy: RetryPolicy,
+    max_attempts: int,
+) -> UUID:
+    """Publish one retained feature scope through the existing fenced work owner.
+
+    The report binds exact source, native fixture/competition/season scope,
+    processing versions, observations and findings. Changed results create new
+    work; identical retries reuse succeeded work without changing source clocks.
+    """
+    digest = hashlib.sha256(report_bytes(context, resource, result)).hexdigest()
+    store = ObservationArtifactStore(connection, artifact_root)
+    prepared = tuple(store.prepare(observation) for observation in result.observations)
+    registry = WorkRegistry(connection)
+    work_id = registry.enqueue(
+        WorkRequest(
+            work_type=WorkType.NORMALIZATION,
+            semantic_key=f"normalization:{digest}",
+            input_hash=digest,
+            priority=0,
+            available_at=context.time.known_at,
+            max_attempts=max_attempts,
+            retry_policy=retry_policy,
+        )
+    )
+    if registry.state(work_id) == WorkState.SUCCEEDED:
+        return work_id
+    claim = registry.claim(worker, lease, (WorkType.NORMALIZATION,), work_ids=(work_id,))
+    if claim is None:
+        raise ValueError(f"normalization work is not claimable: {work_id}")
+    with registry.publication(claim, result_hash=digest):
+        for item in prepared:
+            store.register_prepared(item)
+    return work_id
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-resource-id", type=UUID, required=True)
@@ -190,10 +237,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"reports/normalization/{digest}.json", report
         )
         if args.persist:
-            with connection.transaction():
-                store = ObservationArtifactStore(connection, args.artifact_root)
-                for observation in result.observations:
-                    store.publish(observation)
+            persist_normalization(
+                connection,
+                args.artifact_root,
+                context,
+                args.resource,
+                result,
+                worker="retained-resource-normalization",
+                lease=timedelta(minutes=5),
+                retry_policy=RetryPolicy(timedelta(seconds=60), timedelta(hours=1), 2),
+                max_attempts=3,
+            )
     print(
         json.dumps(
             {

@@ -159,13 +159,29 @@ V2 contracts in `football.contracts.observations_v2` add `EntityReferenceV2.sour
 
 Provider update timestamps retain their declared timezone. A local timestamp without a verified timezone stays in raw evidence and a finding; normalization does not assume UTC. FotMob/PitchAPI coordinates remain unnormalized until their coordinate frame is verified. StatsBomb shots reuse the existing 120×80 coordinate contract. Third-party predicted lineups remain `UNKNOWN`, rather than acquiring MatchForge's `PREDICTED_REPEAT_XI` label. Football-Data.co.uk statistics remain aggregates, and odds remain separate from model features.
 
-The offline command below reads registered retained bytes and writes an immutable report containing source lineage, processing versions, output identities and findings. It performs no provider requests. With `--persist`, all output registrations share one transaction; identical retries use the original registered acquisition/observation clocks. File publication may leave safe orphan files after rollback. Reports describe normalization outputs, not canonical admission or historical eligibility. Use the isolated shadow database until the cutover gate passes.
+The offline command below reads registered retained bytes and writes an immutable report containing source lineage, processing versions, output identities and findings. It performs no provider requests. With `--persist`, the existing work registry fences one NORMALIZATION job per report hash, binding the source, feature, native scope and processing versions. Files are prepared before the publication transaction; observation registration and work completion commit together. Identical retries reuse succeeded work and the original registered acquisition/observation clocks. File publication may leave safe orphan files after rollback. Reports describe normalization outputs, not canonical admission or historical eligibility. Use the isolated shadow database until the cutover gate passes.
 
 ```sh
 uv run --locked python -m football.providers.normalization.cli \
   --source-resource-id RESOURCE_UUID --resource shots --fixture-native-id NATIVE_MATCH_ID \
   --data-root .local/football-data --artifact-root .local/shadow-observations --persist
 ```
+
+`football.providers.data_audit` reads a repeatable, read-only diagnostic snapshot.
+With `--data-root`, it verifies registered observation bytes before counting
+fields by provider, contract and period. Known values, numeric zero, missing
+values, source resources and observation revisions remain separate. Player
+coverage compares distinct native references with recorded mapping claims; it
+does not admit those claims or infer identity from duplicate names. Existing
+participation and position stints establish fixture/season evidence, while
+continuous membership, transfers and historical eligibility require their own
+proof. Unknown qualification and expected coverage remain null.
+
+Canonical resolution accepts V3 rich statistics and shots, period scores,
+referee references and dated team ratings through the existing identity-owner
+checks. Period and score basis, rating date/system and V3 semantic version stay
+in the comparison context. An assisting player, assist event or referee requires its own
+reference binding. No new identity owner or admission route is created.
 
 ### Rebuildable fixture projection
 

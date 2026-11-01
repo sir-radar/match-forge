@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
 from typing import Literal
 
 from football.contracts.observations_v2 import (
+    CoachObservationV2,
     CompetitionObservationV2,
     EventObservationV2,
     LineupMemberV2,
     ResultObservationV2,
 )
+from football.contracts.observations_v3 import RefereeObservationV3
 from football.ingestion.statsbomb_contracts import (
+    Match,
     _parse_competition,
     _parse_event,
     _parse_lineup_team,
@@ -82,12 +86,51 @@ def results(output: ObservationCollector, payload: object) -> None:
                     home_goals=row.home_score,
                     away_goals=row.away_score,
                 )
+            _match_context(output, object_value(raw), row, path)
             output.finding(
                 "KICKOFF_TIMEZONE_UNRESOLVED",
                 path,
                 "StatsBomb local kickoff needs timezone evidence for an exact UTC fixture",
                 severity="WARNING",
             )
+
+
+def _match_context(
+    output: ObservationCollector, raw: Mapping[str, object], match: Match, path: str
+) -> None:
+    referee = raw.get("referee")
+    if referee is not None:
+        key = path + "/referee"
+        with output.record(key):
+            referee = object_value(referee)
+            if referee.get("id") is None and text(referee.get("name")) is None:
+                raise ValueError("reported referee requires an ID or name")
+            output.emit(
+                RefereeObservationV3,
+                key,
+                referee.get("id"),
+                fixture=output.context.reference(match.provider_id, path + "/match_id"),
+                referee=output.context.reference(referee.get("id"), key),
+                name=text(referee.get("name")),
+            )
+    for side, team in (("home_team", match.home_team), ("away_team", match.away_team)):
+        key = path + "/" + side + "/managers"
+        with output.record(key):
+            managers = array(object_value(raw[side]).get("managers", []))
+            for i, manager in enumerate(managers):
+                coach_key = key + f"/{i}"
+                with output.record(coach_key):
+                    coach = object_value(manager)
+                    if coach.get("id") is None and text(coach.get("name")) is None:
+                        raise ValueError("reported manager requires an ID or name")
+                    output.emit(
+                        CoachObservationV2,
+                        coach_key,
+                        coach.get("id"),
+                        coach=output.context.reference(coach.get("id"), coach_key),
+                        team=output.context.reference(team.provider_id, path + "/" + side),
+                        name=text(coach.get("name")),
+                    )
 
 
 def lineups(output: ObservationCollector, payload: object) -> None:
@@ -163,7 +206,7 @@ def _event_type(row: object) -> str | None:
         return "GOAL"
     if kind in ("Foul Committed", "Bad Behaviour"):
         field = "foul_committed" if kind == "Foul Committed" else "bad_behaviour"
-        card = object_value(value.get(field)).get("card")
+        card = object_value(value.get(field, {})).get("card")
         if card is not None:
             return {
                 "Yellow Card": "YELLOW_CARD",

@@ -4,7 +4,52 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-from football.providers.data_audit import summarize_statistics
+from football.providers.data_audit import summarize_observations, summarize_statistics
+
+
+def test_retained_fields_measure_missing_zero_and_time_without_inventing_qualification() -> None:
+    from test_observation_contracts_v3 import examples
+
+    observation = examples()[0]
+    report = summarize_observations([observation])
+    by_path = {field["field"]: field for field in report}
+    assert by_path["/offsides"]["zero"] == by_path["/offsides"]["known"] == 1
+    assert by_path["/corners"]["missing"] == 1
+    assert by_path["/corners"]["zero"] == by_path["/corners"]["known"] == 0
+    assert by_path["/passes"]["source_resources"] == 1
+    for field in report:
+        assert field["known"] + field["missing"] == field["measurements"]
+        assert field["semantic_version_known"] == 0
+        assert field["identity_qualified"] is None
+        assert field["pit_eligible"] is None
+        assert field["expected_units"] is None
+
+
+def test_retained_audit_keeps_sources_periods_versions_and_missing_times_separate() -> None:
+    from dataclasses import replace
+
+    from test_observation_contracts_v3 import examples
+
+    first = examples()[0]
+    first = replace(first, time=replace(first.time, event_time=None))
+    second = replace(first, provenance=replace(first.provenance, provider="soccerway"))
+    third = replace(first, period="FIRST_HALF")
+    report = summarize_observations([first, second, third])
+    offsides = [field for field in report if field["field"] == "/offsides"]
+    assert len(offsides) == 3
+    assert {field["provider"] for field in offsides} == {first.provenance.provider, "soccerway"}
+    assert all(field["event_time_known"] == 0 for field in report)
+    assert summarize_observations([]) == []
+
+
+def test_retained_boolean_false_is_observed_and_never_a_numeric_zero() -> None:
+    from dataclasses import replace
+
+    from test_observation_contracts_v3 import examples
+
+    report = summarize_observations([replace(examples()[3], period_complete=False)])
+    field = next(field for field in report if field["field"] == "/period_complete")
+    assert field["known"] == 1 and field["missing"] == field["zero"] == 0
 
 
 def test_audit_counts_revisions_and_unique_fixtures_without_equating_zero_and_missing() -> None:

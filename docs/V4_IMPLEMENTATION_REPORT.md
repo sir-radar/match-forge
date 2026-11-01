@@ -880,3 +880,74 @@ Verification: 252 focused disposable tests, static/type/complexity, architecture
 21 governance tests, status and diff checks passed. All eight additional sources
 now have tested partial capabilities or documented access blockers. Phase 14
 follows; scientific, identity and cutover/retirement gates remain unchanged.
+
+## Phase 14 — retained history and player evidence
+
+The engineering checkpoint is `PASS_WITH_WARNINGS`; the full phase remains
+`PARTIAL_FUNCTIONAL`. Historical qualification, cross-provider player identity,
+continuous membership/transfers and inaccessible dated Elo remain open. Phase 15
+can proceed independently; these data requirements are not declared complete.
+
+The existing normalization command now publishes through fenced NORMALIZATION
+work. Each report hash binds source bytes, feature, native scope, versions,
+observations and findings. Files are prepared before the transaction; observation
+registration and work completion commit together. Identical retries reuse the
+same work. Existing source registration, immutable observation storage and
+identity owners remain in place.
+
+The isolated `football_v4_phase14_shadow_20261101` database contains 1,524 copied
+source registrations and 84,610 verified observations. The backfill covers all
+760 retained lineup resources, 760 event resources and four match-list resources
+in the recorded source snapshot, without a year floor or new HTTP requests.
+There are 3,044 succeeded feature scopes, including the finding correction.
+Outputs include 19,075 shots and corresponding xG observations, 9,890 supported
+events, 27,353 player observations, 1,520 lineups, 1,034 results, 1,000 referee
+observations and 2,075 manager observations. Counts include source occurrences;
+they are not counts of distinct admitted people or independent matches.
+
+The full replay exposed an optional-metadata bug: unbooked fouls need not contain
+card metadata. Its regression test failed before the fix. Missing metadata now
+produces an informational unsupported-event finding; explicit malformed null
+still fails. Replaying all 760 event scopes preserved their exact observation
+IDs, checksums and versions. Earlier reports remain immutable. The remaining
+839 unknown event-type findings stay quarantined. Manager/referee fields come
+from retained match metadata; no tenure, missing minutes, played participation
+or UTC kickoff was inferred.
+
+Canonical comparison now recognizes the V3 contracts, including period/basis,
+rating date/system and semantic version in their contexts. Assisting-player,
+assist-event and referee references require identity bindings. Publication still
+requires a supported, registered identity-owner proof. A referee name alone does
+not create identity or a new admission route.
+
+The read-only audit measures fields by provider, contract and period, keeping
+missing values and zero separate. It also measures native-player references,
+recorded mapping claims, fixture/season participation, position stints and
+duplicate source names. All 1,240 distinct retained StatsBomb player IDs match
+unique existing operating mapping claims by exact native ID. This creates no
+new admission or cross-provider merge. Sampled player IDs from the seven other
+normalized sources have no recorded player mapping claims. Continuous
+membership and transfers remain unqualified. The shadow database is not a
+canonical-data clone; its empty mapping tables do not erase operating claims.
+
+All 84,610 shadow observation files passed the existing checksum and logical
+identity loader. Their football event times remain unqualified. Acquisition
+clocks, local kickoffs and source availability were not substituted for PIT
+proof or market settlement semantics. No model fit, forecast write, promotion,
+provider activation or production cutover occurred.
+
+An isolation deviation was identified during this phase: earlier V4 normalized
+artifact registrations used the operating `football` database, although the
+architecture requires isolated shadow persistence until cutover. Those 12,310
+additive immutable registrations remain as historical evidence; no V2 routing
+was activated. Phase 14 uses isolated shadow/test databases and makes no
+operating application-table writes. Destructive remediation and production
+cutover still require owner disposition and their existing gates.
+
+[Phase 14 evidence](evidence/matchforge-v4-phase-14-2026-11-01.json) records exact
+receipts, hashes and limitations. The accompanying
+[field coverage](evidence/matchforge-v4-phase-14-coverage-2026-11-01.json) preserves
+provider/contract/period scopes rather than adding incompatible measurements.
+Verification: 187 disposable tests, formatting/lint/complexity, mypy and
+architecture checks passed. Project-status and governance checks are recorded
+in the final phase receipt before commit.

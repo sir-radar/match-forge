@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T04:18:29.111265Z",
+  "updated_at": "2026-11-01T04:51:39.348143Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "13",
+    "current_phase": "14",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -3002,6 +3002,15 @@
     "phase_12_ref": "docs/evidence/matchforge-v4-phase-12c-2026-11-01.json",
     "phase_12c_commit_sha": "5e200ca",
     "phase_13_status": "PARTIAL_FUNCTIONAL",
-    "phase_13_ref": "docs/evidence/matchforge-v4-phase-13-2026-11-01.json"
+    "phase_13_ref": "docs/evidence/matchforge-v4-phase-13-2026-11-01.json",
+    "phase_13_commit_sha": "6d42c2cca0b9376194257a9ce0a3c8a9b1552550",
+    "phase_14_status": "PARTIAL_FUNCTIONAL",
+    "phase_14_engineering_gate": "PASS_WITH_WARNINGS",
+    "phase_14_complete": false,
+    "phase_14_ref": "docs/evidence/matchforge-v4-phase-14-2026-11-01.json",
+    "phase_14_shadow_observations": 84610,
+    "phase_14_shadow_succeeded_normalization_work": 3044,
+    "normalization_persistence": "ISOLATED_SHADOW_ONLY_UNTIL_CUTOVER",
+    "normalization_isolation_deviation_ref": "docs/evidence/matchforge-v4-phase-14-2026-11-01.json"
   }
 }
