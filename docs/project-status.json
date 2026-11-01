@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T02:50:45.991709+00:00",
+  "updated_at": "2026-11-01T02:54:25.668657Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2969,6 +2969,8 @@
     "phase_08_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json",
     "phase_08_commit_sha": "1c2e343",
     "phase_09_status": "PARTIAL_FUNCTIONAL",
-    "phase_09_ref": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json"
+    "phase_09_ref": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json",
+    "phase_09_commit_sha": "ca6c73ea45843a2f97ef205593490b5d74ba1c1e",
+    "phase_09_validation_correction_ref": "docs/evidence/matchforge-v4-phase-09-validation-correction-2026-11-01.json"
   }
 }
