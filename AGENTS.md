@@ -726,3 +726,5 @@ docs/writing-style.md
 - Capture verbose logs, report concise summaries, and preserve full failure details.
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
+
+Implement the current task in CURRENT_TASK.md from start to finish, use CURRENT_TASK_STATUS.md to track the status.

@@ -16,55 +16,29 @@ Canonical ingestion consumes this boundary only after re-verifying the immutable
 
 ## Project use policy
 
-MatchForge is a private, non-commercial research project and is not intended
-for distribution or external publication. Provider qualification therefore
-does not require commercial-use or redistribution rights.
+MatchForge is a local, private, non-commercial experimental research project. This document establishes a **standing internal owner authorization** to investigate, request, acquire, and locally retain football data needed for development and unfinished research tasks. This authorization applies to all providers, competitions, seasons, and technically accessible public routes; it is not limited to specific named sources or a single task.
 
-Terms review must still confirm that private research access, automated or bulk
-acquisition, processing, and required retention are permitted. Attribution,
-rate limits, credential controls, and other applicable usage restrictions remain
-in force. Third-party source data must not be published unless its terms permit
-publication. A publicly viewable source is not eligible for automated or bulk
-acquisition when its terms prohibit that use or permission remains unresolved.
+**Local experimental acquisition is allowed by MatchForge's internal policy even when provider terms have not been reviewed, permission is unresolved, or published terms restrict automated or bulk acquisition.** Do not stop local experimental acquisition solely because a provider's terms status is `UNKNOWN`, `UNRESOLVED`, `RESTRICTED`, or `PROHIBITED`, and do not repeatedly seek an owner decision for the same policy question. This rule removes an _internal research-eligibility gate_; it does **not** constitute provider consent, override an external contract or law, or establish that the activity is permitted by the provider.
+
+Before or during acquisition, record the provider, source URL or route, terms and permission status, known restrictions, purpose, request limits, acquisition time, and compliance limitations in source evidence. Keep those limitations visible; never relabel restricted or unresolved access as provider-approved. Treat actual access failures, missing credentials, source unavailability, explicit operational stops, and immutable-data or security checks as real blockers rather than falsely reporting successful acquisition.
+
+Acquisition remains bounded and local. Respect configured rate and concurrency budgets, backoff, quotas, caching, credential handling, and provenance. Do not bypass authentication, CAPTCHAs, paywalls, access controls, or anti-bot protections. Never distribute or externally publish third-party raw data unless the applicable rights permit it. The local research authorization does not enable production collection, public release, Evaluation V2 qualification, model promotion, or production cutover; these retain their separate scientific and operational gates.
 
 ### Development acquisition routes
 
-The [current owner decision](evidence/owner-decision-public-development-data-access-2026-10-31.json)
-authorizes investigation and use of technically viable public football-data
-routes for private development and research. Official API documentation or a
-commercial integration is not required. Routes may include official APIs,
-undocumented public JSON and browser endpoints, public HTML and embedded state,
-CSV/JSON feeds, open datasets, maintained community wrappers/scrapers, and normal
-public request formats implemented directly in MatchForge.
+The [current owner decision](evidence/owner-decision-public-development-data-access-2026-10-31.json) and the standing project-use policy above authorize investigation and bounded local acquisition from technically viable football-data routes without a new per-provider or per-task approval. Official API documentation or a commercial integration is not a prerequisite for internal experimental acquisition. Routes may include official APIs, undocumented public JSON and browser endpoints, public HTML and embedded state, CSV/JSON feeds, open datasets, maintained community wrappers/scrapers, and normal public request formats implemented directly in MatchForge.
 
-Record the actual access route separately from resource capability and
-qualification. Inspect the source, make a bounded request, preserve exact bytes
-and acquisition time, then measure coverage. An unofficial endpoint, wrapper or
-scraper is not by itself an unavailable source. A failed request is evidence for
-that tested route and scope, not proof that every resource is inaccessible.
+Record the actual access route separately from resource capability, provider permission status, and downstream qualification. Inspect the source, make bounded requests, preserve exact bytes and observation time, and measure coverage. An unofficial endpoint, wrapper, or scraper is not by itself an unavailable source. A failed request is evidence for that tested route and scope, not proof that every resource is inaccessible. A restrictive or unresolved terms status must be recorded as a compliance limitation, not silently converted into a technical acquisition failure or a provider-approval claim.
 
-Use the existing cache, immutable storage, request budgets, quotas, cooldowns,
-schema validation and shared work orchestration. Do not defeat authentication,
-CAPTCHAs, paywalls or explicit technical access restrictions. Applicable source
-use conditions above still apply. Identity, semantic and point-in-time
-qualification remain prerequisites for canonical/model use; public access alone
-does not qualify data or establish earlier historical knowledge.
+Use the existing cache, immutable storage, request budgets, quotas, cooldowns, schema validation, and shared work orchestration. Do not defeat authentication, CAPTCHAs, paywalls, technical access restrictions, or anti-bot controls. Identity, semantic, and point-in-time qualification remain prerequisites for canonical/model use; public access alone does not qualify data or establish earlier historical knowledge. Label new data collected under this standing exception `EXPERIMENTAL_ONLY` until separately qualified.
 
-This decision concerns external football data. MatchForge's own admin/API
-authentication, private-local checks, browser Origin checks, owner approvals and
-request validation remain governed by their existing contracts. Historical
-decisions and frozen evaluation scopes are preserved; this decision applies
-prospectively and does not reopen closed scientific routes.
+This policy concerns external football data. MatchForge's own admin/API authentication, private-local checks, browser Origin checks, owner approvals for consequential operations, and request validation remain governed by their existing contracts. Historical decisions and frozen evaluation scopes are preserved; this standing experimental acquisition authorization applies prospectively and does not reopen closed scientific routes.
 
-### Scoped Flashscore/Soccerway research exception
+### Flashscore and Soccerway under the standing experimental policy
 
-The [R03 owner decision](evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json)
-allows the pending experimental tasks to use available Flashscore and Soccerway
-data despite unresolved provider permission and their automated-acquisition
-restrictions. This is an exception to MatchForge's internal eligibility policy;
-it is not provider permission. Record that compliance limitation with the source
-evidence. Request bounds, isolation, identity/PIT qualification and the prohibition
-on bypassing authentication, access controls or anti-bot protections still apply.
+The [R03 owner decision](evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json) is an earlier source-specific example of the standing experimental policy. Flashscore and Soccerway are eligible for bounded **local experimental acquisition under MatchForge's internal rules** even where provider permission is unresolved or automated-acquisition restrictions have been identified. The same internal rule now applies to other providers; no further exception is required for each experimental task.
+
+Record the named provider restrictions and unresolved permission accurately in acquisition evidence. Internal owner authorization is not provider permission and does not erase external compliance risk. Do not bypass authentication, access controls, CAPTCHAs, paywalls, or anti-bot protections. Preserve request bounds, source isolation, identity and point-in-time checks, and `EXPERIMENTAL_ONLY` classification until independent qualification.
 
 ## WhoScored historical requests
 
@@ -136,23 +110,11 @@ trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
 
 ### Research and Evaluation V2 are separate qualification levels
 
-Ordinary private research may use a provider only where published terms and
-the current account entitlement explicitly permit the intended access and use.
-Public accessibility is not permission. If automation, retention, attribution,
-or another needed activity is unclear, exclude that activity rather than infer
-authority. Live API calls require a documented request budget within an
-owner-authorized scope. The V4 programme already authorizes bounded provider
-investigation and acquisition; routine requests within that scope do not require
-another approval. Frozen research/evaluation acquisition budgets and separate
-scientific or production-cutover approvals remain binding.
+For **local experimental research**, the standing project-use policy permits bounded acquisition without a provider-terms approval gate. Public accessibility is not proof of permission: retain the actual provider terms/entitlement status, known restrictions, and any unresolved compliance limitations, including when automation or retention is prohibited or uncertain. Do not infer that MatchForge's internal authorization grants rights against a provider. Do not treat a terms-only concern as a reason to abandon unrelated acquisition, adapter implementation, missing-data recovery, or research tasks.
 
-Research contract fixtures and sanitized, bounded technical checks do not
-qualify a provider for Evaluation V2. Evaluation qualification additionally
-requires complete frozen coverage, exact source and xG-series identity,
-permitted immutable retention, correction/revision lineage, stable traceable
-identifiers, source hashes, and every applicable corpus and firewall rule.
-Experimental outputs must be labelled `EXPERIMENTAL_ONLY` and cannot be used as
-Evaluation V2, promotion, or production evidence.
+Live requests still require a documented request budget within the standing owner-authorized research scope. The V4 programme's bounded investigation authorization remains in effect, so routine requests do not require repeated approval. Frozen research/evaluation budgets and separate scientific or production-cutover approvals remain binding. Access-control bypass and unsafe or unbounded requests remain prohibited.
+
+Research contract fixtures and sanitized, bounded technical checks do not qualify a provider for Evaluation V2. Evaluation qualification additionally requires complete frozen coverage, exact source and xG-series identity, appropriate rights for immutable retention, correction/revision lineage, stable traceable identifiers, source hashes, and every applicable corpus and firewall rule. Outputs obtained under the experimental exception must be labelled `EXPERIMENTAL_ONLY` and cannot be used as Evaluation V2, promotion, or production evidence unless independently admitted under the stricter applicable qualification requirements.
 
 `validate_pitchapi_audit` is the offline PitchAPI qualification boundary. It
 accepts externally supplied fixture manifests, match-scoped shot responses, a
@@ -183,11 +145,9 @@ Git-specific `SourceManifestV1` and `DatasetManifestV1` must not represent an
 API snapshot with a fabricated Git SHA. See the [contingency preparation
 record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
 
-TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
-API (`/v1/`). It is not enabled until credentials, account timezone/language,
-coverage scopes, and private research-use and access-terms approval are
-recorded. Its aggregate statistics cannot substitute for Tier A event geometry,
-and provider-defined fields such as `dangerous_attacks` retain provider provenance.
+TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST API (`/v1/`). Bounded local experimental acquisition can proceed when required credentials, account timezone/language, and coverage scopes are configured, without requiring separate private-research or access-terms approval. Record actual terms and entitlement status as evidence, not as a claim of permission.
+
+This does not enable production or Evaluation V2 use. Its aggregate statistics cannot substitute for Tier A event geometry, and provider-defined fields such as `dangerous_attacks` retain provider provenance.
 
 Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
 resource and competition/season scope to configurable discovery cadence,
