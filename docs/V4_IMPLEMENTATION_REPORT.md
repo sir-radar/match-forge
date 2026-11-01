@@ -585,3 +585,34 @@ passed. Final read-only replay reproduced both exact published output reports.
 The native-model completeness assertion stayed intact; four Understat examples
 were added. The initial work test was corrected to use idle control connections.
 R3, scientific and production cutover/retirement gates remain unchanged.
+
+## Phase 07 — ClubElo access checkpoint
+
+Status: BLOCKED_WITH_EVIDENCE. Phase 06 commit: `88dc603`.
+
+The official documentation request returned HTTP 403. The dated HTTPS API
+request exhausted four bounded attempts with connection timeouts. The documented
+HTTP dated resource and a team-history resource each returned four empty HTTP
+502 responses. No football CSV or rating was fetched. The
+[current soccerdata source](https://github.com/probberechts/soccerdata/blob/master/soccerdata/clubelo.py)
+uses the same HTTP service; the inference is that installing it would not change
+this observed transport limitation. The wrapper was inspected, not installed or
+claimed as successfully run. No proxy, TLS change, challenge bypass or guessed
+mirror was used. This is an environment/time-specific access result.
+
+[Phase 07 evidence](evidence/matchforge-v4-phase-07-2026-11-01.json) records exact
+URLs, attempt outcomes, timestamps and verified diagnostic hashes. There is no
+fake functional adapter, inferred team identity, current-rating substitute,
+backdated knowledge or invented historical coverage. TeamRatingObservationV3
+already represents a source calendar rating without inferring event time.
+
+Resume by obtaining a reachable documented endpoint or separately verified
+retained CSV, then test dated ratings, source identity, continuity and PIT rules
+before model use. No operating mutation, fitting, evaluation or promotion ran.
+The existing scientific/R3/cutover gates remain. Independent Phase 08 proceeds.
+The programme's request counter is explicitly named for API-Football; other
+sources retain their own detailed access/retry receipts rather than a false
+aggregate request total.
+
+Verification: diagnostic bytes/hashes, project-status validation, 21 governance
+tests and the final diff check passed. No executable repository code changed.
