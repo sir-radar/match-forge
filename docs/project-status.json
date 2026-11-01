@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T09:44:19.787495Z",
+  "updated_at": "2026-11-01T09:54:56.287754Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "16",
+    "current_phase": "17",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2923,7 +2923,8 @@
       "12c",
       "12",
       "13",
-      "15"
+      "15",
+      "17"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -3016,7 +3017,7 @@
     "phase_14_commit_sha": "e58c9bee0c39b1b45cc2ff943f34478767098672",
     "phase_15_status": "PASS_WITH_WARNINGS",
     "phase_15_ref": "docs/evidence/matchforge-v4-phase-15-2026-11-01.json",
-    "market_target_families": 64,
+    "market_target_families": 65,
     "partial_phases": [
       "14",
       "16"
@@ -3025,6 +3026,9 @@
     "phase_16_status": "PARTIAL_FUNCTIONAL",
     "phase_16_engineering_gate": "PASS_WITH_WARNINGS",
     "phase_16_complete": false,
-    "phase_16_ref": "docs/evidence/matchforge-v4-phase-16-2026-11-01.json"
+    "phase_16_ref": "docs/evidence/matchforge-v4-phase-16-2026-11-01.json",
+    "phase_16_commit_sha": "dc8ffa9f23e8152c5c84895c6b7cc5c1b85c7bbb",
+    "phase_17_status": "PASS_WITH_WARNINGS",
+    "phase_17_ref": "docs/evidence/matchforge-v4-phase-17-2026-11-01.json"
   }
 }

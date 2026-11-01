@@ -1035,3 +1035,41 @@ list/detail consistency. Web fixtures cover the conflict warning, retained score
 missing legacy metadata and malformed ordering claims. Phase 16 evidence records
 actual results and remaining source/lifecycle qualifications. No new identities,
 models, forecasts, promotions, normalization writes or cutover were performed.
+
+## Phase 17 — coherent goal products and period qualification
+
+The checkpoint is `PASS_WITH_WARNINGS`. The existing `score_products` and
+`models products` command now derive draw no bet, winning margins, signed Asian
+and integer European handicaps, team/match totals and inclusive ranges, result ×
+totals and result × BTTS from one exact joint score matrix. Result × BTTS closes
+original reference section 64's remaining coverage gap. The current catalogue
+has 65 families; all 64 prior semantic hashes remain unchanged.
+
+Line parameters are explicit and repeatable. Asian quarter lines split the stake
+between adjacent half lines, with separate full win, half win, push, half loss
+and full loss probabilities. Away handicaps reverse the signed home line. Joint
+result/total entries describe strict comparisons and do not imply split-stake
+settlement. No odds, prices, in-play reset rules or sportsbook equivalence are
+inferred. The primary settlement reference is recorded in Phase 17 evidence.
+
+Each partition contains resolved probability, the unchanged unresolved tail and
+marginal bounds. The upper bound is the intersection of resolved-plus-tail mass
+with the probability interval; this is not a simultaneous allocation across
+outcomes. No mass is normalized or distributed into invented tail cells. Existing
+numerical tolerance applies to comparisons with analytic probabilities. Legacy
+censored grids retain their old products and explicitly decline these new exact
+projections. Immutable forecasts, model artifacts, prior raw probabilities and
+champion weights are unchanged.
+
+The nine period targets still have no qualified target coverage or evaluated
+period model. Their existing definitions and readiness checks remain in force;
+no period probability or divided full-time intensity is produced. Pure score
+projections do not grant target evaluation, publication or model promotion.
+
+Verification includes independent settlement examples, zero/push boundaries,
+quarter signs, inclusive ranges, joint cells that differ from marginal products,
+invalid parameters, deterministic ordering, read-only CLI, champion tail bounds,
+unchanged forecast bytes and all prior semantic identities. The focused suite
+passed 95 tests; the final semantic suite passed 28, including one additional
+regression and 27 overlaps. Three existing dependency deprecation warnings remain.
+No provider request, operating write, authoritative fit or publication occurred.

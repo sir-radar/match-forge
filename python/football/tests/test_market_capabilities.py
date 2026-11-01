@@ -273,3 +273,12 @@ def test_research_only_compatibility_never_becomes_public_support():
     report = assess_market(CATALOGUE["RESULT_1X2"], evidence)
     assert report["diagnostic_status"] == "RESEARCH_REQUIRED"
     assert not report["publication"]["eligible_under_declared_evidence"]
+
+
+def test_phase_15_semantic_identities_stay_frozen_as_implementations_expand():
+    import json
+
+    baseline = json.loads(Path("docs/evidence/matchforge-v4-phase-15-2026-11-01.json").read_bytes())
+    for target in baseline["targets"]:
+        assert CATALOGUE[target["market_id"]].sha256 == target["definition_sha256"]
+    assert CATALOGUE["RESULT_BTTS"].implementation == "football.forecasting.products.score_products"

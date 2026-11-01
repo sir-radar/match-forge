@@ -1020,7 +1020,15 @@ publication. Analytic market probabilities, resolved mass and unresolved tails a
 preserved. Legacy censored buckets retain their labels, are excluded from exact
 score atoms, and their summed bucket indices are explicitly distinguished from an
 exact total-goal distribution. Existing forecast serialization and hashes stay
-unchanged. Cards and player products have no runtime implementation or activation.
+unchanged. Exact support also projects draw no bet, winning margins, quarter-goal
+Asian and whole-goal European handicaps, team/match totals and inclusive ranges,
+result × strict totals and result × BTTS. Optional repeatable `--goal-line`,
+`--asian-handicap`, `--european-handicap` and `--goal-range MIN MAX` arguments supply
+explicit parameters. New projections refuse censored support. Each partition
+keeps resolved mass, unresolved tail and marginal bounds; the existing numerical
+tolerance governs comparisons. These mathematical projections do not qualify
+period models, sportsbook semantics or publication. Cards and player products
+have no runtime implementation or activation.
 
 ## Experiment runs
 

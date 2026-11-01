@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from football.cli.main import run
 from football.forecasting.contracts import CornerForecastPayloadV1, forecast_payload_dict
+from football.forecasting.model_contracts import PROBABILITY_TOLERANCE
 from football.forecasting.multimodel_cli import _forecast_dict
 from football.forecasting.products import score_products
 from test_multi_model_forecasting import _forecast
@@ -65,6 +66,27 @@ def test_exact_support_is_never_renormalized_and_tail_stays_explicit() -> None:
     )
     assert products["one_x_two"]["home"] == forecast.home_probability
     assert products["totals"]["distribution"] == list(forecast.total_goal_distribution)
+    derived = products["derived_goals"]
+    for partition in (
+        derived["draw_no_bet"]["home"],
+        derived["winning_margin"],
+        derived["result_btts"],
+    ):
+        assert partition["unresolved_probability"] == forecast.unresolved_tail_probability
+        assert sum(partition["resolved"].values()) + partition[
+            "unresolved_probability"
+        ] == pytest.approx(1, abs=1e-14)
+        for outcome, lower in partition["resolved"].items():
+            assert partition["bounds"][outcome]["lower"] == lower
+            assert lower <= partition["bounds"][outcome]["upper"] <= 1
+    assert (
+        derived["draw_no_bet"]["home"]["bounds"]["FULL_WIN"]["lower"] - PROBABILITY_TOLERANCE
+        <= forecast.home_probability
+    )
+    assert (
+        derived["draw_no_bet"]["home"]["bounds"]["FULL_WIN"]["upper"] + PROBABILITY_TOLERANCE
+        >= forecast.home_probability
+    )
 
 
 def test_independent_corner_payload_does_not_require_or_invent_goal_probabilities() -> None:

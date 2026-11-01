@@ -272,6 +272,7 @@ def _goal_markets() -> tuple[MarketDefinition, ...]:
             " push and split-stake outcomes."
         ),
         "EUROPEAN_GOAL_HANDICAP": "Three-way comparison after the explicit goal handicap.",
+        "RESULT_BTTS": "Joint regulation result and both-teams-to-score condition.",
         "RESULT_GOALS": (
             "Joint regulation result and goal-total condition from one score distribution."
         ),
@@ -284,6 +285,13 @@ def _goal_markets() -> tuple[MarketDefinition, ...]:
         "TEAM_GOALS",
         "BTTS",
         "CLEAN_SHEET",
+        "DRAW_NO_BET",
+        "GOAL_RANGE",
+        "WINNING_MARGIN",
+        "ASIAN_GOAL_HANDICAP",
+        "EUROPEAN_GOAL_HANDICAP",
+        "RESULT_GOALS",
+        "RESULT_BTTS",
     }
     parameters = {
         "RESULT_1X2": ("selection",),
@@ -298,6 +306,7 @@ def _goal_markets() -> tuple[MarketDefinition, ...]:
         "WINNING_MARGIN": ("margin",),
         "ASIAN_GOAL_HANDICAP": ("team", "handicap"),
         "EUROPEAN_GOAL_HANDICAP": ("home_handicap", "selection"),
+        "RESULT_BTTS": ("result", "btts_selection"),
         "RESULT_GOALS": ("result", "goal_line", "goal_selection"),
     }
     for key, meaning in goals.items():
