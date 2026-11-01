@@ -677,3 +677,27 @@ automatically. Independent Phase 10 follows. Verification: 168 focused tests in
 a disposable database, Ruff format/lint/complexity, mypy, architecture, status and
 diff checks passed. The existing Understat storage test now exercises both
 providers through the same manifest, fencing, retry and temporal-exclusion path.
+
+Phase 09 validation correction: the original status-check PASS claim was
+incorrect. The command failed on a `+00:00` timestamp where ProjectStatusV2
+requires `Z`; a later command masked its exit. Checkpoint `428b1f9` corrects the
+timestamp and records the failure without rewriting the implementation commit.
+Project-status validation and all 21 governance tests then passed under fail-fast
+execution. See the [correction evidence](evidence/matchforge-v4-phase-09-validation-correction-2026-11-01.json).
+
+## Phase 10 — FBref access checkpoint
+
+Status: BLOCKED_WITH_EVIDENCE. Phase 09 commit: `ca6c73e`.
+
+Both the current and 2024–25 historical EPL statistics pages returned HTTP 403.
+The primary soccerdata FBref source was fetched and inspected; it reads the same
+fbref.com host. This does not prove that running that wrapper would succeed.
+No shooting, passing, defending, goalkeeper or player-match tables were acquired.
+The prior read-only provider inventory contains zero registered FBref resources.
+
+[Phase 10 evidence](evidence/matchforge-v4-phase-10-2026-11-01.json) retains exact
+URLs, response clocks and verified byte hashes. No fake adapter, operating write,
+model action or access-restriction bypass occurred. Resume with permitted access
+or verified retained tables, then qualify actual identities, historical clocks
+and target definitions. Independent Phase 11 proceeds. Response hashes, 21
+governance tests, project-status validation and the diff check passed.
