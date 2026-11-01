@@ -1,0 +1,3897 @@
+{
+  "phase": "R01-A",
+  "status": "PASS",
+  "scope": "V4 operating isolation Issue 1 only",
+  "starting_branch": "ft/v4-execution-programme",
+  "starting_sha": "72ea7fc6d0cf692d55fc57e97fb11d7902757b3f",
+  "owner_disposition": "PRESERVE_AS_DEVELOPMENT_EVIDENCE",
+  "root_cause": {
+    "selection": "Ad hoc phase publishers explicitly read os.environ[DATABASE_URL], inherited from the operating .env. They did not select or attest an isolated target. The scripts deliberately described additive operating publication; that implementation violated the existing shadow-only architecture instruction.",
+    "configuration": {
+      "dotenv_loaded_by_python": false,
+      "shell_exports_env": true,
+      "configured_host": "127.0.0.1",
+      "configured_port": "55433",
+      "configured_database": "football",
+      "credentials_recorded": false
+    },
+    "missing_safeguards": [
+      "normalization CLI has no explicit database target argument and uses DATABASE_URL for --persist",
+      "observation store CLI uses DATABASE_URL without isolated-role verification",
+      "ad hoc scripts can call shared storage/capability/work owners on any connection",
+      "descriptive shadow names are only assertions in later scripts, not verified database roles"
+    ],
+    "ordinary_operational_sync": "Intentionally defaults to DATABASE_URL; must remain supported. External public development acquisition approval did not authorize production V2 routing or bypass identity/PIT qualification.",
+    "recurrence_possible": true,
+    "isolated_phases": "Phase 05a/05b replays were read-only; Phase 07/08/10 acquired no football observations. Phase 14 backfill connected to separate source READ ONLY and explicit shadow target; test harnesses created disposable databases. No Phase 14 operating normalization."
+  },
+  "commands": [
+    {
+      "script": ".local/reports/v4/phase-05/publish_observations.py",
+      "sha256": "872b8f8d1d1cf163d41b3b168cbff16b44afab0604f86fd4723eb0361e65bfbd",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/publish_observations.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-05/finalize_api_evidence.py",
+      "sha256": "7892ddafec81fbba9c228b263ff7966ba2b736573ab7aa086669831d6e054f5e",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/finalize_api_evidence.py",
+      "effect": "capability-only append",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-05/publish_standings.py",
+      "sha256": "1c77344cd9b90ce436c9a8582b5ae5d9ce074de3ac7bffef72437db2c5a2e876",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/publish_standings.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-06/publish.py",
+      "sha256": "8508dca1cec73be6e0790b7149432c127769cdd6d61a9f4769917b920fb5583c",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-06/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-06/verify_metadata.py",
+      "sha256": "dbf2c622cee83238ab55fffb81bb01bf86bd42e9f30a6859ce5bf3278956c5c1",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-06/verify_metadata.py",
+      "effect": "capability-only append",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-09/publish.py",
+      "sha256": "0d1a21034aa40a555c16a37babd509cf0a70f9688c3eeef62ad8b8a878b04721",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-09/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-11/publish.py",
+      "sha256": "9929b32632ab1ea8a5d35cd86d58b87f42d2af1638062d9bdd3618f9ff3289e9",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-11/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12/publish.py",
+      "sha256": "81233f7a14b1b9026538b1e4459c2041eaf1fa57675a6787a2a17c37d9eceaf8",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12b/publish.py",
+      "sha256": "e4fdd10270b979b66b12237b6ab320cc5c7199dff827a1eff3419aa3c3671fe7",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12b/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12c/publish.py",
+      "sha256": "0a064399591b3097f373bc800a0d4af63001a1fef8fd297a5db678078cb4d777",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12c/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-13/publish.py",
+      "sha256": "20f0ce22dac1caac75a3c07c48a8f95e258e12d60db54d669c2471d196f56636",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-13/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    }
+  ],
+  "safe_selection_reproduction": {
+    "method": "mock psycopg.connect; stop before file or database side effects",
+    "inherited_DATABASE_URL": true,
+    "explicit_target_argument_required": false,
+    "role_validation": false
+  },
+  "snapshot": [
+    "football",
+    "192.168.107.3/32",
+    5432,
+    "on",
+    "2026-11-01 15:17:45.414767+00"
+  ],
+  "counts": {
+    "observations": 12310,
+    "capability_decisions": 26,
+    "source_resources_with_observations": 28,
+    "verified_reports": 33
+  },
+  "provider_counts": {
+    "football_data_uk": 7015,
+    "flashscore": 1183,
+    "understat": 2361,
+    "api_football": 141,
+    "espn": 120,
+    "soccerway": 1183,
+    "fotmob": 128,
+    "pitchapi": 124,
+    "whoscored": 55
+  },
+  "artifact_inventory": {
+    "selection": "Exact observation ID + artifact SHA256 union of the 33 hashed retained reports; equals all current rows. Not timestamp-selected.",
+    "full_original_registration_export": {
+      "path": ".local/reports/v4/isolation-r01/baseline.json",
+      "sha256": "43b92a764b1d449c8a219d88773489c70dd29a9230e8b945a576dec4706347ec"
+    },
+    "audit_script": {
+      "path": ".local/reports/v4/isolation-r01/audit.py",
+      "sha256": "c4882c7a77d77491d13648bef0113eb60238fa7f06c8138b312a4a23c8902469"
+    },
+    "observation_files_verified": 12310,
+    "capability_files_verified": 26,
+    "report_manifests": [
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/1ad4b6b3bcc11200ec6c71fe3e61afbd7f5f1b09fa44ce7b8ba2b35acea7c6e8.json",
+        "sha256": "1ad4b6b3bcc11200ec6c71fe3e61afbd7f5f1b09fa44ce7b8ba2b35acea7c6e8",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "resource_type": "shots",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "5881209",
+          "season_label": null
+        },
+        "observations": 50
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/32d13eac21812fc5c2a7e86345f5c9edc9101aba4d5bf43f6cdaff7ac147ec05.json",
+        "sha256": "32d13eac21812fc5c2a7e86345f5c9edc9101aba4d5bf43f6cdaff7ac147ec05",
+        "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+        "resource_type": "player_statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1208399",
+          "season_label": null
+        },
+        "observations": 82
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/32daafe1626b8f05406adef1b09c17f5a5a9e57106fac18a022fe8f113e0b890.json",
+        "sha256": "32daafe1626b8f05406adef1b09c17f5a5a9e57106fac18a022fe8f113e0b890",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "5881209",
+          "season_label": null
+        },
+        "observations": 8
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed.json",
+        "sha256": "3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed",
+        "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": null,
+          "season_label": null
+        },
+        "observations": 7015
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/50ec9b3d55d7d10322efa16b753f7e998d3d454d44295bd2e1fe29b732fa7ebc.json",
+        "sha256": "50ec9b3d55d7d10322efa16b753f7e998d3d454d44295bd2e1fe29b732fa7ebc",
+        "source_resource_id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+        "resource_type": "events",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1208399",
+          "season_label": null
+        },
+        "observations": 11
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/8c009c861bc2e9e83f38060165d5a17d181f98b38cf6be0958d3a845e4d3b565.json",
+        "sha256": "8c009c861bc2e9e83f38060165d5a17d181f98b38cf6be0958d3a845e4d3b565",
+        "source_resource_id": "d62c70ae-d409-55e1-9b44-194ad7c5dd29",
+        "resource_type": "player_statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1291123",
+          "season_label": null
+        },
+        "observations": 0
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/9c84c3c67f2384c2537c1afe34849bfc1d44fa8db4d31b4e6bcde757e2558925.json",
+        "sha256": "9c84c3c67f2384c2537c1afe34849bfc1d44fa8db4d31b4e6bcde757e2558925",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1208399",
+          "season_label": null
+        },
+        "observations": 6
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/9e45b164363175ca9090daf24c39c386026e48518a70e31df2c8300d3f436a40.json",
+        "sha256": "9e45b164363175ca9090daf24c39c386026e48518a70e31df2c8300d3f436a40",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "resource_type": "player_statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "5881209",
+          "season_label": null
+        },
+        "observations": 70
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/a7c72e7f63a852c22d1506e3f1eac0a1737acf07b9595e6b441b2693d28c2efe.json",
+        "sha256": "a7c72e7f63a852c22d1506e3f1eac0a1737acf07b9595e6b441b2693d28c2efe",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1208399",
+          "season_label": null
+        },
+        "observations": 6
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/bf6901129af877b7683d2f3e98535243eebf09e4af09ff3561ea684ab40361e1.json",
+        "sha256": "bf6901129af877b7683d2f3e98535243eebf09e4af09ff3561ea684ab40361e1",
+        "source_resource_id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "m_3flxzg",
+          "season_label": null
+        },
+        "observations": 8
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/cfa561d4d3302fd9e02cb20815cb1133736eedb8833d2d76205ecdf408317ced.json",
+        "sha256": "cfa561d4d3302fd9e02cb20815cb1133736eedb8833d2d76205ecdf408317ced",
+        "source_resource_id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+        "resource_type": "shots",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "m_3flxzg",
+          "season_label": null
+        },
+        "observations": 46
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/de6258c9e381ce487353326a75b99c942dd889dfc75ebce252e113e7ac992b54.json",
+        "sha256": "de6258c9e381ce487353326a75b99c942dd889dfc75ebce252e113e7ac992b54",
+        "source_resource_id": "cba9a219-55cf-5623-aa54-276579903695",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1291123",
+          "season_label": null
+        },
+        "observations": 0
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/dfd4a287f46a85096ed4395385bf6e2624f77e2b868fc0604a5b1a7ef87b976f.json",
+        "sha256": "dfd4a287f46a85096ed4395385bf6e2624f77e2b868fc0604a5b1a7ef87b976f",
+        "source_resource_id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+        "resource_type": "player_statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "m_3flxzg",
+          "season_label": null
+        },
+        "observations": 70
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/e9854f6e53009e7a61fb6225ed84086c6f162065a5df35c26626279a7a1708e4.json",
+        "sha256": "e9854f6e53009e7a61fb6225ed84086c6f162065a5df35c26626279a7a1708e4",
+        "source_resource_id": "434fdca5-a14d-5220-8028-2002753a6300",
+        "resource_type": "standings",
+        "scope": {
+          "competition_native_id": "39",
+          "fixture_native_id": null,
+          "season_label": "2024"
+        },
+        "observations": 40
+      },
+      {
+        "path": ".local/reports/v4/phase-05/reports/normalization/f56311fad9f0fb07e8c0b45854e1d1f871c536f0e34f89025e85b9974af8e773.json",
+        "sha256": "f56311fad9f0fb07e8c0b45854e1d1f871c536f0e34f89025e85b9974af8e773",
+        "source_resource_id": "8e5dc16c-315c-52cd-800a-295387efa658",
+        "resource_type": "events",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "1291123",
+          "season_label": null
+        },
+        "observations": 2
+      },
+      {
+        "path": ".local/reports/v4/phase-06/reports/normalization/303f74fca4bd8669a0e60c4e1c743c1337635222b35caaed920a95764681a2dd.json",
+        "sha256": "303f74fca4bd8669a0e60c4e1c743c1337635222b35caaed920a95764681a2dd",
+        "source_resource_id": "2de93633-dbb2-59b9-b74a-f7c3916adc83",
+        "resource_type": "results",
+        "scope": {
+          "competition_native_id": "EPL",
+          "fixture_native_id": null,
+          "season_label": "2024"
+        },
+        "observations": 2281
+      },
+      {
+        "path": ".local/reports/v4/phase-06/reports/normalization/eb7cb211515db090b9737eee9ac957dd8ae56f6876545d584eb42d9fcb552d22.json",
+        "sha256": "eb7cb211515db090b9737eee9ac957dd8ae56f6876545d584eb42d9fcb552d22",
+        "source_resource_id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+        "resource_type": "shots",
+        "scope": {
+          "competition_native_id": "EPL",
+          "fixture_native_id": "26602",
+          "season_label": "2024"
+        },
+        "observations": 80
+      },
+      {
+        "path": ".local/reports/v4/phase-09/reports/normalization/1471c1c9914a4f655c1fc989b3a2dbba426483f1ce67207f9469376fabd9c9cd.json",
+        "sha256": "1471c1c9914a4f655c1fc989b3a2dbba426483f1ce67207f9469376fabd9c9cd",
+        "source_resource_id": "a6cec8f3-cec3-5c5d-b8aa-3bcd48b06778",
+        "resource_type": "scoreboard",
+        "scope": {
+          "competition_native_id": "700",
+          "fixture_native_id": null,
+          "season_label": "2024"
+        },
+        "observations": 7
+      },
+      {
+        "path": ".local/reports/v4/phase-09/reports/normalization/78ee36990e02f317ff82a91d1963afb1acf19cfc4f022359bdd466ce26c48af3.json",
+        "sha256": "78ee36990e02f317ff82a91d1963afb1acf19cfc4f022359bdd466ce26c48af3",
+        "source_resource_id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+        "resource_type": "summary",
+        "scope": {
+          "competition_native_id": "700",
+          "fixture_native_id": "704279",
+          "season_label": "2024"
+        },
+        "observations": 109
+      },
+      {
+        "path": ".local/reports/v4/phase-09/reports/normalization/cb7daabedc6e967d4d7d78a2465834cabc2ce44e0c6278c5ad808e6660938c06.json",
+        "sha256": "cb7daabedc6e967d4d7d78a2465834cabc2ce44e0c6278c5ad808e6660938c06",
+        "source_resource_id": "43c56d0e-66f8-5b5a-ad6f-d2d7c7a333fc",
+        "resource_type": "scoreboard",
+        "scope": {
+          "competition_native_id": "700",
+          "fixture_native_id": null,
+          "season_label": "2026"
+        },
+        "observations": 4
+      },
+      {
+        "path": ".local/reports/v4/phase-11/reports/normalization/41d9d55f65c0520f3d332c81c0aeb045aba99ae8dde1861aeaede6e1c59199cc.json",
+        "sha256": "41d9d55f65c0520f3d332c81c0aeb045aba99ae8dde1861aeaede6e1c59199cc",
+        "source_resource_id": "f13a5ccb-998a-5bb5-96db-5f04c79344da",
+        "resource_type": "fixtures",
+        "scope": {
+          "competition_native_id": "2",
+          "fixture_native_id": null,
+          "season_label": "2026/2027"
+        },
+        "observations": 55
+      },
+      {
+        "path": ".local/reports/v4/phase-12/reports/normalization/946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca.json",
+        "sha256": "946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca",
+        "source_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD",
+          "fixture_native_id": null,
+          "season_label": "2026/2027"
+        },
+        "observations": 675
+      },
+      {
+        "path": ".local/reports/v4/phase-12/reports/normalization/c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3.json",
+        "sha256": "c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3",
+        "source_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD",
+          "fixture_native_id": null,
+          "season_label": "2024/2025"
+        },
+        "observations": 437
+      },
+      {
+        "path": ".local/reports/v4/phase-12b/reports/21e847e263bb0f89066e989fba75bdeb86af7f179cbb54a460e195220570ad0d.json",
+        "sha256": "21e847e263bb0f89066e989fba75bdeb86af7f179cbb54a460e195220570ad0d",
+        "source_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 8
+      },
+      {
+        "path": ".local/reports/v4/phase-12c/reports/027f64bc0c0ade50b3959593b1cc2140e691fc71f22c0d311a7d9bfdc392c8f5.json",
+        "sha256": "027f64bc0c0ade50b3959593b1cc2140e691fc71f22c0d311a7d9bfdc392c8f5",
+        "source_resource_id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+        "resource_type": "events",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 16
+      },
+      {
+        "path": ".local/reports/v4/phase-12c/reports/44dbf0d131f9b42ef10e012e9cfd755641215cc4cf30737a9aaa76273306f7c9.json",
+        "sha256": "44dbf0d131f9b42ef10e012e9cfd755641215cc4cf30737a9aaa76273306f7c9",
+        "source_resource_id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+        "resource_type": "summary",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 3
+      },
+      {
+        "path": ".local/reports/v4/phase-12c/reports/aaf766a9566c507291a99363fb79ccf440dfbe57f7f04764963373379312baf6.json",
+        "sha256": "aaf766a9566c507291a99363fb79ccf440dfbe57f7f04764963373379312baf6",
+        "source_resource_id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+        "resource_type": "lineups",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 44
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/0bffd83bdbdc11c7093b54a939ca004d0cccafb7487a106d5df5b1c90538a5fe.json",
+        "sha256": "0bffd83bdbdc11c7093b54a939ca004d0cccafb7487a106d5df5b1c90538a5fe",
+        "source_resource_id": "78e381d1-599c-5590-9355-ba34d219dda9",
+        "resource_type": "summary",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 3
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/a7bd0a96c370f0b85ecfc69ab06a6323465120fe995074173d977aa5a3d540df.json",
+        "sha256": "a7bd0a96c370f0b85ecfc69ab06a6323465120fe995074173d977aa5a3d540df",
+        "source_resource_id": "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d",
+        "resource_type": "statistics",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 8
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/a816e6dacabf70d4021becd393069a1aa6319555a7c8bc159d5a52aa34afad8f.json",
+        "sha256": "a816e6dacabf70d4021becd393069a1aa6319555a7c8bc159d5a52aa34afad8f",
+        "source_resource_id": "47caa8eb-c58e-521a-a3dc-e4cc23cd41e6",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD",
+          "fixture_native_id": null,
+          "season_label": "2024/2025"
+        },
+        "observations": 437
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/ba7a3db292475f46a05d9db643b7dc9926f239c7e13310dc3e5bf19646a501cb.json",
+        "sha256": "ba7a3db292475f46a05d9db643b7dc9926f239c7e13310dc3e5bf19646a501cb",
+        "source_resource_id": "cc057029-4ec1-557f-a62e-9686a88b3011",
+        "resource_type": "events",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 16
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/c5da6e214004fd8a7b8a1109223d8b1c715012272fa99a0b8e097a1ec64326f8.json",
+        "sha256": "c5da6e214004fd8a7b8a1109223d8b1c715012272fa99a0b8e097a1ec64326f8",
+        "source_resource_id": "dfe4095b-5645-5776-b3c0-1da7138772f8",
+        "resource_type": "lineups",
+        "scope": {
+          "competition_native_id": null,
+          "fixture_native_id": "bRXj39aJ",
+          "season_label": null
+        },
+        "observations": 44
+      },
+      {
+        "path": ".local/reports/v4/phase-13/reports/ed7580a6c5ecdfab9a145af1be6a7150141c6e712f330c09b12bcd88a6996fcc.json",
+        "sha256": "ed7580a6c5ecdfab9a145af1be6a7150141c6e712f330c09b12bcd88a6996fcc",
+        "source_resource_id": "52edbbd9-f3a3-55ec-8149-95d94def4143",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD",
+          "fixture_native_id": null,
+          "season_label": "2026/2027"
+        },
+        "observations": 675
+      }
+    ],
+    "groups": [
+      {
+        "provider": "api_football",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "source_sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+        "source": {
+          "id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+          "sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "created_at": "2026-11-01T01:13:20.774461+00:00",
+          "media_type": "application/json",
+          "size_bytes": 1666,
+          "acquired_at": "2026-11-01T01:13:20.772006+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/statistics",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "ba69711c-a6c6-5731-9b75-addf4303d0b4"
+        },
+        "snapshot": {
+          "id": "ba69711c-a6c6-5731-9b75-addf4303d0b4",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.77376+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.772006+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375.json",
+          "manifest_sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "source_identity": "fixture-1208399-statistics",
+          "source_revision": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-statistics-v1",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamObservationV2": 2
+        },
+        "artifacts": 4,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.772006+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.268693+00:00",
+          "2026-11-01T01:13:48.276311+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "f78bbbb6e65325a9979b4954e248f738cd41679de18b02937c6d7462c309ebdf"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "source_sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+        "source": {
+          "id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+          "sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "created_at": "2026-11-01T01:13:20.774461+00:00",
+          "media_type": "application/json",
+          "size_bytes": 1666,
+          "acquired_at": "2026-11-01T01:13:20.772006+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/statistics",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "ba69711c-a6c6-5731-9b75-addf4303d0b4"
+        },
+        "snapshot": {
+          "id": "ba69711c-a6c6-5731-9b75-addf4303d0b4",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.77376+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.772006+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375.json",
+          "manifest_sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "source_identity": "fixture-1208399-statistics",
+          "source_revision": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-statistics-v2",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV3": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.772006+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.272741+00:00",
+          "2026-11-01T01:13:48.279569+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "278579a1763ae6e331545cf558ef8141133c6679142827cc31e0540f77f51330"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "434fdca5-a14d-5220-8028-2002753a6300",
+        "source_sha256": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+        "source": {
+          "id": "434fdca5-a14d-5220-8028-2002753a6300",
+          "sha256": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+          "created_at": "2026-11-01T01:21:15.696389+00:00",
+          "media_type": "application/json",
+          "size_bytes": 10328,
+          "acquired_at": "2026-11-01T01:18:24.529632+00:00",
+          "parse_status": "parsed",
+          "provider_path": "standings",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "7a20881c-4f6d-5829-9f86-be8a94481347"
+        },
+        "snapshot": {
+          "id": "7a20881c-4f6d-5829-9f86-be8a94481347",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:21:15.680285+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:18:24.529632+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b.json",
+          "manifest_sha256": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+          "source_identity": "standings-39-2024",
+          "source_revision": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-standings-v1",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamObservationV2": 20,
+          "StandingObservationV2": 20
+        },
+        "artifacts": 40,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:18:24.529632+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:21:15.941152+00:00",
+          "2026-11-01T01:21:16.039073+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "c06b8897c7d316253f7172e79efd042bad1a21f6e13a4cc01235a420527e10e7"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "8e5dc16c-315c-52cd-800a-295387efa658",
+        "source_sha256": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+        "source": {
+          "id": "8e5dc16c-315c-52cd-800a-295387efa658",
+          "sha256": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+          "created_at": "2026-11-01T01:13:20.765555+00:00",
+          "media_type": "application/json",
+          "size_bytes": 651,
+          "acquired_at": "2026-11-01T01:13:20.761427+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/events",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "dc06c4fd-29da-5ba7-9749-843cca076736"
+        },
+        "snapshot": {
+          "id": "dc06c4fd-29da-5ba7-9749-843cca076736",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.76392+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.761427+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b.json",
+          "manifest_sha256": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+          "source_identity": "fixture-1291123-events",
+          "source_revision": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-events-v1",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "EventObservationV2": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.761427+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.263629+00:00",
+          "2026-11-01T01:13:48.266375+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "266201c6972fecf4d5184a14395a8a120614581e389391b671fb51ea9156465b"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+        "source_sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+        "source": {
+          "id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+          "sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "created_at": "2026-11-01T01:13:20.784223+00:00",
+          "media_type": "application/json",
+          "size_bytes": 27522,
+          "acquired_at": "2026-11-01T01:13:20.778605+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/players",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "e9a55bba-c02f-5f31-bb12-0df7cab82e0d"
+        },
+        "snapshot": {
+          "id": "e9a55bba-c02f-5f31-bb12-0df7cab82e0d",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.782614+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.778605+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302.json",
+          "manifest_sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "source_identity": "fixture-1208399-players",
+          "source_revision": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-player_statistics-v1",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "TeamObservationV2": 2
+        },
+        "artifacts": 42,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.778605+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.299458+00:00",
+          "2026-11-01T01:13:48.439795+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "d805038c2a8fb641d334e8ef573cc84c434adc8ee99ddb0da87cb6dc75530f92"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+        "source_sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+        "source": {
+          "id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+          "sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "created_at": "2026-11-01T01:13:20.784223+00:00",
+          "media_type": "application/json",
+          "size_bytes": 27522,
+          "acquired_at": "2026-11-01T01:13:20.778605+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/players",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "e9a55bba-c02f-5f31-bb12-0df7cab82e0d"
+        },
+        "snapshot": {
+          "id": "e9a55bba-c02f-5f31-bb12-0df7cab82e0d",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.782614+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.778605+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302.json",
+          "manifest_sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "source_identity": "fixture-1208399-players",
+          "source_revision": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-player_statistics-v2",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerStatisticObservationV3": 40
+        },
+        "artifacts": 40,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.778605+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.302637+00:00",
+          "2026-11-01T01:13:48.441225+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "9e6b045ea1a790edc04ab16db4fc9ed06553b1627ea81f6657d43b16336507de"
+      },
+      {
+        "provider": "api_football",
+        "source_resource_id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+        "source_sha256": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+        "source": {
+          "id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+          "sha256": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+          "created_at": "2026-11-01T01:13:20.777611+00:00",
+          "media_type": "application/json",
+          "size_bytes": 3207,
+          "acquired_at": "2026-11-01T01:13:20.775258+00:00",
+          "parse_status": "parsed",
+          "provider_path": "fixtures/events",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "f83d08be-db70-5508-841c-dace34fa20d4"
+        },
+        "snapshot": {
+          "id": "f83d08be-db70-5508-841c-dace34fa20d4",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:13:20.776812+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T01:13:20.775258+00:00",
+          "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "mvp/api_football/2026/11/01/f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08.json",
+          "manifest_sha256": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+          "source_identity": "fixture-1208399-events",
+          "source_revision": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+          "source_commit_at": null
+        },
+        "normalizer_version": "api_football-events-v1",
+        "adapter_versions": [
+          "api_football-resource-adapter-v1"
+        ],
+        "contracts": {
+          "EventObservationV2": 11
+        },
+        "artifacts": 11,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:13:20.775258+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.281547+00:00",
+          "2026-11-01T01:13:48.297888+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "c0680fafe099d2021638f4dda8d8b51ca2d1d4e2c59647404c9dda69f00af843"
+      },
+      {
+        "provider": "espn",
+        "source_resource_id": "43c56d0e-66f8-5b5a-ad6f-d2d7c7a333fc",
+        "source_sha256": "d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5",
+        "source": {
+          "id": "43c56d0e-66f8-5b5a-ad6f-d2d7c7a333fc",
+          "sha256": "d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5",
+          "created_at": "2026-11-01T02:50:01.416594+00:00",
+          "media_type": "application/json",
+          "size_bytes": 15383,
+          "acquired_at": "2026-11-01T02:29:50.88714+00:00",
+          "parse_status": "parsed",
+          "provider_path": "eng.1/scoreboard?dates=20261101",
+          "parser_version": "espn-scoreboard-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "ae6da505-c232-57da-9efe-d9f992a0aeb6"
+        },
+        "snapshot": {
+          "id": "ae6da505-c232-57da-9efe-d9f992a0aeb6",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T02:50:01.413143+00:00",
+          "fixture_id": null,
+          "repository": "https://site.api.espn.com",
+          "acquired_at": "2026-11-01T02:29:50.88714+00:00",
+          "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "espn/manifests/009563462de79c818d696401d005dce704fd86f2055d9c2672a27a7f857c1bed.json",
+          "manifest_sha256": "9b8a2cb853cf13f78d2f0f6a137edc4f57bba90582b06d14398520e5e1307cdf",
+          "source_identity": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20261101",
+          "source_revision": "manifest-v1:d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5:9b8a2cb853cf13f78d2f0f6a137edc4f57bba90582b06d14398520e5e1307cdf",
+          "source_commit_at": null
+        },
+        "normalizer_version": "espn-scoreboard-v1",
+        "adapter_versions": [
+          "espn-resource-adapter-v1"
+        ],
+        "contracts": {
+          "FixtureObservationV2": 1,
+          "TeamObservationV2": 2,
+          "CompetitionObservationV2": 1
+        },
+        "artifacts": 4,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T02:29:50.88714+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T02:50:01.44707+00:00",
+          "2026-11-01T02:50:01.45641+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "2eefab3d5584d6a7518c0424f8d0b814f4c1b55b1e47abeb95ecc6e9b3918909"
+      },
+      {
+        "provider": "espn",
+        "source_resource_id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+        "source_sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+        "source": {
+          "id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+          "sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+          "created_at": "2026-11-01T02:50:01.508645+00:00",
+          "media_type": "application/json",
+          "size_bytes": 402643,
+          "acquired_at": "2026-11-01T02:34:22.105801+00:00",
+          "parse_status": "parsed",
+          "provider_path": "eng.1/summary?event=704279",
+          "parser_version": "espn-summary-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "a7b9917b-4954-5873-b39c-d96a7afd15b0"
+        },
+        "snapshot": {
+          "id": "a7b9917b-4954-5873-b39c-d96a7afd15b0",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T02:50:01.504433+00:00",
+          "fixture_id": null,
+          "repository": "https://site.api.espn.com",
+          "acquired_at": "2026-11-01T02:34:22.105801+00:00",
+          "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "espn/manifests/90661b14b769a6094482d49e50cf808025e0a8d66ba750f74f47585fbb0dfdf5.json",
+          "manifest_sha256": "ecc556aa8f0878e69a4ca05f47156c8c4f8c5535ee22860ad6883af86df0b7f5",
+          "source_identity": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=704279",
+          "source_revision": "manifest-v1:c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a:ecc556aa8f0878e69a4ca05f47156c8c4f8c5535ee22860ad6883af86df0b7f5",
+          "source_commit_at": null
+        },
+        "normalizer_version": "espn-summary-v1",
+        "adapter_versions": [
+          "espn-resource-adapter-v1"
+        ],
+        "contracts": {
+          "LineupObservationV2": 2,
+          "PlayerObservationV2": 40,
+          "FixtureObservationV2": 1,
+          "EventObservationV2": 16,
+          "TeamObservationV2": 6,
+          "CompetitionObservationV2": 1,
+          "ResultObservationV2": 1
+        },
+        "artifacts": 67,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T02:34:22.105801+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T02:50:01.916304+00:00",
+          "2026-11-01T02:50:02.27929+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "608ea0d908a5401dc5fdb6506de7dd7c28b4b8a2105b2827ba10ebe31cebaf9b"
+      },
+      {
+        "provider": "espn",
+        "source_resource_id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+        "source_sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+        "source": {
+          "id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+          "sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+          "created_at": "2026-11-01T02:50:01.508645+00:00",
+          "media_type": "application/json",
+          "size_bytes": 402643,
+          "acquired_at": "2026-11-01T02:34:22.105801+00:00",
+          "parse_status": "parsed",
+          "provider_path": "eng.1/summary?event=704279",
+          "parser_version": "espn-summary-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "a7b9917b-4954-5873-b39c-d96a7afd15b0"
+        },
+        "snapshot": {
+          "id": "a7b9917b-4954-5873-b39c-d96a7afd15b0",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T02:50:01.504433+00:00",
+          "fixture_id": null,
+          "repository": "https://site.api.espn.com",
+          "acquired_at": "2026-11-01T02:34:22.105801+00:00",
+          "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "espn/manifests/90661b14b769a6094482d49e50cf808025e0a8d66ba750f74f47585fbb0dfdf5.json",
+          "manifest_sha256": "ecc556aa8f0878e69a4ca05f47156c8c4f8c5535ee22860ad6883af86df0b7f5",
+          "source_identity": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=704279",
+          "source_revision": "manifest-v1:c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a:ecc556aa8f0878e69a4ca05f47156c8c4f8c5535ee22860ad6883af86df0b7f5",
+          "source_commit_at": null
+        },
+        "normalizer_version": "espn-summary-v2",
+        "adapter_versions": [
+          "espn-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerStatisticObservationV3": 40,
+          "TeamStatisticObservationV3": 2
+        },
+        "artifacts": 42,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T02:34:22.105801+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T02:50:01.942312+00:00",
+          "2026-11-01T02:50:02.245227+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "45d2cad439b2316f0bc1d8fa8919a2a85e70f91b9a409d54f85cc5a93988fb10"
+      },
+      {
+        "provider": "espn",
+        "source_resource_id": "a6cec8f3-cec3-5c5d-b8aa-3bcd48b06778",
+        "source_sha256": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+        "source": {
+          "id": "a6cec8f3-cec3-5c5d-b8aa-3bcd48b06778",
+          "sha256": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+          "created_at": "2026-11-01T02:50:00.99138+00:00",
+          "media_type": "application/json",
+          "size_bytes": 13520,
+          "acquired_at": "2026-11-01T02:29:50.88714+00:00",
+          "parse_status": "parsed",
+          "provider_path": "eng.1/scoreboard?dates=20240816",
+          "parser_version": "espn-scoreboard-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "e9301084-a31f-52e0-908b-c8ae63df09d8"
+        },
+        "snapshot": {
+          "id": "e9301084-a31f-52e0-908b-c8ae63df09d8",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T02:50:00.979261+00:00",
+          "fixture_id": null,
+          "repository": "https://site.api.espn.com",
+          "acquired_at": "2026-11-01T02:29:50.88714+00:00",
+          "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "espn/manifests/cd9d7ca48d50cb0cac50d5d0d4eb0ddfd908b41713a52318e3519d149d645e4c.json",
+          "manifest_sha256": "1519a200535d4a1d55b761b25d872b2e615d1a2cda0e892626b017022fac03e1",
+          "source_identity": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816",
+          "source_revision": "manifest-v1:4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968:1519a200535d4a1d55b761b25d872b2e615d1a2cda0e892626b017022fac03e1",
+          "source_commit_at": null
+        },
+        "normalizer_version": "espn-scoreboard-v1",
+        "adapter_versions": [
+          "espn-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "CompetitionObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "artifacts": 7,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T02:29:50.88714+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T02:50:01.303553+00:00",
+          "2026-11-01T02:50:01.329297+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "136684c236fe12b49649ebab2614ffc446e0085f5db23944f19bedcdd72476a5"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+        "source_sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "source": {
+          "id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+          "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+          "created_at": "2026-11-01T03:43:25.547442+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 5950,
+          "acquired_at": "2026-11-01T03:41:23.063184+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_sui_1_bRXj39aJ",
+          "parser_version": "flashscore-events-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "3ea4fdaa-ff45-569c-8086-8817553ad702"
+        },
+        "snapshot": {
+          "id": "3ea4fdaa-ff45-569c-8086-8817553ad702",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:43:25.540004+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T03:41:23.063184+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/c22d07266a95ef5d369986419bdc12ba8ad4a15ba508099435a1e0ab9991bf20.json",
+          "manifest_sha256": "1274a7ceec7dfca23b8d4a9de36f1da82df669d9dfbffb903880c1e9fa6364b4",
+          "source_identity": "https://global.flashscore.ninja/2/x/feed/df_sui_1_bRXj39aJ",
+          "source_revision": "manifest-v1:58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d:1274a7ceec7dfca23b8d4a9de36f1da82df669d9dfbffb903880c1e9fa6364b4",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-events-v1",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "EventObservationV2": 16
+        },
+        "artifacts": 16,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:41:23.063184+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:43:25.697963+00:00",
+          "2026-11-01T03:43:25.731705+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "d16870d1bf8a52aa57c13da745c9026b3803b6aca60649d7e630deccf68d1f13"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+        "source_sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "source": {
+          "id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+          "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+          "created_at": "2026-11-01T03:43:26.765414+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 262,
+          "acquired_at": "2026-11-01T03:41:24.268932+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_sur_1_bRXj39aJ",
+          "parser_version": "flashscore-summary-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "6b0feffa-cb99-582a-a87c-c47fd9f6fbff"
+        },
+        "snapshot": {
+          "id": "6b0feffa-cb99-582a-a87c-c47fd9f6fbff",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:43:26.761895+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T03:41:24.268932+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/2c93111b98c3f7bbc525906f8582b57698d0cd9c8689b7196934d4625b7bd14f.json",
+          "manifest_sha256": "b7fe902b6096afb2f643f07020c0b98652fb8ecc26bce17682a0ab0b3d008f90",
+          "source_identity": "https://global.flashscore.ninja/2/x/feed/df_sur_1_bRXj39aJ",
+          "source_revision": "manifest-v1:2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a:b7fe902b6096afb2f643f07020c0b98652fb8ecc26bce17682a0ab0b3d008f90",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-summary-v2",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "artifacts": 3,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:41:24.268932+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:43:26.876002+00:00",
+          "2026-11-01T03:43:26.879942+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "699c616cb8a659a42811d7fc1c01d4e20322bb9e862e2bfb8a162e1f0c6d60a8"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "source_sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "source": {
+          "id": "86407a09-3936-59d6-8917-874b7d4192b8",
+          "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+          "created_at": "2026-11-01T03:23:46.062558+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 6073,
+          "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_st_1_bRXj39aJ",
+          "parser_version": "flashscore-statistics-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "3ffeec89-9748-5507-82c0-e149b3f00077"
+        },
+        "snapshot": {
+          "id": "3ffeec89-9748-5507-82c0-e149b3f00077",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:23:46.054476+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/a1cd6eea804bb37011f463d41ba2895c8fd71a190fc8362d5feeac0b6ebf52fd.json",
+          "manifest_sha256": "efd3afa1cce12db41a6f39a403cc7969a01b31643239c4dbc2eb8abe038e5092",
+          "source_identity": "https://global.flashscore.ninja/2/x/feed/df_st_1_bRXj39aJ",
+          "source_revision": "manifest-v1:e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4:efd3afa1cce12db41a6f39a403cc7969a01b31643239c4dbc2eb8abe038e5092",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-statistics-v1",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:20:56.624615+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:23:46.230628+00:00",
+          "2026-11-01T03:23:46.238053+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "69d766cb021fca3db3389af2fdfd11936543e2ba3f39f0d25a2a3f1dfa0e8775"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "source_sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "source": {
+          "id": "86407a09-3936-59d6-8917-874b7d4192b8",
+          "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+          "created_at": "2026-11-01T03:23:46.062558+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 6073,
+          "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_st_1_bRXj39aJ",
+          "parser_version": "flashscore-statistics-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "3ffeec89-9748-5507-82c0-e149b3f00077"
+        },
+        "snapshot": {
+          "id": "3ffeec89-9748-5507-82c0-e149b3f00077",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:23:46.054476+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/a1cd6eea804bb37011f463d41ba2895c8fd71a190fc8362d5feeac0b6ebf52fd.json",
+          "manifest_sha256": "efd3afa1cce12db41a6f39a403cc7969a01b31643239c4dbc2eb8abe038e5092",
+          "source_identity": "https://global.flashscore.ninja/2/x/feed/df_st_1_bRXj39aJ",
+          "source_revision": "manifest-v1:e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4:efd3afa1cce12db41a6f39a403cc7969a01b31643239c4dbc2eb8abe038e5092",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-statistics-v2",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV3": 6
+        },
+        "artifacts": 6,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:20:56.624615+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:23:46.23611+00:00",
+          "2026-11-01T03:23:46.26378+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "441b355cd6d4547293730c43c1807196c0c8d629bf94a857cf311354c45e66cc"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "source_sha256": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+        "source": {
+          "id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+          "sha256": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+          "created_at": "2026-11-01T03:12:00.040759+00:00",
+          "media_type": "text/html",
+          "size_bytes": 1375510,
+          "acquired_at": "2026-11-01T03:00:37.33836+00:00",
+          "parse_status": "parsed",
+          "provider_path": "football/england/premier-league/results",
+          "parser_version": "flashscore-league-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "bac9c371-c659-5455-b81b-625b8ed27fcf"
+        },
+        "snapshot": {
+          "id": "bac9c371-c659-5455-b81b-625b8ed27fcf",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:11:59.987705+00:00",
+          "fixture_id": null,
+          "repository": "https://www.flashscore.com",
+          "acquired_at": "2026-11-01T03:00:37.33836+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/0c64b6e69d4e61664b087aab12aa79d37fdcd758332b14d0c10c9f104ddfdd0d.json",
+          "manifest_sha256": "b7f42e3de62fecf03d4ad1f3577bd8e27f71de4916a0adf4824edfbf634e9d1b",
+          "source_identity": "https://www.flashscore.com/football/england/premier-league/results/",
+          "source_revision": "manifest-v1:3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a:b7f42e3de62fecf03d4ad1f3577bd8e27f71de4916a0adf4824edfbf634e9d1b",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-league-v1",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamObservationV2": 390,
+          "ResultObservationV2": 88,
+          "FixtureObservationV2": 195,
+          "CompetitionObservationV2": 2
+        },
+        "artifacts": 675,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:00:37.33836+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:12:01.633088+00:00",
+          "2026-11-01T03:12:03.902564+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "e57f03c22e32e6b8e134b10a5fe76ace7f2148f96fefac51df79c5f49a31903b"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+        "source_sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "source": {
+          "id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+          "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+          "created_at": "2026-11-01T03:43:25.83217+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 15506,
+          "acquired_at": "2026-11-01T03:41:23.708282+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_li_1_bRXj39aJ",
+          "parser_version": "flashscore-lineups-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "310f9ff9-29c0-5d3f-b946-b67dcc05d5fd"
+        },
+        "snapshot": {
+          "id": "310f9ff9-29c0-5d3f-b946-b67dcc05d5fd",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:43:25.830864+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T03:41:23.708282+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/11885e434507e63cd72b986b62468b68b23eed33dd003f0f4d83010deac63fba.json",
+          "manifest_sha256": "648b896df355cb604e71705aefdf0e908f6291b2eaf382f72f34de4decfb54d9",
+          "source_identity": "https://global.flashscore.ninja/2/x/feed/df_li_1_bRXj39aJ",
+          "source_revision": "manifest-v1:749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3:648b896df355cb604e71705aefdf0e908f6291b2eaf382f72f34de4decfb54d9",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-lineups-v1",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "CoachObservationV2": 2,
+          "LineupObservationV2": 2
+        },
+        "artifacts": 44,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:41:23.708282+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:43:26.197595+00:00",
+          "2026-11-01T03:43:26.362945+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "6b4f25d7662fcba6abaa1f234ccee7247ba52612a57b0dfb3291be821b0b8464"
+      },
+      {
+        "provider": "flashscore",
+        "source_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "source_sha256": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+        "source": {
+          "id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+          "sha256": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+          "created_at": "2026-11-01T03:12:08.376165+00:00",
+          "media_type": "text/html",
+          "size_bytes": 988962,
+          "acquired_at": "2026-11-01T03:06:28.224468+00:00",
+          "parse_status": "parsed",
+          "provider_path": "football/england/premier-league-2024-2025/results",
+          "parser_version": "flashscore-league-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "2bc78697-e7f0-5526-b5f1-ba05c843aa8b"
+        },
+        "snapshot": {
+          "id": "2bc78697-e7f0-5526-b5f1-ba05c843aa8b",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T03:12:08.366252+00:00",
+          "fixture_id": null,
+          "repository": "https://www.flashscore.com",
+          "acquired_at": "2026-11-01T03:06:28.224468+00:00",
+          "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "flashscore/manifests/3a271ba5b90fb4a2808f3130c0cf9a1234c5de00b23d41bb74e43c075f9afb61.json",
+          "manifest_sha256": "905ff5a99231615d633928087abf5456dfc6d04106c26c4867938b79bf70bb31",
+          "source_identity": "https://www.flashscore.com/football/england/premier-league-2024-2025/results/",
+          "source_revision": "manifest-v1:a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f:905ff5a99231615d633928087abf5456dfc6d04106c26c4867938b79bf70bb31",
+          "source_commit_at": null
+        },
+        "normalizer_version": "flashscore-league-v1",
+        "adapter_versions": [
+          "flashscore-resource-adapter-v1"
+        ],
+        "contracts": {
+          "FixtureObservationV2": 109,
+          "TeamObservationV2": 218,
+          "ResultObservationV2": 109,
+          "CompetitionObservationV2": 1
+        },
+        "artifacts": 437,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T03:06:28.224468+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T03:12:09.640008+00:00",
+          "2026-11-01T03:12:11.410438+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "da3fd51a466b264018e0945f156ab03310ca579a9eefb0e30dd0f914259295d6"
+      },
+      {
+        "provider": "football_data_uk",
+        "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+        "source_sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+        "source": {
+          "id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+          "sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+          "created_at": "2026-10-30T22:47:43.256098+00:00",
+          "media_type": "application/zip",
+          "size_bytes": 275025,
+          "acquired_at": "2026-10-30T22:47:43.188176+00:00",
+          "parse_status": "parsed",
+          "provider_path": "mmz4281/2627/data.zip",
+          "parser_version": "football-data-uk-product-v1",
+          "validation_status": "valid",
+          "source_snapshot_id": "06c27b05-c062-54d9-bb15-21722e346663"
+        },
+        "snapshot": {
+          "id": "06c27b05-c062-54d9-bb15-21722e346663",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-30T22:47:43.248169+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-30T22:47:43.188176+00:00",
+          "provider_id": "01a06d67-d46d-756f-80c9-2207d0586d23",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "football_data_uk/manifests/c401b42206821118b14cd80ebbff3eac859812fcbc5bd5fdf827ec8c7fca531e.json",
+          "manifest_sha256": "aa2e68755ad762616eac6e3c1db38b9866188c9a34e7804a4d16c34519f6815f",
+          "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+          "source_revision": "manifest-v1:081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645:aa2e68755ad762616eac6e3c1db38b9866188c9a34e7804a4d16c34519f6815f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "football_data_uk-statistics-v1",
+        "adapter_versions": [
+          "football_data_uk-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV2": 4054
+        },
+        "artifacts": 4054,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-30T22:47:43.188176+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:30.160024+00:00",
+          "2026-11-01T01:13:47.825078+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "c732ef24fe808e25ecfb8de320686d8c665633af0f67f09980e1e67bccd1ce6d"
+      },
+      {
+        "provider": "football_data_uk",
+        "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+        "source_sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+        "source": {
+          "id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+          "sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+          "created_at": "2026-10-30T22:47:43.256098+00:00",
+          "media_type": "application/zip",
+          "size_bytes": 275025,
+          "acquired_at": "2026-10-30T22:47:43.188176+00:00",
+          "parse_status": "parsed",
+          "provider_path": "mmz4281/2627/data.zip",
+          "parser_version": "football-data-uk-product-v1",
+          "validation_status": "valid",
+          "source_snapshot_id": "06c27b05-c062-54d9-bb15-21722e346663"
+        },
+        "snapshot": {
+          "id": "06c27b05-c062-54d9-bb15-21722e346663",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-30T22:47:43.248169+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-30T22:47:43.188176+00:00",
+          "provider_id": "01a06d67-d46d-756f-80c9-2207d0586d23",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "football_data_uk/manifests/c401b42206821118b14cd80ebbff3eac859812fcbc5bd5fdf827ec8c7fca531e.json",
+          "manifest_sha256": "aa2e68755ad762616eac6e3c1db38b9866188c9a34e7804a4d16c34519f6815f",
+          "source_identity": "https://www.football-data.co.uk/mmz4281/2627/data.zip",
+          "source_revision": "manifest-v1:081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645:aa2e68755ad762616eac6e3c1db38b9866188c9a34e7804a4d16c34519f6815f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "football_data_uk-statistics-v2",
+        "adapter_versions": [
+          "football_data_uk-resource-adapter-v1"
+        ],
+        "contracts": {
+          "RefereeObservationV3": 934,
+          "PeriodScoreObservationV3": 2027
+        },
+        "artifacts": 2961,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-30T22:47:43.188176+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:30.170868+00:00",
+          "2026-11-01T01:13:47.8265+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "5288e87ebd74eb187023eb2c78a43c2bb10dc9514d1e59e07515f6923b55a0d9"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-player_statistics-v1",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerObservationV2": 40
+        },
+        "artifacts": 40,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.841465+00:00",
+          "2026-11-01T01:13:47.946812+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "c9037b797d3e8a97a5c21d2d0d06ae1a961c83261aef39d424d7d5a074a4af12"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-player_statistics-v2",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerStatisticObservationV3": 30
+        },
+        "artifacts": 30,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.843315+00:00",
+          "2026-11-01T01:13:47.94525+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "d2f38150939f58f678795172206d8d009552c4461b19a36018303005aafc2a37"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-shots-v1",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 25
+        },
+        "artifacts": 25,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.949961+00:00",
+          "2026-11-01T01:13:48.02321+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "0f91bfcc473c8733b4f7b762e297435e1e1f7ca081fe2aa7751717cd28011cec"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-shots-v2",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ShotObservationV3": 25
+        },
+        "artifacts": 25,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.948413+00:00",
+          "2026-11-01T01:13:48.021517+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "109088254204c95ab1067aad8610f7c8a538218ab637b5a8fdfc4af0ac362221"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-statistics-v1",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.828441+00:00",
+          "2026-11-01T01:13:47.832103+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "4fb7696e407e9e76b82f2b18a3d70bd02ec92f218a1900975275bbf5b59d5f5a"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "source": {
+          "id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "created_at": "2026-10-31T22:16:41.873755+00:00",
+          "media_type": "application/json",
+          "size_bytes": 253660,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-5881209-details",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "05e844d7-54b2-553a-8393-e9182f21c0bb"
+        },
+        "snapshot": {
+          "id": "05e844d7-54b2-553a-8393-e9182f21c0bb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-31T22:16:41.87259+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-31T22:16:41.865536+00:00",
+          "provider_id": "e3566fe3-7e71-5720-88d6-2971352ddbd2",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/fotmob/2026/10/31/af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f.json",
+          "manifest_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_identity": "match-5881209-details",
+          "source_revision": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "fotmob-statistics-v2",
+        "adapter_versions": [
+          "fotmob-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV3": 6
+        },
+        "artifacts": 6,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-31T22:16:41.865536+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:47.830508+00:00",
+          "2026-11-01T01:13:47.8393+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "3c45f39d1aa226636a0d4815e0f0a240b8596da8c56b3e657b792149cd28d7cb"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+        "source_sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+        "source": {
+          "id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+          "sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "created_at": "2026-10-25T21:38:56.91662+00:00",
+          "media_type": "application/json",
+          "size_bytes": 117918,
+          "acquired_at": "2026-10-25T21:38:56.910299+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-players",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "7d19c227-bda5-588e-97a4-9457d9d05bf1"
+        },
+        "snapshot": {
+          "id": "7d19c227-bda5-588e-97a4-9457d9d05bf1",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:56.914597+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:56.910299+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830.json",
+          "manifest_sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "source_identity": "match-m_3flxzg-players",
+          "source_revision": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-player_statistics-v1",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerObservationV2": 40
+        },
+        "artifacts": 40,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:56.910299+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.052852+00:00",
+          "2026-11-01T01:13:48.172284+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "b9f9f68935ceae26bf25fe7b9045d9c0b89ffe10d58dd0ed79bcc0b57f753f17"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+        "source_sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+        "source": {
+          "id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+          "sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "created_at": "2026-10-25T21:38:56.91662+00:00",
+          "media_type": "application/json",
+          "size_bytes": 117918,
+          "acquired_at": "2026-10-25T21:38:56.910299+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-players",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "7d19c227-bda5-588e-97a4-9457d9d05bf1"
+        },
+        "snapshot": {
+          "id": "7d19c227-bda5-588e-97a4-9457d9d05bf1",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:56.914597+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:56.910299+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830.json",
+          "manifest_sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "source_identity": "match-m_3flxzg-players",
+          "source_revision": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-player_statistics-v2",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerStatisticObservationV3": 30
+        },
+        "artifacts": 30,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:56.910299+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.0554+00:00",
+          "2026-11-01T01:13:48.166856+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "343fa3aa2ce61479cc83ee188993b3c95f89ca0ffc39b3df2e2791efd643620e"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+        "source_sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+        "source": {
+          "id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+          "sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "created_at": "2026-10-25T21:38:43.499437+00:00",
+          "media_type": "application/json",
+          "size_bytes": 15879,
+          "acquired_at": "2026-10-25T21:38:43.493151+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-stats",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "33c13424-9efb-52bc-85f1-6cc0473fe231"
+        },
+        "snapshot": {
+          "id": "33c13424-9efb-52bc-85f1-6cc0473fe231",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:43.498297+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:43.493151+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e.json",
+          "manifest_sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "source_identity": "match-m_3flxzg-stats",
+          "source_revision": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-statistics-v1",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:43.493151+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.024878+00:00",
+          "2026-11-01T01:13:48.043275+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "d21074735d7ffa8eded8a4adb3faaacac6548bbf298986fcba7c0ed82a67b1e0"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+        "source_sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+        "source": {
+          "id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+          "sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "created_at": "2026-10-25T21:38:43.499437+00:00",
+          "media_type": "application/json",
+          "size_bytes": 15879,
+          "acquired_at": "2026-10-25T21:38:43.493151+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-stats",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "33c13424-9efb-52bc-85f1-6cc0473fe231"
+        },
+        "snapshot": {
+          "id": "33c13424-9efb-52bc-85f1-6cc0473fe231",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:43.498297+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:43.493151+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e.json",
+          "manifest_sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "source_identity": "match-m_3flxzg-stats",
+          "source_revision": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-statistics-v2",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV3": 6
+        },
+        "artifacts": 6,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:43.493151+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.027413+00:00",
+          "2026-11-01T01:13:48.051556+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "9c65ffee4148e4de2646ac04d04d3d30484f9aabe81ad9e243b96aca322d7296"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+        "source_sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+        "source": {
+          "id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+          "sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "created_at": "2026-10-25T21:38:44.487378+00:00",
+          "media_type": "application/json",
+          "size_bytes": 13554,
+          "acquired_at": "2026-10-25T21:38:44.483778+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-shots",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "b36bb1a3-b3af-5a26-9764-f443ad4ade5c"
+        },
+        "snapshot": {
+          "id": "b36bb1a3-b3af-5a26-9764-f443ad4ade5c",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:44.486359+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:44.483778+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8.json",
+          "manifest_sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "source_identity": "match-m_3flxzg-shots",
+          "source_revision": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-shots-v1",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 23
+        },
+        "artifacts": 23,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:44.483778+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.17681+00:00",
+          "2026-11-01T01:13:48.26152+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "fe6b3de1a652fed7297d9de3d1d34b71f9944b2457b35a88e4ecd73dd8e7c394"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+        "source_sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+        "source": {
+          "id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+          "sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "created_at": "2026-10-25T21:38:44.487378+00:00",
+          "media_type": "application/json",
+          "size_bytes": 13554,
+          "acquired_at": "2026-10-25T21:38:44.483778+00:00",
+          "parse_status": "parsed",
+          "provider_path": "match-m_3flxzg-shots",
+          "parser_version": null,
+          "validation_status": "valid",
+          "source_snapshot_id": "b36bb1a3-b3af-5a26-9764-f443ad4ade5c"
+        },
+        "snapshot": {
+          "id": "b36bb1a3-b3af-5a26-9764-f443ad4ade5c",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-10-25T21:38:44.486359+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-10-25T21:38:44.483778+00:00",
+          "provider_id": "9035b621-b354-5798-9bbd-4d8af9d6a7fe",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "operational/pitchapi/2026/10/25/7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8.json",
+          "manifest_sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "source_identity": "match-m_3flxzg-shots",
+          "source_revision": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+          "source_commit_at": null
+        },
+        "normalizer_version": "pitchapi-shots-v2",
+        "adapter_versions": [
+          "pitchapi-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ShotObservationV3": 23
+        },
+        "artifacts": 23,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-10-25T21:38:44.483778+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:13:48.174884+00:00",
+          "2026-11-01T01:13:48.259278+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "035d9e2d7d2c9ff87b6e8e45edd447a7f102fdcf749c8a17219e81315652cd65"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "47caa8eb-c58e-521a-a3dc-e4cc23cd41e6",
+        "source_sha256": "a472800eb2b6b2c3323183c976009271c70d8cbca4624464642c0a5e87e1310a",
+        "source": {
+          "id": "47caa8eb-c58e-521a-a3dc-e4cc23cd41e6",
+          "sha256": "a472800eb2b6b2c3323183c976009271c70d8cbca4624464642c0a5e87e1310a",
+          "created_at": "2026-11-01T04:11:01.21703+00:00",
+          "media_type": "text/html",
+          "size_bytes": 869066,
+          "acquired_at": "2026-11-01T04:01:21.341283+00:00",
+          "parse_status": "parsed",
+          "provider_path": "england/premier-league-2024-2025/results",
+          "parser_version": "soccerway-league-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "2ffd1a9e-6fc8-5057-ae0e-afb46b3cd71c"
+        },
+        "snapshot": {
+          "id": "2ffd1a9e-6fc8-5057-ae0e-afb46b3cd71c",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:01.213045+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:21.341283+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/59b1526ccb5e11debb1af9526c27590cf4a2fd55d6eeeb71e09b8cea17a419f9.json",
+          "manifest_sha256": "bffd9b936a6efebe43b6edae4dd9108310b8b43e1cd450a565de52e4c79df25a",
+          "source_identity": "https://www.soccerway.com/england/premier-league-2024-2025/results/",
+          "source_revision": "manifest-v1:a472800eb2b6b2c3323183c976009271c70d8cbca4624464642c0a5e87e1310a:bffd9b936a6efebe43b6edae4dd9108310b8b43e1cd450a565de52e4c79df25a",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-league-v1",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamObservationV2": 218,
+          "FixtureObservationV2": 109,
+          "ResultObservationV2": 109,
+          "CompetitionObservationV2": 1
+        },
+        "artifacts": 437,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:21.341283+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:01.732631+00:00",
+          "2026-11-01T04:11:03.41241+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "69a4f6c688c8fe26d8a10d2f408ac446f11092e75f4caf37f2378d3aaad733ee"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d",
+        "source_sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "source": {
+          "id": "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d",
+          "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+          "created_at": "2026-11-01T04:11:05.851254+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 6073,
+          "acquired_at": "2026-11-01T04:01:26.413284+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_st_1_bRXj39aJ",
+          "parser_version": "soccerway-statistics-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "8cd44e21-ed54-52cb-9f88-6b5f0816ebf9"
+        },
+        "snapshot": {
+          "id": "8cd44e21-ed54-52cb-9f88-6b5f0816ebf9",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:05.848244+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:26.413284+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/d690e10c837a57ea70ebfe802bfea1d182088b769e047f6df2aed174f3aea0b0.json",
+          "manifest_sha256": "f19a7bdd952b69dbfa6bd8df85b8f2b2696c4200841e4e3ec50a1afc98950a66",
+          "source_identity": "https://global.flashscore.ninja/2020/x/feed/df_st_1_bRXj39aJ",
+          "source_revision": "manifest-v1:e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4:f19a7bdd952b69dbfa6bd8df85b8f2b2696c4200841e4e3ec50a1afc98950a66",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-statistics-v1",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2
+        },
+        "artifacts": 2,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:26.413284+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:05.970114+00:00",
+          "2026-11-01T04:11:05.972994+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "5b8d2daf09bb315ce3524a41139a4dca28fdf09d3be9687cd6c7d964d2bd868a"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d",
+        "source_sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "source": {
+          "id": "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d",
+          "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+          "created_at": "2026-11-01T04:11:05.851254+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 6073,
+          "acquired_at": "2026-11-01T04:01:26.413284+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_st_1_bRXj39aJ",
+          "parser_version": "soccerway-statistics-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "8cd44e21-ed54-52cb-9f88-6b5f0816ebf9"
+        },
+        "snapshot": {
+          "id": "8cd44e21-ed54-52cb-9f88-6b5f0816ebf9",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:05.848244+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:26.413284+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/d690e10c837a57ea70ebfe802bfea1d182088b769e047f6df2aed174f3aea0b0.json",
+          "manifest_sha256": "f19a7bdd952b69dbfa6bd8df85b8f2b2696c4200841e4e3ec50a1afc98950a66",
+          "source_identity": "https://global.flashscore.ninja/2020/x/feed/df_st_1_bRXj39aJ",
+          "source_revision": "manifest-v1:e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4:f19a7bdd952b69dbfa6bd8df85b8f2b2696c4200841e4e3ec50a1afc98950a66",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-statistics-v2",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamStatisticObservationV3": 6
+        },
+        "artifacts": 6,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:26.413284+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:05.971544+00:00",
+          "2026-11-01T04:11:05.988994+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "e776e8aae7276db1678b8a5b569d65b9e74e9935ad486e454095de59e0a481c8"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "52edbbd9-f3a3-55ec-8149-95d94def4143",
+        "source_sha256": "c64711fb108b331c962693d41cb2f46e09968a1c83df8752ea94ce2ee951722a",
+        "source": {
+          "id": "52edbbd9-f3a3-55ec-8149-95d94def4143",
+          "sha256": "c64711fb108b331c962693d41cb2f46e09968a1c83df8752ea94ce2ee951722a",
+          "created_at": "2026-11-01T04:10:53.494422+00:00",
+          "media_type": "text/html",
+          "size_bytes": 1253234,
+          "acquired_at": "2026-11-01T04:01:14.071854+00:00",
+          "parse_status": "parsed",
+          "provider_path": "england/premier-league/results",
+          "parser_version": "soccerway-league-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "684efcf3-60df-5c36-a30f-3ee595b4b0eb"
+        },
+        "snapshot": {
+          "id": "684efcf3-60df-5c36-a30f-3ee595b4b0eb",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:10:53.477446+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:14.071854+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/0dc1523eb1595f36d13174d1ef18b0cb23be92dd095c2801df06c25111babab7.json",
+          "manifest_sha256": "949b92b2fffde989aa1d89dd7db7842f1d61e96531bad959846287b43ae20302",
+          "source_identity": "https://www.soccerway.com/england/premier-league/results/",
+          "source_revision": "manifest-v1:c64711fb108b331c962693d41cb2f46e09968a1c83df8752ea94ce2ee951722a:949b92b2fffde989aa1d89dd7db7842f1d61e96531bad959846287b43ae20302",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-league-v1",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "TeamObservationV2": 390,
+          "FixtureObservationV2": 195,
+          "ResultObservationV2": 88,
+          "CompetitionObservationV2": 2
+        },
+        "artifacts": 675,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:14.071854+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:10:54.59149+00:00",
+          "2026-11-01T04:10:56.900706+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "6d0e94923177e0b49bf70c3000c060132988e7ffd9e598493a07888fb4f86070"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "78e381d1-599c-5590-9355-ba34d219dda9",
+        "source_sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "source": {
+          "id": "78e381d1-599c-5590-9355-ba34d219dda9",
+          "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+          "created_at": "2026-11-01T04:11:06.775168+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 262,
+          "acquired_at": "2026-11-01T04:01:28.521683+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_sur_1_bRXj39aJ",
+          "parser_version": "soccerway-summary-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "a87d252a-c7cb-5db1-876f-693976a1d09e"
+        },
+        "snapshot": {
+          "id": "a87d252a-c7cb-5db1-876f-693976a1d09e",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:06.773643+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:28.521683+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/09f52785e7185e14dbd327a82a72f1142c32ce77b74fe83b590d45668b500cb1.json",
+          "manifest_sha256": "256bf856a20e44d01bbd642af377c92ae3b0683ce9d0334d6b30265c73119e7f",
+          "source_identity": "https://global.flashscore.ninja/2020/x/feed/df_sur_1_bRXj39aJ",
+          "source_revision": "manifest-v1:2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a:256bf856a20e44d01bbd642af377c92ae3b0683ce9d0334d6b30265c73119e7f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-summary-v2",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "artifacts": 3,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:28.521683+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:06.862535+00:00",
+          "2026-11-01T04:11:06.865375+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "49ed15f8bc1f5cca5aaf53c414751b9ecbced970e14c4581707968f6c391714d"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "cc057029-4ec1-557f-a62e-9686a88b3011",
+        "source_sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "source": {
+          "id": "cc057029-4ec1-557f-a62e-9686a88b3011",
+          "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+          "created_at": "2026-11-01T04:11:06.049742+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 5950,
+          "acquired_at": "2026-11-01T04:01:26.975943+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_sui_1_bRXj39aJ",
+          "parser_version": "soccerway-events-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "e6868a1e-0c3d-56d3-b9de-2365a98e408a"
+        },
+        "snapshot": {
+          "id": "e6868a1e-0c3d-56d3-b9de-2365a98e408a",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:06.046751+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:26.975943+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/b293aeb947152782aad2497169b136a5f727884794a06d5ac56aefc84173100b.json",
+          "manifest_sha256": "ecdfc487f781c7af165681d8d7bb6d963a0369b5cd01589a088d1241f4921102",
+          "source_identity": "https://global.flashscore.ninja/2020/x/feed/df_sui_1_bRXj39aJ",
+          "source_revision": "manifest-v1:58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d:ecdfc487f781c7af165681d8d7bb6d963a0369b5cd01589a088d1241f4921102",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-events-v1",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "EventObservationV2": 16
+        },
+        "artifacts": 16,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:26.975943+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:06.14577+00:00",
+          "2026-11-01T04:11:06.205412+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "c40f929abdbd17f86a4cdc5d533940ae25083496c1734e79e96cb0a1eaf5afff"
+      },
+      {
+        "provider": "soccerway",
+        "source_resource_id": "dfe4095b-5645-5776-b3c0-1da7138772f8",
+        "source_sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "source": {
+          "id": "dfe4095b-5645-5776-b3c0-1da7138772f8",
+          "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+          "created_at": "2026-11-01T04:11:06.32068+00:00",
+          "media_type": "text/plain",
+          "size_bytes": 15506,
+          "acquired_at": "2026-11-01T04:01:27.70765+00:00",
+          "parse_status": "parsed",
+          "provider_path": "df_li_1_bRXj39aJ",
+          "parser_version": "soccerway-lineups-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "969f6e60-7bbc-5d4b-94ed-d423c585ab4c"
+        },
+        "snapshot": {
+          "id": "969f6e60-7bbc-5d4b-94ed-d423c585ab4c",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T04:11:06.318128+00:00",
+          "fixture_id": null,
+          "repository": null,
+          "acquired_at": "2026-11-01T04:01:27.70765+00:00",
+          "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "soccerway/manifests/7b2f16c1a72f2d7b0f2f68992edc4028c6134e77d3386a4c582b4760e29c602c.json",
+          "manifest_sha256": "d092d5cbd0b6157c79b1b84e020d798889f6c87e8884dfb360649fd404a5a65f",
+          "source_identity": "https://global.flashscore.ninja/2020/x/feed/df_li_1_bRXj39aJ",
+          "source_revision": "manifest-v1:749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3:d092d5cbd0b6157c79b1b84e020d798889f6c87e8884dfb360649fd404a5a65f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "soccerway-lineups-v1",
+        "adapter_versions": [
+          "soccerway-resource-adapter-v1"
+        ],
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "LineupObservationV2": 2,
+          "CoachObservationV2": 2
+        },
+        "artifacts": 44,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T04:01:27.70765+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T04:11:06.526316+00:00",
+          "2026-11-01T04:11:06.582171+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "f3bab440db3326690aaedcc8c4095bff51ef9092f7f014ef734693b7fe99ff6d"
+      },
+      {
+        "provider": "understat",
+        "source_resource_id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+        "source_sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+        "source": {
+          "id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+          "sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+          "created_at": "2026-11-01T01:52:35.643614+00:00",
+          "media_type": "text/javascript",
+          "size_bytes": 4373,
+          "acquired_at": "2026-11-01T01:39:14.184456+00:00",
+          "parse_status": "parsed",
+          "provider_path": "getMatchData/26602",
+          "parser_version": "understat-shots-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "3a60b820-da8b-5d1a-a183-2c7a24130f7d"
+        },
+        "snapshot": {
+          "id": "3a60b820-da8b-5d1a-a183-2c7a24130f7d",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:52:35.640829+00:00",
+          "fixture_id": null,
+          "repository": "https://understat.com",
+          "acquired_at": "2026-11-01T01:39:14.184456+00:00",
+          "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "understat/manifests/651dbaea4b65ffc7a30f0f068f72e3d3a1a00097a7a7ff56052d3b61536b568b.json",
+          "manifest_sha256": "272cf49dd1885e82a493003dc4b7a632eda4fcb241874c8084102af25e0cf08f",
+          "source_identity": "https://understat.com/getMatchData/26602",
+          "source_revision": "manifest-v1:50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b:272cf49dd1885e82a493003dc4b7a632eda4fcb241874c8084102af25e0cf08f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "understat-shots-v1",
+        "adapter_versions": [
+          "understat-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 24,
+          "PlayerObservationV2": 32
+        },
+        "artifacts": 56,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:39:14.184456+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:52:35.857059+00:00",
+          "2026-11-01T01:52:36.062626+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "7659fe12088144df3826d4354e484f31b7ed17d5bc574f36d9b5096ebf220511"
+      },
+      {
+        "provider": "understat",
+        "source_resource_id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+        "source_sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+        "source": {
+          "id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+          "sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+          "created_at": "2026-11-01T01:52:35.643614+00:00",
+          "media_type": "text/javascript",
+          "size_bytes": 4373,
+          "acquired_at": "2026-11-01T01:39:14.184456+00:00",
+          "parse_status": "parsed",
+          "provider_path": "getMatchData/26602",
+          "parser_version": "understat-shots-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "3a60b820-da8b-5d1a-a183-2c7a24130f7d"
+        },
+        "snapshot": {
+          "id": "3a60b820-da8b-5d1a-a183-2c7a24130f7d",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:52:35.640829+00:00",
+          "fixture_id": null,
+          "repository": "https://understat.com",
+          "acquired_at": "2026-11-01T01:39:14.184456+00:00",
+          "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "understat/manifests/651dbaea4b65ffc7a30f0f068f72e3d3a1a00097a7a7ff56052d3b61536b568b.json",
+          "manifest_sha256": "272cf49dd1885e82a493003dc4b7a632eda4fcb241874c8084102af25e0cf08f",
+          "source_identity": "https://understat.com/getMatchData/26602",
+          "source_revision": "manifest-v1:50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b:272cf49dd1885e82a493003dc4b7a632eda4fcb241874c8084102af25e0cf08f",
+          "source_commit_at": null
+        },
+        "normalizer_version": "understat-shots-v2",
+        "adapter_versions": [
+          "understat-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ShotObservationV3": 24
+        },
+        "artifacts": 24,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:39:14.184456+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:52:35.899516+00:00",
+          "2026-11-01T01:52:36.059731+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "6b858eb140093368af920c387232e7cbfb6ea156bc6bad69f5453286c1c8adab"
+      },
+      {
+        "provider": "understat",
+        "source_resource_id": "2de93633-dbb2-59b9-b74a-f7c3916adc83",
+        "source_sha256": "fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524",
+        "source": {
+          "id": "2de93633-dbb2-59b9-b74a-f7c3916adc83",
+          "sha256": "fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524",
+          "created_at": "2026-11-01T01:52:15.85062+00:00",
+          "media_type": "text/javascript",
+          "size_bytes": 96113,
+          "acquired_at": "2026-11-01T01:30:35.350098+00:00",
+          "parse_status": "parsed",
+          "provider_path": "getLeagueData/EPL/2024",
+          "parser_version": "understat-results-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "0c76932d-5508-5a88-a447-96ecc1bc64f7"
+        },
+        "snapshot": {
+          "id": "0c76932d-5508-5a88-a447-96ecc1bc64f7",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T01:52:15.841917+00:00",
+          "fixture_id": null,
+          "repository": "https://understat.com",
+          "acquired_at": "2026-11-01T01:30:35.350098+00:00",
+          "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "understat/manifests/4761a391fc63954f803e49f6569b25047e88ce80ee79e8b4e71b7512c631887c.json",
+          "manifest_sha256": "73d8dbae58a17f6f8632690ea40d39e5cb8d5badb964e1068960f9cf02c30e5e",
+          "source_identity": "https://understat.com/getLeagueData/EPL/2024",
+          "source_revision": "manifest-v1:fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524:73d8dbae58a17f6f8632690ea40d39e5cb8d5badb964e1068960f9cf02c30e5e",
+          "source_commit_at": null
+        },
+        "normalizer_version": "understat-results-v1",
+        "adapter_versions": [
+          "understat-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ExpectedGoalsObservationV2": 760,
+          "FixtureObservationV2": 380,
+          "TeamObservationV2": 760,
+          "ResultObservationV2": 380,
+          "CompetitionObservationV2": 1
+        },
+        "artifacts": 2281,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T01:30:35.350098+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T01:52:18.831493+00:00",
+          "2026-11-01T01:52:25.627158+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "98db02ad33db1b7e07cad918870948882303ef88a93a0bb49fa5907dc43dfffd"
+      },
+      {
+        "provider": "whoscored",
+        "source_resource_id": "f13a5ccb-998a-5bb5-96db-5f04c79344da",
+        "source_sha256": "0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a",
+        "source": {
+          "id": "f13a5ccb-998a-5bb5-96db-5f04c79344da",
+          "sha256": "0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a",
+          "created_at": "2026-11-01T02:59:19.232422+00:00",
+          "media_type": "text/html",
+          "size_bytes": 556384,
+          "acquired_at": "2026-11-01T02:55:52.277036+00:00",
+          "parse_status": "parsed",
+          "provider_path": "Regions/252/Tournaments/2/England-Premier-League",
+          "parser_version": "whoscored-fixtures-v1",
+          "validation_status": "warnings",
+          "source_snapshot_id": "79c7c83a-9c57-56b2-a86c-7fb3701a6d0c"
+        },
+        "snapshot": {
+          "id": "79c7c83a-9c57-56b2-a86c-7fb3701a6d0c",
+          "status": "validated",
+          "git_sha": null,
+          "created_at": "2026-11-01T02:59:19.222043+00:00",
+          "fixture_id": null,
+          "repository": "https://www.whoscored.com",
+          "acquired_at": "2026-11-01T02:55:52.277036+00:00",
+          "provider_id": "02d67f20-1a7d-5dc8-ba6b-a785f0a02304",
+          "source_kind": "REAL_PROVIDER",
+          "manifest_path": "whoscored/manifests/25e9608872a6a67a6db890e942d62d619b5deb556abd7ae0f284cca2160afd19.json",
+          "manifest_sha256": "95bc5f5983f538fb1f602cb1bd0aa7aa07474280f59048c260a424a94e4b51bd",
+          "source_identity": "https://www.whoscored.com/Regions/252/Tournaments/2/England-Premier-League",
+          "source_revision": "manifest-v1:0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a:95bc5f5983f538fb1f602cb1bd0aa7aa07474280f59048c260a424a94e4b51bd",
+          "source_commit_at": null
+        },
+        "normalizer_version": "whoscored-fixtures-v1",
+        "adapter_versions": [
+          "whoscored-resource-adapter-v1"
+        ],
+        "contracts": {
+          "ResultObservationV2": 8,
+          "TeamObservationV2": 20,
+          "TeamStatisticObservationV2": 16,
+          "CompetitionObservationV2": 1,
+          "FixtureObservationV2": 10
+        },
+        "artifacts": 55,
+        "event_time_present": 0,
+        "known_at": [
+          "2026-11-01T02:55:52.277036+00:00"
+        ],
+        "registered_at_range": [
+          "2026-11-01T02:59:19.970796+00:00",
+          "2026-11-01T02:59:20.356898+00:00"
+        ],
+        "canonical_resolution_versions": [
+          "None"
+        ],
+        "sorted_id_hashes_sha256": "cffedcc1b2609285277c287be0a59b84f5024fa657ad7fc95fca69ffecb5197c"
+      }
+    ]
+  },
+  "capability_decisions": [
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:12:53.342198+00:00",
+      "decided_at": "2026-11-01T03:12:53.326355+00:00",
+      "season_key": "2024/2025",
+      "decision_id": "03ed0da0-e56f-530d-9526-3cc515f66422",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "2cdf55fc02c201ba53b71626939ab0518f7761e34ff676e3e3078d31aab5327e",
+      "artifact_path": "provider-capabilities/v1/96658f8147af7c8570db064505d3cb94cf761e53a1076fc3e2536eb6cad8c63e.json",
+      "registered_at": "2026-11-01T03:12:53.342198+00:00",
+      "resource_type": "league",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "96658f8147af7c8570db064505d3cb94cf761e53a1076fc3e2536eb6cad8c63e",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-league-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_UNIX_EPOCH; MATCHFORGE_KNOWLEDGE_KNOWN; LIVE_FRESHNESS_UNASSESSED",
+      "publication_sequence": 17,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:43:25.82277+00:00",
+      "decided_at": "2026-11-01T03:43:25.809909+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "08dd2e2c-50c1-5cfc-a0c8-22f0cf4e125a",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "e02c7462bb09baf424aa347c352c00aa0e839b625105ff0b028349eb84870f20",
+      "artifact_path": "provider-capabilities/v1/20a2ad4382e4940d3ac9221e16c4dfacc7f54102392b599a563a1bc1a4496519.json",
+      "registered_at": "2026-11-01T03:43:25.82277+00:00",
+      "resource_type": "events",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "20a2ad4382e4940d3ac9221e16c4dfacc7f54102392b599a563a1bc1a4496519",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNRESOLVED_SOURCE_REFERENCES; NO_CANONICAL_ADMISSION",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-events-v1",
+      "timestamp_precision": "MATCHFORGE_KNOWLEDGE_KNOWN; EVENT_TIME_UNQUALIFIED",
+      "publication_sequence": 19,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "espn",
+      "known_at": "2026-11-01T02:50:01.493139+00:00",
+      "decided_at": "2026-11-01T02:50:01.485455+00:00",
+      "season_key": "2026",
+      "decision_id": "1267d568-b202-5250-880b-bd9e90a61486",
+      "entitlement": null,
+      "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+      "availability": "PARTIAL",
+      "scope_sha256": "3ba4dd3012338d8e9215e91f464fc4de2798199dd73d0bdb9f9a357e2773625d",
+      "artifact_path": "provider-capabilities/v1/8a279eebea43fd72439ba90f65860f0fc3850e1174e4ca9d9256b1b507c4b945.json",
+      "registered_at": "2026-11-01T02:50:01.493139+00:00",
+      "resource_type": "scoreboard",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "espn-resource-adapter-v1",
+      "artifact_sha256": "8a279eebea43fd72439ba90f65860f0fc3850e1174e4ca9d9256b1b507c4b945",
+      "competition_key": "700",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "espn-scoreboard-v1",
+      "timestamp_precision": "KICKOFF_TIMEZONE_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 12,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "espn",
+      "known_at": "2026-11-01T02:50:01.402747+00:00",
+      "decided_at": "2026-11-01T02:50:01.386755+00:00",
+      "season_key": "2024",
+      "decision_id": "1c8ffaba-7c0d-54e7-9cd3-f3ad72f2e174",
+      "entitlement": null,
+      "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+      "availability": "PARTIAL",
+      "scope_sha256": "fbc21a543fe5563ca9a0e51bf6642458e91e258762472dd847bd2c6be0207335",
+      "artifact_path": "provider-capabilities/v1/f34356c04259a6da3cdabd39ad2f180f725b7b6c55432fdf8eb863267c9e2b75.json",
+      "registered_at": "2026-11-01T02:50:01.402747+00:00",
+      "resource_type": "scoreboard",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "espn-resource-adapter-v1",
+      "artifact_sha256": "f34356c04259a6da3cdabd39ad2f180f725b7b6c55432fdf8eb863267c9e2b75",
+      "competition_key": "700",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "espn-scoreboard-v1",
+      "timestamp_precision": "KICKOFF_TIMEZONE_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 11,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:21:16.262769+00:00",
+      "decided_at": "2026-11-01T01:21:16.239733+00:00",
+      "season_key": "2024",
+      "decision_id": "2844a8f8-3585-5693-bd9b-708c37df012c",
+      "entitlement": null,
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "PARTIAL",
+      "scope_sha256": "2cbc9fc465479b6b91cdf0ff61f8195526531f6bc176ca50efdc24063f1a1818",
+      "artifact_path": "provider-capabilities/v1/4d9a7bcbf279f6c5667d64e998e5887426581460876417222b4145244de3a147.json",
+      "registered_at": "2026-11-01T01:21:16.262769+00:00",
+      "resource_type": "standings",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "4d9a7bcbf279f6c5667d64e998e5887426581460876417222b4145244de3a147",
+      "competition_key": "39",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-standings-v1",
+      "timestamp_precision": "PROVIDER_UPDATE_AND_ACQUISITION; EVENT_TIME_UNKNOWN",
+      "publication_sequence": 7,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:06.037208+00:00",
+      "decided_at": "2026-11-01T04:11:06.033062+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "3245c94c-2f43-50ad-acbe-5d48918f701a",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "785edb394e88f65e3cd5d8143977f05351f8e798a53091e55d820e54d0ea42f0",
+      "artifact_path": "provider-capabilities/v1/36f1826551d2a04907cb8b1caadf6c4d9481900305f224ef7e7ba0bf1ed7a961.json",
+      "registered_at": "2026-11-01T04:11:06.037208+00:00",
+      "resource_type": "statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "36f1826551d2a04907cb8b1caadf6c4d9481900305f224ef7e7ba0bf1ed7a961",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-statistics-v2",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 24,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "espn",
+      "known_at": "2026-11-01T02:50:02.770793+00:00",
+      "decided_at": "2026-11-01T02:50:02.762727+00:00",
+      "season_key": "2024",
+      "decision_id": "38475f70-d9cd-5ad5-a5ef-dd86a72adfe7",
+      "entitlement": null,
+      "provider_id": "c2136446-8bc2-5251-9d68-43959057913f",
+      "availability": "PARTIAL",
+      "scope_sha256": "3d59278ef387aab8e7c865566c50184e7f97f3038e53f7a319c9380a19280081",
+      "artifact_path": "provider-capabilities/v1/88ee11a0836899ddb2202e07643602388c5ccae9d8c67665ca0a09f510b47bfd.json",
+      "registered_at": "2026-11-01T02:50:02.770793+00:00",
+      "resource_type": "summary",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "espn-resource-adapter-v1",
+      "artifact_sha256": "88ee11a0836899ddb2202e07643602388c5ccae9d8c67665ca0a09f510b47bfd",
+      "competition_key": "700",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "espn-summary-v2",
+      "timestamp_precision": "KICKOFF_TIMEZONE_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 13,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.493199+00:00",
+      "decided_at": "2026-11-01T01:15:55.48546+00:00",
+      "season_key": "2024",
+      "decision_id": "4bdb4e7b-4b24-53f4-9665-9b8c15411e19",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "PARTIAL",
+      "scope_sha256": "2f4e4cf5bfa064c58fdc00c2be1d78c55a7a4accd1c8724015dec7ca88312380",
+      "artifact_path": "provider-capabilities/v1/e1db39aef0554b66159c9265b17ae465c7a3105bced2ad423b872c49900280b5.json",
+      "registered_at": "2026-11-01T01:15:55.493199+00:00",
+      "resource_type": "events",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "e1db39aef0554b66159c9265b17ae465c7a3105bced2ad423b872c49900280b5",
+      "competition_key": "39",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-events-v1",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 5,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:06.882849+00:00",
+      "decided_at": "2026-11-01T04:11:06.879478+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "5c93f2b9-103d-5f85-900c-815eedd2fe66",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "73fa992bc11c9f1bf97fdab3097ccb6fef4eb09ab05feb49d303623e360c1951",
+      "artifact_path": "provider-capabilities/v1/5ab162a00d5b922f039d75e42ce6f107b380b07d324c1a188453d226001413cb.json",
+      "registered_at": "2026-11-01T04:11:06.882849+00:00",
+      "resource_type": "summary",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "5ab162a00d5b922f039d75e42ce6f107b380b07d324c1a188453d226001413cb",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-summary-v2",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 27,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:06.765624+00:00",
+      "decided_at": "2026-11-01T04:11:06.762825+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "7d9ff38c-0773-577f-b0b1-ce9b9dd72c1b",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "e395e3fb487190b425e3a6b832f621cf362aaaefc6f8645c25fcdaf91322ab66",
+      "artifact_path": "provider-capabilities/v1/86f694dbbb53945dcf9b48b06899ccb43d18c07b1bcaeeb1bf0252139c753d4e.json",
+      "registered_at": "2026-11-01T04:11:06.765624+00:00",
+      "resource_type": "lineups",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "86f694dbbb53945dcf9b48b06899ccb43d18c07b1bcaeeb1bf0252139c753d4e",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-lineups-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 26,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "understat",
+      "known_at": "2026-11-01T01:55:05.608161+00:00",
+      "decided_at": "2026-11-01T01:55:05.600397+00:00",
+      "season_key": "2024",
+      "decision_id": "8655f480-d5e8-5943-a939-8cc2497e3cc9",
+      "entitlement": null,
+      "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+      "availability": "PARTIAL",
+      "scope_sha256": "ea6c5b1c0b9dea946fb74b1ab417034feb0e63c43fd646a7072cf72fcdc4724c",
+      "artifact_path": "provider-capabilities/v1/8d96cea7618c46a5ddb3070b1aed2f581e46715e86e59c62e4b757ed1ef5296d.json",
+      "registered_at": "2026-11-01T01:55:05.608161+00:00",
+      "resource_type": "shots",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "understat-resource-adapter-v1",
+      "artifact_sha256": "8d96cea7618c46a5ddb3070b1aed2f581e46715e86e59c62e4b757ed1ef5296d",
+      "competition_key": "EPL",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "understat-shots-v2",
+      "timestamp_precision": "SOURCE_TIMEZONE_UNKNOWN; MATCHFORGE_ACQUISITION_KNOWN",
+      "publication_sequence": 10,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": "cb0d9f27-9a8c-5c82-9b82-e6d919e779fc",
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.211069+00:00",
+      "decided_at": "2026-11-01T01:15:55.199417+00:00",
+      "season_key": "2024",
+      "decision_id": "9741b435-6a9a-5cbb-9a5b-116650a4072b",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "UNKNOWN",
+      "scope_sha256": "2b3fac956721a2f42fc7a135931af592c145313cd4a2182d9a8f153481407fd8",
+      "artifact_path": "provider-capabilities/v1/417ebbd497fa522be778378e70b27ce6c8a096b9ef518e47bff6ee45ff490727.json",
+      "registered_at": "2026-11-01T01:15:55.211069+00:00",
+      "resource_type": "statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "417ebbd497fa522be778378e70b27ce6c8a096b9ef518e47bff6ee45ff490727",
+      "competition_key": "432",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-statistics-v2",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 1,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:43:26.749591+00:00",
+      "decided_at": "2026-11-01T03:43:26.743005+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "a5453cc1-4b74-58ab-a5ff-a098af166afd",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "89ffed760adba84834159b8db0a1dc2d718e923033bd1ca3c81b8f09de4cca2f",
+      "artifact_path": "provider-capabilities/v1/54a09d502bf7ed36b39721df5a6843f6826b2b2f5eb2df45c8bdb3487453f5b2.json",
+      "registered_at": "2026-11-01T03:43:26.749591+00:00",
+      "resource_type": "lineups",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "54a09d502bf7ed36b39721df5a6843f6826b2b2f5eb2df45c8bdb3487453f5b2",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNRESOLVED_SOURCE_REFERENCES; NO_CANONICAL_ADMISSION",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-lineups-v1",
+      "timestamp_precision": "MATCHFORGE_KNOWLEDGE_KNOWN; EVENT_TIME_UNQUALIFIED",
+      "publication_sequence": 20,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "understat",
+      "known_at": "2026-11-01T01:52:35.630656+00:00",
+      "decided_at": "2026-11-01T01:52:35.615041+00:00",
+      "season_key": "2024",
+      "decision_id": "a872beb2-4444-58dc-9586-1fc6fc1ce00b",
+      "entitlement": null,
+      "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+      "availability": "PARTIAL",
+      "scope_sha256": "5cd1368933f0d1d478ec070052c29f688c9827a449f76fb2c33aa8a3a0216ec5",
+      "artifact_path": "provider-capabilities/v1/299fae585d66328c343f6300e3746a5a121b5fca2b5cdd6252aa578106cfc4b7.json",
+      "registered_at": "2026-11-01T01:52:35.630656+00:00",
+      "resource_type": "results",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "understat-resource-adapter-v1",
+      "artifact_sha256": "299fae585d66328c343f6300e3746a5a121b5fca2b5cdd6252aa578106cfc4b7",
+      "competition_key": "EPL",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "understat-results-v1",
+      "timestamp_precision": "SOURCE_TIMEZONE_UNKNOWN; MATCHFORGE_ACQUISITION_KNOWN",
+      "publication_sequence": 8,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.442839+00:00",
+      "decided_at": "2026-11-01T01:15:55.434578+00:00",
+      "season_key": "2024",
+      "decision_id": "ada120a6-5710-50e2-832d-c3811744bbb4",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "PARTIAL",
+      "scope_sha256": "9e6e0508619b46cec9d086bd5f71f99c54b55700760dc411ca8d3042b3e73886",
+      "artifact_path": "provider-capabilities/v1/9f8d0a24e6161beaf9034885253cec976addc4e7faff0e14d637a8a4be2541cf.json",
+      "registered_at": "2026-11-01T01:15:55.442839+00:00",
+      "resource_type": "statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "9f8d0a24e6161beaf9034885253cec976addc4e7faff0e14d637a8a4be2541cf",
+      "competition_key": "39",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-statistics-v2",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 4,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:06.306911+00:00",
+      "decided_at": "2026-11-01T04:11:06.301346+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "c6209fed-a325-57f9-b1ef-3351265efa15",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "fc7ca08c6e3bdfd50aca481d5038618055d89490e59f19079b993a72b42b7ffb",
+      "artifact_path": "provider-capabilities/v1/222be08574693dd226cde2f93994e9648c555caee240b313126320940bd18c7f.json",
+      "registered_at": "2026-11-01T04:11:06.306911+00:00",
+      "resource_type": "events",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "222be08574693dd226cde2f93994e9648c555caee240b313126320940bd18c7f",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-events-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 25,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "understat",
+      "known_at": "2026-11-01T01:52:36.440176+00:00",
+      "decided_at": "2026-11-01T01:52:36.430703+00:00",
+      "season_key": "2024",
+      "decision_id": "cb0d9f27-9a8c-5c82-9b82-e6d919e779fc",
+      "entitlement": null,
+      "provider_id": "df982904-5677-5556-a5bb-0923307cdde0",
+      "availability": "PARTIAL",
+      "scope_sha256": "ea6c5b1c0b9dea946fb74b1ab417034feb0e63c43fd646a7072cf72fcdc4724c",
+      "artifact_path": "provider-capabilities/v1/fb8311af219d4d0dc63bf2a8eb5c8fe58217ad82d1d2e19731c163f167b413e9.json",
+      "registered_at": "2026-11-01T01:52:36.440176+00:00",
+      "resource_type": "shots",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "understat-resource-adapter-v1",
+      "artifact_sha256": "fb8311af219d4d0dc63bf2a8eb5c8fe58217ad82d1d2e19731c163f167b413e9",
+      "competition_key": "EPL",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "understat-shots-v1",
+      "timestamp_precision": "SOURCE_TIMEZONE_UNKNOWN; MATCHFORGE_ACQUISITION_KNOWN",
+      "publication_sequence": 9,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:23:46.348117+00:00",
+      "decided_at": "2026-11-01T03:23:46.335641+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "d28a48e1-2b19-5e79-a0aa-ac344502dd73",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "490e92b2588e547e6dda90b5cdee511237963c78ffe76fb324e3b9e8036bdc50",
+      "artifact_path": "provider-capabilities/v1/5fc890957947112a549c75064d511230592d238aac07b620e135d01825ac01da.json",
+      "registered_at": "2026-11-01T03:23:46.348117+00:00",
+      "resource_type": "statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "5fc890957947112a549c75064d511230592d238aac07b620e135d01825ac01da",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "ANONYMOUS_HOME_AWAY_SOURCE_SIDES; NO_TEAM_ADMISSION",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-statistics-v2",
+      "timestamp_precision": "MATCHFORGE_KNOWLEDGE_KNOWN; EVENT_TIME_UNQUALIFIED",
+      "publication_sequence": 18,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.294135+00:00",
+      "decided_at": "2026-11-01T01:15:55.290477+00:00",
+      "season_key": "2024",
+      "decision_id": "da92a777-3168-5f25-a1be-3d3f8d492760",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "UNKNOWN",
+      "scope_sha256": "db32955534f0b2cf086b3e36b18c4dd4d44be85eba38a4fbd3f3ffbb6a5afe5a",
+      "artifact_path": "provider-capabilities/v1/48b60480e96226cfd7c158a72a18302111b5f138503c77c2e9f26c7765b3148d.json",
+      "registered_at": "2026-11-01T01:15:55.294135+00:00",
+      "resource_type": "player_statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "48b60480e96226cfd7c158a72a18302111b5f138503c77c2e9f26c7765b3148d",
+      "competition_key": "432",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-player_statistics-v2",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 3,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:12:08.303045+00:00",
+      "decided_at": "2026-11-01T03:12:08.29749+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "e5377ec7-3412-57fa-a6fc-2a798ef02119",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "4a939d08a21c77c360415f0ec5d8dc1798578fa7fa4299ea47d9adca09086c6d",
+      "artifact_path": "provider-capabilities/v1/cfd57ee5d1e6c09a23666c7ad71c94638690176db8b94ca4223228f59f938345.json",
+      "registered_at": "2026-11-01T03:12:08.303045+00:00",
+      "resource_type": "league",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "cfd57ee5d1e6c09a23666c7ad71c94638690176db8b94ca4223228f59f938345",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-league-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_UNIX_EPOCH; MATCHFORGE_KNOWLEDGE_KNOWN; LIVE_FRESHNESS_UNASSESSED",
+      "publication_sequence": 15,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:01.189805+00:00",
+      "decided_at": "2026-11-01T04:11:01.175549+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "eb5ed646-3191-52a1-9d10-3e959129fa3c",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "b9b90c9b889417a61c3712afd48668e814fe45192892300881aa35b62cba59e7",
+      "artifact_path": "provider-capabilities/v1/198063f967242247ad4909b75f64622cd64d5605b822369ef92d0537032444aa.json",
+      "registered_at": "2026-11-01T04:11:01.189805+00:00",
+      "resource_type": "league",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "198063f967242247ad4909b75f64622cd64d5605b822369ef92d0537032444aa",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-league-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 22,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "flashscore",
+      "known_at": "2026-11-01T03:43:26.91093+00:00",
+      "decided_at": "2026-11-01T03:43:26.904232+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "f8312024-c411-5018-a57d-088684005c93",
+      "entitlement": null,
+      "provider_id": "5a04b26a-316d-5597-ae47-6b63d4802152",
+      "availability": "PARTIAL",
+      "scope_sha256": "149265905ec19063cbb3a055773120bb76a26e19fa1989de8c2eb20e891e4ff3",
+      "artifact_path": "provider-capabilities/v1/db1bfdea0e006b26d8f3dc7d37e4637bed85cf67a552743f55b78b54571b1524.json",
+      "registered_at": "2026-11-01T03:43:26.91093+00:00",
+      "resource_type": "summary",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "flashscore-resource-adapter-v1",
+      "artifact_sha256": "db1bfdea0e006b26d8f3dc7d37e4637bed85cf67a552743f55b78b54571b1524",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNRESOLVED_SOURCE_REFERENCES; NO_CANONICAL_ADMISSION",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "flashscore-summary-v2",
+      "timestamp_precision": "MATCHFORGE_KNOWLEDGE_KNOWN; EVENT_TIME_UNQUALIFIED",
+      "publication_sequence": 21,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "whoscored",
+      "known_at": "2026-11-01T02:59:20.954076+00:00",
+      "decided_at": "2026-11-01T02:59:20.942613+00:00",
+      "season_key": "2026/2027",
+      "decision_id": "fc0278c1-a006-5c1b-8cbf-a3a6964f2521",
+      "entitlement": null,
+      "provider_id": "02d67f20-1a7d-5dc8-ba6b-a785f0a02304",
+      "availability": "PARTIAL",
+      "scope_sha256": "a1db759052a896059feef1d474aa540269643a9de9bd869d6b503583f967cb48",
+      "artifact_path": "provider-capabilities/v1/e23bd164751c729eeb4d286d17c353b3ca64d3431f8eaca18596ada47ce99492.json",
+      "registered_at": "2026-11-01T02:59:20.954076+00:00",
+      "resource_type": "fixtures",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "whoscored-resource-adapter-v1",
+      "artifact_sha256": "e23bd164751c729eeb4d286d17c353b3ca64d3431f8eaca18596ada47ce99492",
+      "competition_key": "2",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "whoscored-fixtures-v1",
+      "timestamp_precision": "KICKOFF_UTC_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 14,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.280171+00:00",
+      "decided_at": "2026-11-01T01:15:55.276952+00:00",
+      "season_key": "2024",
+      "decision_id": "fd7ebb6e-f9e3-5083-952a-4a79937e9b74",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "PARTIAL",
+      "scope_sha256": "b1bfd99ec330507c6937b03a9f43d46eec7e9ad33ca84686646cac2b4c596eaf",
+      "artifact_path": "provider-capabilities/v1/4c33c19ed2535cea8278083a3997e0cca35425b0a55b9e7b0a6f6259922618d0.json",
+      "registered_at": "2026-11-01T01:15:55.280171+00:00",
+      "resource_type": "events",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "4c33c19ed2535cea8278083a3997e0cca35425b0a55b9e7b0a6f6259922618d0",
+      "competition_key": "432",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-events-v1",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 2,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "api_football",
+      "known_at": "2026-11-01T01:15:55.833849+00:00",
+      "decided_at": "2026-11-01T01:15:55.828123+00:00",
+      "season_key": "2024",
+      "decision_id": "fd8b4652-a666-530a-b583-14e27e6f1298",
+      "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+      "provider_id": "b8c82fe3-28fc-5b8d-8fad-5f9c78e7051c",
+      "availability": "PARTIAL",
+      "scope_sha256": "8e2592823acba28be1478ab1c19aaa90d9277e3fc8a8195f6ac35ad5c4cfe41e",
+      "artifact_path": "provider-capabilities/v1/5adcdc1c99f2b6d180ca2a279e39401812ef8459f225475bfd055f80d76aec3f.json",
+      "registered_at": "2026-11-01T01:15:55.833849+00:00",
+      "resource_type": "player_statistics",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "api_football-resource-adapter-v1",
+      "artifact_sha256": "5adcdc1c99f2b6d180ca2a279e39401812ef8459f225475bfd055f80d76aec3f",
+      "competition_key": "39",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "api_football-player_statistics-v2",
+      "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+      "publication_sequence": 6,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    },
+    {
+      "provider": "soccerway",
+      "known_at": "2026-11-01T04:11:05.809514+00:00",
+      "decided_at": "2026-11-01T04:11:05.800442+00:00",
+      "season_key": "2024/2025",
+      "decision_id": "ffdb4499-393e-51a9-b11f-650fcc5cc0b7",
+      "entitlement": null,
+      "provider_id": "a2f01ca9-2d2f-55ee-9439-b95d558f8aa3",
+      "availability": "PARTIAL",
+      "scope_sha256": "0e019e2c5593f23c6735c7a61676a45777823d599eb4d8103c2487780748d4e9",
+      "artifact_path": "provider-capabilities/v1/a6e2eed8ba2f49be04755d4c0c92237940b8533fe86da488a06c33f19e2f3ba2.json",
+      "registered_at": "2026-11-01T04:11:05.809514+00:00",
+      "resource_type": "league",
+      "schema_sha256": "dd31aaac6e264c516aca19f4ad175537c447a4153f59dd675ef8973309141ee1",
+      "historical_end": null,
+      "adapter_version": "soccerway-resource-adapter-v1",
+      "artifact_sha256": "a6e2eed8ba2f49be04755d4c0c92237940b8533fe86da488a06c33f19e2f3ba2",
+      "competition_key": "dYlOSQOD",
+      "historical_start": null,
+      "identity_quality": "UNASSESSED; SEPARATE_PROVIDER_NAMESPACE",
+      "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+      "freshness_seconds": null,
+      "normalizer_version": "soccerway-league-v1",
+      "timestamp_precision": "SOURCE_KICKOFF_EXPLICIT; EVENT_TIME_UNQUALIFIED; ACQUISITION_KNOWN",
+      "publication_sequence": 23,
+      "expected_completeness": null,
+      "rate_limit_per_minute": null,
+      "predecessor_decision_id": null,
+      "decision_contract_version": "1"
+    }
+  ],
+  "population_distinctions": {
+    "phase_00_observations": 0,
+    "phase_00_capability_decisions": 0,
+    "newly_registered_task_sources": 27,
+    "new_task_sources_with_observations": 23,
+    "new_task_sources_without_observations": [
+      "cba9a219-55cf-5623-aa54-276579903695",
+      "d62c70ae-d409-55e1-9b44-194ad7c5dd29",
+      "f6745128-bb85-5427-803e-61264afef828",
+      "f7367c8a-70a7-5115-b804-4a5b99e5c66a"
+    ],
+    "preexisting_sources_reused_by_normalization": [
+      "046a6703-25d4-5cdf-9025-abf573d4f069",
+      "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+      "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+      "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+      "e947549e-ee7f-5c53-a665-8695ef6380f2"
+    ],
+    "newly_registered_task_resource_hashes": {
+      "cba9a219-55cf-5623-aa54-276579903695": "f5761fcf85329d6f1e03992ef33b3c08abe5faadefa7f1fb5401642520af11b9",
+      "8e5dc16c-315c-52cd-800a-295387efa658": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+      "d62c70ae-d409-55e1-9b44-194ad7c5dd29": "c90e311429807f433445ca2e17b4139bffeccbc85397aa72a2ecf5d3d8123ff8",
+      "3afe7736-3543-59c7-a39b-52ab0e136249": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+      "c4765eae-1af9-5382-9562-fa3aea7e82b2": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+      "9d989669-d8df-5ad0-a763-a2acbc0776a3": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+      "434fdca5-a14d-5220-8028-2002753a6300": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+      "2de93633-dbb2-59b9-b74a-f7c3916adc83": "fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524",
+      "168959cb-e055-5a5c-9db5-1ced1b8d3151": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+      "a6cec8f3-cec3-5c5d-b8aa-3bcd48b06778": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+      "43c56d0e-66f8-5b5a-ad6f-d2d7c7a333fc": "d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5",
+      "76660203-2b92-59b6-be2c-4ce8ddd520c3": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+      "f13a5ccb-998a-5bb5-96db-5f04c79344da": "0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a",
+      "c227f784-bba3-5795-bcfc-801d5a27d197": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+      "ebc9f2c7-2d13-5c15-a56f-cb58267825e4": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+      "f7367c8a-70a7-5115-b804-4a5b99e5c66a": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+      "86407a09-3936-59d6-8917-874b7d4192b8": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+      "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+      "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+      "847c5405-b32c-5bb3-b558-4d2f4cece116": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+      "52edbbd9-f3a3-55ec-8149-95d94def4143": "c64711fb108b331c962693d41cb2f46e09968a1c83df8752ea94ce2ee951722a",
+      "47caa8eb-c58e-521a-a3dc-e4cc23cd41e6": "a472800eb2b6b2c3323183c976009271c70d8cbca4624464642c0a5e87e1310a",
+      "f6745128-bb85-5427-803e-61264afef828": "a9347b2ac7186da7336ba0bf77d6a5fa6c41c43f58d3f3f6bbe74f47c961cb40",
+      "4b3283c2-45d3-5a7c-8f43-f89f02eb6b8d": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+      "cc057029-4ec1-557f-a62e-9686a88b3011": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+      "dfe4095b-5645-5776-b3c0-1da7138772f8": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+      "78e381d1-599c-5590-9355-ba34d219dda9": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a"
+    },
+    "background_sync": "Other source additions/forecast additions are not assigned to V4 by timestamp. Whole-relation hashed baseline retained to verify preservation; no background work was stopped or altered.",
+    "immutable_observations_not_in_phase_reports": 0,
+    "capability_decisions_not_in_phase_evidence": 0
+  },
+  "qualification": {
+    "all_observation_resolution_versions_null": true,
+    "observations_with_event_time": 0,
+    "registries": {
+      "canonical_resource_resolutions": 0,
+      "provider_resource_authority": 0,
+      "canonical_resource_coverage": 0,
+      "runtime_model_registrations": 0,
+      "post_match_evaluations": 0
+    },
+    "meaning": "Files/registrations are native evidence, not canonical identity, production feature admission, market labels or accepted parity. Actual consumer paths are R01-B work."
+  },
+  "downstream_foreign_keys": [
+    [
+      "canonical_resolution_evidence",
+      "FOREIGN KEY (observation_id) REFERENCES resource_observation_artifacts(observation_id)"
+    ],
+    [
+      "canonical_resource_resolutions",
+      "FOREIGN KEY (selected_observation_id) REFERENCES resource_observation_artifacts(observation_id)"
+    ],
+    [
+      "provider_resource_capabilities",
+      "FOREIGN KEY (predecessor_decision_id, scope_sha256) REFERENCES provider_resource_capabilities(decision_id, scope_sha256)"
+    ]
+  ],
+  "protected_relations": {
+    "product_forecasts": {
+      "rows": 13241,
+      "sorted_row_hashes_sha256": "b7eda7a029ec5bb3b3a69a308d0e1db1f052ff9af81251575014e8ad2c144914"
+    },
+    "product_identity_admissions": {
+      "rows": 21759,
+      "sorted_row_hashes_sha256": "1c0a2b2c7a2803a54ad3e952fb550c698b32860467c91be4432cf4635523d5e1"
+    },
+    "product_provider_mapping_decisions": {
+      "rows": 2285362,
+      "sorted_row_hashes_sha256": "f3e3579706ea87e3a5b656e00550e3e9e7a9703d757d3b1978add950e8c5c530"
+    },
+    "model_artifacts": {
+      "rows": 5230,
+      "sorted_row_hashes_sha256": "611a1f7b2a5520d1d31b1f5450a8d38fd18363fdae0fe47502770641070ad446"
+    },
+    "source_resources": {
+      "rows": 62246,
+      "sorted_row_hashes_sha256": "ecbd4293e074d7759de5bdfd1c0700442210fea44c278527757e671104ccc97e"
+    },
+    "source_snapshots": {
+      "rows": 60438,
+      "sorted_row_hashes_sha256": "0f8ee20eae3431c26db3b39a47a6168304acacdb234708866fdb695799ccce24"
+    },
+    "canonical_resource_resolutions": {
+      "rows": 0,
+      "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "provider_resource_authority": {
+      "rows": 0,
+      "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "canonical_resource_coverage": {
+      "rows": 0,
+      "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "runtime_model_registrations": {
+      "rows": 0,
+      "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "post_match_evaluations": {
+      "rows": 0,
+      "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "artifact_retirement_events": {
+      "rows": 17,
+      "sorted_row_hashes_sha256": "51b7315e7a768c5eaf764104a35d1a158b7ee98c09de460847d2d064b188ad43"
+    },
+    "model_promotion_events": {
+      "rows": 4,
+      "sorted_row_hashes_sha256": "55d88f839c3f6c06abdb22734a984e42b9a23141c46d6f17afde39f39648261d"
+    }
+  },
+  "champion": {
+    "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+    "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "reload_verified": true
+  },
+  "phase_evidence": [
+    {
+      "phase": "05c",
+      "path": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json",
+      "sha256": "f85f5d7d8a797a21b15a02010a488aba2c17bed1e39374a5bfc3dcbed23dc59f"
+    },
+    {
+      "phase": "05d",
+      "path": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json",
+      "sha256": "a4edda966da05ff39336a5cb08a5f48f7a9ca4c96a5bf67894b7f339db6f4cb3"
+    },
+    {
+      "phase": "06",
+      "path": "docs/evidence/matchforge-v4-phase-06-2026-11-01.json",
+      "sha256": "0d27858e04ebb3ae59185fa5fca16011e67508c27a47066804a67117a6d25e2a"
+    },
+    {
+      "phase": "09",
+      "path": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json",
+      "sha256": "8f4a3a91e0395d097e14305ee7b8d6f0376e55e1cc2a23a6460bdc4effc11899"
+    },
+    {
+      "phase": "11",
+      "path": "docs/evidence/matchforge-v4-phase-11-2026-11-01.json",
+      "sha256": "ee7734922ddf3614b4554a6f6f6e645c96b1938be32f228074d62f4d5d876a22"
+    },
+    {
+      "phase": "12a",
+      "path": "docs/evidence/matchforge-v4-phase-12a-2026-11-01.json",
+      "sha256": "b3aedb67816563ada93cf5892a2f77b2b4dff22e78110f55bb83974b73770331"
+    },
+    {
+      "phase": "12b",
+      "path": "docs/evidence/matchforge-v4-phase-12b-2026-11-01.json",
+      "sha256": "11167a271abfc67fe463c0c7c26430755ee33e7dc2ce7796ccf98e59a313ac30"
+    },
+    {
+      "phase": "12c",
+      "path": "docs/evidence/matchforge-v4-phase-12c-2026-11-01.json",
+      "sha256": "385fb40921ab9ea9ff6670613802a266cb629b51c04607a5ca3f0ea9e66dd230"
+    },
+    {
+      "phase": "13",
+      "path": "docs/evidence/matchforge-v4-phase-13-2026-11-01.json",
+      "sha256": "f0b0aa2140eee8e0a49995f4d87d237a48e121758a7a6c061977a7443f44fbe2"
+    }
+  ],
+  "validation": {
+    "operating_connection": "default_transaction_read_only=on; REPEATABLE READ READ ONLY; explicit rollback",
+    "operating_writes": 0,
+    "source_mutations": 0,
+    "observations_created": 0,
+    "capability_decisions_created": 0,
+    "provider_requests": 0,
+    "root_cause_reproduction": "PASS; mock captured inherited DATABASE_URL and halted before any publication",
+    "all_27_new_task_source_bytes": "SHA256_VERIFIED including four resources without observations"
+  },
+  "limitations": [
+    "Detailed full registration/row-hash baseline remains under ignored local storage; its exact checksum and per-source/report definitions are retained here.",
+    "This phase does not assert downstream eligibility before R01-B tests."
+  ],
+  "recorded_at": "2026-11-01T15:17:45.419062+00:00"
+}
