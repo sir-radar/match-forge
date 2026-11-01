@@ -1136,3 +1136,27 @@ multiplied, and no copula, latent model or simulation is selected without eviden
 The full phase is not complete. Its evidence records each joint target's current
 requirements and unqualified status. Phase 21's independent monitoring review
 follows the verified commit.
+
+## Phase 21 — market settlement and learning gate
+
+`BLOCKED_WITH_EVIDENCE`. The Architecture V2 post-match owner remains in place:
+checksum-bound forecasts and outcomes, fenced atomic publication, immutable
+correction versions, cutoff-aware monitoring, 1X2 proper scores, compatible count
+CRPS, calibration, coverage and explicit review limits. Its existing unit and
+disposable database tests verify the correction, retry, concurrency and historical
+knowledge behavior without touching operating or sealed outcomes.
+
+The new corner/card/team/player/period targets still lack qualified forecasts and
+paired outcomes. The frozen input contract explicitly names home/away goals; it
+cannot be reused for cards or widened in place. A versioned extension must bind
+approved market quantity, semantic version, original prediction, source,
+nonappearance/void rules and correction lineage. Source/feature/missingness drift
+and candidate preparation also require qualified cutoff-bound populations. The
+existing metric/coverage monitor does not imply those new functions are complete.
+
+No parallel evaluation framework, invented thresholds, fabricated labels or
+automatic champion replacement is introduced. No operating evaluation is run;
+Architecture V2's cutover gate remains blocked. The requested full feedback loop
+therefore remains incomplete pending Phases 18–20's data/model prerequisites and
+the existing scientific authorization. Phase 22 can independently expose that
+availability truthfully through the current API and Admin application.
