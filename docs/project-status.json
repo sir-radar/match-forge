@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T14:52:23.911577Z",
+  "updated_at": "2026-11-01T15:58:29.077272Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3088,6 +3088,30 @@
         "correction": "Earlier focused production-file typing missed introduced test typing. Final full checks corrected those errors, two live lifecycle regressions, a CSS-module selector and pre-existing immediate recovery host/database clock races. Original receipts remain historical evidence."
       }
     ],
-    "remaining_gates_ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json#remaining_gates"
+    "remaining_gates_ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json#remaining_gates",
+    "operating_isolation_remediation": {
+      "status": "PASS_WITH_WARNINGS",
+      "scope": "Issue 1 only; no other blocked V4 phase resumed",
+      "owner_disposition": "PRESERVE_AS_DEVELOPMENT_EVIDENCE",
+      "record_disposition": "PRESERVED_DEVELOPMENT_ONLY_PENDING_INDEPENDENT_QUALIFICATION",
+      "observation_artifacts": 12310,
+      "capability_decisions": 26,
+      "root_cause_ref": "docs/evidence/v4-operating-isolation-root-cause.json",
+      "eligibility_audit_ref": "docs/evidence/v4-development-observation-eligibility-audit.json",
+      "prospective_guard_ref": "docs/evidence/v4-experimental-database-isolation.json",
+      "phase_commits": {
+        "R01-A": "ebdc900a3b4836d08f74a89d5edfd1695ac064d5",
+        "R01-B": "b6c834fcd91467c787a2c1be445196d272adcac1",
+        "R01-C": "d848a1441698ff1cd51c5696416b21d3f9486d39",
+        "R01-D": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md"
+      },
+      "operating_writes_performed": 0,
+      "final_verification": "PASS",
+      "production_cutover_authorized": false,
+      "independent_qualification_still_required": true,
+      "issue_1_complete": true,
+      "final_verification_ref": "docs/evidence/v4-operating-isolation-final-verification.json",
+      "remaining_owner_decisions": []
+    }
   }
 }

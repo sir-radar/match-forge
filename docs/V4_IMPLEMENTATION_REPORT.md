@@ -1386,3 +1386,71 @@ Statuses below retain the original scoped conclusions; later corrections supplem
 | 22 | PASS_WITH_WARNINGS | `a895197ddbb830c5a4e3bb59f6b1f9479bf199d5` |
 | 23 corrections | PASS_WITH_WARNINGS | `8263ae1f1ba55085d55047132bb5c9fd6a85edc8` |
 | 23 final verification | PASS_WITH_WARNINGS; full programme BLOCKED_WITH_EVIDENCE | This section’s `docs(v4): verify phased implementation and final capability coverage` commit; exact SHA recorded in CURRENT_TASK_STATUS.md and final handoff. |
+
+## V4 blocker remediation R01 — operating database isolation
+
+Status: PASS_WITH_WARNINGS. Issue 1 is resolved with four independent phase
+commits; R01-D is the commit containing this final checkpoint. This correction
+supplements the original Phase 05–13 and Phase 23 receipts; their results and
+immutable registrations remain unchanged.
+
+The read-only R01-A audit reconciled exactly 12,310 observation artifacts and
+26 capability decisions. The artifacts match the exact ID/hash union of 33
+retained normalization reports, covering 28 source resources from nine providers.
+All observation, decision and affected source bytes passed checksum verification;
+original registrations and full protected row hashes are retained locally with
+checksums in the [root-cause audit](evidence/v4-operating-isolation-root-cause.json).
+Ad hoc V4 publisher scripts inherited the operating `.env` `DATABASE_URL` and
+called existing storage/work/capability owners without checking target isolation.
+The normalization CLI also inherited that write target. This violated the
+existing shadow-only architecture instruction; additive immutability did not
+make operating publication acceptable.
+
+The [consumer audit](evidence/v4-development-observation-eligibility-audit.json)
+classifies 19 paths. Native evidence and capability scopes are visible to Admin
+diagnostics and exact acquisition planning. They grant no canonical identity,
+production feature/history admission, published evaluation dataset, model
+promotion or accepted production parity. Disposable before/after regressions
+preserved admitted history, complete forecast rows and serving projections.
+Existing qualification owners enforce this separation; no duplicate status
+schema or retrospective rewrite was needed.
+
+The owner disposition is `PRESERVE_AS_DEVELOPMENT_EVIDENCE`, recorded here as
+`PRESERVED_DEVELOPMENT_ONLY_PENDING_INDEPENDENT_QUALIFICATION`. No additional
+operating decision registration is necessary to enforce the verified existing
+boundaries. This repository disposition does not grant qualification or replace
+any future append-only identity, authority, capability or promotion decision.
+
+The [prospective guard](evidence/v4-experimental-database-isolation.json) requires
+explicit target/reference URLs, compares actual PostgreSQL system identifiers
+and database OIDs, and checks a persistent experimental database marker before
+side effects. Shadow publication CLIs use the verified connection; the guarded
+launcher starts acquisition/backfill/research scripts only after selection and
+pins their database environment. Ordinary operational sync, quotas, leases,
+authentication and scientific/cutover gates retain their existing behavior.
+Safe invocation and target provisioning requirements are in `docs/testing.md`.
+No new database migration or `.env` field was introduced.
+
+Final [R01-D verification](evidence/v4-operating-isolation-final-verification.json)
+retained every original observation/decision registration, original source hash
+and clock, 13,241 baseline forecast rows, 21,759 baseline identity admissions,
+2,285,362 mapping decisions, 5,230 model artifacts, 62,246 source resources and
+60,438 source snapshots. Background additions are reported separately; no
+baseline row changed or disappeared. All 27 newly acquired task resources and
+five reused input resources were checksum-verified again. Champion reload/hash
+remains `e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+Operating routing remains LEGACY; later stage controls are not installed there.
+The operating experimental marker is absent; four original promotion events
+remain unchanged. This remediation performed zero operating database writes.
+
+`make check integration` passed: 2,017 Python tests, strict mypy on 487 files,
+16 Rust tests, Go checks/build, architecture/status gates, 126 web tests and
+865 disposable storage cases plus PostgreSQL/Redis/API integration. Disposable
+migrations reached `202610310800`; no operating migration ran. Seven existing
+Python dependency warnings and one existing ESLint warning remain. No separate
+frontend E2E run or protected scientific evaluation was needed. The optional
+identity/crosswalk/history Make targets were intentionally avoided because they
+migrate operating data. R01-A/B/C commits are `ebdc900`, `b6c834f` and `d848a14`;
+exact full SHAs, receipts and final R01-D commit location are in the evidence
+and task-status ledger. No remaining owner decision blocks Issue 1. Independent
+data qualification, other V4 issues and Phases 35/36 retain their existing gates.
