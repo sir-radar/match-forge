@@ -98,7 +98,13 @@ def page_payload(change: str = "") -> ProviderPayload:
     )
 
 
-def test_statistics_request_uses_verified_page_and_public_client_header() -> None:
+@pytest.mark.parametrize(
+    "method,suffix",
+    [("statistics", "st"), ("events", "sui"), ("lineups", "li"), ("summary", "sur")],
+)
+def test_match_feed_request_uses_verified_page_and_public_client_header(
+    method: str, suffix: str
+) -> None:
     calls: list[str] = []
     guards: list[bool] = []
 
@@ -108,9 +114,9 @@ def test_statistics_request_uses_verified_page_and_public_client_header() -> Non
         return HttpResponseV1(b"SE\xc3\xb7Match", 200, "text/plain", None, None)
 
     source = FlashscoreSource(feed_transport=transport, request_guard=lambda: guards.append(True))
-    response = source.statistics(page_payload())
-    assert calls == ["https://global.flashscore.ninja/2/x/feed/df_st_1_match001"]
-    assert response.resource_key == "df_st_1_match001" and response.raw == b"SE\xc3\xb7Match"
+    response = getattr(source, method)(page_payload())
+    assert calls == [f"https://global.flashscore.ninja/2/x/feed/df_{suffix}_1_match001"]
+    assert response.resource_key == f"df_{suffix}_1_match001" and response.raw == b"SE\xc3\xb7Match"
     assert len(guards) == 1
 
 

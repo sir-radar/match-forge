@@ -32,6 +32,52 @@ def feed_records(feed: str, fields: Collection[str]) -> list[dict[str, str]]:
     return rows
 
 
+def feed_cells(feed: str) -> list[list[tuple[str, str]]]:
+    blocks = []
+    for block in feed.split("¬~"):
+        cells = []
+        for cell in block.split("¬"):
+            if not cell:
+                continue
+            key, separator, value = cell.partition("÷")
+            if not separator:
+                raise ValueError("Flashscore feed cell has no value delimiter")
+            cells.append((key, value))
+        if cells:
+            blocks.append(cells)
+    return blocks
+
+
+class FlashscoreIncidentActor(TypedDict):
+    IE: str
+    IM: NotRequired[str]
+    IF: NotRequired[str]
+
+
+class FlashscoreIncident(TypedDict):
+    III: str
+    IA: str
+    IB: str
+    ID: NotRequired[str]
+    actors: list[FlashscoreIncidentActor]
+
+
+class FlashscoreLineupMember(TypedDict):
+    LP: str
+    LI: str
+    LG: NotRequired[str]
+    LD: NotRequired[str]
+    LS: NotRequired[str]
+
+
+class FlashscoreSummary(TypedDict):
+    AC: str
+    BA: NotRequired[str]
+    BB: NotRequired[str]
+    BC: NotRequired[str]
+    BD: NotRequired[str]
+
+
 class FlashscoreStatistic(TypedDict):
     SD: str
     SG: str

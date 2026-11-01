@@ -14,7 +14,10 @@ from football.providers.normalization import (
     espn,
     files,
     flashscore,
+    flashscore_events,
+    flashscore_lineups,
     flashscore_statistics,
+    flashscore_summary,
     football_data_org,
     fotmob,
     pitchapi,
@@ -31,6 +34,9 @@ from football.providers.normalization.common import (
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
     ("flashscore", "league"): flashscore.league,
     ("flashscore", "statistics"): flashscore_statistics.statistics,
+    ("flashscore", "events"): flashscore_events.events,
+    ("flashscore", "lineups"): flashscore_lineups.lineups,
+    ("flashscore", "summary"): flashscore_summary.summary,
     ("whoscored", "fixtures"): whoscored.fixtures,
     ("espn", "scoreboard"): espn.scoreboard,
     ("espn", "summary"): espn.summary,
@@ -93,9 +99,9 @@ def normalize_resource(
         return output.result()
     payload: object
     if context.provenance.provider == "football_data_uk" or (
-        context.provenance.provider,
-        resource,
-    ) == ("flashscore", "statistics"):
+        context.provenance.provider == "flashscore"
+        and resource in {"statistics", "events", "lineups", "summary"}
+    ):
         payload = raw
     else:
         decoders = {
@@ -107,6 +113,8 @@ def normalize_resource(
         decoded = decoder(raw) if decoder is not None else raw
         payload = native_json(decoded)
     try:
+        if context.provenance.provider == "flashscore":
+            flashscore.validate_resource_scope(context, resource)
         _validate_scope(context, payload)
         normalizer(output, payload)
     except ValueError as error:
@@ -148,7 +156,7 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
         "understat": r"^getMatchData/([1-9][0-9]*)$",
-        "flashscore": r"^df_st_1_([A-Za-z0-9]+)$",
+        "flashscore": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
     }
     match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
     if match is not None:

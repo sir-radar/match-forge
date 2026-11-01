@@ -801,3 +801,45 @@ helper reuse, static/type/complexity, architecture, 21 governance tests, status
 and diff checks passed. Storage tests prove knowledge-only visibility, earlier
 knowledge exclusion and exclusion when an explicit historical event time is
 required. Phase 12c will handle the captured incident and lineup feeds.
+
+## Phase 12c — Flashscore events, lineups and period summary
+
+Status: PARTIAL_FUNCTIONAL. Phase 12b commit: `b0c03f9`. Phase 12's verified
+engineering checkpoints are complete; broader qualification remains separate.
+
+The actual adapter fetched incident, lineup and current summary feeds with
+exactly three guarded requests using the retained verified match page. Primary
+client definitions establish home/away sides and explicit incident actor roles.
+Goals select the scorer, substitutions select the outgoing player, and missed
+penalties/assistants/incoming players do not produce false ordinary goals.
+Shootouts and unknown periods are held. Display and explicit added time must
+agree. Own-goal beneficiary sides do not establish the actor's team.
+
+Starter/bench groups, native player IDs and coach groups are retained. Lineup
+confirmation stays UNKNOWN; source formation text is preserved without a
+confirmed formation or guessed normalized position. No minutes, participation
+or nonappearance is inferred. The first real replay held both goalkeeper rows.
+The source explicitly pairs their LG=3 values with LS=Goalkeeper; only that
+observed pair is now supported. The general participant enum describes another
+field and was not used to guess lineup types. Duplicate players and conflicts
+remain blocking findings.
+
+The summary reports both period scores directly. Their score basis and period
+completeness remain unknown. The referee label has no invented native/canonical
+ID. Source team sides stay anonymous until independently qualified.
+
+[Phase 12c evidence](evidence/matchforge-v4-phase-12c-2026-11-01.json) records the
+client inspection, actual requests and publication. Three resources and three
+fenced NORMALIZATION work items produced 63 observations: forty players, two
+coaches, two lineups, sixteen events, two period scores and one referee label.
+Every artifact loaded and retried without extra rows. Three earlier report
+hashes are unchanged. Totals are 11,127 observations and twenty capability
+decisions, with no identity admission, forecast/model write or routing change.
+
+Verification: 243 focused disposable tests, static/type/complexity, architecture,
+21 governance tests, status and diff checks passed. Live freshness, wider
+history and identity/target/PIT qualification remain unverified. Phase 13 follows.
+
+Phase 12c final review added registered feed-family validation. Three regression
+cases reject cross-family inputs even when fixture IDs agree. A final read-only
+replay confirms all six Flashscore report hashes remain unchanged.

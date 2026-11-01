@@ -64,9 +64,21 @@ class FlashscoreSource:
         return _payload(key, response)
 
     def statistics(self, match_page: ProviderPayload) -> ProviderPayload:
+        return self._match_feed(match_page, "st")
+
+    def events(self, match_page: ProviderPayload) -> ProviderPayload:
+        return self._match_feed(match_page, "sui")
+
+    def lineups(self, match_page: ProviderPayload) -> ProviderPayload:
+        return self._match_feed(match_page, "li")
+
+    def summary(self, match_page: ProviderPayload) -> ProviderPayload:
+        return self._match_feed(match_page, "sur")
+
+    def _match_feed(self, match_page: ProviderPayload, suffix: str) -> ProviderPayload:
         scope = re.fullmatch(r"match/([A-Za-z0-9]+)", match_page.resource_key)
         if match_page.provider != "flashscore" or scope is None:
-            raise ValueError("Flashscore statistics requires its retained native match page")
+            raise ValueError("Flashscore feed requires its retained native match page")
         page = native_record(FlashscoreMatchPage, native_json(environment_bytes(match_page.raw)))
         app = page["config"]["app"]
         if (page["event_id_c"], page["sport_id"], app["project_type"]["id"]) != (scope[1], 1, 1):
@@ -79,7 +91,7 @@ class FlashscoreSource:
         signature = app["feed_sign"]
         if not signature or any(c in signature for c in "\r\n"):
             raise ValueError("Flashscore page has an invalid public feed header")
-        key = "df_st_1_" + scope[1]
+        key = "df_" + suffix + "_1_" + scope[1]
         if self._request_guard is not None:
             self._request_guard()
         response = self._feed_transport(

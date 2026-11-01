@@ -55,6 +55,14 @@ OPEN_MATCH: dict[str, object] = {
 }
 
 EXAMPLES: dict[str, dict[str, object]] = {
+    "FlashscoreIncident": {
+        "III": "event001",
+        "IA": "1",
+        "IB": "30'",
+        "actors": [{"IE": "1", "IM": "player01"}],
+    },
+    "FlashscoreLineupMember": {"LP": "player01", "LI": "Player", "LG": "1"},
+    "FlashscoreSummary": {"AC": "3", "BA": "1", "BB": "0", "BC": "0", "BD": "1"},
     "FlashscoreMatchPage": {
         "event_id_c": "match001",
         "sport_id": 1,

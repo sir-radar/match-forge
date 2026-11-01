@@ -22,6 +22,7 @@ from football.providers.native.flashscore import (
 )
 from football.providers.native.reader import native_record
 from football.providers.normalization.common import (
+    NormalizationContext,
     ObservationCollector,
     array,
     count,
@@ -35,6 +36,12 @@ _NAMED_KEYS = (
     | frozenset(FlashscoreLeague.__annotations__)
     | {"SA"}
 )
+
+
+def validate_resource_scope(context: NormalizationContext, resource: str) -> None:
+    prefix = {"statistics": "st", "events": "sui", "lineups": "li", "summary": "sur"}.get(resource)
+    if prefix is not None and not context.resource_key.startswith("df_" + prefix + "_1_"):
+        raise ValueError("Flashscore registered feed family conflicts with requested resource")
 
 
 def json_bytes(raw: bytes) -> bytes:

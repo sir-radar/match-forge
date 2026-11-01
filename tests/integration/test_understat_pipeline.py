@@ -19,19 +19,15 @@ from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkTyp
 from football.work.storage import WorkRegistry
 
 
-@pytest.mark.parametrize(
-    "provider,statistics",
-    [
-        ("understat", False),
-        ("espn", False),
-        ("whoscored", False),
-        ("flashscore", False),
-        ("flashscore", True),
-    ],
-)
-def test_public_source_manifest_normalization_fenced_publication_and_retry(
-    tmp_path: Path, provider: str, statistics: bool
-) -> None:
+def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
+    if provider == "flashscore" and kind in ("statistics", "events", "lineups", "summary"):
+        suffix, feed = {
+            "statistics": ("st", "SE÷Match¬~SD÷34¬SG÷Total shots¬SH÷10¬SI÷0¬~"),
+            "events": ("sui", "AC÷1st Half¬~III÷event001¬IA÷1¬IB÷30'¬IE÷3¬IM÷player01¬~"),
+            "lineups": ("li", "LB÷Starting Lineups¬LGT÷1¬LGK÷1¬LC÷1¬~LP÷player01¬LI÷Player¬LG÷1¬~"),
+            "summary": ("sur", "AC÷3¬BA÷1¬BB÷0¬~BC÷0¬BD÷1¬~MIT÷REF¬MIV÷Referee¬~"),
+        }[kind]
+        return f"df_{suffix}_1_match001", kind, feed.encode()
     raw = gzip.compress(
         json.dumps(
             {
@@ -151,10 +147,28 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             "cjs.initialFeeds['results'] = {data: `" + header + match + "`};"
             "cjs.initialFeeds['fixtures'] = {data: `" + header + "`};</script>"
         ).encode()
-    if statistics:
-        path = "df_st_1_match001"
-        resource_type = "statistics"
-        raw = "SE÷Match¬~SD÷34¬SG÷Total shots¬SH÷10¬SI÷0¬~".encode()
+    return path, resource_type, raw
+
+
+@pytest.mark.parametrize(
+    "provider,sample_kind",
+    [
+        ("understat", "results"),
+        ("espn", "scoreboard"),
+        ("whoscored", "fixtures"),
+        ("flashscore", "league"),
+        ("flashscore", "statistics"),
+        ("flashscore", "events"),
+        ("flashscore", "lineups"),
+        ("flashscore", "summary"),
+    ],
+)
+def test_public_source_manifest_normalization_fenced_publication_and_retry(
+    tmp_path: Path, provider: str, sample_kind: str
+) -> None:
+    path, resource_type, raw = _sample(provider, sample_kind)
+    assert sample_kind == resource_type
+    scoped = provider == "flashscore" and sample_kind != "league"
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)
     identity = "https://example.test/" + provider + "/" + path
@@ -190,11 +204,11 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             import_pending=True,
         )
         context, retained = registered_resource(
-            c, tmp_path, resource, fixture_native_id="match001" if statistics else None
+            c, tmp_path, resource, fixture_native_id="match001" if scoped else None
         )
         assert retained == raw and context.time.known_at == now
         result = normalize_resource(context, resource_type, retained)
-        if statistics:
+        if sample_kind in ("statistics", "lineups", "events"):
             assert [f.rule_code for f in result.findings] == ["MF_NORM_TEAM_ID_UNRESOLVED"]
         else:
             assert not result.findings
@@ -239,7 +253,12 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             "SELECT id FROM football.providers WHERE code=%s", (provider,)
         ).fetchone()
         assert provider_row is not None
-        contract = "TeamStatisticObservationV2" if statistics else "ResultObservationV2"
+        contract = {
+            "statistics": "TeamStatisticObservationV2",
+            "events": "EventObservationV2",
+            "lineups": "PlayerObservationV2",
+            "summary": "PeriodScoreObservationV3",
+        }.get(sample_kind, "ResultObservationV2")
         expected = {o.observation_id for o in result.observations if contract == o.CONTRACT}
         assert expected
         temporal = PointInTimeRepository(c)
