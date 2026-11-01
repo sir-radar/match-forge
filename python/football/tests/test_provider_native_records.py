@@ -55,6 +55,19 @@ OPEN_MATCH: dict[str, object] = {
 }
 
 EXAMPLES: dict[str, dict[str, object]] = {
+    "FlashscoreMatchPage": {
+        "event_id_c": "match001",
+        "sport_id": 1,
+        "config": {
+            "app": {
+                "project": {"id": 2},
+                "project_type": {"id": 1},
+                "feed_sign": "public-header",
+                "feed_resolver": {"default_url": "https://global.flashscore.ninja"},
+            }
+        },
+    },
+    "FlashscoreStatistic": {"SD": "34", "SG": "Total shots", "SH": "16", "SI": "14"},
     "FlashscoreMatch": {
         "AA": "matchid1",
         "AD": "1793476800",

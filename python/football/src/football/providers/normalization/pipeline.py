@@ -3,19 +3,18 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from collections.abc import Callable
-from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from football.providers.native.reader import _validate_json
+from football.providers.native.reader import native_json
 from football.providers.normalization import (
     api_football,
     api_football_rich,
     espn,
     files,
     flashscore,
+    flashscore_statistics,
     football_data_org,
     fotmob,
     pitchapi,
@@ -31,6 +30,7 @@ from football.providers.normalization.common import (
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
     ("flashscore", "league"): flashscore.league,
+    ("flashscore", "statistics"): flashscore_statistics.statistics,
     ("whoscored", "fixtures"): whoscored.fixtures,
     ("espn", "scoreboard"): espn.scoreboard,
     ("espn", "summary"): espn.summary,
@@ -76,19 +76,6 @@ NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None
 }
 
 
-def _pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("duplicate source JSON key")
-        result[key] = value
-    return result
-
-
-def _constant(value: str) -> None:
-    raise ValueError(f"nonfinite source JSON number: {value}")
-
-
 def normalize_resource(
     context: NormalizationContext, resource: str, raw: bytes
 ) -> NormalizationResult:
@@ -104,7 +91,11 @@ def normalize_resource(
             evidence={"provider": context.provenance.provider, "resource": resource},
         )
         return output.result()
-    if context.provenance.provider == "football_data_uk":
+    payload: object
+    if context.provenance.provider == "football_data_uk" or (
+        context.provenance.provider,
+        resource,
+    ) == ("flashscore", "statistics"):
         payload = raw
     else:
         decoders = {
@@ -114,8 +105,7 @@ def normalize_resource(
         }
         decoder = decoders.get(context.provenance.provider)
         decoded = decoder(raw) if decoder is not None else raw
-        payload = json.loads(decoded, object_pairs_hook=_pairs, parse_constant=_constant)
-        _validate_json(payload, "source")
+        payload = native_json(decoded)
     try:
         _validate_scope(context, payload)
         normalizer(output, payload)
@@ -158,6 +148,7 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
         "understat": r"^getMatchData/([1-9][0-9]*)$",
+        "flashscore": r"^df_st_1_([A-Za-z0-9]+)$",
     }
     match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
     if match is not None:

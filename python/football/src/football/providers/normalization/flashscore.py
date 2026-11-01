@@ -14,7 +14,12 @@ from football.contracts.observations_v2 import (
     FixtureObservationV2,
     ResultObservationV2,
 )
-from football.providers.native.flashscore import FlashscoreLeague, FlashscoreMatch
+from football.providers.native.flashscore import (
+    FlashscoreLeague,
+    FlashscoreMatch,
+    environment_bytes,
+    feed_records,
+)
 from football.providers.native.reader import native_record
 from football.providers.normalization.common import (
     ObservationCollector,
@@ -35,10 +40,7 @@ _NAMED_KEYS = (
 def json_bytes(raw: bytes) -> bytes:
     """Keep raw environment JSON for the pipeline's strict JSON validation."""
     page = raw.decode("utf-8")
-    assignments = list(re.finditer(r"window\.environment\s*=\s*", page))
-    if len(assignments) != 1:
-        raise ValueError("Flashscore page requires one environment JSON object")
-    environment = _json_expression(page, assignments[0].end())
+    environment = environment_bytes(raw).decode("utf-8")
     archives = list(re.finditer(r"var\s+league_archive_data\s*=\s*", page))
     if len(archives) > 1:
         raise ValueError("Flashscore archive JSON is ambiguous")
@@ -60,19 +62,7 @@ def _feed(page: str, name: str) -> list[dict[str, str]]:
     matches = re.findall(pattern, page)
     if len(matches) != 1 or "${" in matches[0]:
         raise ValueError("Flashscore feed is absent, ambiguous or contains interpolation")
-    rows = []
-    for block in matches[0].split("¬~"):
-        row: dict[str, str] = {}
-        for cell in block.split("¬"):
-            key, separator, value = cell.partition("÷")
-            if key not in _NAMED_KEYS:
-                continue
-            if not separator or key in row:
-                raise ValueError("Flashscore named feed field is malformed or duplicated")
-            row[key] = value
-        if row:
-            rows.append(row)
-    return rows
+    return feed_records(matches[0], _NAMED_KEYS)
 
 
 def league(output: ObservationCollector, payload: object) -> None:

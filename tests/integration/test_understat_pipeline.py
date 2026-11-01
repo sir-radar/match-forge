@@ -19,9 +19,18 @@ from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkTyp
 from football.work.storage import WorkRegistry
 
 
-@pytest.mark.parametrize("provider", ["understat", "espn", "whoscored", "flashscore"])
+@pytest.mark.parametrize(
+    "provider,statistics",
+    [
+        ("understat", False),
+        ("espn", False),
+        ("whoscored", False),
+        ("flashscore", False),
+        ("flashscore", True),
+    ],
+)
 def test_public_source_manifest_normalization_fenced_publication_and_retry(
-    tmp_path: Path, provider: str
+    tmp_path: Path, provider: str, statistics: bool
 ) -> None:
     raw = gzip.compress(
         json.dumps(
@@ -142,6 +151,10 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             "cjs.initialFeeds['results'] = {data: `" + header + match + "`};"
             "cjs.initialFeeds['fixtures'] = {data: `" + header + "`};</script>"
         ).encode()
+    if statistics:
+        path = "df_st_1_match001"
+        resource_type = "statistics"
+        raw = "SE÷Match¬~SD÷34¬SG÷Total shots¬SH÷10¬SI÷0¬~".encode()
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)
     identity = "https://example.test/" + provider + "/" + path
@@ -176,10 +189,15 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             acquired_at=now,
             import_pending=True,
         )
-        context, retained = registered_resource(c, tmp_path, resource)
+        context, retained = registered_resource(
+            c, tmp_path, resource, fixture_native_id="match001" if statistics else None
+        )
         assert retained == raw and context.time.known_at == now
         result = normalize_resource(context, resource_type, retained)
-        assert not result.findings
+        if statistics:
+            assert [f.rule_code for f in result.findings] == ["MF_NORM_TEAM_ID_UNRESOLVED"]
+        else:
+            assert not result.findings
         store = ObservationArtifactStore(c, tmp_path)
         prepared = [store.prepare(o) for o in result.observations]
         output_hash = hashlib.sha256(
@@ -221,8 +239,20 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             "SELECT id FROM football.providers WHERE code=%s", (provider,)
         ).fetchone()
         assert provider_row is not None
-        assert not PointInTimeRepository(c).resource_observation_ids_at(
-            "ResultObservationV2",
+        contract = "TeamStatisticObservationV2" if statistics else "ResultObservationV2"
+        expected = {o.observation_id for o in result.observations if contract == o.CONTRACT}
+        assert expected
+        temporal = PointInTimeRepository(c)
+        assert expected <= set(
+            temporal.resource_observation_ids_at(
+                contract, provider_row[0], now + timedelta(seconds=1)
+            )
+        )
+        assert not temporal.resource_observation_ids_at(
+            contract, provider_row[0], now - timedelta(seconds=1)
+        )
+        assert not temporal.resource_observation_ids_at(
+            contract,
             provider_row[0],
             now + timedelta(seconds=1),
             football_cutoff=datetime(2025, 1, 1, tzinfo=UTC),

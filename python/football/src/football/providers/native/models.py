@@ -14,7 +14,12 @@ from football.providers.native.api_football import (
     ApiFootballTeam,
 )
 from football.providers.native.espn import EspnCompetition, EspnCompetitor, EspnEvent, EspnTeam
-from football.providers.native.flashscore import FlashscoreLeague, FlashscoreMatch
+from football.providers.native.flashscore import (
+    FlashscoreLeague,
+    FlashscoreMatch,
+    FlashscoreMatchPage,
+    FlashscoreStatistic,
+)
 from football.providers.native.football_data_org import (
     FootballDataOrgCompetition,
     FootballDataOrgFixture,
@@ -52,6 +57,8 @@ NATIVE_MODELS: dict[str, type[Any]] = {
     model.__name__: model
     for model in (
         FlashscoreMatch,
+        FlashscoreStatistic,
+        FlashscoreMatchPage,
         FlashscoreLeague,
         WhoScoredMatch,
         WhoScoredTournament,

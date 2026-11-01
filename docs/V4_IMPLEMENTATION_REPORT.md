@@ -768,3 +768,36 @@ The completed-match page and its current statistics, summary, incident and lineu
 feeds also returned data. The older summary route returned 404; current feed names
 were verified in the primary client. Phase 12b will normalize these captured
 resources before Phase 13. No challenge, proxy or fingerprint bypass was used.
+
+## Phase 12b — Flashscore match statistics
+
+Status: PARTIAL_FUNCTIONAL. Phase 12a commit: `27e5dff`.
+
+The actual adapter fetched a match page and its statistics feed with exactly two
+guarded requests. It checks native match/football scope and the verified public
+feed origin before using the ordinary public header defined by the source
+client. It permits no arbitrary origin or caller-supplied team binding.
+
+The normalizer retains named scalar statistics for full match and both halves,
+including shots/SOT, corners/cards, fouls/offsides, saves, interceptions,
+clearances, throw-ins, goal kicks, woodwork and xGOT where reported. Match-total
+xG is separate. Unverified fractions, unknown statistics and unsupported
+partial-period xG remain findings. Repeated measurements must agree; conflicts
+hold the field. The bare feed reports home/away values without team IDs, so
+references stay anonymous and unqualified. No name-based identity, event clock,
+live freshness or settlement equivalence is inferred.
+
+[Phase 12b evidence](evidence/matchforge-v4-phase-12b-2026-11-01.json) records the
+guarded adapter run and publication. Existing owners registered two resources
+and published six rich team-statistic and two xG observations under one fenced
+NORMALIZATION work item. Every artifact loaded and retried without extra rows.
+Operating totals are 11,064 observations and seventeen capability decisions.
+Canonical imports remain pending; no identity, forecast/model or routing changed.
+
+The source JSON and named-feed readers are shared by acquisition and
+normalization. Both earlier current/history league report hashes are unchanged.
+Verification: 217 focused disposable tests, 89 final unit tests after response
+helper reuse, static/type/complexity, architecture, 21 governance tests, status
+and diff checks passed. Storage tests prove knowledge-only visibility, earlier
+knowledge exclusion and exclusion when an explicit historical event time is
+required. Phase 12c will handle the captured incident and lineup feeds.
