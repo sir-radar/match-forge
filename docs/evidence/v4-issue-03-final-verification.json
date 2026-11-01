@@ -1,0 +1,720 @@
+{
+  "phase": "R03-H",
+  "phase_status": "PASS_WITH_WARNINGS",
+  "issue_3_acquisition_status": "PASS_WITH_WARNINGS",
+  "qualification_status": "BLOCKED_WITH_EVIDENCE",
+  "issue_2_qualification_complete": false,
+  "issue_2_can_be_reopened_for_final_qualification": false,
+  "starting_sha": "55583a380dce23e4a14bae077b1407341caf2b08",
+  "verified_code_sha": "84e4013356dc0fcad02103bca3c270fc84224a2d",
+  "ending_commit_location": "Commit containing this receipt; exact final SHA in CURRENT_TASK_STATUS.md and final handoff",
+  "branch": "ft/v4-execution-programme",
+  "base_branch": "main",
+  "recorded_at": "2026-11-01T20:38:51.307202Z",
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "phase_commits": {
+    "R03-A": "d48a75212c240ffe5057e611ba06056629e97121",
+    "R03-B": "18bbc028fa8c36c85fde6251bcf9235d85818574",
+    "R03-C": "d589e4afda256bf7e33c649dba276786949bde6a",
+    "R03-D": "238a0f013449ede83d84ed85971e4a38d707ec35",
+    "R03-E": "f1185291bcefe4173e058d65dccd6dcc283fa562",
+    "R03-F": "011e9c4b43e5eea432de25f2420cd42b4e3daaf5",
+    "R03-G": "84e4013356dc0fcad02103bca3c270fc84224a2d"
+  },
+  "owner_intervening_commit": "3bb5d0193cde6328955e499ac716082787cd0018",
+  "provider_before_after": {
+    "understat": {
+      "before": {
+        "fixtures": 380,
+        "players": 32,
+        "seasons": [
+          "2024"
+        ],
+        "utc": 0,
+        "observations": 2361,
+        "source_resources": 2,
+        "contracts": {
+          "ExpectedGoalsObservationV2": 784,
+          "FixtureObservationV2": 380,
+          "TeamObservationV2": 760,
+          "ResultObservationV2": 380,
+          "PlayerObservationV2": 32,
+          "ShotObservationV3": 24,
+          "CompetitionObservationV2": 1
+        }
+      },
+      "after": {
+        "fixtures": 1140,
+        "players": 85,
+        "seasons": [
+          "2015",
+          "2016",
+          "2024"
+        ],
+        "utc": 0,
+        "observations": 7082,
+        "source_resources": 6,
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2357,
+          "FixtureObservationV2": 1140,
+          "TeamObservationV2": 2280,
+          "ResultObservationV2": 1140,
+          "PlayerObservationV2": 85,
+          "ShotObservationV3": 77,
+          "CompetitionObservationV2": 3
+        }
+      },
+      "new_distinct_native_fixtures": 760,
+      "new_distinct_native_players": 53,
+      "new_source_utc_fixture_ids": 0
+    },
+    "espn": {
+      "before": {
+        "fixtures": 2,
+        "players": 40,
+        "seasons": [
+          "2024",
+          "2026"
+        ],
+        "utc": 2,
+        "observations": 120,
+        "source_resources": 3,
+        "contracts": {
+          "LineupObservationV2": 2,
+          "PlayerStatisticObservationV3": 40,
+          "PlayerObservationV2": 40,
+          "FixtureObservationV2": 3,
+          "EventObservationV2": 16,
+          "TeamObservationV2": 10,
+          "TeamStatisticObservationV3": 2,
+          "ResultObservationV2": 2,
+          "CompetitionObservationV2": 3,
+          "TeamStatisticObservationV2": 2
+        }
+      },
+      "after": {
+        "fixtures": 38,
+        "players": 361,
+        "seasons": [
+          "2015",
+          "2024",
+          "2026"
+        ],
+        "utc": 38,
+        "observations": 1714,
+        "source_resources": 30,
+        "contracts": {
+          "LineupObservationV2": 30,
+          "PlayerStatisticObservationV3": 548,
+          "PlayerObservationV2": 548,
+          "FixtureObservationV2": 54,
+          "EventObservationV2": 177,
+          "TeamObservationV2": 168,
+          "TeamStatisticObservationV3": 30,
+          "ResultObservationV2": 53,
+          "CompetitionObservationV2": 30,
+          "TeamStatisticObservationV2": 76
+        }
+      },
+      "new_distinct_native_fixtures": 36,
+      "new_distinct_native_players": 321,
+      "new_source_utc_fixture_ids": 36
+    },
+    "whoscored": {
+      "before": {
+        "fixtures": 10,
+        "players": 0,
+        "seasons": [
+          "2026/2027"
+        ],
+        "utc": 10,
+        "observations": 55,
+        "source_resources": 1,
+        "contracts": {
+          "ResultObservationV2": 8,
+          "TeamObservationV2": 20,
+          "TeamStatisticObservationV2": 16,
+          "CompetitionObservationV2": 1,
+          "FixtureObservationV2": 10
+        }
+      },
+      "after": {
+        "fixtures": 38,
+        "players": 0,
+        "seasons": [
+          "2015/2016",
+          "2026/2027"
+        ],
+        "utc": 38,
+        "observations": 289,
+        "source_resources": 4,
+        "contracts": {
+          "ResultObservationV2": 46,
+          "TeamObservationV2": 98,
+          "TeamStatisticObservationV2": 92,
+          "CompetitionObservationV2": 4,
+          "FixtureObservationV2": 49
+        }
+      },
+      "new_distinct_native_fixtures": 28,
+      "new_distinct_native_players": 0,
+      "new_source_utc_fixture_ids": 28
+    },
+    "flashscore": {
+      "before": {
+        "fixtures": 304,
+        "players": 40,
+        "seasons": [
+          "2024/2025",
+          "2026/2027"
+        ],
+        "utc": 304,
+        "observations": 1183,
+        "source_resources": 6,
+        "contracts": {
+          "FixtureObservationV2": 304,
+          "TeamObservationV2": 608,
+          "ResultObservationV2": 197,
+          "PlayerObservationV2": 40,
+          "EventObservationV2": 16,
+          "TeamStatisticObservationV3": 6,
+          "CompetitionObservationV2": 3,
+          "ExpectedGoalsObservationV2": 2,
+          "CoachObservationV2": 2,
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1,
+          "LineupObservationV2": 2
+        }
+      },
+      "after": {
+        "fixtures": 514,
+        "players": 115,
+        "seasons": [
+          "2015/2016",
+          "2023/2024",
+          "2024/2025",
+          "2026/2027"
+        ],
+        "utc": 514,
+        "observations": 2156,
+        "source_resources": 16,
+        "contracts": {
+          "FixtureObservationV2": 514,
+          "TeamObservationV2": 1028,
+          "ResultObservationV2": 407,
+          "PlayerObservationV2": 116,
+          "EventObservationV2": 43,
+          "TeamStatisticObservationV3": 18,
+          "CompetitionObservationV2": 5,
+          "ExpectedGoalsObservationV2": 4,
+          "CoachObservationV2": 6,
+          "PeriodScoreObservationV3": 6,
+          "RefereeObservationV3": 3,
+          "LineupObservationV2": 6
+        }
+      },
+      "new_distinct_native_fixtures": 210,
+      "new_distinct_native_players": 75,
+      "new_source_utc_fixture_ids": 210
+    },
+    "soccerway": {
+      "before": {
+        "fixtures": 304,
+        "players": 40,
+        "seasons": [
+          "2024/2025",
+          "2026/2027"
+        ],
+        "utc": 304,
+        "observations": 1183,
+        "source_resources": 6,
+        "contracts": {
+          "TeamObservationV2": 608,
+          "TeamStatisticObservationV3": 6,
+          "FixtureObservationV2": 304,
+          "ResultObservationV2": 197,
+          "CompetitionObservationV2": 3,
+          "EventObservationV2": 16,
+          "PlayerObservationV2": 40,
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1,
+          "LineupObservationV2": 2,
+          "ExpectedGoalsObservationV2": 2,
+          "CoachObservationV2": 2
+        }
+      },
+      "after": {
+        "fixtures": 522,
+        "players": 110,
+        "seasons": [
+          "2015/2016",
+          "2016/2017",
+          "2024/2025",
+          "2026/2027"
+        ],
+        "utc": 522,
+        "observations": 2182,
+        "source_resources": 16,
+        "contracts": {
+          "TeamObservationV2": 1044,
+          "TeamStatisticObservationV3": 18,
+          "FixtureObservationV2": 522,
+          "ResultObservationV2": 415,
+          "CompetitionObservationV2": 5,
+          "EventObservationV2": 44,
+          "PlayerObservationV2": 112,
+          "PeriodScoreObservationV3": 6,
+          "RefereeObservationV3": 2,
+          "LineupObservationV2": 6,
+          "ExpectedGoalsObservationV2": 2,
+          "CoachObservationV2": 6
+        }
+      },
+      "new_distinct_native_fixtures": 218,
+      "new_distinct_native_players": 70,
+      "new_source_utc_fixture_ids": 218
+    }
+  },
+  "comparison_scope": "Five-provider audited baseline plus R03 acquisitions. Native IDs and observation registrations are not independent football matches or canonical qualification.",
+  "completed_season_provider_scope_samples": {
+    "before": 4,
+    "after": 12,
+    "interpretation": "Verified source samples; full coverage only where explicitly measured. Ongoing 2026/27 scopes excluded."
+  },
+  "new_shadow": {
+    "status": "PASS",
+    "data_classification": "EXPERIMENTAL_ONLY",
+    "source_resources_checksum_verified": 72,
+    "observation_artifacts_reloaded_and_checksum_verified": 9704,
+    "succeeded_normalization_work_ids": 60,
+    "cached_provider_replays": 5,
+    "additional_guarded_requests": 0,
+    "request_counts_before_and_after": {
+      "understat": 8,
+      "espn": 34,
+      "whoscored": 3,
+      "flashscore": 18,
+      "soccerway": 12
+    },
+    "registry_counts_before": {
+      "source_resources": 72,
+      "source_snapshots": 72,
+      "resource_observation_artifacts": 9704,
+      "provider_resource_coverage": 38,
+      "provider_resource_capabilities": 60,
+      "canonical_resource_resolutions": 0,
+      "resolution_decisions": 0
+    },
+    "registry_counts_after": {
+      "source_resources": 72,
+      "source_snapshots": 72,
+      "resource_observation_artifacts": 9704,
+      "provider_resource_coverage": 38,
+      "provider_resource_capabilities": 60,
+      "canonical_resource_resolutions": 0,
+      "resolution_decisions": 0
+    },
+    "identical_counts": true,
+    "new_shadow_sorted_observation_id_hashes_sha256": "c82dc45b37d391f871bddd650ed797acc919ccc76b91fb81ce47ed3dbf0c8095",
+    "retained_phase14_shadow_observations_verified": 84610,
+    "retained_phase14_sorted_id_hashes_sha256": "d5db74038f9f4e5bd56c036aa94200ca0139ae4d95cad12d3916bc8ee2502da4",
+    "operating_writes": 0,
+    "operating_migrations": 0
+  },
+  "qualification_before_after": {
+    "original_pilot_identity_qualified": {
+      "before": 0,
+      "after": 0
+    },
+    "alternative_pilot_identity_qualified": {
+      "before": 0,
+      "after": 0
+    },
+    "utc_qualified_through_canonical_identity": {
+      "before": 0,
+      "after": 0
+    },
+    "complete_canonical_ht_ft_outcomes": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_shots_sot_labels": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_corners_cards_labels": {
+      "before": 0,
+      "after": 0
+    },
+    "verified_canonical_player_identities": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_canonical_appearances_minutes": {
+      "before": [
+        0,
+        0
+      ],
+      "after": [
+        0,
+        0
+      ]
+    },
+    "market_ready_outcomes": {
+      "before": 0,
+      "after": 0
+    },
+    "research_ready_market_families": {
+      "before": 0,
+      "after": 0
+    },
+    "original_unadmitted_team_competition_checks": {
+      "before": 21,
+      "after": 21
+    },
+    "original_kickoff_clocks_without_utc_proof": {
+      "before": 380,
+      "after": 380
+    },
+    "original_multi_team_player_review_cases": {
+      "before": 15,
+      "after": 15
+    },
+    "independent_real_fixture_count": {
+      "before": null,
+      "after": null,
+      "reason": "Cross-provider identity/independence unqualified; do not substitute sum of native IDs."
+    }
+  },
+  "native_source_proof": {
+    "understat_shots": 53,
+    "understat_display_time_claims": 53,
+    "espn_appearance_occurrences": 390,
+    "espn_player_statistic_occurrences": 508,
+    "flashscore_complete_browser_native_id_census": 380,
+    "flashscore_extra_browser_ids_not_normalized": 273,
+    "flashscore_exact_native_side_bindings": 3,
+    "soccerway_acquired_native_fixtures": 218,
+    "soccerway_shared_with_flashscore": 107,
+    "soccerway_additional_upstream_fixture_ids": 111,
+    "soccerway_new_independent_confirmations": 0,
+    "new_cross_domain_byte_identical_rich_resource_hashes": 4
+  },
+  "request_accounting": {
+    "guarded_http_attempts": {
+      "understat": 8,
+      "espn": 34,
+      "whoscored": 3,
+      "flashscore": 18,
+      "soccerway": 12
+    },
+    "guarded_attempt_total": 75,
+    "browser_document_navigations": 1,
+    "browser_native_pagination_clicks": 3,
+    "definition_pdf_fetches": 1,
+    "browser_subresource_and_terms_lookup_total": null,
+    "count_limitation": "Guarded attempts are measured, not every browser/metadata network request.",
+    "failed_resource_operations": {
+      "understat": 3,
+      "espn": 4,
+      "whoscored": 0,
+      "flashscore": 0,
+      "soccerway": 0
+    },
+    "flashscore_single_zero_pagination_responses": 4,
+    "espn_extra_successful_transport_retry_attempts": 3
+  },
+  "market_status_counts_before": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "market_status_counts_after": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "experimental_isolation": {
+    "database": "football_v4_expansion_r03_20261101",
+    "system_identifier": "7679328148388241450",
+    "oid": 52291857,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "operating_preservation": {
+    "receipt": {
+      "path": ".local/reports/v4/expansion-r03/preservation/final-receipt.json",
+      "sha256": "bfd98c2159a453137fea07db369a22bac5216a4c3aa831f6f38119d573a82387"
+    },
+    "baseline": {
+      "path": ".local/reports/v4/expansion-r03/preservation/baseline.json",
+      "sha256": "a2974075d90c828812b19c531e068e952fb8ad58d3348452e149cd6ef8e6adc6"
+    },
+    "comparisons": {
+      "observations": true,
+      "capabilities": true,
+      "champion": true,
+      "protected_relations": {
+        "artifact_retirement_events": {
+          "retained": true,
+          "baseline_rows": 17,
+          "current_rows": 17
+        },
+        "canonical_resource_coverage": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "canonical_resource_resolutions": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "model_artifacts": {
+          "retained": true,
+          "baseline_rows": 5230,
+          "current_rows": 5230
+        },
+        "model_promotion_events": {
+          "retained": true,
+          "baseline_rows": 4,
+          "current_rows": 4
+        },
+        "post_match_evaluations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "product_forecasts": {
+          "retained": true,
+          "baseline_rows": 13881,
+          "current_rows": 13904
+        },
+        "product_identity_admissions": {
+          "retained": true,
+          "baseline_rows": 22090,
+          "current_rows": 22090
+        },
+        "product_provider_mapping_decisions": {
+          "retained": true,
+          "baseline_rows": 2333927,
+          "current_rows": 2354769
+        },
+        "provider_resource_authority": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "runtime_model_registrations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "source_resources": {
+          "retained": true,
+          "baseline_rows": 63741,
+          "current_rows": 64075
+        },
+        "source_snapshots": {
+          "retained": true,
+          "baseline_rows": 61933,
+          "current_rows": 62267
+        }
+      }
+    },
+    "champion": {
+      "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "reload_verified": true
+    },
+    "original_observation_bytes_verified": 12310,
+    "original_capability_bytes_verified": 26,
+    "retained_phase14_shadow_files_verified": 84610,
+    "retained_phase14_sorted_id_hashes_sha256": "d5db74038f9f4e5bd56c036aa94200ca0139ae4d95cad12d3916bc8ee2502da4",
+    "task_operating_writes": 0,
+    "task_operating_migrations": 0
+  },
+  "operating_controls": {
+    "fixture_route": "LEGACY",
+    "route_function_installed": false,
+    "route_selection_contract": "go/api/internal/app/migration_fixture_route.go: absent route function means LEGACY",
+    "stage_controls_installed": false,
+    "operating_experimental_marker": false,
+    "read_only": "on",
+    "market_status_counts": {
+      "DATA_COLLECTION_REQUIRED": 53,
+      "INSUFFICIENT_PLAYER_DATA": 14
+    },
+    "market_families": 67,
+    "market_report": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/controls/markets-df76c93e656e97b83b43137a030dfd9bd7c92a02820f1e17e9a09c8960fee861.json",
+      "sha256": "df76c93e656e97b83b43137a030dfd9bd7c92a02820f1e17e9a09c8960fee861"
+    },
+    "operating_writes": 0,
+    "model_promotions": 0,
+    "cutover": false,
+    "legacy_retirement": false
+  },
+  "verification": {
+    "aggregate": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "started_at": "2026-11-01T20:19:00.187850+00:00",
+      "finished_at": "2026-11-01T20:32:34.953812+00:00",
+      "exit_code": 0,
+      "log": ".local/reports/v4/expansion-r03/make-check-integration.log",
+      "log_sha256": "46d8b6a603a9ba9981fe2fa26adddb07f8526f692141f1971e1667ee8f5c11ec",
+      "database_scope": "DISPOSABLE_STORAGE_AND_API_TEST_DATABASES; NO_OPERATING_MIGRATIONS",
+      "python_tests": 2026,
+      "mypy_source_files": 487,
+      "rust_tests": 16,
+      "web_tests": 126,
+      "disposable_storage_cases": 865,
+      "architecture_check": "PASS; included",
+      "project_status_check": "PASS; included before final status edit",
+      "format_lint_type_complexity_build": "PASS"
+    },
+    "focused": [
+      {
+        "phase": "R03-B",
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_understat.py python/football/tests/test_source_acquisition.py python/football/tests/test_rich_provider_normalization.py",
+        "passed": 32,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-b-tests.log",
+        "sha256": "8e46ce84823b63346ea08a2e67c7c06d3a16263dd8f50399dca67862318d2764"
+      },
+      {
+        "phase": "R03-C",
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_espn.py python/football/tests/test_observation_contracts_v3.py",
+        "passed": 34,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-c-tests.log",
+        "sha256": "83d7a3b31d287a75d580f5f054199a3ef8601c966d5912e58aa1ac05cc9def30"
+      },
+      {
+        "phase": "R03-D",
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_whoscored.py",
+        "passed": 14,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-d-tests.log",
+        "sha256": "6e9b62ca252a2309f89910ec0546dff1da9d59efb3137f554f33c3ef1f11ddca"
+      },
+      {
+        "phase": "R03-E",
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_flashscore.py python/football/tests/test_flashscore_statistics.py python/football/tests/test_flashscore_details.py",
+        "passed": 49,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-e-tests.log",
+        "sha256": "5cbff49bb62cdb66a31be9ca64e455f0f9b98b0ac34effebe96aab22d55d67ce"
+      },
+      {
+        "phase": "R03-F",
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_soccerway.py python/football/tests/test_flashscore_details.py",
+        "passed": 21,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-f-tests.log",
+        "sha256": "895ed4480909554fd3e9871f617da4e02bbfa66c17246b1ec1db5959b68a90cf"
+      },
+      {
+        "phase": "R03-G",
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py python/football/tests/test_resource_coverage.py python/football/tests/test_canonical_resource_resolution.py python/football/tests/test_identity_repository.py python/football/tests/test_market_capabilities.py",
+        "passed": 110,
+        "exit_code": 0,
+        "path": ".local/reports/v4/expansion-r03/phase-g-tests.log",
+        "sha256": "e08ea623e4a689f3927724c00f1fefd32582c00f56264610dd625ff926d8db69"
+      }
+    ],
+    "changed_file_typing": {
+      "command": "uv run --locked --no-sync mypy --follow-imports=silent python/football/src/football/providers/sources/whoscored.py python/football/src/football/providers/normalization/whoscored.py python/football/tests/test_whoscored.py",
+      "exit_code": 0,
+      "path": ".local/reports/v4/expansion-r03/phase-d-types.log",
+      "sha256": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8"
+    },
+    "cached_replay_and_checksums": {
+      "command": "uv run --locked --no-sync python .local/reports/v4/expansion-r03/verify_isolated.py",
+      "exit_code": 0,
+      "path": ".local/reports/v4/expansion-r03/isolated-verification.json",
+      "sha256": "aeddd50bbe5801bb99df9949dda87514f123756b38f8796ab49d73dafa36cda5"
+    },
+    "controls": {
+      "command": "uv run --locked --no-sync python .local/reports/v4/expansion-r03/verify_controls.py",
+      "exit_code": 0,
+      "path": ".local/reports/v4/expansion-r03/controls-verification.json",
+      "sha256": "7b2acc3c75b322f0c1359895bcc400758d5029e4ee3927016ecaaf286901ebe0"
+    },
+    "final_project_status_check": {
+      "command": "make project-status-check",
+      "exit_code": 0,
+      "log": ".local/reports/v4/expansion-r03/final-project-status.log",
+      "log_sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a"
+    },
+    "diff_check": {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    "review_checklist": "docs/review-checklist.md applied: task scope, current consumers, unchanged contracts/PIT/model mathematics, immutable source/artifacts, isolation, failure paths, complexity <=10, no new migrations/dependencies/environment fields or task-introduced dead code, exact final staged files and no raw provider bytes/secrets.",
+    "initial_diagnostic_failures": [
+      {
+        "exit_code": 1,
+        "error": "psycopg.errors.UndefinedFunction: function football.resolution_fixture_route() does not exist",
+        "resolution": "Use serving owner contract: absent optional route function selects LEGACY; no SQL or operating migration added."
+      },
+      {
+        "exit_code": 1,
+        "error": "ValueError: market report requires an idle connection",
+        "resolution": "End read-only routing inspection before calling the existing market-report transaction owner.",
+        "log": {
+          "path": ".local/reports/v4/expansion-r03/controls-initial-idle-error.log",
+          "sha256": "1fa8a042f147ffc7e6885e240933a6f7405e44fac109e45683ec91df8dd71eb9"
+        }
+      }
+    ],
+    "warnings": [
+      "Seven existing Python dependency warnings",
+      "One existing ESLint unused _input warning",
+      "No separate frontend E2E or protected scientific evaluation run"
+    ]
+  },
+  "historical_metadata_clarifications": [
+    {
+      "phase_receipt": "docs/evidence/v4-issue-03-flashscore.json",
+      "field": "acquisition.access_disposition.technical_access_recheck",
+      "clarification": "NOT_RUN describes the initial retained-only replay step. The same receipt records the later successful historical/rich acquisitions, 18 guarded requests and browser ID traversal. Historical frozen phase bytes are retained."
+    }
+  ],
+  "remaining_issue_3_limitations": [
+    "No independently accepted canonical fixture/team/competition/player anchors",
+    "Original StatsBomb kickoff timezone and exact cross-provider binding remain unqualified",
+    "Regulation/ET, target completeness, correction/void and settlement meaning remain unqualified",
+    "Canonical player membership/transfer bounds and minute exposure remain unqualified",
+    "Partial normalized history outside complete Understat indexes; direct Flashscore pagination format/capability unverified"
+  ],
+  "issue_4_handoff": "ClubElo, Sofascore and FBref access recovery not started. Apply standing experimental policy, existing source/isolation owners and actual technical restrictions after separate owner authorization.",
+  "methods": [
+    {
+      "path": ".local/reports/v4/expansion-r03/run_aggregate.py",
+      "sha256": "4617d2bcdc6ee8510eff6675004592b318d1515af608a7dc80640d2fe8873d3d"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/measure_final.py",
+      "sha256": "044dd0b9088c31b2d4c8c0d2ecb68ebf2a37318f9807c64a148ae531c679dd01"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/verify_isolated.py",
+      "sha256": "d9a4b333c6c1431893bbf73e83ac6615234e0e05fb1dbb3c60fe4327c6016d3f"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/verify_controls.py",
+      "sha256": "0e84deb7220fc3d513e5eb1ffa685d0ffc09073d0e6e2bd7878056f444b935bb"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/preservation/audit.py",
+      "sha256": "f9e7a295b6b724ea3f927eaa765f0f9c9b754f94e488d08c173676b0c02d9c6f"
+    }
+  ],
+  "production_cutover": false,
+  "legacy_retirement": false,
+  "model_training": false,
+  "model_promotions": 0,
+  "pr_url": "https://github.com/sir-radar/match-forge/pull/178",
+  "delivery_record_location": "CURRENT_TASK_STATUS.md and final handoff; commit/push/PR metadata verification follow this final report"
+}

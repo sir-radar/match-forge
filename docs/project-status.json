@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T19:56:24.653080Z",
+  "updated_at": "2026-11-01T20:38:51.307202Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3071,7 +3071,7 @@
       "superseded": 7,
       "missing": 10
     },
-    "required_next_action": "Qualify a bounded retained source/competition/resource population through the existing identity and coverage owners in an isolated database, starting with independent origin/target proof and explicit time/quantity/settlement semantics. Scientific model work requires the existing bounded frozen research gate after those prerequisites. No further implementation is represented as accepted.",
+    "required_next_action": "Review the Issue 3 provider-expansion handoff. Issue 2 still requires exact independently accepted identity anchors, original kickoff timezone, settlement and canonical player membership/exposure proof. Issue 4 is not started and requires a separate owner handoff.",
     "completed_phase_scope": "Committed scoped engineering/provider checkpoints; individual phase statuses and full_programme_complete govern acceptance. Partial/blocked functionality is not complete.",
     "verification_corrections": [
       {
@@ -3151,12 +3151,66 @@
       "operating_writes_performed": 0,
       "issue_2_qualification_complete": false,
       "production_cutover_authorized": false,
-      "issue_3_started": false,
+      "issue_3_started": true,
       "required_next_action": "Supply independently accepted exact source/canonical anchors through Resolution Center, verified kickoff/time and target meanings, player membership/exposure and settlement proof. Preserve the blocked pilot until those prerequisites pass.",
       "verification_status": "PASS_WITH_WARNINGS",
       "report_ref": "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md",
       "final_verification_ref": "docs/evidence/v4-issue-02-final-verification.json",
       "phase_f_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md"
+    },
+    "provider_expansion_remediation": {
+      "status": "PASS_WITH_WARNINGS",
+      "qualification_status": "BLOCKED_WITH_EVIDENCE",
+      "phase": "R03-H",
+      "scope": "Issue 3 only; provider expansion, exact missing-proof acquisition and bounded original/alternative pilot recheck",
+      "starting_sha": "55583a380dce23e4a14bae077b1407341caf2b08",
+      "data_classification": "EXPERIMENTAL_ONLY",
+      "experimental_database": "football_v4_expansion_r03_20261101",
+      "experimental_source_resources": 72,
+      "experimental_observations": 9704,
+      "baseline_flashscore_observation_replays": 1183,
+      "new_acquisition_observation_artifacts": 8521,
+      "new_normalized_native_fixture_ids": {
+        "understat": 760,
+        "espn": 36,
+        "whoscored": 28,
+        "flashscore": 210,
+        "soccerway": 218
+      },
+      "flashscore_complete_2015_16_native_id_census": 380,
+      "soccerway_native_fixture_ids_shared_with_flashscore": 107,
+      "soccerway_additional_shared_upstream_native_fixture_ids": 111,
+      "independently_accepted_canonical_anchors": 0,
+      "qualified_canonical_fixtures": 0,
+      "qualified_market_labels": 0,
+      "qualified_canonical_minutes": 0,
+      "new_research_ready_market_families": 0,
+      "issue_2_can_be_reopened_for_final_qualification": false,
+      "market_status_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "source_policy_exception_ref": "docs/evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json",
+      "source_policy_standing_owner_commit": "3bb5d0193cde6328955e499ac716082787cd0018",
+      "phase_commits": {
+        "R03-A": "d48a75212c240ffe5057e611ba06056629e97121",
+        "R03-B": "18bbc028fa8c36c85fde6251bcf9235d85818574",
+        "R03-C": "d589e4afda256bf7e33c649dba276786949bde6a",
+        "R03-D": "238a0f013449ede83d84ed85971e4a38d707ec35",
+        "R03-E": "f1185291bcefe4173e058d65dccd6dcc283fa562",
+        "R03-F": "011e9c4b43e5eea432de25f2420cd42b4e3daaf5",
+        "R03-G": "84e4013356dc0fcad02103bca3c270fc84224a2d"
+      },
+      "report_ref": "docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md",
+      "final_verification_ref": "docs/evidence/v4-issue-03-final-verification.json",
+      "phase_h_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md and final handoff",
+      "verification_status": "PASS_WITH_WARNINGS",
+      "operating_writes_performed": 0,
+      "production_cutover": false,
+      "legacy_retirement": false,
+      "model_promotions": 0,
+      "issue_4_started": false,
+      "required_next_action": "Retain the blocked qualification result. Obtain exact independently accepted source/canonical anchors and original timezone, settlement and canonical membership/exposure proof. Issue 4 requires a separate owner handoff."
     }
   }
 }
