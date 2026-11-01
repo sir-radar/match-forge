@@ -1113,3 +1113,26 @@ uses a goal model to manufacture player forecasts. A bounded research and frozen
 chronological evaluation decision remains required after the data prerequisites.
 No player model, authoritative fit/evaluation, operating write or publication is
 performed. Phase 20's independent joint-data review follows the verified commit.
+
+## Phase 20 — joint products and dependence prerequisites
+
+`PARTIAL_FUNCTIONAL`. Goal result × totals and result × BTTS already use one
+exact joint distribution from Phase 17; an independent-cell test distinguishes
+that result from multiplying marginals. Their partitions retain unresolved tail
+bounds and normalized resolved-plus-tail mass within the existing numerical rule.
+
+Added the omitted fouls × cards and participation × player-event target families
+to the existing catalogue and diagnostic readiness report. The catalogue now has
+67 families. These new definitions require the relevant paired inputs; neither
+has a model, probability or publication eligibility. All existing semantic hashes
+remain unchanged. This extends the existing owner rather than creating another
+joint engine or expanding Rust.
+
+Other combinations remain blocked by qualified aligned labels and a bounded,
+frozen dependence hypothesis/evaluation decision. Player/team targets additionally
+need exact quantity, membership, exposure and component linkage proof. Generic
+resource availability cannot establish that linkage. No correlated marginals are
+multiplied, and no copula, latent model or simulation is selected without evidence.
+The full phase is not complete. Its evidence records each joint target's current
+requirements and unqualified status. Phase 21's independent monitoring review
+follows the verified commit.

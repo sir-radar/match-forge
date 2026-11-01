@@ -282,3 +282,26 @@ def test_phase_15_semantic_identities_stay_frozen_as_implementations_expand():
     for target in baseline["targets"]:
         assert CATALOGUE[target["market_id"]].sha256 == target["definition_sha256"]
     assert CATALOGUE["RESULT_BTTS"].implementation == "football.forecasting.products.score_products"
+
+
+def test_remaining_joint_targets_declare_required_paired_inputs_without_a_model():
+    for key, requirements in (
+        ("FOULS_CARDS", {"fouls", "cards"}),
+        (
+            "PARTICIPATION_PLAYER_EVENTS",
+            {"player_identity", "membership", "participation", "player_statistics"},
+        ),
+    ):
+        market = CATALOGUE[key]
+        assert set(market.requirements) == requirements
+        assert market.implementation is None
+        assert market.model_product is None
+        report = assess_market(
+            market,
+            MarketQualification(competition_id=COMPETITION, season_id=SEASON, knowledge_cutoff=NOW),
+        )
+        assert report["diagnostic_status"] in {
+            "DATA_COLLECTION_REQUIRED",
+            "INSUFFICIENT_PLAYER_DATA",
+        }
+        assert not report["publication"]["eligible_under_declared_evidence"]

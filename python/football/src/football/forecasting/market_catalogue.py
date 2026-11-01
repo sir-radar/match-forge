@@ -547,6 +547,11 @@ def _joint_markets() -> tuple[MarketDefinition, ...]:
         ("GOALS_CORNERS", ("regulation_score", "corners")),
         ("GOALS_CARDS", ("regulation_score", "cards")),
         ("CORNERS_CARDS", ("corners", "cards")),
+        ("FOULS_CARDS", ("fouls", "cards")),
+        (
+            "PARTICIPATION_PLAYER_EVENTS",
+            ("player_identity", "membership", "participation", "player_statistics"),
+        ),
         ("SHOTS_SHOTS_ON_TARGET", ("shots", "shots_on_target")),
         ("TEAM_PLAYER", ("player_identity", "membership", "participation", "player_statistics")),
     ):
