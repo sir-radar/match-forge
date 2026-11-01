@@ -163,6 +163,9 @@ def test_pitchapi_capabilities_use_existing_native_resource_routes(
         (lambda source: source.lineups("42"), "/fixtures/lineups?fixture=42"),
         (lambda source: source.availability("42"), "/injuries?fixture=42"),
         (lambda source: source.standings("39", "2026"), "/standings?league=39&season=2026"),
+        (lambda source: source.statistics("42"), "/fixtures/statistics?fixture=42"),
+        (lambda source: source.events("42"), "/fixtures/events?fixture=42"),
+        (lambda source: source.player_statistics("42"), "/fixtures/players?fixture=42"),
     ],
 )
 def test_api_football_capabilities_preserve_query_scope_and_quota(

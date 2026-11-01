@@ -12,6 +12,7 @@ from urllib.parse import parse_qs, urlsplit
 from football.providers.native.reader import _validate_json
 from football.providers.normalization import (
     api_football,
+    api_football_rich,
     files,
     football_data_org,
     fotmob,
@@ -41,6 +42,9 @@ NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None
     ("api_football", "competitions"): api_football.competitions,
     ("api_football", "lineups"): api_football.lineups,
     ("api_football", "availability"): api_football.availability,
+    ("api_football", "statistics"): api_football_rich.statistics,
+    ("api_football", "events"): api_football_rich.events,
+    ("api_football", "player_statistics"): api_football_rich.player_statistics,
     ("football_data_org", "fixtures"): football_data_org.fixtures,
     ("football_data_org", "results"): football_data_org.fixtures,
     ("football_data_org", "standings"): football_data_org.standings,
@@ -112,6 +116,9 @@ def _validate_scope(context: NormalizationContext, payload: object) -> None:
     elif context.provenance.provider == "fotmob":
         general = payload.get("general")
         native_id = general.get("matchId") if isinstance(general, dict) else None
+    elif context.provenance.provider == "api_football":
+        parameters = payload.get("parameters")
+        native_id = parameters.get("fixture") if isinstance(parameters, dict) else None
     else:
         native_id = None
     if native_id is not None and str(native_id) != context.fixture_native_id:

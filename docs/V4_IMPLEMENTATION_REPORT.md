@@ -468,3 +468,41 @@ source/report hashes, non-null counts and findings. The existing/rich suite
 passed 52 cases; the expanded boundary suite passed 15. Ruff/format, strict mypy
 on six changed files and architecture checks passed. No provider request,
 operating mutation, fit, evaluation or promotion occurred.
+
+## Phase 05c — configured API-Football rich resources and bounded publication
+
+Status: PASS_WITH_WARNINGS. Phase 05b commit: `3bc0e85`.
+
+The existing client/source now exposes fixture statistics, events and player
+statistics. Three resource decoders reuse native records, named observations,
+source references, strict counts, duplicate handling and existing storage.
+Response fixture parameters and request scope must agree. Unknown event labels
+remain findings; missed penalties are not goals. Periods and missing source IDs
+are not invented. Source pass percentages/accuracy remain separate from counts.
+The routes match the [provider documentation](https://www.api-football.com/documentation_v3).
+
+Six quota-guarded requests covered a retained Serie D fixture (432/2024; two
+events, no team/player statistics) and a retained Premier League fixture
+(39/2024; two team statistics, 11 events and two player groups). Empty responses
+do not establish source-wide absence. Requests used the persistent budget owner;
+no quota was bypassed. Response bytes are immutable and registered through the
+existing ProductSync response owner. Their conservative later registration
+clocks do not backdate knowledge to the match date.
+
+The bounded CSV/FotMob/PitchAPI/API batch now has 7,368 operating immutable
+observation artifacts, up from zero at Phase 00. Every published file hash was
+verified; representative load/retry checks across all 10 emitted contracts
+converged without extra rows. Six scoped acquisition capability decisions retain
+PARTIAL or UNKNOWN status, exact evidence references and unassessed identity.
+They establish neither whole-season coverage nor authority/market eligibility.
+No event time was inferred. Canonical identities, forecasts, models and operating
+routing were not changed. Production cutover/retirement and scientific gates hold.
+
+[Phase 05c evidence](evidence/matchforge-v4-phase-05c-2026-11-01.json) records exact
+request/source/report hashes, IDs, clocks, counts and capability decisions.
+The final focused API/client/source/normalizer suite passed 118 tests. Ruff,
+format, strict mypy on six changed files and architecture checks passed. A real
+source percentage regression failed before its fix; final replay confirms prior
+published observation bytes stay unchanged. The additional boundary suite first
+hit pytest's reserved `request` parameter name; the test name was corrected and
+the final suite passed. The remaining standings decoder is addressed next.

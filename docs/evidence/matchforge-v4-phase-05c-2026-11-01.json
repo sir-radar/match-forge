@@ -1,0 +1,635 @@
+{
+  "phase": "05c",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "3bc0e85b06ccd13e67d00249ba60e91df961367b",
+  "recorded_at": "2026-11-01T01:17:17.580577+00:00",
+  "scope": "API-Football rich routes and bounded additive observation publication through existing owners",
+  "access_probes": [
+    {
+      "recorded_at": "2026-11-01T01:05:54.791569+00:00",
+      "credential_configured": true,
+      "requests": [
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/statistics?fixture=1291123",
+          "requested_at": "2026-11-01T01:05:54.852573+00:00",
+          "sha256": "f5761fcf85329d6f1e03992ef33b3c08abe5faadefa7f1fb5401642520af11b9",
+          "bytes": 136,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-access/raw/f5761fcf85329d6f1e03992ef33b3c08abe5faadefa7f1fb5401642520af11b9"
+        },
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/events?fixture=1291123",
+          "requested_at": "2026-11-01T01:06:25.807293+00:00",
+          "sha256": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+          "bytes": 651,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-access/raw/bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b"
+        },
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/players?fixture=1291123",
+          "requested_at": "2026-11-01T01:06:56.325568+00:00",
+          "sha256": "c90e311429807f433445ca2e17b4139bffeccbc85397aa72a2ecf5d3d8123ff8",
+          "bytes": 133,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-access/raw/c90e311429807f433445ca2e17b4139bffeccbc85397aa72a2ecf5d3d8123ff8"
+        }
+      ],
+      "budget_owner": "PostgresApiFootballBudget; no quota bypass",
+      "source_reference": "https://www.api-football.com/documentation_v3",
+      "fixture": {
+        "provider_id": 1291123,
+        "competition_id": 432,
+        "season": 2024,
+        "retained_resource_sha256": "501c29003d92657b814e2cdfec8343d038eb47e02b7682a7ab76b5ffe0b65cf1"
+      },
+      "budget_before": [
+        [
+          "2026-10-31",
+          56,
+          44,
+          false,
+          "2026-10-30 02:32:28.150911+00:00"
+        ]
+      ],
+      "results": [
+        {
+          "family": "statistics",
+          "status": "FETCHED",
+          "rows": 0,
+          "remaining_day": 99,
+          "remaining_minute": 9
+        },
+        {
+          "family": "events",
+          "status": "FETCHED",
+          "rows": 2,
+          "remaining_day": 98,
+          "remaining_minute": 8
+        },
+        {
+          "family": "players",
+          "status": "FETCHED",
+          "rows": 0,
+          "remaining_day": 97,
+          "remaining_minute": 7
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-11-01T01:08:51.626825+00:00",
+      "credential_configured": true,
+      "requests": [
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/statistics?fixture=1208399",
+          "requested_at": "2026-11-01T01:08:51.679235+00:00",
+          "sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+          "bytes": 1666,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-rich-access/raw/63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375"
+        },
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/events?fixture=1208399",
+          "requested_at": "2026-11-01T01:08:52.524426+00:00",
+          "sha256": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+          "bytes": 3207,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-rich-access/raw/f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08"
+        },
+        {
+          "url": "https://v3.football.api-sports.io/fixtures/players?fixture=1208399",
+          "requested_at": "2026-11-01T01:09:23.023385+00:00",
+          "sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+          "bytes": 27522,
+          "local_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-rich-access/raw/67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302"
+        }
+      ],
+      "budget_owner": "PostgresApiFootballBudget; no quota bypass",
+      "source_reference": "https://www.api-football.com/documentation_v3",
+      "fixture": {
+        "provider_id": 1208399,
+        "competition_id": 39,
+        "season": 2024,
+        "retained_resource_sha256": "9938c1d4d5f614b786f2318a36dbcf0949b7b02d7f4c55272fee5c89b0d82c1f"
+      },
+      "budget_before": [
+        [
+          "2026-11-01",
+          3,
+          97,
+          false,
+          "2026-10-30 02:32:28.150911+00:00"
+        ]
+      ],
+      "results": [
+        {
+          "family": "statistics",
+          "status": "FETCHED",
+          "rows": 2,
+          "remaining_day": 96,
+          "remaining_minute": 9
+        },
+        {
+          "family": "events",
+          "status": "FETCHED",
+          "rows": 11,
+          "remaining_day": 96,
+          "remaining_minute": 9
+        },
+        {
+          "family": "players",
+          "status": "FETCHED",
+          "rows": 2,
+          "remaining_day": 95,
+          "remaining_minute": 8
+        }
+      ]
+    }
+  ],
+  "publication": {
+    "recorded_at": "2026-11-01T01:13:49.595897+00:00",
+    "database_scope": "OPERATING_ADDITIVE_IMMUTABLE_SOURCE_OBSERVATIONS_ONLY",
+    "new_source_registrations": [
+      {
+        "resource": "statistics",
+        "source_resource_id": "cba9a219-55cf-5623-aa54-276579903695",
+        "fixture_native_id": "1291123",
+        "source_sha256": "f5761fcf85329d6f1e03992ef33b3c08abe5faadefa7f1fb5401642520af11b9",
+        "request_started_at": "2026-11-01T01:05:54.852573+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.751226+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      },
+      {
+        "resource": "events",
+        "source_resource_id": "8e5dc16c-315c-52cd-800a-295387efa658",
+        "fixture_native_id": "1291123",
+        "source_sha256": "bb8e3eb7148ba4a8ef11125ec4462ed513de32098ab8e8e7da57e10a0d760e7b",
+        "request_started_at": "2026-11-01T01:06:25.807293+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.761427+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      },
+      {
+        "resource": "player_statistics",
+        "source_resource_id": "d62c70ae-d409-55e1-9b44-194ad7c5dd29",
+        "fixture_native_id": "1291123",
+        "source_sha256": "c90e311429807f433445ca2e17b4139bffeccbc85397aa72a2ecf5d3d8123ff8",
+        "request_started_at": "2026-11-01T01:06:56.325568+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.766971+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      },
+      {
+        "resource": "statistics",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "fixture_native_id": "1208399",
+        "source_sha256": "63463014311e9a4617f44e02f267bef1cabcafe4d4949404f65853891d265375",
+        "request_started_at": "2026-11-01T01:08:51.679235+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.772006+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      },
+      {
+        "resource": "events",
+        "source_resource_id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+        "fixture_native_id": "1208399",
+        "source_sha256": "f2df868935e623c800c4b9b06fdccdd5ce23d410ad0b5743beca9e5712159f08",
+        "request_started_at": "2026-11-01T01:08:52.524426+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.775258+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      },
+      {
+        "resource": "player_statistics",
+        "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+        "fixture_native_id": "1208399",
+        "source_sha256": "67782b6d6b3fdea75affa964c11438b7bda4a1abfd337c92508ad9163edff302",
+        "request_started_at": "2026-11-01T01:09:23.023385+00:00",
+        "registered_acquired_at": "2026-11-01T01:13:20.778605+00:00",
+        "clock_policy": "Conservative later retained-resource registration clock; no historical event time inferred"
+      }
+    ],
+    "operating_observations_before": 0,
+    "operating_observations_after": 7368,
+    "after_representative_retry": 7368,
+    "unique_batch_observations": 7368,
+    "registered_batch_observations": 7368,
+    "all_published_bytes": "SHA256_VERIFIED",
+    "retry_load_contracts": [
+      "EventObservationV2",
+      "ExpectedGoalsObservationV2",
+      "PeriodScoreObservationV3",
+      "PlayerObservationV2",
+      "PlayerStatisticObservationV3",
+      "RefereeObservationV3",
+      "ShotObservationV3",
+      "TeamObservationV2",
+      "TeamStatisticObservationV2",
+      "TeamStatisticObservationV3"
+    ],
+    "resources": [
+      {
+        "scope": {
+          "resource": "statistics",
+          "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+          "fixture_native_id": null
+        },
+        "contracts": {
+          "TeamStatisticObservationV2": 4054,
+          "PeriodScoreObservationV3": 2027,
+          "RefereeObservationV3": 934
+        },
+        "findings": {},
+        "report_sha256": "3b4b1efcb0b6d5f8ffdd5370b92c80f54262d3fb4b8781ac4f12a2f4c65df7ed"
+      },
+      {
+        "scope": {
+          "resource": "statistics",
+          "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "fixture_native_id": "5881209"
+        },
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 126,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        },
+        "report_sha256": "32daafe1626b8f05406adef1b09c17f5a5a9e57106fac18a022fe8f113e0b890"
+      },
+      {
+        "scope": {
+          "resource": "player_statistics",
+          "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "fixture_native_id": "5881209"
+        },
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 30
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 716
+        },
+        "report_sha256": "9e45b164363175ca9090daf24c39c386026e48518a70e31df2c8300d3f436a40"
+      },
+      {
+        "scope": {
+          "resource": "shots",
+          "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+          "fixture_native_id": "5881209"
+        },
+        "contracts": {
+          "ShotObservationV3": 25,
+          "ExpectedGoalsObservationV2": 25
+        },
+        "findings": {
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 25
+        },
+        "report_sha256": "1ad4b6b3bcc11200ec6c71fe3e61afbd7f5f1b09fa44ce7b8ba2b35acea7c6e8"
+      },
+      {
+        "scope": {
+          "resource": "statistics",
+          "source_resource_id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+          "fixture_native_id": "m_3flxzg"
+        },
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 126,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        },
+        "report_sha256": "bf6901129af877b7683d2f3e98535243eebf09e4af09ff3561ea684ab40361e1"
+      },
+      {
+        "scope": {
+          "resource": "player_statistics",
+          "source_resource_id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+          "fixture_native_id": "m_3flxzg"
+        },
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 30
+        },
+        "findings": {
+          "MF_NORM_SOURCE_RECORD_INVALID": 30,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 905
+        },
+        "report_sha256": "dfd4a287f46a85096ed4395385bf6e2624f77e2b868fc0604a5b1a7ef87b976f"
+      },
+      {
+        "scope": {
+          "resource": "shots",
+          "source_resource_id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+          "fixture_native_id": "m_3flxzg"
+        },
+        "contracts": {
+          "ShotObservationV3": 23,
+          "ExpectedGoalsObservationV2": 23
+        },
+        "findings": {
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 23
+        },
+        "report_sha256": "cfa561d4d3302fd9e02cb20815cb1133736eedb8833d2d76205ecdf408317ced"
+      },
+      {
+        "scope": {
+          "resource": "statistics",
+          "source_resource_id": "cba9a219-55cf-5623-aa54-276579903695",
+          "fixture_native_id": "1291123"
+        },
+        "contracts": {},
+        "findings": {},
+        "report_sha256": "de6258c9e381ce487353326a75b99c942dd889dfc75ebce252e113e7ac992b54"
+      },
+      {
+        "scope": {
+          "resource": "events",
+          "source_resource_id": "8e5dc16c-315c-52cd-800a-295387efa658",
+          "fixture_native_id": "1291123"
+        },
+        "contracts": {
+          "EventObservationV2": 2
+        },
+        "findings": {},
+        "report_sha256": "f56311fad9f0fb07e8c0b45854e1d1f871c536f0e34f89025e85b9974af8e773"
+      },
+      {
+        "scope": {
+          "resource": "player_statistics",
+          "source_resource_id": "d62c70ae-d409-55e1-9b44-194ad7c5dd29",
+          "fixture_native_id": "1291123"
+        },
+        "contracts": {},
+        "findings": {},
+        "report_sha256": "8c009c861bc2e9e83f38060165d5a17d181f98b38cf6be0958d3a845e4d3b565"
+      },
+      {
+        "scope": {
+          "resource": "statistics",
+          "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+          "fixture_native_id": "1208399"
+        },
+        "contracts": {
+          "TeamObservationV2": 2,
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 6,
+          "MF_NORM_SOURCE_RECORD_INVALID": 2
+        },
+        "report_sha256": "a7c72e7f63a852c22d1506e3f1eac0a1737acf07b9595e6b441b2693d28c2efe"
+      },
+      {
+        "scope": {
+          "resource": "events",
+          "source_resource_id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+          "fixture_native_id": "1208399"
+        },
+        "contracts": {
+          "EventObservationV2": 11
+        },
+        "findings": {},
+        "report_sha256": "50ec9b3d55d7d10322efa16b753f7e998d3d454d44295bd2e1fe29b732fa7ebc"
+      },
+      {
+        "scope": {
+          "resource": "player_statistics",
+          "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+          "fixture_native_id": "1208399"
+        },
+        "contracts": {
+          "TeamObservationV2": 2,
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 40
+        },
+        "findings": {},
+        "report_sha256": "32d13eac21812fc5c2a7e86345f5c9edc9101aba4d5bf43f6cdaff7ac147ec05"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0,
+    "qualification": "UNASSESSED; all source event times remain unknown and no source/market/identity admission is inferred"
+  },
+  "final_api_replay_and_capabilities": {
+    "recorded_at": "2026-11-01T01:15:55.837300+00:00",
+    "capability_rows_before": 0,
+    "capability_rows_after": 6,
+    "scope": "Source acquisition samples only; no authority, coverage, identity or market qualification",
+    "results": [
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "statistics",
+          "competition": "432",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "UNKNOWN",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-statistics-v2",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "9741b435-6a9a-5cbb-9a5b-116650a4072b",
+        "decision_sha256": "417ebbd497fa522be778378e70b27ce6c8a096b9ef518e47bff6ee45ff490727",
+        "source_resource_id": "cba9a219-55cf-5623-aa54-276579903695",
+        "report_sha256": "de6258c9e381ce487353326a75b99c942dd889dfc75ebce252e113e7ac992b54",
+        "contracts": {},
+        "findings": {},
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      },
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "events",
+          "competition": "432",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "PARTIAL",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-events-v1",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "fd7ebb6e-f9e3-5083-952a-4a79937e9b74",
+        "decision_sha256": "4c33c19ed2535cea8278083a3997e0cca35425b0a55b9e7b0a6f6259922618d0",
+        "source_resource_id": "8e5dc16c-315c-52cd-800a-295387efa658",
+        "report_sha256": "f56311fad9f0fb07e8c0b45854e1d1f871c536f0e34f89025e85b9974af8e773",
+        "contracts": {
+          "EventObservationV2": 2
+        },
+        "findings": {},
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      },
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "player_statistics",
+          "competition": "432",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "UNKNOWN",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-player_statistics-v2",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "da92a777-3168-5f25-a1be-3d3f8d492760",
+        "decision_sha256": "48b60480e96226cfd7c158a72a18302111b5f138503c77c2e9f26c7765b3148d",
+        "source_resource_id": "d62c70ae-d409-55e1-9b44-194ad7c5dd29",
+        "report_sha256": "8c009c861bc2e9e83f38060165d5a17d181f98b38cf6be0958d3a845e4d3b565",
+        "contracts": {},
+        "findings": {},
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      },
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "statistics",
+          "competition": "39",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "PARTIAL",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-statistics-v2",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "ada120a6-5710-50e2-832d-c3811744bbb4",
+        "decision_sha256": "9f8d0a24e6161beaf9034885253cec976addc4e7faff0e14d637a8a4be2541cf",
+        "source_resource_id": "3afe7736-3543-59c7-a39b-52ab0e136249",
+        "report_sha256": "9c84c3c67f2384c2537c1afe34849bfc1d44fa8db4d31b4e6bcde757e2558925",
+        "contracts": {
+          "TeamObservationV2": 2,
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        },
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      },
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "events",
+          "competition": "39",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "PARTIAL",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-events-v1",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "4bdb4e7b-4b24-53f4-9665-9b8c15411e19",
+        "decision_sha256": "e1db39aef0554b66159c9265b17ae465c7a3105bced2ad423b872c49900280b5",
+        "source_resource_id": "c4765eae-1af9-5382-9562-fa3aea7e82b2",
+        "report_sha256": "50ec9b3d55d7d10322efa16b753f7e998d3d454d44295bd2e1fe29b732fa7ebc",
+        "contracts": {
+          "EventObservationV2": 11
+        },
+        "findings": {},
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      },
+      {
+        "scope": {
+          "provider": "api_football",
+          "resource_type": "player_statistics",
+          "competition": "39",
+          "season": "2024"
+        },
+        "capability": {
+          "availability": "PARTIAL",
+          "adapter_version": "api_football-resource-adapter-v1",
+          "normalizer_version": "api_football-player_statistics-v2",
+          "historical_start": null,
+          "historical_end": null,
+          "freshness_seconds": null,
+          "expected_completeness": null,
+          "entitlement": "HTTP_200_TESTED_ONE_FIXTURE; NOT_SEASON_COVERAGE",
+          "rate_limit_per_minute": null,
+          "retention_status": "REGISTERED_CHECKSUM_VERIFIED_SAMPLE",
+          "timestamp_precision": "ACQUISITION_KNOWLEDGE_ONLY",
+          "identity_quality": "UNASSESSED"
+        },
+        "decision_id": "fd8b4652-a666-530a-b583-14e27e6f1298",
+        "decision_sha256": "5adcdc1c99f2b6d180ca2a279e39401812ef8459f225475bfd055f80d76aec3f",
+        "source_resource_id": "9d989669-d8df-5ad0-a763-a2acbc0776a3",
+        "report_sha256": "32d13eac21812fc5c2a7e86345f5c9edc9101aba4d5bf43f6cdaff7ac147ec05",
+        "contracts": {
+          "TeamObservationV2": 2,
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 40
+        },
+        "findings": {},
+        "published_observation_bytes": "UNCHANGED_VERIFIED"
+      }
+    ]
+  },
+  "verification": {
+    "red_tests_failed": 6,
+    "percentage_regression_red_failed": 1,
+    "final_focused_tests_passed": 118,
+    "ruff_format_mypy_architecture": "PASS",
+    "all_published_artifact_bytes": "SHA256_VERIFIED",
+    "retry_load_contracts": 10
+  },
+  "operating_changes": {
+    "source_response_registrations": 6,
+    "unique_observation_registrations": 7368,
+    "scoped_capability_decisions": 6,
+    "bounded_external_requests": 6,
+    "quota_accounting": "EXISTING_PERSISTENT_OWNER; NO_BYPASS",
+    "canonical_identity_changes": 0,
+    "forecasts_written": 0,
+    "models_written": 0,
+    "production_routing_changes": 0
+  },
+  "limitations": [
+    "One populated and one sparse fixture are not full competition/season coverage",
+    "All registered event_time values remain unknown; no historical eligibility was backdated",
+    "Source-native API pass accuracy remains unqualified and is not converted to a count",
+    "Unmapped categories/measurements remain findings; native identities remain unresolved",
+    "Phase 35/36, R3 and scientific/model-promotion gates remain unchanged"
+  ],
+  "next": "Verify the remaining existing API-Football standings decoder gap before Phase 06"
+}
