@@ -115,6 +115,28 @@ EXAMPLES: dict[str, dict[str, object]] = {
     },
     "OpenFootballMatch": OPEN_MATCH,
     "OpenFootballCompetition": {"matches": [OPEN_MATCH]},
+    "UnderstatTeam": {"id": "89", "title": "Team"},
+    "UnderstatMatch": {
+        "id": "26602",
+        "isResult": True,
+        "h": {"id": "89", "title": "Home"},
+        "a": {"id": "228", "title": "Away"},
+        "goals": {"h": "1", "a": "0"},
+        "xG": {"h": "0.5", "a": None},
+        "datetime": "2024-08-16 19:00:00",
+    },
+    "UnderstatShot": {
+        "id": "584630",
+        "match_id": "26602",
+        "player_id": "1228",
+        "h_a": "h",
+        "minute": "19",
+        "result": "MissedShots",
+        "xG": "0.05",
+        "shotType": "LeftFoot",
+        "situation": "OpenPlay",
+    },
+    "UnderstatRoster": {"player_id": "1228", "team_id": "89", "player": "Player", "h_a": "h"},
 }
 
 

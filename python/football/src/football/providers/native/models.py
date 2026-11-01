@@ -38,10 +38,20 @@ from football.providers.native.pitchapi import (
     PitchApiStatistic,
     PitchApiTeam,
 )
+from football.providers.native.understat import (
+    UnderstatMatch,
+    UnderstatRoster,
+    UnderstatShot,
+    UnderstatTeam,
+)
 
 NATIVE_MODELS: dict[str, type[Any]] = {
     model.__name__: model
     for model in (
+        UnderstatMatch,
+        UnderstatTeam,
+        UnderstatShot,
+        UnderstatRoster,
         ApiFootballCoach,
         ApiFootballCompetition,
         ApiFootballFixture,

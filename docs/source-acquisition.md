@@ -82,6 +82,20 @@ this diagnostic report is not another registry or a historical feature reader.
 
 ## Provider capability registry
 
+Understat's development adapter uses its public JSON resources after the ordinary
+anonymous page/session bootstrap. Cookie values remain private and ephemeral.
+Every HTTP request can use the existing scheduler/budget guard. Wire bytes and
+checksums remain immutable; gzip expansion uses the established source byte limit
+before strict JSON/native validation. The existing historical manifest and
+registration owners support retained resources without inventing Git revisions.
+
+Use the existing normalization CLI with `results` or `shots` after registration;
+shot decoding requires the explicit native fixture scope. Unknown source timezones
+remain DATE_ONLY fixture metadata with no inferred event time. Shot assistant
+names and final match scores do not become identities or before-shot context.
+Coordinate frames and market/PIT/identity qualification remain separate. Adapter
+availability and scoped sample capability do not enable production collection.
+
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
 records terms status, supported competition/season scopes, resource-level historical coverage,
 update semantics, cursor/webhook support, rate limits, credential references, and adapter version.

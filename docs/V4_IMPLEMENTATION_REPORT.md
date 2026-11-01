@@ -538,3 +538,50 @@ semantics, player identity and model qualification belong to their existing late
 phases. Existing fixture/history/coach/lineup/live clients were reused. Protected
 StatsBomb outcomes and closed research routes were not opened. Phase 06 can
 proceed independently; R3 and cutover/retirement/scientific gates remain blocked.
+
+## Phase 06 — Understat
+
+Status: PARTIAL_FUNCTIONAL. Phase 05d commit: `edfc232`.
+
+The public season page now loads football data through JSON AJAX resources.
+The current [soccerdata source](https://github.com/probberechts/soccerdata/blob/master/soccerdata/understat.py)
+confirms the same endpoints and ordinary anonymous-cookie flow. Direct requests
+without the session failed; the normal page/session flow returned real season
+and match data. No wrapper dependency, proxy, authentication or challenge bypass
+was introduced. Cookies remain private and ephemeral. Two fresh integrated-client
+bootstrap checks encountered TCP connection timeouts; this reliability limit is
+recorded separately from the successful public data captures.
+
+The adapter uses bounded transport and per-request guards. Decoders preserve
+compressed source bytes/checksums, bound decompression, reject malformed data,
+and reuse native records and existing observation contracts. Native league URL
+slugs and native fixture/team/player IDs remain source references. Unknown
+timezones produce DATE_ONLY fixture metadata and no football event time.
+Scheduled placeholders and provider forecasts never become outcomes or features.
+Shot assistant names do not become IDs, and final scores carried in shot payloads
+never become before-shot context. Unverified coordinates remain raw.
+
+The retained EPL/2024 response contains 380 fixtures (2024-08-16 through
+2025-05-25), 20 team histories and 760 native xGA values. Typed outputs include
+380 results and 760 team-match xG values. The sampled match yields 24 rich shots,
+24 per-shot xG records and 32 explicit player references. Existing manifests and
+HistoricalBackfillStore register the resources; no Git revision is fabricated.
+Canonical import remains pending. Two fenced shared NORMALIZATION work items
+completed; all 2,361 Understat artifacts loaded and retried without duplicate rows.
+The operating observation total is now 9,769.
+
+Two scoped PARTIAL acquisition decisions were registered. The primary shot
+normalizer label was corrected to its actual V3 metadata through an append-only
+successor; the original decision remains. There are now 10 capability decisions
+across nine scopes. No canonical identity, forecast, model or routing changed.
+Other leagues/seasons, coordinate semantics, native xGA reconciliation and
+identity/PIT/model qualification remain separate. No global 2020 limit exists.
+
+[Phase 06 evidence](evidence/matchforge-v4-phase-06-2026-11-01.json) records exact
+access, source, manifest, report, work and capability hashes/IDs. The focused
+disposable-storage suite passed 140 tests, followed by nine final boundary tests.
+Ruff/format, strict mypy on eight changed files, architecture and shell checks
+passed. Final read-only replay reproduced both exact published output reports.
+The native-model completeness assertion stayed intact; four Understat examples
+were added. The initial work test was corrected to use idle control connections.
+R3, scientific and production cutover/retirement gates remain unchanged.

@@ -18,6 +18,7 @@ from football.providers.normalization import (
     fotmob,
     pitchapi,
     statsbomb,
+    understat,
 )
 from football.providers.normalization.common import (
     NormalizationContext,
@@ -26,6 +27,8 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("understat", "results"): understat.results,
+    ("understat", "shots"): understat.shots,
     ("openfootball", "fixtures"): files.openfootball,
     ("openfootball", "results"): files.openfootball,
     ("football_data_uk", "fixtures"): files.football_data_uk,
@@ -97,7 +100,8 @@ def normalize_resource(
     if context.provenance.provider == "football_data_uk":
         payload = raw
     else:
-        payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
+        decoded = understat.json_bytes(raw) if context.provenance.provider == "understat" else raw
+        payload = json.loads(decoded, object_pairs_hook=_pairs, parse_constant=_constant)
         _validate_json(payload, "source")
     try:
         _validate_scope(context, payload)
@@ -137,6 +141,7 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "statsbomb_open_data": r"^(?:data/)?(?:events|lineups)/(\d+)\.json$",
         "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
+        "understat": r"^getMatchData/([1-9][0-9]*)$",
     }
     match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
     if match is not None:

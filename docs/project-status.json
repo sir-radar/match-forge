@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "05",
+    "current_phase": "06",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2914,7 +2914,8 @@
       "05b",
       "05c",
       "05d",
-      "05"
+      "05",
+      "06"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2941,12 +2942,18 @@
     "phase_05b_commit_sha": "3bc0e85b06ccd13e67d00249ba60e91df961367b",
     "phase_05c_status": "PASS_WITH_WARNINGS",
     "phase_05c_ref": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json",
-    "operating_observation_artifacts": 7408,
-    "operating_scoped_capability_decisions": 7,
+    "operating_observation_artifacts": 9769,
+    "operating_scoped_capability_decisions": 10,
     "bounded_provider_requests": 7,
     "phase_05c_commit_sha": "a6f2c95a212e23df61646fad3041028a3bb27a50",
     "phase_05d_status": "PASS_WITH_WARNINGS",
     "phase_05d_ref": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json",
-    "phase_05_status": "PASS_WITH_WARNINGS"
+    "phase_05_status": "PASS_WITH_WARNINGS",
+    "phase_05d_commit_sha": "edfc232d84523e3b63106b0924fd7fdea60977aa",
+    "phase_06_status": "PARTIAL_FUNCTIONAL",
+    "phase_06_ref": "docs/evidence/matchforge-v4-phase-06-2026-11-01.json",
+    "provider_status": {
+      "understat": "PARTIAL_FUNCTIONAL"
+    }
   }
 }
