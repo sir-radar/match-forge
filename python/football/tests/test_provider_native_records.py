@@ -55,6 +55,28 @@ OPEN_MATCH: dict[str, object] = {
 }
 
 EXAMPLES: dict[str, dict[str, object]] = {
+    "WhoScoredMatch": {
+        "id": 42,
+        "stageId": 3,
+        "status": 6,
+        "elapsed": "FT",
+        "period": 7,
+        "startTimeUtc": "2026-10-31T12:30:00Z",
+        "homeTeamId": 1,
+        "homeTeamName": "Home",
+        "awayTeamId": 2,
+        "awayTeamName": "Away",
+        "homeScore": 1,
+        "awayScore": 0,
+    },
+    "WhoScoredTournament": {
+        "tournamentId": 2,
+        "stageId": 3,
+        "seasonId": 4,
+        "tournamentName": "League",
+        "seasonName": "2026/2027",
+        "matches": [],
+    },
     "EspnTeam": {"id": "1", "displayName": "Team"},
     "EspnCompetitor": {"id": "1", "homeAway": "home", "team": {"id": "1", "displayName": "Team"}},
     "EspnCompetition": {

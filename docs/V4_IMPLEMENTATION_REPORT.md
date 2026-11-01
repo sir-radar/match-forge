@@ -701,3 +701,32 @@ model action or access-restriction bypass occurred. Resume with permitted access
 or verified retained tables, then qualify actual identities, historical clocks
 and target definitions. Independent Phase 11 proceeds. Response hashes, 21
 governance tests, project-status validation and the diff check passed.
+
+## Phase 11 — WhoScored
+
+Status: PARTIAL_FUNCTIONAL. Phase 10 commit: `92e919b`.
+
+The public league and home pages returned HTML. The league page has a declared
+JSON fixture block with native competition, stage, season, fixture and team IDs,
+UTC kickoffs and team card counts. A bounded adapter and offline normalizer read
+that block without executing JavaScript. Native shape and requested scope are
+checked; only observed full-time/scheduled status tuples are mapped. Missing and
+zero card counts remain distinct, scheduled placeholders do not become results,
+and final score basis remains UNKNOWN. Raw incidents and unqualified source
+clocks are preserved without guessed event semantics.
+
+The actual completed-match link returned HTTP 403. Detailed events, formations,
+positions, tactical context and player actions remain blocked; no functional
+claim is made for those targets. The primary soccerdata implementation was
+inspected and reads the detailed match page. Live freshness and wider history
+remain unverified. No proxy, fingerprint change or challenge bypass was used.
+
+[Phase 11 evidence](evidence/matchforge-v4-phase-11-2026-11-01.json) records exact
+access responses and the publication receipt. Existing manifests, source
+registration, observation storage and fenced work published 55 observations:
+ten fixtures, eight results, sixteen team-card observations, twenty source team
+records and one competition. All bytes loaded and retries added no rows. The
+canonical import remains pending, with no identity, forecast/model or routing
+change. Operating totals are 9,944 observations and fourteen scoped capability
+decisions. Verification: 182 focused disposable tests, static/type/complexity,
+architecture, 21 governance tests, status and diff checks passed. Phase 12 follows.

@@ -20,6 +20,7 @@ from football.providers.normalization import (
     pitchapi,
     statsbomb,
     understat,
+    whoscored,
 )
 from football.providers.normalization.common import (
     NormalizationContext,
@@ -28,6 +29,7 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("whoscored", "fixtures"): whoscored.fixtures,
     ("espn", "scoreboard"): espn.scoreboard,
     ("espn", "summary"): espn.summary,
     ("understat", "results"): understat.results,
@@ -103,7 +105,9 @@ def normalize_resource(
     if context.provenance.provider == "football_data_uk":
         payload = raw
     else:
-        decoded = understat.json_bytes(raw) if context.provenance.provider == "understat" else raw
+        decoders = {"understat": understat.json_bytes, "whoscored": whoscored.json_bytes}
+        decoder = decoders.get(context.provenance.provider)
+        decoded = decoder(raw) if decoder is not None else raw
         payload = json.loads(decoded, object_pairs_hook=_pairs, parse_constant=_constant)
         _validate_json(payload, "source")
     try:

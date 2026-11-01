@@ -19,7 +19,7 @@ from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkTyp
 from football.work.storage import WorkRegistry
 
 
-@pytest.mark.parametrize("provider", ["understat", "espn"])
+@pytest.mark.parametrize("provider", ["understat", "espn", "whoscored"])
 def test_public_source_manifest_normalization_fenced_publication_and_retry(
     tmp_path: Path, provider: str
 ) -> None:
@@ -84,6 +84,41 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
                     }
                 ],
             }
+        ).encode()
+    if provider == "whoscored":
+        path = "Regions/252/Tournaments/2"
+        resource_type = "fixtures"
+        block = {
+            "tournaments": [
+                {
+                    "tournamentId": 2,
+                    "stageId": 3,
+                    "seasonId": 4,
+                    "tournamentName": "League",
+                    "seasonName": "2024/2025",
+                    "matches": [
+                        {
+                            "id": 42,
+                            "stageId": 3,
+                            "status": 6,
+                            "elapsed": "FT",
+                            "period": 7,
+                            "startTimeUtc": "2024-08-16T19:00:00Z",
+                            "homeTeamId": 1,
+                            "homeTeamName": "Home",
+                            "awayTeamId": 2,
+                            "awayTeamName": "Away",
+                            "homeScore": 1,
+                            "awayScore": 0,
+                        }
+                    ],
+                }
+            ]
+        }
+        raw = (
+            '<script type="application/json" data-hypernova-key="tournamentfixtures"><!--'
+            + json.dumps(block)
+            + "--></script>"
         ).encode()
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)

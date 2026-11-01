@@ -1,0 +1,140 @@
+{
+  "phase": "11",
+  "provider": "whoscored",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "92e919b",
+  "recorded_at": "2026-11-01T03:00:06.546175Z",
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T02:55:52.277036+00:00",
+      "provider": "whoscored",
+      "results": [
+        {
+          "family": "public_league_page",
+          "url": "https://www.whoscored.com/Regions/252/Tournaments/2/England-Premier-League",
+          "requested_at": "2026-11-01T02:55:33.482347+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a",
+          "bytes": 556384,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-11/raw/0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a"
+        },
+        {
+          "family": "public_home_page",
+          "url": "https://www.whoscored.com/",
+          "requested_at": "2026-11-01T02:55:35.350353+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "53ac63af81bdba2fc6cf8518cc93860720f10f31ac2afa29b9aa2b009500c874",
+          "bytes": 612911,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-11/raw/53ac63af81bdba2fc6cf8518cc93860720f10f31ac2afa29b9aa2b009500c874"
+        },
+        {
+          "family": "primary_wrapper_source",
+          "url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/whoscored.py",
+          "requested_at": "2026-11-01T02:55:51.283472+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "7f2e69c938675bcc1cf74bf77adf0ff7f2bd96f024076084cbf5447f45df82b3",
+          "bytes": 33481,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-11/raw/7f2e69c938675bcc1cf74bf77adf0ff7f2bd96f024076084cbf5447f45df82b3"
+        }
+      ]
+    },
+    "match-access-receipt.json": {
+      "recorded_at": "2026-11-01T02:56:09.687081+00:00",
+      "provider": "whoscored",
+      "results": [
+        {
+          "family": "observed_completed_match",
+          "url": "https://www.whoscored.com/matches/1983629/live/england-premier-league-2026-2027-chelsea-manchester-united",
+          "requested_at": "2026-11-01T02:56:09.378935+00:00",
+          "http_failures": [
+            {
+              "http_status": 403,
+              "sha256": "c7e20da10ca52367e0027455981742655c73b7dbae6e2be5643880437ecc98b9",
+              "bytes": 5868,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-11/raw/c7e20da10ca52367e0027455981742655c73b7dbae6e2be5643880437ecc98b9"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://www.whoscored.com/matches/1983629/live/england-premier-league-2026-2027-chelsea-manchester-united: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+        }
+      ]
+    }
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T02:59:20.975324+00:00",
+    "observations_before": 9889,
+    "observations_after": 9944,
+    "results": [
+      {
+        "resource": "fixtures",
+        "source_resource_id": "f13a5ccb-998a-5bb5-96db-5f04c79344da",
+        "source_snapshot_id": "79c7c83a-9c57-56b2-a86c-7fb3701a6d0c",
+        "source_sha256": "0b5f577d2641cc5ba99cd803d6cad6345d7e00efbd620da076ec65c144750a7a",
+        "manifest_path": "whoscored/manifests/25e9608872a6a67a6db890e942d62d619b5deb556abd7ae0f284cca2160afd19.json",
+        "report_sha256": "41d9d55f65c0520f3d332c81c0aeb045aba99ae8dde1861aeaede6e1c59199cc",
+        "known_at": "2026-11-01T02:55:52.277036+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 20,
+          "FixtureObservationV2": 10,
+          "ResultObservationV2": 8,
+          "TeamStatisticObservationV2": 16
+        },
+        "findings": {},
+        "work_id": "4f805109-2709-5abc-bd05-758a2507fe47",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "832b84b73c488046d51738c523be874faa62e8f97cd534985d2a9012e631762c",
+        "retry_rows": 55,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "fc0278c1-a006-5c1b-8cbf-a3a6964f2521",
+        "capability_decision_sha256": "e23bd164751c729eeb4d286d17c353b3ca64d3431f8eaca18596ada47ce99492",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0,
+    "automatic_provider_enablement": false
+  },
+  "verified_capabilities": [
+    "Public league fixture JSON embedded in HTML",
+    "Ten native fixtures, eight full-time results, sixteen team card counts",
+    "Strict native shape, registered competition/season/stage checks and explicit UTC kickoff",
+    "No execution of JavaScript; one declared application/json fixture block; strict JSON duplicate/nonfinite validation",
+    "Scheduled placeholders excluded from results/card statistics; missing counts distinct from zero",
+    "One fenced NORMALIZATION item SUCCEEDED; all 55 artifact loads and retries verified"
+  ],
+  "blocked_capabilities": [
+    "Detailed match route returned HTTP 403",
+    "Detailed events, formations, positions, tactical context and player actions not acquired",
+    "Live freshness and other status/period tuples unverified"
+  ],
+  "remaining_qualification": [
+    "Canonical identity/admission pending",
+    "Final score basis UNKNOWN; cards retain provider semantics",
+    "Native source clocks do not backdate MatchForge knowledge",
+    "Historical depth only observed October31-November2 fixtures; no broad-history claim"
+  ],
+  "verification": {
+    "focused_disposable_tests": "182 passed",
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS (6 source files)",
+    "architecture": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests": "21 passed",
+    "diff_check": "PASS"
+  },
+  "restrictions": "No challenge bypass, proxy or browser fingerprint spoofing",
+  "next_independent_phase": "12 Flashscore"
+}

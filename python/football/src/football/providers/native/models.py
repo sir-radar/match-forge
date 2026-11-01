@@ -45,10 +45,13 @@ from football.providers.native.understat import (
     UnderstatShot,
     UnderstatTeam,
 )
+from football.providers.native.whoscored import WhoScoredMatch, WhoScoredTournament
 
 NATIVE_MODELS: dict[str, type[Any]] = {
     model.__name__: model
     for model in (
+        WhoScoredMatch,
+        WhoScoredTournament,
         EspnCompetition,
         EspnCompetitor,
         EspnEvent,
