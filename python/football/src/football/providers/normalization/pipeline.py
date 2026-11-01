@@ -13,6 +13,7 @@ from football.providers.native.reader import _validate_json
 from football.providers.normalization import (
     api_football,
     api_football_rich,
+    espn,
     files,
     football_data_org,
     fotmob,
@@ -27,6 +28,8 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("espn", "scoreboard"): espn.scoreboard,
+    ("espn", "summary"): espn.summary,
     ("understat", "results"): understat.results,
     ("understat", "shots"): understat.shots,
     ("openfootball", "fixtures"): files.openfootball,
@@ -124,6 +127,9 @@ def _validate_scope(context: NormalizationContext, payload: object) -> None:
     elif context.provenance.provider == "api_football":
         parameters = payload.get("parameters")
         native_id = parameters.get("fixture") if isinstance(parameters, dict) else None
+    elif context.provenance.provider == "espn":
+        header = payload.get("header")
+        native_id = header.get("id") if isinstance(header, dict) else None
     else:
         native_id = None
     if native_id is not None and str(native_id) != context.fixture_native_id:
@@ -149,6 +155,9 @@ def _request_fixture(context: NormalizationContext) -> str | None:
     request = urlsplit(key)
     if context.provenance.provider == "api_football":
         values = parse_qs(request.query).get("fixture", [])
+        return values[0] if len(values) == 1 else None
+    if context.provenance.provider == "espn" and request.path.endswith("/summary"):
+        values = parse_qs(request.query).get("event", [])
         return values[0] if len(values) == 1 else None
     if context.provenance.provider == "pitchapi":
         match = re.fullmatch(

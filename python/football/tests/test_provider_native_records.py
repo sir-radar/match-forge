@@ -55,6 +55,15 @@ OPEN_MATCH: dict[str, object] = {
 }
 
 EXAMPLES: dict[str, dict[str, object]] = {
+    "EspnTeam": {"id": "1", "displayName": "Team"},
+    "EspnCompetitor": {"id": "1", "homeAway": "home", "team": {"id": "1", "displayName": "Team"}},
+    "EspnCompetition": {
+        "id": "42",
+        "date": "2024-08-16T19:00Z",
+        "status": {"type": {"name": "STATUS_SCHEDULED", "state": "pre", "completed": False}},
+        "competitors": [],
+    },
+    "EspnEvent": {"id": "42", "season": {"year": 2024}, "competitions": []},
     "FotmobTeam": FOTMOB_TEAM,
     "FotmobPlayer": {"id": 1, "name": "Player"},
     "FotmobFixture": FOTMOB_FIXTURE,

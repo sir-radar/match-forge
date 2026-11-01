@@ -642,3 +642,38 @@ Phase 09 proceeds; scientific and cutover/retirement gates remain unchanged.
 
 Verification: all diagnostic byte/hash checks, project-status validation and
 the final diff check passed. No executable repository code changed.
+
+## Phase 09 — ESPN
+
+Status: PARTIAL_FUNCTIONAL. Phase 08 commit: `1c2e343`.
+
+The public scoreboard returned a completed EPL fixture from August 2024 and a
+scheduled fixture for November 2026. One historical summary contains team and
+player statistics, rosters and key events. The adapter retains exact response
+bytes, uses bounded requests and shares one summary request across these facts.
+Native records and offline normalizers reuse the established observation owner.
+
+Fixture/request IDs, league ID and URL slug, reported season, explicit home/away
+roles and detail-team membership are checked. Scheduled score placeholders stay
+out of results and statistics. Only the observed scheduled/full-time statuses
+are mapped. Unknown statuses are held. Kickoff requires explicit valid-time and
+timezone evidence. The summary's event wallclocks occur after the match; they
+remain raw rather than becoming event times. Unlabelled period scores, ambiguous
+participant roles, unverified lineup confirmation and missing minutes remain
+unqualified. Unsupported statistic keys produce findings; percentages do not
+become counts. Frozen observation schemas are unchanged.
+
+[Phase 09 evidence](evidence/matchforge-v4-phase-09-2026-11-01.json) records the
+three actual captures, source hashes, normalization reports and publication.
+The existing manifest and historical-resource owners registered three resources
+with canonical imports pending. Three fenced NORMALIZATION work items succeeded.
+All 120 observations loaded with verified bytes and retried without extra rows.
+Operating totals are 9,889 observations and 13 scoped capability decision rows.
+No identity admission, forecast/model write, promotion or routing change ran.
+
+In-play freshness, other status/clock variants, wider season coverage and
+identity/semantic/PIT eligibility still require evidence. No source is enabled
+automatically. Independent Phase 10 follows. Verification: 168 focused tests in
+a disposable database, Ruff format/lint/complexity, mypy, architecture, status and
+diff checks passed. The existing Understat storage test now exercises both
+providers through the same manifest, fencing, retry and temporal-exclusion path.

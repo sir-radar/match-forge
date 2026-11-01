@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T02:27:02.003326Z",
+  "updated_at": "2026-11-01T02:50:45.991709+00:00",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -2896,7 +2896,7 @@
   },
   "v4_programme": {
     "status": "IN_PROGRESS",
-    "current_phase": "08",
+    "current_phase": "09",
     "branch": "ft/v4-execution-programme",
     "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
     "report_ref": "docs/V4_IMPLEMENTATION_REPORT.md",
@@ -2915,7 +2915,8 @@
       "05c",
       "05d",
       "05",
-      "06"
+      "06",
+      "09"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2944,8 +2945,8 @@
     "phase_05b_commit_sha": "3bc0e85b06ccd13e67d00249ba60e91df961367b",
     "phase_05c_status": "PASS_WITH_WARNINGS",
     "phase_05c_ref": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json",
-    "operating_observation_artifacts": 9769,
-    "operating_scoped_capability_decisions": 10,
+    "operating_observation_artifacts": 9889,
+    "operating_scoped_capability_decisions": 13,
     "phase_05c_commit_sha": "a6f2c95a212e23df61646fad3041028a3bb27a50",
     "phase_05d_status": "PASS_WITH_WARNINGS",
     "phase_05d_ref": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json",
@@ -2956,7 +2957,8 @@
     "provider_status": {
       "understat": "PARTIAL_FUNCTIONAL",
       "clubelo": "BLOCKED_WITH_EVIDENCE",
-      "sofascore": "BLOCKED_WITH_EVIDENCE"
+      "sofascore": "BLOCKED_WITH_EVIDENCE",
+      "espn": "PARTIAL_FUNCTIONAL"
     },
     "phase_06_commit_sha": "88dc6035721074e401334f8c7be8c8742101699f",
     "phase_07_status": "BLOCKED_WITH_EVIDENCE",
@@ -2964,6 +2966,9 @@
     "bounded_api_football_requests": 7,
     "phase_07_commit_sha": "bbf9770131bfbe710d37e0f0762a4b626165681d",
     "phase_08_status": "BLOCKED_WITH_EVIDENCE",
-    "phase_08_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json"
+    "phase_08_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json",
+    "phase_08_commit_sha": "1c2e343",
+    "phase_09_status": "PARTIAL_FUNCTIONAL",
+    "phase_09_ref": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json"
   }
 }

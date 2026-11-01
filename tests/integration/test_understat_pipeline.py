@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import psycopg
+import pytest
 from football.observations.storage import ObservationArtifactStore
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.historical_manifest import publish_manifest
@@ -18,7 +19,10 @@ from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkTyp
 from football.work.storage import WorkRegistry
 
 
-def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path: Path) -> None:
+@pytest.mark.parametrize("provider", ["understat", "espn"])
+def test_public_source_manifest_normalization_fenced_publication_and_retry(
+    tmp_path: Path, provider: str
+) -> None:
     raw = gzip.compress(
         json.dumps(
             {
@@ -37,22 +41,69 @@ def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path:
         ).encode(),
         mtime=0,
     )
+    path = "getLeagueData/EPL/2024"
+    resource_type = "results"
+    if provider == "espn":
+        path = "eng.1/scoreboard?dates=20240816"
+        resource_type = "scoreboard"
+        raw = json.dumps(
+            {
+                "leagues": [{"id": "700", "slug": "eng.1", "name": "League"}],
+                "events": [
+                    {
+                        "id": "42",
+                        "season": {"year": 2024},
+                        "competitions": [
+                            {
+                                "id": "42",
+                                "date": "2024-08-16T19:00Z",
+                                "timeValid": True,
+                                "status": {
+                                    "type": {
+                                        "name": "STATUS_FULL_TIME",
+                                        "state": "post",
+                                        "completed": True,
+                                    }
+                                },
+                                "competitors": [
+                                    {
+                                        "id": "1",
+                                        "homeAway": "home",
+                                        "team": {"id": "1", "displayName": "Home"},
+                                        "score": "1",
+                                    },
+                                    {
+                                        "id": "2",
+                                        "homeAway": "away",
+                                        "team": {"id": "2", "displayName": "Away"},
+                                        "score": "0",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ).encode()
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)
-    identity = "https://understat.com/getLeagueData/EPL/2024"
-    path = "getLeagueData/EPL/2024"
+    identity = "https://example.test/" + provider + "/" + path
     manifest = publish_manifest(
         tmp_path,
-        provider="understat",
+        provider=provider,
         source_identity=identity,
         source_revision=digest,
         acquired_at=now,
-        resources=[(path, f"understat/raw/{digest}", raw)],
+        resources=[(path, f"{provider}/raw/{digest}", raw)],
     )
     # The storage harness owns this disposable DB; control calls require idle connections.
     with psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as c:
         owner = HistoricalBackfillStore(
-            c, "understat", "Understat", "understat-results-v1", data_root=tmp_path
+            c,
+            provider,
+            provider.title(),
+            provider + "-" + resource_type + "-v1",
+            data_root=tmp_path,
         )
         snapshot = owner.ensure_snapshot(
             source_identity=identity,
@@ -70,7 +121,7 @@ def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path:
         )
         context, retained = registered_resource(c, tmp_path, resource)
         assert retained == raw and context.time.known_at == now
-        result = normalize_resource(context, "results", retained)
+        result = normalize_resource(context, resource_type, retained)
         assert not result.findings
         store = ObservationArtifactStore(c, tmp_path)
         prepared = [store.prepare(o) for o in result.observations]
@@ -79,7 +130,7 @@ def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path:
         ).hexdigest()
         request = WorkRequest(
             work_type=WorkType.NORMALIZATION,
-            semantic_key=f"understat-test:{digest}",
+            semantic_key=f"{provider}-test:{digest}",
             input_hash=digest,
             priority=0,
             available_at=now,
@@ -89,7 +140,7 @@ def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path:
         work = WorkRegistry(c)
         identifier = work.enqueue(request)
         claim = work.claim(
-            "understat-test",
+            provider + "-test",
             timedelta(minutes=1),
             (WorkType.NORMALIZATION,),
             work_ids=(identifier,),
@@ -109,11 +160,13 @@ def test_understat_manifest_normalization_fenced_publication_and_retry(tmp_path:
             (resource,),
         ).fetchone()
         assert count == (len(result.observations),)
-        provider = c.execute("SELECT id FROM football.providers WHERE code='understat'").fetchone()
-        assert provider is not None
+        provider_row = c.execute(
+            "SELECT id FROM football.providers WHERE code=%s", (provider,)
+        ).fetchone()
+        assert provider_row is not None
         assert not PointInTimeRepository(c).resource_observation_ids_at(
             "ResultObservationV2",
-            provider[0],
+            provider_row[0],
             now + timedelta(seconds=1),
             football_cutoff=datetime(2025, 1, 1, tzinfo=UTC),
         )
