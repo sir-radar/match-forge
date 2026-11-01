@@ -323,8 +323,8 @@ describe("FixtureExplorer", () => {
     fireEvent.click(await screen.findByRole("tab", { name: "Live Match" }));
     expect(await screen.findByText(/Match status unresolved: timed incidents/)).toBeInTheDocument();
     expect(screen.getByText("Score unavailable")).toBeInTheDocument();
-    expect(screen.getAllByText(/pitchapi · freshness unknown/).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/pitchapi · fresh ·/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/pitchapi · fetch freshness unknown/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/pitchapi · fetch fresh ·/)).not.toBeInTheDocument();
   });
 
   it("renders live score, clock, stale state, and live-only filter", async () => {
@@ -413,6 +413,20 @@ describe("FixtureExplorer", () => {
     await screen.findByText("Early");
     const names = [...document.querySelectorAll(".incident-list li > span")].map((node) => node.textContent);
     expect(names).toEqual(["Early", "Tie", "Later", "Added", "Unknown"]);
+  });
+
+  it("shows unresolved score disagreement and separate football ordering evidence", async () => {
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).endsWith("/live")
+      ? Promise.resolve(new Response(JSON.stringify({ ...liveMatch, score_conflict: true, partial: true,
+        score_source: { ...liveMatch.score_source, ordering_basis: "MATCH_CLOCK" } }))) : original(input, options)));
+    const group = parseFixtureGroups({ groups: [{ competition, fixtures: [fixture] }] })[0];
+    render(<ExpandedFixture fixture={group.fixtures[0]} competition={group.competition} />);
+    fireEvent.click(screen.getByRole("tab", { name: "Live Match" }));
+    expect(await screen.findByText(/Retained provider scores disagree/)).toBeInTheDocument();
+    expect(screen.getByText(/match clock available/)).toBeInTheDocument();
+    expect(screen.getAllByText(/football update order unknown/)).toHaveLength(2);
+    expect(document.querySelector(".live-score b")).toHaveTextContent("2–1");
   });
 
   it("explains withheld resources when native fixture identity conflicts", async () => {

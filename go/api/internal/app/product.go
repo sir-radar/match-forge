@@ -186,15 +186,18 @@ type LiveStatistic struct {
 }
 
 type LiveSource struct {
-	Freshness       string    `json:"freshness,omitempty"`
-	Provider        string    `json:"provider"`
-	ProviderMatchID string    `json:"provider_match_id"`
-	ObservedAt      time.Time `json:"observed_at"`
-	LastFetchedAt   time.Time `json:"last_fetched_at"`
-	Stale           bool      `json:"stale"`
+	SourceUpdatedAt *time.Time `json:"source_updated_at,omitempty"`
+	OrderingBasis   string     `json:"ordering_basis,omitempty"`
+	Freshness       string     `json:"freshness,omitempty"`
+	Provider        string     `json:"provider"`
+	ProviderMatchID string     `json:"provider_match_id"`
+	ObservedAt      time.Time  `json:"observed_at"`
+	LastFetchedAt   time.Time  `json:"last_fetched_at"`
+	Stale           bool       `json:"stale"`
 }
 
 type LiveMatch struct {
+	ScoreConflict            bool            `json:"score_conflict,omitempty"`
 	FixtureID                string          `json:"fixture_id"`
 	Status                   string          `json:"status"`
 	Home                     Team            `json:"home"`

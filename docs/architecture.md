@@ -1191,6 +1191,16 @@ canonical model/artifact checksums. Context history excludes the target fixture 
 including earlier kickoff revisions. Form uses five matches, H2H ten, and rest
 uses the existing Python helper; policy `pre-match-revisions-v2` is unchanged.
 
+Live score reconciliation orders qualified match minutes and same-provider update
+clocks separately from HTTP acquisition. Re-fetching a body changes fetch freshness,
+not its original observation time. Missing provider clocks stay unknown. Future
+provider timestamp claims cannot establish ordering. Unordered lifecycle changes
+remain held, and terminal score corrections retain the existing review gate.
+Serving binds canonical status/scores and prefers advanced match clocks before
+transport tie-breaks. Current or unknown-clock score disagreements are visible as
+partial coverage. The optional live-source ordering metadata describes available
+evidence; it does not activate another provider or qualify a historical model input.
+
 OpenAPI 0.9.0 describes domain context, normalized live data and external comparison
 responses. Provider identifiers, status labels and original statistic fields remain
 explicit source provenance for wire compatibility; they are not model keys or

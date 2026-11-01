@@ -101,3 +101,17 @@ is present in this phase.
 Phase 4 adds bounded batch-preview/batch-apply routes (20 cases). Runtime guards bind every preview/event to its requested case and approved inputs, reject duplicate/missing result identities and verify per-case status totals. Owner credentials remain headers only.
 
 Phase 5 case detail adds immutable recovery page receipts and current downstream queue counts for the latest recovery request. Shared generations may include later work; an empty queue is not an identity/parity PASS. The existing read route remains no-store and read-only.
+
+## Live ordering metadata and score disagreements — V4 Phase 16
+
+GET `/v1/fixtures/{id}/live` preserves the canonical score and independent incident
+and statistics resources. `score_conflict` marks unresolved retained score claims;
+the existing Live Match panel explains the warning and partial coverage. Source
+provenance separates fetch freshness, original observation and optional provider
+update time. `ordering_basis` is UNKNOWN, MATCH_CLOCK or PROVIDER_TIMESTAMP.
+Missing legacy metadata becomes UNKNOWN; invalid enums, timestamps and booleans
+fail the existing resource parser and local error/retry path. Existing fetch
+cancellation and request keys are unchanged; no mutations or optimistic updates.
+Deterministic contract/component tests exercise these states. The drift assertion
+binds the new response fields and enum to OpenAPI and Go. Backend disposable tests
+verify cached lower clocks, current/unknown-clock conflicts and canonical progress.

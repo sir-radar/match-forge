@@ -864,7 +864,9 @@ components:
         provider: {"type": "string"}
         provider_match_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
         observed_at: {"type": "string", "format": "date-time"}
-        last_fetched_at: {"type": "string", "format": "date-time"}
+        last_fetched_at: {"type": "string", "format": "date-time", description: Most recent HTTP acquisition; does not establish newer football information.}
+        source_updated_at: {type: [string, 'null'], format: date-time, description: Original provider timestamp when supplied; future claims do not prove ordering.}
+        ordering_basis: {type: string, enum: [UNKNOWN, MATCH_CLOCK, PROVIDER_TIMESTAMP], description: Available football ordering evidence for the selected score observation; not source equivalence or conflict resolution.}
         freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: {"type": "boolean"}
     LiveMatch:
@@ -888,6 +890,7 @@ components:
         statistics_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
         availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
         partial: {"type": "boolean"}
+        score_conflict: {type: boolean, description: Retained noncanonical scores at a current or unknown match clock remain unresolved.}
         resource_identity_conflict: {type: boolean, description: Retained incident or statistics data is withheld because a verified native mapping identifies another effective fixture.}
     ExternalPrediction:
       type: object

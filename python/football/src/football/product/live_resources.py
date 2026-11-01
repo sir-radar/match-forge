@@ -6,7 +6,97 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping, Sequence
-from typing import Any
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Literal
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class LiveUpdate:
+    """Bound fixture facts with a qualified global match clock, not an HTTP clock."""
+
+    provider: str
+    status: str
+    home_score: int | None
+    away_score: int | None
+    minute: int | None
+    added_time: int | None
+    source_updated_at: datetime | None
+    first_known_at: datetime | None
+
+
+def _football_clock_order(current: LiveUpdate, incoming: LiveUpdate) -> int | None:
+    if current.minute is None or incoming.minute is None:
+        return None
+    if current.minute != incoming.minute:
+        return 1 if incoming.minute > current.minute else -1
+    if current.added_time is None or incoming.added_time is None:
+        return None
+    return (incoming.added_time > current.added_time) - (incoming.added_time < current.added_time)
+
+
+def _live_facts(update: LiveUpdate) -> tuple[object, ...]:
+    return update.status, update.home_score, update.away_score, update.minute, update.added_time
+
+
+def _source_clock_order(current: LiveUpdate, incoming: LiveUpdate) -> int | None:
+    if current.provider != incoming.provider:
+        return None
+    old, new = _valid_source_clock(current), _valid_source_clock(incoming)
+    if old is not None and new is not None:
+        return (new > old) - (new < old)
+    # First observation is an upper bound on when those facts could have changed.
+    # It is never substituted for a missing provider update timestamp.
+    if old is not None and incoming.first_known_at is not None and incoming.first_known_at < old:
+        return -1
+    if new is not None and current.first_known_at is not None and new > current.first_known_at:
+        return 1
+    return None
+
+
+def _valid_source_clock(update: LiveUpdate) -> datetime | None:
+    value = update.source_updated_at
+    if value is None or update.first_known_at is None or value > update.first_known_at:
+        return None
+    return value
+
+
+def live_update_order(
+    current: LiveUpdate, incoming: LiveUpdate
+) -> Literal["NEWER", "SAME", "STALE", "CONFLICT", "UNORDERED"]:
+    """Order proven updates; lifecycle/identity/authority owners still approve writes.
+
+    Re-fetching an unchanged body does not change its original knowledge time.
+    Added time remains separate: 45+8 precedes global match minute 46.
+    """
+    source = _source_clock_order(current, incoming)
+    if source == 1:
+        return "NEWER"
+    if source == -1:
+        return "STALE"
+    if source == 0:
+        return "SAME" if _live_facts(current) == _live_facts(incoming) else "CONFLICT"
+    clock = _football_clock_order(current, incoming)
+    if clock:
+        return "NEWER" if clock > 0 else "STALE"
+    if _live_facts(current) == _live_facts(incoming):
+        return "SAME"
+    if incoming.status == "FINISHED" and current.status not in {
+        "FINISHED",
+        "CANCELLED",
+        "ABANDONED",
+        "AWARDED",
+    }:
+        return "NEWER"
+    if current.status == "SCHEDULED" and incoming.status == "LIVE" and incoming.minute is not None:
+        return "NEWER"
+    if (
+        current.minute is not None
+        and incoming.minute == current.minute
+        and current.added_time == incoming.added_time
+    ):
+        return "CONFLICT"
+    return "UNORDERED"
 
 
 def normalize_events(

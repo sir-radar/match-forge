@@ -88,9 +88,10 @@ export type LiveStatistic = {
   available: boolean;
 };
 
-export type LiveSource = { freshness?: "UNKNOWN" | "FRESH" | "STALE"; provider: string; provider_match_id: string; observed_at: string; last_fetched_at: string; stale: boolean };
+export type LiveSource = { source_updated_at?: string | null; ordering_basis?: "UNKNOWN" | "MATCH_CLOCK" | "PROVIDER_TIMESTAMP"; freshness?: "UNKNOWN" | "FRESH" | "STALE"; provider: string; provider_match_id: string; observed_at: string; last_fetched_at: string; stale: boolean };
 
 export type LiveMatch = {
+  score_conflict?: boolean;
   fixture_id: string;
   status: Fixture["status"];
   home: Team;
@@ -380,6 +381,7 @@ export function parseLiveMatch(value: unknown): LiveMatch {
     statistics_source: item.statistics_source === null ? null : parseLiveSource(item.statistics_source),
     availability: booleanRecord(item.availability, "availability"),
     partial: boolean(item.partial, "partial"),
+    score_conflict: item.score_conflict === undefined ? false : boolean(item.score_conflict, "score_conflict"),
     resource_identity_conflict: item.resource_identity_conflict === undefined ? false : boolean(item.resource_identity_conflict, "resource_identity_conflict"),
   };
 }
@@ -794,7 +796,9 @@ function parseLiveStatistic(value: unknown): LiveStatistic {
 
 function parseLiveSource(value: unknown): LiveSource {
   const item = object(value, "live source");
-  return { freshness: parseFreshness(item.freshness), provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: timestamp(item.observed_at, "observed_at"), last_fetched_at: timestamp(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
+  const ordering = item.ordering_basis ?? "UNKNOWN";
+  if (ordering !== "UNKNOWN" && ordering !== "MATCH_CLOCK" && ordering !== "PROVIDER_TIMESTAMP") throw new Error("invalid live ordering_basis");
+  return { source_updated_at: item.source_updated_at === undefined ? null : nullableTimestamp(item.source_updated_at, "source_updated_at"), ordering_basis: ordering, freshness: parseFreshness(item.freshness), provider: text(item.provider, "provider"), provider_match_id: text(item.provider_match_id, "provider_match_id"), observed_at: timestamp(item.observed_at, "observed_at"), last_fetched_at: timestamp(item.last_fetched_at, "last_fetched_at"), stale: boolean(item.stale, "stale") };
 }
 
 function parseTeam(value: unknown): Team {

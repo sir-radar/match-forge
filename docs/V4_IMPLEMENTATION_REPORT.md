@@ -1001,3 +1001,37 @@ model roles and publication separation. Formatting, lint/complexity, mypy,
 architecture, focused disposable tests, status/governance and diff checks are
 recorded in the final receipt. Phase 16 follows independently; Phase 14's data
 qualification remains partial.
+
+## Phase 16 — live update ordering and visible score conflicts
+
+The engineering checkpoint is `PASS_WITH_WARNINGS`; the full phase remains
+`PARTIAL_FUNCTIONAL`. Existing FotMob/PitchAPI reconciliation, scheduling, quota
+and serving owners remain in use. No additional provider is activated without
+identity, status/clock and repeated live-freshness qualification. A bounded ESPN
+Thai league scoreboard request returned no fixtures; that scope does not establish
+working in-play support or global source unavailability.
+
+Retained live samples have no provider update timestamps. Missing timestamps do
+not disable the existing feeds. Football ordering uses verified global match
+minutes, separate added time and known same-provider update times. A later HTTP
+response alone cannot replace the canonical score or lifecycle. Identical bodies
+retain their original knowledge time on re-fetch. Future source timestamp claims
+are preserved but cannot prove newer information. Unordered lifecycle changes
+remain held. Terminal disagreements retain the existing correction review gate.
+The FotMob HT marker now maps to HALF_TIME when the reason label is absent.
+
+List and detail projections prefer advanced football clocks with deterministic
+provider fallback. They continue to bind the canonical status and score. Retained
+score disagreements at a current or unknown match clock mark the detail partial
+and display a warning without replacing its canonical score. Older-clock scores
+stop being current conflicts as play progresses. Source provenance distinguishes
+HTTP freshness from available football ordering evidence; event/statistic order
+stays unknown without qualified evidence. OpenAPI, Go, the strict web parser and
+existing Live Match UI use the same optional fields.
+
+Disposable Python and Go regressions cover stale cached bodies, equal-clock
+conflicts, progress, unknown clocks, terminal transitions, future timestamps and
+list/detail consistency. Web fixtures cover the conflict warning, retained score,
+missing legacy metadata and malformed ordering claims. Phase 16 evidence records
+actual results and remaining source/lifecycle qualifications. No new identities,
+models, forecasts, promotions, normalization writes or cutover were performed.
