@@ -204,3 +204,39 @@ def test_player_audit_keeps_missing_roles_minutes_and_team_conflicts_unqualified
     lineup[1]["team_id"] = 30
     rows = lineup_records("1", context, json.dumps(lineup).encode(), match)
     assert all(row["source_relationship_status"] == "CONTRADICTORY" for row in rows)
+
+
+def test_blocked_projection_rejects_mismatched_or_qualified_evidence():
+    from copy import deepcopy
+
+    import pytest
+
+    from scripts.project_v4_qualification import blocked_population
+
+    header = {
+        "status": "BLOCKED_WITH_EVIDENCE",
+        "match_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+    }
+    identity = {
+        **header,
+        "fixtures": [{"native_fixture_id": "one", "current_resolution_decisions": []}],
+        "owner_mapping_checks": [{"admitted_proof": None}],
+    }
+    timing = {**header, "clocks": [{"native_fixture_id": "one"}], "qualified_market_labels": 0}
+    players = {
+        **header,
+        "records": [{"native_fixture_id": "one"}],
+        "canonical_identity_admissions": 0,
+    }
+    assert blocked_population(identity, timing, players) == {"one"}
+    changed = deepcopy(timing)
+    changed["clocks"][0]["native_fixture_id"] = "another"
+    with pytest.raises(ValueError, match="same nonempty"):
+        blocked_population(identity, changed, players)
+    changed = deepcopy(identity)
+    changed["owner_mapping_checks"][0]["admitted_proof"] = {"id": "accepted"}
+    with pytest.raises(ValueError, match="admitted evidence"):
+        blocked_population(changed, timing, players)
+    changed = {**timing, "qualified_market_labels": 1}
+    with pytest.raises(ValueError, match="cannot be replaced"):
+        blocked_population(identity, changed, players)
