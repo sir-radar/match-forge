@@ -1,0 +1,416 @@
+{
+  "phase": "12a",
+  "provider": "flashscore",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "22cd2d4",
+  "recorded_at": "2026-11-01T03:13:39.092254Z",
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T03:00:37.338360+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "public_league_results",
+          "url": "https://www.flashscore.com/football/england/premier-league/results/",
+          "requested_at": "2026-11-01T03:00:32.861694+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+          "bytes": 1375510,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a"
+        },
+        {
+          "family": "public_football_page",
+          "url": "https://www.flashscore.com/football/",
+          "requested_at": "2026-11-01T03:00:34.932885+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "3f59c5c239de6bf4bf9586f76339cbbb7fa2c8d0ec8dfb499b3cdb9cae339280",
+          "bytes": 733323,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/3f59c5c239de6bf4bf9586f76339cbbb7fa2c8d0ec8dfb499b3cdb9cae339280"
+        }
+      ]
+    },
+    "client-source-receipt.json": {
+      "recorded_at": "2026-11-01T03:01:42.033193+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_client_modules",
+          "url": "https://static.flashscore.com/res/_fs/build/modules.Cq6b5nC.js",
+          "requested_at": "2026-11-01T03:01:18.341146+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "c832a5a58e8a2a638ae71ade10b7409e6e788ac910da46f95c7c8e5236475fc4",
+          "bytes": 70396,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/c832a5a58e8a2a638ae71ade10b7409e6e788ac910da46f95c7c8e5236475fc4"
+        },
+        {
+          "family": "primary_tournament_client",
+          "url": "https://static.flashscore.com/res/_fs/build/tournamentPage.client.O2ghoBp.js",
+          "requested_at": "2026-11-01T03:01:41.253849+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "ca480924d2b72773073b0c6e7504117841d7559d834f026074ea367fc5ffefbf",
+          "bytes": 33924,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/ca480924d2b72773073b0c6e7504117841d7559d834f026074ea367fc5ffefbf"
+        }
+      ]
+    },
+    "feed-definition-receipt.json": {
+      "recorded_at": "2026-11-01T03:02:11.760716+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_feed_constants",
+          "url": "https://static.flashscore.com/res/_fs/build/constants.Bv-_sd9.js",
+          "requested_at": "2026-11-01T03:02:10.771491+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "f69ae300d3d6f6e32f456d473606855cb20b5b8ded6daf25b5bef8ca1f176914",
+          "bytes": 66552,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/f69ae300d3d6f6e32f456d473606855cb20b5b8ded6daf25b5bef8ca1f176914"
+        },
+        {
+          "family": "primary_event_statuses",
+          "url": "https://static.flashscore.com/res/_fs/build/EventStageList.C4Yofgs.js",
+          "requested_at": "2026-11-01T03:02:11.070818+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "875da81db2d733904c733042ab41e24f88dc254b7020a6a52d88df7439241c63",
+          "bytes": 12772,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/875da81db2d733904c733042ab41e24f88dc254b7020a6a52d88df7439241c63"
+        }
+      ]
+    },
+    "historical-access-receipt.json": {
+      "recorded_at": "2026-11-01T03:06:28.224468+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "historical_league_results",
+          "url": "https://www.flashscore.com/football/england/premier-league-2024-2025/results/",
+          "requested_at": "2026-11-01T03:06:26.077335+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+          "bytes": 988962,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f"
+        }
+      ]
+    },
+    "match-access-receipt.json": {
+      "recorded_at": "2026-11-01T03:04:00.746124+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "native_completed_match",
+          "url": "https://www.flashscore.com/match/bRXj39aJ/",
+          "requested_at": "2026-11-01T03:03:58.016745+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "7b772310f46fa2de35ea315575becb55eda88f5d7d882cc16c33a03d0f3bf95f",
+          "bytes": 892653,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/7b772310f46fa2de35ea315575becb55eda88f5d7d882cc16c33a03d0f3bf95f"
+        }
+      ]
+    },
+    "detail-client-receipt.json": {
+      "recorded_at": "2026-11-01T03:05:55.527469+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_detail_client",
+          "url": "https://static.flashscore.com/res/_fs/build/detail.B0EdFI7.js",
+          "requested_at": "2026-11-01T03:05:53.748624+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "a2be3f89d15a92ca629042aab22f9c541eeb8755b5f80bb6d61c1c5c10f53bf9",
+          "bytes": 753568,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/a2be3f89d15a92ca629042aab22f9c541eeb8755b5f80bb6d61c1c5c10f53bf9"
+        }
+      ]
+    },
+    "detail-feed-source-receipt.json": {
+      "recorded_at": "2026-11-01T03:06:47.263608+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_sys_feed",
+          "url": "https://static.flashscore.com/res/_fs/build/SysFeed.BQgCB_Q.js",
+          "requested_at": "2026-11-01T03:06:45.010381+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "aa1233737bc2ac6d808cf479f9833ff3546645f4ccdb145fb4f62e135fdf64a4",
+          "bytes": 1199,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/aa1233737bc2ac6d808cf479f9833ff3546645f4ccdb145fb4f62e135fdf64a4"
+        },
+        {
+          "family": "primary_feed_name",
+          "url": "https://static.flashscore.com/res/_fs/build/FeedNameComposer.BPv9AZ_.js",
+          "requested_at": "2026-11-01T03:06:45.601672+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "ee29c9b7ea7488e47e6bef2a3a50476b9ab571873daaae4e23a3f0ddd47710ba",
+          "bytes": 3085,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/ee29c9b7ea7488e47e6bef2a3a50476b9ab571873daaae4e23a3f0ddd47710ba"
+        },
+        {
+          "family": "primary_sys_feed_name",
+          "url": "https://static.flashscore.com/res/_fs/build/SysFeedNameComposer.dYofxDD.js",
+          "requested_at": "2026-11-01T03:06:46.351409+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "f052b333446f796618b41ecd450b33e5edba7d604b2632227a466973aba485ab",
+          "bytes": 126,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/f052b333446f796618b41ecd450b33e5edba7d604b2632227a466973aba485ab"
+        }
+      ]
+    },
+    "request-source-receipt.json": {
+      "recorded_at": "2026-11-01T03:07:51.514738+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_feed_fetcher",
+          "url": "https://static.flashscore.com/res/_fs/build/FeedFetcherWithPropertiesResolving.DzVUnyx.js",
+          "requested_at": "2026-11-01T03:07:50.709317+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "c22b527aa6c655e8bf8c06e3f56de4b591d54296bbffd1c6b1382f43ae5d03ae",
+          "bytes": 1788,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/c22b527aa6c655e8bf8c06e3f56de4b591d54296bbffd1c6b1382f43ae5d03ae"
+        }
+      ]
+    },
+    "request-builder-receipt.json": {
+      "recorded_at": "2026-11-01T03:08:21.486346+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_request_builder",
+          "url": "https://static.flashscore.com/res/_fs/build/FeedFetcherAbstract.l5uJmGG.js",
+          "requested_at": "2026-11-01T03:08:20.809214+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "463bb65d29c049d83013f8d170f1f6105596edd5120e1f942abda3c4e855b03d",
+          "bytes": 1973,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/463bb65d29c049d83013f8d170f1f6105596edd5120e1f942abda3c4e855b03d"
+        }
+      ]
+    },
+    "detail-feed-receipt.json": {
+      "recorded_at": "2026-11-01T03:08:45.696706+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "match_statistics",
+          "url": "https://global.flashscore.ninja/2/x/feed/df_st_1_bRXj39aJ",
+          "requested_at": "2026-11-01T03:08:42.885646+00:00",
+          "public_header_origin": "retained page app.feed_sign; same ordinary header as primary request builder",
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+          "bytes": 6073,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4"
+        },
+        {
+          "family": "match_summary",
+          "url": "https://global.flashscore.ninja/2/x/feed/d_su_bRXj39aJ_en_1",
+          "requested_at": "2026-11-01T03:08:43.893496+00:00",
+          "public_header_origin": "retained page app.feed_sign; same ordinary header as primary request builder",
+          "status": "FAILED",
+          "http_status": 404,
+          "sha256": "d55d7d81698df68f3cf74b46a1910387aa4e6570931ac510e410021e09eecc18",
+          "bytes": 6073,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/d55d7d81698df68f3cf74b46a1910387aa4e6570931ac510e410021e09eecc18"
+        }
+      ]
+    },
+    "current-detail-feed-receipt.json": {
+      "recorded_at": "2026-11-01T03:10:37.566782+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "current_match_summary",
+          "url": "https://global.flashscore.ninja/2/x/feed/df_sur_1_bRXj39aJ",
+          "requested_at": "2026-11-01T03:10:35.593456+00:00",
+          "public_header_origin": "retained page app.feed_sign; same ordinary header as primary request builder",
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+          "bytes": 262,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a"
+        },
+        {
+          "family": "match_incidents",
+          "url": "https://global.flashscore.ninja/2/x/feed/df_sui_1_bRXj39aJ",
+          "requested_at": "2026-11-01T03:10:36.177551+00:00",
+          "public_header_origin": "retained page app.feed_sign; same ordinary header as primary request builder",
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+          "bytes": 5950,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d"
+        },
+        {
+          "family": "match_lineups",
+          "url": "https://global.flashscore.ninja/2/x/feed/df_li_1_bRXj39aJ",
+          "requested_at": "2026-11-01T03:10:36.843294+00:00",
+          "public_header_origin": "retained page app.feed_sign; same ordinary header as primary request builder",
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+          "bytes": 15506,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12/raw/749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3"
+        }
+      ]
+    }
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T03:12:53.364223+00:00",
+    "observations_before": 9944,
+    "observations_after": 11056,
+    "resume_observations_before": 11056,
+    "results": [
+      {
+        "resource": "league",
+        "source_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "source_snapshot_id": "bac9c371-c659-5455-b81b-625b8ed27fcf",
+        "source_sha256": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+        "manifest_path": "flashscore/manifests/0c64b6e69d4e61664b087aab12aa79d37fdcd758332b14d0c10c9f104ddfdd0d.json",
+        "report_sha256": "946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca",
+        "known_at": "2026-11-01T03:00:37.338360+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 2,
+          "TeamObservationV2": 390,
+          "FixtureObservationV2": 195,
+          "ResultObservationV2": 88
+        },
+        "findings": {},
+        "work_id": "36688b49-f998-5740-b986-6caf1bd7caef",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "59a2d571868f9b655c52e65fcc379ff41e1bd49e69ce7ce0f246282c571e08cb",
+        "retry_rows": 675,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "e5377ec7-3412-57fa-a6fc-2a798ef02119",
+        "capability_decision_sha256": "cfd57ee5d1e6c09a23666c7ad71c94638690176db8b94ca4223228f59f938345",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      },
+      {
+        "resource": "league",
+        "source_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "source_snapshot_id": "2bc78697-e7f0-5526-b5f1-ba05c843aa8b",
+        "source_sha256": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+        "manifest_path": "flashscore/manifests/3a271ba5b90fb4a2808f3130c0cf9a1234c5de00b23d41bb74e43c075f9afb61.json",
+        "report_sha256": "c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3",
+        "known_at": "2026-11-01T03:06:28.224468+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 218,
+          "FixtureObservationV2": 109,
+          "ResultObservationV2": 109
+        },
+        "findings": {
+          "MF_NORM_FEED_EMPTY": 1
+        },
+        "work_id": "f261d0cd-405c-568d-9879-60e0680aa2f0",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "13718ac2bde4e0f4485d0cd36303271b041879f2b72ad074969e2a45b64c782c",
+        "retry_rows": 437,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "03ed0da0-e56f-530d-9526-3cc515f66422",
+        "capability_decision_sha256": "96658f8147af7c8570db064505d3cb94cf761e53a1076fc3e2536eb6cad8c63e",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0,
+    "automatic_provider_enablement": false
+  },
+  "verified_native_keys": {
+    "AA": "SHAREDINDEXES_EVENT_ID",
+    "AD": "SHAREDINDEXES_MATCH_START_UTIME",
+    "AB": "SHAREDINDEXES_EVENT_STAGE_TYPE_ID",
+    "AC": "SHAREDINDEXES_EVENT_STAGE_ID",
+    "AE": "FULLFEEDINDEXES_HOME_PARTICIPANT_NAME",
+    "AF": "FULLFEEDINDEXES_AWAY_PARTICIPANT_NAME",
+    "PX": "FULLFEEDINDEXES_HOME_PARTICIPANT_IDS",
+    "PY": "FULLFEEDINDEXES_AWAY_PARTICIPANT_IDS",
+    "AT": "SHAREDINDEXES_HOME_FULL_TIME_RESULT",
+    "AU": "SHAREDINDEXES_AWAY_FULL_TIME_RESULT",
+    "ZEE": "FULLFEEDINDEXES_TOURNAMENT_TEMPLATE_ID",
+    "ZC": "SHAREDINDEXES_TOURNAMENT_STAGE_ID"
+  },
+  "scope": {
+    "current_2026_2027": {
+      "fixtures": 195,
+      "results": 88
+    },
+    "historical_2024_2025": {
+      "fixtures": 109,
+      "results": 109
+    },
+    "history_completeness": "PARTIAL PAGE FEEDS; NO COMPLETE-SEASON CLAIM",
+    "archive_discovery": "Source lists seasons back to 1901/1902; advertised links, not acquired/qualified historical coverage"
+  },
+  "safeguards": [
+    "Only source-defined named keys normalized; unknown fields retained in raw bytes",
+    "No JavaScript execution",
+    "Selected season/stage, archive URL and registered scope checked",
+    "Only observed status/type pairs supported; other states held",
+    "Explicit full-time scores retained with UNKNOWN score basis; scheduled score placeholders excluded",
+    "Unqualified event/provider-update clocks stay absent; current acquisition knowledge never backdated",
+    "No canonical identity admitted, training/evaluation/promotion or production routing"
+  ],
+  "verification": {
+    "focused_disposable_tests": "198 passed",
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS (6 source files)",
+    "architecture": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests": "21 passed",
+    "all_1112_artifact_bytes_and_retry": "PASS",
+    "fenced_normalization_work": "2 SUCCEEDED",
+    "diff_check": "PASS"
+  },
+  "corrected_failures": [
+    "Disposable integration caught a trailing-slash provider resource path incompatible with existing normalized manifest paths; corrected the adapter key while preserving the exact HTTP URL",
+    "Second capability publication rejected a host decision timestamp ahead of database clock; retried with database clock, reusing the first decision and all successful work/observations; no duplicate rows"
+  ],
+  "next": "12b normalize captured detailed statistics/events/lineups; live freshness and historical identity/semantics remain unqualified"
+}

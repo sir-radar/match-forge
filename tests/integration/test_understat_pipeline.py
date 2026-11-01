@@ -19,7 +19,7 @@ from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkTyp
 from football.work.storage import WorkRegistry
 
 
-@pytest.mark.parametrize("provider", ["understat", "espn", "whoscored"])
+@pytest.mark.parametrize("provider", ["understat", "espn", "whoscored", "flashscore"])
 def test_public_source_manifest_normalization_fenced_publication_and_retry(
     tmp_path: Path, provider: str
 ) -> None:
@@ -119,6 +119,28 @@ def test_public_source_manifest_normalization_fenced_publication_and_retry(
             '<script type="application/json" data-hypernova-key="tournamentfixtures"><!--'
             + json.dumps(block)
             + "--></script>"
+        ).encode()
+    if provider == "flashscore":
+        path = "football/england/league/results"
+        resource_type = "league"
+        environment = {
+            "sport_id": 1,
+            "selected_season_id": 0,
+            "season_list": [
+                {"id": 0, "name": "2024/2025", "pathname": "/standings/seasonid/stageid/"}
+            ],
+        }
+        header = (
+            "SA÷1¬~ZA÷League¬ZEE÷leagueid¬ZC÷stageid¬ZE÷seasonid¬ZL÷/football/england/league/¬~"
+        )
+        match = (
+            "AA÷match001¬AD÷1723834800¬AB÷3¬AC÷3¬AE÷Home¬AF÷Away¬"
+            "PX÷home0001¬PY÷away0001¬AT÷1¬AU÷0¬~"
+        )
+        raw = (
+            "<script>window.environment = " + json.dumps(environment) + ";"
+            "cjs.initialFeeds['results'] = {data: `" + header + match + "`};"
+            "cjs.initialFeeds['fixtures'] = {data: `" + header + "`};</script>"
         ).encode()
     digest = hashlib.sha256(raw).hexdigest()
     now = datetime(2026, 11, 1, tzinfo=UTC)

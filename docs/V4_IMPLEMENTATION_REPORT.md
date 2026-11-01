@@ -730,3 +730,41 @@ canonical import remains pending, with no identity, forecast/model or routing
 change. Operating totals are 9,944 observations and fourteen scoped capability
 decisions. Verification: 182 focused disposable tests, static/type/complexity,
 architecture, 21 governance tests, status and diff checks passed. Phase 12 follows.
+
+## Phase 12a — Flashscore league and historical feeds
+
+Status: PARTIAL_FUNCTIONAL. Phase 11 commit: `22cd2d4`. Phase 12 remains in progress.
+
+Public current and historical league pages returned embedded results and fixture
+feeds. Native key names and status definitions were checked against the site's
+primary client exports. The bounded adapter retains original HTML; the offline
+decoder reads data without executing JavaScript. It checks selected season/stage,
+registered league scope and historical archive URLs. Scheduled placeholders stay
+out of results. Explicit full-time scores retain UNKNOWN score basis. Unmapped
+statuses are held, empty fixture feeds are reported, and event clocks remain
+unqualified. Canonical identity is not inferred from names or source IDs.
+
+The current page yields 195 fixtures and 88 results; the sampled 2024–25 page
+yields 109 fixtures/results. These are partial page counts. The source advertises
+seasons back to 1901–02; those links are discovery evidence, not acquired history.
+No complete-season, historical PIT or live-freshness qualification is claimed.
+
+[Phase 12a evidence](evidence/matchforge-v4-phase-12a-2026-11-01.json) records all
+requests, verified source/code hashes and publication receipts. Two source
+registrations and two fenced NORMALIZATION work items produced 1,112 immutable
+observations. Every artifact loaded and retried without additional rows. Current
+totals are 11,056 artifacts and sixteen capability decision rows. Imports remain
+pending; no canonical identity, forecast/model or routing change occurred.
+
+The disposable suite caught an incompatible trailing-slash manifest path; the
+adapter now preserves the HTTP URL while using a normalized resource key. The
+database also rejected a host capability clock ahead of its own clock. A retry
+used the database clock and reused all successful work and the first capability
+decision. No validation was weakened. Verification: 198 focused disposable tests,
+static/type/complexity, architecture, 21 governance tests, status and diff checks
+passed.
+
+The completed-match page and its current statistics, summary, incident and lineup
+feeds also returned data. The older summary route returned 404; current feed names
+were verified in the primary client. Phase 12b will normalize these captured
+resources before Phase 13. No challenge, proxy or fingerprint bypass was used.

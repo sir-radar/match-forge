@@ -15,6 +15,7 @@ from football.providers.normalization import (
     api_football_rich,
     espn,
     files,
+    flashscore,
     football_data_org,
     fotmob,
     pitchapi,
@@ -29,6 +30,7 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("flashscore", "league"): flashscore.league,
     ("whoscored", "fixtures"): whoscored.fixtures,
     ("espn", "scoreboard"): espn.scoreboard,
     ("espn", "summary"): espn.summary,
@@ -105,7 +107,11 @@ def normalize_resource(
     if context.provenance.provider == "football_data_uk":
         payload = raw
     else:
-        decoders = {"understat": understat.json_bytes, "whoscored": whoscored.json_bytes}
+        decoders = {
+            "understat": understat.json_bytes,
+            "whoscored": whoscored.json_bytes,
+            "flashscore": flashscore.json_bytes,
+        }
         decoder = decoders.get(context.provenance.provider)
         decoded = decoder(raw) if decoder is not None else raw
         payload = json.loads(decoded, object_pairs_hook=_pairs, parse_constant=_constant)

@@ -55,6 +55,23 @@ OPEN_MATCH: dict[str, object] = {
 }
 
 EXAMPLES: dict[str, dict[str, object]] = {
+    "FlashscoreMatch": {
+        "AA": "matchid1",
+        "AD": "1793476800",
+        "AB": "3",
+        "AC": "3",
+        "AE": "Home",
+        "AF": "Away",
+        "PX": "home0001",
+        "PY": "away0001",
+    },
+    "FlashscoreLeague": {
+        "ZA": "League",
+        "ZEE": "leagueid",
+        "ZC": "stageid",
+        "ZE": "seasonid",
+        "ZL": "/football/england/league/",
+    },
     "WhoScoredMatch": {
         "id": 42,
         "stageId": 3,
