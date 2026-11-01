@@ -45,6 +45,7 @@ NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None
     ("api_football", "statistics"): api_football_rich.statistics,
     ("api_football", "events"): api_football_rich.events,
     ("api_football", "player_statistics"): api_football_rich.player_statistics,
+    ("api_football", "standings"): api_football.standings,
     ("football_data_org", "fixtures"): football_data_org.fixtures,
     ("football_data_org", "results"): football_data_org.fixtures,
     ("football_data_org", "standings"): football_data_org.standings,

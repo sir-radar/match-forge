@@ -2912,7 +2912,9 @@
       "04",
       "05a",
       "05b",
-      "05c"
+      "05c",
+      "05d",
+      "05"
     ],
     "phase_00_status": "PASS",
     "phase_00_commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
@@ -2939,8 +2941,12 @@
     "phase_05b_commit_sha": "3bc0e85b06ccd13e67d00249ba60e91df961367b",
     "phase_05c_status": "PASS_WITH_WARNINGS",
     "phase_05c_ref": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json",
-    "operating_observation_artifacts": 7368,
-    "operating_scoped_capability_decisions": 6,
-    "bounded_provider_requests": 6
+    "operating_observation_artifacts": 7408,
+    "operating_scoped_capability_decisions": 7,
+    "bounded_provider_requests": 7,
+    "phase_05c_commit_sha": "a6f2c95a212e23df61646fad3041028a3bb27a50",
+    "phase_05d_status": "PASS_WITH_WARNINGS",
+    "phase_05d_ref": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json",
+    "phase_05_status": "PASS_WITH_WARNINGS"
   }
 }

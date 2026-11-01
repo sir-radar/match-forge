@@ -506,3 +506,35 @@ source percentage regression failed before its fix; final replay confirms prior
 published observation bytes stay unchanged. The additional boundary suite first
 hit pytest's reserved `request` parameter name; the test name was corrected and
 the final suite passed. The remaining standings decoder is addressed next.
+
+## Phase 05d — existing standings decoder gap
+
+Status: PASS_WITH_WARNINGS. Phase 05c commit: `a6f2c95` (first push
+failed on a GitHub port 443 connection timeout; local commit preserved).
+
+The existing API-Football standings source method returned a 39/2024 snapshot.
+Its new decoder reuses the native league/standing records and V2 contract.
+Competition/season conflicts are rejected; multiple groups are held rather than
+turned into global competition ranks. Only reported all-match aggregates are
+used. Signed points and zero counts remain valid; provider update time remains
+separate from later MatchForge knowledge. No event time is inferred.
+
+The checksum-verified snapshot yielded 20 team observations and 20 standings,
+with no findings. All 40 stored artifacts loaded and retried without new rows.
+The operating bounded batch now totals 7,408 observations and seven scoped
+acquisition capability decisions. This remains source normalization, not
+identity, market or historical eligibility qualification. The existing-source
+normalizer inventory is now 37 routes; old routes remain compatible.
+
+[Phase 05d evidence](evidence/matchforge-v4-phase-05d-2026-11-01.json) records
+source/report hashes, registration IDs, request clocks, quota and retry checks.
+Focused new/existing normalizer tests passed 45 cases; Ruff/format, strict mypy
+on three changed files and architecture checks passed. No identity, forecast,
+model or production-routing writes occurred.
+
+Phase 05's measured high-value retained-field and decoder gaps are implemented
+through four independent checkpoints. Historical scope, remaining raw-field
+semantics, player identity and model qualification belong to their existing later
+phases. Existing fixture/history/coach/lineup/live clients were reused. Protected
+StatsBomb outcomes and closed research routes were not opened. Phase 06 can
+proceed independently; R3 and cutover/retirement/scientific gates remain blocked.
