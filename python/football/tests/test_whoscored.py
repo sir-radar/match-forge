@@ -48,7 +48,11 @@ def payload() -> dict[str, Any]:
     }
 
 
-def normalize(value: dict[str, Any]) -> NormalizationResult:
+def normalize(
+    value: dict[str, Any],
+    *,
+    resource_key: str = "Regions/252/Tournaments/2/England-Premier-League",
+) -> NormalizationResult:
     raw = (
         '<script type="application/json" data-hypernova-key="tournamentfixtures"><!--'
         + json.dumps(value)
@@ -61,7 +65,7 @@ def normalize(value: dict[str, Any]) -> NormalizationResult:
             "whoscored", None, uid, uid, hashlib.sha256(raw).hexdigest()
         ),
         time=ObservationTime(observed_at=now, acquired_at=now, known_at=now),
-        resource_key="Regions/252/Tournaments/2/England-Premier-League",
+        resource_key=resource_key,
         competition_native_id="2",
         season_label="2026/2027",
     )
@@ -157,3 +161,48 @@ def test_source_exact_route_guard_and_error_response() -> None:
     transport.status = 403
     with pytest.raises(ProviderFetchError):
         source.league("252", "2")
+
+
+@pytest.mark.parametrize("stage", ["", "/stages/3/fixtures"])
+def test_historical_season_requires_exact_native_season_binding(stage: str) -> None:
+    route = f"Regions/252/Tournaments/2/Seasons/4{stage}/england-premier-league"
+    accepted = normalize(payload(), resource_key=route)
+    assert not accepted.findings
+    assert any(o.CONTRACT == "FixtureObservationV2" for o in accepted.observations)
+    rejected = normalize(payload(), resource_key=route.replace("/Seasons/4/", "/Seasons/5/"))
+    assert not rejected.observations
+    assert any(f.rule_code == "MF_NORM_SOURCE_RECORD_INVALID" for f in rejected.findings)
+    if stage:
+        rejected = normalize(payload(), resource_key=route.replace("/stages/3/", "/stages/5/"))
+        assert not rejected.observations
+
+
+def test_historical_season_source_keeps_observed_route_and_guard() -> None:
+    calls: list[str] = []
+    guards: list[bool] = []
+
+    class Transport:
+        def get_response(
+            self, url: str, *, timeout_seconds: float, max_bytes: int
+        ) -> HttpResponseV1:
+            calls.append(url)
+            return HttpResponseV1(b"retained", 200, "text/html", None, None)
+
+        def get(self, url: str, *, timeout_seconds: float, max_bytes: int) -> bytes:
+            raise AssertionError("metadata must be retained")
+
+    source = WhoScoredSource(transport=Transport(), request_guard=lambda: guards.append(True))
+    result = source.season("252", "2", "5826", "england-premier-league")
+    assert result.resource_key == "Regions/252/Tournaments/2/Seasons/5826/england-premier-league"
+    assert result.raw == b"retained" and len(calls) == len(guards) == 1
+    with pytest.raises(ValueError):
+        source.season("252", "2", "5826", "../other")
+    assert len(calls) == len(guards) == 1
+    fixtures = source.season(
+        "252", "2", "5826", "england-premier-league-2015-2016", provider_stage_id="12496"
+    )
+    assert fixtures.resource_key == (
+        "regions/252/tournaments/2/seasons/5826/stages/12496/fixtures/"
+        "england-premier-league-2015-2016"
+    )
+    assert len(calls) == len(guards) == 2

@@ -56,6 +56,15 @@ request validation remain governed by their existing contracts. Historical
 decisions and frozen evaluation scopes are preserved; this decision applies
 prospectively and does not reopen closed scientific routes.
 
+## WhoScored historical requests
+
+`WhoScoredSource.season` accepts the native region, tournament, season and slug
+from retained league-selector links. Its optional stage ID selects the linked
+monthly fixtures page. Normalization checks both requested season and stage IDs
+against the embedded fixture payload. A reachable season page or month is not
+complete-season coverage. Native UTC values and source-side IDs still require
+independent canonical identity and target qualification before historical use.
+
 ## Auditing retained provider data
 
 Run a read-only inventory against the configured database:

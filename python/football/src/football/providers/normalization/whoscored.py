@@ -85,13 +85,19 @@ def fixtures(output: ObservationCollector, payload: object) -> None:
 
 def _scope(output: ObservationCollector, league: WhoScoredTournament) -> None:
     route = re.fullmatch(
-        r"/?regions/[1-9][0-9]*/tournaments/([1-9][0-9]*)(?:/[A-Za-z0-9-]+)?",
+        r"/?regions/[1-9][0-9]*/tournaments/([1-9][0-9]*)"
+        r"(?:/seasons/([1-9][0-9]*)(?:/stages/([1-9][0-9]*)/fixtures)?)?"
+        r"(?:/[A-Za-z0-9-]+)?",
         urlsplit(output.context.resource_key).path,
         flags=re.IGNORECASE,
     )
     native = str(league["tournamentId"])
     if route is None or route[1] != native:
         raise ValueError("WhoScored tournament conflicts with registered request")
+    if route[2] is not None and route[2] != str(league["seasonId"]):
+        raise ValueError("WhoScored season conflicts with registered request")
+    if route[3] is not None and route[3] != str(league["stageId"]):
+        raise ValueError("WhoScored stage conflicts with registered request")
     if output.context.competition_native_id not in (
         None,
         native,

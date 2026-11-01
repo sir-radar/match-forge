@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from datetime import UTC, datetime
 
@@ -26,7 +27,30 @@ class WhoScoredSource:
             numeric_identifier(provider_region_id),
             numeric_identifier(provider_competition_id),
         )
-        key = f"Regions/{region}/Tournaments/{tournament}"
+        return self._resource(f"Regions/{region}/Tournaments/{tournament}")
+
+    def season(
+        self,
+        provider_region_id: str,
+        provider_competition_id: str,
+        provider_season_id: str,
+        competition_slug: str,
+        *,
+        provider_stage_id: str | None = None,
+    ) -> ProviderPayload:
+        """Fetch a season route discovered in the provider's league selector."""
+        region, tournament, season = (
+            numeric_identifier(value)
+            for value in (provider_region_id, provider_competition_id, provider_season_id)
+        )
+        if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", competition_slug) is None:
+            raise ValueError("WhoScored season requires its native competition slug")
+        key = f"Regions/{region}/Tournaments/{tournament}/Seasons/{season}"
+        if provider_stage_id is not None:
+            key = f"{key}/stages/{numeric_identifier(provider_stage_id)}/fixtures".lower()
+        return self._resource(f"{key}/{competition_slug}")
+
+    def _resource(self, key: str) -> ProviderPayload:
         if self._guard is not None:
             self._guard()
         response = self._transport.get_response(
