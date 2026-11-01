@@ -1,0 +1,436 @@
+{
+  "phase": "R03-A",
+  "status": "PASS",
+  "starting_sha": "55583a380dce23e4a14bae077b1407341caf2b08",
+  "recorded_at": "2026-11-01T19:33:40.625933+00:00",
+  "issue_2_status": "BLOCKED_WITH_EVIDENCE",
+  "model_routing": "L3: exact identity, historical time and qualification governance",
+  "issue_2_evidence_reviewed": {
+    "docs/evidence/v4-issue-02-baseline.json": {
+      "sha256": "8888ac6c6c779c55a33ef6ea8ef5ef0728f52f18e04eaa3cb75bc43332c70812"
+    },
+    "docs/evidence/v4-issue-02-identity.json": {
+      "sha256": "81f119dbd26cfda1d2a563191364cd1911b2c2932807f8679fac6e29a5ad68e3"
+    },
+    "docs/evidence/v4-issue-02-time-targets.json": {
+      "sha256": "d66ec70cc3faf32cae5841104cba58de09e69329eccb25c79285ceab4926c116"
+    },
+    "docs/evidence/v4-issue-02-players.json": {
+      "sha256": "3ffadaf60aeeefa6ca1e3626f2d9f8e72486ed8258b6fbe95325f92ccb8d065a"
+    },
+    "docs/evidence/v4-issue-02-coverage.json": {
+      "sha256": "808c931c6bce344d4943725115ac22ac5e3cfaf3afbe4fac5f9740d354d43a9d"
+    },
+    "docs/evidence/v4-issue-02-final-verification.json": {
+      "sha256": "a8b0c00e75d1073bb418a0a71f9c388edbefeeedade4a90071360ab23a099d3c"
+    }
+  },
+  "tracks": {
+    "A": "Original StatsBomb EPL 2/27, all 380 fixtures; preserve blocked baseline",
+    "B": "Bounded ESPN EPL 2024/25 fixture; compare exact origin/admission proof against original pilot"
+  },
+  "matrix": [
+    {
+      "missing_proof": "exact fixture/team/competition anchors",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "espn",
+      "candidate_resource": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20150801-20160531&limit=1000",
+      "required_independence": "Independent exact canonical target evidence required; ESPN IDs alone are native proof",
+      "target_semantics": "Native fixture/side relationships only",
+      "requested_fields": [
+        "id",
+        "uid",
+        "competitors.team.id",
+        "date",
+        "timeValid",
+        "links"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20150801-20160531&limit=1000",
+      "priority": 1,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "verified UTC kickoff",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "whoscored",
+      "candidate_resource": "https://www.whoscored.com/Regions/206/Tournaments/2",
+      "required_independence": "Exact independent fixture binding before StatsBomb clock qualification",
+      "target_semantics": "Explicit UTC field; never infer timezone from agreement",
+      "requested_fields": [
+        "season id",
+        "stage id",
+        "startTimeUtc",
+        "team IDs"
+      ],
+      "retained_resource_available": true,
+      "public_access_path": "https://www.whoscored.com/Regions/206/Tournaments/2",
+      "priority": 2,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "FT/HT and statistical meanings",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "espn",
+      "candidate_resource": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=<discovered ID>",
+      "required_independence": "Native definitions plus accepted fixture chain",
+      "target_semantics": "Regulation versus ET and direct HT must be explicit",
+      "requested_fields": [
+        "status",
+        "score",
+        "linescores",
+        "period",
+        "boxscore.statistics"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=<discovered ID>",
+      "priority": 3,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "complete counts and source-side IDs",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "flashscore",
+      "candidate_resource": "https://www.flashscore.com/football/england/premier-league-2015-2016/results/",
+      "required_independence": "Soccerway shared client/content is one upstream",
+      "target_semantics": "Corners/cards/shots/SOT units and periods; settlement remains separate",
+      "requested_fields": [
+        "season",
+        "native fixture IDs",
+        "native team IDs",
+        "period summaries",
+        "statistics"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://www.flashscore.com/football/england/premier-league-2015-2016/results/",
+      "priority": 4,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "membership/transfer and minutes",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": [
+        "10457",
+        "20285",
+        "22594",
+        "3057",
+        "3085",
+        "3297",
+        "3631",
+        "3656",
+        "3963",
+        "6871",
+        "9528",
+        "9542",
+        "9593",
+        "9911",
+        "9958"
+      ],
+      "candidate_source": "espn",
+      "candidate_resource": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=<discovered ID>",
+      "required_independence": "No cross-provider player ID admission by names; explicit external IDs needed",
+      "target_semantics": "Appearance is not continuous membership; absent minutes unknown",
+      "requested_fields": [
+        "rosters.athlete.id",
+        "starter",
+        "stats",
+        "substitution roles",
+        "minutes"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=<discovered ID>",
+      "priority": 5,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "fixture/xG/shot and player relationships",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "understat",
+      "candidate_resource": "https://understat.com/getLeagueData/EPL/2015",
+      "required_independence": "Independent exact fixture/team anchors still required",
+      "target_semantics": "Naive clocks stay DATE_ONLY; xG native source quantity",
+      "requested_fields": [
+        "dates.id",
+        "h.id",
+        "a.id",
+        "datetime",
+        "goals",
+        "xG",
+        "getMatchData shots/rosters"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://understat.com/getLeagueData/EPL/2015",
+      "priority": 6,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "incremental history versus duplicated upstream",
+      "affected_provider": "statsbomb_open_data",
+      "native_competition": "2",
+      "native_season": "27",
+      "native_fixture_id": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_team_id": [
+        "26",
+        "28",
+        "33",
+        "40",
+        "37",
+        "29",
+        "41",
+        "1",
+        "23",
+        "30",
+        "25",
+        "31",
+        "59",
+        "22",
+        "24",
+        "38",
+        "36",
+        "56",
+        "39",
+        "27"
+      ],
+      "native_player_id": null,
+      "candidate_source": "soccerway",
+      "candidate_resource": "https://www.soccerway.com/england/premier-league-2015-2016/results/",
+      "required_independence": "Compare every resource hash and native namespace to Flashscore",
+      "target_semantics": "Different domain never establishes independent source",
+      "requested_fields": [
+        "native fixture IDs",
+        "source SHA256",
+        "statistics",
+        "lineups"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://www.soccerway.com/england/premier-league-2015-2016/results/",
+      "priority": 7,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    },
+    {
+      "missing_proof": "alternative bounded qualification pilot",
+      "affected_provider": "espn",
+      "native_competition": "eng.1",
+      "native_season": "2024",
+      "native_fixture_id": null,
+      "native_team_id": null,
+      "native_player_id": null,
+      "candidate_source": "espn",
+      "candidate_resource": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816",
+      "required_independence": "Use existing identity owners and exact target proof; no autoapproval",
+      "target_semantics": "One independently bound completed fixture preferred to raw volume",
+      "requested_fields": [
+        "native event/team IDs",
+        "UTC",
+        "timeValid",
+        "completed",
+        "exact canonical origin evidence"
+      ],
+      "retained_resource_available": false,
+      "public_access_path": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816",
+      "priority": 9,
+      "blocker": "Access/field coverage must be measured; no identity admission from coincident names/time"
+    }
+  ],
+  "acquisition_controls": {
+    "sequential_providers": true,
+    "request_budget_per_provider": 40,
+    "minimum_request_interval_seconds": 1,
+    "cache_resume": "Immutable source hashes and receipt checkpoints; no refetch on replay",
+    "database": "New marked experimental database; verify physical identity before any publication/request",
+    "operating_access": "READ_ONLY",
+    "restrictions": "Stop on authentication/CAPTCHA/paywall/explicit restrictions; record failures without bypass",
+    "historical_use": "Acquired now, never backdate MatchForge pre-match knowledge"
+  },
+  "verification": {
+    "source_evidence_checksums": "PASS",
+    "matrix_required_fields": "PASS",
+    "architecture_and_status_checks": "Run before this phase commit"
+  },
+  "operating_writes": 0,
+  "provider_requests": 0,
+  "matrix_scope": "Exact three-fixture discovery sample; full 380-fixture population pinned by Issue 2 identity report SHA. Native team IDs list all 20 pilot participants; player IDs list 15 transfer-review cases. Candidate provider IDs are not cross-provider mappings."
+}
