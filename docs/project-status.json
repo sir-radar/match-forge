@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T15:58:29.077272Z",
+  "updated_at": "2026-11-01T19:21:14.003023Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3112,6 +3112,50 @@
       "issue_1_complete": true,
       "final_verification_ref": "docs/evidence/v4-operating-isolation-final-verification.json",
       "remaining_owner_decisions": []
+    },
+    "historical_qualification_remediation": {
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "scope": "Issue 2 only; retained historical/player evidence qualification",
+      "phase": "R02-F",
+      "starting_sha": "5716261f4efafdfb670d6ec830fcc6977e0f5613",
+      "retained_observations_verified": 96920,
+      "retained_normalized_resources_verified": 1552,
+      "pilot_provider": "statsbomb_open_data",
+      "pilot_native_competition": "2",
+      "pilot_native_season": "27",
+      "pilot_native_fixtures": 380,
+      "pilot_native_players": 644,
+      "qualified_canonical_fixtures": 0,
+      "qualified_market_labels": 0,
+      "new_canonical_identity_admissions": 0,
+      "verified_minutes_exposures": 0,
+      "market_status_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "phase_commits": {
+        "R02-A": "11d3217f94f9e1beb6d4067e60aae35a3f4cf311",
+        "R02-B": "59cd60cb7b45f992188e3292624c3c6ae6bedef7",
+        "R02-C": "1482c88c641825b6dd09f39a63d53a0dc6d4d13c",
+        "R02-D": "0c3917ccc57f8688669bb1c8c42de117d5440675",
+        "R02-E": "6666464be00e50213ba6374e205fe22ab91b5a68"
+      },
+      "evidence_refs": [
+        "docs/evidence/v4-issue-02-baseline.json",
+        "docs/evidence/v4-issue-02-identity.json",
+        "docs/evidence/v4-issue-02-time-targets.json",
+        "docs/evidence/v4-issue-02-players.json",
+        "docs/evidence/v4-issue-02-coverage.json"
+      ],
+      "operating_writes_performed": 0,
+      "issue_2_qualification_complete": false,
+      "production_cutover_authorized": false,
+      "issue_3_started": false,
+      "required_next_action": "Supply independently accepted exact source/canonical anchors through Resolution Center, verified kickoff/time and target meanings, player membership/exposure and settlement proof. Preserve the blocked pilot until those prerequisites pass.",
+      "verification_status": "PASS_WITH_WARNINGS",
+      "report_ref": "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md",
+      "final_verification_ref": "docs/evidence/v4-issue-02-final-verification.json",
+      "phase_f_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md"
     }
   }
 }

@@ -1454,3 +1454,20 @@ migrate operating data. R01-A/B/C commits are `ebdc900`, `b6c834f` and `d848a14`
 exact full SHAs, receipts and final R01-D commit location are in the evidence
 and task-status ledger. No remaining owner decision blocks Issue 1. Independent
 data qualification, other V4 issues and Phases 35/36 retain their existing gates.
+
+## V4 blocker remediation R02 — retained historical and player qualification
+
+Status: BLOCKED_WITH_EVIDENCE. The [Issue 2 report](V4_ISSUE_02_QUALIFICATION_REPORT.md)
+records a checksum-verified census of 96,920 observations across 1,552 source
+resources and a bounded EPL 2015/16 pilot of 380 native fixtures and 644 players.
+Existing identity, source, coverage, market and isolation owners were reused.
+The pilot lacks admitted exact identity, verified UTC kickoff and target/player
+use proof. No canonical identity, historical eligibility or market label was
+newly qualified; all 67 market families remain at 53 data-required and 14
+player-data-insufficient. Four isolated native coverage reports repeat with
+stable IDs/hashes/counts and zero qualified units. Operating baseline rows,
+original observation/capability bytes, the prior shadow, champion and LEGACY
+routing remain preserved. Final [verification evidence](evidence/v4-issue-02-final-verification.json)
+records `make check integration` exit 0, independent phase commits and the exact
+remaining proof. Issue 3 acquisition, scientific research and production cutover
+were not started; the qualification objective remains blocked.
