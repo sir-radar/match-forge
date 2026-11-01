@@ -59,6 +59,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_resource_observation_artifacts.py \
 	tests/integration/test_rich_observation_artifacts.py \
 	tests/integration/test_understat_pipeline.py \
+	tests/integration/test_v4_development_isolation.py \
 	tests/integration/test_artifact_retirement.py \
 	tests/integration/test_integrity_verification.py \
 	tests/integration/test_provider_observability.py \
