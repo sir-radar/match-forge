@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Iterator, Sequence
 from datetime import datetime
 from pathlib import Path
@@ -15,7 +15,7 @@ from uuid import UUID
 import psycopg
 from football.contracts.source import canonical_json_bytes
 from football.identity.repository import IdentityRepository
-from football.ingestion.statsbomb_contracts import _parse_events
+from football.ingestion.statsbomb_contracts import LineupPlayer, _parse_events, _parse_lineup
 from football.product.identity_admission import (
     RetainedIdentityVerifier,
     classify_mapping,
@@ -262,13 +262,147 @@ def time_report(
     }
 
 
+def appearance_status(player: LineupPlayer) -> str:
+    if player.was_starter:
+        return "STARTED"
+    reasons = {position.start_reason for position in player.positions}
+    if reasons & {"Substitution - On (Tactical)", "Substitution - On (Injury)"}:
+        return "SUBSTITUTE_APPEARANCE"
+    return "UNKNOWN"
+
+
+def lineup_records(
+    native: str, context: NormalizationContext, raw: bytes, match: dict[str, Any]
+) -> list[dict[str, Any]]:
+    lineup = _parse_lineup(raw, context.resource_key, native)
+    expected = {str(match[side][side + "_id"]) for side in ("home_team", "away_team")}
+    players = [player.provider_id for team in lineup.teams for player in team.players]
+    consistent = {team.provider_id for team in lineup.teams} == expected and len(players) == len(
+        set(players)
+    )
+    return [
+        {
+            "native_fixture_id": native,
+            "native_team_id": team.provider_id,
+            "native_player_id": player.provider_id,
+            "source_name": player.full_name,
+            "native_fixture_date": match["match_date"],
+            "source_resource_id": str(context.provenance.source_resource_id),
+            "source_sha256": context.provenance.source_sha256,
+            "source_relationship_status": "VERIFIED" if consistent else "CONTRADICTORY",
+            "native_appearance": appearance_status(player),
+            "position_stints": len(player.positions),
+            "closed_position_stints": sum(p.clock_to is not None for p in player.positions),
+            "verified_minutes": None,
+            "continuous_membership_interval": None,
+            "pre_match_lineup_known": False,
+        }
+        for team in lineup.teams
+        for player in team.players
+    ]
+
+
+def player_report(
+    connection: Connection[Any], root: Path, matches: list[dict[str, Any]], cutoff: datetime
+) -> dict[str, Any]:
+    by_fixture = {str(match["match_id"]): match for match in matches}
+    records = [
+        record
+        for native, source, raw in native_resources(connection, root, matches, "lineups")
+        for record in lineup_records(native, source, raw, by_fixture[native])
+    ]
+    associations: dict[str, set[str]] = defaultdict(set)
+    names: dict[str, set[str]] = defaultdict(set)
+    for record in records:
+        associations[record["native_player_id"]].add(record["native_team_id"])
+        names[record["source_name"]].add(record["native_player_id"])
+    claims = connection.execute(
+        """WITH states AS (
+          SELECT DISTINCT ON(mapping_id) * FROM football.provider_mapping_history
+          WHERE subject_type='player' AND known_at<=%s
+          ORDER BY mapping_id,known_at DESC,history_id DESC)
+        SELECT h.provider_entity_id,h.canonical_id,h.mapping_method,h.known_at,h.mapping_id
+        FROM states h JOIN football.providers p ON p.id=h.provider_id
+        WHERE p.code='statsbomb_open_data' AND h.operation<>'DELETE'
+        ORDER BY h.provider_entity_id,h.mapping_id""",
+        (cutoff,),
+    ).fetchall()
+    scoped = [row for row in claims if row[0] in associations]
+    return {
+        "phase": "R02-D",
+        "status": "BLOCKED_WITH_EVIDENCE",
+        "native_fixtures": len(matches),
+        "native_players": len(associations),
+        "native_lineup_occurrences": len(records),
+        "native_participation_status_counts": dict(
+            Counter(r["native_appearance"] for r in records)
+        ),
+        "closed_position_stint_occurrences": sum(r["closed_position_stints"] for r in records),
+        "contradictory_lineup_occurrences": sum(
+            r["source_relationship_status"] == "CONTRADICTORY" for r in records
+        ),
+        "all_statsbomb_recorded_player_claims": len(claims),
+        "pilot_players_with_recorded_claim": len({row[0] for row in scoped}),
+        "pilot_claimed_canonical_players": len({row[1] for row in scoped}),
+        "claims": [
+            {
+                "native_player_id": native,
+                "claimed_canonical_id": str(canonical),
+                "mapping_method": method,
+                "known_at": known.isoformat(),
+                "mapping_id": str(key),
+            }
+            for native, canonical, method, known, key in scoped
+        ],
+        "native_players_with_multiple_team_associations": {
+            native: sorted(teams) for native, teams in associations.items() if len(teams) > 1
+        },
+        "same_name_multiple_native_ids": {
+            name: sorted(ids) for name, ids in names.items() if len(ids) > 1
+        },
+        "canonical_identity_admissions": 0,
+        "cross_provider_admissions": 0,
+        "qualified_membership_intervals": 0,
+        "qualified_transfer_dates": 0,
+        "qualified_canonical_appearances": 0,
+        "qualified_minutes_exposures": 0,
+        "qualified_player_market_labels": {
+            key: 0
+            for key in (
+                "goals",
+                "assists",
+                "shots",
+                "SOT",
+                "passes",
+                "tackles",
+                "fouls",
+                "cards",
+                "goalkeeper_saves",
+            )
+        },
+        "records": records,
+        "limitations": [
+            "Native Starting XI/substitution reasons establish source-scoped appearance evidence, "
+            "not a canonical identity or knowledge of the lineup before kickoff.",
+            "No position or absent player-stat row proves unused substitution or nonappearance. "
+            "Unknown source roles remain UNKNOWN.",
+            "Closed position stints do not independently establish settlement-compatible minute "
+            "exposure; no 90-minute default or invented minute total is used.",
+            "Fixture-scoped team associations are not continuous membership intervals. Multiple "
+            "teams are transfer-review candidates, not confirmed transfers or exact dates.",
+            "Player identity admissions and participant/exposure/void semantics are still missing; "
+            "every canonical player-market label remains blocked.",
+        ],
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database-url", required=True)
     parser.add_argument("--source-root", required=True, type=Path)
     parser.add_argument("--match-resource-id", required=True, type=UUID)
     parser.add_argument("--artifact-root", required=True, type=Path)
-    parser.add_argument("--section", choices=("identity", "time"), default="identity")
+    parser.add_argument("--section", choices=("identity", "time", "players"), default="identity")
     args = parser.parse_args(argv)
     with (
         psycopg.connect(
@@ -283,8 +417,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.section == "identity":
             report = identity_report(connection, args.source_root, matches, snapshot[0])
             report["phase"] = "R02-B"
-        else:
+        elif args.section == "time":
             report = time_report(connection, args.source_root, matches, args.match_resource_id)
+        else:
+            report = player_report(connection, args.source_root, matches, snapshot[0])
         report.update(
             {
                 "knowledge_cutoff": snapshot[0].isoformat(),

@@ -134,3 +134,73 @@ def test_pilot_clocks_keep_local_dates_and_late_knowledge_separate():
     assert report["verified_utc_kickoff"] is None
     assert report["provider_observation_time"] is None
     assert report["provider_updated_at"] == "2024-01-01T12:00:00+00:00"
+
+
+def test_player_audit_keeps_missing_roles_minutes_and_team_conflicts_unqualified():
+    import json
+
+    from scripts.inspect_v4_pilot import lineup_records
+
+    clock = datetime(2026, 11, 1, tzinfo=UTC)
+    context = NormalizationContext(
+        provenance=ObservationProvenance(
+            "statsbomb_open_data", None, UUID(int=1), UUID(int=2), "a" * 64, "json:/0"
+        ),
+        time=ObservationTime(observed_at=clock, acquired_at=clock, known_at=clock),
+        resource_key="data/lineups/1.json",
+    )
+    position = {
+        "position": "Goalkeeper",
+        "from": "00:00",
+        "to": "90:00",
+        "from_period": 1,
+        "to_period": 2,
+        "start_reason": "Starting XI",
+    }
+    lineup = [
+        {
+            "team_id": 10,
+            "team_name": "Home",
+            "lineup": [
+                {"player_id": 1, "player_name": "Same Name", "positions": [position], "cards": []},
+                {
+                    "player_id": 3,
+                    "player_name": "Sub",
+                    "positions": [
+                        {
+                            **position,
+                            "from": "70:00",
+                            "from_period": 2,
+                            "start_reason": "Substitution - On (Tactical)",
+                        }
+                    ],
+                    "cards": [],
+                },
+            ],
+        },
+        {
+            "team_id": 20,
+            "team_name": "Away",
+            "lineup": [
+                {"player_id": 2, "player_name": "Same Name", "positions": [], "cards": []},
+            ],
+        },
+    ]
+    match = {
+        "home_team": {"home_team_id": 10},
+        "away_team": {"away_team_id": 20},
+        "match_date": "2015-08-08",
+    }
+    rows = lineup_records("1", context, json.dumps(lineup).encode(), match)
+    assert [row["native_appearance"] for row in rows] == [
+        "STARTED",
+        "SUBSTITUTE_APPEARANCE",
+        "UNKNOWN",
+    ]
+    assert {row["native_player_id"] for row in rows} == {"1", "2", "3"}
+    assert all(row["verified_minutes"] is None for row in rows)
+    assert all(row["continuous_membership_interval"] is None for row in rows)
+    assert all(row["pre_match_lineup_known"] is False for row in rows)
+    lineup[1]["team_id"] = 30
+    rows = lineup_records("1", context, json.dumps(lineup).encode(), match)
+    assert all(row["source_relationship_status"] == "CONTRADICTORY" for row in rows)
