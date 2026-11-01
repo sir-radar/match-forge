@@ -1,0 +1,495 @@
+{
+  "phase": "18",
+  "starting_sha": "bec63abb1102e2b29375a3e1eb92a003670c2b3e",
+  "recorded_at": "2026-11-01T09:57:18.919348Z",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "complete": false,
+  "gate_review": "PASS",
+  "existing_implementation": {
+    "corner_engine": "python/football/src/football/forecasting/corner.py",
+    "families": [
+      "poisson",
+      "negative_binomial"
+    ],
+    "adjustments": "Existing competition/team attack/defence effects, features and time decay; no duplicate engine.",
+    "label_owner": "Sprint2CornerLabelPublisher",
+    "label_version": "statsbomb-pass-type-61-corner-v1",
+    "frozen_gate": {
+      "status": "FAIL",
+      "decision": "RETAIN_FAIL_AND_STOP",
+      "ref": "docs/sprint2-phase-gate.md"
+    }
+  },
+  "actual_inventory": {
+    "recorded_at": "2026-11-01T09:56:30.237233+00:00",
+    "snapshot_at": "2026-11-01T09:56:30.216136+00:00",
+    "database": "football",
+    "read_only": "on",
+    "existing_corner_labels": [
+      {
+        "version": "statsbomb-pass-type-61-corner-v1",
+        "rows": 760,
+        "first_known": "2026-08-30T18:42:53.287987+00:00",
+        "last_known": "2026-09-09T04:42:47.557844+00:00"
+      }
+    ],
+    "registry_counts": {
+      "canonical_resource_coverage": 0,
+      "runtime_model_registrations": 0,
+      "post_match_evaluations": 0
+    }
+  },
+  "inventory_sha256": "11895d7ef1a4b9e4ce4fde59f64a37fb19d924c2f6d237f21777998c03915a69",
+  "target_readiness_reference": "189e527f4220318770af5c6ec0f62cd3ce1c96aacb552a33065f806f7470bb7e",
+  "target_readiness": [
+    {
+      "market_id": "CORNERS_TOTAL",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_TEAM",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_HANDICAP",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_RANGE",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_FIRST_HALF",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_SECOND_HALF",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corners": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_TOTAL",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_TEAM",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_HANDICAP",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_RANGE",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_FIRST_HALF",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_SECOND_HALF",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNER_RACE",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "corner_events": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "YELLOW_CARDS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "RED_CARDS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARD_POINTS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "cards": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SHOTS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "shots": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SHOTS_ON_TARGET",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "shots_on_target": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_FOULS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "fouls": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_OFFSIDES",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "offsides": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SAVES",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "saves": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_TACKLES",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "tackles": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_THROW_INS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "throw_ins": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_GOAL_KICKS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "goal_kicks": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_WOODWORK",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "woodwork": null
+      },
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    }
+  ],
+  "blockers": [
+    "Existing 760 immutable corner labels do not authorize reopening the failed Sprint 2 model route.",
+    "New V4 raw/normalized sources have no registered canonical target/input qualification. Cards and team counts require identity, temporal, quantity and settlement proof.",
+    "No bounded owner-approved new count-model hypothesis, frozen evaluation specification or authoritative target-access authorization is supplied.",
+    "No qualified paired shots/SOT outcomes for a joint constrained count model; no universal Poisson substitution."
+  ],
+  "required_next_action": "Qualify exact labels through existing identity/coverage owners, then obtain the bounded research decision required by docs/model-governance.md#challenger-authorization. Preserve frozen failure and evaluate a newly authorized route only.",
+  "actions": {
+    "new_models": 0,
+    "authoritative_fits": 0,
+    "authoritative_evaluations": 0,
+    "promotions": 0,
+    "operating_writes": 0,
+    "provider_requests": 0,
+    "published_probabilities": 0
+  },
+  "verification": {
+    "read_only_snapshot": "PASS",
+    "focused_corner_and_governance_tests": 36,
+    "project_status": "PASS",
+    "diff_check": "PASS",
+    "tests_log_sha256": "c09f3fa1f978f826bbe4b9fa68de3112cd1d11d57b9284f3802a7dc3f9d9887d"
+  },
+  "next_phase": "Independent Phase 19 prerequisite review; do not cross the count-model scientific gate."
+}

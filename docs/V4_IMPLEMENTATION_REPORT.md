@@ -1073,3 +1073,25 @@ unchanged forecast bytes and all prior semantic identities. The focused suite
 passed 95 tests; the final semantic suite passed 28, including one additional
 regression and 27 overlaps. Three existing dependency deprecation warnings remain.
 No provider request, operating write, authoritative fit or publication occurred.
+
+## Phase 18 — count-model data and research gate
+
+`BLOCKED_WITH_EVIDENCE`. The existing corner engine already has Poisson and
+negative-binomial families, competition/team effects, feature inputs and time
+decay. A read-only repeatable operating snapshot confirms 760 immutable
+`statsbomb-pass-type-61-corner-v1` labels. These are existing labels; they do not
+reopen Sprint 2's retained FAIL or authorize a new candidate search.
+
+The snapshot has no canonical target coverage, runtime model registrations or
+post-match evaluation rows. Phase 15's exact target report leaves corner/card/team
+count qualification unknown. Newly normalized shots, cards and other statistics
+are observations awaiting identity, temporal and semantic qualification. SOT ≤
+shots cannot be assumed across unqualified source definitions or unmatched scopes.
+No cards/team-count model is created before qualified labels exist.
+
+A new bounded model direction and frozen research/evaluation scope are also
+required by the existing Challenger Authorization policy. This gate is preserved;
+no source sample, generic V4 implementation authorization or legacy failed model
+is treated as permission to fit or evaluate a production candidate. No new model,
+operating write, authoritative fit, evaluation or probability is produced. The
+next independent work is Phase 19's participation prerequisites.
