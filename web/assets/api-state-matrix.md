@@ -112,3 +112,7 @@ cancellation and request keys are unchanged; no mutations or optimistic updates.
 Deterministic contract/component tests exercise these states. The drift assertion
 binds the new response fields and enum to OpenAPI and Go. Backend disposable tests
 verify cached lower clocks, current/unknown-clock conflicts and canonical progress.
+
+## V4 Phase 22 — market readiness
+
+Market capabilities: idle before scope; loading/refreshing via useResource; empty definitions have an explicit message; unqualified/partial targets show reasons and inputs; malformed enum/hash/version/model metadata is rejected; 400/403/503/network failures use the scoped alert/retry; sync status remains independent. Request keys bind competition, season and cutoff; abort/generation checks reject late old scopes. No mutations, optimistic updates or automatic retries. Deterministic component and browser tests cover partial data, local failure/retry and stale completion; Go tests cover invalid scopes and unchanged 403 protection.

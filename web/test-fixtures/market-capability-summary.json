@@ -1,0 +1,113 @@
+{
+  "authoritative": false,
+  "automatic_promotion": false,
+  "competition_id": "00000000-0000-4000-8000-000000000101",
+  "contract": "MarketCapabilitySummary",
+  "contract_version": "1",
+  "knowledge_cutoff": "2026-10-31T00:00:00Z",
+  "limitations": [
+    "Market families are unbound; qualification must bind exact target parameters and semantic versions.",
+    "Provider scope/access is reported separately from field, canonical identity and target qualification.",
+    "Unknown publication status does not withdraw or approve any existing forecast route.",
+    "No provider request, new probability, model fit, promotion or operating mutation is performed.",
+    "Synthetic UI fixture, not source or evaluation evidence."
+  ],
+  "markets": [
+    {
+      "definition_sha256": "0702b1aa4e416974fc3cc0e338f92e8341f3615483a5de05e1216f48caf1f498",
+      "evaluation_status": "UNASSESSED",
+      "group": "GOALS",
+      "market_id": "RESULT_1X2",
+      "model_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "model_role": "CHAMPION",
+      "model_version": "transferable-rolling-goals-poisson-v1",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "publication_eligible": false,
+      "publication_status": "UNKNOWN",
+      "semantic_version": "result_1x2-v1",
+      "source_compatibility": "UNKNOWN",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "unavailable_reason": "TARGET_INPUTS_UNQUALIFIED",
+      "unqualified_inputs": [
+        "regulation_score"
+      ]
+    },
+    {
+      "definition_sha256": "163d8caaf63182bb8d719dca2dc7eb810a469a06e55ccf9654b90825d9332982",
+      "evaluation_status": "UNASSESSED",
+      "group": "PERIODS",
+      "market_id": "FIRST_HALF_RESULT",
+      "model_artifact_sha256": null,
+      "model_id": null,
+      "model_role": null,
+      "model_version": null,
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "publication_eligible": false,
+      "publication_status": "UNKNOWN",
+      "semantic_version": "first_half_result-v1",
+      "source_compatibility": "UNKNOWN",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "unavailable_reason": "TARGET_INPUTS_UNQUALIFIED",
+      "unqualified_inputs": [
+        "period_score"
+      ]
+    },
+    {
+      "definition_sha256": "158be187b60c3407188d0195aa7992cdf9d643f9a9959dfbda20fda4a8a0c711",
+      "evaluation_status": "UNASSESSED",
+      "group": "PLAYERS",
+      "market_id": "PLAYER_GOALS",
+      "model_artifact_sha256": null,
+      "model_id": null,
+      "model_role": null,
+      "model_version": null,
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "publication_eligible": false,
+      "publication_status": "UNKNOWN",
+      "semantic_version": "player_goals-v1",
+      "source_compatibility": "UNKNOWN",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "unavailable_reason": "PLAYER_HISTORY_UNQUALIFIED",
+      "unqualified_inputs": [
+        "player_identity",
+        "membership",
+        "participation",
+        "goal_events"
+      ]
+    },
+    {
+      "definition_sha256": "c7d2426e55cfe31c82b5f4a0e3f40da3a7aea694c01d139cfc2e1ed7b760c370",
+      "evaluation_status": "UNASSESSED",
+      "group": "JOINT",
+      "market_id": "GOALS_CORNERS",
+      "model_artifact_sha256": null,
+      "model_id": null,
+      "model_role": null,
+      "model_version": null,
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "publication_eligible": false,
+      "publication_status": "UNKNOWN",
+      "semantic_version": "goals_corners-v1",
+      "source_compatibility": "UNKNOWN",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "unavailable_reason": "TARGET_INPUTS_UNQUALIFIED",
+      "unqualified_inputs": [
+        "regulation_score",
+        "corners"
+      ]
+    }
+  ],
+  "monitoring_scope": "EXISTING_PUBLISHED_GOAL_FORECASTS_ONLY",
+  "new_market_settlement": "NOT_IMPLEMENTED",
+  "provider_candidates": [
+    {
+      "provider": "fotmob",
+      "resource": "shots",
+      "availability": "PARTIAL"
+    }
+  ],
+  "read_only": "on",
+  "recorded_at": "2026-10-31T00:00:01Z",
+  "season_id": "00000000-0000-4000-8000-000000000102"
+}

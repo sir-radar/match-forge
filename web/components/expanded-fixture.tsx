@@ -18,7 +18,7 @@ export function ExpandedFixture({ fixture, competition }: { fixture: Fixture; co
 
   return <div className="expanded-panel">
     <div className="match-identity">
-      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.freshness === "FRESH" ? "fresh" : fixture.stale || fixture.freshness === "STALE" ? "fetch stale" : "fetch freshness unknown"}{fixture.last_successful_update ? ` · fetched ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
+      <div><small>{competition.name} · {fixture.round ?? "Current round"}</small><h3>{fixture.home.name} <span>vs</span> {fixture.away.name}</h3><p>{fixture.venue ?? "Venue unavailable"} · {formatDateTime(fixture.kickoff_at)}</p>{fixture.provider && <p className="provider-observation">{fixture.provider} · {fixture.freshness === "FRESH" ? "fetch fresh" : fixture.stale || fixture.freshness === "STALE" ? "fetch stale" : "fetch freshness unknown"}{fixture.last_successful_update ? ` · fetched ${formatDateTime(fixture.last_successful_update)}` : ""}</p>}</div>
       <span className={`status-badge ${fixture.forecast ? "ok" : "muted"}`}>{fixture.forecast ? "Pre-match forecast" : availabilityCopy(fixture.forecast_availability)}</span>
     </div>
     {fixture.forecast && <section className="forecast-hero" aria-label="MatchForge forecast">

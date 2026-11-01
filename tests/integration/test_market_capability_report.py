@@ -12,7 +12,10 @@ from football.coverage.resources import CanonicalCoverage, CanonicalCoverageScop
 from football.coverage.storage import CoverageRegistry, prepare_coverage
 from football.forecasting.market_catalogue import market_catalogue
 from football.product.market_capabilities import market_input_key
-from football.product.market_capability_cli import market_capability_report
+from football.product.market_capability_cli import (
+    market_capability_report,
+    market_capability_summary,
+)
 from football.providers.capability_registry import CapabilityRegistry, prepare_capability
 from football.providers.resource_capabilities import ResourceCapability, ResourceScope
 
@@ -100,6 +103,15 @@ def test_registered_sources_and_coverage_remain_read_only_and_knowledge_scoped(t
         assert any(item["scope"]["provider"] == provider for item in new["provider_sources"])
         assert new["diagnostic_status"] == "DATA_COLLECTION_REQUIRED"
         assert new["publication"]["current_status"] == "UNKNOWN"
+        summary = market_capability_summary(current)
+        assert summary["contract"] == "MarketCapabilitySummary"
+        assert summary["competition_id"] == str(competition)
+        assert summary["season_id"] == str(season)
+        assert len(summary["markets"]) == len(current["markets"])
+        assert summary["markets"][0]["semantic_version"].endswith("-v1")
+        assert not summary["authoritative"] and not summary["automatic_promotion"]
+        assert all(not row["publication_eligible"] for row in summary["markets"])
+        assert "database" not in summary
         assert current["read_only"] == "on"
         assert not any(row["publication"]["grants_new_publication"] for row in current["markets"])
         assert connection.execute(counts_query).fetchone() == counts

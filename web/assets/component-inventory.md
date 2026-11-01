@@ -23,3 +23,7 @@ No public component API changed. Duplicate search found one owner per role.
 Resolution Center reuses AppShell, ResourceLoading, ResourceError, EmptyState and
 TableScroll. AdminNavigation is shared with Data Sync. CaseFilters, CaseResults,
 CaseGroups, CaseTable, CaseReview and Evidence stay local to resolution-center.tsx.
+
+## V4 Phase 22 — market readiness
+
+MarketReadinessAdmin is local to DataSyncAdmin. It reuses useResource, the API request helper, ResourceLoading/ResourceError/EmptyState and TableScroll. DataSyncAdmin props and every shared component API remain unchanged. The local CSS module owns spacing and disclosure targets. No Figma evidence was supplied; existing tokens and native controls are authoritative. Duplicate search found one readiness reader/view owner.

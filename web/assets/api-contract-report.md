@@ -115,3 +115,7 @@ cancellation and request keys are unchanged; no mutations or optimistic updates.
 Deterministic contract/component tests exercise these states. The drift assertion
 binds the new response fields and enum to OpenAPI and Go. Backend disposable tests
 verify cached lower clocks, current/unknown-clock conflicts and canonical progress.
+
+## V4 Phase 22 — market readiness
+
+The Python read-only report now has a compact operator summary; full CLI output is unchanged unless --summary is requested. Go validates canonical scope, cutoff, non-authoritative/read-only envelope and bounds output to 2 MiB using the existing shared command buffer. The frontend checks every rendered field, model metadata completeness, semantic version, digests, status enums and exact scope/cutoff. OpenAPI/Go/Python and deterministic fixtures are verified; status drift ties the Python enum to the web and documented schema. The actual operating summary has 67 families, 53 DATA_COLLECTION_REQUIRED and 14 INSUFFICIENT_PLAYER_DATA, with no publication grant.

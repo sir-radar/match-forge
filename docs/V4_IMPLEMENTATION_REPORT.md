@@ -1160,3 +1160,45 @@ Architecture V2's cutover gate remains blocked. The requested full feedback loop
 therefore remains incomplete pending Phases 18–20's data/model prerequisites and
 the existing scientific authorization. Phase 22 can independently expose that
 availability truthfully through the current API and Admin application.
+
+## Phase 22 — scoped capability API and existing Admin integration
+
+`PASS_WITH_WARNINGS`. The existing Go API adds a private-local read route for
+market capabilities. It calls the existing Python capability/coverage owner with
+a canonical competition/season pair and explicit knowledge cutoff. Invalid,
+future, duplicate or unknown parameters are rejected; cutoff precision matches
+Python/PostgreSQL microseconds. Output is bounded and scope-checked, requests are
+cancellable, and responses are no-store. Internal Admin authorization is unchanged.
+
+The compact summary exposes target semantic/version identity, missing qualified
+inputs, source compatibility, current configured model metadata, evaluation and
+publication status. Native source candidates are explicitly unassessed against
+the canonical scope. The response exports no database name, provider payload or
+probabilities. Current metadata is traceability, not target/historical qualification
+or V2 runtime activation. UNKNOWN publication does not withdraw existing forecasts.
+
+The Data Sync page reuses existing resource states, cancellation, keyboard-scroll
+regions, tokens and native forms/disclosures. Results/goals, halves, corners,
+cards, team statistics, players and combinations are grouped and initially
+collapsed. New-market settlement is explicitly unavailable; existing goal monitoring
+does not imply an active worker. No automatic promotion or new public probability
+route is introduced. The Resolution Center remains the identity owner. Existing
+published Markets, live and context views continue to expose supported data and
+explicit unsupported states without hundreds of empty markets.
+
+The actual read-only operating summary contains 67 families: 53 require data
+collection and 14 have insufficient player data. Twenty distinct native
+provider/resource/availability candidates are not canonical target qualification.
+The summary and its checksum are recorded in Phase 22 evidence; it grants no
+publication and performs no acquisition, fit, evaluation or operating write.
+
+Verification includes the actual Go/Python bridge in a disposable database,
+canonical scope and timestamp rejection, unchanged Admin protection, strict
+frontend binding/parsing, malformed metadata, independent failures, retry and a
+late obsolete response. The current operating summary passes the frontend parser
+and OpenAPI schema. Desktop Chromium and mobile WebKit exercise deterministic
+and real-backend journeys, plus existing Data Sync workflows. Seven browser cases
+pass; one existing desktop-only conditional skip remains. The two final layout
+cases pass after local stylesheet verification. Axe, keyboard controls, 320px
+reflow, reduced motion and forced colors pass on the tested scope. Physical
+screen-reader/zoom checks and an approved pixel baseline are not claimed.

@@ -101,7 +101,7 @@ func (runner *CommandSyncRunner) Resolution(ctx context.Context, input resolutio
 	}
 	command.Stdin = bytes.NewReader(payload)
 	command.Env = append(os.Environ(), "DATABASE_URL="+runner.pool.Config().ConnConfig.ConnString())
-	var output resolutionOutput
+	var output boundedCommandOutput
 	command.Stdout = &output
 	if command.Run() != nil {
 		return resolutionResult{}, errProductUnavailable
@@ -113,11 +113,11 @@ func (runner *CommandSyncRunner) Resolution(ctx context.Context, input resolutio
 	return result, nil
 }
 
-type resolutionOutput struct{ buffer bytes.Buffer }
+type boundedCommandOutput struct{ buffer bytes.Buffer }
 
-func (output *resolutionOutput) Write(payload []byte) (int, error) {
+func (output *boundedCommandOutput) Write(payload []byte) (int, error) {
 	if output.buffer.Len()+len(payload) > 2*1024*1024 {
-		return 0, errors.New("resolution response too large")
+		return 0, errors.New("command response too large")
 	}
 	return output.buffer.Write(payload)
 }

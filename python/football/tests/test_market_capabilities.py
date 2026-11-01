@@ -305,3 +305,38 @@ def test_remaining_joint_targets_declare_required_paired_inputs_without_a_model(
             "INSUFFICIENT_PLAYER_DATA",
         }
         assert not report["publication"]["eligible_under_declared_evidence"]
+
+
+def test_operator_summary_keeps_unknown_source_access_and_does_not_export_database_details():
+    from football.product.market_capability_cli import market_capability_summary
+
+    market = assess_market(
+        CATALOGUE["RESULT_1X2"],
+        MarketQualification(competition_id=COMPETITION, season_id=SEASON, knowledge_cutoff=NOW),
+        (
+            MarketSource(
+                ResourceScope(
+                    provider="fotmob", resource_type="fixtures", competition=None, season=None
+                ),
+                None,
+            ),
+        ),
+    )
+    report = {
+        "competition_id": str(COMPETITION),
+        "season_id": str(SEASON),
+        "knowledge_cutoff": NOW.isoformat(),
+        "recorded_at": NOW.isoformat(),
+        "read_only": "on",
+        "limitations": [],
+        "markets": [market],
+        "database": "private_database_name",
+    }
+    summary = market_capability_summary(report)
+    assert summary["provider_candidates"] == [
+        {"provider": "fotmob", "resource": "fixtures", "availability": "UNKNOWN"}
+    ]
+    assert summary["markets"][0]["model_id"] is None
+    assert not summary["authoritative"] and not summary["automatic_promotion"]
+    assert "database" not in summary
+    assert "probabilities" not in summary["markets"][0]

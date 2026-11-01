@@ -77,6 +77,7 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     capabilities.add_argument("--season-id", required=True, type=UUID)
     capabilities.add_argument("--knowledge-cutoff", required=True)
     capabilities.add_argument("--model-registration", type=Path)
+    capabilities.add_argument("--summary", action="store_true")
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
 
@@ -159,7 +160,10 @@ def _market_capabilities(
     args: argparse.Namespace, environment: Mapping[str, str]
 ) -> dict[str, Any]:
     from football.forecasting.runtime_models import ModelRegistration
-    from football.product.market_capability_cli import market_capability_report
+    from football.product.market_capability_cli import (
+        market_capability_report,
+        market_capability_summary,
+    )
 
     database_url = (
         args.database_url
@@ -174,7 +178,7 @@ def _market_capabilities(
         else None
     )
     with psycopg.connect(database_url, autocommit=True) as connection:
-        return market_capability_report(
+        report = market_capability_report(
             connection,
             args.data_root or Path(".local/football-data"),
             competition_id=args.competition_id,
@@ -182,6 +186,7 @@ def _market_capabilities(
             knowledge_cutoff=datetime.fromisoformat(args.knowledge_cutoff),
             model=model,
         )
+        return market_capability_summary(report) if args.summary else report
 
 
 def _runtime_registry(

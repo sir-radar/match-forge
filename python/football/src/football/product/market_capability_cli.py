@@ -123,3 +123,64 @@ def market_capability_report(
             "or operating mutation is performed.",
         ],
     }
+
+
+def market_capability_summary(report: dict[str, Any]) -> dict[str, Any]:
+    """Bounded operator projection of the existing diagnostic report, not forecasts."""
+    markets = []
+    providers = {}
+    for row in report["markets"]:
+        model = row["model"]
+        markets.append(
+            {
+                "market_id": row["market"]["market_id"],
+                "group": row["market"]["group"],
+                "semantic_version": row["market"]["semantic_contract"]["version"],
+                "definition_sha256": row["definition_sha256"],
+                "status": row["diagnostic_status"],
+                "unavailable_reason": row["diagnostic_blocker"],
+                "next_action": row["next_action"],
+                "source_compatibility": row["source_compatibility"],
+                "unqualified_inputs": [
+                    key
+                    for key, value in row["qualified_historical_coverage"].items()
+                    if value is None
+                ],
+                "model_id": model["model_id"] if model else None,
+                "model_version": model["version"] if model else None,
+                "model_artifact_sha256": model["artifact_hash"] if model else None,
+                "model_role": model["lifecycle_state"] if model else None,
+                "evaluation_status": row["evaluation"]["status"],
+                "publication_status": row["publication"]["current_status"],
+                "publication_eligible": row["publication"]["eligible_under_declared_evidence"],
+            }
+        )
+        for source in row["provider_sources"]:
+            scope = source["scope"]
+            key = (
+                scope["provider"],
+                scope["resource_type"],
+                (source["capability"] or {}).get("availability", "UNKNOWN"),
+            )
+            providers[key] = dict(zip(("provider", "resource", "availability"), key, strict=True))
+    return {
+        "contract": "MarketCapabilitySummary",
+        "contract_version": "1",
+        **{
+            key: report[key]
+            for key in (
+                "competition_id",
+                "season_id",
+                "knowledge_cutoff",
+                "recorded_at",
+                "read_only",
+                "limitations",
+            )
+        },
+        "authoritative": False,
+        "markets": markets,
+        "provider_candidates": [providers[key] for key in sorted(providers)],
+        "monitoring_scope": "EXISTING_PUBLISHED_GOAL_FORECASTS_ONLY",
+        "new_market_settlement": "NOT_IMPLEMENTED",
+        "automatic_promotion": False,
+    }

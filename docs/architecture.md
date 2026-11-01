@@ -1370,3 +1370,21 @@ Unbound pre-migration in-flight rows retain their compatibility consumers. Queue
 emptiness does not prove deployed readers are retired or grant code removal.
 Live retirement requires accepted Phase35 cutover, a deployed-scheduler inventory,
 owned pending work, stabilization/rollback approval and separate authorization.
+
+
+### Scoped Admin market diagnostics
+
+`GET /v1/admin/market-capabilities` uses the existing private-local Admin access
+policy and the Python capability/coverage reader. Canonical competition and season
+IDs plus a nonfuture timezone-aware knowledge cutoff bind the report; the season
+must belong to that competition. Cutoffs have at most microsecond precision.
+The compact `MarketCapabilitySummary` is diagnostic, not a forecast or promotion.
+It retains target semantics, missing inputs, source compatibility, configured
+model traceability and publication/evaluation distinctions. Native candidates do
+not establish canonical scope or historical eligibility. No database name or raw
+provider payload is exported. Existing published forecasts are not withdrawn or
+approved by this report. Request cancellation terminates the bounded reader.
+
+The existing Data Sync page owns the scoped read form and grouped disclosures.
+Its resource fails/retries independently of sync status. No new Admin app,
+credential store, acquisition control, model fitting or runtime cutover is added.

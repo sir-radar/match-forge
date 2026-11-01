@@ -949,3 +949,70 @@ function parseExternalIdentity(item: Record<string, unknown>) {
     source_revision_conflict: item.source_revision_conflict === undefined ? undefined : boolean(item.source_revision_conflict, "source_revision_conflict"),
   };
 }
+
+export const MARKET_STATUSES = ["SUPPORTED", "SHADOW", "ENGINEERING_READY", "RESEARCH_REQUIRED", "DATA_COLLECTION_REQUIRED", "INSUFFICIENT_HISTORY", "INSUFFICIENT_PLAYER_DATA", "SEMANTIC_MISMATCH", "BLOCKED"] as const;
+export const MARKET_GROUPS = ["GOALS", "PERIODS", "CORNERS", "CARDS", "TEAM_STATISTICS", "PLAYERS", "JOINT"] as const;
+export type MarketScope = { competition_id: string; season_id: string; knowledge_cutoff: string };
+export type MarketDiagnostic = {
+  market_id: string; group: typeof MARKET_GROUPS[number]; semantic_version: string; definition_sha256: string;
+  status: typeof MARKET_STATUSES[number]; unavailable_reason: string | null; next_action: string;
+  source_compatibility: string; unqualified_inputs: string[];
+  model_id: string | null; model_version: string | null; model_artifact_sha256: string | null; model_role: string | null;
+  evaluation_status: string; publication_status: string; publication_eligible: boolean;
+};
+export type MarketCapabilitySummary = MarketScope & {
+  contract: "MarketCapabilitySummary"; contract_version: "1"; recorded_at: string; read_only: "on";
+  authoritative: false; automatic_promotion: false; monitoring_scope: string; new_market_settlement: string;
+  limitations: string[]; markets: MarketDiagnostic[];
+  provider_candidates: { provider: string; resource: string; availability: string }[];
+};
+
+function enumMember<T extends string>(value: unknown, values: readonly T[], field: string): T {
+  const result = values.find((candidate) => candidate === value);
+  if (result === undefined) throw new Error(`invalid ${field}`);
+  return result;
+}
+function marketDigest(value: unknown): string | null {
+  const result = nullableText(value, "model_artifact_sha256");
+  if (result !== null && !/^[0-9a-f]{64}$/.test(result)) throw new Error("invalid market checksum");
+  return result;
+}
+function parseMarketDiagnostic(value: unknown): MarketDiagnostic {
+  const item = object(value, "market diagnostic");
+  const definition = marketDigest(item.definition_sha256);
+  if (!definition) throw new Error("missing market checksum");
+  const id = text(item.market_id, "market_id"), version = text(item.semantic_version, "semantic_version");
+  if (!/^[A-Z][A-Z0-9_]*$/.test(id) || !new RegExp(`^${id.toLowerCase()}-v[1-9][0-9]*$`).test(version)) throw new Error("market semantic version mismatch");
+  const modelID = nullableText(item.model_id, "model_id"), modelVersion = nullableText(item.model_version, "model_version"), modelHash = marketDigest(item.model_artifact_sha256);
+  const modelRole = item.model_role === null ? null : enumMember(item.model_role, ["CHAMPION", "CHALLENGER", "RESEARCH", "RETIRED"], "model role");
+  const model = [modelID, modelVersion, modelHash, modelRole];
+  if (model.some((value) => value === null) && model.some((value) => value !== null)) throw new Error("incomplete model metadata");
+  return {
+    market_id: id, group: enumMember(item.group, MARKET_GROUPS, "market group"), semantic_version: version, definition_sha256: definition,
+    status: enumMember(item.status, MARKET_STATUSES, "market status"), unavailable_reason: nullableText(item.unavailable_reason, "unavailable_reason"), next_action: text(item.next_action, "next_action"),
+    source_compatibility: enumMember(item.source_compatibility, ["EXACT_OR_VERIFIED_EQUIVALENT", "TRANSFORMABLE_WITH_EVIDENCE", "NORMALIZABLE", "RESEARCH_COMPATIBLE_ONLY", "INCOMPATIBLE", "UNKNOWN"], "source compatibility"),
+    unqualified_inputs: array(item.unqualified_inputs, "unqualified_inputs").map((value) => text(value, "input")),
+    model_id: modelID, model_version: modelVersion, model_artifact_sha256: modelHash, model_role: modelRole,
+    evaluation_status: enumMember(item.evaluation_status, ["UNASSESSED", "PASS", "PASS_WITH_WARNINGS", "FAIL"], "evaluation status"),
+    publication_status: enumMember(item.publication_status, ["UNKNOWN", "NOT_PUBLISHED", "SHADOW", "PUBLISHED", "SUSPENDED"], "publication status"),
+    publication_eligible: boolean(item.publication_eligible, "publication_eligible"),
+  };
+}
+export function parseMarketCapabilitySummary(value: unknown): MarketCapabilitySummary {
+  const item = object(value, "market capability summary");
+  if (item.contract !== "MarketCapabilitySummary" || item.contract_version !== "1" || item.read_only !== "on" || item.authoritative !== false || item.automatic_promotion !== false) throw new Error("invalid diagnostic report boundary");
+  const markets = array(item.markets, "markets").map(parseMarketDiagnostic);
+  if (new Set(markets.map((row) => row.market_id)).size !== markets.length) throw new Error("duplicate market diagnostic");
+  return {
+    contract: "MarketCapabilitySummary", contract_version: "1", read_only: "on", authoritative: false, automatic_promotion: false,
+    competition_id: text(item.competition_id, "competition_id"), season_id: text(item.season_id, "season_id"),
+    knowledge_cutoff: timestamp(item.knowledge_cutoff, "knowledge_cutoff"), recorded_at: timestamp(item.recorded_at, "recorded_at"),
+    monitoring_scope: enumMember(item.monitoring_scope, ["EXISTING_PUBLISHED_GOAL_FORECASTS_ONLY"], "monitoring_scope"),
+    new_market_settlement: enumMember(item.new_market_settlement, ["NOT_IMPLEMENTED"], "new_market_settlement"),
+    limitations: array(item.limitations, "limitations").map((value) => text(value, "limitation")), markets,
+    provider_candidates: array(item.provider_candidates, "provider_candidates").map((value) => {
+      const candidate = object(value, "provider candidate");
+      return { provider: text(candidate.provider, "provider"), resource: text(candidate.resource, "resource"), availability: enumMember(candidate.availability, ["SUPPORTED", "UNSUPPORTED", "PARTIAL", "UNKNOWN", "PLAN_RESTRICTED", "AUTHORIZATION_REQUIRED", "TEMPORARILY_UNAVAILABLE"], "availability") };
+    }),
+  };
+}
