@@ -65,7 +65,7 @@ root, then registers metadata without filesystem access. Shared work can prepare
 files before entering its bounded publication transaction. The existing `publish`
 method composes both operations for compatible callers.
 
-With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
+With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document. `store INPUT --data-root PATH --database-url TARGET --operating-database-url OPERATING` requires a verified isolated database; it never inherits a write target from `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass. See the experimental database procedure in `docs/testing.md`.
 
 `PointInTimeRepository.resource_observation_ids_at` reads this registry by exact contract and provider with an explicit `knowledge_cutoff`. It returns all immutable observations whose `known_at` is at or before that cutoff, ordered by knowledge time and observation ID. Provider update times and earlier football validity never backdate MatchForge knowledge. Later corrections add observations; the reader preserves earlier evidence and does not choose a conflict winner or latest normalizer.
 
@@ -164,8 +164,20 @@ The offline command below reads registered retained bytes and writes an immutabl
 ```sh
 uv run --locked python -m football.providers.normalization.cli \
   --source-resource-id RESOURCE_UUID --resource shots --fixture-native-id NATIVE_MATCH_ID \
-  --data-root .local/football-data --artifact-root .local/shadow-observations --persist
+  --data-root .local/football-data --artifact-root .local/shadow-observations --persist \
+  --database-url "$V4_TARGET_DATABASE_URL" --operating-database-url "$DATABASE_URL"
 ```
+
+Persistence verifies the actual PostgreSQL system identifier and database OID
+against the operating connection, then requires the target's persistent
+`matchforge.database_role=experimental` database setting. Session overrides,
+ambiguous libpq routing settings and a shadow-looking database name do not prove
+isolation. Verification uses read-only connections before files or work are
+published; writes use the same verified target connection. Offline replay without
+`--persist` uses a read-only connection. Other experimental acquisition/backfill
+scripts must use the guarded launcher described in `docs/testing.md` before any
+provider call, quota debit or publication. Operational sync keeps its existing
+database selection and worker rules.
 
 `football.providers.data_audit` reads a repeatable, read-only diagnostic snapshot.
 With `--data-root`, it verifies registered observation bytes before counting

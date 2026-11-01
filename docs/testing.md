@@ -32,6 +32,55 @@ Tests should normally be committed with the production behavior they prove.
 
 ## Testing layers
 
+### Experimental V4 database selection
+
+Experimental acquisition, normalization, backfills and model research must use a
+new disposable or explicitly retained shadow database. Reuse the repository's
+`createdb`/Goose provisioning convention; never migrate the operating database
+for an experiment. Keep the original operating URL available as the reference.
+
+On the newly provisioned target only, its database owner records the intended
+role with `ALTER DATABASE "new_database" SET matchforge.database_role='experimental'`.
+This is database metadata, not a schema migration or an observation disposition.
+Never mark the operating database. The guard independently compares actual
+PostgreSQL system identifiers and database OIDs, so even a marked target cannot
+equal the supplied operating reference. The connection account needs permission
+to read `pg_control_system()`; unverifiable identity fails closed.
+
+Export `.env` once, load `scripts/toolchain.sh`, and supply both explicit URLs.
+`V4_TARGET_DATABASE_URL` below is a shell variable for that newly provisioned
+database, not a default or a new `.env` configuration field:
+
+```sh
+uv run --locked python -m football.storage.experimental \
+  --database-url "$V4_TARGET_DATABASE_URL" \
+  --operating-database-url "$DATABASE_URL" -- \
+  uv run --locked python path/to/experimental_phase.py
+```
+
+The launcher checks isolation before starting the child, logs credential-free
+database identity, and pins both `DATABASE_URL` and `FOOTBALL_DATABASE_URL` to the
+verified endpoint. It rejects service/session overrides, multiple endpoints,
+missing connection coordinates and routing `PG*` variables; it removes `PG*`
+defaults from the child. Phase scripts must consume those supplied URLs, preserve
+the existing quota/work owners, and must not reload `.env` or pass an independent
+database URL inside the child. Python callers may instead use
+`football.storage.experimental.experimental_connection(target, operating)` and
+perform all work through that verified connection. This guards database choice;
+it does not sandbox arbitrary code or authorize scientific evaluations, model
+promotion or Architecture V2 cutover.
+
+The observation `store` CLI and normalization CLI with `--persist` require the
+same two explicit URL arguments and perform this check themselves. Read-only
+normalization replay still supports `DATABASE_URL`. Historical V4 local publisher
+scripts and their original invocations are audit evidence, not approved launch
+instructions; reruns must use the guarded launcher and an isolated target.
+Normal operational provider sync retains its existing operating behavior.
+
+`scripts/storage-integration.sh` includes the isolation and development-eligibility
+regressions. Its databases and the additional databases created by those tests
+are disposable. Role markers used by tests are written only to their own targets.
+
 ### Unit tests
 
 Use for:

@@ -25,6 +25,7 @@ from football.providers.football_data_uk_evidence import FootballDataUkAcquisiti
 from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.normalization.common import NormalizationContext, NormalizationResult
 from football.providers.normalization.pipeline import normalize_resource
+from football.storage.experimental import experimental_connection
 from football.storage.raw import ImmutableFileStore, ImmutableRawStore
 from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkType
 from football.work.storage import WorkRegistry
@@ -220,8 +221,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--competition-native-id")
     parser.add_argument("--season-label")
     parser.add_argument("--persist", action="store_true")
+    parser.add_argument("--database-url")
+    parser.add_argument("--operating-database-url")
     args = parser.parse_args(argv)
-    with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as connection:
+    if args.persist and (not args.database_url or not args.operating_database_url):
+        parser.error("--persist requires explicit --database-url and --operating-database-url")
+    selected = (
+        experimental_connection(args.database_url, args.operating_database_url)
+        if args.persist
+        else psycopg.connect(
+            args.database_url or os.environ["DATABASE_URL"],
+            autocommit=True,
+            options="-c default_transaction_read_only=on",
+        )
+    )
+    with selected as connection:
         context, raw = registered_resource(
             connection,
             args.data_root,

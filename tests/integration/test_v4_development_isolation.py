@@ -60,7 +60,7 @@ def _protected(c):
     }
 
 
-def _publish(c, root, provider):
+def _source(c, root, provider):
     import hashlib
 
     kind = {"espn": "scoreboard", "whoscored": "fixtures"}.get(provider, "league")
@@ -93,6 +93,14 @@ def _publish(c, root, provider):
         import_pending=True,
     )
     context, retained = registered_resource(c, root, rid)
+    return context, retained, resource_type
+
+
+def _publish(c, root, provider):
+    context, retained, resource_type = _source(c, root, provider)
+    known = context.time.known_at
+    rid = context.provenance.source_resource_id
+    digest = context.provenance.source_sha256
     result = normalize_resource(context, resource_type, retained)
     assert result.observations and not result.findings
     persist_normalization(

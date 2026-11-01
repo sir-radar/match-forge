@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from collections.abc import Sequence
 from pathlib import Path
-
-import psycopg
 
 from football.contracts.observation_schema import observation_schema
 from football.contracts.observations import observation_from_bytes
 from football.observations.storage import ObservationArtifactStore
+from football.storage.experimental import experimental_connection
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -25,13 +23,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         action.add_argument("input", type=Path)
         if command == "store":
             action.add_argument("--data-root", type=Path, required=True)
+            action.add_argument("--database-url", required=True)
+            action.add_argument("--operating-database-url", required=True)
     args = parser.parse_args(argv)
     if args.command == "schema":
         print(json.dumps(observation_schema(args.version), indent=2, sort_keys=True))
         return 0
     observation = observation_from_bytes(args.input.read_bytes())
     if args.command == "store":
-        with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
+        with (
+            experimental_connection(args.database_url, args.operating_database_url) as connection,
+            connection.transaction(),
+        ):
             ObservationArtifactStore(connection, args.data_root).publish(observation)
     print(
         json.dumps(
