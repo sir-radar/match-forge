@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T07:36:17.678694Z",
+  "updated_at": "2026-11-02T07:39:06.222585Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3318,7 +3318,7 @@
     },
     "identity_admission_recovery": {
       "status": "IN_PROGRESS",
-      "phase": "IDR-B",
+      "phase": "IDR-C",
       "starting_sha": "e5b9b88b33212e542ebbd98ae5558a56b41c1e46",
       "root_cause_ref": "docs/evidence/v4-identity-recovery-root-cause.json",
       "source_verified_legacy_mappings": 21,
@@ -3330,10 +3330,14 @@
       "issue_2_complete": false,
       "production_cutover": false,
       "phase_commits": {
-        "IDR-A": "ff592523f163b6deeb7996976690808d3e83d2a8"
+        "IDR-A": "ff592523f163b6deeb7996976690808d3e83d2a8",
+        "IDR-B": "7082432642a1cdbfc81d5d86e1271156f924ae9f"
       },
       "relationship_proof_ref": "docs/evidence/v4-identity-recovery-relationship-proof.json",
-      "relationship_status": "BLOCKED_WITH_EVIDENCE"
+      "relationship_status": "BLOCKED_WITH_EVIDENCE",
+      "correction_contract_ref": "docs/evidence/v4-identity-recovery-correction-contract.json",
+      "correction_status": "BLOCKED_WITH_EVIDENCE",
+      "new_statsbomb_correction_contract": false
     }
   }
 }

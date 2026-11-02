@@ -1,0 +1,96 @@
+{
+  "phase": "IDR-C",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "7082432642a1cdbfc81d5d86e1271156f924ae9f",
+  "recorded_at": "2026-11-02T07:39:06.220232+00:00",
+  "independent_relationship_prerequisite": "NOT_MET",
+  "new_statsbomb_correction_contract_implemented": false,
+  "new_correction_migration": null,
+  "existing_capabilities": [
+    {
+      "owner": "identity_trust.py:qualify_mapping / explicit_target",
+      "available": "Exact supported origin and static explicit crosswalk qualification",
+      "limitation": "Crosswalk qualification requires canonical_id equal to crosswalk_target plus verified context. It cannot prospectively redirect the retained UUIDv7 row unchanged."
+    },
+    {
+      "owner": "identity_admission.py:_manual_review",
+      "available": "Existing reviewed fixture-bound manual evidence",
+      "limitation": "Requires a retained MANUAL_ACCEPTED decision, exact native fields, snapshot and canonical fixture context. An arbitrary Reep artifact is not that decision."
+    },
+    {
+      "owner": "identity_correction.py:TeamIdentityCorrection / _qualify",
+      "available": "Prospective linked FDO-to-API-Football team correction, revocation, revalidation, domain lock and atomic history",
+      "limitation": "Source must be FDO, target API-Football, with approved static crosswalk, retained original incorrect origin projection and fixture proof. StatsBomb UUIDv7 does not meet this contract."
+    },
+    {
+      "owner": "resolution_actions.py:qualify_action / apply_one",
+      "available": "Existing preview/version, explicit approval, idempotency, lock, append-only review and follow-up orchestration",
+      "limitation": "Orchestration does not replace domain qualification; APPROVE requires ORIGIN_ANCHOR/CROSSWALK and CORRECT uses the restricted team contract."
+    },
+    {
+      "owner": "IdentityRepository.admitted_identity_at",
+      "available": "Effective knowledge-cutoff reads for team corrections and competition admissions",
+      "limitation": "Competition admission has no team-style prospective redirect; do not force competition 2 into the team correction contract."
+    }
+  ],
+  "decision": "Retain current trust/correction behavior and leave unsupported legacy relationships unresolved. A narrowly scoped correction capability would be justified only once at least one exact relationship is independently proven and the recognized evidence/review policy is settled. Building an unused proof-free contract now would be speculative and cannot unblock these cases.",
+  "selected_future_path": "Prospective append-only reviewed crosswalk, preserving old UUID/mapping and original decisions; implement only missing team/competition compatibility after proof. No global override, StatsBomb origin allowlist or historical rewrites.",
+  "existing_path_regression": {
+    "command": "TEST_DATABASE_URL=<verified experimental target> uv run --locked --no-sync pytest -o addopts='' -q tests/integration/test_team_identity_correction.py tests/integration/test_product_identity_admission.py",
+    "exit_code": 0,
+    "passed": 64,
+    "log": {
+      "path": ".local/identity-recovery/c-tests.log",
+      "sha256": "b241068446cf289e1f20c5f7f67e07f7207c610fda13a0ae0321ab89ff6ef92e"
+    },
+    "database_scope": "Existing isolated_database fixtures create/migrate/drop disposable targets; other admission tests use the separately provisioned experimental target. Operating URL is not supplied as TEST_DATABASE_URL.",
+    "coverage": [
+      "Existing exact FDO/API-Football correction and independently retained fixture context",
+      "Hash corruption and missing source",
+      "Wrong mappings/decisions and competing target",
+      "Repeat convergence and conflicting repeated requests",
+      "Concurrent identical and incompatible approvals",
+      "Prospective correction/revocation and historical cutoff preservation",
+      "Transaction failure rolls back admission/history",
+      "Populated upgrade preserves prior decisions",
+      "Reviewed revalidation cannot override operator revocation"
+    ],
+    "limitation": "These are existing supported-path regressions. They do not demonstrate a new StatsBomb correction, independent football identity proof or owner-approved admission."
+  },
+  "unexecuted_statsbomb_contract_tests": "No StatsBomb approval/redirect contract exists or was added; the requested success/concurrency/rollback matrix for such a contract is blocked by the unmet proof/policy prerequisite. No passing claim is made for it.",
+  "research": [
+    {
+      "question": "Can transaction snapshots alone replace identity coordination?",
+      "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+      "version": "PostgreSQL 18",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "finding": "Snapshots and locks have distinct guarantees. Existing transaction/ordered admission locks and under-lock evidence rechecks remain in place.",
+      "alternatives_considered": [
+        "Uncoordinated read then write",
+        "Broad new correction table"
+      ],
+      "selected_approach": "Preserve established domain lock and transaction owner",
+      "uncertainty_remaining": "No tested StatsBomb proof-specific correction path yet"
+    },
+    {
+      "question": "How should retry/concurrent approval coordinate?",
+      "url": "https://www.postgresql.org/docs/18/explicit-locking.html",
+      "version": "PostgreSQL 18",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "finding": "Transaction-scoped coordination is retained; existing tests prove supported correction races and rollback.",
+      "alternatives_considered": [
+        "Weaken locks or add unrelated registry"
+      ],
+      "selected_approach": "Reuse existing domain lock, append-only admissions and workflow idempotency",
+      "uncertainty_remaining": "Any new proof-specific branch must be tested once authorized by real evidence"
+    }
+  ],
+  "operating_writes": 0,
+  "operating_migrations": 0,
+  "original_mappings_modified": 0,
+  "actual_admissions": 0,
+  "isolated_statsbomb_corrections": 0,
+  "next_action": "Obtain one independently verifiable exact StatsBomb-to-accepted-target relationship or an explicitly approved reviewed evidence policy. Then scope and test the missing prospective compatibility; keep competition semantics separate."
+}
