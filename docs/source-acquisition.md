@@ -455,3 +455,13 @@ mapping or admission decisions. Confidence and a shared Reep ID cannot override
 UUID-origin contradictions, missing source anchors, historical knowledge times
 or player membership/minute requirements. Check the release's own quality gates
 separately; downloadable does not mean qualified.
+
+ClubElo's `ratings_archive` normalizer consumes the inspected seven-column CSV
+format through the existing normalization CLI. Keep the archive repository,
+revision, original URL and acquired bytes in source evidence. `From` is the
+rating's source calendar date; `To` stays in the raw CSV and does not establish
+intraday availability or a MatchForge membership interval. Acquisition/knowledge
+time remains the actual collection time. Daily CSV labels differ from website
+slugs, so team references remain anonymous until the identity owner accepts an
+exact mapping. This archived path does not establish current website/Vega access,
+complete rating history, or permission to redistribute provider data.

@@ -11,6 +11,7 @@ from football.providers.native.reader import native_json
 from football.providers.normalization import (
     api_football,
     api_football_rich,
+    clubelo,
     espn,
     files,
     flashscore,
@@ -32,6 +33,7 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("clubelo", "ratings_archive"): clubelo.ratings_archive,
     ("soccerway", "league"): flashscore.league,
     ("soccerway", "statistics"): flashscore_statistics.statistics,
     ("soccerway", "events"): flashscore_events.events,
@@ -103,7 +105,7 @@ def normalize_resource(
         )
         return output.result()
     payload: object
-    if context.provenance.provider == "football_data_uk" or (
+    if context.provenance.provider in {"football_data_uk", "clubelo"} or (
         context.provenance.provider in {"flashscore", "soccerway"}
         and resource in {"statistics", "events", "lineups", "summary"}
     ):
