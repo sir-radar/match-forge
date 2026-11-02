@@ -111,11 +111,7 @@ def bridge_candidates(
     keys = {_native(row) for row in inventory}
     required = {"reep_id", "provider", "namespace", "external_id", "entity_type"}
     matched: dict[tuple[str, str, str], list[dict[str, str]]] = defaultdict(list)
-    table = pl.scan_csv(
-        release_path.parent / "bridges.csv.gz",
-        infer_schema=False,
-        empty_string_is_null=False,
-    )
+    table = pl.scan_csv(release_path.parent / "bridges.csv.gz", infer_schema=False).fill_null("")
     if not required <= set(table.collect_schema().names()):
         raise ValueError("Reep bridges missing required columns")
     if keys:
