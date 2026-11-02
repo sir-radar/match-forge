@@ -101,29 +101,48 @@ def test_names_without_search_alias_do_not_abort_native_identity_storage(
 ) -> None:
     competition, _ = geography_fixture(connection, tmp_path, "pitchapi", "MAR", names)
     assert competition is not None
-    assert {row[0] for row in connection.execute("SELECT name FROM football.product_teams")} == set(
-        names
-    )
-    assert connection.execute("SELECT count(*) FROM football.product_team_aliases").fetchone() == (
-        aliases,
-    )
+    fixture = connection.execute(
+        "SELECT fixture_id,home_team_id,away_team_id FROM football.product_fixtures "
+        "WHERE competition_id=%s",
+        (competition,),
+    ).fetchone()
+    assert fixture is not None
+    fixture_id, home_id, away_id = fixture
+    assert {
+        row[0]
+        for row in connection.execute(
+            "SELECT name FROM football.product_teams WHERE team_id=ANY(%s)",
+            ([home_id, away_id],),
+        )
+    } == set(names)
     assert connection.execute(
-        "SELECT identity_status FROM football.product_fixtures"
+        "SELECT count(*) FROM football.product_team_aliases WHERE team_id=ANY(%s)",
+        ([home_id, away_id],),
+    ).fetchone() == (aliases,)
+    assert connection.execute(
+        "SELECT identity_status FROM football.product_fixtures WHERE fixture_id=%s",
+        (fixture_id,),
     ).fetchone() == ("PROVISIONAL",)
     assert connection.execute(
-        "SELECT count(*) FROM football.product_team_match_history"
+        "SELECT count(*) FROM football.product_team_match_history WHERE fixture_id=%s",
+        (fixture_id,),
     ).fetchone() == (0,)
     assert caplog.text.count("search alias unavailable") == missing_aliases
-    original_fixture = connection.execute(
-        "SELECT fixture_id FROM football.product_fixtures"
-    ).fetchone()
     assert geography_fixture(connection, tmp_path, "pitchapi", "MAR", names)[0] == competition
     assert (
-        connection.execute("SELECT fixture_id FROM football.product_fixtures").fetchone()
-        == original_fixture
+        connection.execute(
+            "SELECT fixture_id,home_team_id,away_team_id FROM football.product_fixtures "
+            "WHERE competition_id=%s",
+            (competition,),
+        ).fetchone()
+        == fixture
     )
     assert connection.execute(
-        "SELECT count(*) FROM football.match_provider_mappings"
+        "SELECT count(*) FROM football.match_provider_mappings m "
+        "JOIN football.providers p ON p.id=m.provider_id "
+        "WHERE p.code='pitchapi' AND m.provider_match_id='m_Geo001' "
+        "AND m.valid_to IS NULL AND m.match_id=%s",
+        (fixture_id,),
     ).fetchone() == (1,)
 
 

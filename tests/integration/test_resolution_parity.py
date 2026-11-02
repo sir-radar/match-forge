@@ -101,15 +101,39 @@ def test_expired_parity_lease_cannot_publish_report(tmp_path):
         c.commit()
         claim = WorkRegistry(c).claim(
             "expired-parity",
-            timedelta(milliseconds=1),
+            timedelta(seconds=1),
             (WorkType.READ_MODEL_PROJECTION,),
             work_ids=(work,),
         )
         assert claim
+        c.execute(
+            "SELECT pg_sleep(GREATEST(0,extract(epoch "
+            "FROM (%s::timestamptz-clock_timestamp())))+0.005)",
+            (claim.lease_until,),
+        )
+        c.commit()
         assert parity.publish_parity(c, Path.cwd(), tmp_path, claim)["status"] == "LEASE_LOST"
         assert c.execute("SELECT outcome FROM football.resolution_parity_work").fetchone() == (
             None,
         )
+
+
+def test_immediate_parity_work_uses_database_clock(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta
+
+    class AheadClock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return super().now(tz) + timedelta(minutes=1)
+
+    with isolated_database() as url, psycopg.connect(url) as c:
+        seed(c, tmp_path)
+        c.commit()
+        monkeypatch.setattr(parity, "datetime", AheadClock)
+        request = approve(c, tmp_path, proposal())
+        apply_one(c, tmp_path, request, ACTOR)
+        c.commit()
+        assert run_pending_recovery(c, tmp_path)["status"] == "PROCESSED"
 
 
 def test_parity_input_identity_is_checked_before_verification(tmp_path):

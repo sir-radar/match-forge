@@ -1814,3 +1814,17 @@ The populated rehearsal is processing the retained alias-error cohorts, thirteen
 Receipt: [source alias cases](../../.local/data-status-remediation/retained-alias-cases.json), SHA-256 `251f4fca2b99ab8482089ff9df3237b51299fb006e5dbf5d5373b5f4d569a311`.
 
 Receipt: [populated provision](../../.local/data-status-remediation/populated/provision.json), SHA-256 `a421baaba0e966462783b0e58a5c4fadadeda29b20a548d4c9b4557a21e6a649`.
+
+### L7. Aggregate validation repairs
+
+The first `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration` passed the configured static, unit, architecture, build, project-status and web checks, then failed ten storage integration cases. Its log is preserved; the API integration script was not reached. Six failures shared a test fixture that registered normalizer v1 while publishing a current v2 manifest. Two alias cases counted an unrelated baseline native mapping. The fixture now uses its actual normalizer version, and alias assertions use the exact fixture/team/native IDs. The integrity verifier and exact-one-mapping assertion remain strict.
+
+Two parity failures exposed immediate-work scheduling that compared an application timestamp with the database clock. A deterministic regression moves the application clock one minute ahead and reproduces `BUSY` before the fix. Immediate parity work now uses `clock_timestamp()` from the same database that decides eligibility. The expiry regression obtains an owned one-second lease and explicitly waits past its recorded database deadline before requiring `LEASE_LOST`; no fencing check is bypassed. All five affected integration suites pass together, and all seven parity tests pass after the scheduling fix. Scoped Ruff formatting/lint, Mypy and whitespace checks pass. Final aggregate validation remains required after this checkpoint.
+
+Local receipt `.local/data-status-remediation/check-integration.log`: SHA-256 `872aac59c2e8e3c05f858fcd54a8a989b974a9ccf929cb66ae6b942ee486118a`.
+
+Local receipt `.local/data-status-remediation/verification-repairs.log`: SHA-256 `db6439b4aa72f96259c1d4ad3478df055e13081b6e156339ee2e830d07e81753`.
+
+Local receipt `.local/data-status-remediation/parity-clock-red.log`: SHA-256 `13c947fcf7f18dba96036dbc8c5e354dcbbeddb14030508a554a8cf3a3364813`.
+
+Local receipt `.local/data-status-remediation/parity-green.log`: SHA-256 `90081b2ad8c54e0bd7ba2ad701ea022ba8768ebcaa810cd0a11faac8fe18ff9e`.
