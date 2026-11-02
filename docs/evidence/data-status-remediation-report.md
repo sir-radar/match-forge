@@ -2239,3 +2239,43 @@ Phase 3A: **PASS_WITH_WARNINGS**. Worker receipts:
 `684fd6de3cb9b5864dcb23fe10dc21df59b4dd6547c9457f7cde443de69994a4`.
 The production code is unchanged since the passing full gate; this checkpoint
 uses prose review and `git diff --check`.
+
+### N5. Remaining retained-scope recovery
+
+After committing the preceding checkpoint as `2902e86`, operating replay
+processes the remaining 13 retained FotMob deadlock-only scopes and two
+PitchAPI scopes already verified twice in the populated shadow. It uses the
+existing ingestion method, a 400-row limit per scope and the original source
+bytes/timestamps, with no provider request, migration, restart or scope-status
+override. All 15 runs finish with zero row failures and retain
+**BLOCKED_IDENTITY** qualification. Prior fixture and mapping IDs remain.
+
+The measured additional recovery is **31 new canonical fixture records and
+25 new retained history rows**, making this continuation's cumulative totals
+**269 new fixture records and 209 new history rows**. These populations
+overlap and must not be added as distinct football matches. Raw provider
+claims and retained history remain separate from currently eligible model
+history; the latter is measured in the final checkpoint.
+
+The Ghana `522/2024/2025` cohort grows from 520 to 540 represented fixture
+IDs and from 493 to 512 represented history IDs. Creation-time checks show
+that 18 of those additional fixture IDs already existed globally before this
+task. Only two match records and one history row are new there. Those 18
+existing matches are excluded from new-record recovery counts. The other
+cohorts add 29 new fixtures and 24 new history rows. This explains why the
+old shadow's 287 additional represented fixture IDs are not a defensible
+claim of 287 new operating matches.
+
+Canonical `matches.created_at` checks verify all 269 newly counted match IDs
+were created during this task, and the 209 newly counted history rows belong
+to those new matches. Each source-cohort before/after sample has its own
+execution window. No simultaneous global snapshot or completed provider
+season is inferred. The two PitchAPI scopes add five provisional fixture
+records and zero history rows; their outstanding identity proof is retained.
+
+Phase 3B: **PASS_WITH_WARNINGS**. Exact source IDs, counters and before/after
+IDs: `remaining-operating-replay.json`, SHA-256
+`1182033130e5785292318369c4f926e6b2984e15171f3164ef536b5596f93f26`.
+`record-creation-proof.json` records new versus previously existing canonical
+IDs and creation times. No production code changed after the passing full
+gate; this checkpoint uses prose review and `git diff --check`.
