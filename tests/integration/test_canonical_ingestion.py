@@ -699,6 +699,97 @@ def test_registers_source_and_ingests_canonical_hierarchy_idempotently(
         ).fetchone() == (None, "2024-12-16T10:15:11.055845")
 
 
+@pytest.mark.parametrize(
+    "table,canonical_column",
+    [
+        ("competition_provider_mappings", "competition_id"),
+        ("season_provider_mappings", "season_id"),
+        ("team_provider_mappings", "team_id"),
+        ("player_provider_mappings", "player_id"),
+        ("match_provider_mappings", "match_id"),
+    ],
+)
+def test_surrogate_ingestion_records_native_mapping_without_deterministic_origin(
+    connection: Connection[Any], tmp_path: Path, table: str, canonical_column: str
+) -> None:
+    from psycopg import sql
+
+    acquired_at = datetime(2026, 8, 29, 8, 0, tzinfo=UTC)
+    acquisition = _acquire_bundle(tmp_path, source_git_sha="a" * 40, acquired_at=acquired_at)
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+    first = ingestor.ingest(acquisition)
+    query = sql.SQL(
+        "SELECT id,{},mapping_method,source_snapshot_id FROM football.{} "
+        "WHERE provider_id=%s ORDER BY id"
+    ).format(sql.Identifier(canonical_column), sql.Identifier(table))
+    rows = connection.execute(query, (_provider_id(connection),)).fetchall()
+    assert rows
+    assert all(row[1].version == 7 and row[2] == "provider_native" for row in rows)
+    assert all(row[3] == first.source_snapshot_id for row in rows)
+    assert ingestor.ingest(acquisition) == first
+    assert connection.execute(query, (_provider_id(connection),)).fetchall() == rows
+    history = connection.execute(
+        "SELECT canonical_id,mapping_method,known_at,first_seen_at "
+        "FROM football.provider_mapping_history WHERE mapping_id=ANY(%s) ORDER BY mapping_id",
+        ([row[0] for row in rows],),
+    ).fetchall()
+    assert [(row[0], row[1]) for row in history] == [(row[1], row[2]) for row in rows]
+    assert all(row[2] >= row[3] for row in history)
+
+
+def test_ingestion_preserves_legacy_mapping_method_and_history(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    from psycopg import sql
+
+    acquisition = _acquire_bundle(
+        tmp_path, source_git_sha="a" * 40, acquired_at=datetime(2026, 8, 29, 8, 0, tzinfo=UTC)
+    )
+    ingestor = StatsBombCanonicalIngestor(connection, tmp_path)
+    ingestor.ingest(acquisition)
+    provider = _provider_id(connection)
+    # Recreate the legacy metadata in this rolled-back fixture only.
+    connection.execute(
+        "UPDATE football.team_provider_mappings SET mapping_method='deterministic' "
+        "WHERE provider_id=%s",
+        (provider,),
+    )
+    before = connection.execute(
+        "SELECT to_jsonb(m) FROM football.team_provider_mappings m WHERE provider_id=%s "
+        "ORDER BY id",
+        (provider,),
+    ).fetchall()
+    history = connection.execute(
+        "SELECT to_jsonb(h) FROM football.provider_mapping_history h WHERE provider_id=%s "
+        "ORDER BY history_id",
+        (provider,),
+    ).fetchall()
+    ingestor.ingest(acquisition)
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(m) FROM football.team_provider_mappings m WHERE provider_id=%s "
+            "ORDER BY id",
+            (provider,),
+        ).fetchall()
+        == before
+    )
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(h) FROM football.provider_mapping_history h WHERE provider_id=%s "
+            "ORDER BY history_id",
+            (provider,),
+        ).fetchall()
+        == history
+    )
+    with pytest.raises(psycopg.errors.CheckViolation), connection.transaction():
+        connection.execute(
+            sql.SQL(
+                "UPDATE football.{} SET mapping_method='trust_legacy_uuid' WHERE provider_id=%s"
+            ).format(sql.Identifier("team_provider_mappings")),
+            (provider,),
+        )
+
+
 def test_match_list_supplies_catalog_missing_competition_season_with_lineage(
     connection: Connection[Any], tmp_path: Path
 ) -> None:

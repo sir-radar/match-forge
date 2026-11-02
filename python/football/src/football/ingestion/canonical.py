@@ -1182,7 +1182,7 @@ class _CanonicalWriter:
             *provider_values,
             self._known_from,
             self._known_from,
-            "deterministic",
+            "provider_native",
             1.0,
             self._source.snapshot_id,
         )

@@ -71,6 +71,18 @@ With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observat
 
 An explicit `football_cutoff` restricts history to observations with a reported `event_time` strictly before it, excluding simultaneous, future and unknown event times. A requested `valid_at` requires a reported validity start and applies `[valid_from, valid_to)`; a null end is open. Without these filters, the query describes source facts known at the cutoff, including known future schedules or announcements. Returned IDs can be loaded separately through `ObservationArtifactStore`; they do not establish canonical identity, model-history eligibility or a sealed forecast context. The existing modelling and serving paths remain active during shadow migration.
 
+### Provider-native mapping metadata
+
+StatsBomb canonical ingestion allocates database UUIDv7 identities and records new
+mapping claims as `provider_native`. This method binds an exact native ID to its
+surrogate; it does not establish a deterministic UUID origin or authorize canonical
+admission. Existing `deterministic` rows, UUIDs and admission decisions remain
+unchanged. Mapping history accepts the same method and retains its original
+knowledge times. Independent crosswalk proof and the existing review/admission
+contracts still govern canonical use. Deploy migration
+`202611020100_provider_native_mapping_method.sql` before the updated writer.
+Downgrade refuses to remove the method while any such mappings/history remain.
+
 ### Provider-native records
 
 `football.providers.native` describes each provider's JSON records independently. FotMob keeps numeric/string IDs and camel-case fields; PitchAPI keeps its own string IDs, status vocabulary and snake-case fields. API-Football models its own fixtures, teams, lineups, injuries, statistics and standings. football-data.org retains its v4 fixture, score and standing structures. OpenFootball retains source names and file/row identity rather than inventing team IDs. Football-Data.co.uk continues to use `FootballDataUkCsvRecordV1` and its receipt-verified CSV parser, preserving string values and empty cells.
