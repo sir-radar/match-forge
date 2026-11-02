@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T01:28:07.760022Z",
+  "updated_at": "2026-11-02T02:46:35.260130Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3071,7 +3071,7 @@
       "superseded": 7,
       "missing": 10
     },
-    "required_next_action": "Execute authorized Issue 4 phases R04-B through R04-G; preserve blocked Issue 2 and all existing scientific/cutover gates.",
+    "required_next_action": "Return to repository owner for review of exact Resolution Center proposals and source/reuse limits. Qualification requires independently accepted original UUID/source/canonical anchors, original timezone and settlement proof, and canonical player membership/exposure. Keep Issue 2 blocked. No subsequent issue/phase is authorized by this completion.",
     "completed_phase_scope": "Committed scoped engineering/provider checkpoints; individual phase statuses and full_programme_complete govern acceptance. Partial/blocked functionality is not complete.",
     "verification_corrections": [
       {
@@ -3209,14 +3209,14 @@
       "production_cutover": false,
       "legacy_retirement": false,
       "model_promotions": 0,
-      "issue_4_started": false,
-      "required_next_action": "Retain the blocked qualification result. Obtain exact independently accepted source/canonical anchors and original timezone, settlement and canonical membership/exposure proof. Issue 4 requires a separate owner handoff."
+      "issue_4_started": true,
+      "required_next_action": "R03 remains closed. Authorized R04 recovery and its owner handoff are recorded in provider_access_recovery; qualification remains blocked."
     },
     "provider_access_recovery": {
-      "status": "IN_PROGRESS",
+      "status": "PASS_WITH_WARNINGS",
       "scope": "Issue 4 only; R04-A through R04-G authorized by CURRENT_TASK.md",
       "starting_sha": "61f1c95f0d46bedf598a96b9bea1a13978d013ee",
-      "current_phase": "R04-F",
+      "current_phase": "R04-G",
       "research_ref": "docs/evidence/v4-issue-04-open-source-research.json",
       "data_classification": "EXPERIMENTAL_ONLY",
       "production_cutover": false,
@@ -3228,7 +3228,43 @@
       "fbref_ref": "docs/evidence/v4-issue-04-fbref.json",
       "qualification_status": "BLOCKED_WITH_EVIDENCE",
       "qualification_impact_ref": "docs/evidence/v4-issue-04-qualification-impact.json",
-      "issue_2_can_be_reopened_for_final_qualification": false
+      "issue_2_can_be_reopened_for_final_qualification": false,
+      "technical_work_complete": true,
+      "provider_classification": {
+        "clubelo": "PARTIAL_FUNCTIONAL",
+        "sofascore": "PARTIAL_FUNCTIONAL",
+        "fbref": "PARTIAL_FUNCTIONAL"
+      },
+      "phase_commits": {
+        "R04-A": "acb175a946782b46d3e672e71c7e4ada609fb808",
+        "R04-B": "53df8df43c616ef2b5762a1fa00706b1bac2f11c",
+        "R04-C": "967d1fcc589c9a0d039373119f9464b36ee04c8a",
+        "R04-D": "c3be2f4854aba5b850b0fb07d1a359ea379c6659",
+        "R04-E": "9690bb5c8bf87e5dc80534bf56bf228edb1b2ab5",
+        "R04-F": "b07f8f8f2a6b6ccf102d552013d3452ff153559c",
+        "R04-G period semantics": "6ec940122c562a1da81bf65c8f0d419c1727e3cd",
+        "R04-G CSV compatibility": "297f3f524936a7633e8c00289d5e5cf47614fd2d",
+        "R04-G archive season semantics": "6567b62b501d1fa511adbbd1ace9f43f1cdbcf81",
+        "R04-G final": "Commit containing this evidence; exact SHA in CURRENT_TASK_STATUS.md and final handoff"
+      },
+      "report_ref": "docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md",
+      "final_verification_ref": "docs/evidence/v4-issue-04-final-verification.json",
+      "experimental_database": "football_v4_access_r04_20261102",
+      "experimental_source_resources": 3265,
+      "experimental_selected_observations": 203705,
+      "experimental_physical_observation_artifacts": 203721,
+      "retained_diagnostic_artifacts": 16,
+      "normalized_fbref_pages": 3250,
+      "reep_release": "2026-10-31.1",
+      "reep_target_provider_bridge_rows": 66494,
+      "source_identity_candidate_entities": 14971,
+      "qualified_canonical_fixtures": 0,
+      "qualified_market_labels": 0,
+      "qualified_canonical_minutes": 0,
+      "operating_writes_performed": 0,
+      "operating_migrations_performed": 0,
+      "issue_5_started": false,
+      "required_next_action": "Return to repository owner for review of exact Resolution Center proposals and source/reuse limits. Qualification requires independently accepted original UUID/source/canonical anchors, original timezone and settlement proof, and canonical player membership/exposure. Keep Issue 2 blocked. No subsequent issue/phase is authorized by this completion."
     }
   }
 }
