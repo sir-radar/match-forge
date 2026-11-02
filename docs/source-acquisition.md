@@ -428,3 +428,30 @@ Checksum conflicts use the stable `SB_SOURCE_CHECKSUM_MISMATCH` code defined by 
 ## Storage evolution
 
 `ImmutableRawStore` currently provides the local filesystem implementation used for development and deterministic tests. A later object-store implementation must preserve the same exclusive publication, checksum, path, manifest, retry, and attribution contracts.
+
+## Reep identity evidence
+
+Use the dated v1 download distribution, not the frozen v0 CSV interfaces. The
+packaging schema currently calls its selection/release documents
+`reep-public-selection/v1` and `reep-public-release/v4`; these are distinct from
+the register's v1 data model. Verify the pinned release hash and the declared
+length/hash of `bridges.csv.gz` and `redirects.csv.gz` before extracting evidence:
+
+```sh
+uv run --locked python -m football.identity.reep \
+  --release /path/to/release.json --release-sha256 <verified-release-sha256> \
+  --inventory /path/to/exact-native-ids.json --artifact-root /experimental/root
+```
+
+The inventory is a JSON array with exact `provider`, `namespace`, and
+`external_id` strings. Translate provider codes explicitly when constructing it
+(for example MatchForge `statsbomb_open_data` to Reep `statsbomb` with
+`offline_team`, `offline_competition`, `offline_match` or `offline_player` for
+the corresponding open-data IDs; ESPN athletes use `person`). Extra fields
+can identify existing Resolution Center cases. The reader keeps release hashes,
+original bridge fields and redirect chains, rejects conflicting IDs, and writes
+immutable review evidence through the existing file store. It never writes
+mapping or admission decisions. Confidence and a shared Reep ID cannot override
+UUID-origin contradictions, missing source anchors, historical knowledge times
+or player membership/minute requirements. Check the release's own quality gates
+separately; downloadable does not mean qualified.

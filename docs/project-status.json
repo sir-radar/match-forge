@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T00:34:30.433735Z",
+  "updated_at": "2026-11-02T00:41:36.019290Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3216,11 +3216,13 @@
       "status": "IN_PROGRESS",
       "scope": "Issue 4 only; R04-A through R04-G authorized by CURRENT_TASK.md",
       "starting_sha": "61f1c95f0d46bedf598a96b9bea1a13978d013ee",
-      "current_phase": "R04-A",
+      "current_phase": "R04-B",
       "research_ref": "docs/evidence/v4-issue-04-open-source-research.json",
       "data_classification": "EXPERIMENTAL_ONLY",
       "production_cutover": false,
-      "model_promotions": 0
+      "model_promotions": 0,
+      "identity_bridge_ref": "docs/evidence/v4-issue-04-identity-bridge-results.json",
+      "identities_admitted": 0
     }
   }
 }

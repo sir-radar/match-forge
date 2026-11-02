@@ -1,0 +1,278 @@
+{
+  "phase": "R04-B",
+  "status": "PASS_WITH_WARNINGS",
+  "recorded_at": "2026-11-02T00:41:36.019290Z",
+  "release": "2026-10-31.1",
+  "release_sha256": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+  "files": {
+    "bridges.csv.gz": {
+      "bytes": 276303973,
+      "key": "releases/2026-10-31.1/objects/03a631a3-c5b4-4455-a178-d52c23b9241e/bridges.csv.gz",
+      "sha256": "0c9912fb18f9e78b118c9b2d15054138a5d2967cf6117b5e6824ade7bbcf894d"
+    },
+    "redirects.csv.gz": {
+      "bytes": 354652,
+      "key": "releases/2026-10-31.1/objects/03a631a3-c5b4-4455-a178-d52c23b9241e/redirects.csv.gz",
+      "sha256": "e54d6cad14108fe0ef91fa3fc932c10abd527f7bfd1216c949006bb940966c01"
+    }
+  },
+  "inventory": {
+    "path": ".local/issue04/inventory-final.json",
+    "sha256": "e22c7a5a8f7946bf7e003071655eadb86f4bcaf3d4e495e546d2a9ca4697f2f3",
+    "exact_native_ids": 19530,
+    "namespace_rules": "Explicit inspected current-release namespaces; statsbomb offline_* for Open Data and ESPN person for athletes. No v0 imports or fuzzy joins."
+  },
+  "evidence_artifact": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+    "sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+    "matched_native_ids": 16669,
+    "candidate_identities": 11771,
+    "conflicts": 343,
+    "identities_admitted": 0
+  },
+  "matched_native_ids": 16669,
+  "unique_candidate_identities": 11771,
+  "candidate_inventory_records": 16326,
+  "rejected_inventory_records": 343,
+  "unique_rejected_native_ids": 343,
+  "exact_target_provider_bridges": 44435,
+  "bridges_by_provider": {
+    "api_football": 11290,
+    "fotmob": 8829,
+    "sofascore": 7130,
+    "espn": 4296,
+    "clubelo": 609,
+    "whoscored": 8414,
+    "statsbomb": 1198,
+    "understat": 1652,
+    "fbref": 1017
+  },
+  "redirect_records": 12917,
+  "track_a": {
+    "native_ids_found_by_kind": {
+      "match": 344,
+      "player": 601,
+      "team": 20
+    },
+    "affected_existing_team_competition_cases": 20,
+    "new_ready_for_admission_cases": 0,
+    "original_uuid_proof_obtained": false,
+    "target_or_timezone_proof_obtained": false,
+    "examples": [
+      {
+        "case_key": "team:01a051db-5a79-7834-a02d-a92525d1515d",
+        "existing_disposition": "UNRESOLVED",
+        "existing_reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+        "reep_id": "rt13f99514be4cfd",
+        "exact_ids": [
+          {
+            "provider": "fbref",
+            "namespace": "team",
+            "external_id": "Arsenal",
+            "entity_type": "team"
+          },
+          {
+            "provider": "statsbomb",
+            "namespace": "offline_team",
+            "external_id": "1",
+            "entity_type": "team"
+          },
+          {
+            "provider": "whoscored",
+            "namespace": "team",
+            "external_id": "13",
+            "entity_type": "team"
+          },
+          {
+            "provider": "espn",
+            "namespace": "team",
+            "external_id": "359",
+            "entity_type": "team"
+          },
+          {
+            "provider": "api_football",
+            "namespace": "team",
+            "external_id": "42",
+            "entity_type": "team"
+          },
+          {
+            "provider": "sofascore",
+            "namespace": "team",
+            "external_id": "42",
+            "entity_type": "team"
+          },
+          {
+            "provider": "understat",
+            "namespace": "team",
+            "external_id": "83",
+            "entity_type": "team"
+          },
+          {
+            "provider": "fotmob",
+            "namespace": "team",
+            "external_id": "9825",
+            "entity_type": "team"
+          },
+          {
+            "provider": "clubelo",
+            "namespace": "team",
+            "external_id": "Arsenal",
+            "entity_type": "team"
+          }
+        ],
+        "admission_permission": false
+      },
+      {
+        "case_key": "team:01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+        "existing_disposition": "UNRESOLVED",
+        "existing_reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+        "reep_id": "rtdd8b468937ef95",
+        "exact_ids": [
+          {
+            "provider": "whoscored",
+            "namespace": "team",
+            "external_id": "14",
+            "entity_type": "team"
+          },
+          {
+            "provider": "statsbomb",
+            "namespace": "offline_team",
+            "external_id": "22",
+            "entity_type": "team"
+          },
+          {
+            "provider": "sofascore",
+            "namespace": "team",
+            "external_id": "31",
+            "entity_type": "team"
+          },
+          {
+            "provider": "espn",
+            "namespace": "team",
+            "external_id": "375",
+            "entity_type": "team"
+          },
+          {
+            "provider": "api_football",
+            "namespace": "team",
+            "external_id": "46",
+            "entity_type": "team"
+          },
+          {
+            "provider": "understat",
+            "namespace": "team",
+            "external_id": "75",
+            "entity_type": "team"
+          },
+          {
+            "provider": "fotmob",
+            "namespace": "team",
+            "external_id": "8197",
+            "entity_type": "team"
+          },
+          {
+            "provider": "clubelo",
+            "namespace": "team",
+            "external_id": "Leicester",
+            "entity_type": "team"
+          }
+        ],
+        "admission_permission": false
+      },
+      {
+        "case_key": "team:01a051db-5a85-7b6d-bd58-5aac5d43815e",
+        "existing_disposition": "UNRESOLVED",
+        "existing_reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+        "reep_id": "rtfc419c6db9e06f",
+        "exact_ids": [
+          {
+            "provider": "statsbomb",
+            "namespace": "offline_team",
+            "external_id": "23",
+            "entity_type": "team"
+          },
+          {
+            "provider": "sofascore",
+            "namespace": "team",
+            "external_id": "24",
+            "entity_type": "team"
+          },
+          {
+            "provider": "whoscored",
+            "namespace": "team",
+            "external_id": "27",
+            "entity_type": "team"
+          },
+          {
+            "provider": "api_football",
+            "namespace": "team",
+            "external_id": "38",
+            "entity_type": "team"
+          },
+          {
+            "provider": "espn",
+            "namespace": "team",
+            "external_id": "395",
+            "entity_type": "team"
+          },
+          {
+            "provider": "understat",
+            "namespace": "team",
+            "external_id": "90",
+            "entity_type": "team"
+          },
+          {
+            "provider": "fotmob",
+            "namespace": "team",
+            "external_id": "9817",
+            "entity_type": "team"
+          },
+          {
+            "provider": "clubelo",
+            "namespace": "team",
+            "external_id": "Watford",
+            "entity_type": "team"
+          }
+        ],
+        "admission_permission": false
+      }
+    ]
+  },
+  "track_b": {
+    "fixture": "704279",
+    "exact_fixture_candidate_found": true,
+    "reep_ids": [
+      "rmc4c63fe1e9d5a2"
+    ],
+    "canonical_chain_admitted": false
+  },
+  "review_disposition": "Candidate artifact can accompany existing Resolution Center case review; no admission API invoked. Original retained-source/UUID-origin proof and independent accepted anchors remain required. Reep own release quality gate is false.",
+  "cases_with_sufficient_new_proof_for_valid_admission": 0,
+  "identities_admitted": 0,
+  "canonical_writes": 0,
+  "operating_writes": 0,
+  "release_data_licence": "CC0-1.0",
+  "verification": {
+    "red": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_reep_evidence.py",
+      "exit_code": 2,
+      "result": "ModuleNotFoundError before implementation",
+      "log": ".local/issue04/reep-red.log"
+    },
+    "focused": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_reep_evidence.py python/football/tests/test_identity_repository.py tests/test_resolution_identity.py",
+      "exit_code": 0,
+      "passed": 23,
+      "log": ".local/issue04/reep-green.log"
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "strict_mypy": "PASS (2 files)",
+    "real_release_hashes": "PASS",
+    "immutable_replay": "Same aa62b0a4 report hash after streaming implementation and type validation; retries converge",
+    "preservation_baseline": {
+      "path": ".local/issue04/preservation/baseline-receipt.json",
+      "sha256": "c0c4fd51a984fea5647f09713e1cd4abd1432f2413bdc95caf531411af00f620"
+    }
+  },
+  "external_bridge_limitations": "Other-provider IDs are claims from the pinned register, not independently verified source-native identifiers. For example some fbref team entries contain club labels rather than historical eight-character IDs; no such value is admitted or substituted for an original FBref identifier."
+}
