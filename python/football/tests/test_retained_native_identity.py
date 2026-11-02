@@ -276,3 +276,25 @@ def test_statsbomb_player_cannot_appear_for_both_sides_of_one_retained_lineup() 
     ).encode()
     with pytest.raises(ValueError, match="multiple teams"):
         _identity_index("statsbomb_open_data", raw, "data/lineups/42.json", "source")
+
+
+@pytest.mark.parametrize("missing", ["manifest", "resource"])
+def test_missing_statsbomb_file_remains_unverified(tmp_path: Path, missing: str) -> None:
+    row = registered_row(tmp_path)
+    path = tmp_path / row[0] if missing == "manifest" else next(tmp_path.rglob("27.json"))
+    path.unlink()
+    assert not RetainedIdentityVerifier(tmp_path).contains(
+        "statsbomb_open_data", "team", "1", None, row
+    )
+
+
+@pytest.mark.parametrize("limit", ["MAX_SOURCE_MANIFEST_BYTES", "MAX_SOURCE_RESOURCE_BYTES"])
+def test_statsbomb_byte_limit_keeps_retained_reader_error_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, limit: str
+) -> None:
+    from football.ingestion import registration
+
+    row = registered_row(tmp_path)
+    monkeypatch.setattr(registration, limit, 1)
+    with pytest.raises(ValueError, match="exceeds"):
+        registration.read_registered_statsbomb_resource(tmp_path, row[:9])
