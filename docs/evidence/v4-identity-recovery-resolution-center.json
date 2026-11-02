@@ -1,0 +1,802 @@
+{
+  "phase": "IDR-D",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "c22e16f436a1a252fb890fad9ba46fb1bce03acf",
+  "recorded_at": "2026-11-02T07:40:13.753959+00:00",
+  "cases": [
+    {
+      "case_id": "team:01a051db-5a79-7834-a02d-a92525d1515d",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "1",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a79-70bd-82d2-b457afa0ae99",
+      "proposed_canonical_targets": [
+        "a230dc08-aa98-5d93-a0fd-d5b072629d4a"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "7665101756e0b82137b87568d2dc9e2a401df0a686af05dfe815ab23c4e80796",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "22",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5abd-7993-b014-222dcda3ef5b",
+      "proposed_canonical_targets": [
+        "e9bb5d23-691a-5216-9cbb-c09db6615d77"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "6a2c7c87656d7ee6b12a6a3c093e17123f904d9942039aec43ed6777d67238ae",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a85-7b6d-bd58-5aac5d43815e",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "23",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a85-745b-b656-00578f24f7a5",
+      "proposed_canonical_targets": [
+        "440b0339-8804-52e0-800e-c4c3f8591e72"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "919219b8a8b0096647fe46b0eac408dcb640595f203ee27fdb434b1ae1a9219e",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5acd-7dba-a362-f32450b941ec",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "24",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5acd-78c4-9b3f-25ab572d67ad",
+      "proposed_canonical_targets": [
+        "a1885e25-3c5b-53da-885f-09ef2e2d01cb"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "d270585bb3d6fca9dee123ea1b1208050b797ee9f0098fefe2e8244b68afe5f3",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a95-7513-a32e-c7af8bc47909",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "25",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a94-7cf6-9ddb-3e687d0e74d6",
+      "proposed_canonical_targets": [
+        "7c52f01f-04d0-571a-a6f9-3afb575f83e6"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "96eda36aeef64ea3055050105c5d22209c1e4dbe0729658073c2f9db2377cf42",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a1f-7a47-82c4-908f7d33d776",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "26",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a1d-7d5a-aafc-99446175859c",
+      "proposed_canonical_targets": [
+        "f016c84c-53c0-56d0-b9fa-df13f648a4b7"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "6c88a6435bfa7e16b5d5b3128b79f37ce273644a1a524d1baa99684b60489903",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5b41-71c7-ac36-f912fc78fcc1",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "27",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5b40-7ea5-8fde-ba3b39b734bf",
+      "proposed_canonical_targets": [
+        "adf9d9e9-7e9f-5eab-9697-ec75b9c6c1c8"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "b136c36fa2e608250791612e0a8bc8ec52b40cf95b01ca8d8ce345e7cc50efa9",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "28",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a27-7bd7-a036-0a0c1ecdbaf3",
+      "proposed_canonical_targets": [
+        "e28e7533-6931-5361-9129-7c2a5bae2aaa"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "dd8ec04899a5aa04a4677e4d48233c4ec6f46199372fef6780977c6846939caa",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "29",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a5d-7942-b41b-2c56349f52a2",
+      "proposed_canonical_targets": [],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "029e1eaa7e47e38e705b9d856bf98b6701b495191a740f2b3636be8cf68eb8c2",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a88-7987-95c9-eca6eab916a9",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "30",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a88-71cb-80e5-35fbb11bee33",
+      "proposed_canonical_targets": [
+        "b6d1a4d8-0310-5b30-8e56-5e5912238358"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "8ad5138d01959d0890bc18a5786ac553ed0075cf73faf5c1cab7c037537efc10",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "31",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a9f-7b3a-9cf1-20ef467acc55",
+      "proposed_canonical_targets": [
+        "edd9a29a-13b2-5a98-835c-ae7510fdd86d"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "6fb00737462e06232a6279b44284b16677f1a402a1333d02bd141b23ab966939",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "33",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a48-78d5-b313-eb17f70a03bf",
+      "proposed_canonical_targets": [
+        "5ca3d524-59e8-5122-bfe8-b1cafdbf224e"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "e97b3f3bdd0fa6b1581cb9cab6edea554740e7b08d15facd509efa2a6b62211d",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5af6-7b1d-824c-34502a2e2831",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "36",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5af6-77fc-a4ac-30cc00a11d7f",
+      "proposed_canonical_targets": [
+        "36b78199-4873-5fd7-b9a9-2eb0a9bd265a"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "870fb8bce5a3f12c18748ab4f520764420ee12bfe50acd1bdce2fca3cb6fbbdd",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a59-7c13-acac-85b521f5208e",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "37",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a59-72f8-bfea-74440545bdf6",
+      "proposed_canonical_targets": [
+        "da1aa24f-48be-549b-ac95-b06fbd369503"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "b180eab1038200e41b8b93f9a6a7a280d1c4efc399a57d92d392eadd44d052b5",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5ae1-75fc-8928-a2be57126f37",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "38",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5ae1-7156-9569-5522f1cac756",
+      "proposed_canonical_targets": [
+        "99bdab6f-afd6-5beb-bae4-b20dbaf611df"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "12d7bbc99e91891b976c954da79fa31465b10d2e6ce9d0671d0201f86fb1e939",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5b30-7e46-baa2-e7357c3af53b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "39",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5b30-7b57-965b-3129c84cf8ba",
+      "proposed_canonical_targets": [
+        "fcefd735-1779-555e-800f-e700d5b89abd"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "64ffd18f34f6e16247406d545ae8abca47f13b6e58d00f7193858468e93cb859",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a4c-79ed-a00c-cef1f2c25966",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "40",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a4c-7222-8cca-178f69c8a8d5",
+      "proposed_canonical_targets": [
+        "a9bed76e-0f11-5fc2-a316-82c6aecef5d8"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "bb1603563e0d55722fc02e5d28d7d5c27cf392d9f028a95c9da76e19a9d64e84",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5a6c-7b32-b41a-5f8544e650f0",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "41",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5a6c-72c5-9778-9c25c78b75ea",
+      "proposed_canonical_targets": [
+        "fd513e15-8e14-5643-9689-a3eb609661b2"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "b20db3977ef1257866740fc6d95c40e324039385f549e801d38e72d4f0284a58",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5b00-7052-b946-5468c594ba27",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "56",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5aff-7d08-990c-af541f9f60ad",
+      "proposed_canonical_targets": [
+        "7d25a5b5-05f7-5c1e-bc1a-004aa28401a1"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "13b3f01016abcdaa6510f7885c5267ca20f76f77a2d55d2286ba0a21cd3cc184",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "team:01a051db-5ab4-74d7-b528-592695b1795b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "59",
+        "entity_type": "team"
+      },
+      "existing_canonical_id": "01a051db-5ab3-7ba9-9e67-a99f2b99b6e1",
+      "proposed_canonical_targets": [
+        "9648865b-e6be-56cf-9c84-fefa3cb3f978"
+      ],
+      "source_evidence": {
+        "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+        "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 38,
+      "previous_admission": null,
+      "evidence_version": "a5300d200319ac21576116ea6dd5f8d64613456149c7086fa77a83a361901ab7",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    },
+    {
+      "case_id": "competition:01a051db-5565-73ca-b461-3de984216d04",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "native_id": "2",
+        "entity_type": "competition"
+      },
+      "existing_canonical_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+      "proposed_canonical_targets": [],
+      "source_evidence": {
+        "resource_id": "01a051db-545a-7337-9aaa-d9ad55f52184",
+        "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa"
+      },
+      "independent_relationship_proof": [],
+      "conflict_assessment": "Independent relationship/category/target proof incomplete; Reep release quality gate false",
+      "affected_fixture_count": 380,
+      "previous_admission": null,
+      "evidence_version": "c3233e57fc5f0246cec15a81c3734d0643d3bf53ae8d3877e8a9f50468a84a27",
+      "repeat_preview_identical": true,
+      "approval_allowed": false,
+      "qualification": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "approval_requirements": "Independent recognized relationship proof, current preview, owner credential, approved=true and fresh request UUID; unsupported correction is not authorized by credentials alone.",
+      "historical_impact": "No decision or knowledge time changed",
+      "effective_date": null,
+      "recommended_action": "REQUEST_MORE_EVIDENCE",
+      "applied": false
+    }
+  ],
+  "bounded_batch": {
+    "limit": 20,
+    "requested": 20,
+    "results": [
+      {
+        "case_id": "team:01a051db-5a79-7834-a02d-a92525d1515d",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a85-7b6d-bd58-5aac5d43815e",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5acd-7dba-a362-f32450b941ec",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a95-7513-a32e-c7af8bc47909",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a1f-7a47-82c4-908f7d33d776",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5b41-71c7-ac36-f912fc78fcc1",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a88-7987-95c9-eca6eab916a9",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5af6-7b1d-824c-34502a2e2831",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a59-7c13-acac-85b521f5208e",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5ae1-75fc-8928-a2be57126f37",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5b30-7e46-baa2-e7357c3af53b",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a4c-79ed-a00c-cef1f2c25966",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5a6c-7b32-b41a-5f8544e650f0",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5b00-7052-b946-5468c594ba27",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      },
+      {
+        "case_id": "team:01a051db-5ab4-74d7-b528-592695b1795b",
+        "status": "PREVIEWED",
+        "approval_allowed": false,
+        "error": null
+      }
+    ],
+    "source_bytes_verified": 698179
+  },
+  "read_only": "on",
+  "proof_ready_cases": 0,
+  "owner_decision_package": [],
+  "owner_approvals_requested": 0,
+  "actual_admissions": 0,
+  "isolated_statsbomb_corrections": 0,
+  "operating_apply_attempts": 0,
+  "operating_writes": 0,
+  "operating_migrations": 0,
+  "new_review_ui": false,
+  "conclusion": "All 21 exact live approval previews remain blocked. The existing 20-case bound and overlapping-effect detection remain active. No invalid identity is presented for owner approval; positive StatsBomb workflow validation is blocked by IDR-B/C. Existing supported workflow tests are recorded separately.",
+  "verification": {
+    "live_preview": {
+      "command": "uv run --locked --no-sync python .local/identity-recovery/preview_d.py",
+      "exit_code": 0,
+      "cases": 21,
+      "batch_limit": 20,
+      "blocked_approval_cases": 21,
+      "log": {
+        "path": ".local/identity-recovery/d-preview.log",
+        "sha256": "6ab6e5b6c6eb86b4cad0e3454410c37967d6473d2489e9f461986d5837467c1e"
+      }
+    },
+    "existing_workflow_suite": {
+      "command": "TEST_DATABASE_URL=<verified experimental target> uv run --locked --no-sync pytest -o addopts='' -q tests/integration/test_resolution_identity_database.py tests/integration/test_resolution_decisions.py tests/integration/test_resolution_batches.py tests/integration/test_resolution_recovery.py",
+      "initial_exit_code": 1,
+      "initial_passed": 31,
+      "initial_failed": 3,
+      "initial_log": {
+        "path": ".local/identity-recovery/d-tests.log",
+        "sha256": "33f05e995dec80e82423f4fb9b0fb16320e3722b9e30f92edf3dfc6d45799f76"
+      },
+      "failure": "Browser and restart application harness lacked exported POSTGRES_ADDR; Go startup exited before any workflow. Normal service configuration was then exported, operating DB variables removed and only these three failed tests rerun.",
+      "failed_case_rerun_command": "TEST_DATABASE_URL=<verified experimental target> uv run --locked --no-sync pytest -o addopts='' -q tests/integration/test_resolution_decisions.py::test_real_browser_approves_a_qualified_correction tests/integration/test_resolution_batches.py::test_real_browser_batch_records_independent_reviews tests/integration/test_resolution_recovery.py::test_go_schedule_drains_committed_recovery_after_restart",
+      "rerun_exit_code": 0,
+      "rerun_passed": 3,
+      "rerun_log": {
+        "path": ".local/identity-recovery/d-browser-green.log",
+        "sha256": "6da98f905a660ee8fd64fe9a081e178daa0b2a5d7c1be60dce215255f56ceb44"
+      },
+      "total_verified_cases": 34,
+      "coverage": [
+        "Read-only views and current qualifications",
+        "Single-case authenticated browser correction",
+        "Owner approval and invalid credential route tests",
+        "20-case bound, shared-fixture overlap and partial stale batch",
+        "Exact evidence version and immutable retained bytes",
+        "Request UUID convergence and concurrent approvals",
+        "Prospective quarantine and historical cutoffs",
+        "Scoped recovery, fencing, continuations and restart"
+      ]
+    },
+    "go_routes": {
+      "command": "cd go/api && go test ./internal/app -run Resolution -count=1",
+      "exit_code": 0,
+      "log": {
+        "path": ".local/identity-recovery/d-go-tests.log",
+        "sha256": "ebe0f1d889d74c6dcf7456a617398d785ec419f4a9da018347503205a6315c4b"
+      }
+    },
+    "positive_statsbomb_correction_workflow": "BLOCKED: no independently proven relationship or recognized correction contract. Existing positive browser cases are synthetic FDO/API-Football cases; no real StatsBomb approval is implied."
+  }
+}
