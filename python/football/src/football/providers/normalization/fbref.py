@@ -47,7 +47,7 @@ class _MatchPage(HTMLParser):
         self.capture: tuple[str, str, str] | None = None
         self.captured: list[str] = []
         self.teams: list[tuple[str, str]] = []
-        self.competitions: list[tuple[str, str, str]] = []
+        self.competitions: list[tuple[str, str | None, str]] = []
         self.scores: list[str] = []
         self.epoch: str | None = None
         self.venue_date: str | None = None
@@ -81,12 +81,12 @@ class _MatchPage(HTMLParser):
         if tag == "a":
             path = values.get("href", "")
             team = re.match(r"^/en/squads/([a-f0-9]{8})/", path)
-            competition = re.match(r"^/en/comps/([1-9][0-9]*)/([0-9]{4}-[0-9]{4})/", path)
+            competition = re.match(r"^/en/comps/([1-9][0-9]*)(?:/([0-9]{4}-[0-9]{4}))?/", path)
             if team:
                 self.capture, self.captured = ("a", "team", team[1]), []
             elif competition:
                 self.capture, self.captured = (
-                    ("a", "competition", competition[1] + "/" + competition[2]),
+                    ("a", "competition", competition[1] + "/" + (competition[2] or "")),
                     [],
                 )
 
@@ -152,7 +152,7 @@ class _MatchPage(HTMLParser):
                 self.teams.append((native, text))
             elif kind == "competition":
                 competition, season = native.split("/")
-                self.competitions.append((competition, season, text))
+                self.competitions.append((competition, season or None, text))
             else:
                 self.scores.append(text)
             self.capture = None
@@ -220,11 +220,18 @@ def _match(
     output: ObservationCollector,
     page: _MatchPage,
     competition: str,
-    season: str,
+    season: str | None,
     name: str,
     kickoff: datetime,
     precision: str,
 ) -> None:
+    if season is None:
+        output.finding(
+            "SEASON_LABEL_UNVERIFIED",
+            "html:scorebox/competition",
+            "Source competition URL omits its season; match date is not a season binding",
+            severity="WARNING",
+        )
     comp = output.context.reference(competition, "html:scorebox/competition")
     teams = [
         output.context.reference(native, "html:scorebox/team/" + str(index))

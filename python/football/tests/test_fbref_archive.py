@@ -24,7 +24,7 @@ def page(*, epoch: str = 'data-venue-epoch="1505502000"', match: str = "00836893
     </tr></tbody><tfoot><tr><td data-stat="goals">99</td></tr></tfoot></table>"""
 
 
-def normalize(html: str) -> NormalizationResult:
+def normalize(html: str, *, season: str | None = None) -> NormalizationResult:
     raw = html.encode()
     now = datetime(2026, 11, 2, tzinfo=UTC)
     context = NormalizationContext(
@@ -34,6 +34,7 @@ def normalize(html: str) -> NormalizationResult:
         time=ObservationTime(observed_at=now, acquired_at=now, known_at=now),
         resource_key="archive/" + "a" * 64 + "/matches/00836893.html",
         fixture_native_id="00836893",
+        season_label=season,
     )
     return normalize_resource(context, "archived_match_html", raw)
 
@@ -76,3 +77,12 @@ def test_comment_tables_parse_as_data_without_script_execution() -> None:
     html = html[:start] + "<!--" + html[start:] + '--><script>throw new Error("never run")</script>'
     result = normalize(html)
     assert any(o.CONTRACT == "PlayerObservationV2" for o in result.observations)
+
+
+def test_short_competition_url_keeps_missing_season_unknown() -> None:
+    html = page().replace("/en/comps/9/2017-2018/League", "/en/comps/9/Premier-League-Stats")
+    result = normalize(html)
+    fixture = next(o.to_dict() for o in result.observations if o.CONTRACT == "FixtureObservationV2")
+    assert fixture["season_label"] is None
+    assert any("SEASON_LABEL_UNVERIFIED" in f.rule_code for f in result.findings)
+    assert not normalize(html, season="2017-2018").observations

@@ -497,3 +497,8 @@ current response. Neither archive establishes current basic-table access or
 restores the advanced feed removed in January 2026. Keep original-provider and
 archive reuse limitations visible, and obtain independent identity, time and
 target-use decisions before historical modelling.
+
+Some archived FBref scoreboxes use a competition URL without a season. Those
+pages retain native match/team/player facts with a null season and an explicit
+finding. A requested season still requires matching source evidence; neither the
+match date nor the archive directory is converted into an observed season label.
