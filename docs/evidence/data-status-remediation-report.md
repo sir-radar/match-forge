@@ -1828,3 +1828,5 @@ Local receipt `.local/data-status-remediation/verification-repairs.log`: SHA-256
 Local receipt `.local/data-status-remediation/parity-clock-red.log`: SHA-256 `13c947fcf7f18dba96036dbc8c5e354dcbbeddb14030508a554a8cf3a3364813`.
 
 Local receipt `.local/data-status-remediation/parity-green.log`: SHA-256 `90081b2ad8c54e0bd7ba2ad701ea022ba8768ebcaa810cd0a11faac8fe18ff9e`.
+
+Final review also found that an unclassified provider exception, a missing quota reservation, or a non-bytes transport could fall through as retryable. Five focused cases fail before the correction. Classification now retries a typed network cause, an HTTP transient, a provider deadline or the exact existing quota-suppression response; unknown provider failures are non-retryable, and missing API credentials are externally blocked. Both provider adapters retain network retry coverage. All 89 focused history/API/product-sync unit tests and scoped Ruff/Mypy checks pass. This correction does not change historical attempts or provider budgets.

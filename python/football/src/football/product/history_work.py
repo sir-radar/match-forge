@@ -20,6 +20,7 @@ from football.contracts.source import SHA256_PATTERN
 from football.product.api_football import ApiFootballError, CapabilityStatus
 from football.product.domain import sha256_json
 from football.product.football_data_org import FootballDataOrgError
+from football.providers.base import ProviderFetchError
 from football.storage.locks import LOCK_ORDER_SQLSTATE, LockClass, LockOrderError
 from football.work.contracts import (
     RetryClassification,
@@ -66,7 +67,10 @@ def _database_failure(error: Error) -> RetryClassification:
 
 
 def _provider_failure(error: ApiFootballError | FootballDataOrgError) -> RetryClassification:
-    if (
+    if str(error) in {
+        "API_FOOTBALL_API_KEY is required",
+        "FOOTBALL_DATA_DOT_ORG_API_TOKEN is required",
+    } or (
         isinstance(error, ApiFootballError)
         and error.capability_status == CapabilityStatus.PLAN_RESTRICTION
     ):
@@ -82,12 +86,11 @@ def _provider_failure(error: ApiFootballError | FootballDataOrgError) -> RetryCl
             if cause.code in {408, 429} or 500 <= cause.code < 600
             else RetryClassification.NON_RETRYABLE
         )
-    if isinstance(cause, (ValueError, UnicodeError)) or any(
-        marker in str(error)
-        for marker in ("invalid JSON", "must contain a list", "missing collection", "rejected")
+    if isinstance(cause, (OSError, ProviderFetchError)) or str(error) == (
+        "API-Football quota or cooldown active; request suppressed"
     ):
-        return RetryClassification.NON_RETRYABLE
-    return RetryClassification.RETRYABLE
+        return RetryClassification.RETRYABLE
+    return RetryClassification.NON_RETRYABLE
 
 
 def register_history_request(connection: Connection[Any], job_id: UUID) -> UUID | None:

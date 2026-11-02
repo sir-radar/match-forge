@@ -4,6 +4,7 @@ from urllib.error import HTTPError
 import psycopg
 import pytest
 from football.product.api_football import ApiFootballError, CapabilityStatus
+from football.product.football_data_org import FootballDataOrgError
 from football.product.history_work import classify_history_failure
 from football.work.contracts import RetryClassification
 
@@ -20,7 +21,17 @@ from football.work.contracts import RetryClassification
             ApiFootballError("API-Football quota or cooldown active; request suppressed"),
             "RETRYABLE",
         ),
-        (ApiFootballError("provider temporarily unavailable"), "RETRYABLE"),
+        (ApiFootballError("unclassified provider failure"), "NON_RETRYABLE"),
+        (ApiFootballError("API-Football quota reservation is missing"), "NON_RETRYABLE"),
+        (ApiFootballError("API_FOOTBALL_API_KEY is required"), "BLOCKED_EXTERNAL"),
+        (
+            FootballDataOrgError("FOOTBALL_DATA_DOT_ORG_API_TOKEN is required"),
+            "BLOCKED_EXTERNAL",
+        ),
+        (
+            FootballDataOrgError("football-data.org transport returned non-bytes data"),
+            "NON_RETRYABLE",
+        ),
         (
             psycopg.errors.RaiseException(
                 "unresolved canonical fixture identity conflict at team/timestamp"
@@ -57,6 +68,13 @@ def test_provider_http_cause_controls_retry(status: int, expected: str) -> None:
     error = ApiFootballError("API-Football request failed for /fixtures")
     error.__cause__ = HTTPError("https://example.invalid", status, "failed", Message(), None)
     assert classify_history_failure(error) == RetryClassification(expected)
+
+
+@pytest.mark.parametrize("error_type", [ApiFootballError, FootballDataOrgError])
+def test_provider_network_cause_remains_retryable(error_type) -> None:
+    error = error_type("provider request failed")
+    error.__cause__ = TimeoutError("network timed out")
+    assert classify_history_failure(error) == RetryClassification.RETRYABLE
 
 
 def test_quota_body_rejection_remains_retryable_with_a_deadline() -> None:
