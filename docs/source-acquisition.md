@@ -465,3 +465,14 @@ time remains the actual collection time. Daily CSV labels differ from website
 slugs, so team references remain anonymous until the identity owner accepts an
 exact mapping. This archived path does not establish current website/Vega access,
 complete rating history, or permission to redistribute provider data.
+
+Sofascore's `retained_event`, `retained_statistics`, `retained_lineups` and
+`retained_incidents` resources read the inspected upstream research envelopes.
+Keep the Git revision/URL, exact envelope, original provider URL/fetch clock and
+`trimmed` flag. The reader validates fixture/family scope and reports
+`__trimmed__` omissions. Source fetch time never becomes MatchForge knowledge
+time. These samples do not prove live access, complete seasons or full lineups.
+Player `teamId` can identify a club outside the sampled fixture, so it does not
+bind the match team or establish historical membership. Unsupported measurements
+and periods remain findings; partial-period xG is not a match-total observation.
+No upstream browser challenge-solving transport is used.

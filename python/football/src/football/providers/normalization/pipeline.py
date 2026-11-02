@@ -22,6 +22,7 @@ from football.providers.normalization import (
     football_data_org,
     fotmob,
     pitchapi,
+    sofascore,
     statsbomb,
     understat,
     whoscored,
@@ -34,6 +35,10 @@ from football.providers.normalization.common import (
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
     ("clubelo", "ratings_archive"): clubelo.ratings_archive,
+    ("sofascore", "retained_event"): sofascore.event,
+    ("sofascore", "retained_statistics"): sofascore.statistics,
+    ("sofascore", "retained_lineups"): sofascore.lineups,
+    ("sofascore", "retained_incidents"): sofascore.incidents,
     ("soccerway", "league"): flashscore.league,
     ("soccerway", "statistics"): flashscore_statistics.statistics,
     ("soccerway", "events"): flashscore_events.events,
@@ -143,6 +148,8 @@ def _validate_scope(context: NormalizationContext, payload: object) -> None:
     elif context.provenance.provider == "api_football":
         parameters = payload.get("parameters")
         native_id = parameters.get("fixture") if isinstance(parameters, dict) else None
+    elif context.provenance.provider == "sofascore":
+        native_id = sofascore.retained_fixture(payload)
     elif context.provenance.provider == "espn":
         header = payload.get("header")
         native_id = header.get("id") if isinstance(header, dict) else None
