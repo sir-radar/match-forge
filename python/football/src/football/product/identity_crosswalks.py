@@ -97,6 +97,9 @@ TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
 }
 
 OPERATIONAL_TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
+    # Exact 2026 Brazilian senior fixtures and official records: remediation report N3.
+    ("football_data_org", "4286"): ("api_football", "794"),  # RB Bragantino
+    ("football_data_org", "6685"): ("api_football", "128"),  # Santos
     ("fotmob", "9825"): ("api_football", "42"),  # Arsenal
     ("fotmob", "10252"): ("api_football", "66"),  # Aston Villa
     ("fotmob", "8678"): ("api_football", "35"),  # Bournemouth

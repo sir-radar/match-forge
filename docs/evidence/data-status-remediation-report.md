@@ -2080,3 +2080,138 @@ The initial sandbox-denied connection made no database change; reviewed local
 access succeeded. No source, identity decision, model or forecast was changed
 by this phase. Prose review and `git diff --check` are the applicable commit
 checks; the migration rehearsal is separately recorded operational evidence.
+
+### N2. Shared blockers and retained historical recovery
+
+The 17:31:47 UTC snapshot reproduces **108,425 current review keys**: 5,056
+entity mappings and 103,369 native fixture relationships/fixture records.
+These are distinct review keys, not distinct football matches. The largest
+fixture groups remain 43,035 provisional fixture identities, 23,654 without an
+exact canonical candidate, 21,331 without a provider season label and 10,504
+team/timestamp quarantines. Their upstream requirements are exact admitted
+identity, retained season context and independently established fixture
+correspondence. Changing names or declaring a provider origin algorithm would
+not supply that proof.
+
+The existing populated-shadow receipts already prove the optional-alias fix
+against seven FotMob `9195` seasons, twice each. The updated owner request
+authorizes actual retained-data recovery through existing workflows. Operating
+replay therefore uses `OperationalProviderSync.backfill_league_response` with
+the original checksum-verified responses and `network_acquired=False`; it
+requires no migration, process restart, quota change or source enablement.
+Each season repeats before the next, with a 400-row maximum and a stop on row
+failure, invalid geography or changed replay hashes. Old sources, fixture IDs,
+mapping IDs and decisions remain retained. Full-season status is derived by
+the existing qualification rules.
+
+The [KNVB's February 2021 decision](https://www.knvb.nl/nieuws/amateurvoetbal/competitiezaken/62806/competities-senioren-categorie-niet-hervat)
+confirms that the 2020/21 senior amateur competitions were discontinued.
+Consequently, unplayed fixtures from that season are not missing final
+results to invent. This research does not change their retained native status
+or mark the provider scope complete.
+
+Operating execution from 17:37:39 to 17:46:52 UTC recovers **238 provider-scoped
+fixture records and 184 retained history rows**. These are separate row
+populations, not 422 distinct matches or a claim of 238 newly qualified
+football outcomes. The before/after values below belong to each season's
+bounded execution window; they are not one simultaneous database snapshot.
+
+| Season | Fixture records before / after | History rows before / after |
+| --- | ---: | ---: |
+| 2020/2021 | 272 / 306 | 42 / 47 |
+| 2021/2022 | 272 / 306 | 272 / 306 |
+| 2022/2023 | 272 / 306 | 272 / 306 |
+| 2023/2024 | 274 / 308 | 272 / 306 |
+| 2024/2025 | 272 / 306 | 272 / 306 |
+| 2025/2026 | 272 / 306 | 272 / 306 |
+| 2026/2027 | 275 / 309 | 91 / 100 |
+| Distinct fixture IDs within this cohort | 1,909 / 2,147 | 1,493 / 1,677 |
+
+All seven second passes create zero fixtures/history rows and retain identical
+core-state hashes. No row failure, provider request or invalid geography is
+reported. All original cohort fixture, mapping and history IDs remain. All
+seven season results remain **BLOCKED_IDENTITY**; provider-history scope
+statuses are not overwritten. Current qualification still excludes unsupported
+identities and unplayed results. The operating 2026/27 baseline already has
+16 more fixture records than the earlier shadow baseline; those concurrent
+additions are excluded from this task's recovery count. Exact IDs, counts,
+responses and repeated-state hashes are in `alias-operating-replay.json`,
+SHA-256 `d26c7b6ce11eddf0f37b3060906f18a400d783464edb5d28e25d224ca13ba1c9`.
+
+### N3. Exact Brazilian team relationships
+
+Two unresolved football-data.org mappings already point to existing accepted
+API-Football team IDs. Research establishes their exact senior-fixture context:
+
+| football-data.org team | Accepted API-Football team | Provider fixtures | Exact context |
+| --- | --- | --- | --- |
+| `4286` RB Bragantino | `794` | `554940` / `1492310` | Atlético Mineiro home, Bragantino away; Brazil Série A 2026, round 21; 2026-10-03 21:30 UTC, Arena MRV |
+| `6685` Santos | `128` | `554948` / `1492318` | São Paulo home, Santos away; Brazil Série A 2026, round 21; 2026-10-02 23:00 UTC, Morumbi; final score 1–2 |
+
+Bragantino's [official fixture announcement](https://www.redbullbragantino.com/br-pt/noticias/atletico-mineiro-x-red-bull-bragantino-pela-21-rodada-tem-data-definida)
+confirms the first fixture at 18:30 Brasília time. The second is confirmed by
+the [CBF match record](https://www.cbf.com.br/futebol-brasileiro/jogos/campeonato-brasileiro/serie-c/2026/sao-paulo-x-santos-fc/832092)
+and [São Paulo's official match report](https://www.saopaulofc.net/sao-paulo-sofre-reves-diante-do-santos-pelo-campeonato-brasileiro/).
+The CBF page explicitly identifies Série A despite its inconsistent URL slug;
+its page content supplies the evidence. Local provider times independently
+agree after conversion to UTC. In-play API scores are not compared with a
+later final score or used as final outcomes. No independence is inferred from
+the two commercial providers: authoritative club/federation records support
+the identity correspondence.
+
+The retained verifier checks the original mapping snapshot
+`a190943a-0540-5437-97fc-8c9f4412f226`, resource
+`d5435807-848f-5b4d-8706-b07a94784f0c`, SHA-256
+`17b18668e5e7068fc58a2ef15a729eeabd4bbd9de819251498f736d41114171a`.
+It verifies both target origin mappings and their current admission. The later
+football-data.org snapshot `f928233a-9852-5bd5-946d-7a835b312a9e` has SHA-256
+`00429866dc34091b855a286ed305dd6e422c2c05ef8955431711a218b19beacf` and contains
+both exact fixtures. API snapshot hashes are
+`dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae`
+and `a2a14015e20226eda7049f036f26e67a58510610d7900dab3c4e210d90b3e86a`.
+Detailed retained rows and source links are in `brazil-research.json`, SHA-256
+`cd74ab43c8b7a6e813c6095bebefced098bebea194fc4763a80a8843827e580f`.
+
+The code change adds only these two entries to
+`OPERATIONAL_TEAM_CROSSWALKS`. Historical crosswalk construction, origin
+algorithms, confidence thresholds and canonical IDs are unchanged. The two
+regressions fail before the entries exist, then pass; eight focused identity
+tests pass together. They retain rejection of a different target UUID,
+conflicting country and absent retained proof. The authenticated operating
+Admin preview also qualifies both exact source mapping IDs; the first has
+more than 100 affected fixtures and therefore requires the existing single
+case workflow rather than the bounded multi-case approval endpoint.
+
+After the full repository gate passes, the existing authenticated single-case
+Admin workflow applies both admissions at 17:57:43 and 17:57:48 UTC. The server
+records its authenticated actor, exact preview version, approved request UUID
+and immutable review event. The requests are
+`95117f88-92ba-49c3-b014-a91248eccd81` (Bragantino) and
+`9d62eb3e-64db-4b9a-a1be-c6eb11074cbc` (Santos). Identical retries return the
+same events. **Two current identity relationships are resolved.** The original
+mapping rows and canonical IDs are unchanged. The two prospective admission
+decisions supersede unresolved October decisions without changing them.
+
+The 41 eligible history rows for the affected existing teams have identical
+rows/hashes when read at the frozen pre-approval cutoff. Current eligible
+history is also 41 at this checkpoint: no new history row or forecast coverage
+is claimed from the two approvals. Both frozen recovery requests are queued
+for their existing bounded worker. Application receipts are in
+`brazil-admin-apply.json`, SHA-256
+`eef5da00a35e083fdd0f08f9063e7c1d8b83eecbcdb533ee39f0f6774ddb1e86`;
+`brazil-after.json`, SHA-256
+`c183ad57fa835108e9c42e46fef71f780b112f610807f992519aa055f811ab69`, verifies
+unchanged mappings and earlier-cutoff history.
+
+Phase 2: **PASS_WITH_WARNINGS**. The final
+`env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits **0** after the final code change. Formatting, lint/complexity, strict
+Mypy on 446 files, Rust/Go checks, architecture/project-status checks, builds,
+1,795 Python unit tests, 16 Rust tests, 107 frontend tests, all 851 disposable
+storage cases and PostgreSQL/Redis/Go API integration pass. Seven existing
+Python dependency warnings and the existing ESLint warning remain. No check
+is skipped or weakened. Its log SHA-256 is
+`948f6a7e0753bec76a1807e5a1bd4658a1c1a058df1724df9a077eef8b783b06`.
+The production diff is limited to the two operational crosswalk entries;
+their existing classification callers consume them. No production function,
+dependency, migration, environment variable or alternate workflow is added.

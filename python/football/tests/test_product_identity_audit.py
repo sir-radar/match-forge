@@ -87,3 +87,57 @@ def test_identity_audit_retains_contradictory_and_missing_source_findings(
     report = identity_audit.audit_report(connection)
     assert report["mapping_classifications"] == {"UNRESOLVED": 2}
     assert report["unsafe_shared_identity_count"] == 1
+
+
+@pytest.mark.parametrize(("source_id", "target_id"), [("4286", "794"), ("6685", "128")])
+def test_brazil_crosswalks_require_retained_source_country_and_exact_target(
+    monkeypatch: pytest.MonkeyPatch, source_id: str, target_id: str
+) -> None:
+    canonical = stable_id("team", "api_football", target_id)
+    row = (
+        uuid4(),
+        canonical,
+        "football_data_org",
+        source_id,
+        "explicit_crosswalk",
+        1,
+        "Brazil",
+        uuid4(),
+    )
+    monkeypatch.setattr(_Result, "fetchone", lambda _self: ("Brazil",))
+    monkeypatch.setattr(
+        identity_admission,
+        "verify_source_identifier",
+        lambda *_args: {"source_resource_id": "verified", "sha256": "a" * 64},
+    )
+    connection: Any = _Connection()
+    decision = identity_admission.classify_mapping(connection, "team", row, Path("unused"))
+    assert (decision["disposition"], decision["reason"]) == (
+        "CROSSWALK",
+        "VERIFIED_EXPLICIT_CROSSWALK",
+    )
+    assert decision["evidence"]["crosswalk_target"] == {
+        "provider": "api_football",
+        "provider_entity_id": target_id,
+    }
+
+    wrong_target = (row[0], uuid4(), *row[2:])
+    assert (
+        identity_admission.classify_mapping(connection, "team", wrong_target, Path("unused"))[
+            "disposition"
+        ]
+        == "CONTRADICTORY"
+    )
+
+    monkeypatch.setattr(_Result, "fetchone", lambda _self: ("England",))
+    assert (
+        identity_admission.classify_mapping(connection, "team", row, Path("unused"))["disposition"]
+        == "UNRESOLVED"
+    )
+
+    monkeypatch.setattr(_Result, "fetchone", lambda _self: ("Brazil",))
+    monkeypatch.setattr(identity_admission, "verify_source_identifier", lambda *_args: None)
+    assert (
+        identity_admission.classify_mapping(connection, "team", row, Path("unused"))["reason"]
+        == "RETAINED_SOURCE_EVIDENCE_REQUIRED"
+    )
