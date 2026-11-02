@@ -1,0 +1,323 @@
+{
+  "phase": "R04-F",
+  "status": "PASS_WITH_WARNINGS",
+  "qualification_status": "BLOCKED_WITH_EVIDENCE",
+  "recorded_at": "2026-11-02T01:28:07.760022Z",
+  "knowledge_cutoff": "2026-11-02T01:24:26.341896+00:00",
+  "comparison_scope": "New R04 shadow acquisition and new Reep evidence only; before=zero for this incremental scope. Frozen pilot before/after qualification is reported separately. Counts do not sum to independent football facts.",
+  "before_after": {
+    "raw_resources": {
+      "before": 0,
+      "after": 395
+    },
+    "normalized_observations": {
+      "before": 0,
+      "after": 24071
+    },
+    "native_identity_bridges": {
+      "before": 0,
+      "after": 47053
+    },
+    "source_identity_candidate_entities": {
+      "before": 0,
+      "after": 12163
+    },
+    "source_canonical_identity_candidate_cases": {
+      "before": 0,
+      "after": 13715
+    },
+    "accepted_canonical_identities": {
+      "before": 0,
+      "after": 0
+    },
+    "utc_qualified_canonical_fixtures": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_statistical_labels": {
+      "before": 0,
+      "after": 0
+    },
+    "verified_canonical_player_appearances": {
+      "before": 0,
+      "after": 0
+    },
+    "verified_canonical_minute_exposures": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_market_outcomes": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "resource_accounting": {
+    "football_source_resources": 395,
+    "archive_containers": 2,
+    "normalized_member_resources": 393,
+    "resources_with_observations": 392,
+    "final_selected_observation_artifacts": 24071,
+    "retained_initial_diagnostic_artifacts_outside_final_reports": 14,
+    "physical_observation_registry_total": 24085,
+    "identity_release_files": "Separate from football resource counts: verified release/manifest, full bridge/redirect gzip files and explicitly partial table inspections.",
+    "duplicate_scope_warning": "Sofascore includes two revisions of the same completed event; repeated provider observations and cross-provider IDs are not independent matches."
+  },
+  "provider_results": {
+    "clubelo": {
+      "resources": 1,
+      "rating_rows": 594,
+      "source_labels": 594,
+      "date_range": [
+        "2026-08-31",
+        "2026-08-31"
+      ],
+      "native_club_ids_verified": 0,
+      "original_2015_16_history": false
+    },
+    "sofascore": {
+      "resources": 12,
+      "observations": 115,
+      "native_references": {
+        "competition": 2,
+        "fixture": 5,
+        "home_team": 2,
+        "away_team": 2,
+        "player": 33
+      },
+      "distinct_event_snapshot_fixtures": 2,
+      "native_utc_fixture_claims": 2,
+      "partial_lineup_occurrences": 16,
+      "reported_minute_occurrences": 16,
+      "canonical_match_team_bindings_from_player_teamId": 0
+    },
+    "fbref": {
+      "resources": 382,
+      "html_archive_pages": 3250,
+      "derived_sqlite_matches": 17551,
+      "normalized_pages": 380,
+      "observations": 22768,
+      "native_ids": {
+        "team": 20,
+        "competition": 1,
+        "fixture": 380,
+        "home_team": 20,
+        "away_team": 20,
+        "player": 515
+      },
+      "native_utc_fixture_claims": 380,
+      "native_minute_occurrences": 10433,
+      "scope": "9 / 2017-2018",
+      "original_2015_16_history": false
+    }
+  },
+  "reep": {
+    "release": "2026-10-31.1",
+    "initial_evidence": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+      "sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+      "matched_native_ids": 16669,
+      "candidate_identities": 11771,
+      "conflicts": 343,
+      "identities_admitted": 0
+    },
+    "new_source_evidence": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/ac116754e1eaf97ab1cd9e69c3159c19d58df14fcfba0f4894a9fe42df780c98.json",
+      "sha256": "ac116754e1eaf97ab1cd9e69c3159c19d58df14fcfba0f4894a9fe42df780c98",
+      "matched_native_ids": 689,
+      "candidate_identities": 687,
+      "conflicts": 2,
+      "identities_admitted": 0
+    },
+    "new_source_inventory_native_keys": 1476,
+    "new_source_native_keys_matched": 689,
+    "new_source_candidate_entities": 687,
+    "new_source_conflicts_rejected": 2,
+    "new_source_candidates_by_namespace": {
+      "fbref/match": 156,
+      "fbref/person": 377,
+      "fbref/player": 125,
+      "sofascore/player": 24,
+      "sofascore/team": 4,
+      "sofascore/unique_tournament": 1
+    },
+    "new_source_conflicts": [
+      {
+        "conflicts": [
+          {
+            "external_ids": [
+              "4630",
+              "91"
+            ],
+            "namespace": "competition_numeric",
+            "provider": "worldfootball"
+          }
+        ],
+        "inventory": {
+          "entity_type": "competition",
+          "external_id": "9",
+          "namespace": "competition",
+          "provider": "fbref",
+          "source": "R04 verified retained observation"
+        },
+        "reep_id": "rlceee8c6f01551d"
+      },
+      {
+        "conflicts": [
+          {
+            "entity_types": [
+              "coach"
+            ],
+            "expected": "player"
+          }
+        ],
+        "inventory": {
+          "entity_type": "player",
+          "external_id": "d2bff301",
+          "namespace": "person",
+          "provider": "fbref",
+          "source": "R04 verified retained observation"
+        },
+        "reep_id": "rp89723d78152acc"
+      }
+    ],
+    "unique_matched_native_keys_all_scopes": 17358,
+    "target_provider_bridge_rows_all_scopes": 47053,
+    "release_quality_gate_passed": false,
+    "table_inspection": {
+      "path": ".local/issue04/research/reep-table-inspection.json",
+      "sha256": "b4b842036f3698781c3a64eb771cc620e534be41b470659c1850aada9e72d6bc",
+      "disposition": "Actual entity/match/edge Parquet schemas and bounded entity/edge rows inspected; declared row counts match manifest. Partial ranges have their own hashes, not verified full-file SHA-256. Match row sample exceeded 4 MB bound and was not fetched.",
+      "match_schema_limitation": "No explicit kickoff UTC column in inspected match schema; match_date_iso and generic metadata are not original StatsBomb timezone proof.",
+      "membership_limitation": "No new verified historical membership intervals or minute evidence from Reep. Release manifest appearance_count=0; partial edge samples are not proof of player stints."
+    },
+    "source_id_limitations": "No FBref eight-character native team ID matched this checked inventory. Some Reep fbref/team values are club labels; no name-based conversion used. Player d2bff301 person bridge resolves to coach type and is rejected; FBref competition 9 candidate is rejected for conflicting peer bridges."
+  },
+  "track_a": {
+    "provider": "statsbomb_open_data",
+    "competition": "2",
+    "season": "27",
+    "native_fixtures": 380,
+    "unresolved_team_competition_checks_before": 21,
+    "unresolved_team_competition_checks_after": 21,
+    "current_reasons": {
+      "RETAINED_SOURCE_EVIDENCE_REQUIRED": 21
+    },
+    "native_fixture_candidates": 344,
+    "native_player_candidates": 601,
+    "team_cases_with_exact_external_candidates": 20,
+    "accepted_exact_crosswalks_before": 0,
+    "accepted_exact_crosswalks_after": 0,
+    "unknown_original_kickoff_timezone_before": 380,
+    "unknown_original_kickoff_timezone_after": 380,
+    "verified_canonical_fixtures": 0,
+    "qualified_targets": 0,
+    "player_multi_team_review_cases_before": 15,
+    "player_multi_team_review_cases_after": 15,
+    "verified_membership_intervals": 0,
+    "qualified_minute_exposures": 0,
+    "original_uuid_algorithm_proof_obtained": false
+  },
+  "track_b": {
+    "provider": "espn",
+    "competition": "700",
+    "season": "2024",
+    "fixture": "704279",
+    "native_utc_present": true,
+    "exact_external_fixture_candidate": true,
+    "canonical_checks": [
+      {
+        "admitted_proofs": [],
+        "entity_type": "competition",
+        "mapping_claims": 0,
+        "native_id": "700"
+      },
+      {
+        "admitted_proofs": [],
+        "entity_type": "team",
+        "mapping_claims": 0,
+        "native_id": "360"
+      },
+      {
+        "admitted_proofs": [],
+        "entity_type": "team",
+        "mapping_claims": 0,
+        "native_id": "370"
+      }
+    ],
+    "fixture_resolution_decisions": [],
+    "canonical_competition_uuid_created": false,
+    "qualified_fixtures_before": 0,
+    "qualified_fixtures_after": 0,
+    "qualified_targets": 0
+  },
+  "existing_owner_recheck": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/qualification/1276976e58d10176aa111daa4753a68a8907ac7b68a281dda922db13a7b6c545.json",
+    "sha256": "1276976e58d10176aa111daa4753a68a8907ac7b68a281dda922db13a7b6c545"
+  },
+  "coverage_registry_reports": [
+    {
+      "coverage_id": "d9ce65ed-ec84-59df-9fdd-82a2c425988e",
+      "expected": 380,
+      "observed": 380,
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/coverage/provider/v1/e9e12be0f9a459f4090beb3f91e2865691e1f621d5f0738e9c9e3fee8db390e7.json",
+      "qualified": 0,
+      "sha256": "e9e12be0f9a459f4090beb3f91e2865691e1f621d5f0738e9c9e3fee8db390e7",
+      "track": "A"
+    },
+    {
+      "coverage_id": "4a0f252c-9a35-5715-8062-a072599ec869",
+      "expected": 1,
+      "observed": 1,
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/coverage/provider/v1/4940c5213db35e19c6a9858887ec1533c823eb098290f2c3070dc1bfa98bab34.json",
+      "qualified": 0,
+      "sha256": "4940c5213db35e19c6a9858887ec1533c823eb098290f2c3070dc1bfa98bab34",
+      "track": "B"
+    },
+    {
+      "coverage_id": "808ef38c-b228-5f32-9325-89109ae24b06",
+      "expected": 380,
+      "observed": 380,
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/coverage/provider/v1/225191fc1c4734d856bf067bc85ac675cc07d90f070646630c75cf560219ed1e.json",
+      "qualified": 0,
+      "sha256": "225191fc1c4734d856bf067bc85ac675cc07d90f070646630c75cf560219ed1e",
+      "track": "RECOVERED"
+    }
+  ],
+  "review_proposals": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/review-proposals/f2c8f9985a9116f246b8e7b6a6794472d63b054517c1d73b09a8a49c923dc8e8.json",
+    "sha256": "f2c8f9985a9116f246b8e7b6a6794472d63b054517c1d73b09a8a49c923dc8e8",
+    "cases": 20,
+    "cases_with_sufficient_proof_to_admit": 0,
+    "applied": 0,
+    "owner": "Existing Resolution Center and identity-admission rules"
+  },
+  "target_semantics": {
+    "ht_ft": "Partial native period counts exist; no new complete admitted HT/FT chain",
+    "regulation_vs_et": "FBref score/status remains UNKNOWN; Sofascore current score basis UNKNOWN; no settlement equivalence granted",
+    "corners": "No new qualified corner labels; omitted sample fields and archive aggregates are not substituted",
+    "cards_shots_sot": "Real native team/player counts retained; no qualified canonical market labels",
+    "player_appearances_minutes": "Original per-match rows and reported minutes retained; no admitted canonical identities or historical memberships",
+    "player_market_outcomes": "ZERO qualified outcomes"
+  },
+  "issue_2_can_be_reopened_for_final_qualification": false,
+  "issue_3_reopened": false,
+  "verification": {
+    "focused": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_reep_evidence.py python/football/tests/test_identity_repository.py python/football/tests/test_resource_coverage.py python/football/tests/test_market_capabilities.py",
+      "exit_code": 0,
+      "passed": 60,
+      "log": ".local/issue04/qualification-tests.log"
+    },
+    "owner_recheck_and_coverage": {
+      "exit_code": 0,
+      "log": ".local/issue04/qualification-check.log",
+      "read_only_operating_connection": "on",
+      "coverage_retry_identical": true
+    }
+  },
+  "operating_writes": 0,
+  "identity_admissions_applied": 0,
+  "models_trained": 0,
+  "production_cutover": false,
+  "required_next_action": "Owner review of exact candidate evidence, original retained UUID/source/canonical anchors and original timezone/settlement/player membership proof. Keep Issue 2 blocked; no protected evaluation or Issue 5 authorized."
+}
