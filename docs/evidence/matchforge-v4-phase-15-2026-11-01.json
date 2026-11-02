@@ -1,0 +1,1663 @@
+{
+  "phase": "15",
+  "starting_sha": "e58c9bee0c39b1b45cc2ff943f34478767098672",
+  "recorded_at": "2026-11-01T08:38:37.891141Z",
+  "status": "PASS_WITH_WARNINGS",
+  "scope": "Market target/semantics contracts and diagnostic capability assessment; no probability production or activation.",
+  "market_count": 64,
+  "groups": {
+    "GOALS": 13,
+    "PERIODS": 9,
+    "CORNERS": 7,
+    "CARDS": 9,
+    "TEAM_STATISTICS": 9,
+    "PLAYERS": 12,
+    "JOINT": 5
+  },
+  "report": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-15/market-capabilities/189e527f4220318770af5c6ec0f62cd3ce1c96aacb552a33065f806f7470bb7e.json",
+    "sha256": "189e527f4220318770af5c6ec0f62cd3ce1c96aacb552a33065f806f7470bb7e",
+    "bytes": 639874,
+    "knowledge_cutoff": "2026-11-01T08:36:36.798600+00:00",
+    "competition_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+    "season_id": "01a051db-5566-7286-8ad7-40d945ab8253",
+    "scope_selection": "Exact existing season mapping claim statsbomb_open_data:2/27, read through mapping_at; not an admission.",
+    "markets": 64,
+    "read_only": "on",
+    "new_probabilities": 0,
+    "operating_writes": 0,
+    "new_publication_grants": 0
+  },
+  "diagnostic_status_counts": {
+    "DATA_COLLECTION_REQUIRED": 51,
+    "INSUFFICIENT_PLAYER_DATA": 13
+  },
+  "qualified_market_coverage_reports": 0,
+  "qualification_interpretation": "No exact target/input coverage reports are registered for this scope. Eligible fixture counts are unknown, not assumed zero.",
+  "candidate_provider_scope_count": 24,
+  "targets": [
+    {
+      "market_id": "RESULT_1X2",
+      "semantic_version": "result_1x2-v1",
+      "definition_sha256": "0702b1aa4e416974fc3cc0e338f92e8341f3615483a5de05e1216f48caf1f498",
+      "target_sha256": "133408ac5794a8176d8e0dc004b8c5e70a23440c1eb165928f8872795d3964bf",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "DOUBLE_CHANCE",
+      "semantic_version": "double_chance-v1",
+      "definition_sha256": "f36456bfb21b8ba992a8a3962f05f8fe2707c1fd5f64542fde4efdf01b9a685a",
+      "target_sha256": "cf0915f977224e69f4bab82708971b48a4f96b87200351468d942f395dfebfa4",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "DRAW_NO_BET",
+      "semantic_version": "draw_no_bet-v1",
+      "definition_sha256": "8804c8fbf06937bc321da9e704bcf14ccfc0a4959dd91c3dc425e3f7ed0f18f0",
+      "target_sha256": "80c5de0778f16fc77e5465125dbb3e78d8e322908cb78ef80e31abb139f5dc48",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORRECT_SCORE",
+      "semantic_version": "correct_score-v1",
+      "definition_sha256": "474127fd053cca85585fcad9cd8fe7e80adcf7e28ef129be71bc4c693f25df7b",
+      "target_sha256": "ad236513f5268ba17d46c4f2bdc65c5bf9d2f7b2ac522ea0c6841c5ec659c330",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TOTAL_GOALS",
+      "semantic_version": "total_goals-v1",
+      "definition_sha256": "a7a61c77045a8e12f5ead70cc4fc54a91c8efb5bbce3a70dfd6ca4f16cfe6c77",
+      "target_sha256": "44443a396a4ce5584647ed01784a7f5f9b57f631a0b9f71c3a6542073b073fc4",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_GOALS",
+      "semantic_version": "team_goals-v1",
+      "definition_sha256": "cc838e63cad663e296b111e0b97e0a9ef891699a4ac9bd6efc3143abd4934186",
+      "target_sha256": "3baa0a92def48683f50cdd4da4170841419b286400c1fb31b44d8d5b1e54dcc2",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "BTTS",
+      "semantic_version": "btts-v1",
+      "definition_sha256": "14751ba282cdd14d0e8426035323b795db42a556f028ce57211d4ad2ac79bd2e",
+      "target_sha256": "45fe067a052b1702d32d01c2e7b24cf57563ca967b8a73c7833ca24501043653",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CLEAN_SHEET",
+      "semantic_version": "clean_sheet-v1",
+      "definition_sha256": "e1dd15dc1eba1d3710053803e891ccce317b243e2b70854240ed00685f095ff8",
+      "target_sha256": "de4abc0cc2478a8fef98f40724c734c10c4f2db2647b070516c81ea8ebe6ff06",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.products.score_products",
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "GOAL_RANGE",
+      "semantic_version": "goal_range-v1",
+      "definition_sha256": "894dbd2efddb6d99221c43d4855fcc4c8b93eaa2db1d6fb6f7b8d785d878a881",
+      "target_sha256": "79c61fbf87f753f86cd271df596a080591c8fe950b1959211219598337b0e181",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "WINNING_MARGIN",
+      "semantic_version": "winning_margin-v1",
+      "definition_sha256": "a15fe734655406db76bb06b2a8f2b2ada4fd4002692be3c840071e41acd05de8",
+      "target_sha256": "2e121b7790609087b377cedbfe5be1ce67170accdb84a7323be9f5aedfa0b004",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "ASIAN_GOAL_HANDICAP",
+      "semantic_version": "asian_goal_handicap-v1",
+      "definition_sha256": "52a33f042f6d6b81fc48e950c714689bb2502d52d502e855845b634f71c155b8",
+      "target_sha256": "4f11d3e182377b3d801990b862d360dade8e1c5c6efbaa04b590392037b509d0",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "EUROPEAN_GOAL_HANDICAP",
+      "semantic_version": "european_goal_handicap-v1",
+      "definition_sha256": "1d58dfd5f741b0f08d6a184e2db6efdec2f23e9128a2251f9e38fc77e83c805b",
+      "target_sha256": "6d6aafc44157fff74df4d57e1dfbb70bf2dcc13b99f39321878120e34c9c0246",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "RESULT_GOALS",
+      "semantic_version": "result_goals-v1",
+      "definition_sha256": "6629aeaa26793a47b70e57bc1673f23bea8ab9cf5d4b9f360c16779dc59f3b07",
+      "target_sha256": "fe05e8f78364b2f0f1b8497c0ad9722fc3a5552b0ccd6161fd14da532775e8bb",
+      "required_inputs": [
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": "transferable-rolling-goals-poisson-v1",
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "FIRST_HALF_RESULT",
+      "semantic_version": "first_half_result-v1",
+      "definition_sha256": "163d8caaf63182bb8d719dca2dc7eb810a469a06e55ccf9654b90825d9332982",
+      "target_sha256": "966eaf8ce54c67bceec31e243c02eb22720623c9a2c9601b274cc1efef3c51f3",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "FIRST_HALF_TOTALS",
+      "semantic_version": "first_half_totals-v1",
+      "definition_sha256": "9dc0e0f8bf209fd19d2f06ed7315820fe57c89795583c5105d48fad045771e2a",
+      "target_sha256": "b479e714eec55e64ce2c794884fd7aac9f563a88d281711c4b9c3724f1505187",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "FIRST_HALF_BTTS",
+      "semantic_version": "first_half_btts-v1",
+      "definition_sha256": "929bc5f0e9a05ee1ee55d3e7a845c6c64907b8a3d5c19ae5a5b1e64d8439e44e",
+      "target_sha256": "a4fcec72bb8e5732f9b6624285303e3a691c00344048510dac4e36d815a51b5e",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "SECOND_HALF_RESULT",
+      "semantic_version": "second_half_result-v1",
+      "definition_sha256": "4963d3a4aaa063e04e2d60a8b04ca389bd1a35b596e00ec66d35508a0b5f1e4d",
+      "target_sha256": "be8d70e12ea4b1ab2059c7441df874bcfecbf67b7880e42e4b1cb1d21d2851ae",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "SECOND_HALF_TOTALS",
+      "semantic_version": "second_half_totals-v1",
+      "definition_sha256": "4a854d1c26a7f46786adc3988b465632d999cac0cc0f024a04e44e4534ef9711",
+      "target_sha256": "4744032cc0b753e2e1ebd24625804424f9542805afa73683e88cb1a34fcdc7e9",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "SECOND_HALF_BTTS",
+      "semantic_version": "second_half_btts-v1",
+      "definition_sha256": "e44aaac5b41c9821493731905d27eb5fa13b9b073d299d08b1be3d2550dc7181",
+      "target_sha256": "d284c80284bfc0eb66bd2c5b2e58662442cf077b3f962c0261d39249ee22cb80",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "HT_FT",
+      "semantic_version": "ht_ft-v1",
+      "definition_sha256": "1e254f7b17fa0eecc6136184117e7ae684066dce6f2d43053ee281480ee9c571",
+      "target_sha256": "17c3ae53e9c79d2d9bd620994f4009f46a6fb616cf7ab4ba4c993360c2f12695",
+      "required_inputs": [
+        "period_score",
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "HIGHEST_SCORING_HALF",
+      "semantic_version": "highest_scoring_half-v1",
+      "definition_sha256": "a4fac8b39968c8db24dffd1a70e03dd7bd94ccd13e4d5d9283077c6d0aa847ad",
+      "target_sha256": "2d12428bf7b4ae5c54a96b3149a65e325b7d60b7e646b4bd2210352ee7e24019",
+      "required_inputs": [
+        "period_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "SCORING_INTERVALS",
+      "semantic_version": "scoring_intervals-v1",
+      "definition_sha256": "85e268d754bbea3d7d7bccb2927bdcf79ad35dce57914529798bf13cb5e1423e",
+      "target_sha256": "9212fc335ef2a0dc4634bdd835cd3d71f37a82fbd041c46dcd5658ccfcf28083",
+      "required_inputs": [
+        "goal_events"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_TOTAL",
+      "semantic_version": "corners_total-v1",
+      "definition_sha256": "890786daa690fcf1aae0817ff22b3b5503be9c8892d622aabfd62ec76574b89f",
+      "target_sha256": "1b6c54f689383f0d029a3f8601e3d239a77c20a3a8b8eb724e01f767124febce",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.corner.CornerModels",
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_TEAM",
+      "semantic_version": "corners_team-v1",
+      "definition_sha256": "e6d25f8a3344fcd5a2388a403011f7dbe7056997cce82313d50f0e8b51c27d2f",
+      "target_sha256": "446a41def1f30061ae922690c1c0aba27f46471dde16390351ca7805fd6c731c",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.corner.CornerModels",
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_HANDICAP",
+      "semantic_version": "corners_handicap-v1",
+      "definition_sha256": "7051a1333aade7583bdf6a0fac8633170a62ab1b6ebeeb074531dcaf2f410597",
+      "target_sha256": "6903d4c3f81194eedcf608547f952c80888be1912841d35eb0cbee1b4641ed1e",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.corner.CornerModels",
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_RANGE",
+      "semantic_version": "corners_range-v1",
+      "definition_sha256": "1c340b828c2da6aa118765c106bc004d1211b6cded3e69d880161b073de719e0",
+      "target_sha256": "bb62625d69a9818380b6439d11221a6461a31df52ab3818ea101a0a47f249b82",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": "football.forecasting.corner.CornerModels",
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_FIRST_HALF",
+      "semantic_version": "corners_first_half-v1",
+      "definition_sha256": "8722f90d4ceaf5745c5877a582aaf2db5f8c296ee748a87ffea8eae66316d9b8",
+      "target_sha256": "d519d126c78118316d0f934c87dfe8e5f93605e15c9703fbcea88c42ad054c3e",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_SECOND_HALF",
+      "semantic_version": "corners_second_half-v1",
+      "definition_sha256": "4dded26b68b1357ae12100a3ace757cf591df8e79247b6d444e590a66a0ca37b",
+      "target_sha256": "d34aa05f7264132e8587551ea612110bb26897b5314d2020208999bdd6c20ef8",
+      "required_inputs": [
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_TOTAL",
+      "semantic_version": "cards_total-v1",
+      "definition_sha256": "61727aa8291d78b9e133ebefb78d16599a3f1a05363d1dcce674561055fbb788",
+      "target_sha256": "c7d3ab9c8fa87294454d04dcd9aa735155f21495a12f9fe00d6412b773c442ea",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_TEAM",
+      "semantic_version": "cards_team-v1",
+      "definition_sha256": "f43f34accfdfb0390b5cea19b716e43aada56f1d37d3c80dd05fcbc4c1acf2b2",
+      "target_sha256": "3f6b202763cba7343ab32c68146f7f73a9f7147b534c8809f25ee4198f8086e2",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_HANDICAP",
+      "semantic_version": "cards_handicap-v1",
+      "definition_sha256": "71aa7ce33d18d02e1369c55e35db5f62e9a26ae42fc53e1f186815927b9fa5e0",
+      "target_sha256": "32257d42d163be7b60f1bc87fa2996be8b710ebb35f4e3de92e532615e03416e",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_RANGE",
+      "semantic_version": "cards_range-v1",
+      "definition_sha256": "615ee5ae3fc4b9863fed4ab63ebb142ebf2df1a18d40f6e5b2007313ee16478b",
+      "target_sha256": "b0f0fca72f4349f8c37eb311ee09c9788c354a47933626776407dc1a1792d89e",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_FIRST_HALF",
+      "semantic_version": "cards_first_half-v1",
+      "definition_sha256": "83e3556b4a207d356c21b335dd2f52ec8f0f99f3b364a8cf0e90a98e95075214",
+      "target_sha256": "b70b40cbfc2f0c798a384637e44b601588b73caf88a8184fa1ebf674c624e7cf",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARDS_SECOND_HALF",
+      "semantic_version": "cards_second_half-v1",
+      "definition_sha256": "dd6f1506c67e9e7010cf7d73dc0950bfbfe86db11896cc63c0d705019c17469c",
+      "target_sha256": "368a62d59d5dd5437787a713fcca5faafb8fe36b9b299e55c9482e97bf65f96d",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNER_RACE",
+      "semantic_version": "corner_race-v1",
+      "definition_sha256": "1ad2008a44740b0e53bea197539774766a08708e40c0f460670ae129b6e15456",
+      "target_sha256": "7acc06718f03c03df3cec7636656bce951dc72aee1fab66cfecb308927d16ad6",
+      "required_inputs": [
+        "corner_events"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "YELLOW_CARDS",
+      "semantic_version": "yellow_cards-v1",
+      "definition_sha256": "80141771ef3ad36c2dae22338b73375f0566da7d42ef076e7c91c2a55b6a86e8",
+      "target_sha256": "fdbaac9de68dd3dc851e8cf0ecaa8f5547038e171d981b44f952fb88b79c9bb0",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "RED_CARDS",
+      "semantic_version": "red_cards-v1",
+      "definition_sha256": "0a331fbd253eabe0f96058a9d01464e9f17a9f0eaa1b4f275a1627cb2dfbc979",
+      "target_sha256": "74e8ed532fb41c83ff4ea1fa4a7cbf52f51378d0c47ab42325dd28cdc12369c4",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CARD_POINTS",
+      "semantic_version": "card_points-v1",
+      "definition_sha256": "8f971898154e7fa2ee5760f862cedbd7db57595e9ba3bd3e2ea448c7d047fa30",
+      "target_sha256": "79b819c890ceadd3e9af8e147621779ae13ef54b4a354e2fda5b926fb8682297",
+      "required_inputs": [
+        "cards"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SHOTS",
+      "semantic_version": "team_shots-v1",
+      "definition_sha256": "bf0a651bfd6478c443b702fe4c96397319530bf7816d39ccb868b96f12b580e4",
+      "target_sha256": "7764ef6a7d384d975af587d5f5a38735cd134e496e50dd096fc9a7e1ddeabb25",
+      "required_inputs": [
+        "shots"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SHOTS_ON_TARGET",
+      "semantic_version": "team_shots_on_target-v1",
+      "definition_sha256": "0e28234d74ce8899acd2f3889706de37a86c69fdc6ad3cdf701d1d5a7a2fb0b1",
+      "target_sha256": "a83ed4710744a871245b9acf0920083bd84cc105b57e8455d01a28662de7d957",
+      "required_inputs": [
+        "shots_on_target"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_FOULS",
+      "semantic_version": "team_fouls-v1",
+      "definition_sha256": "decf474fc24c67a55cddfe1de75b055ac205598994c6606ee1f658fa6aceb516",
+      "target_sha256": "4e62edb66633c72a34f80ab201d557e3e31f037856b36ba333d3015c80701f64",
+      "required_inputs": [
+        "fouls"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_OFFSIDES",
+      "semantic_version": "team_offsides-v1",
+      "definition_sha256": "cab8f5b446ff8c108716667d87733b9b11b2559027354ac17187e9cf39b3a1c1",
+      "target_sha256": "3b5f888316ec8006cf06b5af8ecccfe47efeac06ddd1b680abeea12ed4915db8",
+      "required_inputs": [
+        "offsides"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_SAVES",
+      "semantic_version": "team_saves-v1",
+      "definition_sha256": "e6fb29593a75dfd64a91bd7694a82ab8b79a166d752c2025c4690d0914338049",
+      "target_sha256": "fc82a406a5546f495222ad4bda1f939bc3e62e99e2e4fc7adb3594d9d0ea0f55",
+      "required_inputs": [
+        "saves"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_TACKLES",
+      "semantic_version": "team_tackles-v1",
+      "definition_sha256": "8c2a93e832338ccc40826a214aefb31810106ca99fc595cb06c15eb4f8abaf94",
+      "target_sha256": "ee442dd6128e0ffb38c9b8b89dbbc1000e23dc81d3b5d50357ac6bbb28277fd3",
+      "required_inputs": [
+        "tackles"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_THROW_INS",
+      "semantic_version": "team_throw_ins-v1",
+      "definition_sha256": "9051acd4099c57e13f648b821a0dee914e7a2153320ae6f3b58454b9743e5aea",
+      "target_sha256": "7b40bbb86df517bd0d8297806c7153ea1748881fff3740fde3ee4d8986c5ca75",
+      "required_inputs": [
+        "throw_ins"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_GOAL_KICKS",
+      "semantic_version": "team_goal_kicks-v1",
+      "definition_sha256": "7ca46aa140214a2094425c40ba303e5976702380d4c3e9e96e43ef7db47d03d3",
+      "target_sha256": "6f0dbbbb10744d27537cd634abe2d130a078a0995531f01be6f90334e624a728",
+      "required_inputs": [
+        "goal_kicks"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_WOODWORK",
+      "semantic_version": "team_woodwork-v1",
+      "definition_sha256": "7b01a99693e2739ecdbc4eec3e09950ddd719bb5dafcef6e7eb633225b90a064",
+      "target_sha256": "a9bdcb465459408a82d6f8c728487b15a1d48253dd490d7a8c3f2d3d20defb30",
+      "required_inputs": [
+        "woodwork"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_GOALS",
+      "semantic_version": "player_goals-v1",
+      "definition_sha256": "158be187b60c3407188d0195aa7992cdf9d643f9a9959dfbda20fda4a8a0c711",
+      "target_sha256": "84e18c7be2f3b363464b841b81edfccf96a1e8811b80c4932426b397436ecaa5",
+      "required_inputs": [
+        "goal_events",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_ASSISTS",
+      "semantic_version": "player_assists-v1",
+      "definition_sha256": "f5191c9951c5bf8b55de63130c335551490640dd671706a702dfee6c62546462",
+      "target_sha256": "9592cfff1fdbe98383563b3c306eacb6396454be1ad61decff4a1bb571643e34",
+      "required_inputs": [
+        "assists",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_SHOTS",
+      "semantic_version": "player_shots-v1",
+      "definition_sha256": "2029fb693e4413cdb51ca2a4bd240c50425050bf383c910c89ecf006aa21c891",
+      "target_sha256": "19d59bdaced421806e67b6a89df9ad468715a606feaa823e094eaccfd54e4c8c",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_SHOTS_ON_TARGET",
+      "semantic_version": "player_shots_on_target-v1",
+      "definition_sha256": "3aa86a498bbea471abc48760ad53bab2204fda3fa8869eedd8235bf2301b1916",
+      "target_sha256": "568cc34c2e7612e7d14fa195f709fb3760b381dfafbafedd6c82567f74cba3c1",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_PASSES",
+      "semantic_version": "player_passes-v1",
+      "definition_sha256": "3214eb3c651843f4bf2f9df3bcfed8b604ef986a9566454e3ef164bb06ec528f",
+      "target_sha256": "857fad1dadebe15e6c0646b4af3db0e5028d186ab892a6e9d0dd417fcb0a2f06",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_TACKLES",
+      "semantic_version": "player_tackles-v1",
+      "definition_sha256": "8987513da4c0bbf0a11e10f7f76d5d6ed7e7f91f988091ff316df9f9354c8ce5",
+      "target_sha256": "606ee48e0d2322f63989a3caec44aa68dc0a9214302176de2025641a089ec68d",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_FOULS",
+      "semantic_version": "player_fouls-v1",
+      "definition_sha256": "916ec34fe73d29d8c9f41a685f53950e048eed69762f5644a20707818a7ccfdb",
+      "target_sha256": "7a54b7e1433bcb531e771a6ce99988cb49dab987366c1e71b67cf6e84f3a74e5",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "PLAYER_CARDS",
+      "semantic_version": "player_cards-v1",
+      "definition_sha256": "cd6525ac6c3f4539a9faa7846a907ee9d90df0dbaac4c0b7b8afce6d5b87ec78",
+      "target_sha256": "dd68eee6240d5ec1a01a5f7412bdbb3016947a1dcf30aae93d797fa96a281355",
+      "required_inputs": [
+        "cards",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "GOALKEEPER_SAVES",
+      "semantic_version": "goalkeeper_saves-v1",
+      "definition_sha256": "8b0de62266d2038c72210d931ce153df2dd93c9f263d681f51b9cf0abf5f570c",
+      "target_sha256": "cea1f01758d55bc3f9d7eac6dddc4371e1a438efdfe8d8f61eecf0359faa4b01",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "ANYTIME_SCORER",
+      "semantic_version": "anytime_scorer-v1",
+      "definition_sha256": "31b575edb6ab5c0165c65358d5a7e5535b340f60f4c1bc78c3889530c00cd649",
+      "target_sha256": "3cbc7d2dbf2e32a4f9a2cef263fdfada645860c48f6d47356c355de513db2c98",
+      "required_inputs": [
+        "goal_events",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "FIRST_SCORER",
+      "semantic_version": "first_scorer-v1",
+      "definition_sha256": "7fcab08d8a1c805ea1729cdc2612e5072d944227d3157fdd3ba63c408afc7334",
+      "target_sha256": "c5576eb391953b22703dbbfcfabd094334e4c54ffcbfdf7e1284733b45c80483",
+      "required_inputs": [
+        "goal_events",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "LAST_SCORER",
+      "semantic_version": "last_scorer-v1",
+      "definition_sha256": "7d10d02a91ab809546800118705b23efc625d0081cfd25ac4ca8de0603efda2a",
+      "target_sha256": "cc780211481589a6f9c1cbde40b4993d4ecd5c6d1b3786d2f45454ee2fe4a1a6",
+      "required_inputs": [
+        "goal_events",
+        "membership",
+        "participation",
+        "player_identity"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "GOALS_CORNERS",
+      "semantic_version": "goals_corners-v1",
+      "definition_sha256": "c7d2426e55cfe31c82b5f4a0e3f40da3a7aea694c01d139cfc2e1ed7b760c370",
+      "target_sha256": "c8e6731e64f8bc25e46e45d7ef1ecdc5b4dd6d6eba4124b275f1c7ddf6cb1419",
+      "required_inputs": [
+        "corners",
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "GOALS_CARDS",
+      "semantic_version": "goals_cards-v1",
+      "definition_sha256": "902094335cbacb7cc70c65d79ea9f5b381a131fdd1bcaffcdde3138e091a94b0",
+      "target_sha256": "5baa0b1e8c8ac3bfff0928394242cbe56c021055d115fb636facffa4c6a625c3",
+      "required_inputs": [
+        "cards",
+        "regulation_score"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "CORNERS_CARDS",
+      "semantic_version": "corners_cards-v1",
+      "definition_sha256": "812c261768dd4afde55e482fbe44cc532df5412fdaaf4a888ce3c22379dac8c0",
+      "target_sha256": "6d6940da1b7acf2b9cbb7a71af7f94b440a505e494b820443279247be7575077",
+      "required_inputs": [
+        "cards",
+        "corners"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "SHOTS_SHOTS_ON_TARGET",
+      "semantic_version": "shots_shots_on_target-v1",
+      "definition_sha256": "c8345078a6d38a56d78dcb40e838297c1a57b9a8dc5ff2079ea05612c8ebbae0",
+      "target_sha256": "e66b681c572c441daeae67103b12d467e58cff0903e72644c9c5d1d42e93dde2",
+      "required_inputs": [
+        "shots",
+        "shots_on_target"
+      ],
+      "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+      "blocker": "TARGET_INPUTS_UNQUALIFIED",
+      "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    },
+    {
+      "market_id": "TEAM_PLAYER",
+      "semantic_version": "team_player-v1",
+      "definition_sha256": "86cf804e851be11062cae3b8a64a4f9c5582e48ff79b294256b6bd3dd93a25d2",
+      "target_sha256": "b0d5067fc9ca81e39658f81a14fd5fb90d3d702c96dbec738e5a4ce91ae3df91",
+      "required_inputs": [
+        "membership",
+        "participation",
+        "player_identity",
+        "player_statistics"
+      ],
+      "diagnostic_status": "INSUFFICIENT_PLAYER_DATA",
+      "blocker": "PLAYER_HISTORY_UNQUALIFIED",
+      "next_action": "Qualify native identity, time-aware membership, participation and exposure.",
+      "implementation": null,
+      "model_id": null,
+      "evaluation": {
+        "evidence_ref": null,
+        "status": "UNASSESSED"
+      },
+      "publication": {
+        "current_status": "UNKNOWN",
+        "eligible_under_declared_evidence": false,
+        "existing_evidence_ref": null,
+        "grants_new_publication": false
+      }
+    }
+  ],
+  "invariants": [
+    "Native source scopes remain unjoined until existing identity-owner proof establishes their canonical relation.",
+    "Provider availability does not qualify fields, history, semantic equivalence or model publication.",
+    "Coverage is bound to exact target semantics and parameters; joint inputs require common canonical fixtures.",
+    "Model implementation inventory is separate from target semantic identity.",
+    "History sufficiency and evaluation require existing owner references; no new numerical threshold is invented.",
+    "Research-only semantic compatibility and research/retired models cannot qualify public support.",
+    "Unknown current publication remains UNKNOWN; diagnostics neither activate nor withdraw forecasts.",
+    "Exact target parameter zero is observed, not missing; invalid/nonfinite parameters are rejected."
+  ],
+  "references": [
+    {
+      "url": "https://optaplayerstats.statsperform.com/en_GB/opta-event-definitions",
+      "role": "Primary reference confirming that source definitions and corrections need explicit agreement; no provider or sportsbook equivalence inferred."
+    },
+    {
+      "url": "https://sports.sportybet.com/ng/help?nav=sports",
+      "role": "Public help returned a JavaScript shell during direct retrieval; no unverified settlement detail is adopted from it."
+    }
+  ],
+  "verification": {
+    "focused_disposable_tests": {
+      "passed": 89,
+      "log_sha256": "0b798b56d6cf66f35aacf413cdea777b4413e3a1a5f574bee9b2cd6608bbe630"
+    },
+    "static_type_architecture": "PASS; formatting/lint/complexity on seven Python files, mypy on five production files, architecture boundaries.",
+    "project_status_governance": {
+      "passed": 24,
+      "project_status": "ProjectStatusV2 valid",
+      "governance_log_sha256": "12784721e0280443291002b595b03384e8588476665647b621a862f07297e08f"
+    },
+    "diff_check": "PASS"
+  },
+  "remaining_qualification": [
+    "Source/target semantic bindings, field/period/PIT coverage and frozen sufficiency/evaluation decisions remain unqualified where the report says so.",
+    "Bound player/team/line/rule parameters are required before interpreting a family as an individual market.",
+    "Per-forecast numerical support and immutable model/promotion owners remain separate gates."
+  ],
+  "provider_requests": 0,
+  "new_probabilities": 0,
+  "operating_writes": 0,
+  "new_publication_grants": 0,
+  "next_phase": "16 multi-provider live intelligence"
+}

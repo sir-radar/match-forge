@@ -1,0 +1,2385 @@
+{
+  "phase": "03",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "956d0f7950c89cc1b7bdbacc1605cbd75435bc66",
+  "recorded_at": "2026-10-31T21:23:51.221437+00:00",
+  "database": "football",
+  "operating_access": "READ_ONLY_REPEATABLE_READ",
+  "full_audit": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-03/reports/provider-data-audit/4ace1ff3681e7aeff46ffbd1f3fc93e5d86d345a197b83d35654937bd23a4e89.json",
+    "sha256": "4ace1ff3681e7aeff46ffbd1f3fc93e5d86d345a197b83d35654937bd23a4e89",
+    "bytes": 5257191,
+    "recorded_at": "2026-10-31 21:17:54.648220+00:00",
+    "field_scopes": 8838,
+    "resource_scopes": 1305
+  },
+  "providers": [
+    {
+      "provider": "api_football",
+      "implemented_access_route_class": "OFFICIAL_API",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-09-29 20:56:42.234107+00:00",
+        "last_acquired_at": "2026-10-31 11:12:02.797904+00:00",
+        "provider": "api_football",
+        "registered_bytes": 122689395,
+        "registered_resources": 345
+      },
+      "normalizer_resources": [
+        "availability",
+        "competitions",
+        "fixtures",
+        "lineups",
+        "results"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 345,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "football_data_org",
+      "implemented_access_route_class": "OFFICIAL_API",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-09-30 09:45:48.317361+00:00",
+        "last_acquired_at": "2026-10-29 17:29:23.434701+00:00",
+        "provider": "football_data_org",
+        "registered_bytes": 14184116,
+        "registered_resources": 116
+      },
+      "normalizer_resources": [
+        "fixtures",
+        "results",
+        "standings"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 116,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "football_data_uk",
+      "implemented_access_route_class": "PUBLIC_WEB",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-09-04 16:20:53.340469+00:00",
+        "last_acquired_at": "2026-10-30 22:47:43.188176+00:00",
+        "provider": "football_data_uk",
+        "registered_bytes": 19302712,
+        "registered_resources": 56
+      },
+      "normalizer_resources": [
+        "fixtures",
+        "odds",
+        "results",
+        "statistics"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 56,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "fotmob",
+      "implemented_access_route_class": "PUBLIC_JSON",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-10-09 22:42:15.965524+00:00",
+        "last_acquired_at": "2026-10-31 21:17:18.329004+00:00",
+        "provider": "fotmob",
+        "registered_bytes": 3201030772,
+        "registered_resources": 32407
+      },
+      "normalizer_resources": [
+        "events",
+        "fixtures",
+        "lineups",
+        "player_statistics",
+        "results",
+        "shots",
+        "statistics"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 32407,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "openfootball",
+      "implemented_access_route_class": "OPEN_DATASET",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-09-30 18:52:55.394824+00:00",
+        "last_acquired_at": "2026-09-30 19:10:57.094530+00:00",
+        "provider": "openfootball",
+        "registered_bytes": 30036862,
+        "registered_resources": 291
+      },
+      "normalizer_resources": [
+        "fixtures",
+        "results"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 291,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "pitchapi",
+      "implemented_access_route_class": "OFFICIAL_API",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-10-09 22:42:08.379561+00:00",
+        "last_acquired_at": "2026-10-31 21:17:54.429233+00:00",
+        "provider": "pitchapi",
+        "registered_bytes": 213506527,
+        "registered_resources": 21943
+      },
+      "normalizer_resources": [
+        "events",
+        "fixtures",
+        "lineups",
+        "player_statistics",
+        "results",
+        "shots",
+        "statistics"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 21943,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    },
+    {
+      "provider": "statsbomb_open_data",
+      "implemented_access_route_class": "OPEN_DATASET",
+      "current_endpoint_access": "NOT_RETESTED_IN_THIS_READ_ONLY_PHASE",
+      "registered_resources": {
+        "first_acquired_at": "2026-08-30 08:48:35.855412+00:00",
+        "last_acquired_at": "2026-09-09 21:00:56.295263+00:00",
+        "provider": "statsbomb_open_data",
+        "registered_bytes": 2266588054,
+        "registered_resources": 1526
+      },
+      "normalizer_resources": [
+        "competitions",
+        "events",
+        "lineups",
+        "results",
+        "shots"
+      ],
+      "runtime_stages": {
+        "AVAILABLE": null,
+        "FETCHED": {
+          "registered_resources": 1526,
+          "claim": "registrations, not a successful real-provider request count"
+        },
+        "RETAINED": {
+          "byte_verified_samples": 1,
+          "full_population_verified": false
+        },
+        "NORMALIZED": {
+          "v2_artifacts": 0,
+          "legacy_projection_counts": "See full_audit.recorded_resource_scopes; kept separate from V2 artifacts"
+        },
+        "IDENTITY_QUALIFIED": null,
+        "SEMANTICALLY_QUALIFIED": null,
+        "PIT_ELIGIBLE": null,
+        "MODELED": null
+      }
+    }
+  ],
+  "registry_counts": [
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "api_football"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "football_data_org"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "football_data_uk"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "fotmob"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "openfootball"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "pitchapi"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_00bff669480149e7b91dc1d20a4cc12c"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_1a354d1eefa649f49216abb819cff1e8"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_1f735332c8eb40c5baca64964f5604c1"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_2051331c15f2492884684c80e0377c14"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_28c6caad9f464e25a68877601d8b9042"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_2bd50b91ff8949868a31cfa8dcefe474"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_39604579cb914b4fa4f295b6e7a2cb9c"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_3dcb065087ef421e9c26b1d0d1ac311a"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_4b74f681ac5f467b9b8df9eac9761a82"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_6692cfbe364b4b25ac20fa9c73cedff8"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_6f46fd95d285431287b92002a4b17966"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_8141a80d60c44158afab0b7430402741"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_8452b3e702ea4bb99961c51662f547c9"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_96a8f9a8ee03400089d588105abff609"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_990c6d0a7a3141a39de2e0f6ff961efb"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_9acc6a649ddf4d978310c11da7f183fa"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_addc7ed89b204d3e92091a11723e854c"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_c00c9a7c76674177bf22918cbe1704ae"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_c0917715e3964511a5f8a1ada10498d3"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_c630d2162497442c86e92e81cf71b595"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_cd4a6890ebe447d5a52f7f7a3a61ddb5"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_d28943a771fa43448dbcc5f0b101bf39"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_d4bf2c1ddd60449aab3354529619697c"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_d8abdad398f040bbb4a28afb315d8644"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_ec6d18f493cd43a5a454f4655dae702f"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_f34c429bbb564454a8cb8ffe7820f569"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_f5b1d447028746ccb27cd73704bea457"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_f857530a87a74b9b9f2e793dad0dc60a"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_sprint2_058a02e982c541a89c951c281bf25592"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "provider_sprint2_66320d12a11743cfa83e0997882f64e0"
+    },
+    {
+      "authority_decisions": 0,
+      "capability_decisions": 0,
+      "coverage_reports": 0,
+      "normalized_artifacts": 0,
+      "provider": "statsbomb_open_data"
+    }
+  ],
+  "retained_samples": {
+    "recorded_at": "2026-10-31T21:17:58.231459+00:00",
+    "access": "READ_ONLY_REPEATABLE_READ",
+    "sample_scope": "One checksum-verified retained resource per provider; no coverage or model qualification inferred. StatsBomb catalog only; no protected match/event payload loaded.",
+    "samples": [
+      {
+        "provider": "api_football",
+        "source_resource_id": "bb45096f-20b6-5189-9f56-74a7f7b31e37",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "fixtures",
+        "sha256": "501c29003d92657b814e2cdfec8343d038eb47e02b7682a7ab76b5ffe0b65cf1",
+        "bytes": 300769,
+        "acquired_at": "2026-10-31 11:12:02.797904+00:00"
+      },
+      {
+        "provider": "football_data_org",
+        "source_resource_id": "e8fffc6f-5559-57f0-b0dc-7f01eeead727",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "competitions/PD/matches",
+        "sha256": "b077c433ca383821d55314e61185e827459ab3733f3fb66fb667b1e44c6dddb1",
+        "bytes": 101602,
+        "acquired_at": "2026-10-29 17:29:23.434701+00:00"
+      },
+      {
+        "provider": "football_data_uk",
+        "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "mmz4281/2627/data.zip",
+        "sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+        "bytes": 275025,
+        "acquired_at": "2026-10-30 22:47:43.188176+00:00"
+      },
+      {
+        "provider": "fotmob",
+        "source_resource_id": "4c45a0c0-2e4d-5568-9d80-2d76e28d8f8c",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "fixtures-2026-10-31",
+        "sha256": "3756bdcc167b35e5f172e5c4cdb56f513c68dcd683e4eecd1691d03f28bcaaf2",
+        "bytes": 490384,
+        "acquired_at": "2026-10-31 21:17:18.329004+00:00"
+      },
+      {
+        "provider": "openfootball",
+        "source_resource_id": "07b1f8b1-fb7c-5ae2-9720-3353796fac87",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "2016-17/en.1.json",
+        "sha256": "9c8cdb27355678ab81aacbbabc34a08d00b399aacc28ef4b733da4954a344f17",
+        "bytes": 113759,
+        "acquired_at": "2026-09-30 19:10:57.094530+00:00"
+      },
+      {
+        "provider": "pitchapi",
+        "source_resource_id": "f70880dc-0ff4-563e-8223-36f2270cc5b8",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "match-m_4Fnwwq-details",
+        "sha256": "113ab10cf1ac639f96ecdd23a77b25f570462e67c888c61053f6505ca50aec3b",
+        "bytes": 759,
+        "acquired_at": "2026-10-31 21:17:54.429233+00:00"
+      },
+      {
+        "provider": "statsbomb_open_data",
+        "source_resource_id": "01a08230-93ea-7eca-b3a3-dfbd851ced79",
+        "status": "BYTE_VERIFIED",
+        "registered_path": "data/competitions.json",
+        "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+        "bytes": 34887,
+        "acquired_at": "2026-09-08 18:03:35.711589+00:00"
+      }
+    ]
+  },
+  "field_depth_summary": {
+    "api_football": [],
+    "football_data_org": [],
+    "football_data_uk": [],
+    "fotmob": [
+      {
+        "source_key": "BallPossesion",
+        "field_scopes": 190,
+        "normalizer_recognizes": "possession",
+        "resource_period_rows": 23755,
+        "numeric_measurements": 47510,
+        "zero_measurements": 98,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "Offsides",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 22787,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ShotsOffTarget",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 8483,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ShotsOnTarget",
+        "field_scopes": 190,
+        "normalizer_recognizes": "shots_on_target",
+        "resource_period_rows": 23755,
+        "numeric_measurements": 93464,
+        "zero_measurements": 21254,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "accurate_crosses",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 13357,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "accurate_passes",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 91908,
+        "zero_measurements": 1376,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "aerials_won",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 5908,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "big_chance",
+        "field_scopes": 181,
+        "normalizer_recognizes": "big_chances",
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 23039,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "big_chance_missed_title",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 30648,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "blocked_shots",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 15522,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "clearances",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 4836,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "corners",
+        "field_scopes": 190,
+        "normalizer_recognizes": "corners",
+        "resource_period_rows": 23755,
+        "numeric_measurements": 47510,
+        "zero_measurements": 10376,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "defense",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 0,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "discipline",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 0,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "dribbles_succeeded",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 10067,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "duel_won",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 3415,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "duels",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 0,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals",
+        "field_scopes": 109,
+        "normalizer_recognizes": "expected_goals",
+        "resource_period_rows": 14009,
+        "numeric_measurements": 55848,
+        "zero_measurements": 2414,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_non_penalty",
+        "field_scopes": 109,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 13902,
+        "numeric_measurements": 27804,
+        "zero_measurements": 1153,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_on_target",
+        "field_scopes": 107,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 13076,
+        "numeric_measurements": 26152,
+        "zero_measurements": 4364,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_open_play",
+        "field_scopes": 109,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 13781,
+        "numeric_measurements": 27562,
+        "zero_measurements": 1959,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_set_play",
+        "field_scopes": 107,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 12970,
+        "numeric_measurements": 25940,
+        "zero_measurements": 6376,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "fouls",
+        "field_scopes": 181,
+        "normalizer_recognizes": "fouls",
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 2728,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ground_duels_won",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 7209,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "interceptions",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 6504,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "keeper_saves",
+        "field_scopes": 181,
+        "normalizer_recognizes": "saves",
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 15608,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "long_balls_accurate",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 3881,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "matchstats.headers.tackles",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 2591,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "opposition_half_passes",
+        "field_scopes": 165,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 21487,
+        "numeric_measurements": 42714,
+        "zero_measurements": 45,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "own_half_passes",
+        "field_scopes": 165,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 21544,
+        "numeric_measurements": 42914,
+        "zero_measurements": 26,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "passes",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 629,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics",
+        "field_scopes": 3,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 145,
+        "numeric_measurements": 0,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_distance_covered",
+        "field_scopes": 3,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 145,
+        "numeric_measurements": 290,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_number_of_sprints",
+        "field_scopes": 3,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 145,
+        "numeric_measurements": 290,
+        "zero_measurements": 1,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_running",
+        "field_scopes": 3,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 145,
+        "numeric_measurements": 290,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_sprinting",
+        "field_scopes": 3,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 145,
+        "numeric_measurements": 290,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-11 15:30:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "player_throws",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 1644,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "red_cards",
+        "field_scopes": 181,
+        "normalizer_recognizes": "red_cards",
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 44253,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shot_blocks",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 16809,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 0,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_inside_box",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 7970,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_outside_box",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 12374,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_woodwork",
+        "field_scopes": 181,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 22977,
+        "numeric_measurements": 45954,
+        "zero_measurements": 39779,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "total_shots",
+        "field_scopes": 190,
+        "normalizer_recognizes": "total_shots",
+        "resource_period_rows": 23755,
+        "numeric_measurements": 93464,
+        "zero_measurements": 6976,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "touches_opp_box",
+        "field_scopes": 164,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 21097,
+        "numeric_measurements": 81862,
+        "zero_measurements": 578,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "yellow_cards",
+        "field_scopes": 181,
+        "normalizer_recognizes": "yellow_cards",
+        "resource_period_rows": 22977,
+        "numeric_measurements": 91908,
+        "zero_measurements": 52138,
+        "earliest_observed_fixture": "2026-10-02 19:00:00+00:00",
+        "latest_observed_fixture": "2026-10-31 20:30:00+00:00",
+        "qualification": "UNKNOWN"
+      }
+    ],
+    "openfootball": [],
+    "pitchapi": [
+      {
+        "source_key": "BallPossesion",
+        "field_scopes": 48,
+        "normalizer_recognizes": "possession",
+        "resource_period_rows": 4069,
+        "numeric_measurements": 8138,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "Offsides",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 3223,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ShotsOffTarget",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 734,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ShotsOnTarget",
+        "field_scopes": 48,
+        "normalizer_recognizes": "shots_on_target",
+        "resource_period_rows": 4069,
+        "numeric_measurements": 16274,
+        "zero_measurements": 2048,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "accurate_crosses",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 1199,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "accurate_passes",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 16272,
+        "zero_measurements": 576,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "aerials_won",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 347,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "big_chance",
+        "field_scopes": 48,
+        "normalizer_recognizes": "big_chances",
+        "resource_period_rows": 4014,
+        "numeric_measurements": 8028,
+        "zero_measurements": 2760,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "big_chance_missed_title",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4014,
+        "numeric_measurements": 8028,
+        "zero_measurements": 4265,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "blocked_shots",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 1658,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "clearances",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 301,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "corners",
+        "field_scopes": 48,
+        "normalizer_recognizes": "corners",
+        "resource_period_rows": 4069,
+        "numeric_measurements": 8138,
+        "zero_measurements": 1012,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "dribbles_succeeded",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 666,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "duel_won",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals",
+        "field_scopes": 48,
+        "normalizer_recognizes": "expected_goals",
+        "resource_period_rows": 3870,
+        "numeric_measurements": 15480,
+        "zero_measurements": 86,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_non_penalty",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 3870,
+        "numeric_measurements": 7740,
+        "zero_measurements": 48,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_on_target",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 3867,
+        "numeric_measurements": 7734,
+        "zero_measurements": 750,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_open_play",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 3870,
+        "numeric_measurements": 7740,
+        "zero_measurements": 165,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "expected_goals_set_play",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 3870,
+        "numeric_measurements": 7740,
+        "zero_measurements": 1234,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "fouls",
+        "field_scopes": 48,
+        "normalizer_recognizes": "fouls",
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 309,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "ground_duels_won",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 312,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "interceptions",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 388,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "keeper_saves",
+        "field_scopes": 48,
+        "normalizer_recognizes": "saves",
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 1762,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "long_balls_accurate",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 289,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "matchstats.headers.tackles",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 298,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "opposition_half_passes",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "own_half_passes",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "passes",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_distance_covered",
+        "field_scopes": 6,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 46,
+        "numeric_measurements": 92,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-18 13:00:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_number_of_sprints",
+        "field_scopes": 6,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 46,
+        "numeric_measurements": 92,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-18 13:00:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_running",
+        "field_scopes": 6,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 46,
+        "numeric_measurements": 92,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-18 13:00:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "physical_metrics_sprinting",
+        "field_scopes": 6,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 46,
+        "numeric_measurements": 92,
+        "zero_measurements": 0,
+        "earliest_observed_fixture": "2026-10-18 13:00:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "player_throws",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 288,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "red_cards",
+        "field_scopes": 48,
+        "normalizer_recognizes": "red_cards",
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 7650,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shot_blocks",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 1676,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_inside_box",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 474,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_outside_box",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 8136,
+        "zero_measurements": 930,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "shots_woodwork",
+        "field_scopes": 27,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 2865,
+        "numeric_measurements": 5730,
+        "zero_measurements": 4566,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "total_shots",
+        "field_scopes": 48,
+        "normalizer_recognizes": "total_shots",
+        "resource_period_rows": 4069,
+        "numeric_measurements": 16274,
+        "zero_measurements": 654,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "touches_opp_box",
+        "field_scopes": 48,
+        "normalizer_recognizes": null,
+        "resource_period_rows": 4068,
+        "numeric_measurements": 16240,
+        "zero_measurements": 596,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      },
+      {
+        "source_key": "yellow_cards",
+        "field_scopes": 48,
+        "normalizer_recognizes": "yellow_cards",
+        "resource_period_rows": 4068,
+        "numeric_measurements": 16272,
+        "zero_measurements": 5988,
+        "earliest_observed_fixture": "2026-10-09 00:30:00+00:00",
+        "latest_observed_fixture": "2026-10-25 14:00:00+00:00",
+        "qualification": "UNKNOWN"
+      }
+    ],
+    "statsbomb_open_data": []
+  },
+  "missing_field_matrix": [
+    {
+      "family": "fixtures_results",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "fixtures",
+          "results"
+        ],
+        "football_data_org": [
+          "fixtures",
+          "results"
+        ],
+        "football_data_uk": [
+          "fixtures",
+          "results"
+        ],
+        "fotmob": [
+          "fixtures",
+          "results"
+        ],
+        "openfootball": [
+          "fixtures",
+          "results"
+        ],
+        "pitchapi": [
+          "fixtures",
+          "results"
+        ],
+        "statsbomb_open_data": [
+          "results"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Reuse current fixture/result decoders and explicit regulation score bases.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "period_scores",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [],
+        "openfootball": [],
+        "pitchapi": [],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "No half-score resource contract in current V2 path; sampled CSV has HT fields. Extend only observed period scores.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "match_statistics",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "statistics"
+        ],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Current named fields are a subset; preserve unknown native fields and extend from measured gaps.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "corners_cards",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "statistics"
+        ],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Counts exist; period/card-counting semantics and market qualification remain required.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "fouls_offsides",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "statistics"
+        ],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Fouls decode; retained Offsides is not yet a named V2 statistic.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "shots_SOT",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "shots",
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "shots",
+          "statistics"
+        ],
+        "statsbomb_open_data": [
+          "shots"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Preserve source-specific shot and SOT definitions and compatible count constraints.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "saves",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "statistics"
+        ],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Team saves decode where reported; player and settlement definitions remain separate.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "events",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "events"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "events"
+        ],
+        "statsbomb_open_data": [
+          "events"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Reuse existing event decoders and retain unknown status/type findings.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "shotmaps",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "shots"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "shots"
+        ],
+        "statsbomb_open_data": [
+          "shots"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Coordinates remain unknown without a verified provider frame; no guessed conversion.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "xG_xGA_xGOT",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [
+          "statistics"
+        ],
+        "fotmob": [
+          "shots",
+          "statistics"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "shots",
+          "statistics"
+        ],
+        "statsbomb_open_data": [
+          "shots"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Existing xG is separate; xGOT/shot-context and qualified opposing xGA require measured extension.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "lineups",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "lineups"
+        ],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "lineups"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "lineups"
+        ],
+        "statsbomb_open_data": [
+          "lineups"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Reuse current lineup modes and knowledge-time checks; actual/predicted states cannot be conflated.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "players",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "lineups"
+        ],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "player_statistics",
+          "lineups"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "player_statistics",
+          "lineups"
+        ],
+        "statsbomb_open_data": [
+          "lineups"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Native player observations exist; detailed fields, membership and cross-provider qualification remain gaps.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "referees",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [],
+        "openfootball": [],
+        "pitchapi": [],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Sampled CSV has 934 referee fields; no named referee observation in the V2 normalizer path.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "managers",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "lineups"
+        ],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "lineups"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "lineups"
+        ],
+        "statsbomb_open_data": [
+          "lineups"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Coach observations and context builders exist; source-backed tenure/tactical coverage remains to be qualified.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "tactical_context",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "lineups"
+        ],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [
+          "lineups"
+        ],
+        "openfootball": [],
+        "pitchapi": [
+          "lineups"
+        ],
+        "statsbomb_open_data": [
+          "lineups"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Formation is partial context; no pressing/style/opponent interaction is inferred from it.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "injuries_suspensions",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "availability"
+        ],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [],
+        "openfootball": [],
+        "pitchapi": [],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "API-Football availability decoder exists; Missing Fixture does not imply a specific injury or suspension.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "strength_ratings",
+      "decoder_resource_candidates": {
+        "api_football": [],
+        "football_data_org": [],
+        "football_data_uk": [],
+        "fotmob": [],
+        "openfootball": [],
+        "pitchapi": [],
+        "statsbomb_open_data": []
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Internal Elo already exists; provider-native dated rating observations require the planned extension.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "family": "live_observations",
+      "decoder_resource_candidates": {
+        "api_football": [
+          "fixtures",
+          "results"
+        ],
+        "football_data_org": [
+          "fixtures",
+          "results"
+        ],
+        "football_data_uk": [
+          "fixtures",
+          "results",
+          "statistics"
+        ],
+        "fotmob": [
+          "fixtures",
+          "results",
+          "events",
+          "statistics"
+        ],
+        "openfootball": [
+          "fixtures",
+          "results"
+        ],
+        "pitchapi": [
+          "fixtures",
+          "results",
+          "events",
+          "statistics"
+        ],
+        "statsbomb_open_data": [
+          "results",
+          "events"
+        ]
+      },
+      "available_now": "UNKNOWN_UNLESS_SCOPED_EVIDENCE_ESTABLISHES_IT",
+      "identity_qualified": null,
+      "semantically_qualified": null,
+      "pit_eligible": null,
+      "modeled": null,
+      "remaining_work": "Existing operational FotMob/PitchAPI lanes are reused; current normalizer routes alone do not prove live capability.",
+      "owning_phases": [
+        "04",
+        "05",
+        "14",
+        "15"
+      ]
+    }
+  ],
+  "csv_sample": {
+    "source_resource_id": "b5a7edf4-0813-5944-9862-4d20e55dc6b3",
+    "sha256": "081aab8b3b5c5a9c827335552cc9b1cf53747f47efa4a6f4b0337c884c422645",
+    "rows": 2027,
+    "fields": {
+      "AC": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "AF": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "AFK": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "AO": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "AR": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "AS": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "AST": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "AW": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "AY": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "FTAG": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "FTHG": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "FTR": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HC": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HF": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HFK": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "HO": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "HR": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HS": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HST": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HTAG": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HTHG": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HTR": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "HW": {
+        "present_rows": 0,
+        "non_null_rows": 0
+      },
+      "HY": {
+        "present_rows": 2027,
+        "non_null_rows": 2027
+      },
+      "Referee": {
+        "present_rows": 934,
+        "non_null_rows": 934
+      }
+    },
+    "qualification": "UNASSESSED; retained field counts only, no identity/semantic/PIT/model admission"
+  },
+  "unused_endpoint_and_decoder_inventory": [
+    {
+      "provider": "fotmob",
+      "existing_methods": [
+        "team",
+        "player"
+      ],
+      "gap": "Standalone profile decoders are absent; lineup/fixture participant emitters already exist. Verify useful missing identity/context fields before adding a decoder."
+    },
+    {
+      "provider": "api_football",
+      "existing_methods": [
+        "standings"
+      ],
+      "gap": "Source method exists but no API-Football standings entry in NORMALIZERS. Fixture events/statistics/player resource decoding remains to be measured and extended under actual entitlements."
+    },
+    {
+      "provider": "football_data_org",
+      "existing_methods": [
+        "standings"
+      ],
+      "gap": "Source method and decoder already exist; no replacement is needed. Measure registered scopes before new collection."
+    },
+    {
+      "provider": "football_data_uk",
+      "existing_methods": [
+        "results"
+      ],
+      "gap": "Current V2 path omits observed HT and referee fields; retain source semantics and source-record identities."
+    },
+    {
+      "provider": "pitchapi",
+      "existing_methods": [
+        "statistics",
+        "shots",
+        "lineups",
+        "events"
+      ],
+      "gap": "Retained numeric fields exceed current vocabulary; reuse bytes and routes rather than making another client."
+    },
+    {
+      "provider": "openfootball",
+      "existing_methods": [
+        "results"
+      ],
+      "gap": "Deep fixture/history route already exists; no rich-stat capability is inferred."
+    },
+    {
+      "provider": "statsbomb_open_data",
+      "existing_methods": [
+        "competitions",
+        "results",
+        "lineups",
+        "events"
+      ],
+      "gap": "Existing pinned research adapter/decoders remain; protected outcome resources are not reopened."
+    }
+  ],
+  "prioritized_expansion_plan": [
+    {
+      "priority": 1,
+      "scope": "Retained FotMob/PitchAPI numeric statistics",
+      "evidence": "Observed Offsides, blocked_shots, passes, interceptions, tackles, woodwork and xGOT keys exceed current named fields. Preserve source-specific definitions and unknowns.",
+      "phase": "04,05"
+    },
+    {
+      "priority": 2,
+      "scope": "Retained Football-Data.co.uk HT and referee fields",
+      "evidence": "2,027 sampled rows have non-null HT scores/results; 934 have referee fields. No offsides/woodwork/free-kick columns occur in this sample.",
+      "phase": "04,05"
+    },
+    {
+      "priority": 3,
+      "scope": "Existing-source rich history and feature-aware enrichment",
+      "evidence": "Observed retained statistic fixture depth is 2026-10-02 through 2026-10-31; fixture season discovery does not prove matching rich-data depth.",
+      "phase": "05,14"
+    },
+    {
+      "priority": 4,
+      "scope": "API-Football resource and entitlement gaps",
+      "evidence": "Reuse known methods and bounded real access checks; do not assume account access from source code.",
+      "phase": "05"
+    },
+    {
+      "priority": 5,
+      "scope": "Eight additional sources",
+      "evidence": "Investigate each only after the measured high-value existing-provider work.",
+      "phase": "06–13"
+    }
+  ],
+  "warnings": [
+    "Registered bytes and one verified sample do not prove all retained resources or current endpoint access.",
+    "The full report includes all registered provider namespaces; seven have the existing football acquisition/normalizer implementations. Other registrations are not counted as additional football integrations.",
+    "Legacy AVAILABLE/ELIGIBLE flags and source-key presence are not canonical/market qualification.",
+    "Native statistic depth is reported by stored canonical season ID; no current display label is substituted for a historical season.",
+    "Protected StatsBomb match/event outcomes and closed evaluation routes were not read or rerun."
+  ],
+  "provider_requests": 0,
+  "operating_mutations": 0,
+  "model_fits": 0,
+  "model_promotions": 0,
+  "verification": {
+    "red_tests": "Missing module, then nonfinite/repeated-measurement regression failures observed before fixes",
+    "focused_final_command": "sh .local/reports/v4/phase-03/test_database.sh",
+    "focused_final_exit_code": 0,
+    "focused_final_tests_passed": 9,
+    "database_scope": "DISPOSABLE_DATABASE_AND_DATA_ROOT",
+    "ruff": "PASS",
+    "mypy": "PASS_2_CHANGED_SOURCE_FILES",
+    "architecture": "PASS",
+    "shell_syntax": "PASS",
+    "operating_audit_exit_code": 0,
+    "retained_sample_verification_exit_code": 0,
+    "csv_field_measurement_exit_code": 0,
+    "python_build": {
+      "command": ". ./scripts/toolchain.sh; uv build --no-build-isolation --out-dir .local/reports/v4/phase-03/dist",
+      "exit_code": 0,
+      "wheel_module_bytes": "MATCH_FINAL_SOURCE",
+      "local_files_secrets_and_caches": "EXCLUDED_FROM_WHEEL_AND_SDIST",
+      "warning": "uv reported its cache directory inside the source tree; archive inspection confirmed the ignored cache was excluded"
+    },
+    "project_status_check": "PASS_EXIT_0",
+    "diff_check": "PASS_EXIT_0"
+  }
+}

@@ -14,6 +14,7 @@ from football.contracts.observations_v2 import (
     PlayerStatisticObservationV2,
     ResultObservationV2,
 )
+from football.contracts.observations_v3 import PlayerStatisticObservationV3
 from football.providers.native.pitchapi import (
     PitchApiEvent,
     PitchApiLineupSide,
@@ -41,6 +42,7 @@ from football.providers.normalization.measurements import (
     period_name,
     player_measurements,
     shot_outcome,
+    statistic_contract,
 )
 from football.providers.normalization.participants import (
     emit_lineup,
@@ -134,6 +136,9 @@ def shots(output: ObservationCollector, payload: object) -> None:
                     outcome=shot_outcome(output, row.get("event_type"), path),
                     own_goal=row.get("is_own_goal"),
                     coordinates="x" in row or "y" in row,
+                    body_part=row.get("shot_type"),
+                    situation=row.get("situation"),
+                    expected_goals_on_target=row.get("expected_goals_on_target"),
                 )
 
 
@@ -216,7 +221,9 @@ def player_statistics(output: ObservationCollector, payload: object) -> None:
             values = player_measurements(output, row.get("stats"), path)
             if values:
                 output.emit(
-                    PlayerStatisticObservationV2,
+                    statistic_contract(
+                        values, PlayerStatisticObservationV2, PlayerStatisticObservationV3
+                    ),
                     path,
                     player.get("id"),
                     fixture=output.context.fixture(),

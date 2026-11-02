@@ -1,0 +1,345 @@
+{
+  "phase": "R02-L",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "d5c848142ba99f25616a7499d8796ad1ff2e660f",
+  "knowledge_cutoff": "2026-11-02T05:10:17.808378+00:00",
+  "artifact": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/issue02-unblocking/players/6c85aca59f877decb8aa477a4f4507007a0543898f46bcf91c8b72cd9a1cf9e3.json",
+    "sha256": "6c85aca59f877decb8aa477a4f4507007a0543898f46bcf91c8b72cd9a1cf9e3"
+  },
+  "source_identity_improvement": {
+    "statsbomb_lineup_resources_verified": 380,
+    "native_players_recognized_by_retained_extractor": 644,
+    "canonical_player_admissions": 0
+  },
+  "native_participation": {
+    "lineup_occurrences": 13678,
+    "status_counts": {
+      "STARTED": 8350,
+      "SUBSTITUTE_APPEARANCE": 2099,
+      "UNKNOWN": 3229
+    },
+    "closed_position_stints": 4353,
+    "contradictory_occurrences": 0,
+    "fixture_specific_association": "Verified native team/fixture associations only; canonical qualification still blocked.",
+    "unknown_rows_are_nonappearance": false,
+    "starters_defaulted_to_90": false
+  },
+  "provider_samples": [
+    {
+      "provider": "fbref",
+      "source_resource_id": "a70984c4-a868-5f5d-b215-01cc034b22cc",
+      "source_sha256": "9c0381adc1fa60be814dcf81b51c82d401909ca6a19d48cfae8e75f75b8a2efb",
+      "observation_contracts": {
+        "TeamObservationV2": 2,
+        "CompetitionObservationV2": 1,
+        "FixtureObservationV2": 1,
+        "ResultObservationV2": 1,
+        "PlayerObservationV2": 27,
+        "PlayerStatisticObservationV3": 27
+      },
+      "native_player_references": 27,
+      "reported_minute_occurrences": 27,
+      "minute_examples": [
+        {
+          "player_native_id": "f1e8372d",
+          "fixture_native_id": "00836893",
+          "minutes_played": 77,
+          "source_record_key": "html:stats_4ba7cbea_summary/tbody/0"
+        },
+        {
+          "player_native_id": "b63f4077",
+          "fixture_native_id": "00836893",
+          "minutes_played": 13,
+          "source_record_key": "html:stats_4ba7cbea_summary/tbody/1"
+        },
+        {
+          "player_native_id": "43458538",
+          "fixture_native_id": "00836893",
+          "minutes_played": 89,
+          "source_record_key": "html:stats_4ba7cbea_summary/tbody/2"
+        }
+      ],
+      "qualified_canonical_players": 0,
+      "qualification": "NATIVE_ONLY; no independently accepted player identity/fixture binding or target-specific appearance/void decision"
+    },
+    {
+      "provider": "sofascore",
+      "source_resource_id": "af933ae5-0589-56ba-928e-7dbc13fa0943",
+      "source_sha256": "c33c1498e0ab04534b23142ac8cd0acb05315c4342daa976cd60f147ee8c2793",
+      "observation_contracts": {
+        "PlayerObservationV2": 4,
+        "PlayerStatisticObservationV2": 3,
+        "LineupObservationV2": 2,
+        "PlayerStatisticObservationV3": 1
+      },
+      "native_player_references": 4,
+      "reported_minute_occurrences": 4,
+      "minute_examples": [
+        {
+          "player_native_id": "158263",
+          "fixture_native_id": "17167343",
+          "minutes_played": 90,
+          "source_record_key": "json:/body/home/players/0/statistics"
+        },
+        {
+          "player_native_id": "1106603",
+          "fixture_native_id": "17167343",
+          "minutes_played": 74,
+          "source_record_key": "json:/body/home/players/1/statistics"
+        },
+        {
+          "player_native_id": "331437",
+          "fixture_native_id": "17167343",
+          "minutes_played": 90,
+          "source_record_key": "json:/body/away/players/0/statistics"
+        }
+      ],
+      "qualified_canonical_players": 0,
+      "qualification": "NATIVE_ONLY; no independently accepted player identity/fixture binding or target-specific appearance/void decision"
+    },
+    {
+      "provider": "espn",
+      "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+      "source_sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+      "observation_contracts": {
+        "CompetitionObservationV2": 1,
+        "TeamObservationV2": 6,
+        "FixtureObservationV2": 1,
+        "ResultObservationV2": 1,
+        "TeamStatisticObservationV3": 2,
+        "PlayerObservationV2": 40,
+        "PlayerStatisticObservationV3": 40,
+        "LineupObservationV2": 2,
+        "EventObservationV2": 16
+      },
+      "native_player_references": 40,
+      "reported_minute_occurrences": 0,
+      "minute_examples": [],
+      "qualified_canonical_players": 0,
+      "qualification": "NATIVE_ONLY; no independently accepted player identity/fixture binding or target-specific appearance/void decision"
+    },
+    {
+      "provider": "understat",
+      "source_resource_id": "00512d25-4076-5898-a1b5-408c98027c0c",
+      "source_sha256": "b150c947050860616d287ca46cfe3f6e6f23950f5494a0850ef96e33921ea807",
+      "observation_contracts": {
+        "PlayerObservationV2": 28,
+        "ShotObservationV3": 21,
+        "ExpectedGoalsObservationV2": 21
+      },
+      "native_player_references": 28,
+      "reported_minute_occurrences": 0,
+      "minute_examples": [],
+      "qualified_canonical_players": 0,
+      "qualification": "NATIVE_ONLY; no independently accepted player identity/fixture binding or target-specific appearance/void decision"
+    }
+  ],
+  "multi_team_cases": [
+    {
+      "native_player_id": "10457",
+      "native_team_ids": [
+        "31",
+        "56"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "20285",
+      "native_team_ids": [
+        "27",
+        "59"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "22594",
+      "native_team_ids": [
+        "40",
+        "56"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3057",
+      "native_team_ids": [
+        "26",
+        "37"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3085",
+      "native_team_ids": [
+        "28",
+        "31"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3297",
+      "native_team_ids": [
+        "37",
+        "38"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3631",
+      "native_team_ids": [
+        "22",
+        "26"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3656",
+      "native_team_ids": [
+        "27",
+        "38"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "3963",
+      "native_team_ids": [
+        "33",
+        "40"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "6871",
+      "native_team_ids": [
+        "23",
+        "41"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "9528",
+      "native_team_ids": [
+        "29",
+        "56"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "9542",
+      "native_team_ids": [
+        "24",
+        "59"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "9593",
+      "native_team_ids": [
+        "28",
+        "56"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "9911",
+      "native_team_ids": [
+        "28",
+        "59"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    },
+    {
+      "native_player_id": "9958",
+      "native_team_ids": [
+        "24",
+        "25"
+      ],
+      "classification": "INDIVIDUAL_REVIEW_REQUIRED",
+      "continuous_membership": false,
+      "transfer_date_qualified": false,
+      "contradictory": false
+    }
+  ],
+  "canonical_qualification": {
+    "accepted_player_resolution_decisions": 0,
+    "appearances": 0,
+    "minute_exposures": 0,
+    "continuous_membership_intervals": 0,
+    "transfer_dates": 0,
+    "target_labels": {
+      "goals": 0,
+      "assists": 0,
+      "shots": 0,
+      "SOT": 0,
+      "cards": 0,
+      "passes": 0,
+      "tackles": 0,
+      "saves": 0,
+      "appearances": 0,
+      "minutes": 0
+    }
+  },
+  "research_and_contract_findings": {
+    "reep": "Pinned identity bridges are not appearance/minute evidence; no repeat search of a schema without that data.",
+    "statsbomb": "Existing native lineup parser supplies start/substitute reasons and position stints. Closed stints alone do not prove complete elapsed exposure or injury-time/void rules.",
+    "fbref_sofascore_espn": "Actual retained source and normalized samples are inspected separately; reported minutes stay native evidence until identity and fixture/target qualification pass.",
+    "membership": "Fixture-specific association may suffice for a target where its existing contract permits it. No blanket career-history requirement added; continuous membership and transfers are measured separately.",
+    "pre_match_knowledge": "Post-match observations do not establish that a lineup was known before kickoff."
+  },
+  "source_ambiguity_repair": "Reject a native player appearing on both teams in one StatsBomb lineup; native player ID recognition must not accept contradictory fixture associations.",
+  "verification": {
+    "red_command": "uv run --locked --no-sync pytest -q python/football/tests/test_retained_native_identity.py -k both_sides",
+    "red_exit_code": 1,
+    "focused_command": "uv run --locked --no-sync pytest -q python/football/tests/test_retained_native_identity.py tests/test_qualification_audit.py",
+    "focused_exit_code": 0,
+    "focused_tests": 25,
+    "ruff_format_lint_complexity": "PASS",
+    "strict_mypy": "PASS; two changed files",
+    "source_audit_exit_code": 0
+  },
+  "operating_writes": 0,
+  "new_identity_admissions": 0,
+  "owner_action": "Resolve exact player source/canonical and fixture bindings through existing identity decisions before canonical participation or exposure. No invalid approval request submitted."
+}

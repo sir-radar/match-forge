@@ -6,7 +6,7 @@ import json
 import types
 from collections.abc import Callable
 from dataclasses import fields, is_dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from functools import cache, lru_cache
 from typing import Annotated, Any, Union, cast, get_args, get_origin, get_type_hints
 from uuid import UUID
@@ -26,6 +26,15 @@ from football.contracts.observations import (
     TeamStatisticObservationV1,
 )
 from football.contracts.observations_v2 import EntityReferenceV2
+from football.contracts.observations_v3 import (
+    ObservationVersionsV3,
+    PeriodScoreObservationV3,
+    PlayerStatisticObservationV3,
+    RefereeObservationV3,
+    ShotObservationV3,
+    TeamRatingObservationV3,
+    TeamStatisticObservationV3,
+)
 
 
 def _encode(value: Any) -> Any:
@@ -35,6 +44,8 @@ def _encode(value: Any) -> Any:
         if value.tzinfo is None or value.utcoffset() is None:
             raise ObservationError("observation timestamps require a timezone")
         return value.astimezone(UTC).isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
     if isinstance(value, UUID):
         return str(value)
     if is_dataclass(value):
@@ -88,7 +99,9 @@ def _validate_payload(payload: object) -> None:
 
 @lru_cache(maxsize=1)
 def _models() -> dict[str, type[Observation]]:
-    return {model.CONTRACT: model for version in ("1", "2") for model in observation_types(version)}
+    return {
+        model.CONTRACT: model for version in ("1", "2", "3") for model in observation_types(version)
+    }
 
 
 def _observation_model(payload: object) -> type[Observation]:
@@ -136,6 +149,7 @@ def _decode(annotation: Any, value: Any) -> Any:
     parsers: dict[Any, Callable[[Any], Any]] = {
         UUID: UUID,
         datetime: datetime.fromisoformat,
+        date: date.fromisoformat,
         float: float,
         int: int,
     }
@@ -203,6 +217,53 @@ def _validate_resource(item: Observation) -> None:
         _validate_lineup(item)
     if isinstance(item, TeamStatisticObservationV1 | PlayerStatisticObservationV1):
         _validate_statistics(item)
+    _validate_v3_resource(item)
+
+
+def _validate_v3_resource(item: Observation) -> None:
+    versions = item.versions
+    if (
+        isinstance(versions, ObservationVersionsV3)
+        and versions.semantic_version is not None
+        and not versions.semantic_version.strip()
+    ):
+        raise ObservationError("semantic_version must be nonblank or unknown")
+    if isinstance(item, TeamStatisticObservationV3 | PlayerStatisticObservationV3):
+        _validate_rich_counts(item)
+    if isinstance(item, ShotObservationV3) and (
+        (item.home_goals_before_shot is None) != (item.away_goals_before_shot is None)
+    ):
+        raise ObservationError("shot score context requires both sides")
+    if isinstance(item, PeriodScoreObservationV3):
+        required = "EXTRA_TIME" if item.period == "EXTRA_TIME" else "REGULATION_90"
+        if item.score_basis not in {required, "UNKNOWN"}:
+            raise ObservationError("period and score basis are incompatible")
+    if isinstance(item, RefereeObservationV3):
+        _validate_referee(item)
+    if isinstance(item, TeamRatingObservationV3) and not item.rating_system.strip():
+        raise ObservationError("rating_system must be nonblank")
+
+
+def _validate_rich_counts(item: TeamStatisticObservationV3 | PlayerStatisticObservationV3) -> None:
+    total = "total_shots" if isinstance(item, TeamStatisticObservationV3) else "shots"
+    pairs = [("shots_on_target", total), ("accurate_passes", "passes")]
+    if isinstance(item, TeamStatisticObservationV3):
+        pairs.extend((("shots_off_target", total), ("blocked_shots", total)))
+    for part, whole in pairs:
+        part_value, whole_value = getattr(item, part), getattr(item, whole)
+        if part_value is not None and whole_value is not None and part_value > whole_value:
+            raise ObservationError(f"{part} cannot exceed {whole}")
+
+
+def _validate_referee(item: RefereeObservationV3) -> None:
+    if item.name is not None and not item.name.strip():
+        raise ObservationError("referee name must be nonblank or unknown")
+    if (
+        item.name is None
+        and item.referee.provider_native_id is None
+        and item.referee.canonical_id is None
+    ):
+        raise ObservationError("referee observation requires an observed identifier or name")
 
 
 def _validate_lineup(item: LineupObservationV1) -> None:

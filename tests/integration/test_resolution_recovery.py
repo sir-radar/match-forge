@@ -1,6 +1,7 @@
 """Approved recovery freezes inputs, publishes fenced checkpoints and resumes fairly."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from importlib import import_module
 from uuid import uuid4
 
 import psycopg
@@ -55,6 +56,50 @@ def approved_job(c, root, extra_fixtures=0):
     ).fetchone()[0]
     c.commit()
     return home, request, work
+
+
+@pytest.mark.parametrize("kind", ["recovery", "files", "parity"])
+def test_immediate_recovery_work_uses_the_database_clock(tmp_path, monkeypatch, kind):
+    from tests.integration.test_resolution_files import missing_resource
+    from tests.integration.test_resolution_files import proposal as file_proposal
+
+    class AheadClock:
+        @staticmethod
+        def now(tz):
+            return datetime.now(tz) + timedelta(minutes=5)
+
+    module = import_module("football.product.resolution_" + kind)
+    monkeypatch.setattr(module, "datetime", AheadClock, raising=False)
+    with isolated_database() as url, psycopg.connect(url) as c:
+        if kind == "recovery":
+            _, _, work = approved_job(c, tmp_path)
+        else:
+            key, path, _ = missing_resource(c, tmp_path)
+            candidate = {"target_path": path, "recovery_path": "recovery/original.json"}
+            request = approve(
+                c,
+                tmp_path,
+                file_proposal(key, "RECOVER", **candidate)
+                if kind == "files"
+                else file_proposal(key, "VERIFY"),
+            )
+            apply_one(c, tmp_path, request, ACTOR)
+            table = "resolution_file_recovery_work" if kind == "files" else "resolution_parity_work"
+            work = c.execute(
+                "SELECT work_id FROM football." + table + " WHERE request_id=%s",
+                (request["request_id"],),
+            ).fetchone()[0]
+        row = c.execute(
+            "SELECT work_type,available_at<=clock_timestamp() "
+            "FROM football.work_items WHERE work_id=%s",
+            (work,),
+        ).fetchone()
+        c.commit()
+        assert row[1], "Immediate work must not wait for an ahead host clock"
+        claim = WorkRegistry(c).claim(
+            "database-clock-test", timedelta(seconds=30), (WorkType(row[0]),), work_ids=(work,)
+        )
+        assert claim is not None
 
 
 def test_approval_freezes_inventory_and_preserves_source_history(tmp_path):

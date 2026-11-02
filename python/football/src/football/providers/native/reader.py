@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 import types
 from collections.abc import Mapping
@@ -20,6 +21,25 @@ from typing import (
 
 class NativeRecordError(ValueError):
     """A native record cannot be read as its provider's declared shape."""
+
+
+def native_json(raw: bytes) -> object:
+    value = json.loads(raw, object_pairs_hook=_json_object, parse_constant=_nonfinite)
+    _validate_json(value, "source")
+    return value
+
+
+def _json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate source JSON key")
+        result[key] = value
+    return result
+
+
+def _nonfinite(value: str) -> None:
+    raise ValueError(f"nonfinite source JSON number: {value}")
 
 
 def native_record[T](model: type[T], payload: object) -> T:

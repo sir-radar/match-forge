@@ -46,6 +46,18 @@ describe("API contract boundary", () => {
     expect(value.home_score).toBe(0);
     expect(value.statistics[0]).toMatchObject({ home: 0, away: null });
   });
+  it("validates live ordering metadata without conflating fetch time", () => {
+    const source = { provider: "fotmob", provider_match_id: "native", observed_at: "2026-11-01T12:00:00Z", last_fetched_at: "2026-11-01T12:05:00Z", stale: false, ordering_basis: "MATCH_CLOCK", source_updated_at: null };
+    const live = { fixture_id: "f", status: "LIVE", home: { id: "h", name: "Home", crest_url: null }, away: { id: "a", name: "Away", crest_url: null }, home_score: 0, away_score: 0, match_minute: 20, added_time: null, period: null, events: [], statistics: [], score_source: source, event_source: null, statistics_source: null, availability: {}, partial: true, score_conflict: true };
+    expect(parseLiveMatch(live).score_source).toMatchObject({ ordering_basis: "MATCH_CLOCK", source_updated_at: null });
+    expect(() => parseLiveMatch({ ...live, score_source: { ...source, ordering_basis: "HTTP_TIME" } })).toThrow(/ordering_basis/);
+    expect(() => parseLiveMatch({ ...live, score_source: { ...source, source_updated_at: "not-a-date" } })).toThrow();
+    expect(() => parseLiveMatch({ ...live, score_conflict: "false" })).toThrow(/score_conflict/);
+    const { ordering_basis, source_updated_at, ...legacy } = source;
+    void ordering_basis; void source_updated_at;
+    expect(parseLiveMatch({ ...live, score_source: legacy }).score_source?.ordering_basis).toBe("UNKNOWN");
+  });
+
   it("rejects invalid forecast probabilities", () => {
     expect(() => parseFixtureGroups({ groups: [{ competition: {
       id: "c", name: "League", country: "Country", continent: "Europe", division: 1, type: "LEAGUE", season: "2026",

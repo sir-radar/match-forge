@@ -356,6 +356,9 @@ def _resource_bindings(payload: dict[str, object]) -> list[CanonicalBinding]:
         "coach": "coach",
         "venue": "venue",
         "shot": "shot",
+        "assisting_player": "player",
+        "assist_event": "event",
+        "referee": "referee",
     }
     bindings: list[CanonicalBinding] = []
 
@@ -416,3 +419,56 @@ def test_different_effective_intervals_cannot_be_reconciled_as_one_context() -> 
         resolve_canonical_resource(
             (first, second), selection((first, second)), knowledge_cutoff=NOW
         )
+
+
+@pytest.mark.parametrize("index", range(6))
+def test_rich_resources_bind_exact_identities_and_preserve_period_and_rating_context(
+    index: int,
+) -> None:
+    from football.contracts.observations_v2 import EntityReferenceV2
+    from football.contracts.observations_v3 import RefereeObservationV3, ShotObservationV3
+    from test_observation_contracts_v3 import examples
+
+    observation = examples()[index]
+    observation = replace(
+        observation, provenance=replace(observation.provenance, provider="fotmob")
+    )
+    if isinstance(observation, RefereeObservationV3):
+        observation = replace(observation, referee=EntityReferenceV2("referee-1"))
+    if isinstance(observation, ShotObservationV3):
+        observation = replace(
+            observation,
+            assisting_player=EntityReferenceV2("assist-player"),
+            assist_event=EntityReferenceV2("assist-event"),
+        )
+    bindings = _resource_bindings(observation.to_dict())
+    subject, proof = bindings[0].canonical_id, bindings[0].identity_decision
+    if isinstance(observation, ShotObservationV3):
+        subject = UUID(int=999)
+        proof = replace(identity(subject), subject_type="shot")
+    item = CanonicalCandidate(
+        observation=observation,
+        canonical_subject_id=subject,
+        subject_identity=proof,
+        bindings=tuple(bindings),
+    )
+    assert item.resource_type == observation.CONTRACT.removesuffix("V3")
+    assert len(item.value_sha256) == len(item.context_sha256) == 64
+    assert item.observation.to_bytes() == observation.to_bytes()
+    changed_semantics = replace(
+        item,
+        observation=replace(
+            observation, versions=replace(observation.versions, semantic_version="reviewed-source")
+        ),
+    )
+    assert changed_semantics.context_sha256 != item.context_sha256
+    if index == 3:
+        changed = replace(item, observation=replace(observation, period="SECOND_HALF"))
+        assert changed.context_sha256 != item.context_sha256
+    if index == 5:
+        from datetime import date
+
+        changed = replace(item, observation=replace(observation, rating_date=date(2026, 10, 2)))
+        assert changed.context_sha256 != item.context_sha256
+    with pytest.raises(CanonicalResolutionError, match="reference"):
+        replace(item, bindings=tuple(bindings[:-1]))

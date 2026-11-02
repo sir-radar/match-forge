@@ -1,0 +1,2003 @@
+{
+  "phase": "R02-I",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "37295332a04963a8de310d3d541c3b95dfff7b9a",
+  "knowledge_cutoff": "2026-11-02T04:58:01.836297+00:00",
+  "pinned_release": "2026-10-31.1",
+  "release_sha256": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+  "candidate_artifact": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+    "sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+    "matched_native_ids": 16669,
+    "candidate_identities": 11771,
+    "conflicts": 343,
+    "identities_admitted": 0
+  },
+  "release_quality_gate": false,
+  "proposals": [
+    {
+      "case_key": "team:01a051db-5a79-7834-a02d-a92525d1515d",
+      "current_canonical_id": "01a051db-5a79-70bd-82d2-b457afa0ae99",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "1",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt13f99514be4cfd",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "1",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt13f99514be4cfd",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "heal.wit_3597.statsbomb_team_gender_reattach"
+          }
+        ],
+        "redirect_chain": [
+          "rt13f99514be4cfd"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-bddd-781b-a329-b62e7d51c688",
+          "canonical_id": "a230dc08-aa98-5d93-a0fd-d5b072629d4a",
+          "provider": "api_football",
+          "native_id": "42",
+          "existing_admission_id": "01a13892-11c1-7dec-95b9-a6c6972db8a3",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "42",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "a230dc08-aa98-5d93-a0fd-d5b072629d4a"
+      ],
+      "evidence_version": "f42793d87aee6c4f0ff0fdceaddf9234b2a345b4749deb00f1168e0a81e8ab4a",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+      "current_canonical_id": "01a051db-5abd-7993-b014-222dcda3ef5b",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "22",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtdd8b468937ef95",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "22",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtdd8b468937ef95",
+            "route_scope": "structural",
+            "rule_id": "c2.team.intraday_clean_attach"
+          }
+        ],
+        "redirect_chain": [
+          "rtdd8b468937ef95"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a110af-2281-750d-adde-561e89061cea",
+          "canonical_id": "e9bb5d23-691a-5216-9cbb-c09db6615d77",
+          "provider": "api_football",
+          "native_id": "46",
+          "existing_admission_id": "01a13891-f885-7d2f-b57e-d18bc9da4e1e",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "46",
+            "source_resource_id": "10c8a560-474a-5afd-9d2e-600e9bc5517a",
+            "sha256": "405f18914b9779293ca62e7df1fb81e8a27877a6b3ab0956ced4b0518e06ba07",
+            "acquired_at": "2026-10-06T10:07:54.055464+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "e9bb5d23-691a-5216-9cbb-c09db6615d77"
+      ],
+      "evidence_version": "e9265f136ee4b427504077daf5c4bb7455c1c3bd1b3886947f3c49c5bee55fd2",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a85-7b6d-bd58-5aac5d43815e",
+      "current_canonical_id": "01a051db-5a85-745b-b656-00578f24f7a5",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "23",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtfc419c6db9e06f",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.99",
+            "entity_type": "team",
+            "external_id": "23",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtfc419c6db9e06f",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.season_token_cluster"
+          }
+        ],
+        "redirect_chain": [
+          "rtfc419c6db9e06f"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-d4c3-79f5-b754-451acfdbd884",
+          "canonical_id": "440b0339-8804-52e0-800e-c4c3f8591e72",
+          "provider": "api_football",
+          "native_id": "38",
+          "existing_admission_id": "01a13893-f229-7f7d-b464-533630c9dbbc",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "38",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "440b0339-8804-52e0-800e-c4c3f8591e72"
+      ],
+      "evidence_version": "0703503784ff4fca0a12d338d2f596193bedc295a700e99b8703d180bd7f14de",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5acd-7dba-a362-f32450b941ec",
+      "current_canonical_id": "01a051db-5acd-78c4-9b3f-25ab572d67ad",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "24",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt0fcab1a2109ab8",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "24",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt0fcab1a2109ab8",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt0fcab1a2109ab8"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12985-8a63-7647-9be7-da4ac85a9343",
+          "canonical_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb",
+          "provider": "api_football",
+          "native_id": "40",
+          "existing_admission_id": "01a13894-0570-7675-920a-5e6cdcb631b8",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "40",
+            "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+            "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+            "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "a1885e25-3c5b-53da-885f-09ef2e2d01cb"
+      ],
+      "evidence_version": "7b86b322c7f565c0d38fb84f9743fb30e2816a576afcef4ed4fcf1f959dcb4e4",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a95-7513-a32e-c7af8bc47909",
+      "current_canonical_id": "01a051db-5a94-7cf6-9ddb-3e687d0e74d6",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "25",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt4ba241d195a7ef",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "25",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt4ba241d195a7ef",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt4ba241d195a7ef"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12985-7ea9-760d-8733-da9b46b99dfb",
+          "canonical_id": "7c52f01f-04d0-571a-a6f9-3afb575f83e6",
+          "provider": "api_football",
+          "native_id": "41",
+          "existing_admission_id": "01a13893-fd04-78b0-83bb-0e5db781766d",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "41",
+            "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+            "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+            "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "7c52f01f-04d0-571a-a6f9-3afb575f83e6"
+      ],
+      "evidence_version": "89669801050ce2ca8fcec2c682b5ac8e58a2713789187f0032d6ea0cc1a3759d",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a1f-7a47-82c4-908f7d33d776",
+      "current_canonical_id": "01a051db-5a1d-7d5a-aafc-99446175859c",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "26",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtb3e9f092ec5270",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.99",
+            "entity_type": "team",
+            "external_id": "26",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtb3e9f092ec5270",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.season_token_cluster"
+          }
+        ],
+        "redirect_chain": [
+          "rtb3e9f092ec5270"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-bded-7dbd-b74b-19f6905a4a95",
+          "canonical_id": "f016c84c-53c0-56d0-b9fa-df13f648a4b7",
+          "provider": "api_football",
+          "native_id": "76",
+          "existing_admission_id": "01a13892-121e-75bc-8d21-cc4ba1fe9322",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "76",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "f016c84c-53c0-56d0-b9fa-df13f648a4b7"
+      ],
+      "evidence_version": "44657ef298b9c656cf08819541a64bc5d0a7ce2854dfae8a669400c06cb6c52a",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5b41-71c7-ac36-f912fc78fcc1",
+      "current_canonical_id": "01a051db-5b40-7ea5-8fde-ba3b39b734bf",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "27",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt411d7e1fcb4344",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "27",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt411d7e1fcb4344",
+            "route_scope": "structural",
+            "rule_id": "c2.team.intraday_clean_attach"
+          }
+        ],
+        "redirect_chain": [
+          "rt411d7e1fcb4344"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-bdf5-74de-902e-8cafbe52f21d",
+          "canonical_id": "adf9d9e9-7e9f-5eab-9697-ec75b9c6c1c8",
+          "provider": "api_football",
+          "native_id": "60",
+          "existing_admission_id": "01a13892-1228-7128-af37-09efa950eb78",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "60",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "adf9d9e9-7e9f-5eab-9697-ec75b9c6c1c8"
+      ],
+      "evidence_version": "69b1dfd2410f2c296ddfe9d4cf9ff2307fb8ae55223ea4c14a5b6d85a3ecebf7",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+      "current_canonical_id": "01a051db-5a27-7bd7-a036-0a0c1ecdbaf3",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "28",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt3bdff329d36885",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.99",
+            "entity_type": "team",
+            "external_id": "28",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt3bdff329d36885",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.season_token_cluster"
+          }
+        ],
+        "redirect_chain": [
+          "rt3bdff329d36885"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-d3e7-710f-8f6d-891b1281ef2b",
+          "canonical_id": "e28e7533-6931-5361-9129-7c2a5bae2aaa",
+          "provider": "api_football",
+          "native_id": "35",
+          "existing_admission_id": "01a13893-f0f5-7073-a6b1-d698f296751c",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "35",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "e28e7533-6931-5361-9129-7c2a5bae2aaa"
+      ],
+      "evidence_version": "a690373fc457b970319769b005a5e349beb4d2e256358dec8dfb6c20dbb9a607",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+      "current_canonical_id": "01a051db-5a5d-7942-b41b-2c56349f52a2",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "29",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt9a79cf4e54e278",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "29",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt9a79cf4e54e278",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt9a79cf4e54e278"
+        ]
+      },
+      "existing_target_anchors": [],
+      "candidate_canonical_ids": [],
+      "evidence_version": "893d7f48570253a3e3ee254e83b912be65b06fa5eb5413e55946cd2cf4a4a7d9",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a88-7987-95c9-eca6eab916a9",
+      "current_canonical_id": "01a051db-5a88-71cb-80e5-35fbb11bee33",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "30",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtebfbadc8ea5e46",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "30",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtebfbadc8ea5e46",
+            "route_scope": "structural",
+            "rule_id": "c2.team.intraday_clean_attach"
+          }
+        ],
+        "redirect_chain": [
+          "rtebfbadc8ea5e46"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-d48e-7b21-9998-80f21196577d",
+          "canonical_id": "b6d1a4d8-0310-5b30-8e56-5e5912238358",
+          "provider": "api_football",
+          "native_id": "75",
+          "existing_admission_id": "01a13893-f1fa-7200-97d1-ba36685ac464",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "75",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "b6d1a4d8-0310-5b30-8e56-5e5912238358"
+      ],
+      "evidence_version": "c9c21ab3762ce9d80140aa58cbe4322d8adb2fbd70c6246d2a98715ba57b7a5d",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+      "current_canonical_id": "01a051db-5a9f-7b3a-9cf1-20ef467acc55",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "31",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtbaccc9912a7639",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.99",
+            "entity_type": "team",
+            "external_id": "31",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtbaccc9912a7639",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.season_token_cluster"
+          }
+        ],
+        "redirect_chain": [
+          "rtbaccc9912a7639"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a0ff25-3264-72b4-a3c4-e958ecc1f979",
+          "canonical_id": "edd9a29a-13b2-5a98-835c-ae7510fdd86d",
+          "provider": "api_football",
+          "native_id": "52",
+          "existing_admission_id": "01a13889-b7f8-7092-89bc-06aa8a0979cb",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "52",
+            "source_resource_id": "44290e04-8812-5490-9c61-5d62079ccf20",
+            "sha256": "dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae",
+            "acquired_at": "2026-10-03T00:23:40.705128+00:00",
+            "country": "World",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "edd9a29a-13b2-5a98-835c-ae7510fdd86d"
+      ],
+      "evidence_version": "fd3f41ef330ffd52d6873509f574304176406cf52018f374c26e20d02ac14745",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+      "current_canonical_id": "01a051db-5a48-78d5-b313-eb17f70a03bf",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "33",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt3763d29e7947d8",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "33",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt3763d29e7947d8",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "heal.wit_3597.statsbomb_team_gender_reattach"
+          }
+        ],
+        "redirect_chain": [
+          "rt3763d29e7947d8"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-d3e5-7b8b-a5c4-9cb150276c82",
+          "canonical_id": "5ca3d524-59e8-5122-bfe8-b1cafdbf224e",
+          "provider": "api_football",
+          "native_id": "49",
+          "existing_admission_id": "01a13893-f0c9-78a0-abc1-9eb8f8250e48",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "49",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "5ca3d524-59e8-5122-bfe8-b1cafdbf224e"
+      ],
+      "evidence_version": "52d0ec840a7e13658194152ab9325f63193831b954cad9fe05677c2deac50ec0",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5af6-7b1d-824c-34502a2e2831",
+      "current_canonical_id": "01a051db-5af6-77fc-a4ac-30cc00a11d7f",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "36",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt37c836a696a159",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "36",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt37c836a696a159",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt37c836a696a159"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12985-8a64-7855-93a6-93d9248815eb",
+          "canonical_id": "36b78199-4873-5fd7-b9a9-2eb0a9bd265a",
+          "provider": "api_football",
+          "native_id": "50",
+          "existing_admission_id": "01a13894-059a-7019-af7e-919210b122be",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "50",
+            "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+            "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+            "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "36b78199-4873-5fd7-b9a9-2eb0a9bd265a"
+      ],
+      "evidence_version": "e4cb1e42bf6161282c03b3de3dafaf6767bebf2311b39df3005677ed04b02d02",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a59-7c13-acac-85b521f5208e",
+      "current_canonical_id": "01a051db-5a59-72f8-bfea-74440545bdf6",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "37",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt9216c37cb92105",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "37",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt9216c37cb92105",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt9216c37cb92105"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a14218-c859-7200-a259-e3f37f61fdcd",
+          "canonical_id": "da1aa24f-48be-549b-ac95-b06fbd369503",
+          "provider": "api_football",
+          "native_id": "34",
+          "existing_admission_id": "01a14218-e4ad-7833-ab20-1d437d7edb68",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "34",
+            "source_resource_id": "fe968af5-8320-5807-9edb-ee9e7026b986",
+            "sha256": "39193424ebad4bbe7526ab4d43dc789eb5de8150516302fd45a3a99d3e35f250",
+            "acquired_at": "2026-10-16T00:12:27.211899+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "da1aa24f-48be-549b-ac95-b06fbd369503"
+      ],
+      "evidence_version": "311b8fa8a53777f2061173fcb9b0b8bd89148d1108dc27aeb64e44ee08b8dd39",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5ae1-75fc-8928-a2be57126f37",
+      "current_canonical_id": "01a051db-5ae1-7156-9569-5522f1cac756",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "38",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtcffb6a6bdb89fe",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "38",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtcffb6a6bdb89fe",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rtcffb6a6bdb89fe"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-dd1f-7cd6-9d4a-65afeeab2088",
+          "canonical_id": "99bdab6f-afd6-5beb-bae4-b20dbaf611df",
+          "provider": "api_football",
+          "native_id": "47",
+          "existing_admission_id": "01a13893-f685-78a7-afb1-8d5ec36f8236",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "47",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "99bdab6f-afd6-5beb-bae4-b20dbaf611df"
+      ],
+      "evidence_version": "41c3fc7079b52c3fcfd27567f0de5c201cbd38e17400cfd05ba71bf28351231f",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5b30-7e46-baa2-e7357c3af53b",
+      "current_canonical_id": "01a051db-5b30-7b57-965b-3129c84cf8ba",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "39",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt85aa78bccbd812",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "39",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt85aa78bccbd812",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt85aa78bccbd812"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-dd1e-7ce2-91a0-519384970c77",
+          "canonical_id": "fcefd735-1779-555e-800f-e700d5b89abd",
+          "provider": "api_football",
+          "native_id": "33",
+          "existing_admission_id": "01a13893-f65d-7679-9034-71339a5d4420",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "33",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "fcefd735-1779-555e-800f-e700d5b89abd"
+      ],
+      "evidence_version": "54377bb5702419714913a7693372f416b71549ca1f34084fdf6cdfda07388398",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a4c-79ed-a00c-cef1f2c25966",
+      "current_canonical_id": "01a051db-5a4c-7222-8cca-178f69c8a8d5",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "40",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt63d613341bc69c",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.98",
+            "entity_type": "team",
+            "external_id": "40",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt63d613341bc69c",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.intraday_clean_attach"
+          }
+        ],
+        "redirect_chain": [
+          "rt63d613341bc69c"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a11e01-9042-72d3-8cb9-1cb431734432",
+          "canonical_id": "a9bed76e-0f11-5fc2-a316-82c6aecef5d8",
+          "provider": "api_football",
+          "native_id": "48",
+          "existing_admission_id": "01a13892-0af1-7d5d-a8a0-ba4c7b0bedd4",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "48",
+            "source_resource_id": "84d2d688-aeda-5f1c-bd23-7802f3110a11",
+            "sha256": "2e542b0c8d8ab55cb213dc0644b53a93fd7bf9ac83edd03064d2e8eeacfb4c3e",
+            "acquired_at": "2026-10-09T00:12:27.955452+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "a9bed76e-0f11-5fc2-a316-82c6aecef5d8"
+      ],
+      "evidence_version": "258060114268cde9b71bd6471b8209347e9b5c2b1ad15c5debac72f53315a52f",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5a6c-7b32-b41a-5f8544e650f0",
+      "current_canonical_id": "01a051db-5a6c-72c5-9778-9c25c78b75ea",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "41",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rtb471f322d5ad96",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "0.99",
+            "entity_type": "team",
+            "external_id": "41",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rtb471f322d5ad96",
+            "route_scope": "closed-small",
+            "rule_id": "c2.team.season_token_cluster"
+          }
+        ],
+        "redirect_chain": [
+          "rtb471f322d5ad96"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a12582-d3f1-71b9-ad9a-4ff3f7477af9",
+          "canonical_id": "fd513e15-8e14-5643-9689-a3eb609661b2",
+          "provider": "api_football",
+          "native_id": "746",
+          "existing_admission_id": "01a13893-f168-7884-aa41-2d570d532b00",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "746",
+            "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+            "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+            "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "fd513e15-8e14-5643-9689-a3eb609661b2"
+      ],
+      "evidence_version": "96034508facec1334e001d2ebc43924d24f4bae6033a95c6ca3c41db0a7b29c7",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5b00-7052-b946-5468c594ba27",
+      "current_canonical_id": "01a051db-5aff-7d08-990c-af541f9f60ad",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "56",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt9587b13df1ee36",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "56",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt9587b13df1ee36",
+            "route_scope": "structural",
+            "rule_id": "c2.team.intraday_clean_attach"
+          }
+        ],
+        "redirect_chain": [
+          "rt9587b13df1ee36"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a17419-6ff2-7841-8f6a-a7047a541a06",
+          "canonical_id": "7d25a5b5-05f7-5c1e-bc1a-004aa28401a1",
+          "provider": "api_football",
+          "native_id": "18210",
+          "existing_admission_id": "01a1741f-848a-7b1c-bf12-db5c83749dbc",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "18210",
+            "source_resource_id": "992ab80a-cb9d-51fe-bca8-e4f952371036",
+            "sha256": "eb1462399cd679975d59a559646aa56c8659bf835ed3a02ab260ee912e2c2d57",
+            "acquired_at": "2026-10-25T17:26:17.782007+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "7d25a5b5-05f7-5c1e-bc1a-004aa28401a1"
+      ],
+      "evidence_version": "a92e8a7829be6f6d299c3a1dbbde4b84d352067ec17336a851ab4ebb4394adc3",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    },
+    {
+      "case_key": "team:01a051db-5ab4-74d7-b528-592695b1795b",
+      "current_canonical_id": "01a051db-5ab3-7ba9-9e67-a99f2b99b6e1",
+      "native_key": {
+        "provider": "statsbomb",
+        "namespace": "offline_team",
+        "external_id": "59",
+        "entity_type": "team"
+      },
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "origin_basis": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "bridge": {
+        "reep_id": "rt5ab67076de8cc1",
+        "source_rows": [
+          {
+            "attached_at": "",
+            "confidence": "1.0",
+            "entity_type": "team",
+            "external_id": "59",
+            "independence_bucket": "STATSBOMB",
+            "namespace": "offline_team",
+            "provider": "statsbomb",
+            "reep_id": "rt5ab67076de8cc1",
+            "route_scope": "seeded_canonical_bulk",
+            "rule_id": "v4.reverified.canonical_bridge"
+          }
+        ],
+        "redirect_chain": [
+          "rt5ab67076de8cc1"
+        ]
+      },
+      "existing_target_anchors": [
+        {
+          "mapping_id": "01a0ff25-285c-75c2-be15-6d7dd87223b7",
+          "canonical_id": "9648865b-e6be-56cf-9c84-fefa3cb3f978",
+          "provider": "api_football",
+          "native_id": "66",
+          "existing_admission_id": "01a13889-9e9f-75fd-97bc-f2e3b2218afe",
+          "current_reverification": "ORIGIN_ANCHOR",
+          "source": {
+            "provider": "api_football",
+            "provider_entity_id": "66",
+            "source_resource_id": "ae11b564-96a3-579e-8e46-e50605c92e56",
+            "sha256": "a2a14015e20226eda7049f036f26e67a58510610d7900dab3c4e210d90b3e86a",
+            "acquired_at": "2026-10-03T00:23:06.864428+00:00",
+            "country": "World",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          }
+        }
+      ],
+      "candidate_canonical_ids": [
+        "9648865b-e6be-56cf-9c84-fefa3cb3f978"
+      ],
+      "evidence_version": "45625c68a2b34e6015f27837ef18e4f287689d28d76a919647557182d4441060",
+      "conflict_status": "NO_ENTITY_TYPE_CONFLICT; release quality false",
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "native_id_classification": "EXACT_SOURCE_ID_VERIFIED",
+      "permissible_action": "REQUEST_EVIDENCE; APPROVE is blocked by existing verifier",
+      "approval_required": true,
+      "approval_allowed": false,
+      "applied": false,
+      "missing_proof": [
+        "Independently qualified source-to-target relationship; Reep quality-failing release alone is insufficient",
+        "Existing review/correction process must bind target without rewriting historical UUIDs"
+      ]
+    }
+  ],
+  "competition": {
+    "case_key": "competition:01a051db-5565-73ca-b461-3de984216d04",
+    "native_id": "2",
+    "qualification": {
+      "status": "BLOCKED",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "decision": {
+        "mapping_id": "01a051db-5565-73ca-b461-3de984216d04",
+        "canonical_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+        "entity_type": "competition",
+        "provider": "statsbomb_open_data",
+        "provider_id": "2",
+        "disposition": "UNRESOLVED",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5456-70a2-b637-d2840cfaf9c2",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "2",
+          "source_resource_id": "01a051db-545a-7337-9aaa-d9ad55f52184",
+          "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+          "acquired_at": "2026-08-30T08:48:35.855412+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        },
+        "source_observed_at": "2026-08-30T08:48:35.855412+00:00"
+      }
+    },
+    "evidence_version": "885b023fa6793cc763f49f7213fcb9bf6f6318405ee3c5c004c14f0657ed32b9",
+    "allowed": false,
+    "exact_reep_candidate": false
+  },
+  "bounded_other_candidates": [
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753972",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmc9279fed04aeb8",
+      "redirect_chain": [
+        "rmc9279fed04aeb8"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753972",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmc9279fed04aeb8",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753974",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm8ab74847b339b2",
+      "redirect_chain": [
+        "rm8ab74847b339b2"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753974",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm8ab74847b339b2",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753975",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmb41b20e0b42435",
+      "redirect_chain": [
+        "rmb41b20e0b42435"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753975",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmb41b20e0b42435",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753977",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm7a20049c91abcd",
+      "redirect_chain": [
+        "rm7a20049c91abcd"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753977",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm7a20049c91abcd",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753978",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm0a2b3e0f51a7e2",
+      "redirect_chain": [
+        "rm0a2b3e0f51a7e2"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753978",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm0a2b3e0f51a7e2",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753979",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm17f55c21dad9d0",
+      "redirect_chain": [
+        "rm17f55c21dad9d0"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753979",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm17f55c21dad9d0",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753980",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm46bf98bdbf0a77",
+      "redirect_chain": [
+        "rm46bf98bdbf0a77"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753980",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm46bf98bdbf0a77",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753981",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rme514532d4c2524",
+      "redirect_chain": [
+        "rme514532d4c2524"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753981",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rme514532d4c2524",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753982",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm9e2db0b6bb5b51",
+      "redirect_chain": [
+        "rm9e2db0b6bb5b51"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753982",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm9e2db0b6bb5b51",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "3753984",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmc93b824b77a131",
+      "redirect_chain": [
+        "rmc93b824b77a131"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753984",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmc93b824b77a131",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10007",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp792209baf08071",
+      "redirect_chain": [
+        "rp792209baf08071"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10007",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp792209baf08071",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10024",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp6dc1b9ae82640e",
+      "redirect_chain": [
+        "rp6dc1b9ae82640e"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10024",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp6dc1b9ae82640e",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10326",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp2af8064e47b97c",
+      "redirect_chain": [
+        "rp2af8064e47b97c"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10326",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp2af8064e47b97c",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10457",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpbd9009eef6eeeb",
+      "redirect_chain": [
+        "rpbd9009eef6eeeb"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10457",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpbd9009eef6eeeb",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10458",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp8680cae0e593b8",
+      "redirect_chain": [
+        "rp8680cae0e593b8"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10458",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp8680cae0e593b8",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10484",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpf1db807d993069",
+      "redirect_chain": [
+        "rpf1db807d993069"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10484",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpf1db807d993069",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10496",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp93bd860d90b737",
+      "redirect_chain": [
+        "rp93bd860d90b737"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10496",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp93bd860d90b737",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10499",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpea62f8d46d507a",
+      "redirect_chain": [
+        "rpea62f8d46d507a"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10499",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpea62f8d46d507a",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10546",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp29f36f837a7831",
+      "redirect_chain": [
+        "rp29f36f837a7831"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10546",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp29f36f837a7831",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "player",
+        "external_id": "10769",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp7cc6bce7173b35",
+      "redirect_chain": [
+        "rp7cc6bce7173b35"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10769",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp7cc6bce7173b35",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    },
+    {
+      "native_key": {
+        "entity_type": "match",
+        "external_id": "704279",
+        "matchforge_provider": "espn",
+        "namespace": "match",
+        "provider": "espn"
+      },
+      "reep_id": "rmc4c63fe1e9d5a2",
+      "redirect_chain": [
+        "rmc4c63fe1e9d5a2"
+      ],
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "704279",
+          "independence_bucket": "OPTA",
+          "namespace": "match",
+          "provider": "espn",
+          "reep_id": "rmc4c63fe1e9d5a2",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED_MORE_PROOF",
+      "admission_permission": false
+    }
+  ],
+  "counts": {
+    "team_candidates": 20,
+    "competition_candidates_checked": 1,
+    "match_candidates": 10,
+    "player_candidates": 10,
+    "espn_fixture_candidates": 1,
+    "source_identity_checks_passed": 21,
+    "existing_target_anchors": 19,
+    "review_ready_proposals": 0,
+    "accepted_decisions": 0,
+    "rejected_or_more_proof_required": 42
+  },
+  "upstream_independence": "Reep independence_bucket is candidate provenance only. A second bridge is not independent confirmation of a MatchForge source-to-target relationship. No full register reprocessing or release upgrade.",
+  "owner_action": "No approval request submitted: current APPROVE previews reject these proposals. Obtain verifiable relationship evidence first; consequential review then stays in Resolution Center.",
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "verification": {
+    "command": "uv run --locked --no-sync python .local/issue02-unblocking/phase_i.py",
+    "exit_code": 0,
+    "all_20_previews_blocked": true,
+    "exact_artifact_hash_verified": true
+  }
+}

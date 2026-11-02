@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -65,12 +65,14 @@ def retained_bytes(root: Path, relative: str) -> bytes:
 def enqueue_file_recovery(
     connection: Connection[Any], request_id: str, plan: dict[str, Any]
 ) -> UUID:
+    stamp = connection.execute("SELECT clock_timestamp()").fetchone()
+    assert stamp is not None
     request = WorkRequest(
         work_type=WorkType.PROVIDER_ACQUISITION,
         semantic_key=f"resolution-file:{UUID(request_id)}",
         input_hash=sha256_json(plan),
         priority=0,
-        available_at=datetime.now(UTC),
+        available_at=stamp[0],
         max_attempts=2**31 - 1,
         retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
     )

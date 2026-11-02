@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
@@ -162,12 +162,15 @@ def enqueue_page(
 ) -> UUID:
     request_id = str(UUID(request_id))
     inputs = page_inputs(request_id, inventory, cursor_kind, cursor_id)
+    # Immediate work uses the same clock as the SQL eligibility and lease checks.
+    stamp = connection.execute("SELECT clock_timestamp()").fetchone()
+    assert stamp is not None
     request = WorkRequest(
         work_type=WorkType.CANONICAL_RECONCILIATION,
         semantic_key=f"resolution-recovery:{request_id}:{cursor_kind}:{cursor_id}",
         input_hash=sha256_json(inputs),
         priority=0,
-        available_at=datetime.now(UTC),
+        available_at=stamp[0],
         max_attempts=2**31 - 1,
         retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
         dependencies=(parent,) if parent else (),

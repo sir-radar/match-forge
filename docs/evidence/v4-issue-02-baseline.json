@@ -1,0 +1,399 @@
+{
+  "phase": "R02-A",
+  "status": "PASS",
+  "starting_sha": "5716261f4efafdfb670d6ec830fcc6977e0f5613",
+  "recorded_at": "2026-11-01T18:44:17.323007+00:00",
+  "scope": "Every registered operating and Phase 14 normalized observation; raw-only registrations inventoried separately.",
+  "matrix": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/qualification/1b56026f55f158c716cc8f70ae6596ce7883a667b8247b5e7e7519a4b07b01e7.json",
+    "sha256": "1b56026f55f158c716cc8f70ae6596ce7883a667b8247b5e7e7519a4b07b01e7"
+  },
+  "matrix_rows": 1552,
+  "verified_observations": 96920,
+  "databases": [
+    {
+      "database": "football",
+      "raw_registered_resources": 62521,
+      "raw_registration_inventory": [
+        {
+          "bytes": 136888563,
+          "provider": "api_football",
+          "resources": 394
+        },
+        {
+          "bytes": 431546,
+          "provider": "espn",
+          "resources": 3
+        },
+        {
+          "bytes": 3284916,
+          "provider": "flashscore",
+          "resources": 7
+        },
+        {
+          "bytes": 15119543,
+          "provider": "football_data_org",
+          "resources": 126
+        },
+        {
+          "bytes": 19302712,
+          "provider": "football_data_uk",
+          "resources": 56
+        },
+        {
+          "bytes": 3603514195,
+          "provider": "fotmob",
+          "resources": 36002
+        },
+        {
+          "bytes": 30036862,
+          "provider": "openfootball",
+          "resources": 291
+        },
+        {
+          "bytes": 229954239,
+          "provider": "pitchapi",
+          "resources": 24073
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_00bff669480149e7b91dc1d20a4cc12c",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_1a354d1eefa649f49216abb819cff1e8",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_1f735332c8eb40c5baca64964f5604c1",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_2051331c15f2492884684c80e0377c14",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_28c6caad9f464e25a68877601d8b9042",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_2bd50b91ff8949868a31cfa8dcefe474",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_39604579cb914b4fa4f295b6e7a2cb9c",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_3dcb065087ef421e9c26b1d0d1ac311a",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_4b74f681ac5f467b9b8df9eac9761a82",
+          "resources": 1
+        },
+        {
+          "bytes": 8,
+          "provider": "provider_6692cfbe364b4b25ac20fa9c73cedff8",
+          "resources": 3
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_6f46fd95d285431287b92002a4b17966",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_8141a80d60c44158afab0b7430402741",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_8452b3e702ea4bb99961c51662f547c9",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_96a8f9a8ee03400089d588105abff609",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_990c6d0a7a3141a39de2e0f6ff961efb",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_9acc6a649ddf4d978310c11da7f183fa",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_addc7ed89b204d3e92091a11723e854c",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_c00c9a7c76674177bf22918cbe1704ae",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_c0917715e3964511a5f8a1ada10498d3",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_c630d2162497442c86e92e81cf71b595",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_cd4a6890ebe447d5a52f7f7a3a61ddb5",
+          "resources": 1
+        },
+        {
+          "bytes": 5,
+          "provider": "provider_d28943a771fa43448dbcc5f0b101bf39",
+          "resources": 2
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_d4bf2c1ddd60449aab3354529619697c",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_d8abdad398f040bbb4a28afb315d8644",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_ec6d18f493cd43a5a454f4655dae702f",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_f34c429bbb564454a8cb8ffe7820f569",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_f5b1d447028746ccb27cd73704bea457",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_f857530a87a74b9b9f2e793dad0dc60a",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_sprint2_058a02e982c541a89c951c281bf25592",
+          "resources": 1
+        },
+        {
+          "bytes": 2,
+          "provider": "provider_sprint2_66320d12a11743cfa83e0997882f64e0",
+          "resources": 1
+        },
+        {
+          "bytes": 2889812,
+          "provider": "soccerway",
+          "resources": 7
+        },
+        {
+          "bytes": 2266588054,
+          "provider": "statsbomb_open_data",
+          "resources": 1526
+        },
+        {
+          "bytes": 100486,
+          "provider": "understat",
+          "resources": 2
+        },
+        {
+          "bytes": 556384,
+          "provider": "whoscored",
+          "resources": 1
+        }
+      ],
+      "read_only": "on",
+      "recorded_at": "2026-11-01T16:30:04.699720+00:00",
+      "registry_counts": {
+        "canonical_resource_coverage": 0,
+        "canonical_resource_resolutions": 0,
+        "provider_resource_authority": 0,
+        "provider_resource_capabilities": 26
+      },
+      "verified_normalized_resources": 28,
+      "verified_observations": 12310
+    },
+    {
+      "database": "football_v4_phase14_shadow_20261101",
+      "raw_registered_resources": 1524,
+      "raw_registration_inventory": [
+        {
+          "bytes": 2266518280,
+          "provider": "statsbomb_open_data",
+          "resources": 1524
+        }
+      ],
+      "read_only": "on",
+      "recorded_at": "2026-11-01T16:30:32.070167+00:00",
+      "registry_counts": {
+        "canonical_resource_coverage": 0,
+        "canonical_resource_resolutions": 0,
+        "provider_resource_authority": 0,
+        "provider_resource_capabilities": 0
+      },
+      "verified_normalized_resources": 1524,
+      "verified_observations": 84610
+    }
+  ],
+  "candidate_scopes": [
+    {
+      "provider": "statsbomb_open_data",
+      "path": "data/matches/11/2.json",
+      "source_resource_id": "01a087a2-7696-7755-9f2a-063db3d4eabe",
+      "sha256": "f34be8ff144e889af756082410c9357dcadd380aa13f8ec85a1b344411f8722c",
+      "fixtures": 34,
+      "event_lineup_pairs": 0,
+      "competition": 11,
+      "season": 2,
+      "pilot_fixture_ids": [],
+      "native_date_range": [
+        "2016-08-20",
+        "2017-05-21"
+      ],
+      "source_publication_timezone_proven": false
+    },
+    {
+      "provider": "statsbomb_open_data",
+      "path": "data/matches/11/27.json",
+      "source_resource_id": "01a08230-a2d5-7184-ab22-2ddc7c6b9dc9",
+      "sha256": "4e2074c633559f3b88e9593a752d8d15d9d9ba0d6c8a25316a68ec6526b4d14b",
+      "fixtures": 380,
+      "event_lineup_pairs": 380,
+      "competition": 11,
+      "season": 27,
+      "pilot_fixture_ids": [
+        "265839",
+        "265894",
+        "265944"
+      ],
+      "native_date_range": [
+        "2015-08-21",
+        "2016-05-15"
+      ],
+      "source_publication_timezone_proven": false
+    },
+    {
+      "provider": "statsbomb_open_data",
+      "path": "data/matches/182/281.json",
+      "source_resource_id": "01a087f9-63fa-7115-b517-36718a3fa007",
+      "sha256": "ea93b27a4d1101ba62792c88b5770bdacd904cefdf38671382698f5c2298628a",
+      "fixtures": 240,
+      "event_lineup_pairs": 0,
+      "competition": 182,
+      "season": 281,
+      "pilot_fixture_ids": [],
+      "native_date_range": [
+        "2023-09-15",
+        "2024-06-16"
+      ],
+      "source_publication_timezone_proven": false
+    },
+    {
+      "provider": "statsbomb_open_data",
+      "path": "data/matches/2/27.json",
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "fixtures": 380,
+      "event_lineup_pairs": 380,
+      "competition": 2,
+      "season": 27,
+      "pilot_fixture_ids": [
+        "3753972",
+        "3753973",
+        "3753974"
+      ],
+      "native_date_range": [
+        "2015-08-08",
+        "2016-05-17"
+      ],
+      "source_publication_timezone_proven": false
+    }
+  ],
+  "prioritization": [
+    {
+      "rank": 1,
+      "scope": "StatsBomb 2/27 (EPL 2015/2016)",
+      "reason": "380 complete native match/event/lineup sets. Ten old independent CSV fixture resolutions provide exact proof candidates to inspect; they are not new admissions.",
+      "pilot": "All 380 fixtures; 761 resources including exact match index SHA e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b.",
+      "prerequisites": [
+        "Admitted exact fixture, competition, team and player bindings",
+        "Verified kickoff timezone, event clocks, period/quantity meanings",
+        "Retrospective-label use separated from earlier-known features; settlement proof"
+      ]
+    },
+    {
+      "rank": 2,
+      "scope": "StatsBomb 11/27 (La Liga 2015/2016)",
+      "reason": "380 complete sets; same identity/time barriers; no additional proof advantage."
+    },
+    {
+      "rank": 3,
+      "scope": "Football-Data UK retained 2627 archive",
+      "reason": "7015 observations and existing R2 competition/team owners, but anonymous source-record fixture/team bindings and player evidence are incomplete."
+    },
+    {
+      "rank": 4,
+      "scope": "Other retained native provider samples",
+      "reason": "Small samples without accepted resolutions for their exact fixture/player records; shared Flashscore/Soccerway bytes are not independent proof."
+    }
+  ],
+  "potential_market_examples": [
+    "RESULT_1X2",
+    "TOTAL_GOALS",
+    "FIRST_HALF_RESULT",
+    "PLAYER_GOALS",
+    "PLAYER_SHOTS"
+  ],
+  "potential_unlocks": "Conditional data evidence only. Actual unlocked market families: zero. No model, support status or sufficiency decision granted.",
+  "preservation_baseline": {
+    "receipt": {
+      "path": ".local/reports/v4/qualification-r02/preservation/baseline-receipt.json",
+      "sha256": "7aa47bee5c0910acbd69a61e59b200e82a473a8c446dbff25ae60329efde25ad"
+    },
+    "row_hash_export": {
+      "path": ".local/reports/v4/qualification-r02/preservation/baseline.json",
+      "sha256": "130f34708a697a0efca5451b3160adecf11a7dd6f9dc887d1f1e8dbc2000ee8a"
+    }
+  },
+  "verification": {
+    "focused_tests": {
+      "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py",
+      "exit_code": 0,
+      "passed": 3
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS; scripts/audit_v4_qualification.py",
+    "architecture_check": "PASS",
+    "census_exit_code": 0,
+    "initial_failure": "PostgreSQL byte-total Decimal serialization; fixed with regression coverage, full read-only retry passed.",
+    "diff_check": "PASS"
+  },
+  "operating_writes": 0,
+  "provider_requests": 0,
+  "identity_admissions": 0,
+  "qualification_grants": 0
+}

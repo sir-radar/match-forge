@@ -247,6 +247,15 @@ class ApiFootballClient:
     def lineups(self, fixture_id: int) -> ApiResponse:
         return self._get("/fixtures/lineups", {"fixture": str(fixture_id)})
 
+    def statistics(self, fixture_id: int) -> ApiResponse:
+        return self._get("/fixtures/statistics", {"fixture": str(fixture_id)})
+
+    def events(self, fixture_id: int) -> ApiResponse:
+        return self._get("/fixtures/events", {"fixture": str(fixture_id)})
+
+    def fixture_players(self, fixture_id: int) -> ApiResponse:
+        return self._get("/fixtures/players", {"fixture": str(fixture_id)})
+
     def _get(self, path: str, query: Mapping[str, str]) -> ApiResponse:
         reservation = self._request_budget.before_request() if self._request_budget else None
         url = f"{API_BASE_URL}{path}?{urllib.parse.urlencode(sorted(query.items()))}"

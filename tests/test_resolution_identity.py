@@ -32,3 +32,22 @@ def test_missing_source_evidence_is_blocked_even_with_a_name_candidate():
     assert (
         review_status("UNRESOLVED", False, True, "RETAINED_SOURCE_EVIDENCE_REQUIRED") == "BLOCKED"
     )
+
+
+@pytest.mark.parametrize("kind", ["team", "competition"])
+@pytest.mark.parametrize("method", ["provider_native", "deterministic"])
+def test_statsbomb_native_surrogate_is_never_an_admitted_origin(kind, method):
+    from uuid import UUID
+
+    from football.product.identity_trust import MappingEvidence, origin_id, qualify_mapping
+
+    legacy = UUID("01a051db-5a79-70bd-82d2-b457afa0ae99")
+    evidence = MappingEvidence(
+        kind, legacy, "statsbomb_open_data", "1", method, 1.0, "England", True, True
+    )
+    assert origin_id(kind, "statsbomb_open_data", "1", "England") is None
+    disposition, reason = qualify_mapping(evidence)
+    assert disposition == "UNRESOLVED"
+    assert reason == (
+        "UNSUPPORTED_ORIGIN_ALGORITHM" if method == "deterministic" else "REVIEW_EVIDENCE_REQUIRED"
+    )

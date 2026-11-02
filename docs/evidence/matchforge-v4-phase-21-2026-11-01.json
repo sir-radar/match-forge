@@ -1,0 +1,48 @@
+{
+  "phase": "21",
+  "starting_sha": "19b4494ad43db2d32f2d293467e3dfaf3b443d4d",
+  "recorded_at": "2026-11-01T10:03:07.606891Z",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "complete": false,
+  "existing_owners": [
+    "python/football/src/football/forecasting/postmatch.py",
+    "python/football/src/football/forecasting/postmatch_storage.py",
+    "python/football/src/football/forecasting/postmatch_cli.py",
+    "schemas/contracts/post-match-evaluation.schema.json",
+    "infrastructure/migrations/202610190400_post_match_evaluation.sql"
+  ],
+  "existing_behavior": [
+    "Checksum-bound published pre-match forecast and separate final-result snapshots.",
+    "Fenced work publication, immutable input/results, retries and atomic rollback.",
+    "Official goal corrections produce new input/evaluation versions; old knowledge cutoffs remain readable.",
+    "1X2 log loss/Brier/RPS, supported count CRPS, calibration and explicit missing metric coverage.",
+    "Window/horizon/model/competition/season/data-quality segmentation, explicit owner review limits; no automatic promotion."
+  ],
+  "blockers": [
+    "No qualified published corner/card/team/player/period forecast contract or paired outcome target from Phases 18\u201320.",
+    "The existing immutable input/schema explicitly binds home_goals and away_goals. Those fields cannot be repurposed for another quantity or widened in place.",
+    "Market-specific semantic versions, nonappearance/void rules and correction sources need approved target/forecast contracts before a versioned extension can score them.",
+    "Source/feature/missingness drift and candidate preparation for these targets need qualified, cutoff-bound populations and an approved bounded research route. Current metric/coverage monitoring is not a claim those extensions exist."
+  ],
+  "gate_decision": "Preserve the existing monitoring framework and frozen schema; do not fabricate forecasts, labels, thresholds or challenger inputs merely to start a self-learning loop.",
+  "actions": {
+    "operating_outcomes_read": 0,
+    "sealed_outcomes_read": 0,
+    "operating_writes": 0,
+    "provider_requests": 0,
+    "new_evaluation_frameworks": 0,
+    "authoritative_model_fits": 0,
+    "authoritative_evaluations": 0,
+    "promotions": 0
+  },
+  "verification": {
+    "scope": "Synthetic unit and disposable database correction/retry/concurrency regressions only; no operating evaluation command.",
+    "tests": "PASS: 22 unit and 20 disposable integration tests",
+    "initial_collection": "Same-basename unit/integration modules collided; corrected by running the suites separately, without changing tests or product code.",
+    "governance": "PASS: 24 tests",
+    "status": "PASS",
+    "diff_check": "PASS",
+    "test_log_sha256": "33bee24ff270868b710df9d9ec720db65393d92962757fc09600aac90bd46a2c"
+  },
+  "next_phase": "Independent Phase 22 truthful capability/availability integration."
+}

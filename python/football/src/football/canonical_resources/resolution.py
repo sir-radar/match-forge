@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, fields, is_dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import cast
 from uuid import UUID
 
@@ -15,6 +15,7 @@ from football.contracts.observations import (
     observation_from_bytes,
 )
 from football.contracts.observations_v2 import EntityReferenceV2
+from football.contracts.observations_v3 import ObservationVersionsV3
 from football.contracts.source import canonical_json_bytes
 from football.ingestion.conflicts import ConflictRecordV1
 
@@ -36,6 +37,9 @@ _SCOPE_FIELDS = {
     "PlayerStatisticObservation": ("fixture", "team", "player"),
     "StandingObservation": ("competition", "team", "season_label"),
     "OddsObservation": ("fixture", "bookmaker", "market"),
+    "PeriodScoreObservation": ("fixture", "period", "score_basis"),
+    "RefereeObservation": ("fixture",),
+    "TeamRatingObservation": ("team", "rating_date", "rating_system"),
 }
 _IDENTITY_TYPES = frozenset(
     ("identity_resolution", "identity_admission", "fixture_identity_resolution")
@@ -110,7 +114,7 @@ class CanonicalCandidate[T: Observation]:
 
     @property
     def resource_type(self) -> str:
-        return self.observation.CONTRACT.removesuffix("V1").removesuffix("V2")
+        return self.observation.CONTRACT.removesuffix("V1").removesuffix("V2").removesuffix("V3")
 
     @property
     def value_sha256(self) -> str:
@@ -135,6 +139,8 @@ class CanonicalCandidate[T: Observation]:
             "valid_from": _canonical_value(self.observation.time.valid_from, "", identities),
             "valid_to": _canonical_value(self.observation.time.valid_to, "", identities),
         }
+        if isinstance(self.observation.versions, ObservationVersionsV3):
+            payload["semantic_version"] = self.observation.versions.semantic_version
         return hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
 
 
@@ -241,6 +247,9 @@ def _validate_reference_scope(
         "coach": ("coach", "manager"),
         "venue": ("venue",),
         "shot": ("shot", "event"),
+        "assisting_player": ("player",),
+        "assist_event": ("event",),
+        "referee": ("referee",),
     }
     kind = binding.reference_path.rsplit("/", 1)[-1]
     if binding.identity_decision.subject_type not in kinds.get(kind, ()):
@@ -355,6 +364,8 @@ def _canonical_value(value: object, path: str, identities: dict[str, UUID]) -> o
         return str(identities[path])
     if isinstance(value, datetime):
         return value.astimezone(UTC).isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
     if isinstance(value, UUID):
         return str(value)
     if is_dataclass(value) and not isinstance(value, type):

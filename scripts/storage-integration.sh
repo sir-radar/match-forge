@@ -49,6 +49,7 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_identity_history.py \
 	tests/integration/test_canonical_resource_resolutions.py \
 	tests/integration/test_provider_resource_capabilities.py \
+	tests/integration/test_provider_data_audit_storage.py \
 	tests/integration/test_provider_resource_authority.py \
 	tests/integration/test_resource_coverage_storage.py \
 	tests/integration/test_fixture_read_model.py \
@@ -56,6 +57,10 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_work_metrics.py \
 	tests/integration/test_lock_order.py \
 	tests/integration/test_resource_observation_artifacts.py \
+	tests/integration/test_rich_observation_artifacts.py \
+	tests/integration/test_understat_pipeline.py \
+	tests/integration/test_v4_development_isolation.py \
+	tests/integration/test_experimental_database_storage.py \
 	tests/integration/test_artifact_retirement.py \
 	tests/integration/test_integrity_verification.py \
 	tests/integration/test_provider_observability.py \

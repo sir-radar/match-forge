@@ -513,6 +513,8 @@ def verify_source_identifier(
         "football_data_uk",
         "fotmob",
         "pitchapi",
+        "statsbomb_open_data",
+        "espn",
     }:
         return None
     verifier = verifier or RetainedIdentityVerifier(root)
@@ -541,7 +543,8 @@ def verify_source_identifier(
                     "country": country,
                     "manifest_classification": (
                         "BYTE_VERIFIED"
-                        if row[3].startswith("manifest-v1:")
+                        if provider == "statsbomb_open_data"
+                        or row[3].startswith("manifest-v1:")
                         or (
                             provider not in {"openfootball", "football_data_uk"}
                             and row[1] == row[7]
@@ -556,6 +559,10 @@ def verify_source_identifier(
 
 
 def _retained_payload(root: Path, provider: str, row: tuple[Any, ...]) -> bytes | None:
+    if provider == "statsbomb_open_data":
+        from football.ingestion.registration import read_registered_statsbomb_resource
+
+        return read_registered_statsbomb_resource(root, row[:9])
     files = ImmutableFileStore(root)
     if row[3].startswith("manifest-v1:"):
         revision = row[3].removeprefix("manifest-v1:").rsplit(":", 1)[0]
@@ -583,6 +590,14 @@ def _retained_payload(root: Path, provider: str, row: tuple[Any, ...]) -> bytes 
 def _identity_index(
     provider: str, payload: bytes, path: str, identity: str
 ) -> dict[tuple[str, str | None], set[str]]:
+    if provider == "espn":
+        from football.product.retained_identities import espn_summary_identifiers
+
+        return espn_summary_identifiers(payload, path)
+    if provider == "statsbomb_open_data":
+        from football.product.retained_identities import statsbomb_identifiers
+
+        return statsbomb_identifiers(payload, path)
     if provider == "football_data_uk":
         from football.product.football_data_uk import csv_members, parse_csv_resource
 

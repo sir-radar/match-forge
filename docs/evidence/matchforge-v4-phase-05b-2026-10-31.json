@@ -1,0 +1,226 @@
+{
+  "phase": "05b",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "14ef312",
+  "recorded_at": "2026-10-31T22:29:59.561090+00:00",
+  "scope": "Retained FotMob/PitchAPI team/player counts and shot context through existing normalizers",
+  "retained_replay": {
+    "recorded_at": "2026-10-31T22:29:25.327042+00:00",
+    "samples": [
+      {
+        "provider": "fotmob",
+        "resource": "statistics",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "fixture_native_id": "5881209",
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 126,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        },
+        "rich_non_null_fields": {
+          "period": 6,
+          "possession": 6,
+          "total_shots": 6,
+          "shots_on_target": 6,
+          "corners": 6,
+          "fouls": 6,
+          "yellow_cards": 6,
+          "red_cards": 6,
+          "big_chances": 6,
+          "saves": 6,
+          "shots_off_target": 6,
+          "blocked_shots": 6,
+          "offsides": 6,
+          "passes": 6,
+          "accurate_passes": 6,
+          "accurate_crosses": 6,
+          "tackles": 6,
+          "interceptions": 6,
+          "clearances": 6,
+          "woodwork": 6,
+          "expected_goals_on_target": 6
+        },
+        "report_sha256": "32daafe1626b8f05406adef1b09c17f5a5a9e57106fac18a022fe8f113e0b890",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/32daafe1626b8f05406adef1b09c17f5a5a9e57106fac18a022fe8f113e0b890.json"
+      },
+      {
+        "provider": "fotmob",
+        "resource": "player_statistics",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "fixture_native_id": "5881209",
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 30
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 716
+        },
+        "rich_non_null_fields": {
+          "minutes_played": 30,
+          "passes": 30,
+          "accurate_passes": 30,
+          "tackles": 30,
+          "interceptions": 30,
+          "fouls": 30,
+          "saves": 2,
+          "goals": 28,
+          "assists": 28,
+          "expected_assists": 22,
+          "shots": 17,
+          "shots_on_target": 17,
+          "expected_goals": 17
+        },
+        "report_sha256": "9e45b164363175ca9090daf24c39c386026e48518a70e31df2c8300d3f436a40",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/9e45b164363175ca9090daf24c39c386026e48518a70e31df2c8300d3f436a40.json"
+      },
+      {
+        "provider": "fotmob",
+        "resource": "shots",
+        "source_resource_id": "046a6703-25d4-5cdf-9025-abf573d4f069",
+        "source_sha256": "af13c36cbd8c3e18259fea5f4f9bda34132ec5baf142c4f3d9b7db07ae568a5f",
+        "fixture_native_id": "5881209",
+        "contracts": {
+          "ShotObservationV3": 25,
+          "ExpectedGoalsObservationV2": 25
+        },
+        "findings": {
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 25
+        },
+        "rich_non_null_fields": {
+          "minute": 25,
+          "period": 25,
+          "expected_goals": 25,
+          "is_own_goal": 25,
+          "outcome": 25,
+          "body_part": 25,
+          "situation": 25,
+          "expected_goals_on_target": 25
+        },
+        "report_sha256": "1ad4b6b3bcc11200ec6c71fe3e61afbd7f5f1b09fa44ce7b8ba2b35acea7c6e8",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/1ad4b6b3bcc11200ec6c71fe3e61afbd7f5f1b09fa44ce7b8ba2b35acea7c6e8.json"
+      },
+      {
+        "provider": "pitchapi",
+        "resource": "statistics",
+        "source_resource_id": "ae37bed8-8fc8-56e0-9279-7ffc3e69cb2d",
+        "source_sha256": "f74e99b328f51aad3e8a19130d04dcde334dc32bba8674a1bcd706af7edaa40e",
+        "fixture_native_id": "m_3flxzg",
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 126,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        },
+        "rich_non_null_fields": {
+          "period": 6,
+          "possession": 6,
+          "total_shots": 6,
+          "shots_on_target": 6,
+          "corners": 6,
+          "fouls": 6,
+          "yellow_cards": 6,
+          "red_cards": 6,
+          "big_chances": 6,
+          "saves": 6,
+          "shots_off_target": 6,
+          "blocked_shots": 6,
+          "offsides": 6,
+          "passes": 6,
+          "accurate_passes": 6,
+          "accurate_crosses": 6,
+          "tackles": 6,
+          "interceptions": 6,
+          "clearances": 6,
+          "woodwork": 6,
+          "expected_goals_on_target": 6
+        },
+        "report_sha256": "bf6901129af877b7683d2f3e98535243eebf09e4af09ff3561ea684ab40361e1",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/bf6901129af877b7683d2f3e98535243eebf09e4af09ff3561ea684ab40361e1.json"
+      },
+      {
+        "provider": "pitchapi",
+        "resource": "player_statistics",
+        "source_resource_id": "a6987bd5-952b-5b2a-ab58-09ddfd8aef79",
+        "source_sha256": "5d0c820fdf22af76cf530d890bd0590d8492aea952678ec4120ca9e835508830",
+        "fixture_native_id": "m_3flxzg",
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 30
+        },
+        "findings": {
+          "MF_NORM_SOURCE_RECORD_INVALID": 30,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 905
+        },
+        "rich_non_null_fields": {
+          "minutes_played": 30,
+          "goals": 28,
+          "assists": 28,
+          "passes": 30,
+          "accurate_passes": 30,
+          "tackles": 30,
+          "interceptions": 30,
+          "fouls": 30,
+          "shots": 14,
+          "shots_on_target": 14,
+          "expected_goals": 14,
+          "expected_assists": 18,
+          "saves": 2
+        },
+        "report_sha256": "dfd4a287f46a85096ed4395385bf6e2624f77e2b868fc0604a5b1a7ef87b976f",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/dfd4a287f46a85096ed4395385bf6e2624f77e2b868fc0604a5b1a7ef87b976f.json"
+      },
+      {
+        "provider": "pitchapi",
+        "resource": "shots",
+        "source_resource_id": "e947549e-ee7f-5c53-a665-8695ef6380f2",
+        "source_sha256": "7e4435ca301373452cdd08c44cdaceccbedbd27f199fac41b13aedc31ccddcc8",
+        "fixture_native_id": "m_3flxzg",
+        "contracts": {
+          "ShotObservationV3": 23,
+          "ExpectedGoalsObservationV2": 23
+        },
+        "findings": {
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 23
+        },
+        "rich_non_null_fields": {
+          "minute": 23,
+          "period": 23,
+          "expected_goals": 23,
+          "outcome": 23,
+          "body_part": 23,
+          "situation": 23,
+          "expected_goals_on_target": 22,
+          "is_own_goal": 1
+        },
+        "report_sha256": "cfa561d4d3302fd9e02cb20815cb1133736eedb8833d2d76205ecdf408317ced",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/reports/normalization/cfa561d4d3302fd9e02cb20815cb1133736eedb8833d2d76205ecdf408317ced.json"
+      }
+    ],
+    "persisted": false,
+    "provider_requests": 0,
+    "operating_mutations": 0
+  },
+  "verification": {
+    "existing_and_rich_tests_passed": 52,
+    "additional_rich_boundary_suite_passed": 15,
+    "static_type_architecture": "PASS"
+  },
+  "limitations": [
+    "Native categories retained without market semantic equivalence",
+    "Coordinates remain absent without a verified source frame",
+    "Partial-period xG remains unsupported by existing match-total contract",
+    "Ambiguous player_throws and additional unmapped measurements remain findings",
+    "PitchAPI retains 30 empty-key Shotmap source-record findings; no scalar value fabricated",
+    "No canonical, market or PIT qualification inferred",
+    "No provider requests, operating mutations, fits, evaluations or promotions"
+  ]
+}

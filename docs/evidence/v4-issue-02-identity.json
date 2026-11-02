@@ -1,0 +1,100 @@
+{
+  "phase": "R02-B",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "11d3217f94f9e1beb6d4067e60aae35a3f4cf311",
+  "R02-A_commit": "11d3217f94f9e1beb6d4067e60aae35a3f4cf311",
+  "pilot": {
+    "provider": "statsbomb_open_data",
+    "competition": "2",
+    "season": "27",
+    "fixtures_examined": 380,
+    "fixtures_with_recorded_claim": 380,
+    "native_teams": 20,
+    "owner_mapping_checks": 21,
+    "admitted_owner_proofs": 0
+  },
+  "report": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/pilot/d8827bdd747c86148d8bfdc47992a6801b53e0e6659efbfd9b7017508e8bc940.json",
+    "sha256": "d8827bdd747c86148d8bfdc47992a6801b53e0e6659efbfd9b7017508e8bc940"
+  },
+  "mapping_blockers": {
+    "RETAINED_SOURCE_EVIDENCE_REQUIRED": 21
+  },
+  "resolution_center_rechecks": [
+    {
+      "case_key": "team:01a0f3af-a21f-7ba4-85d1-b39e601b8aee",
+      "status": "BLOCKED",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "evidence_version": "cb85351c0fe98882eec03a2d22367e0d1a018c447fcafb10fac6ba5085955843",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "team:01a0f3af-a264-7312-89ae-dcc1e1af04e0",
+      "status": "BLOCKED",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "evidence_version": "063693c10919d8d8d2564a103c42b34ca507269e3a7f258b97c9285ab7b15ce2",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "team:01a0f3b0-2043-752b-8aa4-74debd2448fb",
+      "status": "BLOCKED",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "evidence_version": "f547ab5452914e10191e165f7e71945f4a9720fc658acb638d27cda41ec1098b",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a12ac1-0225-7f0f-b0be-d9241b662872",
+      "status": "BLOCKED",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "evidence_version": "bfaba85d70516344eab32677d671a35cc24155b7963ad3cf605c8ed6559bec36",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a129b2-cc1f-7013-90cb-1995f3e1e067",
+      "status": "BLOCKED",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "evidence_version": "3168a7fb289cfbd75a459c3160954f4c7f0329129ec82d066906ea11783af3d9",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a129b2-cc65-7d42-a95e-2bdc9c2c5d42",
+      "status": "BLOCKED",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "evidence_version": "6d92fb805696f8089c638557f7d1a671427b84588f3db1a1b3e78826f5b63a01",
+      "approval_required": true,
+      "applied": false
+    }
+  ],
+  "new_canonical_identities": 0,
+  "contradictions_resolved": 0,
+  "resource_rows_unlocked": 0,
+  "historical_eligibility_delta": 0,
+  "missing_proof": [
+    "Exact independently accepted StatsBomb source/canonical fixture, team and competition anchors; retained native bytes alone do not verify the recorded UUID origins.",
+    "Existing anonymous CSV fixture/team references need exact source-record publication binding; ten accepted old CSV keys do not approve StatsBomb native keys.",
+    "OpenFootball corrections still need existing qualified FDO/API-Football target proof; PitchAPI origin algorithms remain unsupported."
+  ],
+  "owner_action": "Prepare independently verifiable exact anchors and use Resolution Center previews/approval; no ambiguous mapping auto-approved.",
+  "verification": {
+    "resolution_identity_tests": {
+      "passed": 7,
+      "exit_code": 0
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS",
+    "read_only_inspection_exit_code": 0,
+    "diff_check": "PASS",
+    "identity_owner_tests": {
+      "passed": 12,
+      "exit_code": 0
+    }
+  },
+  "operating_writes": 0,
+  "provider_requests": 0,
+  "history": "R3 remains partial; no rejected algorithm was replaced or existing decision altered."
+}

@@ -1,0 +1,779 @@
+{
+  "phase": "IDR-F",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "recorded_at": "2026-11-02T10:58:51.206741+00:00",
+  "starting_sha": "e5b9b88b33212e542ebbd98ae5558a56b41c1e46",
+  "verified_implementation_sha": "554d09e50e8aa2af297b1d4295599cbf98b778bb",
+  "ending_delivery_commit_resolution": "git log -1 --format=%H -- docs/evidence/v4-identity-recovery-final.json; exact delivery SHA also recorded after commit in CURRENT_TASK_STATUS.md and final handoff",
+  "phase_commits": {
+    "IDR-A": "ff592523f163b6deeb7996976690808d3e83d2a8",
+    "IDR-B": "7082432642a1cdbfc81d5d86e1271156f924ae9f",
+    "IDR-C": "c22e16f436a1a252fb890fad9ba46fb1bce03acf",
+    "IDR-D": "676584078c582715cd199ef604bd47a89c10aff3",
+    "IDR-E": "554d09e50e8aa2af297b1d4295599cbf98b778bb"
+  },
+  "phase_f_commit_resolution": "Commit containing this final evidence; self SHA resolved from Git after commit, never fabricated",
+  "phase_statuses": {
+    "IDR-A": "PASS_WITH_WARNINGS",
+    "IDR-B": "BLOCKED_WITH_EVIDENCE",
+    "IDR-C": "BLOCKED_WITH_EVIDENCE",
+    "IDR-D": "BLOCKED_WITH_EVIDENCE",
+    "IDR-E": "BLOCKED_WITH_EVIDENCE",
+    "IDR-F": "PASS_WITH_WARNINGS"
+  },
+  "independently_executable_work_complete": true,
+  "requested_identity_recovery_complete": false,
+  "recurrence_prevention_status": "PASS",
+  "narrow_identity_correction_milestone_passed": false,
+  "full_issue_2_can_be_closed": false,
+  "root_cause": "StatsBomb canonical ingestion has allocated database UUIDv7 surrogates since commit 851cf4ef01f674ec2742f8c2ede4ec8827dc6acc, while recording mappings as deterministic. Native bytes verify the IDs but cannot reproduce or prove the canonical UUID origin. Existing admission rejects the unsupported origin correctly.",
+  "remediation": {
+    "new_writer_method": "provider_native",
+    "scope": "New StatsBomb competition, season, team, player and match mapping rows only",
+    "migration": "202611020100_provider_native_mapping_method.sql",
+    "history_constraint_included": true,
+    "old_uuid_mapping_method_and_decisions_unchanged": true,
+    "origin_allowlist_unchanged": true,
+    "deployment_order": "Apply migration before updated writer; operating migration not authorized or performed",
+    "downgrade": "Refuses when native-method rows/history exist; isolated rollback verified"
+  },
+  "relationship_counts": {
+    "source_verified_legacy_mappings": 21,
+    "accepted_target_anchors": 19,
+    "team_cases": 20,
+    "competition_cases": 1,
+    "statsbomb_fixture_candidates_retained": 344,
+    "statsbomb_player_candidates_retained": 601,
+    "bounded_fixture_cases": 10,
+    "bounded_player_cases": 10,
+    "espn_fixture_cases": 1,
+    "independent_relationships_proven": 0,
+    "review_ready_cases": 0,
+    "actual_admissions": 0
+  },
+  "competition_target_supplement": [
+    {
+      "mapping_id": "01a138d0-817f-7db5-9a5d-91e6452b48c2",
+      "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+      "provider": "api_football",
+      "native_id": "39",
+      "current_qualification": {
+        "mapping_id": "01a138d0-817f-7db5-9a5d-91e6452b48c2",
+        "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+        "entity_type": "competition",
+        "provider": "api_football",
+        "provider_id": "39",
+        "disposition": "ORIGIN_ANCHOR",
+        "reason": "VERIFIED_PROVIDER_ORIGIN",
+        "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+        "evidence": {
+          "provider": "api_football",
+          "provider_entity_id": "39",
+          "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+          "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+          "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+          "country": "England",
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        },
+        "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+      },
+      "accepted_proof": {
+        "contract": "DecisionRecordV1",
+        "contract_version": "1",
+        "decision_type": "identity_admission",
+        "subject_type": "competition",
+        "subject_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+        "decided_at": "2026-10-14T14:25:43.841254+00:00",
+        "effective_at": null,
+        "disposition": "ORIGIN_ANCHOR",
+        "reason": "VERIFIED_PROVIDER_ORIGIN",
+        "evidence": {
+          "source_contract": {
+            "decision_id": "01a13ace-09a1-73a0-9165-e7525a7af860",
+            "entity_type": "competition",
+            "mapping_id": "01a138d0-817f-7db5-9a5d-91e6452b48c2",
+            "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+            "provider_code": "api_football",
+            "provider_entity_id": "39",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+            "decided_at": "2026-10-14T14:25:43.841254+00:00",
+            "evidence": {
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "country": "England",
+              "provider": "api_football",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "policy_version": "ProductIdentityTrustV1",
+              "provider_entity_id": "39",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "manifest_classification": "BYTE_VERIFIED"
+            },
+            "evidence_sha256": "17caa401be406e48cec4d28c167c6bf6d71d86dfbcfd08a461f6b8cfe4fab388",
+            "corrects_decision_id": null,
+            "target_mapping_id": null,
+            "contract": "football.product_identity_admissions",
+            "identity_scope": {
+              "provider": "api_football",
+              "provider_native_id": "39",
+              "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc"
+            }
+          },
+          "source_sha256": "2e97299ec4e8dbcd501150300d5a1cb1822d9034b75bc9e4ccc38b7f92e5d88c"
+        },
+        "evidence_hash": "7f24156ee519a39fa739c459e899630c7a9c14a17535fbb56774f7e9c074f404",
+        "predecessor": null
+      },
+      "statsbomb_relationship_proven": false,
+      "role": "Possible competition target only; native label/scope and existing API origin do not prove StatsBomb 2 to canonical relationship."
+    }
+  ],
+  "correction_contract": {
+    "existing_fdo_api_football_path_preserved": true,
+    "new_statsbomb_correction_contract": false,
+    "status": "BLOCKED_WITH_EVIDENCE",
+    "reason": "No independently proven source-to-target relationship or recognized new evidence policy to implement against. Existing team correction cannot be generalized safely; competition has distinct admission semantics."
+  },
+  "owner_decision_package": [],
+  "proof_ready_cases": 0,
+  "actual_authorized_identity_decisions": 0,
+  "isolated_statsbomb_corrections": 0,
+  "positive_statsbomb_correction_workflow_verified": false,
+  "existing_supported_correction_workflow_verified": true,
+  "qualification": {
+    "before_after": [
+      {
+        "metric": "source_verified_legacy_team_competition_mappings",
+        "real_before": 21,
+        "real_after": 21,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "independent_source_target_relationships",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "proof_ready_review_cases",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "new_actual_authorized_admissions",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": 0,
+        "isolated_after": 0,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "statsbomb_corrections",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": 0,
+        "isolated_after": 0,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "statsbomb_canonical_fixtures_resolved",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": 0,
+        "isolated_after": 0,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "espn_canonical_fixtures_resolved",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": 0,
+        "isolated_after": 0,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "existing_accepted_canonical_fixtures",
+        "real_before": 5,
+        "real_after": 5,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "utc_qualified_canonical_fixtures",
+        "real_before": 5,
+        "real_after": 5,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "historically_eligible_accepted_fixtures",
+        "real_before": 5,
+        "real_after": 5,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "research_qualified_goal_scalars",
+        "real_before": 10,
+        "real_after": 10,
+        "isolated_before": 0,
+        "isolated_after": 10,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "existing_fixtures_projected_in_qualified_coverage",
+        "real_before": null,
+        "real_after": null,
+        "isolated_before": 0,
+        "isolated_after": 5,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "statsbomb_player_candidates",
+        "real_before": 601,
+        "real_after": 601,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "statsbomb_native_players_source_verified",
+        "real_before": 644,
+        "real_after": 644,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "verified_canonical_player_appearances",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "verified_canonical_player_minutes",
+        "real_before": 0,
+        "real_after": 0,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      },
+      {
+        "metric": "remaining_legacy_mapping_proof_blockers",
+        "real_before": 21,
+        "real_after": 21,
+        "isolated_before": null,
+        "isolated_after": null,
+        "hypothetical_expected_impact": null
+      }
+    ],
+    "statsbomb": {
+      "source_fixtures": 380,
+      "source_verified_mappings": 21,
+      "admitted_identity_chains": 0,
+      "resolved_canonical_fixtures": 0,
+      "qualified_utc_fixtures": 0,
+      "historically_qualified_fixtures": 0,
+      "qualified_ft_goal_scalars": 0,
+      "qualified_ht_goal_scalars": 0,
+      "native_players": 644,
+      "native_lineup_occurrences": 13678,
+      "native_participation": {
+        "STARTED": 8350,
+        "SUBSTITUTE_APPEARANCE": 2099,
+        "UNKNOWN": 3229
+      },
+      "contradictory_lineup_occurrences": 0,
+      "canonical_player_resolution_counts": [],
+      "original_time_proof": "No new original kickoff evidence; naive source clock and existing policy do not establish the original UTC claim.",
+      "native_source_hashes_verified": true
+    },
+    "espn": {
+      "native_fixture": "704279",
+      "native_competition": "700",
+      "native_utc": "2024-08-16T19:00Z",
+      "source_sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+      "source_identity_proofs": [
+        {
+          "entity_type": "competition",
+          "native_id": "700",
+          "proof": {
+            "provider": "espn",
+            "provider_entity_id": "700",
+            "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+            "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+            "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+            "country": null,
+            "manifest_classification": "BYTE_VERIFIED"
+          }
+        },
+        {
+          "entity_type": "match",
+          "native_id": "704279",
+          "proof": {
+            "provider": "espn",
+            "provider_entity_id": "704279",
+            "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+            "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+            "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+            "country": null,
+            "manifest_classification": "BYTE_VERIFIED"
+          }
+        },
+        {
+          "entity_type": "team",
+          "native_id": "360",
+          "proof": {
+            "provider": "espn",
+            "provider_entity_id": "360",
+            "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+            "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+            "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+            "country": null,
+            "manifest_classification": "BYTE_VERIFIED"
+          }
+        },
+        {
+          "entity_type": "team",
+          "native_id": "370",
+          "proof": {
+            "provider": "espn",
+            "provider_entity_id": "370",
+            "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+            "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+            "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+            "country": null,
+            "manifest_classification": "BYTE_VERIFIED"
+          }
+        }
+      ],
+      "operating_mapping_rows": {
+        "team": 0,
+        "competition": 0
+      },
+      "complete_canonical_chain": false,
+      "qualified_fixture_labels": 0
+    },
+    "accepted_pilot": {
+      "native_provider": "api_football",
+      "native_competition": "399",
+      "native_season_label": "2027",
+      "existing_canonical_fixtures": 5,
+      "regulation_score_pairs": 5,
+      "research_qualified_goal_scalars": 10,
+      "bookmaker_equivalent_labels": 0,
+      "first_audit": {
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/identity-recovery/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+        "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+      },
+      "second_audit": {
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/identity-recovery/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+        "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+      },
+      "identical_to_original_frozen_audit": true,
+      "canonical_ids_decisions_scores_source_history_and_cutoff_preserved": true,
+      "qualification_scope": "Retrospective label eligibility at the original frozen later knowledge cutoff, not pre-kickoff feature knowledge."
+    },
+    "isolated_projection": {
+      "database": "football_v4_identity_recovery_projection_20261102",
+      "isolation": {
+        "database": "football_v4_identity_recovery_projection_20261102",
+        "system_identifier": "7679328148388241450",
+        "oid": 59504797,
+        "operating_reference_read_only": true,
+        "persistent_marker_verified": true,
+        "physical_isolation_verified": true
+      },
+      "registry_before": {
+        "source_resources": 0,
+        "source_snapshots": 0,
+        "resource_observation_artifacts": 0,
+        "provider_resource_coverage": 0,
+        "canonical_resource_coverage": 0,
+        "canonical_resource_resolutions": 0,
+        "product_identity_admissions": 0,
+        "resolution_decisions": 0
+      },
+      "registry_after": {
+        "source_resources": 2,
+        "source_snapshots": 2,
+        "resource_observation_artifacts": 10,
+        "provider_resource_coverage": 1,
+        "canonical_resource_coverage": 1,
+        "canonical_resource_resolutions": 0,
+        "product_identity_admissions": 0,
+        "resolution_decisions": 0
+      },
+      "identical_ids_hashes_counts": true,
+      "identical_artifact_files": true,
+      "real_new_canonical_facts": 0,
+      "research_only_existing_fixtures_projected": 5,
+      "research_only_existing_goal_scalars_projected": 10,
+      "market_diagnostic": "Bound RESULT_1X2 / HOME becomes RESEARCH_REQUIRED in the new experiment only; no frozen scientific sufficiency or bookmaker equivalence claimed"
+    }
+  },
+  "verification": {
+    "aggregate": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "source_git_sha": "554d09e50e8aa2af297b1d4295599cbf98b778bb",
+      "started_at": "2026-11-02T10:44:18.542539+00:00",
+      "exit_code": 0,
+      "completed_at": "2026-11-02T10:58:09.673443+00:00",
+      "elapsed_seconds": 831.14,
+      "log": ".local/identity-recovery/make-check-integration-final.log",
+      "log_receipt": {
+        "path": ".local/identity-recovery/make-check-integration-final.log",
+        "sha256": "d9010d4716fc44aa1cb7bf441d98f7fb81eda4ed2f3ea256c4130d577578f0ec"
+      },
+      "python_unit_tests_passed": 2096,
+      "strict_mypy_files": 497,
+      "rust_tests_passed": 16,
+      "web_tests_passed": 126,
+      "disposable_storage_tests_passed": 871,
+      "go_lint_tests_build": "PASS",
+      "migration_validation_and_fresh_database_upgrade": "PASS",
+      "architecture_and_status": "PASS",
+      "postgres_redis_api_integration": "PASS"
+    },
+    "focused_phase_tests": {
+      "IDR-A": 48,
+      "IDR-C_existing_supported_path": 64,
+      "IDR-D_existing_supported_workflow": 34,
+      "IDR-E": 15
+    },
+    "migration_upgrade_receipt": {
+      "path": ".local/identity-recovery/upgrade-verification.json",
+      "sha256": "841dc8b5c0ddc477c6f7b4b5a23528948fa531d56ce741733c1b5f2325bcc46d"
+    },
+    "evidence_validation": {
+      "path": ".local/identity-recovery/evidence-validation.json",
+      "sha256": "ca77738e878b2a32fff74f1db2dda3f46af9d497a64dafa1109f4cb7f5a29d53"
+    },
+    "final_identity_checks": {
+      "path": ".local/identity-recovery/final-identity-checks.json",
+      "sha256": "c3b45c67e99199faaf1eb1b10c847097a15314ddb6675a0f2d2d2ddb1b005f9e"
+    },
+    "final_project_status_check": {
+      "command": "make project-status-check",
+      "exit_code": 0
+    },
+    "final_diff_check": {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    "warnings": [
+      "Seven existing Python dependency warnings and one existing ESLint warning",
+      "The intermediate contaminated-database ingestion failure log was overwritten by the final fresh-database log; its observed 26-failed/22-passed summary and cause are retained in IDR-A evidence. Red regression, final green, migration and aggregate logs remain retained."
+    ],
+    "failure_disposition": "Five desired red regressions proved the metadata defect. An intermediate suite rerun reused committed concurrency fixtures; fresh target passed. Three Admin harness startup failures lacked POSTGRES_ADDR; only those failed cases reran successfully with normal configuration. A local measurement import needed PYTHONPATH=.; no domain check was changed or suppressed. The approval-review usage-limit interruption executed no command and was resolved after owner resume.",
+    "unexecuted": "No new StatsBomb correction success/concurrency/rollback matrix, actual owner-approved admission, fitting, protected scientific evaluation, promotion, production cutover or legacy retirement"
+  },
+  "preservation": {
+    "baseline_receipt": {
+      "path": ".local/identity-recovery/preservation/baseline-receipt.json",
+      "sha256": "e68c8a9e6842ac09f5d78d38aa6f21800fba2990453c3d84fdf7540cf2f123b5"
+    },
+    "final_receipt": {
+      "path": ".local/identity-recovery/preservation/final-receipt.json",
+      "sha256": "26988498f8ccc4344abeadc47849d7c225a7e88e84d1d0f47f929c0fd601e84e"
+    },
+    "comparisons": {
+      "observations": true,
+      "capabilities": true,
+      "champion": true,
+      "protected_relations": {
+        "artifact_retirement_events": {
+          "retained": true,
+          "baseline_rows": 17,
+          "current_rows": 17
+        },
+        "canonical_resource_coverage": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "canonical_resource_resolutions": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "model_artifacts": {
+          "retained": true,
+          "baseline_rows": 5230,
+          "current_rows": 5230
+        },
+        "model_promotion_events": {
+          "retained": true,
+          "baseline_rows": 4,
+          "current_rows": 4
+        },
+        "post_match_evaluations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "product_forecasts": {
+          "retained": true,
+          "baseline_rows": 14054,
+          "current_rows": 14054
+        },
+        "product_identity_admissions": {
+          "retained": true,
+          "baseline_rows": 22515,
+          "current_rows": 22515
+        },
+        "product_provider_mapping_decisions": {
+          "retained": true,
+          "baseline_rows": 2475239,
+          "current_rows": 2475239
+        },
+        "provider_resource_authority": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "runtime_model_registrations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "source_resources": {
+          "retained": true,
+          "baseline_rows": 66967,
+          "current_rows": 66982
+        },
+        "source_snapshots": {
+          "retained": true,
+          "baseline_rows": 65159,
+          "current_rows": 65174
+        }
+      }
+    },
+    "observations_bytes_verified": 12310,
+    "capability_artifacts_bytes_verified": 26,
+    "original_legacy_mappings_reverified": 21,
+    "champion": {
+      "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "reload_verified": true
+    },
+    "controls": {
+      "fixture_route": "LEGACY",
+      "route_function_installed": false,
+      "route_selection_contract": "go/api/internal/app/migration_fixture_route.go: absent route function means LEGACY",
+      "stage_controls_installed": false,
+      "operating_experimental_marker": false,
+      "read_only": "on",
+      "market_status_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "market_families": 67,
+      "market_report": {
+        "path": "/Users/radar/Desktop/football-simutation/.local/identity-recovery/controls/markets-2c824e73c1a9f01c5d6be9635881dde9f7213354a72c62dee7961414d42ad2af.json",
+        "sha256": "2c824e73c1a9f01c5d6be9635881dde9f7213354a72c62dee7961414d42ad2af"
+      },
+      "operating_writes": 0,
+      "model_promotions": 0,
+      "cutover": false,
+      "legacy_retirement": false
+    },
+    "concurrent_operating_additions": "All baseline row hashes remain present. Source snapshots/resources increased by 15 during task execution; no globally unchanged database is claimed. These are operating additions observed through read-only task connections.",
+    "operating_writes": 0,
+    "operating_migrations": 0,
+    "operating_metadata_migration_applied": false,
+    "model_promotions": 0,
+    "production_cutover": false,
+    "legacy_retirement": false
+  },
+  "research_sources": [
+    {
+      "question": "Can independent bridge logos corroborate identity?",
+      "source_url": "https://reep.football/coverage/",
+      "version": "Live documentation; page reports API 2026-10-25.1",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Official roles group Opta-derived providers together and classify StatsBomb/API-Football as bridge-only. This corroborates the pinned row buckets without upgrading the release.",
+      "alternatives_considered": [
+        "Count all provider bridges independently"
+      ],
+      "selected_approach": "Reject; preserve per-row pinned buckets and count upstream groups once",
+      "uncertainty_remaining": "Public policy is not the private per-case source packet",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Does public Reep engine code prove v1 matching rules?",
+      "source_url": "https://github.com/withqwerty/reep/blob/main/README.md",
+      "version": "main retrieved 2026-11-02; frozen v0 reference",
+      "publication_or_commit_date": "2026-06-21",
+      "retrieval_date": "2026-11-02",
+      "evidence": "README states the v1 engine is not public and v0 output is frozen; v0 IDs cannot be used as v1 proof.",
+      "alternatives_considered": [
+        "Inspect frozen v0 code or aliases as v1 adjudication evidence"
+      ],
+      "selected_approach": "Reject; exact pinned bridge/rule identifiers retained as candidates only",
+      "uncertainty_remaining": "Per-case v1 rule rationale and source packets unavailable",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "How should cross-provider namespaces be joined?",
+      "source_url": "https://reep.football/get-started/",
+      "version": "Live documentation retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Provider namespaces distinguish StatsBomb offline_team from API-Football team. Stable release and redirect chain remain required.",
+      "alternatives_considered": [
+        "Join bare numbers or latest hosted API"
+      ],
+      "selected_approach": "Use pinned release and exact scoped keys",
+      "uncertainty_remaining": "No independent relationship follows merely from the join",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Can a matching framework replace existing approval?",
+      "source_url": "https://recordlinkage.readthedocs.io/en/stable/",
+      "version": "Python Record Linkage Toolkit 0.15",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Indexing, comparison and classification are distinct steps. Existing MatchForge candidate/review code already covers this need.",
+      "alternatives_considered": [
+        "Add another matching framework"
+      ],
+      "selected_approach": "Do not add dependency or scoring-based admission",
+      "uncertainty_remaining": "No new historical proof supplied by a toolkit",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Should reconciliation auto-approve similar names?",
+      "source_url": "https://openrefine.org/docs/manual/reconciling",
+      "version": "Live user manual retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Reconciliation suggestions require reviewed judgment; existing Resolution Center already owns this workflow.",
+      "alternatives_considered": [
+        "Build a parallel reviewer or bulk-admit names"
+      ],
+      "selected_approach": "Reuse existing review and require recognized evidence",
+      "uncertainty_remaining": "Multi-field reviewed policy would require explicit approval before use",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Is another documented ID mapping endpoint a StatsBomb bridge?",
+      "source_url": "https://docs.fansunitedmedia.com/reference/getfootballidmappings",
+      "version": "Live API reference retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Published input providers include API-Football, Sportradar, Enetpulse, Sportal365 and Statscore; the reference does not document a StatsBomb offline namespace. A client/key is required.",
+      "alternatives_considered": [
+        "Acquire unrelated provider populations"
+      ],
+      "selected_approach": "No calls or spend; does not answer the specific missing StatsBomb relationship proof",
+      "uncertainty_remaining": "No claim that no external proof exists globally",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Can UUIDv7 be reproduced from native football IDs?",
+      "url": "https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-7",
+      "version": "RFC 9562 section 5.7",
+      "publication_date": "2024-05",
+      "retrieval_date": "2026-11-02",
+      "finding": "Timestamp and uniqueness fields do not encode a reproducible football-provider origin. Repository uses database allocation, not provider-derived identity.",
+      "alternative": "Invent provider UUIDv7 transform",
+      "decision": "Reject; preserve IDs and require relationship proof",
+      "remaining_uncertainty": "None for observed allocation path",
+      "verification": "Five failing then passing database regressions plus all canonical ingestion tests"
+    },
+    {
+      "question": "How to represent native mapping metadata without reclassifying historical records?",
+      "url": "https://www.postgresql.org/docs/18/ddl-constraints.html",
+      "version": "PostgreSQL 18",
+      "publication_date": null,
+      "retrieval_date": "2026-11-02",
+      "finding": "Add the honest provider_native method through one additive migration; preserve all original rows and admission checks.",
+      "alternative": "Reuse manual, explicit_crosswalk or probabilistic",
+      "decision": "Rejected because each misstates how the new link was produced",
+      "remaining_uncertainty": "Production migration deployment remains outside task authorization"
+    },
+    {
+      "question": "Can transaction snapshots alone replace identity coordination?",
+      "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+      "version": "PostgreSQL 18",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "finding": "Snapshots and locks have distinct guarantees. Existing transaction/ordered admission locks and under-lock evidence rechecks remain in place.",
+      "alternatives_considered": [
+        "Uncoordinated read then write",
+        "Broad new correction table"
+      ],
+      "selected_approach": "Preserve established domain lock and transaction owner",
+      "uncertainty_remaining": "No tested StatsBomb proof-specific correction path yet"
+    },
+    {
+      "question": "How should retry/concurrent approval coordinate?",
+      "url": "https://www.postgresql.org/docs/18/explicit-locking.html",
+      "version": "PostgreSQL 18",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "finding": "Transaction-scoped coordination is retained; existing tests prove supported correction races and rollback.",
+      "alternatives_considered": [
+        "Weaken locks or add unrelated registry"
+      ],
+      "selected_approach": "Reuse existing domain lock, append-only admissions and workflow idempotency",
+      "uncertainty_remaining": "Any new proof-specific branch must be tested once authorized by real evidence"
+    }
+  ],
+  "evidence_refs": [
+    {
+      "path": "docs/evidence/v4-identity-recovery-root-cause.json",
+      "sha256": "9a48e6b0ed4ae0167f3f3d5fca4c6f986bab0c4e3472ed517c152a130a1bd4f5"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-relationship-proof.json",
+      "sha256": "67946cb3dfb2185c0f47af25d20a61c6e6f91ba0b072ee17bbd3eece8765ef58"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-correction-contract.json",
+      "sha256": "257059af8199b63468dcffa326e15a81765ddcb1bd5a6b890dc602cd282be37a"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-resolution-center.json",
+      "sha256": "e5d063ec61411cd7ae3f3c86abdb247d03e56b156c6846f408d52470b3940fcf"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-qualification-impact.json",
+      "sha256": "1148c92b4a739ed977f3fc800f244f93c0e7565a2c732673f105a3540fa0a41c"
+    }
+  ],
+  "remaining_blockers": [
+    "All 21 original StatsBomb source-to-canonical relationships lack independent proof",
+    "Original StatsBomb kickoff qualification remains incomplete despite native clocks and existing policies",
+    "ESPN canonical competition/home/away/fixture chain is absent",
+    "Canonical player identity, membership, appearance, exposure and target semantics remain missing",
+    "Research-only five-fixture pilot does not establish scientific sufficiency or bookmaker settlement equivalence"
+  ],
+  "next_action": "Owner handoff. Obtain an independently verifiable exact relationship/source packet for one StatsBomb team and its accepted canonical candidate first (for example offline_team:1 to API-Football team:42). A bounded reviewed multi-field policy would require an explicit owner decision before use; no invalid identity proposal is submitted for approval. Then implement only the missing prospective correction compatibility, separately for team and competition where needed. Do not start Issue 5, scientific evaluation, cutover or retirement.",
+  "review": {
+    "checklist": "docs/review-checklist.md",
+    "production_change": "One writer metadata value with six matching SQL constraints; no new production helper, dependency, environment variable, registry or UI",
+    "phase_sources_and_proof_requirements_preserved": true,
+    "unrelated_work_preserved": [
+      "docs/evidence/data-status-remediation-report.md"
+    ],
+    "git_delivery": "Current branch; per-phase commits pushed; existing PR #178 updated after final commit"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "ALLOW_FLASH_RESEARCH_SOURCE_ELIGIBILITY_EXCEPTION_R03",
+  "recorded_at": "2026-11-01T19:56:24.653080Z",
+  "title": "Allow a scoped internal eligibility exception for Flashscore and Soccerway experimental research",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "project-governance",
+  "ticket": "V4 Issue 3 R03-E/R03-F",
+  "source": {
+    "execution_instruction": "Owner response in this chat during Issue 3 implementation",
+    "exact_owner_instruction": "Treat this as an explicit exception to MatchForge's internal source-eligibility policy for this experimental work, not as provider permission."
+  },
+  "scope": [
+    "Available Flashscore and Soccerway data for pending MatchForge experimental research tasks",
+    "Bounded historical acquisition, retained normalization, source identity/coverage analysis and validation in verified isolation"
+  ],
+  "authorizes": [
+    "Proceed without further routine permission questions about this same internal policy exception"
+  ],
+  "requires": [
+    "Document source provenance and compliance limitations",
+    "Preserve existing quotas, caching, work fencing and database isolation",
+    "Keep identity, PIT, target meaning and market qualification gates intact"
+  ],
+  "explicitly_not_authorized": [
+    "Provider permission or a claim that provider terms permit the use",
+    "Authentication, access-control or anti-bot bypass",
+    "Production cutover, legacy retirement, training, model promotion, or third-party data publication"
+  ],
+  "source_constraints": [
+    "https://www.flashscore.com/terms-of-use/",
+    "https://www.soccerway.com/terms-of-use/"
+  ],
+  "compliance_status": "OWNER_ACCEPTED_RISK; PROVIDER_PERMISSION_NOT_ESTABLISHED",
+  "supersession": "Scoped exception to docs/source-acquisition.md source-eligibility restriction only; other requirements of AUTHORIZE_PUBLIC_DEVELOPMENT_DATA_ACQUISITION_V1 remain in force."
+}
