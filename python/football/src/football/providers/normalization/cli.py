@@ -17,8 +17,12 @@ import psycopg
 from psycopg import Connection
 
 from football.contracts.observations import ObservationProvenance, ObservationTime
-from football.contracts.source import SourceManifest, SourceResource, canonical_json_bytes
-from football.ingestion.registration import MAX_SOURCE_MANIFEST_BYTES, MAX_SOURCE_RESOURCE_BYTES
+from football.contracts.source import canonical_json_bytes
+from football.ingestion.registration import (
+    MAX_SOURCE_MANIFEST_BYTES,
+    MAX_SOURCE_RESOURCE_BYTES,
+    read_registered_statsbomb_resource,
+)
 from football.observations.storage import ObservationArtifactStore
 from football.product.identity_admission import _retained_payload
 from football.providers.football_data_uk_evidence import FootballDataUkAcquisitionEvidenceV1
@@ -26,7 +30,7 @@ from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.normalization.common import NormalizationContext, NormalizationResult
 from football.providers.normalization.pipeline import normalize_resource
 from football.storage.experimental import experimental_connection
-from football.storage.raw import ImmutableFileStore, ImmutableRawStore
+from football.storage.raw import ImmutableFileStore
 from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkType
 from football.work.storage import WorkRegistry
 
@@ -49,7 +53,7 @@ def registered_resource(
     legacy_row = (*row[:4], row[12], *row[5:9])
     raw: bytes | None
     if row[9] == "statsbomb_open_data":
-        raw = _statsbomb_payload(root, row[:9])
+        raw = read_registered_statsbomb_resource(root, row[:9])
     elif (row[9], row[2]) == (
         "football_data_uk",
         "football_data_uk/phase1b/frozen-resource-bundle",
@@ -94,33 +98,6 @@ def _frozen_csv_payload(root: Path, row: tuple[Any, ...]) -> bytes:
         files.path_for(FootballDataUkRawStoreV1.relative_path(receipt)), MAX_SOURCE_RESOURCE_BYTES
     )
     if hashlib.sha256(raw).hexdigest() != receipt.raw_sha256 or len(raw) != receipt.raw_byte_size:
-        raise ValueError("registered source resource checksum mismatch")
-    return raw
-
-
-def _statsbomb_payload(root: Path, row: tuple[Any, ...]) -> bytes:
-    files = ImmutableFileStore(root)
-    path = files.path_for(row[0])
-    manifest_raw = _read_source(path, MAX_SOURCE_MANIFEST_BYTES)
-    if hashlib.sha256(manifest_raw).hexdigest() != row[1]:
-        raise ValueError("registered source manifest checksum mismatch")
-    manifest = SourceManifest.from_bytes(manifest_raw)
-    if (manifest.snapshot.provider, manifest.snapshot.source_git_sha) != (
-        "statsbomb_open_data",
-        row[3],
-    ):
-        raise ValueError("source manifest differs from the registered snapshot")
-    matches = [resource for resource in manifest.resources if resource.path == row[6]]
-    if len(matches) != 1 or (matches[0].sha256, matches[0].size_bytes) != (row[7], row[8]):
-        raise ValueError("source manifest resource differs from its registration")
-    resource = matches[0]
-    expected_path = ImmutableRawStore(root).relative_path(
-        manifest.snapshot, SourceResource(resource.path, resource.media_type)
-    )
-    if resource.raw_path != expected_path:
-        raise ValueError("source manifest raw path differs from the pinned storage layout")
-    raw = _read_source(files.path_for(resource.raw_path), MAX_SOURCE_RESOURCE_BYTES)
-    if hashlib.sha256(raw).hexdigest() != resource.sha256 or len(raw) != resource.size_bytes:
         raise ValueError("registered source resource checksum mismatch")
     return raw
 

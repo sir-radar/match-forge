@@ -780,6 +780,16 @@ Each read requires a football-validity instant and an explicit `knowledge_cutoff
 
 A returned mapping is an identity claim with provenance. Qualification stays with the existing decisions: `admitted_identity_at` reads R2 admissions and revocations, and delegates team corrections to `product_team_identity_at`. Confidence alone does not create admission. The resolution-decision and R3 fixture-resolution owners remain in place; an R3 version label does not make its mutable rows an immutable historical record. Existing lineup participation and coach observations retain their fixture and time scope. Continuous membership or management tenure requires independent evidence. The new mapping capture is rehearsed in shadow/test databases before the controlled cutover.
 
+`RetainedIdentityVerifier` reads StatsBomb competition indexes, scoped match
+indexes and lineups through the existing native parsers. Identity verification
+and normalization share `read_registered_statsbomb_resource`, which checks the
+pinned manifest, resource registration, storage path and raw checksum. ESPN
+summary verification binds the exact requested event, league slug and competitor
+IDs; unrelated nested IDs do not count. These readers establish native source
+identity only. Database-generated StatsBomb UUIDv7 mappings do not satisfy the
+deterministic origin algorithms in `ProductIdentityTrustV1`; canonical admission
+still requires the existing qualified crosswalk or review process.
+
 Team corrections extend the R2 `product_identity_admissions` log. A correction
 links one source mapping to a verified target mapping and the original fixture
 contradiction using `corrects_decision_id` and `target_mapping_id`. It preserves

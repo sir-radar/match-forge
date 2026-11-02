@@ -623,7 +623,7 @@ def test_canonical_statsbomb_reader_verifies_manifest_and_exact_resource(tmp_pat
         SourceResource,
         SourceSnapshot,
     )
-    from football.providers.normalization.cli import _statsbomb_payload
+    from football.ingestion.registration import read_registered_statsbomb_resource
     from football.storage.raw import ImmutableFileStore, ImmutableRawStore
 
     root = tmp_path / "data"
@@ -660,16 +660,18 @@ def test_canonical_statsbomb_reader_verifies_manifest_and_exact_resource(tmp_pat
         written.sha256,
         len(raw),
     )
-    assert _statsbomb_payload(root, row) == raw
+    assert read_registered_statsbomb_resource(root, row) == raw
     with pytest.raises(ValueError, match="manifest checksum"):
-        _statsbomb_payload(root, (row[0], "f" * 64, *row[2:]))
+        read_registered_statsbomb_resource(root, (row[0], "f" * 64, *row[2:]))
     changed = replace(manifest, resources=(replace(entry, raw_path="elsewhere.json"),))
     alternate = files.publish("manifests/changed.json", changed.to_bytes())
     with pytest.raises(ValueError, match="pinned storage"):
-        _statsbomb_payload(root, (alternate.relative_path, alternate.sha256, *row[2:]))
+        read_registered_statsbomb_resource(
+            root, (alternate.relative_path, alternate.sha256, *row[2:])
+        )
     written.path.write_bytes(b"tampered")
     with pytest.raises(ValueError, match="resource checksum"):
-        _statsbomb_payload(root, row)
+        read_registered_statsbomb_resource(root, row)
 
 
 def test_normalization_report_preserves_findings_versions_and_determinism() -> None:
