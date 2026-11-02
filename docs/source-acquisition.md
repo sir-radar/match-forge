@@ -191,6 +191,15 @@ conflict, publication, or reconciliation failures. Spike and drop thresholds
 remain versioned operational configuration; consumers compare these snapshots
 without changing the recorded evidence.
 
+Snapshots from the PostgreSQL lifecycle reader include `unmeasured_fields` and
+`PROVIDER_MEASUREMENTS_UNAVAILABLE` when that scope has no durable measurement
+for a field. Consumers must treat the named fields as unavailable, including
+zero counters and the legacy `CLOSED` circuit value. These placeholders do not
+establish provider health. Measured snapshots without missing fields keep their
+existing serialization and digest. The reader also lists `current_state_fields`
+for job discovery, retry and processing-failure counts. These describe current
+job state; an earlier observation time does not reconstruct their past values.
+
 Phase 2B extends the same snapshot with schema-compatibility failures, quota
 exhaustion, resolution-review backlog, dataset-rebuild queue depth, stale
 dependency count, and cursor-advance time. These fields make the required
