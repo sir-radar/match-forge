@@ -1,7 +1,7 @@
 # MatchForge data status audit and remediation plan
 
 Audit date: **2026-11-02**. Source checkout: `e5b9b88` (`ft/data-status-audit`).
-The original audit is preserved below. **Execution checkpoints added on 2026-11-02 are in sections L and M; the latest checkpoint supersedes earlier delivery and operating counts within its stated scope.**
+The original audit is preserved below. **Execution checkpoints added on 2026-11-02 are in sections L, M and N; the latest checkpoint supersedes earlier delivery and operating counts within its stated scope.**
 
 Delivery of the original audit: audit and plan only. **No database changes, recovery jobs, acquisition, migrations, model fits, evaluations, publication, or cutover were performed by this audit.** Local audit evidence and this report were written. Existing workers continued independently.
 
@@ -2215,3 +2215,27 @@ is skipped or weakened. Its log SHA-256 is
 The production diff is limited to the two operational crosswalk entries;
 their existing classification callers consume them. No production function,
 dependency, migration, environment variable or alternate workflow is added.
+
+### N4. Approved identity recovery completes
+
+The existing fenced recovery worker processes only the two approved frozen
+inventories in seven normal pages, through 18:12 UTC. All seven work items
+are **SUCCEEDED**: 187 fixture targets are checked and two retained observation
+targets are reconciled, with zero blocked targets, work failures or lease
+losses. The inventories overlap in football identity; 189 targets are not
+189 new matches or recovered identities. Reconciliation is not counted as a
+new binding without a measured before/after difference.
+
+Both observation results keep their original clocks/source observations and
+resolve through the existing native-ID rules. Their fixture IDs are
+`a33c5d64-df65-5baa-bee8-8dd00aea4ef4` and
+`e708aa1c-57ae-54d3-98f2-d2ef7ffdacb2`. Context/performance refresh remains
+owned by the normal downstream queues. No provider request or scope/status
+override is used. No owned recovery item remains pending. The parity table
+is absent on the deployed schema, so no parity pass or cutover is claimed.
+
+Phase 3A: **PASS_WITH_WARNINGS**. Worker receipts:
+`identity-recovery-pages.json`, SHA-256
+`684fd6de3cb9b5864dcb23fe10dc21df59b4dd6547c9457f7cde443de69994a4`.
+The production code is unchanged since the passing full gate; this checkpoint
+uses prose review and `git diff --check`.
