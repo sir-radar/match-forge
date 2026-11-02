@@ -1,0 +1,96 @@
+{
+  "phase": "R02-K",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "a42825cfdbc8890e1928251294c00cdb9d8c4a2f",
+  "pilot_ref": "docs/evidence/v4-issue-02-canonical-pilot.json",
+  "pilot_sha256": "f0ac014d7e1194715f8d6e1fe1ce5f236439410f12f26bc460f61b09d3ccd99d",
+  "audit_artifact": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/unblocking-r02/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+    "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+  },
+  "qualification_basis": "Existing ProductIdentityTrustV1 history decisions and source-reverified accepted entity admissions, plus unchanged API-Football fixtures normalizer ResultObservationV2 / FINISHED / REGULATION_90. This audit inspects and measures existing qualification owners; it adds no registry or admission rule.",
+  "counts": {
+    "existing_accepted_canonical_fixtures": 5,
+    "source_native_verified_ft_score_pairs": 5,
+    "source_native_verified_ft_goal_scalars": 10,
+    "source_native_verified_ht_goal_scalars": 10,
+    "research_qualified_ft_score_pairs": 5,
+    "research_qualified_ft_goal_scalars": 10,
+    "research_qualified_ht_score_pairs": 0,
+    "bookmaker_equivalent_labels": 0,
+    "new_canonical_admissions": 0,
+    "new_existing_history_rows": 0
+  },
+  "targets": [
+    {
+      "target": "FT home/away goals",
+      "period": "REGULATION_90",
+      "competition_native_id": "399",
+      "season_source_label": "2027",
+      "tier": "RESEARCH_TARGET_QUALIFIED",
+      "scalar_labels": 10,
+      "inclusions": "Direct reported FT team goals including regulation added time. Exact reported FT status and elapsed 90; no extra-time or shootout values.",
+      "completeness": "Both integer goal values present and match score.fulltime and the exact accepted history decision.",
+      "missingness": "Missing/invalid values fail existing native parser/normalizer; no zero defaults.",
+      "corrections": "Source revisions and normalized artifacts remain immutable; changed bytes create new evidence and cannot change this frozen hash.",
+      "feature_eligibility": "Not eligible as pre-match inputs to the same fixture."
+    },
+    {
+      "target": "First-half home/away goals",
+      "period": "FIRST_HALF",
+      "tier": "SOURCE_NATIVE_VERIFIED",
+      "scalar_labels": 10,
+      "blocker": "Direct halftime fields retained; existing API-Football fixture normalizer does not emit a separately qualified PeriodScoreObservation for this resource. No inferred second-half labels."
+    },
+    {
+      "target": "Corners/cards/shots/SOT/other statistics",
+      "tier": "NOT_QUALIFIED",
+      "scalar_labels": 0,
+      "blocker": "These selected exact fixture resources contain no target-specific statistics/disciplinary evidence. StatsBomb event totals are not promoted to market aggregates without complete semantic proof."
+    }
+  ],
+  "chronology": {
+    "knowledge_cutoff": "2026-11-02T05:00:10.714222+00:00",
+    "utc_fixtures_reverified": 5,
+    "new_kickoff_claims": 0,
+    "utc_before": 5,
+    "utc_after": 5,
+    "identity_scope": "Retrospective label cutoff, not a pre-kickoff mapping claim.",
+    "feature_eligibility_same_fixture": false,
+    "source_knowledge_backdated": false,
+    "outcomes_used_for_models": false,
+    "statsbomb_kickoff_policies_applied": false,
+    "pinned_tzdata_version_verified": "2026.3"
+  },
+  "research": {
+    "question": "Do API-Football FT fixtures provide regulation results and absolute kickoff evidence?",
+    "url": "https://www.api-football.com/documentation_v3",
+    "supporting_url": "https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide",
+    "publication_or_revision_date": null,
+    "retrieved_at": "2026-11-02",
+    "schema": "API-Football v3; retained ApiFootballFixture schema",
+    "competing_explanations": [
+      "Treat any finished score as regulation",
+      "Require native FT, fulltime/goals equality and absent extra-time/shootout values"
+    ],
+    "observed": "Official documentation separates FT, AET and PEN and documents date/timezone and score breakdown. Retained UTC dates agree with epoch timestamps on all five fixtures.",
+    "selected": "Audit only direct FT regulation pairs using existing versioned normalization; no sportsbook-equivalence claim.",
+    "reason": "Exact source field, period, identity and time agreement without inferred timezone or scoring totals.",
+    "tests": "15 branch-oriented source/history checks, 6 existing qualification regressions, real retained replay.",
+    "remaining_uncertainty": "Broader statistics, first-half target normalization, settlement equivalence, player exposure and scientific sufficiency remain unqualified."
+  },
+  "verification": {
+    "red": "Two expected failures (date-only history and contradictory timezone metadata) before correction.",
+    "focused_command": "uv run --locked --no-sync pytest -q tests/test_v4_accepted_history_audit.py tests/test_qualification_audit.py",
+    "focused_exit_code": 0,
+    "focused_tests": 21,
+    "ruff_format_lint_complexity": "PASS; maximum 10",
+    "strict_mypy": "PASS; two new files",
+    "real_audit_exit_code": 0,
+    "unchanged_existing_normalizer_hashes": true,
+    "identical_report_hash_after_validation_changes": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+  },
+  "operating_writes": 0,
+  "model_fits": 0,
+  "publications": 0
+}
