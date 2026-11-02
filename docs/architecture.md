@@ -351,6 +351,12 @@ explicit refresh retains its existing eligibility and cooldown rules.
 
 Operator run transitions delegate to shared work through SQL triggers. Existing
 lanes, command launch, logs, summaries and manual retry-as-new-run behavior remain.
+The command runner redacts credential values and credential-bearing URLs from
+both output streams before writing private run logs. It also redacts nested
+summary values. A nonzero exit with a generic failed summary retains the last
+specific process error in that summary, preserving run parameters and log-path
+correlation without changing historical failed runs. Output-read failure stops
+the owned process group before returning the diagnostic error.
 Shared root cancellation serializes with child publication through the existing
 run-control fence. In-flight pre-migration controls may drain through their
 compatibility path; all newly inserted runs receive shared work atomically.
