@@ -71,7 +71,9 @@ def test_provider_http_cause_controls_retry(status: int, expected: str) -> None:
 
 
 @pytest.mark.parametrize("error_type", [ApiFootballError, FootballDataOrgError])
-def test_provider_network_cause_remains_retryable(error_type) -> None:
+def test_provider_network_cause_remains_retryable(
+    error_type: type[ApiFootballError | FootballDataOrgError],
+) -> None:
     error = error_type("provider request failed")
     error.__cause__ = TimeoutError("network timed out")
     assert classify_history_failure(error) == RetryClassification.RETRYABLE
