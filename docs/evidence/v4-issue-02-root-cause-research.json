@@ -1,0 +1,2220 @@
+{
+  "phase": "R02-G",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "eb4f810",
+  "reference_sha": "851790fcf489f071b55e0d6ce5c47f05bd1e4622",
+  "reference_difference": "One documentation-only engineering-guide commit; no implementation changes.",
+  "recorded_at": "2026-11-02T04:49:33.924448+00:00",
+  "classification": "L3",
+  "scope": "Root-cause audit only; no admissions or data writes.",
+  "live_audit": {
+    "path": ".local/issue02-unblocking/root-cause-live.json",
+    "sha256": "18442041b499810c052da8ea2d334408edcd81f77ac349e36b4e14b16ffe3c4d"
+  },
+  "pilot": {
+    "resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+    "snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+    "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+    "fixtures": 380,
+    "teams": [
+      "1",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+      "31",
+      "33",
+      "36",
+      "37",
+      "38",
+      "39",
+      "40",
+      "41",
+      "56",
+      "59"
+    ],
+    "registered_source": [
+      "manifests/provider=statsbomb_open_data/snapshot=b0bc9f22dd77c206ddedc1d742893b3bbe64baec/scope=e7dc11a69eca08ec0414e4b2d04739cffcf499b64d6e3348d638353bd7e6d6e3/source-manifest-v1.json",
+      "2118010a181c32f28702a0beb83684e3233b9107f0fac66988ce805acf2c125b",
+      "manifests/provider=statsbomb_open_data/snapshot=b0bc9f22dd77c206ddedc1d742893b3bbe64baec/scope=e7dc11a69eca08ec0414e4b2d04739cffcf499b64d6e3348d638353bd7e6d6e3",
+      "b0bc9f22dd77c206ddedc1d742893b3bbe64baec",
+      "b0bc9f22dd77c206ddedc1d742893b3bbe64baec",
+      "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "data/matches/2/27.json",
+      "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      698179,
+      "2026-08-30 08:48:43.916791+00:00"
+    ],
+    "normalization_reader_verified": true,
+    "identity_reader_verified": false
+  },
+  "provider_checks": {
+    "statsbomb_open_data": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a051db-5565-73ca-b461-3de984216d04",
+          "canonical_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+          "entity_type": "competition",
+          "provider": "statsbomb_open_data",
+          "provider_id": "2",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5456-70a2-b637-d2840cfaf9c2",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:35.855412+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a1f-7a47-82c4-908f7d33d776",
+          "canonical_id": "01a051db-5a1d-7d5a-aafc-99446175859c",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "26",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+          "canonical_id": "01a051db-5a27-7bd7-a036-0a0c1ecdbaf3",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "28",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+          "canonical_id": "01a051db-5a48-78d5-b313-eb17f70a03bf",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "33",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a4c-79ed-a00c-cef1f2c25966",
+          "canonical_id": "01a051db-5a4c-7222-8cca-178f69c8a8d5",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "40",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a59-7c13-acac-85b521f5208e",
+          "canonical_id": "01a051db-5a59-72f8-bfea-74440545bdf6",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "37",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+          "canonical_id": "01a051db-5a5d-7942-b41b-2c56349f52a2",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "29",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a6c-7b32-b41a-5f8544e650f0",
+          "canonical_id": "01a051db-5a6c-72c5-9778-9c25c78b75ea",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "41",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a79-7834-a02d-a92525d1515d",
+          "canonical_id": "01a051db-5a79-70bd-82d2-b457afa0ae99",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "1",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a85-7b6d-bd58-5aac5d43815e",
+          "canonical_id": "01a051db-5a85-745b-b656-00578f24f7a5",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "23",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a88-7987-95c9-eca6eab916a9",
+          "canonical_id": "01a051db-5a88-71cb-80e5-35fbb11bee33",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "30",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5a95-7513-a32e-c7af8bc47909",
+          "canonical_id": "01a051db-5a94-7cf6-9ddb-3e687d0e74d6",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "25",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+          "canonical_id": "01a051db-5a9f-7b3a-9cf1-20ef467acc55",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "31",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5ab4-74d7-b528-592695b1795b",
+          "canonical_id": "01a051db-5ab3-7ba9-9e67-a99f2b99b6e1",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "59",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+          "canonical_id": "01a051db-5abd-7993-b014-222dcda3ef5b",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "22",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5acd-7dba-a362-f32450b941ec",
+          "canonical_id": "01a051db-5acd-78c4-9b3f-25ab572d67ad",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "24",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5ae1-75fc-8928-a2be57126f37",
+          "canonical_id": "01a051db-5ae1-7156-9569-5522f1cac756",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "38",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5af6-7b1d-824c-34502a2e2831",
+          "canonical_id": "01a051db-5af6-77fc-a4ac-30cc00a11d7f",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "36",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5b00-7052-b946-5468c594ba27",
+          "canonical_id": "01a051db-5aff-7d08-990c-af541f9f60ad",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "56",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5b30-7e46-baa2-e7357c3af53b",
+          "canonical_id": "01a051db-5b30-7b57-965b-3129c84cf8ba",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "39",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a051db-5b41-71c7-ac36-f912fc78fcc1",
+          "canonical_id": "01a051db-5b40-7ea5-8fde-ba3b39b734bf",
+          "entity_type": "team",
+          "provider": "statsbomb_open_data",
+          "provider_id": "27",
+          "disposition": "UNRESOLVED",
+          "reason": "RETAINED_SOURCE_EVIDENCE_REQUIRED",
+          "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+          "evidence": {},
+          "source_observed_at": "2026-08-30T08:48:43.916791+00:00",
+          "canonical_uuid_version": 7,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        }
+      ]
+    },
+    "pitchapi": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a129b2-cb4c-7448-be6a-22b1bd093196",
+          "canonical_id": "1489c64f-47f1-5d55-b523-cfae82d26e0c",
+          "entity_type": "competition",
+          "provider": "pitchapi",
+          "provider_id": "l_1D8Xrl",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+          "evidence": {
+            "provider": "pitchapi",
+            "provider_entity_id": "l_1D8Xrl",
+            "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+            "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+            "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+            "country": "Brazil",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T05:54:18.589844+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-cb80-7f34-a066-3dfef4e11309",
+          "canonical_id": "85d11712-7c22-5afd-8048-188424602128",
+          "entity_type": "competition",
+          "provider": "pitchapi",
+          "provider_id": "l_1xXulJ",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+          "evidence": {
+            "provider": "pitchapi",
+            "provider_entity_id": "l_1xXulJ",
+            "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+            "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+            "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+            "country": "Colombia",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T05:54:18.589844+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-cb97-7a13-aaf0-72909e45f0fd",
+          "canonical_id": "179eab67-1281-52e7-8bc1-56719d45d509",
+          "entity_type": "competition",
+          "provider": "pitchapi",
+          "provider_id": "l_2EKrnc",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+          "evidence": {
+            "provider": "pitchapi",
+            "provider_entity_id": "l_2EKrnc",
+            "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+            "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+            "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+            "country": "South-Korea",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T05:54:18.589844+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-cbae-7398-8f85-b2880ded27de",
+          "canonical_id": "873123b7-43af-5dbc-96a2-3194efef32cb",
+          "entity_type": "competition",
+          "provider": "pitchapi",
+          "provider_id": "l_271pqa",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+          "evidence": {
+            "provider": "pitchapi",
+            "provider_entity_id": "l_271pqa",
+            "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+            "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+            "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+            "country": "South-Korea",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T05:54:18.589844+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        }
+      ]
+    },
+    "espn": {
+      "sample_mappings": []
+    },
+    "football_data_uk": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a1044a-3057-7162-b3df-fd47a92c7a8d",
+          "canonical_id": "076c344a-3b42-538e-ab15-382a1333ea32",
+          "entity_type": "competition",
+          "provider": "football_data_uk",
+          "provider_id": "SC0",
+          "disposition": "CROSSWALK",
+          "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+          "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+          "evidence": {
+            "provider": "football_data_uk",
+            "provider_entity_id": "SC0",
+            "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+            "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+            "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+            "country": "Scotland",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1",
+            "crosswalk_target": {
+              "provider": "api_football",
+              "provider_entity_id": "179"
+            }
+          },
+          "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "75f43895-4bca-5c03-8a56-05997eec5f76",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "076c344a-3b42-538e-ab15-382a1333ea32",
+            "decided_at": "2026-10-14T04:07:42.096349+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3710-7562-9038-e34a325ca9bd",
+                "entity_type": "competition",
+                "mapping_id": "01a1044a-3057-7162-b3df-fd47a92c7a8d",
+                "canonical_id": "076c344a-3b42-538e-ab15-382a1333ea32",
+                "provider_code": "football_data_uk",
+                "provider_entity_id": "SC0",
+                "disposition": "CROSSWALK",
+                "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+                "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+                "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+                "decided_at": "2026-10-14T04:07:42.096349+00:00",
+                "evidence": {
+                  "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+                  "country": "Scotland",
+                  "provider": "football_data_uk",
+                  "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "crosswalk_target": {
+                    "provider": "api_football",
+                    "provider_entity_id": "179"
+                  },
+                  "provider_entity_id": "SC0",
+                  "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "01cbebdafbd2516899840c9ce26941db6811335dde6bf682375f34c37a739b3f",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_uk",
+                  "provider_native_id": "SC0",
+                  "canonical_id": "076c344a-3b42-538e-ab15-382a1333ea32"
+                }
+              },
+              "source_sha256": "3e4e853e5a4414ec8556c2ebb824aedc51787e13b57f983b2abbe0e2ec77ae48"
+            },
+            "evidence_hash": "63289ca1de7ca11df327f36e0d4e28c2439ccb0cf1f0cfe6aed47088629a4640",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a1044a-3059-7628-8aa2-bc56eff6579a",
+          "canonical_id": "1438be97-8e2f-5cc9-88ae-ceec41a2dd4a",
+          "entity_type": "competition",
+          "provider": "football_data_uk",
+          "provider_id": "E1",
+          "disposition": "CROSSWALK",
+          "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+          "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+          "evidence": {
+            "provider": "football_data_uk",
+            "provider_entity_id": "E1",
+            "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+            "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+            "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+            "country": "England",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1",
+            "crosswalk_target": {
+              "provider": "api_football",
+              "provider_entity_id": "40"
+            }
+          },
+          "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "c8afc612-d3d4-5459-a460-73c988d6998e",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "1438be97-8e2f-5cc9-88ae-ceec41a2dd4a",
+            "decided_at": "2026-10-14T04:07:45.376040+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-43e0-7032-92f0-1861e2c6a441",
+                "entity_type": "competition",
+                "mapping_id": "01a1044a-3059-7628-8aa2-bc56eff6579a",
+                "canonical_id": "1438be97-8e2f-5cc9-88ae-ceec41a2dd4a",
+                "provider_code": "football_data_uk",
+                "provider_entity_id": "E1",
+                "disposition": "CROSSWALK",
+                "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+                "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+                "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+                "decided_at": "2026-10-14T04:07:45.376040+00:00",
+                "evidence": {
+                  "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+                  "country": "England",
+                  "provider": "football_data_uk",
+                  "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "crosswalk_target": {
+                    "provider": "api_football",
+                    "provider_entity_id": "40"
+                  },
+                  "provider_entity_id": "E1",
+                  "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "00c0193764123ba8210370cf0936a8b781d3b007897d3c5fc356c3ceafbe00c3",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_uk",
+                  "provider_native_id": "E1",
+                  "canonical_id": "1438be97-8e2f-5cc9-88ae-ceec41a2dd4a"
+                }
+              },
+              "source_sha256": "53b4de5f10c9c069d618de2404cbb56809cb0696279e256f7efb209dddfc5253"
+            },
+            "evidence_hash": "1e2cc1e89ee15a3128a6439121c601ece983372e6422b7d50905d92aa8abce28",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a1044a-305c-7846-b595-b68599daa1b7",
+          "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+          "entity_type": "competition",
+          "provider": "football_data_uk",
+          "provider_id": "E0",
+          "disposition": "CROSSWALK",
+          "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+          "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+          "evidence": {
+            "provider": "football_data_uk",
+            "provider_entity_id": "E0",
+            "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+            "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+            "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+            "country": "England",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1",
+            "crosswalk_target": {
+              "provider": "api_football",
+              "provider_entity_id": "39"
+            }
+          },
+          "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "195bb745-d70a-5c8e-a536-15d230d7bcdd",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+            "decided_at": "2026-10-14T04:08:00.468469+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-7ed4-7675-b6cc-2947c83effd2",
+                "entity_type": "competition",
+                "mapping_id": "01a1044a-305c-7846-b595-b68599daa1b7",
+                "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+                "provider_code": "football_data_uk",
+                "provider_entity_id": "E0",
+                "disposition": "CROSSWALK",
+                "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+                "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+                "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+                "decided_at": "2026-10-14T04:08:00.468469+00:00",
+                "evidence": {
+                  "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+                  "country": "England",
+                  "provider": "football_data_uk",
+                  "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "crosswalk_target": {
+                    "provider": "api_football",
+                    "provider_entity_id": "39"
+                  },
+                  "provider_entity_id": "E0",
+                  "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "4f0067b920b8f710a19110d7d5975bba3c36ca78d62b85337681d976c24d70ff",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_uk",
+                  "provider_native_id": "E0",
+                  "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc"
+                }
+              },
+              "source_sha256": "ead345b59c6737e95f85c19c61cb4a10023179d6a38855d733f04be72365ac4d"
+            },
+            "evidence_hash": "5c822af77b833796e155c40983dd5959b2c6d98dd9fd073fd8427b2f553ea4a1",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a1044a-305d-7f06-a788-d96408faa222",
+          "canonical_id": "3044c9fa-2d22-5995-ab91-247620c662b5",
+          "entity_type": "competition",
+          "provider": "football_data_uk",
+          "provider_id": "F2",
+          "disposition": "CROSSWALK",
+          "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+          "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+          "evidence": {
+            "provider": "football_data_uk",
+            "provider_entity_id": "F2",
+            "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+            "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+            "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+            "country": "France",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1",
+            "crosswalk_target": {
+              "provider": "api_football",
+              "provider_entity_id": "62"
+            }
+          },
+          "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "141e2e56-207f-55b0-a0a8-00c78851f26f",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "3044c9fa-2d22-5995-ab91-247620c662b5",
+            "decided_at": "2026-10-14T04:08:12.522574+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-adea-7880-a7bb-a4681f73e334",
+                "entity_type": "competition",
+                "mapping_id": "01a1044a-305d-7f06-a788-d96408faa222",
+                "canonical_id": "3044c9fa-2d22-5995-ab91-247620c662b5",
+                "provider_code": "football_data_uk",
+                "provider_entity_id": "F2",
+                "disposition": "CROSSWALK",
+                "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+                "source_snapshot_id": "c3cb0119-6c75-5d5f-af91-db5f89864e44",
+                "source_observed_at": "2026-09-30T15:26:14.595882+00:00",
+                "decided_at": "2026-10-14T04:08:12.522574+00:00",
+                "evidence": {
+                  "sha256": "56d48575f4100b37467f945fe8e06c69d70040f36071909493634d2d703ed6ef",
+                  "country": "France",
+                  "provider": "football_data_uk",
+                  "acquired_at": "2026-09-30T19:14:10.024347+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "crosswalk_target": {
+                    "provider": "api_football",
+                    "provider_entity_id": "62"
+                  },
+                  "provider_entity_id": "F2",
+                  "source_resource_id": "77e58390-1520-5d03-8d87-b0057f4bcec5",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "8714eb5f819cbefa1040945ebd22aafd8f3eba65135b4d1878ed697e92daedb3",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_uk",
+                  "provider_native_id": "F2",
+                  "canonical_id": "3044c9fa-2d22-5995-ab91-247620c662b5"
+                }
+              },
+              "source_sha256": "eaaba7bb053ab5d510083ed36380b0263aaf59022b9852d3d104b5095b2b542f"
+            },
+            "evidence_hash": "9aa6cebb7007d4f4fb7d431a05cb2ef65ed77db20e814101a825b985873066f9",
+            "predecessor": null
+          }
+        }
+      ]
+    },
+    "api_football": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a0eef4-9bf2-7e0c-8731-015d38da5980",
+          "canonical_id": "60e45d07-b636-5817-acdd-31e7394df308",
+          "entity_type": "competition",
+          "provider": "api_football",
+          "provider_id": "807",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+          "evidence": {
+            "provider": "api_football",
+            "provider_entity_id": "807",
+            "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+            "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+            "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+            "country": "World",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "60e45d07-b636-5817-acdd-31e7394df308",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "60e45d07-b636-5817-acdd-31e7394df308",
+            "decided_at": "2026-10-14T04:07:23.004192+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13897-ec7c-7287-8069-a574942c167a",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-9bf2-7e0c-8731-015d38da5980",
+                "canonical_id": "60e45d07-b636-5817-acdd-31e7394df308",
+                "provider_code": "api_football",
+                "provider_entity_id": "807",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:23.004192+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "World",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "807",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ea04e6908eedf04b45e847b3a60f7dc75d1127f72c8b7e281d242dd822a6c247",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "807",
+                  "canonical_id": "60e45d07-b636-5817-acdd-31e7394df308"
+                }
+              },
+              "source_sha256": "78b335c39f8a68d26839107dd12283482140652b4a4c4e67b36e3b3e61eaa3d0"
+            },
+            "evidence_hash": "3d5404a8836ff40146a899a3c3006c5b67784359c63916eefe87123c570e9493",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0eef4-9bf9-7281-aa38-4ab1828229b8",
+          "canonical_id": "fc4c6db1-39aa-524f-9527-a985e2206506",
+          "entity_type": "competition",
+          "provider": "api_football",
+          "provider_id": "925",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+          "evidence": {
+            "provider": "api_football",
+            "provider_entity_id": "925",
+            "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+            "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+            "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+            "country": "Czech-Republic",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "fc4c6db1-39aa-524f-9527-a985e2206506",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "fc4c6db1-39aa-524f-9527-a985e2206506",
+            "decided_at": "2026-10-14T04:07:23.012343+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13897-ec84-752f-b648-e7141aba8f2c",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-9bf9-7281-aa38-4ab1828229b8",
+                "canonical_id": "fc4c6db1-39aa-524f-9527-a985e2206506",
+                "provider_code": "api_football",
+                "provider_entity_id": "925",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:23.012343+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Czech-Republic",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "925",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "507c9728044346f611eaf98b8b7186a0997983d94e156124eb4d26c1aeed770b",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "925",
+                  "canonical_id": "fc4c6db1-39aa-524f-9527-a985e2206506"
+                }
+              },
+              "source_sha256": "53d00b5e2abeabb6b04d0ee06d57ed318655ab7682ee8e78aef9c2fd1c377af0"
+            },
+            "evidence_hash": "8eebbebc2abda15bd38e3c5818fba871831ce932c929d8886a943a41c6692c05",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0eef4-9bfd-7393-8333-9e18f654d338",
+          "canonical_id": "008117a4-913d-5fd2-9284-23b90ef65b2d",
+          "entity_type": "competition",
+          "provider": "api_football",
+          "provider_id": "804",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+          "evidence": {
+            "provider": "api_football",
+            "provider_entity_id": "804",
+            "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+            "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+            "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+            "country": "World",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "008117a4-913d-5fd2-9284-23b90ef65b2d",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "008117a4-913d-5fd2-9284-23b90ef65b2d",
+            "decided_at": "2026-10-14T04:07:23.018040+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13897-ec8a-7026-b64f-d572601190f2",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-9bfd-7393-8333-9e18f654d338",
+                "canonical_id": "008117a4-913d-5fd2-9284-23b90ef65b2d",
+                "provider_code": "api_football",
+                "provider_entity_id": "804",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:23.018040+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "World",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "804",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "91541545096f116697c60d4f1bdd842a502eed3829983e2ebde2ffdde64cb86d",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "804",
+                  "canonical_id": "008117a4-913d-5fd2-9284-23b90ef65b2d"
+                }
+              },
+              "source_sha256": "9226fc0ea441cecd164168b540a3486cd25e45f2789775f37cf5ee341b1ffb52"
+            },
+            "evidence_hash": "f13096d01a8ff76e274ee214dd02f527037b480abb8f66a04eaba9c85fa0a123",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0eef4-9c01-73f9-a72a-81b6565d8947",
+          "canonical_id": "ca0bc021-bb29-5211-b1ed-d65f40f6b4d3",
+          "entity_type": "competition",
+          "provider": "api_football",
+          "provider_id": "805",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+          "evidence": {
+            "provider": "api_football",
+            "provider_entity_id": "805",
+            "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+            "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+            "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+            "country": "World",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "ca0bc021-bb29-5211-b1ed-d65f40f6b4d3",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "ca0bc021-bb29-5211-b1ed-d65f40f6b4d3",
+            "decided_at": "2026-10-14T04:07:23.021674+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13897-ec8d-7a99-9a1c-8dddf2642f29",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-9c01-73f9-a72a-81b6565d8947",
+                "canonical_id": "ca0bc021-bb29-5211-b1ed-d65f40f6b4d3",
+                "provider_code": "api_football",
+                "provider_entity_id": "805",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:23.021674+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "World",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "805",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "65786075c483fafa8e74709baa47c5ba2ae383d53c18aa52a1ff00d07c274133",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "805",
+                  "canonical_id": "ca0bc021-bb29-5211-b1ed-d65f40f6b4d3"
+                }
+              },
+              "source_sha256": "bb68cf52a059e7c48bf41011a0c86bd2718a9b00f88d3b8a32962732d0f8c4fb"
+            },
+            "evidence_hash": "561b7eadb5b9558ae755dbbe68682a01445c2556ab970322ac082507bb12ca71",
+            "predecessor": null
+          }
+        }
+      ]
+    },
+    "fotmob": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a129b2-a11b-7848-be6d-fe6b4b9e8c95",
+          "canonical_id": "bff7784e-280e-5a76-bf52-716b1fa2e213",
+          "entity_type": "competition",
+          "provider": "fotmob",
+          "provider_id": "938696",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "8a52f05a-0888-5bda-ae8e-acbce2f98474",
+          "evidence": {
+            "provider": "fotmob",
+            "provider_entity_id": "938696",
+            "source_resource_id": "092a9d44-4ced-5a59-8abc-fdcf950288ef",
+            "sha256": "7146db6e991f99eb5e4086fea4eb228e57509bfa6a778b781a0f75c27d1ac146",
+            "acquired_at": "2026-10-11T06:42:14.801773+00:00",
+            "country": "Austria",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T06:42:14.801773+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-a189-753a-a896-3ec384c1c10f",
+          "canonical_id": "039d3f10-3798-5476-8727-c284cbe8f32a",
+          "entity_type": "competition",
+          "provider": "fotmob",
+          "provider_id": "937879",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "8a52f05a-0888-5bda-ae8e-acbce2f98474",
+          "evidence": {
+            "provider": "fotmob",
+            "provider_entity_id": "937879",
+            "source_resource_id": "092a9d44-4ced-5a59-8abc-fdcf950288ef",
+            "sha256": "7146db6e991f99eb5e4086fea4eb228e57509bfa6a778b781a0f75c27d1ac146",
+            "acquired_at": "2026-10-11T06:42:14.801773+00:00",
+            "country": "Poland",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T06:42:14.801773+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-a19a-7936-9165-f84782b20263",
+          "canonical_id": "cceab1da-f5b3-596c-a795-68610e80c4d1",
+          "entity_type": "competition",
+          "provider": "fotmob",
+          "provider_id": "937276",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "8a52f05a-0888-5bda-ae8e-acbce2f98474",
+          "evidence": {
+            "provider": "fotmob",
+            "provider_entity_id": "937276",
+            "source_resource_id": "092a9d44-4ced-5a59-8abc-fdcf950288ef",
+            "sha256": "7146db6e991f99eb5e4086fea4eb228e57509bfa6a778b781a0f75c27d1ac146",
+            "acquired_at": "2026-10-11T06:42:14.801773+00:00",
+            "country": "Netherlands",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T06:42:14.801773+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        },
+        {
+          "mapping_id": "01a129b2-a1a7-7bc2-a557-cbd05197e4c0",
+          "canonical_id": "6f304882-aa7f-5e0c-bf73-57bf08f08179",
+          "entity_type": "competition",
+          "provider": "fotmob",
+          "provider_id": "916016",
+          "disposition": "UNRESOLVED",
+          "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+          "source_snapshot_id": "8a52f05a-0888-5bda-ae8e-acbce2f98474",
+          "evidence": {
+            "provider": "fotmob",
+            "provider_entity_id": "916016",
+            "source_resource_id": "092a9d44-4ced-5a59-8abc-fdcf950288ef",
+            "sha256": "7146db6e991f99eb5e4086fea4eb228e57509bfa6a778b781a0f75c27d1ac146",
+            "acquired_at": "2026-10-11T06:42:14.801773+00:00",
+            "country": "Ireland",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-11T06:42:14.801773+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "None",
+          "accepted_anchor": null
+        }
+      ]
+    },
+    "openfootball": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a0f3a9-a212-715c-8898-e1c5c8e28d89",
+          "canonical_id": "8fc32559-bf04-5c5e-be54-e5e5f7f86678",
+          "entity_type": "competition",
+          "provider": "openfootball",
+          "provider_id": "at.1",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+          "evidence": {
+            "provider": "openfootball",
+            "provider_entity_id": "at.1",
+            "source_resource_id": "19f50498-3243-5fa6-ab80-90e2dd6b5a9f",
+            "sha256": "a54cdb3978789df2bf9e3e24d75c2dbfc3ef33c11169935f09f708ced501e0bb",
+            "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+            "country": "Austria",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "8fc32559-bf04-5c5e-be54-e5e5f7f86678",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "8fc32559-bf04-5c5e-be54-e5e5f7f86678",
+            "decided_at": "2026-10-14T04:10:45.853750+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1389b-04dd-7b6e-b0b8-cc9c6e0ed6eb",
+                "entity_type": "competition",
+                "mapping_id": "01a0f3a9-a212-715c-8898-e1c5c8e28d89",
+                "canonical_id": "8fc32559-bf04-5c5e-be54-e5e5f7f86678",
+                "provider_code": "openfootball",
+                "provider_entity_id": "at.1",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+                "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+                "decided_at": "2026-10-14T04:10:45.853750+00:00",
+                "evidence": {
+                  "sha256": "a54cdb3978789df2bf9e3e24d75c2dbfc3ef33c11169935f09f708ced501e0bb",
+                  "country": "Austria",
+                  "provider": "openfootball",
+                  "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "at.1",
+                  "source_resource_id": "19f50498-3243-5fa6-ab80-90e2dd6b5a9f",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "cf9533ef92b995c6e2fbd955cf86e4802cc47824453b1d7bcbe69e4f8e6b4e04",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "openfootball",
+                  "provider_native_id": "at.1",
+                  "canonical_id": "8fc32559-bf04-5c5e-be54-e5e5f7f86678"
+                }
+              },
+              "source_sha256": "834072a8b0f4e5ba5dc647f776e65c33a8497c6498abdd334f6a34ab05ce46e9"
+            },
+            "evidence_hash": "0ee0b12da1e3e71ee13f8c64b5ff96d68ad940a310ee179394b8035ebf2c193e",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0f3a9-a4d2-78c7-b14c-23bf55c49131",
+          "canonical_id": "54ae78d1-b80c-5371-bc6e-c25dfb84b577",
+          "entity_type": "competition",
+          "provider": "openfootball",
+          "provider_id": "at.2",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+          "evidence": {
+            "provider": "openfootball",
+            "provider_entity_id": "at.2",
+            "source_resource_id": "095238a2-10ac-590d-8dfc-b7b13099ca1f",
+            "sha256": "4215ca4a0c0e75f78ebc6a0f68ff1ca15a584d743f6c8bd4b864fbe4e2f22d6d",
+            "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+            "country": "Austria",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "54ae78d1-b80c-5371-bc6e-c25dfb84b577",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "54ae78d1-b80c-5371-bc6e-c25dfb84b577",
+            "decided_at": "2026-10-14T04:10:48.585814+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1389b-0f89-7c79-a63f-25fa0cfcdcd0",
+                "entity_type": "competition",
+                "mapping_id": "01a0f3a9-a4d2-78c7-b14c-23bf55c49131",
+                "canonical_id": "54ae78d1-b80c-5371-bc6e-c25dfb84b577",
+                "provider_code": "openfootball",
+                "provider_entity_id": "at.2",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+                "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+                "decided_at": "2026-10-14T04:10:48.585814+00:00",
+                "evidence": {
+                  "sha256": "4215ca4a0c0e75f78ebc6a0f68ff1ca15a584d743f6c8bd4b864fbe4e2f22d6d",
+                  "country": "Austria",
+                  "provider": "openfootball",
+                  "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "at.2",
+                  "source_resource_id": "095238a2-10ac-590d-8dfc-b7b13099ca1f",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "d56ea86e5b5e66c466939e0f6276d69e8b2d878f570e449b061c2bbee8d3da1b",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "openfootball",
+                  "provider_native_id": "at.2",
+                  "canonical_id": "54ae78d1-b80c-5371-bc6e-c25dfb84b577"
+                }
+              },
+              "source_sha256": "b0d9ce254f27499642738d20c69ae479049262aadaea8684e4ec153065e4148b"
+            },
+            "evidence_hash": "15f6bc68462014e020a92ee34582c810853684b63d8f7a16c07bc0a8a0d30c1c",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0f3aa-4008-7184-a2b8-d1f2cb54c57d",
+          "canonical_id": "edde2d1e-d040-5e2b-af6e-086fce9c8c62",
+          "entity_type": "competition",
+          "provider": "openfootball",
+          "provider_id": "de.2",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+          "evidence": {
+            "provider": "openfootball",
+            "provider_entity_id": "de.2",
+            "source_resource_id": "2c59b02c-507f-5703-b3d4-7c2cc30d4657",
+            "sha256": "9de885f874be68e34f702b44ca21fded5de9f0188a15777346dd17deeeb1575e",
+            "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+            "country": "Germany",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "edde2d1e-d040-5e2b-af6e-086fce9c8c62",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "edde2d1e-d040-5e2b-af6e-086fce9c8c62",
+            "decided_at": "2026-10-14T04:10:50.971063+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1389b-18db-708d-b3aa-d94a617d1539",
+                "entity_type": "competition",
+                "mapping_id": "01a0f3aa-4008-7184-a2b8-d1f2cb54c57d",
+                "canonical_id": "edde2d1e-d040-5e2b-af6e-086fce9c8c62",
+                "provider_code": "openfootball",
+                "provider_entity_id": "de.2",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+                "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+                "decided_at": "2026-10-14T04:10:50.971063+00:00",
+                "evidence": {
+                  "sha256": "9de885f874be68e34f702b44ca21fded5de9f0188a15777346dd17deeeb1575e",
+                  "country": "Germany",
+                  "provider": "openfootball",
+                  "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "de.2",
+                  "source_resource_id": "2c59b02c-507f-5703-b3d4-7c2cc30d4657",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "964a11cf3664a3705aa7d359d4fc22db63c2e9a345715bf4239d3024fcbcaaa0",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "openfootball",
+                  "provider_native_id": "de.2",
+                  "canonical_id": "edde2d1e-d040-5e2b-af6e-086fce9c8c62"
+                }
+              },
+              "source_sha256": "f64cb4d416a2a1392e4f07b4f155a7892edad08696ab0893be2dc2bc48d85495"
+            },
+            "evidence_hash": "66c2670f733130abca659b0de5e34df1758fef0da890e6f85e45595ef3183179",
+            "predecessor": null
+          }
+        },
+        {
+          "mapping_id": "01a0f3aa-870c-7027-8202-002ee36f9cb5",
+          "canonical_id": "c34b5c63-bd1c-5f21-aede-3a05ac17f81a",
+          "entity_type": "competition",
+          "provider": "openfootball",
+          "provider_id": "es.2",
+          "disposition": "ORIGIN_ANCHOR",
+          "reason": "VERIFIED_PROVIDER_ORIGIN",
+          "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+          "evidence": {
+            "provider": "openfootball",
+            "provider_entity_id": "es.2",
+            "source_resource_id": "372ca0e3-27b7-5b87-b24c-42748f5547ad",
+            "sha256": "eb8e1ebe9829f0d3c5d90a6539c2caa907e54a1c7020808128e890cf64a10e91",
+            "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+            "country": "Spain",
+            "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "c34b5c63-bd1c-5f21-aede-3a05ac17f81a",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "c34b5c63-bd1c-5f21-aede-3a05ac17f81a",
+            "decided_at": "2026-10-14T04:10:55.313415+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1389b-29d1-75e3-9ad6-807a69b81865",
+                "entity_type": "competition",
+                "mapping_id": "01a0f3aa-870c-7027-8202-002ee36f9cb5",
+                "canonical_id": "c34b5c63-bd1c-5f21-aede-3a05ac17f81a",
+                "provider_code": "openfootball",
+                "provider_entity_id": "es.2",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+                "source_observed_at": "2026-09-30T15:17:11.642124+00:00",
+                "decided_at": "2026-10-14T04:10:55.313415+00:00",
+                "evidence": {
+                  "sha256": "eb8e1ebe9829f0d3c5d90a6539c2caa907e54a1c7020808128e890cf64a10e91",
+                  "country": "Spain",
+                  "provider": "openfootball",
+                  "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "es.2",
+                  "source_resource_id": "372ca0e3-27b7-5b87-b24c-42748f5547ad",
+                  "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED"
+                },
+                "evidence_sha256": "4066a605abde461d892c60f7c7d009bcdf95e337fc6e0d62220b1efb88c60590",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "openfootball",
+                  "provider_native_id": "es.2",
+                  "canonical_id": "c34b5c63-bd1c-5f21-aede-3a05ac17f81a"
+                }
+              },
+              "source_sha256": "3c60cfbdf46bcfff58ba33dae76e83f7f2ca02d5f387b2caced807fb107f893b"
+            },
+            "evidence_hash": "84fb093d6296160d2ff9c71e44eb54c836055b6f96df13b2da2c716c56ff51d7",
+            "predecessor": null
+          }
+        }
+      ]
+    },
+    "football_data_org": {
+      "sample_mappings": [
+        {
+          "mapping_id": "01a138f2-168a-745f-bcce-fb531ed584ad",
+          "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+          "entity_type": "competition",
+          "provider": "football_data_org",
+          "provider_id": "PL",
+          "disposition": "CROSSWALK",
+          "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+          "source_snapshot_id": "df1f2cb2-fe37-5da4-b750-51e612f9de14",
+          "evidence": {
+            "provider": "football_data_org",
+            "provider_entity_id": "PL",
+            "source_resource_id": "9994f48a-5585-5dd7-b046-ef202cb0c111",
+            "sha256": "cbbeec32af16dbc359bfd60d08cf5d8355f1d54d25448f66078d1033c442eee4",
+            "acquired_at": "2026-10-04T00:19:00.618124+00:00",
+            "country": "England",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1",
+            "crosswalk_target": {
+              "provider": "api_football",
+              "provider_entity_id": "39"
+            }
+          },
+          "source_observed_at": "2026-10-04T00:19:00.618124+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "aef897d1-cacc-5096-8353-4e334268c4e9",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+            "decided_at": "2026-10-14T05:45:52.030514+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a138f2-169d-7f45-81a2-358c767ebd89",
+                "entity_type": "competition",
+                "mapping_id": "01a138f2-168a-745f-bcce-fb531ed584ad",
+                "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc",
+                "provider_code": "football_data_org",
+                "provider_entity_id": "PL",
+                "disposition": "CROSSWALK",
+                "reason": "VERIFIED_EXPLICIT_CROSSWALK",
+                "source_snapshot_id": "df1f2cb2-fe37-5da4-b750-51e612f9de14",
+                "source_observed_at": "2026-10-04T00:19:00.618124+00:00",
+                "decided_at": "2026-10-14T05:45:52.030514+00:00",
+                "evidence": {
+                  "sha256": "cbbeec32af16dbc359bfd60d08cf5d8355f1d54d25448f66078d1033c442eee4",
+                  "country": "England",
+                  "provider": "football_data_org",
+                  "acquired_at": "2026-10-04T00:19:00.618124+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "crosswalk_target": {
+                    "provider": "api_football",
+                    "provider_entity_id": "39"
+                  },
+                  "provider_entity_id": "PL",
+                  "source_resource_id": "9994f48a-5585-5dd7-b046-ef202cb0c111",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "d10b9067575378a452c16dd0d6dd8c234a111c0a83e372429f9ecffded87d9c6",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_org",
+                  "provider_native_id": "PL",
+                  "canonical_id": "2b741f00-2715-554b-9c74-e0274694f9cc"
+                }
+              },
+              "source_sha256": "035f105f2d831f5ec64d102d5d79f918de615efa8494b18cc70d692795b4317a"
+            },
+            "evidence_hash": "1c6bca26bf2c1295a6ede410cbc63fdb41f471a110d7edd8b505a22138609f15",
+            "predecessor": null
+          }
+        },
+        {
+          "entity_type": "team",
+          "mapping_id": "01a0f1b8-a51f-7d41-8f74-891eaadb5322",
+          "canonical_id": "73f1706b-973b-54a6-aad7-c80ef9d55e73",
+          "provider": "football_data_org",
+          "provider_id": "402",
+          "disposition": "CROSSWALK",
+          "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+          "source_snapshot_id": "caf77905-51f7-5775-828b-b2a770162aef",
+          "source_observed_at": "2026-09-30T09:50:02.641354+00:00",
+          "evidence": {
+            "reason": "INCORRECT_PRIOR_MAPPING",
+            "sha256": "ea196be0c49d91a3d01f9be53c283a5c074ab1a16fb1cb05b82ec47e796019c0",
+            "context": {
+              "away": "64",
+              "home": "402",
+              "league": "PL",
+              "country": "England",
+              "kickoff": "2026-10-17T14:00:00+00:00",
+              "season_end": "2027-05-30",
+              "season_start": "2026-08-21"
+            },
+            "country": "England",
+            "contract": "ProductTeamIdentityCorrectionV1",
+            "provider": "football_data_org",
+            "acquired_at": "2026-09-30T09:50:02.641354+00:00",
+            "orientation": "HOME",
+            "policy_version": "ProductIdentityTrustV1",
+            "target_evidence": {
+              "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+              "country": "England",
+              "provider": "api_football",
+              "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+              "provider_entity_id": "55",
+              "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+              "source_snapshot_id": "0f26e569-b330-5e53-9411-55f07dcb37a3",
+              "manifest_classification": "BYTE_VERIFIED"
+            },
+            "context_resources": [
+              {
+                "sha256": "d8cb709ce10562085499a477a08ba848a19bd5153e0109bdf2d9633c5496d9b2",
+                "provider": "football_data_org",
+                "acquired_at": "2026-10-04T00:18:59.164416+00:00",
+                "source_resource_id": "2c0241f4-59c3-5899-95b4-f53ba848c9cd",
+                "source_snapshot_id": "e1660be9-cb05-5a8f-97f3-d1e5f9cb3780"
+              },
+              {
+                "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+                "provider": "api_football",
+                "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+                "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+                "source_snapshot_id": "0f26e569-b330-5e53-9411-55f07dcb37a3"
+              },
+              {
+                "sha256": "026ba42d8631666ae5b25890b7fb660f72313ff09fdb7542fa8821d30c811dff",
+                "provider": "fotmob",
+                "acquired_at": "2026-10-12T11:09:53.075099+00:00",
+                "source_resource_id": "7ed4a45e-24f5-5616-bf78-184770cab869",
+                "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f"
+              },
+              {
+                "sha256": "11d8665ed5c01a6d2f4d97d99adc55ee0dd0f95eadcf07c86405ed8859c05ff9",
+                "country": "England",
+                "provider": "fotmob",
+                "mapping_id": "01a13a5a-2728-7045-a712-9006861cf802",
+                "acquired_at": "2026-10-14T05:26:11.054241+00:00",
+                "policy_version": "ProductIdentityTrustV1",
+                "operator_review": {
+                  "decided_at": "2026-10-14T12:19:09.241303+00:00",
+                  "decision_id": "01a13a5a-2739-74ca-9c9f-5c362af2ceb3"
+                },
+                "crosswalk_target": {
+                  "provider": "api_football",
+                  "provider_entity_id": "55"
+                },
+                "provider_entity_id": "9937",
+                "source_resource_id": "b729e14e-14be-5f44-9efd-2a39761cf8d1",
+                "source_snapshot_id": "4bb6d5ff-30f1-554b-8f8f-bf0a9743b6fc",
+                "manifest_classification": "BYTE_VERIFIED"
+              }
+            ],
+            "original_decision": {
+              "reason": "verified team_provider_mappings contradicts exact-name candidate",
+              "evidence": {
+                "rule": "unique_exact_competition_home_away_utc_kickoff_v1",
+                "exact_candidates": [
+                  "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                ],
+                "nearby_candidates": 3,
+                "provider_away_team": "Liverpool",
+                "provider_home_team": "Brentford",
+                "provider_competition": "Premier League",
+                "kickoff_tolerance_seconds": 1800
+              },
+              "created_at": "2026-10-12T11:11:43.648023+00:00",
+              "decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+              "disposition": "CONTRADICTORY",
+              "observed_at": "2026-10-12T11:09:53.075099+00:00",
+              "provider_code": "fotmob",
+              "semantic_sha256": "a2c2c04182255a5caa47cc39c15e47f0b815b516a026d3eaf62bd151f89b6e81",
+              "provider_match_id": "5795476",
+              "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f",
+              "candidate_fixture_id": "e20b126f-3007-53d5-aadc-d55c5adf5131"
+            },
+            "provider_entity_id": "402",
+            "source_resource_id": "e51b8d80-9cd4-51ad-b1fe-78f991122ad5",
+            "fixture_registration_id": "01a10447-3e16-72e3-9a11-0c2900260f87",
+            "manifest_classification": "BYTE_VERIFIED"
+          },
+          "corrects_decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+          "decision_id": "01a13e9b-02ba-7c67-9ced-f4744bae6291",
+          "canonical_uuid_version": 5,
+          "expected_origin": "4ad06673-9f52-53cb-87dd-406676d6d814",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "73f1706b-973b-54a6-aad7-c80ef9d55e73",
+            "decided_at": "2026-10-15T08:08:28.603821+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13e9b-02ba-7c67-9ced-f4744bae6291",
+                "entity_type": "team",
+                "mapping_id": "01a0f1b8-a51f-7d41-8f74-891eaadb5322",
+                "canonical_id": "73f1706b-973b-54a6-aad7-c80ef9d55e73",
+                "provider_code": "football_data_org",
+                "provider_entity_id": "402",
+                "disposition": "CROSSWALK",
+                "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+                "source_snapshot_id": "caf77905-51f7-5775-828b-b2a770162aef",
+                "source_observed_at": "2026-09-30T09:50:02.641354+00:00",
+                "decided_at": "2026-10-15T08:08:28.603821+00:00",
+                "evidence": {
+                  "reason": "INCORRECT_PRIOR_MAPPING",
+                  "sha256": "ea196be0c49d91a3d01f9be53c283a5c074ab1a16fb1cb05b82ec47e796019c0",
+                  "context": {
+                    "away": "64",
+                    "home": "402",
+                    "league": "PL",
+                    "country": "England",
+                    "kickoff": "2026-10-17T14:00:00+00:00",
+                    "season_end": "2027-05-30",
+                    "season_start": "2026-08-21"
+                  },
+                  "country": "England",
+                  "contract": "ProductTeamIdentityCorrectionV1",
+                  "provider": "football_data_org",
+                  "acquired_at": "2026-09-30T09:50:02.641354+00:00",
+                  "orientation": "HOME",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "target_evidence": {
+                    "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+                    "country": "England",
+                    "provider": "api_football",
+                    "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+                    "provider_entity_id": "55",
+                    "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+                    "source_snapshot_id": "0f26e569-b330-5e53-9411-55f07dcb37a3",
+                    "manifest_classification": "BYTE_VERIFIED"
+                  },
+                  "context_resources": [
+                    {
+                      "sha256": "d8cb709ce10562085499a477a08ba848a19bd5153e0109bdf2d9633c5496d9b2",
+                      "provider": "football_data_org",
+                      "acquired_at": "2026-10-04T00:18:59.164416+00:00",
+                      "source_resource_id": "2c0241f4-59c3-5899-95b4-f53ba848c9cd",
+                      "source_snapshot_id": "e1660be9-cb05-5a8f-97f3-d1e5f9cb3780"
+                    },
+                    {
+                      "sha256": "efe6cf35c0cabc6b47667dce4da67ed49f17cded09419618c0a0b558ee0262ca",
+                      "provider": "api_football",
+                      "acquired_at": "2026-10-10T11:11:20.041240+00:00",
+                      "source_resource_id": "9abfa8d5-0db5-5f31-8075-ebeb3768617c",
+                      "source_snapshot_id": "0f26e569-b330-5e53-9411-55f07dcb37a3"
+                    },
+                    {
+                      "sha256": "026ba42d8631666ae5b25890b7fb660f72313ff09fdb7542fa8821d30c811dff",
+                      "provider": "fotmob",
+                      "acquired_at": "2026-10-12T11:09:53.075099+00:00",
+                      "source_resource_id": "7ed4a45e-24f5-5616-bf78-184770cab869",
+                      "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f"
+                    },
+                    {
+                      "sha256": "11d8665ed5c01a6d2f4d97d99adc55ee0dd0f95eadcf07c86405ed8859c05ff9",
+                      "country": "England",
+                      "provider": "fotmob",
+                      "mapping_id": "01a13a5a-2728-7045-a712-9006861cf802",
+                      "acquired_at": "2026-10-14T05:26:11.054241+00:00",
+                      "policy_version": "ProductIdentityTrustV1",
+                      "operator_review": {
+                        "decided_at": "2026-10-14T12:19:09.241303+00:00",
+                        "decision_id": "01a13a5a-2739-74ca-9c9f-5c362af2ceb3"
+                      },
+                      "crosswalk_target": {
+                        "provider": "api_football",
+                        "provider_entity_id": "55"
+                      },
+                      "provider_entity_id": "9937",
+                      "source_resource_id": "b729e14e-14be-5f44-9efd-2a39761cf8d1",
+                      "source_snapshot_id": "4bb6d5ff-30f1-554b-8f8f-bf0a9743b6fc",
+                      "manifest_classification": "BYTE_VERIFIED"
+                    }
+                  ],
+                  "original_decision": {
+                    "reason": "verified team_provider_mappings contradicts exact-name candidate",
+                    "evidence": {
+                      "rule": "unique_exact_competition_home_away_utc_kickoff_v1",
+                      "exact_candidates": [
+                        "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                      ],
+                      "nearby_candidates": 3,
+                      "provider_away_team": "Liverpool",
+                      "provider_home_team": "Brentford",
+                      "provider_competition": "Premier League",
+                      "kickoff_tolerance_seconds": 1800
+                    },
+                    "created_at": "2026-10-12T11:11:43.648023+00:00",
+                    "decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+                    "disposition": "CONTRADICTORY",
+                    "observed_at": "2026-10-12T11:09:53.075099+00:00",
+                    "provider_code": "fotmob",
+                    "semantic_sha256": "a2c2c04182255a5caa47cc39c15e47f0b815b516a026d3eaf62bd151f89b6e81",
+                    "provider_match_id": "5795476",
+                    "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f",
+                    "candidate_fixture_id": "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                  },
+                  "provider_entity_id": "402",
+                  "source_resource_id": "e51b8d80-9cd4-51ad-b1fe-78f991122ad5",
+                  "fixture_registration_id": "01a10447-3e16-72e3-9a11-0c2900260f87",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "d66a2ad6b59df78720614c936c66e31ba82cb8ae2fea9625efb21a4d217dac65",
+                "corrects_decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+                "target_mapping_id": "01a12582-d3e2-764e-bcb4-d7ddc1147550",
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_org",
+                  "provider_native_id": "402",
+                  "canonical_id": "73f1706b-973b-54a6-aad7-c80ef9d55e73"
+                }
+              },
+              "source_sha256": "64ec60b1ebd4e09313c2b2f72da31184d848933bd24eb457a8d55693beedb0db"
+            },
+            "evidence_hash": "c7525ccfdbf5cba72d5b5ae2b4c758a0ef70cd00afef81ce04a3356166d622f8",
+            "predecessor": "01a12fcf-b420-7015-b277-ca5e176d0252"
+          }
+        },
+        {
+          "entity_type": "team",
+          "mapping_id": "01a0f1b8-ad41-7653-9556-019eb14c6439",
+          "canonical_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb",
+          "provider": "football_data_org",
+          "provider_id": "64",
+          "disposition": "CROSSWALK",
+          "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+          "source_snapshot_id": "adff84af-a491-599a-baff-ae8e1d92cd50",
+          "source_observed_at": "2026-09-30T09:50:05.631582+00:00",
+          "evidence": {
+            "reason": "INCORRECT_PRIOR_MAPPING",
+            "sha256": "61f390c021d535b3ccb3e868dbcfc467470bbbf0cce1e83b5c5a91f949489856",
+            "context": {
+              "away": "64",
+              "home": "402",
+              "league": "PL",
+              "country": "England",
+              "kickoff": "2026-10-17T14:00:00+00:00",
+              "season_end": "2027-05-30",
+              "season_start": "2026-08-21"
+            },
+            "country": "England",
+            "contract": "ProductTeamIdentityCorrectionV1",
+            "provider": "football_data_org",
+            "acquired_at": "2026-09-30T09:50:05.631582+00:00",
+            "orientation": "AWAY",
+            "policy_version": "ProductIdentityTrustV1",
+            "target_evidence": {
+              "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+              "country": "England",
+              "provider": "api_football",
+              "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+              "provider_entity_id": "40",
+              "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+              "source_snapshot_id": "b10d506c-61ea-52db-b261-165182361c26",
+              "manifest_classification": "BYTE_VERIFIED"
+            },
+            "context_resources": [
+              {
+                "sha256": "d8cb709ce10562085499a477a08ba848a19bd5153e0109bdf2d9633c5496d9b2",
+                "provider": "football_data_org",
+                "acquired_at": "2026-10-04T00:18:59.164416+00:00",
+                "source_resource_id": "2c0241f4-59c3-5899-95b4-f53ba848c9cd",
+                "source_snapshot_id": "e1660be9-cb05-5a8f-97f3-d1e5f9cb3780"
+              },
+              {
+                "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+                "provider": "api_football",
+                "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+                "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+                "source_snapshot_id": "b10d506c-61ea-52db-b261-165182361c26"
+              },
+              {
+                "sha256": "026ba42d8631666ae5b25890b7fb660f72313ff09fdb7542fa8821d30c811dff",
+                "provider": "fotmob",
+                "acquired_at": "2026-10-12T11:09:53.075099+00:00",
+                "source_resource_id": "7ed4a45e-24f5-5616-bf78-184770cab869",
+                "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f"
+              },
+              {
+                "sha256": "b5934de5cfe7b4981f5ef1f3af0f979d6081af32ac26d5153f05087e9799a5c4",
+                "country": "England",
+                "provider": "fotmob",
+                "mapping_id": "01a13a5b-1b40-79d6-8662-7c9093543e91",
+                "acquired_at": "2026-10-12T08:31:28.760927+00:00",
+                "policy_version": "ProductIdentityTrustV1",
+                "operator_review": {
+                  "decided_at": "2026-10-14T12:20:13.034448+00:00",
+                  "decision_id": "01a13a5b-206a-771d-8aa0-cdb7454f4d06"
+                },
+                "crosswalk_target": {
+                  "provider": "api_football",
+                  "provider_entity_id": "40"
+                },
+                "provider_entity_id": "8650",
+                "source_resource_id": "33385469-cd11-5eaf-9ec5-5d4d5ee43e74",
+                "source_snapshot_id": "0b255e42-20f8-5924-9573-b9bdeda3844a",
+                "manifest_classification": "BYTE_VERIFIED"
+              }
+            ],
+            "original_decision": {
+              "reason": "verified team_provider_mappings contradicts exact-name candidate",
+              "evidence": {
+                "rule": "unique_exact_competition_home_away_utc_kickoff_v1",
+                "exact_candidates": [
+                  "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                ],
+                "nearby_candidates": 3,
+                "provider_away_team": "Liverpool",
+                "provider_home_team": "Brentford",
+                "provider_competition": "Premier League",
+                "kickoff_tolerance_seconds": 1800
+              },
+              "created_at": "2026-10-12T11:11:43.648023+00:00",
+              "decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+              "disposition": "CONTRADICTORY",
+              "observed_at": "2026-10-12T11:09:53.075099+00:00",
+              "provider_code": "fotmob",
+              "semantic_sha256": "a2c2c04182255a5caa47cc39c15e47f0b815b516a026d3eaf62bd151f89b6e81",
+              "provider_match_id": "5795476",
+              "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f",
+              "candidate_fixture_id": "e20b126f-3007-53d5-aadc-d55c5adf5131"
+            },
+            "provider_entity_id": "64",
+            "source_resource_id": "a171e58d-db57-503a-bbb8-f17dc135e8ec",
+            "fixture_registration_id": "01a10447-3e16-72e3-9a11-0c2900260f87",
+            "manifest_classification": "BYTE_VERIFIED"
+          },
+          "corrects_decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+          "decision_id": "01a13e9b-06d4-7e76-b69f-404c2db60b69",
+          "canonical_uuid_version": 5,
+          "expected_origin": "aa612e87-7467-5309-a137-31a1a7b49ef5",
+          "accepted_anchor": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb",
+            "decided_at": "2026-10-15T08:08:29.653018+00:00",
+            "effective_at": null,
+            "disposition": "CROSSWALK",
+            "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13e9b-06d4-7e76-b69f-404c2db60b69",
+                "entity_type": "team",
+                "mapping_id": "01a0f1b8-ad41-7653-9556-019eb14c6439",
+                "canonical_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb",
+                "provider_code": "football_data_org",
+                "provider_entity_id": "64",
+                "disposition": "CROSSWALK",
+                "reason": "INCORRECT_PRIOR_MAPPING_CORRECTED",
+                "source_snapshot_id": "adff84af-a491-599a-baff-ae8e1d92cd50",
+                "source_observed_at": "2026-09-30T09:50:05.631582+00:00",
+                "decided_at": "2026-10-15T08:08:29.653018+00:00",
+                "evidence": {
+                  "reason": "INCORRECT_PRIOR_MAPPING",
+                  "sha256": "61f390c021d535b3ccb3e868dbcfc467470bbbf0cce1e83b5c5a91f949489856",
+                  "context": {
+                    "away": "64",
+                    "home": "402",
+                    "league": "PL",
+                    "country": "England",
+                    "kickoff": "2026-10-17T14:00:00+00:00",
+                    "season_end": "2027-05-30",
+                    "season_start": "2026-08-21"
+                  },
+                  "country": "England",
+                  "contract": "ProductTeamIdentityCorrectionV1",
+                  "provider": "football_data_org",
+                  "acquired_at": "2026-09-30T09:50:05.631582+00:00",
+                  "orientation": "AWAY",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "target_evidence": {
+                    "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+                    "country": "England",
+                    "provider": "api_football",
+                    "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+                    "provider_entity_id": "40",
+                    "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+                    "source_snapshot_id": "b10d506c-61ea-52db-b261-165182361c26",
+                    "manifest_classification": "BYTE_VERIFIED"
+                  },
+                  "context_resources": [
+                    {
+                      "sha256": "d8cb709ce10562085499a477a08ba848a19bd5153e0109bdf2d9633c5496d9b2",
+                      "provider": "football_data_org",
+                      "acquired_at": "2026-10-04T00:18:59.164416+00:00",
+                      "source_resource_id": "2c0241f4-59c3-5899-95b4-f53ba848c9cd",
+                      "source_snapshot_id": "e1660be9-cb05-5a8f-97f3-d1e5f9cb3780"
+                    },
+                    {
+                      "sha256": "56152ca56ba66415dd064473253c193f33ed7ca9d99d6c719783b01229805835",
+                      "provider": "api_football",
+                      "acquired_at": "2026-10-11T05:52:54.630208+00:00",
+                      "source_resource_id": "9dda6d94-4173-511e-bda1-d1378226e031",
+                      "source_snapshot_id": "b10d506c-61ea-52db-b261-165182361c26"
+                    },
+                    {
+                      "sha256": "026ba42d8631666ae5b25890b7fb660f72313ff09fdb7542fa8821d30c811dff",
+                      "provider": "fotmob",
+                      "acquired_at": "2026-10-12T11:09:53.075099+00:00",
+                      "source_resource_id": "7ed4a45e-24f5-5616-bf78-184770cab869",
+                      "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f"
+                    },
+                    {
+                      "sha256": "b5934de5cfe7b4981f5ef1f3af0f979d6081af32ac26d5153f05087e9799a5c4",
+                      "country": "England",
+                      "provider": "fotmob",
+                      "mapping_id": "01a13a5b-1b40-79d6-8662-7c9093543e91",
+                      "acquired_at": "2026-10-12T08:31:28.760927+00:00",
+                      "policy_version": "ProductIdentityTrustV1",
+                      "operator_review": {
+                        "decided_at": "2026-10-14T12:20:13.034448+00:00",
+                        "decision_id": "01a13a5b-206a-771d-8aa0-cdb7454f4d06"
+                      },
+                      "crosswalk_target": {
+                        "provider": "api_football",
+                        "provider_entity_id": "40"
+                      },
+                      "provider_entity_id": "8650",
+                      "source_resource_id": "33385469-cd11-5eaf-9ec5-5d4d5ee43e74",
+                      "source_snapshot_id": "0b255e42-20f8-5924-9573-b9bdeda3844a",
+                      "manifest_classification": "BYTE_VERIFIED"
+                    }
+                  ],
+                  "original_decision": {
+                    "reason": "verified team_provider_mappings contradicts exact-name candidate",
+                    "evidence": {
+                      "rule": "unique_exact_competition_home_away_utc_kickoff_v1",
+                      "exact_candidates": [
+                        "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                      ],
+                      "nearby_candidates": 3,
+                      "provider_away_team": "Liverpool",
+                      "provider_home_team": "Brentford",
+                      "provider_competition": "Premier League",
+                      "kickoff_tolerance_seconds": 1800
+                    },
+                    "created_at": "2026-10-12T11:11:43.648023+00:00",
+                    "decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+                    "disposition": "CONTRADICTORY",
+                    "observed_at": "2026-10-12T11:09:53.075099+00:00",
+                    "provider_code": "fotmob",
+                    "semantic_sha256": "a2c2c04182255a5caa47cc39c15e47f0b815b516a026d3eaf62bd151f89b6e81",
+                    "provider_match_id": "5795476",
+                    "source_snapshot_id": "23c8386a-7641-517a-8637-605231a5107f",
+                    "candidate_fixture_id": "e20b126f-3007-53d5-aadc-d55c5adf5131"
+                  },
+                  "provider_entity_id": "64",
+                  "source_resource_id": "a171e58d-db57-503a-bbb8-f17dc135e8ec",
+                  "fixture_registration_id": "01a10447-3e16-72e3-9a11-0c2900260f87",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "4a62578138bcc0d607401679fb7b38acc0c4ae44f82753ced3100cb97589761f",
+                "corrects_decision_id": "01a12fcf-b420-7015-b277-ca5e176d0252",
+                "target_mapping_id": "01a12985-8a63-7647-9be7-da4ac85a9343",
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "football_data_org",
+                  "provider_native_id": "64",
+                  "canonical_id": "a1885e25-3c5b-53da-885f-09ef2e2d01cb"
+                }
+              },
+              "source_sha256": "e5fc079386a369755fe327896df558484f9bf8c401689a1b6c76857adc607f5a"
+            },
+            "evidence_hash": "23127abbd2b945d98e6fc9153cae644a69bae6189299c399fca1503fe5bff984",
+            "predecessor": "01a12fcf-b420-7015-b277-ca5e176d0252"
+          }
+        },
+        {
+          "mapping_id": "01a0ff36-4bd0-79dc-a4fc-f2808dad8abd",
+          "canonical_id": "62da0869-8095-5d29-a8ee-78096f87ca69",
+          "entity_type": "team",
+          "provider": "football_data_org",
+          "provider_id": "4286",
+          "disposition": "UNRESOLVED",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED",
+          "source_snapshot_id": "a190943a-0540-5437-97fc-8c9f4412f226",
+          "evidence": {
+            "provider": "football_data_org",
+            "provider_entity_id": "4286",
+            "source_resource_id": "d5435807-848f-5b4d-8706-b07a94784f0c",
+            "sha256": "17b18668e5e7068fc58a2ef15a729eeabd4bbd9de819251498f736d41114171a",
+            "acquired_at": "2026-10-03T00:42:21.594563+00:00",
+            "country": "Brazil",
+            "manifest_classification": "BYTE_VERIFIED",
+            "policy_version": "ProductIdentityTrustV1"
+          },
+          "source_observed_at": "2026-10-03T00:42:21.594563+00:00",
+          "canonical_uuid_version": 5,
+          "expected_origin": "532522cb-5e1e-502c-9634-2cbdfc7406f2",
+          "accepted_anchor": null
+        }
+      ]
+    }
+  },
+  "canonical_id_defaults": [
+    [
+      "competitions",
+      "id",
+      "uuidv7()"
+    ],
+    [
+      "matches",
+      "id",
+      "uuidv7()"
+    ],
+    [
+      "players",
+      "id",
+      "uuidv7()"
+    ],
+    [
+      "teams",
+      "id",
+      "uuidv7()"
+    ]
+  ],
+  "existing_resolution_decisions": [
+    [
+      "football_data_uk",
+      "match",
+      "AUTO_ACCEPTED",
+      10
+    ],
+    [
+      "football_data_uk",
+      "team",
+      "MANUALLY_APPROVED",
+      20
+    ]
+  ],
+  "root_causes": [
+    {
+      "code": "SOURCE_PROVIDER_EXCLUDED",
+      "evidence": "verify_source_identifier returns None before querying StatsBomb and ESPN resources. _json_identifiers supports only api_football, football_data_org, pitchapi and fotmob.",
+      "classification": "CODE_GAP",
+      "next": "Narrow exact-format extraction after registration and byte verification."
+    },
+    {
+      "code": "INCOMPATIBLE_RETAINED_READER",
+      "evidence": "StatsBomb SourceManifestV1 has a separate raw_path; the generic legacy reader hashes manifest bytes against the resource digest and returns None. Existing normalization._statsbomb_payload verifies the same real 380-match resource successfully.",
+      "classification": "CODE_GAP",
+      "next": "Reuse the existing verified reader through a shared ingestion owner."
+    },
+    {
+      "code": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "evidence": "All 21 original StatsBomb team/competition canonical UUIDs are version 7. Canonical ingestion._insert_canonical uses INSERT DEFAULT VALUES; SQL defaults are uuidv7(). _insert_mapping calls the method deterministic, but that describes the recorded link, not a reproducible uuid5 origin.",
+      "classification": "GENUINE_ORIGIN_PROOF_FAILURE",
+      "next": "Keep origin allowlist unchanged. Existing approved crosswalk/review process must prove the exact target."
+    },
+    {
+      "code": "ORIGIN_UUID_MISMATCH",
+      "evidence": "qualify_mapping compares supported provider origins exactly; country participates in openfootball/football_data_uk origins. Existing contradictory review cases must not be reclassified by source extraction alone.",
+      "classification": "GENUINE_TARGET_PROOF_FAILURE",
+      "next": "Exact source/canonical crosswalk or existing correction workflow; no UUID rewrites."
+    },
+    {
+      "code": "CANONICAL_OWNER_DISTINCTION",
+      "evidence": "Native IDs, normalized artifacts, mapping rows, legacy real-fixture deduplication, and R2 admissions are separate contracts. ESPN Track B has no current team/competition mapping rows in the operating database.",
+      "classification": "MISSING_ADMISSION_CHAIN",
+      "next": "Evaluate accepted canonical Track C independently; source verification cannot create absent canonical relationships."
+    }
+  ],
+  "research": [
+    {
+      "question": "How are authentic StatsBomb Open Data IDs scoped?",
+      "url": "https://github.com/statsbomb/open-data",
+      "resolved_url": "https://github.com/hudl/open-data",
+      "revision_date": null,
+      "retrieved_at": "2026-11-02",
+      "schema": "Pinned pilot revision b0bc9f22dd77c206ddedc1d742893b3bbe64baec; JSON match index",
+      "alternatives": [
+        "Recursively collect every id",
+        "Read only documented resource/entity fields"
+      ],
+      "observed": "Official README defines competitions, competition/season match paths, and match-scoped event/lineup paths. Retained index contains exact native competition, season, match and team fields.",
+      "selected": "Resource-specific extraction; do not equate online API IDs with offline namespaces.",
+      "reason": "Avoid numeric-ID collisions and unrelated nested fields.",
+      "tests": "Real registered index checksum and all 21 pilot mapping claims inspected.",
+      "remaining_uncertainty": "README does not prove a UTC timezone or any MatchForge UUID algorithm."
+    },
+    {
+      "question": "Can Reep establish membership, time or automatic canonical admission?",
+      "url": "https://www.reep.football/data/",
+      "revision_date": null,
+      "retrieved_at": "2026-11-02",
+      "schema": "Reep v1 API / public-bridge-register-v2; retained release 2026-10-31.1 remains pinned",
+      "alternatives": [
+        "Treat common numeric IDs as a join",
+        "Use provider/namespace/external_id/entity_type and redirects"
+      ],
+      "observed": "Official download documentation separates aliases/bridges and structural relationships; public player appearance history is not supplied. Live page advertises a different release than the retained artifact.",
+      "selected": "Reuse pinned candidates only; no live release upgrade and no automatic admission.",
+      "reason": "Preserve frozen evidence and exact namespace/type checks.",
+      "tests": "Existing Issue 4 candidate and release hashes retained for R02-I.",
+      "remaining_uncertainty": "Pinned release quality gate is false; upstream independence and exact canonical target still require proof."
+    },
+    {
+      "question": "Does Football-Data UK 2015/16 give exact kickoff proof?",
+      "url": "https://py.sportsdataverse.org/docs/soccer/reference/football_data",
+      "revision_date": null,
+      "retrieved_at": "2026-11-02",
+      "schema": "sportsdataverse-py 0.2.0 reference; source season CSV",
+      "alternatives": [
+        "Interpret source date as UTC midnight",
+        "Require actual kickoff/time policy evidence"
+      ],
+      "observed": "Maintainer reference documents kickoff Time from 2019/20. Direct source notes/data page returned HTTP 429.",
+      "selected": "No UTC inferred from 2015/16 date-only rows.",
+      "reason": "Source date is insufficient to establish an absolute instant.",
+      "tests": "Track C will inspect actual retained fields and existing accepted claims.",
+      "remaining_uncertainty": "A complete compatible Track C fixture/source binding must still be proven."
+    }
+  ],
+  "provenance_code": {
+    "canonical_insertion": "python/football/src/football/ingestion/canonical.py:_insert_canonical,_insert_mapping",
+    "schema": "infrastructure/migrations/202608290200_canonical_storage.sql",
+    "source_registration": "python/football/src/football/ingestion/registration.py:PostgresSourceRegistry",
+    "admission": "python/football/src/football/product/identity_admission.py",
+    "origin": "python/football/src/football/product/identity_trust.py"
+  },
+  "verification": {
+    "audit_command": "uv run --locked --no-sync python .local/issue02-unblocking/audit_g.py",
+    "exit_code": 0,
+    "read_only": "on",
+    "pilot_checks": 21
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "qualification_grants": 0
+}
