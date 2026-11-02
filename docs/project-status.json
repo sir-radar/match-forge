@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-01T20:38:51.307202Z",
+  "updated_at": "2026-11-02T00:34:30.433735Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3071,7 +3071,7 @@
       "superseded": 7,
       "missing": 10
     },
-    "required_next_action": "Review the Issue 3 provider-expansion handoff. Issue 2 still requires exact independently accepted identity anchors, original kickoff timezone, settlement and canonical player membership/exposure proof. Issue 4 is not started and requires a separate owner handoff.",
+    "required_next_action": "Execute authorized Issue 4 phases R04-B through R04-G; preserve blocked Issue 2 and all existing scientific/cutover gates.",
     "completed_phase_scope": "Committed scoped engineering/provider checkpoints; individual phase statuses and full_programme_complete govern acceptance. Partial/blocked functionality is not complete.",
     "verification_corrections": [
       {
@@ -3211,6 +3211,16 @@
       "model_promotions": 0,
       "issue_4_started": false,
       "required_next_action": "Retain the blocked qualification result. Obtain exact independently accepted source/canonical anchors and original timezone, settlement and canonical membership/exposure proof. Issue 4 requires a separate owner handoff."
+    },
+    "provider_access_recovery": {
+      "status": "IN_PROGRESS",
+      "scope": "Issue 4 only; R04-A through R04-G authorized by CURRENT_TASK.md",
+      "starting_sha": "61f1c95f0d46bedf598a96b9bea1a13978d013ee",
+      "current_phase": "R04-A",
+      "research_ref": "docs/evidence/v4-issue-04-open-source-research.json",
+      "data_classification": "EXPERIMENTAL_ONLY",
+      "production_cutover": false,
+      "model_promotions": 0
     }
   }
 }
