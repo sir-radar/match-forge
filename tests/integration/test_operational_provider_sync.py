@@ -666,6 +666,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         minute=45,
         period="HALF_TIME",
     )
+    sync._store_observation(half_time, snapshot_id, fixture_id)
     assert sync._update_canonical_fixture(half_time, fixture_id, snapshot_id) == 1
     second_half = replace(
         half_time,
@@ -676,6 +677,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         minute=46,
         period="SECOND_HALF",
     )
+    sync._store_observation(second_half, snapshot_id, fixture_id)
     assert sync._update_canonical_fixture(second_half, fixture_id, snapshot_id) == 1
     assert (
         sync._update_canonical_fixture(
@@ -697,6 +699,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         source_updated_at=kickoff + timedelta(minutes=60),
         observed_at=kickoff + timedelta(minutes=61),
     )
+    sync._store_observation(suspended, snapshot_id, fixture_id)
     assert sync._update_canonical_fixture(suspended, fixture_id, snapshot_id) == 1
     resumed = replace(
         suspended,
@@ -707,6 +710,7 @@ def test_reconciliation_and_lifecycle_precedence_are_deterministic(
         minute=55,
         period="SECOND_HALF",
     )
+    sync._store_observation(resumed, snapshot_id, fixture_id)
     assert sync._update_canonical_fixture(resumed, fixture_id, snapshot_id) == 1
     finished = replace(
         resumed,
@@ -1003,3 +1007,62 @@ def test_reviewed_native_season_label_is_exact_and_replay_is_idempotent(
     )
     with pytest.raises(ValueError, match="not independently reviewed"):
         sync._set_verified_league_season(row, fixture, "2026/2027")
+
+
+def test_later_fetch_cannot_erase_a_live_score_with_an_older_or_equal_football_clock(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    sync, fixture_id, _, snapshot_id, live, kickoff, _ = seed_reviewed_operational_fixture(
+        connection, tmp_path
+    )
+    old = replace(
+        live,
+        home_score=0,
+        minute=10,
+        source_updated_at=None,
+        observed_at=kickoff + timedelta(minutes=40),
+    )
+    sync._store_observation(old, snapshot_id, fixture_id)
+    assert sync._update_canonical_fixture(old, fixture_id, snapshot_id) == 0
+    ambiguous = replace(old, minute=20)
+    sync._store_observation(ambiguous, snapshot_id, fixture_id)
+    assert sync._update_canonical_fixture(ambiguous, fixture_id, snapshot_id) == 0
+    forward = replace(old, home_score=2, minute=21)
+    sync._store_observation(forward, snapshot_id, fixture_id)
+    assert sync._update_canonical_fixture(forward, fixture_id, snapshot_id) == 1
+    assert connection.execute(
+        "SELECT home_score,away_score FROM football.product_fixtures WHERE fixture_id=%s",
+        (fixture_id,),
+    ).fetchone() == (2, 0)
+    assert (
+        connection.execute(
+            "SELECT count(*) FROM football.product_provider_fixture_observations "
+            "WHERE canonical_fixture_id=%s AND home_score=0",
+            (fixture_id,),
+        ).fetchone()[0]
+        >= 2
+    )
+
+
+def test_bound_alternate_provider_can_advance_the_canonical_match_clock(
+    connection: Connection[Any], tmp_path: Path
+) -> None:
+    _, fixture_id, _, snapshot_id, live, kickoff, _ = seed_reviewed_operational_fixture(
+        connection, tmp_path
+    )
+    alternate = OperationalProviderSync(
+        connection, tmp_path, provider_code="fotmob", minimum_interval_seconds=0
+    )
+    incoming = replace(
+        live,
+        provider_match_id="alternate-native-match",
+        home_score=2,
+        minute=21,
+        source_updated_at=None,
+        observed_at=kickoff + timedelta(minutes=40),
+    )
+    alternate._store_observation(incoming, snapshot_id, fixture_id)
+    assert alternate._update_canonical_fixture(incoming, fixture_id, snapshot_id) == 1
+    stale = replace(incoming, home_score=0, minute=19)
+    alternate._store_observation(stale, snapshot_id, fixture_id)
+    assert alternate._update_canonical_fixture(stale, fixture_id, snapshot_id) == 0

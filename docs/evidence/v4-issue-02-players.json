@@ -1,0 +1,130 @@
+{
+  "phase": "R02-D",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "1482c88c641825b6dd09f39a63d53a0dc6d4d13c",
+  "report": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/pilot/5b31643bd4d067f4dc6529e459d40be8c56902a252322156f3de599eebd64aec.json",
+    "sha256": "5b31643bd4d067f4dc6529e459d40be8c56902a252322156f3de599eebd64aec"
+  },
+  "population": {
+    "native_fixtures": 380,
+    "native_players": 644,
+    "native_lineup_occurrences": 13678,
+    "native_participation_status_counts": {
+      "STARTED": 8350,
+      "SUBSTITUTE_APPEARANCE": 2099,
+      "UNKNOWN": 3229
+    },
+    "closed_position_stint_occurrences": 4353,
+    "contradictory_lineup_occurrences": 0,
+    "all_statsbomb_recorded_player_claims": 1240,
+    "pilot_players_with_recorded_claim": 644,
+    "pilot_claimed_canonical_players": 644
+  },
+  "identity_states": {
+    "NATIVE_REFERENCE": 644,
+    "RECORDED_MAPPING_CLAIM": 644,
+    "CANONICAL_IDENTITY_ADMITTED": 0,
+    "HISTORICAL_MEMBERSHIP_QUALIFIED": 0,
+    "PARTICIPATION_QUALIFIED": 0,
+    "MARKET_LABEL_QUALIFIED": 0
+  },
+  "scope_of_states": "Pilot unique native players; recorded canonical IDs are claims. Participation-qualified means canonical, not native source role evidence.",
+  "cross_provider_admissions": 0,
+  "qualified_membership_intervals": 0,
+  "qualified_transfer_dates": 0,
+  "qualified_minutes_exposures": 0,
+  "qualified_player_market_labels": {
+    "SOT": 0,
+    "assists": 0,
+    "cards": 0,
+    "fouls": 0,
+    "goalkeeper_saves": 0,
+    "goals": 0,
+    "passes": 0,
+    "shots": 0,
+    "tackles": 0
+  },
+  "transfer_review_candidates": {
+    "10457": [
+      "31",
+      "56"
+    ],
+    "20285": [
+      "27",
+      "59"
+    ],
+    "22594": [
+      "40",
+      "56"
+    ],
+    "3057": [
+      "26",
+      "37"
+    ],
+    "3085": [
+      "28",
+      "31"
+    ],
+    "3297": [
+      "37",
+      "38"
+    ],
+    "3631": [
+      "22",
+      "26"
+    ],
+    "3656": [
+      "27",
+      "38"
+    ],
+    "3963": [
+      "33",
+      "40"
+    ],
+    "6871": [
+      "23",
+      "41"
+    ],
+    "9528": [
+      "29",
+      "56"
+    ],
+    "9542": [
+      "24",
+      "59"
+    ],
+    "9593": [
+      "28",
+      "56"
+    ],
+    "9911": [
+      "28",
+      "59"
+    ],
+    "9958": [
+      "24",
+      "25"
+    ]
+  },
+  "same_name_multiple_native_ids": {},
+  "limitations": [
+    "Native Starting XI/substitution reasons establish source-scoped appearance evidence, not a canonical identity or knowledge of the lineup before kickoff.",
+    "No position or absent player-stat row proves unused substitution or nonappearance. Unknown source roles remain UNKNOWN.",
+    "Closed position stints do not independently establish settlement-compatible minute exposure; no 90-minute default or invented minute total is used.",
+    "Fixture-scoped team associations are not continuous membership intervals. Multiple teams are transfer-review candidates, not confirmed transfers or exact dates.",
+    "Player identity admissions and participant/exposure/void semantics are still missing; every canonical player-market label remains blocked."
+  ],
+  "verification": {
+    "focused_audit_and_observation_contract_tests": {
+      "passed": 36,
+      "exit_code": 0
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS",
+    "read_only_lineup_inspection_exit_code": 0,
+    "diff_check": "PASS"
+  },
+  "operating_writes": 0,
+  "provider_requests": 0
+}

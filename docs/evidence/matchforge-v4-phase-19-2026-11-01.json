@@ -1,0 +1,240 @@
+{
+  "phase": "19",
+  "starting_sha": "3ee2a033ec54dd4f0fd80dbd5be5bfa259a930eb",
+  "recorded_at": "2026-11-01T09:58:21.192875Z",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "complete": false,
+  "gate_review": "PASS",
+  "evidence_refs": [
+    "docs/evidence/matchforge-v4-phase-14-2026-11-01.json",
+    "docs/evidence/matchforge-v4-phase-15-2026-11-01.json",
+    "docs/evidence/matchforge-v4-phase-18-2026-11-01.json"
+  ],
+  "player_identity": {
+    "existing_native_players": 1240,
+    "exact_unique_recorded_mapping_claims": 1240,
+    "ambiguous_claims": 0,
+    "unmapped_statsbomb_native_players": 0,
+    "cross_provider_admissions": 0,
+    "new_source_player_references": [
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "api_football"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "espn"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "flashscore"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "fotmob"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "pitchapi"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "soccerway"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 32,
+        "pit_eligible": null,
+        "provider": "understat"
+      }
+    ],
+    "claim_artifact": {
+      "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-14/player-claims/0b4ddb5b37d7bd6f3e3e432f4f63c21af28e532b18bce2cbfc5e622d47baf478.json",
+      "sha256": "0b4ddb5b37d7bd6f3e3e432f4f63c21af28e532b18bce2cbfc5e622d47baf478"
+    },
+    "qualified_continuous_membership": null,
+    "qualified_transfers": null
+  },
+  "claim_artifact_checksum_verified": true,
+  "target_readiness": [
+    {
+      "market_id": "PLAYER_GOALS",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "goal_events": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "PLAYER_ASSISTS",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "assists": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "PLAYER_SHOTS",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "PLAYER_SHOTS_ON_TARGET",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "PLAYER_PASSES",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "PLAYER_TACKLES",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "PLAYER_FOULS",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "PLAYER_CARDS",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "cards": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "GOALKEEPER_SAVES",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    },
+    {
+      "market_id": "ANYTIME_SCORER",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "goal_events": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "FIRST_SCORER",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "goal_events": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "LAST_SCORER",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "goal_events": null,
+        "membership": null,
+        "participation": null,
+        "player_identity": null
+      }
+    },
+    {
+      "market_id": "TEAM_PLAYER",
+      "status": "INSUFFICIENT_PLAYER_DATA",
+      "qualified_coverage": {
+        "membership": null,
+        "participation": null,
+        "player_identity": null,
+        "player_statistics": null
+      }
+    }
+  ],
+  "blockers": [
+    "Recorded native-player mapping claims are not qualified cross-provider admissions. New sampled provider references have no recorded MatchForge player mapping.",
+    "Qualified continuous membership, transfers, historical participation and exposure remain unknown. A fixture appearance does not establish a continuous membership interval.",
+    "No qualified pre-match start/substitute/nonappearance population, minutes exposure or actual target nonappearance/void semantics for fitting and evaluation.",
+    "No bounded player-model research and frozen chronological evaluation authorization."
+  ],
+  "required_next_action": "Supply exact player identity/membership and participation/settlement qualification through existing owners; obtain a bounded new research decision. Do not assume starts, infer missing counts as zero or treat goal-model probabilities as player forecasts.",
+  "actions": {
+    "new_player_models": 0,
+    "authoritative_fits": 0,
+    "authoritative_evaluations": 0,
+    "promotions": 0,
+    "operating_writes": 0,
+    "provider_requests": 0,
+    "published_probabilities": 0
+  },
+  "verification": {
+    "claim_file_sha256": "PASS",
+    "status_and_governance": "PASS: 24 tests; ProjectStatusV2 valid",
+    "diff_check": "PASS",
+    "tests_sha256": "c6b3e7593768202af9bf2f5b5e9aae1fc2b099d1f5ea3e0e52731812fcc17e12"
+  },
+  "next_phase": "Independent Phase 20 joint-data review."
+}

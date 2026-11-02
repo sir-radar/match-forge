@@ -1,0 +1,453 @@
+{
+  "phase": "R01-D",
+  "issue_status": "PASS_WITH_WARNINGS",
+  "issue_1_complete": true,
+  "recorded_at": "2026-11-01T15:58:29.065074+00:00",
+  "scope": "Operating database isolation Issue 1 only. Other V4 blockers/Architecture V2 gates unchanged.",
+  "starting": {
+    "branch": "ft/v4-execution-programme",
+    "sha": "72ea7fc6d0cf692d55fc57e97fb11d7902757b3f"
+  },
+  "ending": {
+    "branch": "ft/v4-execution-programme",
+    "commit_location": "R01-D commit containing this file; exact SHA in CURRENT_TASK_STATUS.md and final handoff"
+  },
+  "root_cause": {
+    "selection": "Ad hoc phase publishers explicitly read os.environ[DATABASE_URL], inherited from the operating .env. They did not select or attest an isolated target. The scripts deliberately described additive operating publication; that implementation violated the existing shadow-only architecture instruction.",
+    "configuration": {
+      "dotenv_loaded_by_python": false,
+      "shell_exports_env": true,
+      "configured_host": "127.0.0.1",
+      "configured_port": "55433",
+      "configured_database": "football",
+      "credentials_recorded": false
+    },
+    "missing_safeguards": [
+      "normalization CLI has no explicit database target argument and uses DATABASE_URL for --persist",
+      "observation store CLI uses DATABASE_URL without isolated-role verification",
+      "ad hoc scripts can call shared storage/capability/work owners on any connection",
+      "descriptive shadow names are only assertions in later scripts, not verified database roles"
+    ],
+    "ordinary_operational_sync": "Intentionally defaults to DATABASE_URL; must remain supported. External public development acquisition approval did not authorize production V2 routing or bypass identity/PIT qualification.",
+    "recurrence_possible": true,
+    "isolated_phases": "Phase 05a/05b replays were read-only; Phase 07/08/10 acquired no football observations. Phase 14 backfill connected to separate source READ ONLY and explicit shadow target; test harnesses created disposable databases. No Phase 14 operating normalization."
+  },
+  "commands_causing_publication": [
+    {
+      "script": ".local/reports/v4/phase-05/publish_observations.py",
+      "sha256": "872b8f8d1d1cf163d41b3b168cbff16b44afab0604f86fd4723eb0361e65bfbd",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/publish_observations.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-05/finalize_api_evidence.py",
+      "sha256": "7892ddafec81fbba9c228b263ff7966ba2b736573ab7aa086669831d6e054f5e",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/finalize_api_evidence.py",
+      "effect": "capability-only append",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-05/publish_standings.py",
+      "sha256": "1c77344cd9b90ce436c9a8582b5ae5d9ce074de3ac7bffef72437db2c5a2e876",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-05/publish_standings.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-06/publish.py",
+      "sha256": "8508dca1cec73be6e0790b7149432c127769cdd6d61a9f4769917b920fb5583c",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-06/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-06/verify_metadata.py",
+      "sha256": "dbf2c622cee83238ab55fffb81bb01bf86bd42e9f30a6859ce5bf3278956c5c1",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-06/verify_metadata.py",
+      "effect": "capability-only append",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-09/publish.py",
+      "sha256": "0d1a21034aa40a555c16a37babd509cf0a70f9688c3eeef62ad8b8a878b04721",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-09/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-11/publish.py",
+      "sha256": "9929b32632ab1ea8a5d35cd86d58b87f42d2af1638062d9bdd3618f9ff3289e9",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-11/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12/publish.py",
+      "sha256": "81233f7a14b1b9026538b1e4459c2041eaf1fa57675a6787a2a17c37d9eceaf8",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12b/publish.py",
+      "sha256": "e4fdd10270b979b66b12237b6ab320cc5c7199dff827a1eff3419aa3c3671fe7",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12b/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-12c/publish.py",
+      "sha256": "0a064399591b3097f373bc800a0d4af63001a1fef8fd297a5db678078cb4d777",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-12c/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    },
+    {
+      "script": ".local/reports/v4/phase-13/publish.py",
+      "sha256": "20f0ce22dac1caac75a3c07c48a8f95e258e12d60db54d669c2471d196f56636",
+      "invocation_pattern": "set -a; . ./.env; set +a; . ./scripts/toolchain.sh; uv run --locked --no-sync python .local/reports/v4/phase-13/publish.py",
+      "effect": "source/observation/capability publication through existing owners",
+      "evidence_basis": "Retained script bytes plus matching phase publication receipts. No shell transcript exists to prove original flags/environment export command."
+    }
+  ],
+  "affected_population": {
+    "observations": 12310,
+    "capability_decisions": 26,
+    "source_resources_with_observations": 28,
+    "new_task_source_registrations": 27,
+    "preexisting_source_resources_reused": 5,
+    "affected_source_registration_union": 32,
+    "new_task_sources_without_observations": 4,
+    "retained_report_manifests": 33,
+    "provider_observation_counts": {
+      "football_data_uk": 7015,
+      "flashscore": 1183,
+      "understat": 2361,
+      "api_football": 141,
+      "espn": 120,
+      "soccerway": 1183,
+      "fotmob": 128,
+      "pitchapi": 124,
+      "whoscored": 55
+    },
+    "contract_counts": {
+      "CoachObservationV2": 4,
+      "CompetitionObservationV2": 11,
+      "EventObservationV2": 61,
+      "ExpectedGoalsObservationV2": 842,
+      "FixtureObservationV2": 1001,
+      "LineupObservationV2": 6,
+      "PeriodScoreObservationV3": 2031,
+      "PlayerObservationV2": 272,
+      "PlayerStatisticObservationV3": 140,
+      "RefereeObservationV3": 936,
+      "ResultObservationV2": 784,
+      "ShotObservationV3": 72,
+      "StandingObservationV2": 20,
+      "TeamObservationV2": 2030,
+      "TeamStatisticObservationV2": 4072,
+      "TeamStatisticObservationV3": 28
+    }
+  },
+  "evidence_refs": {
+    "root_cause": "docs/evidence/v4-operating-isolation-root-cause.json",
+    "consumer_eligibility": "docs/evidence/v4-development-observation-eligibility-audit.json",
+    "prospective_isolation": "docs/evidence/v4-experimental-database-isolation.json"
+  },
+  "evidence_and_hashes_checked": {
+    "original_baseline": {
+      "path": ".local/reports/v4/isolation-r01/baseline.json",
+      "sha256": "43b92a764b1d449c8a219d88773489c70dd29a9230e8b945a576dec4706347ec"
+    },
+    "final_full_receipt": {
+      "path": ".local/reports/v4/isolation-r01/final-receipt.json",
+      "sha256": "7c54d20c8063721feac584a40ec71770a5daa8cd3803ab30e018a3718de53283"
+    },
+    "observation_files_verified": 12310,
+    "capability_decision_files_verified": 26,
+    "task_acquired_source_files_verified": 27,
+    "reused_source_files_verified": 5,
+    "report_files_verified": 33,
+    "original_observation_metadata_and_clocks_exact": true,
+    "original_capability_metadata_and_clocks_exact": true,
+    "protected_relations": {
+      "artifact_retirement_events": {
+        "retained": true,
+        "baseline_rows": 17,
+        "current_rows": 17
+      },
+      "canonical_resource_coverage": {
+        "retained": true,
+        "baseline_rows": 0,
+        "current_rows": 0
+      },
+      "canonical_resource_resolutions": {
+        "retained": true,
+        "baseline_rows": 0,
+        "current_rows": 0
+      },
+      "model_artifacts": {
+        "retained": true,
+        "baseline_rows": 5230,
+        "current_rows": 5230
+      },
+      "model_promotion_events": {
+        "retained": true,
+        "baseline_rows": 4,
+        "current_rows": 4
+      },
+      "post_match_evaluations": {
+        "retained": true,
+        "baseline_rows": 0,
+        "current_rows": 0
+      },
+      "product_forecasts": {
+        "retained": true,
+        "baseline_rows": 13241,
+        "current_rows": 13241
+      },
+      "product_identity_admissions": {
+        "retained": true,
+        "baseline_rows": 21759,
+        "current_rows": 21934
+      },
+      "product_provider_mapping_decisions": {
+        "retained": true,
+        "baseline_rows": 2285362,
+        "current_rows": 2288297
+      },
+      "provider_resource_authority": {
+        "retained": true,
+        "baseline_rows": 0,
+        "current_rows": 0
+      },
+      "runtime_model_registrations": {
+        "retained": true,
+        "baseline_rows": 0,
+        "current_rows": 0
+      },
+      "source_resources": {
+        "retained": true,
+        "baseline_rows": 62246,
+        "current_rows": 62304
+      },
+      "source_snapshots": {
+        "retained": true,
+        "baseline_rows": 60438,
+        "current_rows": 60496
+      }
+    },
+    "current_sorted_row_hashes": {
+      "product_forecasts": {
+        "rows": 13241,
+        "sorted_row_hashes_sha256": "b7eda7a029ec5bb3b3a69a308d0e1db1f052ff9af81251575014e8ad2c144914"
+      },
+      "product_identity_admissions": {
+        "rows": 21934,
+        "sorted_row_hashes_sha256": "20b7064b401a0219f54b445237a3254265d3d14c59e0a200f84e872ae6e79a96"
+      },
+      "product_provider_mapping_decisions": {
+        "rows": 2288297,
+        "sorted_row_hashes_sha256": "8c975daee05713ada2d981c5345e18b7949056fe30558a482b9364b7d1d23d2f"
+      },
+      "model_artifacts": {
+        "rows": 5230,
+        "sorted_row_hashes_sha256": "611a1f7b2a5520d1d31b1f5450a8d38fd18363fdae0fe47502770641070ad446"
+      },
+      "source_resources": {
+        "rows": 62304,
+        "sorted_row_hashes_sha256": "7f013d4b5886551d3b83630f52be9ea3cf7bee129b2d3d64fe522ba323bdc72c"
+      },
+      "source_snapshots": {
+        "rows": 60496,
+        "sorted_row_hashes_sha256": "9bced7fbd6b697116f941819133de1164936800326084fcf2b4cf6f34cfba568"
+      },
+      "canonical_resource_resolutions": {
+        "rows": 0,
+        "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "provider_resource_authority": {
+        "rows": 0,
+        "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "canonical_resource_coverage": {
+        "rows": 0,
+        "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "runtime_model_registrations": {
+        "rows": 0,
+        "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "post_match_evaluations": {
+        "rows": 0,
+        "sorted_row_hashes_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "artifact_retirement_events": {
+        "rows": 17,
+        "sorted_row_hashes_sha256": "51b7315e7a768c5eaf764104a35d1a158b7ee98c09de460847d2d064b188ad43"
+      },
+      "model_promotion_events": {
+        "rows": 4,
+        "sorted_row_hashes_sha256": "55d88f839c3f6c06abdb22734a984e42b9a23141c46d6f17afde39f39648261d"
+      }
+    },
+    "champion": {
+      "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "reload_verified": true
+    },
+    "frozen_research_original_phase_evidence_and_model_registration_git_diff": "EMPTY"
+  },
+  "authoritative_consumer_access": {
+    "eligibility_issue_found": false,
+    "eligibility_fix_required": false,
+    "diagnostic_visibility": "Admin/native audits and exact acquisition capability planning can see evidence. They do not grant canonical, feature, evaluation, model or cutover eligibility.",
+    "existing_independently_qualified_baseline_sources": "The five reused raw resources retain their original independent qualifications. This disposition applies to the unexpected V4 registrations and does not rewrite or disqualify prior baseline facts.",
+    "audit_consumer_paths": 19,
+    "disposable_regressions": "115 focused cases passed; five new representative-provider cases plus existing identity, temporal, registry and protocol checks."
+  },
+  "new_isolation_mechanism": {
+    "owner": "football.storage.experimental.experimental_connection",
+    "targets": "Explicit --database-url and --operating-database-url; no experimental environment fallback",
+    "identity": "Actual PostgreSQL pg_control_system().system_identifier plus pg_database.oid. Equivalent hostnames/URLs do not establish separation.",
+    "intended_role": "pg_db_role_setting setdatabase=current database OID, setrole=0, setconfig contains matchforge.database_role=experimental. Not a session GUC or name suffix.",
+    "order": "Validate connection settings; read-only operating identity; read-only target identity and persistent role; log credential-free target identity; enable writes on that same target connection; then provider/publication work.",
+    "launcher": "Verify before subprocess; pin resolved hostaddr/port/dbname/user; replace DATABASE_URL and FOOTBALL_DATABASE_URL; remove PG* defaults from child. Reject routing PG* settings, libpq service/options, multihost and incomplete/nested targets.",
+    "limits": "Launcher supplies connection settings to cooperating phase scripts. It is not a sandbox for arbitrary code. Scripts must not reload .env or independently override database settings. Shared registries retain provider-neutral caller-owned connections; supported experimental entrypoints enforce selection.",
+    "ordinary_operations": "Product operational provider sync, admin authorization, provider quota owners, worker publication fences, protected research and parity/cutover gates unchanged."
+  },
+  "operational_behavior_preserved": {
+    "normal_operational_sync": true,
+    "provider_quota_owner": true,
+    "worker_leases_and_publication_fences": true,
+    "internal_authentication": true,
+    "scientific_evaluation_gates": true,
+    "architecture_cutover_gates": true,
+    "focused_compatibility_tests": 60
+  },
+  "preservation_disposition": {
+    "owner_instruction": "PRESERVE_AS_DEVELOPMENT_EVIDENCE",
+    "current_disposition": "PRESERVED_DEVELOPMENT_ONLY_PENDING_INDEPENDENT_QUALIFICATION",
+    "original_records_retained": true,
+    "original_records_rewritten": false,
+    "records_deleted": 0,
+    "append_only_database_disposition_needed": false,
+    "reason": "Existing independent qualification and routing contracts enforce separation. Repository evidence records the scoped owner disposition; no new operational decision is necessary to enforce it. Future qualification still belongs to its existing append-only owner.",
+    "qualification_or_promotion_granted": false
+  },
+  "operating_database_writes_by_remediation": 0,
+  "provider_requests_by_remediation": 0,
+  "new_authoritative_model_fits_or_evaluations": 0,
+  "new_model_promotions": 0,
+  "cutover_activated": false,
+  "operating_controls": {
+    "recorded_at": "2026-11-01T15:46:02.737992+00:00",
+    "read_only": "on",
+    "fixture_route": "LEGACY",
+    "route_basis": "Control function absent; Go migration_fixture_route.go explicitly returns product_serving_fixtures (LEGACY) when absent",
+    "stage_controls_installed": false,
+    "model_promotion_events": 4,
+    "operating_experimental_marker": false
+  },
+  "background_changes": {
+    "description": "Operating sync continued independently. Every R01-A baseline row is retained; additions are reported separately, never attributed to V4 using timestamps alone.",
+    "identity_admissions_added": 175,
+    "mapping_decisions_added": 2935,
+    "source_resources_added": 58
+  },
+  "verification": {
+    "R01-B": {
+      "command": "sh .local/reports/v4/isolation-r01/test_database.sh tests/integration/test_v4_development_isolation.py tests/integration/test_resource_observation_artifacts.py tests/integration/test_canonical_resource_resolutions.py tests/integration/test_provider_resource_capabilities.py tests/integration/test_provider_resource_authority.py tests/integration/test_fixture_features.py tests/integration/test_runtime_model_registry.py python/football/tests/test_evaluation_protocol.py",
+      "exit_code": 0,
+      "passed": 115,
+      "receipt": ".local/reports/v4/isolation-r01/eligibility-focused.log",
+      "receipt_sha256": "c7fcb3248dd14a5485752ded3d7a8c52e779c88e7cf2ee3b5cb246a4497aedfe",
+      "ruff": "PASS",
+      "shell_syntax": "PASS",
+      "initial_test_setup_failures": "Corrected test import, transaction boundaries, materialized view initialization and mixed history seed order; no production behavior was changed to pass tests."
+    },
+    "R01-C": {
+      "red": {
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_experimental_database.py",
+        "exit_code": 2,
+        "reason": "New experimental module absent before implementation; collection failure retained in isolation-red.log"
+      },
+      "focused": {
+        "command": "sh .local/reports/v4/isolation-r01/test_database.sh tests/integration/test_experimental_database_storage.py python/football/tests/test_experimental_database.py tests/integration/test_v4_development_isolation.py tests/integration/test_operational_provider_sync.py tests/integration/test_api_football_budget.py tests/integration/test_worker_publication_fencing.py python/football/tests/test_provider_runtime_policy.py",
+        "exit_code": 0,
+        "passed": 60,
+        "receipt": ".local/reports/v4/isolation-r01/isolation-focused.log",
+        "receipt_sha256": "99e1335670115fe0472333e67a976e3151dbc88508a62b231b4daf386675e45d"
+      },
+      "ruff": {
+        "exit_code": 0
+      },
+      "strict_mypy": {
+        "exit_code": 0,
+        "files": 4
+      },
+      "architecture_check": {
+        "exit_code": 0
+      },
+      "diff_check": {
+        "exit_code": 0
+      }
+    },
+    "aggregate": {
+      "command": "make check integration",
+      "exit_code": 0,
+      "started_at": "2026-11-01T15:43:09.372389+00:00",
+      "finished_at": "2026-11-01T15:56:27.323341+00:00",
+      "log": ".local/reports/v4/isolation-r01/make-check-integration.log",
+      "log_sha256": "7fcce49cbebed4e1d5f44cf8223929f552f0203910866a8aa05731aa24acc0d2",
+      "python_passed": 2017,
+      "python_dependency_warnings": 7,
+      "strict_mypy_files": 487,
+      "rust_passed": 16,
+      "web_passed": 126,
+      "storage_integration_passed": 865,
+      "storage_count_basis": "865 successful pytest progress outcomes; the existing double-quiet harness omits its numeric summary",
+      "fresh_disposable_migrations_through": "202610310800",
+      "includes": [
+        "format/lint/type/complexity checks",
+        "Python/Rust/Go tests and builds",
+        "architecture-check",
+        "project-status-check",
+        "web lint/types/tests/build",
+        "PostgreSQL/Redis/API disposable integration"
+      ],
+      "operating_migrations": 0
+    },
+    "final_documentation_status_check": {
+      "command": "make project-status-check",
+      "exit_code": 0,
+      "receipt": ".local/reports/v4/isolation-r01/final-project-status.log",
+      "receipt_sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a"
+    },
+    "skipped_checks": [
+      {
+        "command": "standalone frontend browser/E2E suite",
+        "reason": "No frontend/UI or serving contract changed; aggregate repository checks include the established web suite and integration browser cases."
+      },
+      {
+        "command": "make identity-check; make entity-crosswalk-review; make canonical-history-audit",
+        "reason": "These optional targets migrate the operating database; enforced read-only preservation/audit was used instead."
+      }
+    ],
+    "review_checklist": "docs/review-checklist.md applied. Scope, sources of truth, current consumers, dependency direction, existing qualification/fences, zero migrations/dependencies/env additions, immutable preservation and actual verification reviewed. No task-introduced obsolete production code or changed frozen criteria. Staged secrets/generated-file and complete task-diff review passed; AGENTS.md remains excluded."
+  },
+  "phase_commits": {
+    "R01-A": "ebdc900a3b4836d08f74a89d5edfd1695ac064d5",
+    "R01-B": "b6c834fcd91467c787a2c1be445196d272adcac1",
+    "R01-C": "d848a1441698ff1cd51c5696416b21d3f9486d39",
+    "R01-D": "Commit containing this evidence; exact SHA recorded after commit in CURRENT_TASK_STATUS.md and final response"
+  },
+  "warnings": [
+    "Seven pre-existing Python dependency deprecation warnings.",
+    "One pre-existing ESLint unused _input warning."
+  ],
+  "remaining_owner_decisions_for_issue_1": [],
+  "remaining_work_inside_issue_1": "NONE. Independent data qualification and other V4/Phase 35/36 work remain outside this issue."
+}

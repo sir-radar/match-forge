@@ -65,7 +65,7 @@ root, then registers metadata without filesystem access. Shared work can prepare
 files before entering its bounded publication transaction. The existing `publish`
 method composes both operations for compatible callers.
 
-With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document; `store INPUT --data-root PATH` registers it using `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass.
+With `scripts/toolchain.sh` loaded, `uv run --locked python -m football.observations.cli schema` emits the schema. The `validate INPUT` command checks a document. `store INPUT --data-root PATH --database-url TARGET --operating-database-url OPERATING` requires a verified isolated database; it never inherits a write target from `DATABASE_URL`. Use a migrated shadow database until the later parity and cutover gates pass. See the experimental database procedure in `docs/testing.md`.
 
 `PointInTimeRepository.resource_observation_ids_at` reads this registry by exact contract and provider with an explicit `knowledge_cutoff`. It returns all immutable observations whose `known_at` is at or before that cutoff, ordered by knowledge time and observation ID. Provider update times and earlier football validity never backdate MatchForge knowledge. Later corrections add observations; the reader preserves earlier evidence and does not choose a conflict winner or latest normalizer.
 
@@ -159,13 +159,41 @@ V2 contracts in `football.contracts.observations_v2` add `EntityReferenceV2.sour
 
 Provider update timestamps retain their declared timezone. A local timestamp without a verified timezone stays in raw evidence and a finding; normalization does not assume UTC. FotMob/PitchAPI coordinates remain unnormalized until their coordinate frame is verified. StatsBomb shots reuse the existing 120×80 coordinate contract. Third-party predicted lineups remain `UNKNOWN`, rather than acquiring MatchForge's `PREDICTED_REPEAT_XI` label. Football-Data.co.uk statistics remain aggregates, and odds remain separate from model features.
 
-The offline command below reads registered retained bytes and writes an immutable report containing source lineage, processing versions, output identities and findings. It performs no provider requests. With `--persist`, all output registrations share one transaction; identical retries use the original registered acquisition/observation clocks. File publication may leave safe orphan files after rollback. Reports describe normalization outputs, not canonical admission or historical eligibility. Use the isolated shadow database until the cutover gate passes.
+The offline command below reads registered retained bytes and writes an immutable report containing source lineage, processing versions, output identities and findings. It performs no provider requests. With `--persist`, the existing work registry fences one NORMALIZATION job per report hash, binding the source, feature, native scope and processing versions. Files are prepared before the publication transaction; observation registration and work completion commit together. Identical retries reuse succeeded work and the original registered acquisition/observation clocks. File publication may leave safe orphan files after rollback. Reports describe normalization outputs, not canonical admission or historical eligibility. Use the isolated shadow database until the cutover gate passes.
 
 ```sh
 uv run --locked python -m football.providers.normalization.cli \
   --source-resource-id RESOURCE_UUID --resource shots --fixture-native-id NATIVE_MATCH_ID \
-  --data-root .local/football-data --artifact-root .local/shadow-observations --persist
+  --data-root .local/football-data --artifact-root .local/shadow-observations --persist \
+  --database-url "$V4_TARGET_DATABASE_URL" --operating-database-url "$DATABASE_URL"
 ```
+
+Persistence verifies the actual PostgreSQL system identifier and database OID
+against the operating connection, then requires the target's persistent
+`matchforge.database_role=experimental` database setting. Session overrides,
+ambiguous libpq routing settings and a shadow-looking database name do not prove
+isolation. Verification uses read-only connections before files or work are
+published; writes use the same verified target connection. Offline replay without
+`--persist` uses a read-only connection. Other experimental acquisition/backfill
+scripts must use the guarded launcher described in `docs/testing.md` before any
+provider call, quota debit or publication. Operational sync keeps its existing
+database selection and worker rules.
+
+`football.providers.data_audit` reads a repeatable, read-only diagnostic snapshot.
+With `--data-root`, it verifies registered observation bytes before counting
+fields by provider, contract and period. Known values, numeric zero, missing
+values, source resources and observation revisions remain separate. Player
+coverage compares distinct native references with recorded mapping claims; it
+does not admit those claims or infer identity from duplicate names. Existing
+participation and position stints establish fixture/season evidence, while
+continuous membership, transfers and historical eligibility require their own
+proof. Unknown qualification and expected coverage remain null.
+
+Canonical resolution accepts V3 rich statistics and shots, period scores,
+referee references and dated team ratings through the existing identity-owner
+checks. Period and score basis, rating date/system and V3 semantic version stay
+in the comparison context. An assisting player, assist event or referee requires its own
+reference binding. No new identity owner or admission route is created.
 
 ### Rebuildable fixture projection
 
@@ -752,6 +780,16 @@ Each read requires a football-validity instant and an explicit `knowledge_cutoff
 
 A returned mapping is an identity claim with provenance. Qualification stays with the existing decisions: `admitted_identity_at` reads R2 admissions and revocations, and delegates team corrections to `product_team_identity_at`. Confidence alone does not create admission. The resolution-decision and R3 fixture-resolution owners remain in place; an R3 version label does not make its mutable rows an immutable historical record. Existing lineup participation and coach observations retain their fixture and time scope. Continuous membership or management tenure requires independent evidence. The new mapping capture is rehearsed in shadow/test databases before the controlled cutover.
 
+`RetainedIdentityVerifier` reads StatsBomb competition indexes, scoped match
+indexes and lineups through the existing native parsers. Identity verification
+and normalization share `read_registered_statsbomb_resource`, which checks the
+pinned manifest, resource registration, storage path and raw checksum. ESPN
+summary verification binds the exact requested event, league slug and competitor
+IDs; unrelated nested IDs do not count. These readers establish native source
+identity only. Database-generated StatsBomb UUIDv7 mappings do not satisfy the
+deterministic origin algorithms in `ProductIdentityTrustV1`; canonical admission
+still requires the existing qualified crosswalk or review process.
+
 Team corrections extend the R2 `product_identity_admissions` log. A correction
 links one source mapping to a verified target mapping and the original fixture
 contradiction using `corrects_decision_id` and `target_mapping_id`. It preserves
@@ -922,6 +960,35 @@ and simulation inputs. Context features retain structured competition type, home
 splits, missingness, rest, opponent-adjusted form, and recency-weighted head-to-head data.
 External provider predictions are benchmark-only and require exact fixture mapping.
 
+## Market targets and readiness
+
+`football.forecasting.market_catalogue` defines versioned statistical targets,
+periods, required fields and explicit selection/line/participation/rule parameters.
+Targets exclude extra time and shootouts unless separately defined. Unknown
+source meaning, card rules, player nonappearance or incomplete settlement stays
+unqualified. A provider label does not establish SportyBet or Opta equivalence.
+
+`football.product.market_capabilities` describes readiness without granting
+publication. It reuses provider capability and canonical coverage contracts.
+Coverage binds the target definition and exact parameters, input, canonical
+competition/season and knowledge cutoff. Qualified component sets must share
+canonical fixtures; multiple providers do not add independent fixtures. Generic
+resource counts cannot qualify a target field. Sufficiency and evaluation come
+from existing owner evidence, rather than a new sample-size threshold.
+
+Diagnostic status and current publication status are separate. Research or
+retired models cannot become public support; shadow eligibility is not public
+eligibility. Even a complete diagnostic grants no new publication and does not
+withdraw an existing forecast. Model loading, fitting, evaluation, promotion and
+per-forecast numerical checks retain their existing owners.
+
+The existing `models market-capabilities` command reads one repeatable, read-only
+snapshot of the capability/coverage registries. It reports all target families,
+required semantics, candidate native source scopes, unknown coverage and model
+metadata. Native competition/season scopes are not silently joined to canonical
+ones. Target families without bound parameters and qualification proof remain
+unqualified; the command creates no probability, HTTP request or operating write.
+
 ## Runtime model registration
 
 `ModelRegistration` records model/family/version, feature contract, the content
@@ -975,7 +1042,15 @@ publication. Analytic market probabilities, resolved mass and unresolved tails a
 preserved. Legacy censored buckets retain their labels, are excluded from exact
 score atoms, and their summed bucket indices are explicitly distinguished from an
 exact total-goal distribution. Existing forecast serialization and hashes stay
-unchanged. Cards and player products have no runtime implementation or activation.
+unchanged. Exact support also projects draw no bet, winning margins, quarter-goal
+Asian and whole-goal European handicaps, team/match totals and inclusive ranges,
+result × strict totals and result × BTTS. Optional repeatable `--goal-line`,
+`--asian-handicap`, `--european-handicap` and `--goal-range MIN MAX` arguments supply
+explicit parameters. New projections refuse censored support. Each partition
+keeps resolved mass, unresolved tail and marginal bounds; the existing numerical
+tolerance governs comparisons. These mathematical projections do not qualify
+period models, sportsbook semantics or publication. Cards and player products
+have no runtime implementation or activation.
 
 ## Experiment runs
 
@@ -1146,6 +1221,16 @@ canonical model/artifact checksums. Context history excludes the target fixture 
 including earlier kickoff revisions. Form uses five matches, H2H ten, and rest
 uses the existing Python helper; policy `pre-match-revisions-v2` is unchanged.
 
+Live score reconciliation orders qualified match minutes and same-provider update
+clocks separately from HTTP acquisition. Re-fetching a body changes fetch freshness,
+not its original observation time. Missing provider clocks stay unknown. Future
+provider timestamp claims cannot establish ordering. Unordered lifecycle changes
+remain held, and terminal score corrections retain the existing review gate.
+Serving binds canonical status/scores and prefers advanced match clocks before
+transport tie-breaks. Current or unknown-clock score disagreements are visible as
+partial coverage. The optional live-source ordering metadata describes available
+evidence; it does not activate another provider or qualify a historical model input.
+
 OpenAPI 0.9.0 describes domain context, normalized live data and external comparison
 responses. Provider identifiers, status labels and original statistic fields remain
 explicit source provenance for wire compatibility; they are not model keys or
@@ -1307,3 +1392,21 @@ Unbound pre-migration in-flight rows retain their compatibility consumers. Queue
 emptiness does not prove deployed readers are retired or grant code removal.
 Live retirement requires accepted Phase35 cutover, a deployed-scheduler inventory,
 owned pending work, stabilization/rollback approval and separate authorization.
+
+
+### Scoped Admin market diagnostics
+
+`GET /v1/admin/market-capabilities` uses the existing private-local Admin access
+policy and the Python capability/coverage reader. Canonical competition and season
+IDs plus a nonfuture timezone-aware knowledge cutoff bind the report; the season
+must belong to that competition. Cutoffs have at most microsecond precision.
+The compact `MarketCapabilitySummary` is diagnostic, not a forecast or promotion.
+It retains target semantics, missing inputs, source compatibility, configured
+model traceability and publication/evaluation distinctions. Native candidates do
+not establish canonical scope or historical eligibility. No database name or raw
+provider payload is exported. Existing published forecasts are not withdrawn or
+approved by this report. Request cancellation terminates the bounded reader.
+
+The existing Data Sync page owns the scoped read form and grouped disclosures.
+Its resource fails/retries independently of sync status. No new Admin app,
+credential store, acquisition control, model fitting or runtime cutover is added.

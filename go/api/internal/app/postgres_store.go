@@ -13,6 +13,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Match clocks order football observations; HTTP acquisition only breaks otherwise
+// equivalent ties. Provider timestamps are compared after the provider priority.
+const liveObservationOrder = `live.match_minute DESC NULLS LAST,
+    live.added_time DESC NULLS LAST,
+    (live.stale_after >= clock_timestamp()) DESC NULLS LAST,
+    CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
+    live.provider_code,
+    CASE WHEN live.source_updated_at <= live.observed_at THEN live.source_updated_at END DESC NULLS LAST,
+    live.observed_at DESC, live.observation_id DESC`
+
 type PostgresProductStore struct {
 	pool *pgxpool.Pool
 }
@@ -97,10 +107,7 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 			  AND live.canonical_status = pf.status
 			  AND live.home_score IS NOT DISTINCT FROM pf.home_score
 			  AND live.away_score IS NOT DISTINCT FROM pf.away_score
-			ORDER BY COALESCE(live.source_updated_at, live.observed_at) DESC,
-			         (live.stale_after >= clock_timestamp()) DESC,
-			         CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
-			         live.observed_at DESC, live.observation_id DESC
+			ORDER BY ` + liveObservationOrder + `
 			LIMIT 1
 		) observation ON true
 		LEFT JOIN LATERAL (
@@ -149,6 +156,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 	var scoreProvider, scoreMatchID, eventProvider, eventMatchID, statsProvider, statsMatchID *string
 	var scoreObserved, scoreFetched, eventObserved, eventFetched, statsObserved, statsFetched *time.Time
 	var scoreStale, eventStale, statsStale *bool
+	var scoreUpdated *time.Time
 	err := store.pool.QueryRow(ctx, `
 		SELECT pf.fixture_id::text, pf.status,
 		       home.team_id::text, home.name, home.crest_url,
@@ -167,7 +175,22 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
                 WHERE held.canonical_fixture_id=pf.fixture_id
                 AND held.resource_type IN ('NORMALIZED_EVENTS','NORMALIZED_STATISTICS')
                 AND NOT EXISTS (SELECT 1 FROM football.product_uncontested_provider_resources eligible
-                    WHERE eligible.resource_observation_id=held.resource_observation_id))
+                    WHERE eligible.resource_observation_id=held.resource_observation_id)),
+            score.source_updated_at,
+            EXISTS (SELECT 1 FROM football.product_provider_fixture_observations held
+                WHERE held.canonical_fixture_id=pf.fixture_id
+                  AND held.canonical_status=pf.status
+                  AND (held.home_score,held.away_score) IS DISTINCT FROM (pf.home_score,pf.away_score)
+                  AND held.home_score IS NOT NULL AND held.away_score IS NOT NULL
+                  AND (held.match_minute IS NULL OR score.match_minute IS NULL
+                       OR held.match_minute > score.match_minute
+                       OR (held.match_minute=score.match_minute AND
+                           (held.added_time IS NULL OR score.added_time IS NULL OR held.added_time>=score.added_time)))
+                  AND NOT COALESCE((held.provider_code=score.provider_code
+                      AND held.source_updated_at<=held.observed_at
+                      AND score.source_updated_at<=score.observed_at
+                      AND held.source_updated_at<score.source_updated_at), false)
+            )
 		FROM football.product_effective_fixtures pf
 		JOIN football.product_teams home ON home.team_id = pf.home_team_id
 		JOIN football.product_teams away ON away.team_id = pf.away_team_id
@@ -177,10 +200,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 			  AND live.canonical_status = pf.status
 			  AND live.home_score IS NOT DISTINCT FROM pf.home_score
 			  AND live.away_score IS NOT DISTINCT FROM pf.away_score
-			ORDER BY COALESCE(live.source_updated_at, live.observed_at) DESC,
-			         (live.stale_after >= clock_timestamp()) DESC,
-			         CASE live.provider_code WHEN 'pitchapi' THEN 0 WHEN 'fotmob' THEN 1 ELSE 2 END,
-			         live.observed_at DESC, live.observation_id DESC LIMIT 1
+			ORDER BY `+liveObservationOrder+` LIMIT 1
 		) score ON true
 		LEFT JOIN LATERAL (
 			SELECT resource.* FROM football.product_uncontested_provider_resources resource
@@ -201,7 +221,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		&scoreProvider, &scoreMatchID, &scoreObserved, &scoreFetched, &scoreStale,
 		&eventsJSON, &eventProvider, &eventMatchID, &eventObserved, &eventFetched, &eventStale,
 		&statisticsJSON, &statsProvider, &statsMatchID, &statsObserved, &statsFetched, &statsStale,
-		&item.ResourceIdentityConflict,
+		&item.ResourceIdentityConflict, &scoreUpdated, &item.ScoreConflict,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return LiveMatch{}, errProductNotFound
@@ -216,7 +236,7 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		return LiveMatch{}, err
 	}
 	attachEventTeams(item.Events, item.Home.ID, item.Away.ID, valueOrEmpty(eventProvider))
-	item.ScoreSource = liveSource(scoreProvider, scoreMatchID, scoreObserved, scoreFetched, scoreStale)
+	item.ScoreSource = liveScoreSource(scoreProvider, scoreMatchID, scoreObserved, scoreFetched, scoreStale, scoreUpdated, item.MatchMinute)
 	item.EventSource = liveSource(eventProvider, eventMatchID, eventObserved, eventFetched, eventStale)
 	item.StatsSource = liveSource(statsProvider, statsMatchID, statsObserved, statsFetched, statsStale)
 	item.Availability = map[string]bool{
@@ -224,8 +244,23 @@ func (store *PostgresProductStore) LiveFixture(ctx context.Context, fixtureID st
 		"events":     len(item.Events) > 0,
 		"statistics": len(item.Statistics) > 0,
 	}
-	item.Partial = item.ResourceIdentityConflict || !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
+	item.Partial = item.ScoreConflict || item.ResourceIdentityConflict || !item.Availability["score"] || !item.Availability["events"] || !item.Availability["statistics"]
 	return item, nil
+}
+
+func liveScoreSource(provider, matchID *string, observed, fetched *time.Time, stale *bool, updated *time.Time, minute *int) *LiveSource {
+	source := liveSource(provider, matchID, observed, fetched, stale)
+	if source == nil {
+		return nil
+	}
+	source.SourceUpdatedAt = updated
+	source.OrderingBasis = "UNKNOWN"
+	if minute != nil {
+		source.OrderingBasis = "MATCH_CLOCK"
+	} else if updated != nil && !updated.After(*observed) {
+		source.OrderingBasis = "PROVIDER_TIMESTAMP"
+	}
+	return source
 }
 
 func liveSource(provider, matchID *string, observed, fetched *time.Time, stale *bool) *LiveSource {

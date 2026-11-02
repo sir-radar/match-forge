@@ -1,0 +1,39 @@
+{
+  "contract": "OwnerDecisionRecordV1",
+  "decision_id": "AUTHORIZE_PUBLIC_DEVELOPMENT_DATA_ACQUISITION_V1",
+  "recorded_at": "2026-10-31T20:50:00Z",
+  "title": "Authorize public football-data acquisition for private development and research",
+  "status": "APPROVED",
+  "owner": "repository owner / sir-radar",
+  "map": "project-governance",
+  "ticket": "V4 Phase 01 development data-access policy",
+  "record_md": "docs/V4_IMPLEMENTATION_REPORT.md",
+  "source": {
+    "execution_instruction": "CURRENT_TASK.md section 7; repository-owner correction accompanying the original V4 reference",
+    "requirements_reference": "docs/references/matchforge-v4-original-110-section-prompt.md",
+    "reference_role": "HISTORICAL_REQUIREMENTS_COVERAGE_ONLY"
+  },
+  "authorizes": [
+    "investigate and use technically viable public football-data routes for private development, research, historical and rich-data acquisition, provider comparison and live-data experimentation",
+    "use official APIs, undocumented public JSON and browser endpoints, public HTML and embedded state, public CSV/JSON feeds, open datasets, maintained community wrappers and scrapers, and normal public request formats",
+    "perform bounded investigation and acquisition within the V4 programme without requiring routine approval for each already-authorized request",
+    "determine actual resource access and usefulness empirically rather than rejecting a source solely because an official API or commercial integration is unavailable"
+  ],
+  "requires": [
+    "respect applicable source use conditions, entitlements, attribution, retention and request restrictions",
+    "retain exact source bytes or text, checksums, native identifiers, request and acquisition times and processing versions",
+    "reuse existing request bounds, cache, quotas, cooldowns, immutable storage, normalization and work orchestration",
+    "qualify identity, statistic semantics and point-in-time eligibility before canonical or model use",
+    "record tested access routes and exact blockers without fabricating access, observations, qualified coverage or market probabilities",
+    "preserve historical decisions and frozen evidence and apply this policy prospectively"
+  ],
+  "explicitly_not_authorized": [
+    "defeating authentication, CAPTCHAs, paywalls or explicit technical restrictions",
+    "changing MatchForge internal admin/API authentication, browser Origin checks, private-local controls, owner approvals or request validation",
+    "introducing MATCHFORGE_ADMIN_ACCESS_ENFORCED",
+    "publishing third-party source data without permission",
+    "reopening closed scientific routes, accessing sealed outcomes, changing frozen evaluation budgets or automatically promoting models",
+    "production Architecture V2 cutover or legacy retirement without their existing gates and explicit approval"
+  ],
+  "supersession": "Prospectively clarify current development acquisition policy and already-authorized V4 request scope. Earlier source/evaluation evidence remains unchanged; an official API is not a prerequisite for investigation."
+}

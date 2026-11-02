@@ -152,6 +152,19 @@ paths:
   /v1/admin/sync/fotmob: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/pitchapi: { $ref: '#/components/pathItems/StartSync' }
   /v1/admin/sync/all: { $ref: '#/components/pathItems/StartSync' }
+  /v1/admin/market-capabilities:
+    get:
+      operationId: getMarketCapabilities
+      description: Private-local diagnostic over registered evidence. Existing admin access is required. No forecasts, provider requests, model fits, mutations or publication approval.
+      parameters:
+        - {name: competition_id, in: query, required: true, schema: {type: string, format: uuid}}
+        - {name: season_id, in: query, required: true, schema: {type: string, format: uuid}}
+        - {name: knowledge_cutoff, in: query, required: true, description: Nonfuture timestamp with timezone and at most microsecond precision., schema: {type: string, format: date-time}}
+      responses:
+        '200': {description: Cutoff-bound unbound target diagnostics, content: {application/json: {schema: {$ref: '#/components/schemas/MarketCapabilitySummary'}}}}
+        '400': {description: Invalid or future scope}
+        '403': {description: Existing private-local admin authorization required}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v1/admin/operations/{domain}:
     get:
       operationId: getOperationsView
@@ -856,6 +869,46 @@ components:
         unit: {"type": "string"}
         original_field: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
         available: {"type": "boolean"}
+    MarketDiagnostic:
+      type: object
+      additionalProperties: false
+      required: ["market_id", "semantic_version", "next_action", "source_compatibility", "evaluation_status", "publication_status", "group", "definition_sha256", "status", "unavailable_reason", "unqualified_inputs", "publication_eligible", "model_id", "model_version", "model_role", "model_artifact_sha256"]
+      properties:
+        market_id: {"type": "string"}
+        semantic_version: {"type": "string"}
+        next_action: {"type": "string"}
+        source_compatibility: {"type": "string"}
+        evaluation_status: {"type": "string"}
+        publication_status: {"type": "string"}
+        group: {"type": "string", "enum": ["GOALS", "PERIODS", "CORNERS", "CARDS", "TEAM_STATISTICS", "PLAYERS", "JOINT"]}
+        definition_sha256: {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        status: {"type": "string", "enum": ["SUPPORTED", "SHADOW", "ENGINEERING_READY", "RESEARCH_REQUIRED", "DATA_COLLECTION_REQUIRED", "INSUFFICIENT_HISTORY", "INSUFFICIENT_PLAYER_DATA", "SEMANTIC_MISMATCH", "BLOCKED"]}
+        unavailable_reason: {"type": ["string", "null"]}
+        unqualified_inputs: {"type": "array", "items": {"type": "string"}}
+        publication_eligible: {"type": "boolean"}
+        model_id: {"type": ["string", "null"]}
+        model_version: {"type": ["string", "null"]}
+        model_role: {"type": ["string", "null"]}
+        model_artifact_sha256: {"type": ["string", "null"]}
+    MarketCapabilitySummary:
+      type: object
+      additionalProperties: false
+      required: ["competition_id", "season_id", "knowledge_cutoff", "recorded_at", "contract", "contract_version", "read_only", "authoritative", "automatic_promotion", "monitoring_scope", "new_market_settlement", "limitations", "markets", "provider_candidates"]
+      properties:
+        competition_id: {"type": "string", "format": "uuid"}
+        season_id: {"type": "string", "format": "uuid"}
+        knowledge_cutoff: {"type": "string", "format": "date-time"}
+        recorded_at: {"type": "string", "format": "date-time"}
+        contract: {"const": "MarketCapabilitySummary"}
+        contract_version: {"const": "1"}
+        read_only: {"const": "on"}
+        authoritative: {"const": false}
+        automatic_promotion: {"const": false}
+        monitoring_scope: {"const": "EXISTING_PUBLISHED_GOAL_FORECASTS_ONLY"}
+        new_market_settlement: {"const": "NOT_IMPLEMENTED"}
+        limitations: {"type": "array", "items": {"type": "string"}}
+        markets: {"type": "array", "items": {"$ref": "#/components/schemas/MarketDiagnostic"}}
+        provider_candidates: {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["provider", "resource", "availability"], "properties": {"provider": {"type": "string"}, "resource": {"type": "string"}, "availability": {"type": "string", "enum": ["SUPPORTED", "UNSUPPORTED", "PARTIAL", "UNKNOWN", "PLAN_RESTRICTED", "AUTHORIZATION_REQUIRED", "TEMPORARILY_UNAVAILABLE"]}}}}
     LiveSource:
       type: object
       additionalProperties: false
@@ -864,7 +917,9 @@ components:
         provider: {"type": "string"}
         provider_match_id: {"type": "string", "description": "Source provenance only; not a MatchForge identity or model input."}
         observed_at: {"type": "string", "format": "date-time"}
-        last_fetched_at: {"type": "string", "format": "date-time"}
+        last_fetched_at: {"type": "string", "format": "date-time", description: Most recent HTTP acquisition; does not establish newer football information.}
+        source_updated_at: {type: [string, 'null'], format: date-time, description: Original provider timestamp when supplied; future claims do not prove ordering.}
+        ordering_basis: {type: string, enum: [UNKNOWN, MATCH_CLOCK, PROVIDER_TIMESTAMP], description: Available football ordering evidence for the selected score observation; not source equivalence or conflict resolution.}
         freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: {"type": "boolean"}
     LiveMatch:
@@ -888,6 +943,7 @@ components:
         statistics_source: {"anyOf": [{"$ref": "#/components/schemas/LiveSource"}, {"type": "null"}]}
         availability: {"type": "object", "additionalProperties": {"type": "boolean"}}
         partial: {"type": "boolean"}
+        score_conflict: {type: boolean, description: Retained noncanonical scores at a current or unknown match clock remain unresolved.}
         resource_identity_conflict: {type: boolean, description: Retained incident or statistics data is withheld because a verified native mapping identifies another effective fixture.}
     ExternalPrediction:
       type: object

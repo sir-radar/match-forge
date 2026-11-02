@@ -1,0 +1,296 @@
+{
+  "phase": "12c",
+  "provider": "flashscore",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "b0c03f9",
+  "recorded_at": "2026-11-01T03:47:59.765548Z",
+  "adapter_verification": {
+    "recorded_at": "2026-11-01T03:41:24.271485+00:00",
+    "guarded_requests": 3,
+    "retained_page_sha256": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+    "results": [
+      {
+        "resource": "events",
+        "resource_key": "df_sui_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:23.063184+00:00",
+        "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "bytes": 5950,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "status": "FETCHED"
+      },
+      {
+        "resource": "lineups",
+        "resource_key": "df_li_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:23.708282+00:00",
+        "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "bytes": 15506,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "status": "FETCHED"
+      },
+      {
+        "resource": "summary",
+        "resource_key": "df_sur_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:24.268932+00:00",
+        "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "bytes": 262,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "status": "FETCHED"
+      }
+    ]
+  },
+  "primary_client_inspection": {
+    "native-definition-receipt.json": {
+      "recorded_at": "2026-11-01T03:28:03.664941+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_sides",
+          "url": "https://static.flashscore.com/res/_fs/build/SidesList.D7zLukh.js",
+          "requested_at": "2026-11-01T03:27:57.616918+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "a602068247ac9aacdf257f2a276b7bdac79b18465ed8bfa04aee900930ac4a35",
+          "bytes": 235,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/a602068247ac9aacdf257f2a276b7bdac79b18465ed8bfa04aee900930ac4a35"
+        },
+        {
+          "family": "primary_incident_types",
+          "url": "https://static.flashscore.com/res/_fs/build/EventIncidentTypeList.CFYVND3.js",
+          "requested_at": "2026-11-01T03:28:00.066299+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "8f1a76898415f36fdfb4a83bcf786f9a36a7b660f6b9781adb23b6a9e81695ab",
+          "bytes": 14852,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/8f1a76898415f36fdfb4a83bcf786f9a36a7b660f6b9781adb23b6a9e81695ab"
+        }
+      ]
+    },
+    "participant-type-receipt.json": {
+      "recorded_at": "2026-11-01T03:36:49.735058+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_participant_types",
+          "url": "https://static.flashscore.com/res/_fs/build/ParticipantTypeList.D-ibeC-.js",
+          "requested_at": "2026-11-01T03:36:32.784780+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "a467b92de7369ca2c8069e567ce5ab6dacfb0cdd574bd4effd57053ec72daeb9",
+          "bytes": 657,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/a467b92de7369ca2c8069e567ce5ab6dacfb0cdd574bd4effd57053ec72daeb9"
+        }
+      ]
+    },
+    "lineup-client-receipt.json": {
+      "recorded_at": "2026-11-01T03:38:55.646094+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_lineup_client",
+          "url": "https://static.flashscore.com/res/_fs/build/lineupsTab.BLqo8xE.js",
+          "requested_at": "2026-11-01T03:38:53.614665+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "18ad026c62407b1495b58858a8def71bc7109f000b7af3b952cc674b55f97ff2",
+          "bytes": 1142,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/18ad026c62407b1495b58858a8def71bc7109f000b7af3b952cc674b55f97ff2"
+        }
+      ]
+    },
+    "lineup-widget-receipt.json": {
+      "recorded_at": "2026-11-01T03:39:20.387750+00:00",
+      "provider": "flashscore",
+      "results": [
+        {
+          "family": "primary_lineup_widget",
+          "url": "https://static.flashscore.com/res/_fs/build/LineupsWidget.CaKKqjp.js",
+          "requested_at": "2026-11-01T03:39:19.235516+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "c8b1da65ba0406bdaea0d454182d7b6af484e54f43cf9f4db4b315bf3a451abe",
+          "bytes": 94801,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12c/raw/c8b1da65ba0406bdaea0d454182d7b6af484e54f43cf9f4db4b315bf3a451abe"
+        }
+      ]
+    }
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T03:43:26.916939+00:00",
+    "observations_before": 11064,
+    "observations_after": 11127,
+    "results": [
+      {
+        "family": "events",
+        "source_resource_id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+        "source_snapshot_id": "3ea4fdaa-ff45-569c-8086-8817553ad702",
+        "source_sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "known_at": "2026-11-01T03:41:23.063184+00:00",
+        "manifest_path": "flashscore/manifests/c22d07266a95ef5d369986419bdc12ba8ad4a15ba508099435a1e0ab9991bf20.json",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION",
+        "report_sha256": "027f64bc0c0ade50b3959593b1cc2140e691fc71f22c0d311a7d9bfdc392c8f5",
+        "work_id": "f801576c-e70e-5f32-a1b3-2d1ba92797fd",
+        "work_state": "SUCCEEDED",
+        "contracts": {
+          "EventObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_EVENT_ACTOR_TYPE_UNSUPPORTED": 13,
+          "MF_NORM_EVENT_TEAM_ROLE_UNKNOWN": 1
+        },
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "retry_rows": 16,
+        "capability_decision_id": "08dd2e2c-50c1-5cfc-a0c8-22f0cf4e125a",
+        "capability_decision_sha256": "20a2ad4382e4940d3ac9221e16c4dfacc7f54102392b599a563a1bc1a4496519"
+      },
+      {
+        "family": "lineups",
+        "source_resource_id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+        "source_snapshot_id": "310f9ff9-29c0-5d3f-b946-b67dcc05d5fd",
+        "source_sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "known_at": "2026-11-01T03:41:23.708282+00:00",
+        "manifest_path": "flashscore/manifests/11885e434507e63cd72b986b62468b68b23eed33dd003f0f4d83010deac63fba.json",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION",
+        "report_sha256": "aaf766a9566c507291a99363fb79ccf440dfbe57f7f04764963373379312baf6",
+        "work_id": "9f64ea24-fcbc-52d5-b658-006ba7ecc9be",
+        "work_state": "SUCCEEDED",
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "CoachObservationV2": 2,
+          "LineupObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 2
+        },
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "retry_rows": 44,
+        "capability_decision_id": "a5453cc1-4b74-58ab-a5ff-a098af166afd",
+        "capability_decision_sha256": "54a09d502bf7ed36b39721df5a6843f6826b2b2f5eb2df45c8bdb3487453f5b2"
+      },
+      {
+        "family": "summary",
+        "source_resource_id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+        "source_snapshot_id": "6b0feffa-cb99-582a-a87c-c47fd9f6fbff",
+        "source_sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "known_at": "2026-11-01T03:41:24.268932+00:00",
+        "manifest_path": "flashscore/manifests/2c93111b98c3f7bbc525906f8582b57698d0cd9c8689b7196934d4625b7bd14f.json",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION",
+        "report_sha256": "44dbf0d131f9b42ef10e012e9cfd755641215cc4cf30737a9aaa76273306f7c9",
+        "work_id": "6f3a5a98-fe54-5fdd-9ada-e4021d3b857a",
+        "work_state": "SUCCEEDED",
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "findings": {},
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "retry_rows": 3,
+        "capability_decision_id": "f8312024-c411-5018-a57d-088684005c93",
+        "capability_decision_sha256": "db1bfdea0e006b26d8f3dc7d37e4637bed85cf67a552743f55b78b54571b1524"
+      }
+    ],
+    "previous_league_reports_unchanged": [
+      {
+        "source_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "report_sha256": "946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca"
+      },
+      {
+        "source_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "report_sha256": "c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3"
+      },
+      {
+        "source_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "report_sha256": "21e847e263bb0f89066e989fba75bdeb86af7f179cbb54a460e195220570ad0d"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0
+  },
+  "source_definitions": {
+    "sides": "SidesList: HOME=1; AWAY=2",
+    "incident_roles": "EventIncidentTypeList: yellow1/red2/goal3/own-goal4/substitution-out6/in7/assistance8/penalty-scored10/missed11/disallowed362",
+    "lineup_groups": "Starting Lineups/LGT1/LGK1; Substitutes/LGT1/LGK2; Coaches/LGT4",
+    "goalkeeper_variant": "Observed LG3 paired with explicit LS=Goalkeeper in both retained starting lineups; no global LG3 meaning inferred",
+    "period_scores": "Primary constants BA/BB=home/away period1, BC/BD=period2",
+    "referee": "MIT=REF/MIV=source referee label; no native ID inferred from name"
+  },
+  "safeguards": [
+    "Goal actor and substitute-out selected only from explicit actor roles; assistance/incoming/missed-penalty roles retained without false ordinary events",
+    "Shootout and unknown periods held; display/explicit added time must agree",
+    "Own-goal beneficiary side never establishes actor team",
+    "Lineup starter/bench roles explicit; confirmation UNKNOWN; native formation preserved without normalization or confirmed-formation output",
+    "Duplicate players, conflicting formations/coaches and unsupported native participant types held",
+    "Observed goalkeeper type requires source Goalkeeper label; initial real replay held both until explicit-label support was added",
+    "No inferred minutes, appearances, nonappearance or normalized position",
+    "Reported H1/H2 scores retained directly with UNKNOWN basis and unknown period completeness; no subtraction-derived score",
+    "Anonymous source team/side references and name-only referee remain unqualified",
+    "No native name matching, canonical admission, model fitting, evaluation, promotion or routing change",
+    "Registered feed family must match requested resource; native fixture scope must also agree"
+  ],
+  "verification": {
+    "focused_disposable_tests": "243 passed",
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS (10 source files)",
+    "architecture": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests": "21 passed",
+    "three_actual_guarded_adapter_requests": "PASS",
+    "all_63_artifact_bytes_and_retry": "PASS",
+    "fenced_normalization_work": "3 SUCCEEDED",
+    "prior_current_history_and_statistic_reports": "3 SHA256 UNCHANGED",
+    "diff_check": "PASS",
+    "final_registered_report_replay": {
+      "recorded_at": "2026-11-01T03:51:47.068440+00:00",
+      "access": "READ_ONLY",
+      "registered_reports_unchanged": [
+        {
+          "resource": "league",
+          "resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+          "report_sha256": "946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca"
+        },
+        {
+          "resource": "league",
+          "resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+          "report_sha256": "c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3"
+        },
+        {
+          "resource": "statistics",
+          "resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+          "report_sha256": "21e847e263bb0f89066e989fba75bdeb86af7f179cbb54a460e195220570ad0d"
+        },
+        {
+          "resource": "events",
+          "resource_id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+          "report_sha256": "027f64bc0c0ade50b3959593b1cc2140e691fc71f22c0d311a7d9bfdc392c8f5"
+        },
+        {
+          "resource": "lineups",
+          "resource_id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+          "report_sha256": "aaf766a9566c507291a99363fb79ccf440dfbe57f7f04764963373379312baf6"
+        },
+        {
+          "resource": "summary",
+          "resource_id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+          "report_sha256": "44dbf0d131f9b42ef10e012e9cfd755641215cc4cf30737a9aaa76273306f7c9"
+        }
+      ]
+    }
+  },
+  "provider_phase_12_disposition": "PARTIAL_FUNCTIONAL; engineering checkpoints 12a/12b/12c verified; live freshness, broader history, identity and target semantics remain unqualified",
+  "next_independent_phase": "13 Soccerway"
+}

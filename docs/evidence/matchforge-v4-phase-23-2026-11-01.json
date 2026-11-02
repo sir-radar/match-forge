@@ -1,0 +1,871 @@
+{
+  "phase": "23",
+  "recorded_at": "2026-11-01T14:52:23.417044Z",
+  "status": "PASS_WITH_WARNINGS",
+  "programme_status": "BLOCKED_WITH_EVIDENCE",
+  "full_programme_complete": false,
+  "starting_branch": "main",
+  "starting_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
+  "branch": "ft/v4-execution-programme",
+  "phase_23_starting_sha": "a895197ddbb830c5a4e3bb59f6b1f9479bf199d5",
+  "source_correction_commit_sha": "8263ae1f1ba55085d55047132bb5c9fd6a85edc8",
+  "phase_commits": [
+    {
+      "phase": "00",
+      "status": "PASS",
+      "commit_sha": "bfb581e14f2a97917e5f7da87919b88aec479bf1",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-00-2026-10-31.json"
+    },
+    {
+      "phase": "01",
+      "status": "PASS",
+      "commit_sha": "6331628f66951b995ce690121558ac26f23d7003",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-00-2026-10-31.json"
+    },
+    {
+      "phase": "02",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "956d0f7950c89cc1b7bdbacc1605cbd75435bc66",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-02-2026-10-31.json"
+    },
+    {
+      "phase": "03",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "1b431b7fcbdaaa0cc55d146141258a544621e0f1",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-03-2026-10-31.json"
+    },
+    {
+      "phase": "04",
+      "status": "PASS",
+      "commit_sha": "82d9784cf915f7023ec0f9dfb1ed0acc72426ca2",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-04-2026-10-31.json"
+    },
+    {
+      "phase": "05a",
+      "status": "PASS",
+      "commit_sha": "14ef3128fd4e0fa455e368275f9700bbab78bf57",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-05a-2026-10-31.json"
+    },
+    {
+      "phase": "05b",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "3bc0e85b06ccd13e67d00249ba60e91df961367b",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-05b-2026-10-31.json"
+    },
+    {
+      "phase": "05c",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "a6f2c95a212e23df61646fad3041028a3bb27a50",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json"
+    },
+    {
+      "phase": "05d",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "edfc232d84523e3b63106b0924fd7fdea60977aa",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json"
+    },
+    {
+      "phase": "06",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "88dc6035721074e401334f8c7be8c8742101699f",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-06-2026-11-01.json"
+    },
+    {
+      "phase": "07",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "bbf9770131bfbe710d37e0f0762a4b626165681d",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-07-2026-11-01.json"
+    },
+    {
+      "phase": "08",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "1c2e34364fa33bbf5e983be9a4f8e1618f603762",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json"
+    },
+    {
+      "phase": "09",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "ca6c73ea45843a2f97ef205593490b5d74ba1c1e",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json"
+    },
+    {
+      "phase": "09 verification correction",
+      "status": "PASS",
+      "commit_sha": "428b1f9162c9ce50027e91987d2079e31432c81b",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-09-validation-correction-2026-11-01.json"
+    },
+    {
+      "phase": "10",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "92e919b10121bd3f1ceda212ba77a2307b3406b2",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-10-2026-11-01.json"
+    },
+    {
+      "phase": "11",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "22cd2d4aefb253c8795cc357825f331bfb91119b",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-11-2026-11-01.json"
+    },
+    {
+      "phase": "12a",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "27e5dff2388da7a15c002e6ad72f8ad3666278f1",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-12a-2026-11-01.json"
+    },
+    {
+      "phase": "12b",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "b0c03f9ac56cd967bbb9d138d552f33e874a0e0e",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-12b-2026-11-01.json"
+    },
+    {
+      "phase": "12c",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "5e200ca7f098b8902e42d3c23d088e594c44ebcb",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-12c-2026-11-01.json"
+    },
+    {
+      "phase": "13",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "6d42c2cca0b9376194257a9ce0a3c8a9b1552550",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-13-2026-11-01.json"
+    },
+    {
+      "phase": "14",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "e58c9bee0c39b1b45cc2ff943f34478767098672",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-14-2026-11-01.json"
+    },
+    {
+      "phase": "15",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "a9d19a38d3f2a64e4853a15ffd820695a6923b20",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-15-2026-11-01.json"
+    },
+    {
+      "phase": "16",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "dc8ffa9f23e8152c5c84895c6b7cc5c1b85c7bbb",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-16-2026-11-01.json"
+    },
+    {
+      "phase": "17",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "bec63abb1102e2b29375a3e1eb92a003670c2b3e",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-17-2026-11-01.json"
+    },
+    {
+      "phase": "18",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "3ee2a033ec54dd4f0fd80dbd5be5bfa259a930eb",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-18-2026-11-01.json"
+    },
+    {
+      "phase": "19",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "36510d9c909d821507b090ba6a64a3580d470e23",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-19-2026-11-01.json"
+    },
+    {
+      "phase": "20",
+      "status": "PARTIAL_FUNCTIONAL",
+      "commit_sha": "19b4494ad43db2d32f2d293467e3dfaf3b443d4d",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-20-2026-11-01.json"
+    },
+    {
+      "phase": "21",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "commit_sha": "e5ca743ebc636e575ea6d89c7578c3d107e25445",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-21-2026-11-01.json"
+    },
+    {
+      "phase": "22",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "a895197ddbb830c5a4e3bb59f6b1f9479bf199d5",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-22-2026-11-01.json"
+    },
+    {
+      "phase": "23 corrections",
+      "status": "PASS_WITH_WARNINGS",
+      "commit_sha": "8263ae1f1ba55085d55047132bb5c9fd6a85edc8",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json"
+    }
+  ],
+  "phase_23_final_commit_location": "CURRENT_TASK_STATUS.md and Git history; a commit cannot contain its own SHA.",
+  "requirements_coverage": {
+    "ref": "docs/evidence/matchforge-v4-phase-23-coverage-2026-11-01.json",
+    "sha256": "d11ea516f013d7a9c6d804019cd6a1578cd66ac38ef47fcc8e5489146a9a3877",
+    "counts": {
+      "already implemented": 26,
+      "partially implemented": 66,
+      "no longer applicable": 2,
+      "superseded": 7,
+      "missing": 10
+    },
+    "complete_programme_acceptance": false
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": 1,
+      "status": "PASS",
+      "requirement": "Reuse Architecture V2",
+      "evidence": "Existing source, normalization, capability, coverage, identity, work, model, API and Admin owners retained."
+    },
+    {
+      "criterion": 2,
+      "status": "PASS",
+      "requirement": "Original requirement dispositions",
+      "evidence": "All numbered sections 0\u2013110 have baseline and exit dispositions; the historical reference remains byte-identical."
+    },
+    {
+      "criterion": 3,
+      "status": "PASS_WITH_WARNINGS",
+      "requirement": "Independent verified commits",
+      "evidence": "All independent phase checkpoints were committed before subsequent work. Final full typing found gaps in earlier focused test typing; append-only correction follows."
+    },
+    {
+      "criterion": 4,
+      "status": "PASS",
+      "requirement": "Existing provider audit",
+      "evidence": "Seven existing sources audited for useful retained fields and acquisition routes."
+    },
+    {
+      "criterion": 5,
+      "status": "PASS_WITH_WARNINGS",
+      "requirement": "Existing data expansion",
+      "evidence": "Half-time, referee, rich match/player/shot statistics, standings and retained StatsBomb context expanded; qualification remains separate."
+    },
+    {
+      "criterion": 6,
+      "status": "PASS_WITH_WARNINGS",
+      "requirement": "Eight additional sources",
+      "evidence": "Five verified partial integrations; ClubElo, Sofascore and FBref have genuine access blockers."
+    },
+    {
+      "criterion": 7,
+      "status": "PARTIAL",
+      "requirement": "Canonical provenance",
+      "evidence": "Native observations retain source hashes/IDs and contracts; additional canonical identity/target qualification is incomplete."
+    },
+    {
+      "criterion": 8,
+      "status": "PARTIAL",
+      "requirement": "Historical depth",
+      "evidence": "Measured provider/competition/resource samples and retained history; expected eligible universes and qualified target depth remain unknown."
+    },
+    {
+      "criterion": 9,
+      "status": "BLOCKED",
+      "requirement": "Player identity for player markets",
+      "evidence": "No new player probabilities: membership, exposure, canonical identity and settlement proof remain insufficient."
+    },
+    {
+      "criterion": 10,
+      "status": "PASS_WITH_WARNINGS",
+      "requirement": "Versioned statistical semantics",
+      "evidence": "67 target families/versioned quantities; sportsbook equivalence remains explicitly unverified."
+    },
+    {
+      "criterion": 11,
+      "status": "PASS",
+      "requirement": "Honest readiness",
+      "evidence": "Scoped diagnostic reports actual missing inputs/model/evaluation/publication status without granting publication."
+    },
+    {
+      "criterion": 12,
+      "status": "PARTIAL",
+      "requirement": "Safe live reconciliation",
+      "evidence": "Current-provider clocks/conflicts/lifecycle regression guards verified; no additional source passed live freshness/identity qualification."
+    },
+    {
+      "criterion": 13,
+      "status": "PASS",
+      "requirement": "Reuse goals/corner models",
+      "evidence": "Champion/goals and existing corner Poisson/NB owners retained; frozen failed route remains closed."
+    },
+    {
+      "criterion": 14,
+      "status": "BLOCKED",
+      "requirement": "Qualified new models and evaluation",
+      "evidence": "Period/count/player/dependence models need qualified labels and newly authorized bounded research/frozen evaluation."
+    },
+    {
+      "criterion": 15,
+      "status": "PASS",
+      "requirement": "No fabricated probabilities",
+      "evidence": "Unsupported and censored targets stay explicit; compatible goal products derive from the same joint matrix with tail bounds."
+    },
+    {
+      "criterion": 16,
+      "status": "BLOCKED",
+      "requirement": "Additional market settlement",
+      "evidence": "Existing immutable goal monitoring retained; new target forecast/outcome contracts remain unqualified."
+    },
+    {
+      "criterion": 17,
+      "status": "BLOCKED",
+      "requirement": "Reproducible challenger feedback",
+      "evidence": "Existing work/artifact/experiment owners retained; qualified new outcome-to-candidate loop is incomplete."
+    },
+    {
+      "criterion": 18,
+      "status": "PASS",
+      "requirement": "No automatic promotion",
+      "evidence": "Zero task model promotions or champion replacements."
+    },
+    {
+      "criterion": 19,
+      "status": "PASS",
+      "requirement": "Internal access preserved",
+      "evidence": "Existing private-local Admin/API authorization tests pass; external development acquisition policy is separate."
+    },
+    {
+      "criterion": 20,
+      "status": "PASS_WITH_WARNINGS",
+      "requirement": "Engineering checks",
+      "evidence": "Final make check integration, browser coverage, Fallow and status checks; receipts enumerate real results and limitations."
+    },
+    {
+      "criterion": 21,
+      "status": "PASS",
+      "requirement": "Immutable history preserved",
+      "evidence": "Every baseline forecast, identity decision, artifact and source registration remains unchanged; champion reload/checksum verified."
+    },
+    {
+      "criterion": 22,
+      "status": "PASS",
+      "requirement": "Separate production migration gate",
+      "evidence": "Architecture V2 phases 35/36 remain blocked; no operating migration, routing cutover or legacy retirement."
+    }
+  ],
+  "verification": {
+    "comprehensive": {
+      "command": ". ./scripts/toolchain.sh; make check integration",
+      "exit_code": 0,
+      "python_unit_tests": 2006,
+      "python_dependency_warnings": 7,
+      "mypy_source_files": 485,
+      "rust_tests": 16,
+      "web_unit_tests": 126,
+      "go": "PASS",
+      "disposable_storage_cases": 857,
+      "disposable_migration_version": "202610310800",
+      "postgres_redis_api": "PASS",
+      "receipt": ".local/reports/v4/phase-23/make-check-integration-verified.log"
+    },
+    "browser": {
+      "command": ". ./scripts/toolchain.sh; cd web; pnpm test:e2e --workers 2",
+      "exit_code": 0,
+      "passed": 38,
+      "skipped": 26,
+      "skip_scope": "24 pre-existing conditional/backend cases and two new actual-reader cases whose desktop/mobile disposable harness was verified separately in Phase 22. No skip added to bypass a failing check."
+    },
+    "initial_failures": [
+      {
+        "command": "make check integration",
+        "exit_code": 2,
+        "failure": "64 strict-mypy errors in four introduced/modified test files. Earlier phase production-file typing was insufficient. Fixed annotations and runtime type narrowing without suppressions or removed assertions."
+      },
+      {
+        "command": "make check integration",
+        "exit_code": 2,
+        "failure": "Two existing live lifecycle concurrency assertions rejected a native-timestamp update without a prior retained provider observation. Conservative known_by bound and verified start milestones restore lifecycle behavior without substituting HTTP freshness."
+      }
+    ],
+    "recovery_clock_correction": {
+      "initial_aggregate_exit": 2,
+      "initial_failed_cases": 14,
+      "deterministic_ahead_host_red_cases": 3,
+      "red_exit": 1,
+      "change": "Immediate Resolution Center recovery/file/parity jobs use PostgreSQL clock_timestamp, matching eligibility/lease clocks. No lease/deadline/fencing rule weakened.",
+      "focused_suite_receipt": ".local/reports/v4/phase-23/recovery-clock-green.log",
+      "focused_suite_passed": 43,
+      "focused_exit_code": 0
+    },
+    "focused_corrections": {
+      "strict_mypy_exit": 0,
+      "type_regression_tests": 102,
+      "live_unit_tests": 9,
+      "disposable_lifecycle_and_operational_tests": 22,
+      "exit_code": 0
+    },
+    "browser_after_css_correction": {
+      "command": "pnpm exec playwright test e2e/market-readiness.spec.ts --workers 2",
+      "exit_code": 0,
+      "passed": 2,
+      "conditional_skipped": 2,
+      "scope": "Computed wrap/button size, keyboard/retry, axe, 320px reflow, forced colors and reduced motion on desktop/mobile current production build."
+    },
+    "final_frontend_review": "Fallow CSS selector finding corrected and computed-style assertions added. Final browser rerun receipt follows the final build. Dynamic-regex and fixed-origin encoded-query candidates ruled out; no suppression/configuration changes.",
+    "optional_commands_not_run": [
+      "make identity-check",
+      "make entity-crosswalk-review",
+      "make canonical-history-audit"
+    ],
+    "optional_commands_reason": "These aggregate targets migrate the operating database. Read-only exact-case/identity preservation evidence was used instead; no unapproved production migration or protected population audit.",
+    "limitations": [
+      "One pre-existing ESLint unused _input warning.",
+      "Seven Python dependency warnings; full logs retained.",
+      "Physical screen-reader and browser-zoom interaction not run; no WCAG conformance claim.",
+      "No approved pixel baseline/exact Figma comparison or new authoritative scientific evaluation.",
+      "Fallow is syntactic; root lacks node_modules, web-scoped scan covers installed dependencies. No configured Fallow architecture/policy rules; MatchForge architecture gate remains authoritative."
+    ],
+    "final_status_checks": {
+      "commands": [
+        "make project-status-check",
+        "uv run --locked --no-sync pytest -q python/football/tests/test_project_status.py python/football/tests/test_provider_runtime_policy.py",
+        "git diff --check"
+      ],
+      "exit_code": 0,
+      "governance_cases_passed": 24,
+      "scope": "After final durable report, evidence and project-status edits."
+    }
+  },
+  "preservation": {
+    "recorded_at": "2026-11-01T14:16:15.951337+00:00",
+    "baseline_path": ".local/reports/v4/phase-00/preservation.json",
+    "baseline_file_sha256": "09a08b1825114b1f7aff38ade04fbad5446d284a6c7c4a554682464df397c9a6",
+    "access": "READ_ONLY_REPEATABLE_READ",
+    "relations": {
+      "product_forecasts": {
+        "baseline_rows": 13067,
+        "current_rows": 13241,
+        "unchanged_baseline_rows": 13067,
+        "missing_or_changed_baseline_rows": 0,
+        "additional_rows": 174,
+        "current_sorted_row_hashes_sha256": "b7eda7a029ec5bb3b3a69a308d0e1db1f052ff9af81251575014e8ad2c144914",
+        "missing_row_hashes": []
+      },
+      "product_identity_admissions": {
+        "baseline_rows": 21759,
+        "current_rows": 21759,
+        "unchanged_baseline_rows": 21759,
+        "missing_or_changed_baseline_rows": 0,
+        "additional_rows": 0,
+        "current_sorted_row_hashes_sha256": "1c0a2b2c7a2803a54ad3e952fb550c698b32860467c91be4432cf4635523d5e1",
+        "missing_row_hashes": []
+      },
+      "product_provider_mapping_decisions": {
+        "baseline_rows": 1889307,
+        "current_rows": 2279572,
+        "unchanged_baseline_rows": 1889307,
+        "missing_or_changed_baseline_rows": 0,
+        "additional_rows": 390265,
+        "current_sorted_row_hashes_sha256": "3a3219476b673933c9e9b5d788e3b48b17d5446d29044d4d701f8313d9a60208",
+        "missing_row_hashes": []
+      },
+      "model_artifacts": {
+        "baseline_rows": 5230,
+        "current_rows": 5230,
+        "unchanged_baseline_rows": 5230,
+        "missing_or_changed_baseline_rows": 0,
+        "additional_rows": 0,
+        "current_sorted_row_hashes_sha256": "611a1f7b2a5520d1d31b1f5450a8d38fd18363fdae0fe47502770641070ad446",
+        "missing_row_hashes": []
+      },
+      "source_resources": {
+        "baseline_rows": 55653,
+        "current_rows": 62130,
+        "unchanged_baseline_rows": 55653,
+        "missing_or_changed_baseline_rows": 0,
+        "additional_rows": 6477,
+        "current_sorted_row_hashes_sha256": "61e8ee1b9bec12383362a9d7738a5dcc4293b84d415fc79b37f86ea792f0ad4c",
+        "missing_row_hashes": []
+      }
+    },
+    "snapshot_at": "2026-11-01T14:16:16.010071+00:00",
+    "read_only": "on",
+    "operating_registry_counts": {
+      "resource_observation_artifacts": 12310,
+      "provider_resource_capabilities": 26,
+      "canonical_resource_coverage": 0,
+      "runtime_model_registrations": 0,
+      "post_match_evaluations": 0
+    },
+    "champion": {
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "verified_reload": true
+    },
+    "schema_files": {
+      "1": {
+        "path": "schemas/contracts/resource-observations-v1.schema.json",
+        "sha256": "5c0fdc64fd5e01a6f4bf4798898d9a0d7a52292e8a9b3d49ff4f644322deae06",
+        "unchanged_from_initial_version": true
+      },
+      "2": {
+        "path": "schemas/contracts/resource-observations-v2.schema.json",
+        "sha256": "1d6211884d08945840fb27fa8d3823fdd580255bfe53406431cdb615ef928a37",
+        "unchanged_from_initial_version": true
+      },
+      "3": {
+        "path": "schemas/contracts/resource-observations-v3.schema.json",
+        "sha256": "80dd31e6954514e5dbdba2a4b4306e9f382a3086763721c6b9b88e0e5de9b476",
+        "unchanged_from_initial_version": true
+      }
+    },
+    "reference_unchanged": true,
+    "baseline_file_unchanged": true,
+    "status": "PASS"
+  },
+  "preservation_limits": [
+    "Row-multiset audit covers all Phase 00 baseline rows, not every legacy raw archive byte.",
+    "All 27 task-acquired registered resource bytes, manifest/checksums/sizes verified separately; all Phase 14 shadow artifacts were verified at that checkpoint.",
+    "Historical cutoff, same-kickoff, retry and worker-fence regression checks passed in disposable tests; no claim of recomputing every historical forecast.",
+    "Background sync additions are not all task acquisitions. No task authoritative fit, sealed evaluation, promotion or production cutover."
+  ],
+  "new_task_registered_resources": 27,
+  "task_source_verification": {
+    "path": ".local/reports/v4/phase-23/task-source-verification.json",
+    "sha256": "ff7f6ba8f68832729adc4e52831b5aa7b1424c45d6631d06aaa21501d79ed873"
+  },
+  "before_after": {
+    "providers": {
+      "before": "Seven established real provider namespaces; existing acquisition/normalizer owners.",
+      "after": "Those retained plus five verified partial source integrations; three documented access blockers. No new verified live provider."
+    },
+    "observations": {
+      "before_operating_v2_artifacts": 0,
+      "after_operating_artifacts": 12310,
+      "after_operating_capability_decisions": 26,
+      "isolated_shadow_artifacts": 84610,
+      "isolated_shadow_resources": 1524,
+      "isolated_succeeded_work": 3044,
+      "warning": "Phase 05\u201313 operating normalization breached required isolation. Preserve immutable registrations; all subsequent normalization isolated. No cutover."
+    },
+    "history": {
+      "source_native_scopes_measured": 1305,
+      "operating_field_coverage_rows": 718,
+      "shadow_field_coverage_rows": 52,
+      "understat_epl_2024_25_fixtures": 380,
+      "understat_dates": [
+        "2024-08-16",
+        "2025-05-25"
+      ],
+      "understat_team_history_rows": 760,
+      "flashscore_soccerway_2026_27_sample_fixtures": 195,
+      "flashscore_soccerway_2024_25_sample_fixtures": 109,
+      "qualified_target_depth": "UNKNOWN",
+      "expected_eligible_universe": "UNKNOWN",
+      "note": "Shared upstream/sample fixtures are not independent confirmation or full-season completion."
+    },
+    "players": {
+      "statsbomb_exact_existing_native_mapping_claims": 1240,
+      "new_admissions": 0,
+      "understat_sample_native_players": 32,
+      "other_sample": "Six provider samples of 40 native player references each had zero mapping claims.",
+      "qualified_continuous_membership_exposure": "UNKNOWN"
+    },
+    "markets": {
+      "before": "Existing champion goal products and research corner engine.",
+      "after_target_families": 67,
+      "scoped_diagnostic_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "new_publication_grants": 0,
+      "new_qualified_non_goal_probabilities": 0,
+      "shadow_new_market_model_acceptance": false,
+      "goal_algebra": "DNB, signed Asian split-stake handicaps, integer European handicaps, explicit totals/ranges/margins and result \u00d7 total/BTTS from the same exact joint matrix; unresolved tail bounds retained.",
+      "period_count_player_dependence": "Unqualified and unsupported pending data/scientific gates."
+    },
+    "learning": {
+      "retained": "Immutable correction-safe goal monitor, proper scoring/count CRPS, coverage and calibration; fenced worker tests.",
+      "new_market_settlement": "NOT_IMPLEMENTED",
+      "source_feature_missingness_drift_extension": "NOT_COMPLETE",
+      "new_challenger_feedback": "BLOCKED",
+      "automatic_promotion": false
+    },
+    "R3": "PARTIAL_REMAINING_BLOCKERS",
+    "architecture_v2_cutover": false,
+    "legacy_retirement": false
+  },
+  "reused": [
+    "Architecture V2 source/normalization/capability/coverage/canonical/identity/work/model registries",
+    "Identity Resolution Center",
+    "Python football modelling and existing goal/champion/corner engines",
+    "Existing Go API/Next Admin/resource state/cancellation/TableScroll",
+    "Existing post-match correction, scoring and experiment owners"
+  ],
+  "redundant_work_not_created": [
+    "Second provider/capability/identity/work framework",
+    "Replacement goal/corner/post-match engine",
+    "Second Admin/API",
+    "Rust ingestion or model training",
+    "Reopened terminal model or Wayfinder route"
+  ],
+  "remaining_gates": [
+    {
+      "phases": [
+        "02",
+        "14",
+        "19"
+      ],
+      "blocker": "Independent origin/target proof and time-aware player identity/membership/exposure are absent.",
+      "resume": "Use existing Resolution Center and coverage owners with exact retained proof; do not reopen terminal routes or infer identity by name."
+    },
+    {
+      "phases": [
+        "07"
+      ],
+      "blocker": "ClubElo dated/history requests produced 403/502/timeouts; no dated CSV.",
+      "resume": "Retry a genuinely accessible dated/history route and retain exact source bytes before normalizing."
+    },
+    {
+      "phases": [
+        "08",
+        "10"
+      ],
+      "blocker": "Sofascore and FBref public routes returned genuine 403 responses.",
+      "resume": "Resume on a permitted working source route or verified restored service access; do not bypass challenges."
+    },
+    {
+      "phases": [
+        "06",
+        "09",
+        "11",
+        "12",
+        "13",
+        "14"
+      ],
+      "blocker": "Acquired source samples do not prove complete eligible history, equivalent semantics, canonical identity or known-by time.",
+      "resume": "Qualify a bounded source/competition/resource population in an isolated database using the existing versioned contracts."
+    },
+    {
+      "phases": [
+        "16"
+      ],
+      "blocker": "New provider live identity/freshness/correction/lifecycle evidence is insufficient.",
+      "resume": "Retain repeated real live observations and source clock/correction proof; keep HTTP acquisition time distinct from football time."
+    },
+    {
+      "phases": [
+        "17",
+        "18",
+        "19",
+        "20"
+      ],
+      "blocker": "Qualified period/count/player/paired outcomes and a bounded frozen research decision are missing.",
+      "resume": "After exact label/identity/time/settlement qualification, obtain the required new scientific authorization; never retune frozen thresholds or reopen retained failures."
+    },
+    {
+      "phases": [
+        "21"
+      ],
+      "blocker": "Qualified new market forecasts/outcomes and approved settlement/void/correction contracts are unavailable.",
+      "resume": "Extend the existing versioned post-match owner after prerequisites; then qualify drift and reproducible candidate preparation without automatic promotion."
+    },
+    {
+      "phases": [
+        "Architecture V2 35",
+        "Architecture V2 36"
+      ],
+      "blocker": "Authentic evidence/full production parity/explicit acceptance remain open; earlier normalization isolation deviation is unresolved.",
+      "resume": "Owner disposition of immutable Phase 05\u201313 operating registrations before any destructive remediation or cutover; retain isolated normalization until separately accepted cutover."
+    }
+  ],
+  "exact_next_action": "Qualify a bounded retained source/competition/resource population through the existing identity and coverage owners in an isolated database, starting with independent origin/target proof and explicit time/quantity/settlement semantics. Scientific model work requires the existing bounded frozen research gate after those prerequisites. No further implementation is represented as accepted.",
+  "normalization_isolation_deviation_ref": "docs/evidence/matchforge-v4-phase-14-2026-11-01.json",
+  "receipts": {
+    "admin-market-readiness--diagnostic--1440x1000--dark--desktop.png": {
+      "path": ".local/reports/v4/phase-23/admin-market-readiness--diagnostic--1440x1000--dark--desktop.png",
+      "sha256": "d401b18d62eb871d63f3c5689fe91dedc5ef9789d9d9aaa0abcaf00c29ed2fda",
+      "bytes": 144087
+    },
+    "admin-market-readiness--diagnostic--390x664--dark--mobile.png": {
+      "path": ".local/reports/v4/phase-23/admin-market-readiness--diagnostic--390x664--dark--mobile.png",
+      "sha256": "6e68bd4a219d617f87bce836adced26088abe392466b92e26f4f3005eb5e6e4f",
+      "bytes": 214493
+    },
+    "browser-final-exit.json": {
+      "path": ".local/reports/v4/phase-23/browser-final-exit.json",
+      "sha256": "72e1c5cbb5c129defd80724689411199318ed7be4d2aba296fe5df2d2a61bf81",
+      "bytes": 98
+    },
+    "browser-final.log": {
+      "path": ".local/reports/v4/phase-23/browser-final.log",
+      "sha256": "420de4fc3e0ca7fc97eb145a6c4d47750d564b5853876b4c99ffc178ae83cd8d",
+      "bytes": 2344
+    },
+    "clock-diagnostic.json": {
+      "path": ".local/reports/v4/phase-23/clock-diagnostic.json",
+      "sha256": "7e4864f21d63b6b48592a97702001567b9a3a0c0be129ff8b6e70b484f5e0e0d",
+      "bytes": 216
+    },
+    "fallow-fix-preview.json": {
+      "path": ".local/reports/v4/phase-23/fallow-fix-preview.json",
+      "sha256": "3159ae197a24a743bed40c4e8de119e808316e11146cb04e41ad5980afcb33cb",
+      "bytes": 225
+    },
+    "fallow-frontend-security-final.json": {
+      "path": ".local/reports/v4/phase-23/fallow-frontend-security-final.json",
+      "sha256": "50aa2ba42dc7eb3ebce08eaeb479b2096d138bb31843cc304f6d1f5c80eaa8e0",
+      "bytes": 8071
+    },
+    "fallow-frontend-security.json": {
+      "path": ".local/reports/v4/phase-23/fallow-frontend-security.json",
+      "sha256": "3459d86889c70275877e4dece3ce647926afa2c7f2097964fdde13b0676e12ee",
+      "bytes": 8071
+    },
+    "fallow-remediation-record.md": {
+      "path": ".local/reports/v4/phase-23/fallow-remediation-record.md",
+      "sha256": "06968c0a221ce1de1c365c0657a9b6c17da7e1534c6362c120462132780f0924",
+      "bytes": 4603
+    },
+    "fallow-root-final.json": {
+      "path": ".local/reports/v4/phase-23/fallow-root-final.json",
+      "sha256": "6913960dfc5eaaaddbec530fcc163224497bb84e39b781a43bb44bf3a18bc932",
+      "bytes": 95960
+    },
+    "fallow-root.json": {
+      "path": ".local/reports/v4/phase-23/fallow-root.json",
+      "sha256": "efac2cbb1b52bef76f127f2f8501bb7d26c26912ce1ff906be683e0405efc3cf",
+      "bytes": 96533
+    },
+    "fallow-staged-security-final.json": {
+      "path": ".local/reports/v4/phase-23/fallow-staged-security-final.json",
+      "sha256": "f3d1dbc3156e4b82fe9eebf0b27ce76d3e98cc62986df9e6c4aa24e4e93986b3",
+      "bytes": 2111
+    },
+    "fallow-staged-security.json": {
+      "path": ".local/reports/v4/phase-23/fallow-staged-security.json",
+      "sha256": "0536dfc088306d86af6beaf02f185b37ac26ee8d16ac7929d0dc123b99b360f0",
+      "bytes": 1634
+    },
+    "fallow-web-final.json": {
+      "path": ".local/reports/v4/phase-23/fallow-web-final.json",
+      "sha256": "6af7659791c75ce1d1531c5f29c0abb00085c42efbc3378e15f6e084df11c263",
+      "bytes": 94694
+    },
+    "fallow-web.json": {
+      "path": ".local/reports/v4/phase-23/fallow-web.json",
+      "sha256": "64b837977f050c9b590de2d2a615a924451e228387d4e1657faeb66337a39edb",
+      "bytes": 95276
+    },
+    "frontend-review-initial.md": {
+      "path": ".local/reports/v4/phase-23/frontend-review-initial.md",
+      "sha256": "1ae5b9d6e5b3922c8f1b5df73c020f98230ac205417fa92bb8e2921ccbb566bd",
+      "bytes": 345
+    },
+    "integration-collection.log": {
+      "path": ".local/reports/v4/phase-23/integration-collection.log",
+      "sha256": "2aaa9406fd905ffbd52574eaff28272fa4b1235ce1e80151b7d071f86f3f1d82",
+      "bytes": 98857
+    },
+    "lifecycle-database.log": {
+      "path": ".local/reports/v4/phase-23/lifecycle-database.log",
+      "sha256": "28ed1b7ea1cc7e154f85287262913b92af4fe50b95009263c9a71666262cd1e5",
+      "bytes": 99
+    },
+    "lifecycle-red.log": {
+      "path": ".local/reports/v4/phase-23/lifecycle-red.log",
+      "sha256": "934cc8e7272be639446d1dd87ba9deed914cc3291890d22ca63ea9fd308c1958",
+      "bytes": 1874
+    },
+    "lifecycle-unit.log": {
+      "path": ".local/reports/v4/phase-23/lifecycle-unit.log",
+      "sha256": "db0a95095d1bb8c193b53ba76639b787b936edf85d81be2e3194da0c47c89d10",
+      "bytes": 98
+    },
+    "make-check-integration-final-exit.json": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-final-exit.json",
+      "sha256": "d0dfe45285c3f7d4e59081b77122ccedcc5243cb31f4332fdf0a5b3fd3bf0293",
+      "bytes": 54
+    },
+    "make-check-integration-final.log": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-final.log",
+      "sha256": "b96d577b386cfd270702ea956026a1ae57c87994c811ead5fc7193fcab956e0c",
+      "bytes": 39796
+    },
+    "make-check-integration-initial-failure.log": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-initial-failure.log",
+      "sha256": "ba7b46d3ef2e7e5263617a797690824b1d96c70bcc7d9b53f6bdd859407aee58",
+      "bytes": 10855
+    },
+    "make-check-integration-lifecycle-failure.log": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-lifecycle-failure.log",
+      "sha256": "64301f4e42e983b1c93271d6cd0ccb3f152e7a167137bb30f2f9f83156f5247e",
+      "bytes": 27771
+    },
+    "make-check-integration-verified-exit.json": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-verified-exit.json",
+      "sha256": "e7e1b37fd501d147d16e1d7b9b216e756138add92f5396e3aff8e863563df765",
+      "bytes": 54
+    },
+    "make-check-integration-verified.log": {
+      "path": ".local/reports/v4/phase-23/make-check-integration-verified.log",
+      "sha256": "33010102256793c0a9b73afc2002844be506b11eb6653062f541528dac0d570f",
+      "bytes": 27415
+    },
+    "make-check-integration.log": {
+      "path": ".local/reports/v4/phase-23/make-check-integration.log",
+      "sha256": "00457275dd67585a7f043067f8781904814c40278d257489b9943929652cf079",
+      "bytes": 27460
+    },
+    "mypy-correction.log": {
+      "path": ".local/reports/v4/phase-23/mypy-correction.log",
+      "sha256": "f99d93d3ae154c0a4454f3891920c07784054437bae8dc035c626fe8cab40828",
+      "bytes": 45
+    },
+    "preservation-result.json": {
+      "path": ".local/reports/v4/phase-23/preservation-result.json",
+      "sha256": "bbf65a571b4b9b2f49c453ed834582ae01f25adc497c1cad995f924915fd3478",
+      "bytes": 3352
+    },
+    "preservation.log": {
+      "path": ".local/reports/v4/phase-23/preservation.log",
+      "sha256": "bbf65a571b4b9b2f49c453ed834582ae01f25adc497c1cad995f924915fd3478",
+      "bytes": 3352
+    },
+    "recovery-clock-green.log": {
+      "path": ".local/reports/v4/phase-23/recovery-clock-green.log",
+      "sha256": "6141c32c8bb08c8044cdce0133167f0e68da5ecdbe7ba4b9a33732da8b1db053",
+      "bytes": 111
+    },
+    "recovery-clock-red.log": {
+      "path": ".local/reports/v4/phase-23/recovery-clock-red.log",
+      "sha256": "4d0d562799daea845d81e93ad2ba77badb144c1834b759f48afaad3b2253712d",
+      "bytes": 7642
+    },
+    "report.md": {
+      "path": ".local/reports/v4/phase-23/report.md",
+      "sha256": "43a908c5804e3bd0fa177cc7aa0d8cb58b9e28c59307983f34e7436d099d2763",
+      "bytes": 12278
+    },
+    "task-source-verification.json": {
+      "path": ".local/reports/v4/phase-23/task-source-verification.json",
+      "sha256": "ff7f6ba8f68832729adc4e52831b5aa7b1424c45d6631d06aaa21501d79ed873",
+      "bytes": 7713
+    },
+    "task-source-verification.log": {
+      "path": ".local/reports/v4/phase-23/task-source-verification.log",
+      "sha256": "5b3ba173520f9239b286e56a21049acf11d0a5c0d523cd970bbd621e3622f8a6",
+      "bytes": 45
+    },
+    "test-migrations.log": {
+      "path": ".local/reports/v4/phase-23/test-migrations.log",
+      "sha256": "2eb3ade41e6e1bebea0f47921c3aca36c63023d788b8a6e2c3003998ce77bcdd",
+      "bytes": 8268
+    },
+    "type-correction-tests.log": {
+      "path": ".local/reports/v4/phase-23/type-correction-tests.log",
+      "sha256": "d4c32ba6da0e399ae23ffe64bd72b9943375fb26c1f702cc50406b3ff2d5a669",
+      "bytes": 180
+    },
+    "web-e2e.log": {
+      "path": ".local/reports/v4/phase-23/web-e2e.log",
+      "sha256": "cdc460a93c0f42249ffd81bf332587faa9f27efe5ce58e967d72551242a4c1c0",
+      "bytes": 10005
+    },
+    "final-status-check.log": {
+      "path": ".local/reports/v4/phase-23/final-status-check.log",
+      "sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a",
+      "bytes": 22
+    },
+    "final-governance-tests.log": {
+      "path": ".local/reports/v4/phase-23/final-governance-tests.log",
+      "sha256": "12784721e0280443291002b595b03384e8588476665647b621a862f07297e08f",
+      "bytes": 80
+    }
+  }
+}

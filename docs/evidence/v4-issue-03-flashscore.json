@@ -1,0 +1,910 @@
+{
+  "phase": "R03-E",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "238a0f013449ede83d84ed85971e4a38d707ec35",
+  "recorded_at": "2026-11-01T20:05:43.215396+00:00",
+  "provider": "flashscore",
+  "before": {
+    "resources": 7,
+    "distinct_native_fixtures": 304,
+    "verified_native_seasons": [
+      "2024/2025",
+      "2026/2027"
+    ],
+    "rich_match_samples": 1
+  },
+  "after": {
+    "verified_native_seasons": [
+      "2015/2016",
+      "2023/2024",
+      "2024/2025",
+      "2026/2027"
+    ],
+    "new_seasons": [
+      "2015/2016",
+      "2023/2024"
+    ],
+    "new_normalized_distinct_native_fixtures": 210,
+    "all_normalized_native_fixtures_in_shadow": 514,
+    "new_normalized_observations": 973,
+    "complete_browser_traversal": {
+      "season": "2015/2016",
+      "fixture_ids": 380,
+      "initial_html_fixture_rows": 107,
+      "native_show_more_clicks": 3,
+      "remaining_show_more_controls": 0,
+      "captured_text": {
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore-browser-ids.txt",
+        "sha256": "2b6a3248877a1e3238d3bd4c03b8a7752d97ed17077756bc0ed2812c41051258"
+      },
+      "browser_crc32": "5aced062",
+      "interpretation": "Complete native ID census only. Extra browser rows are not represented as normalized result/statistic observations or UTC-qualified source fixtures."
+    },
+    "new_rich_match_samples": [
+      "bsZIXK2G",
+      "jXP8f29S"
+    ],
+    "source_side_bindings": [
+      {
+        "fixture_native_id": "bRXj39aJ",
+        "home_native_id": "W00wmLO0",
+        "away_native_id": "69ZiU2Om",
+        "match_resource_id": "d91d6b8a-9ae1-512e-a2f9-ed527d9dbe65",
+        "match_source_sha256": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+        "league_named_fields": [
+          "AA",
+          "PX",
+          "PY"
+        ],
+        "native_binding": "EXACT_SAME_PROVIDER_FIXTURE_AND_SIDE_IDS; NO_CANONICAL_ADMISSION"
+      },
+      {
+        "fixture_native_id": "bsZIXK2G",
+        "home_native_id": "ppjDR086",
+        "away_native_id": "OtpNdwrc",
+        "match_resource_id": "b8fd592d-1111-506c-8886-a844345cd21a",
+        "match_source_sha256": "c0e868ca814a55f5f382039aac76d2f6355808d9c669ba9603abd71b168aaf1f",
+        "league_named_fields": [
+          "AA",
+          "PX",
+          "PY"
+        ],
+        "native_binding": "EXACT_SAME_PROVIDER_FIXTURE_AND_SIDE_IDS; NO_CANONICAL_ADMISSION"
+      },
+      {
+        "fixture_native_id": "jXP8f29S",
+        "home_native_id": "hA1Zm19f",
+        "away_native_id": "KluSTr9s",
+        "match_resource_id": "5c3d2772-ffa5-5726-b7fd-b6b2bc1bc4db",
+        "match_source_sha256": "374e01061e32eef036f74077a5331df8d2da9036f615b4b0cd2b2bdf79de7c4d",
+        "league_named_fields": [
+          "AA",
+          "PX",
+          "PY"
+        ],
+        "native_binding": "EXACT_SAME_PROVIDER_FIXTURE_AND_SIDE_IDS; NO_CANONICAL_ADMISSION"
+      }
+    ],
+    "source_http_guarded_requests": 18,
+    "browser_document_navigations": 1,
+    "browser_show_more_clicks": 3,
+    "browser_subresource_request_count": null,
+    "direct_pagination_probes": {
+      "responses_with_single_zero": 4,
+      "interpretation": "HTTP responses retained; no useful football rows. Direct feed pagination format/capability remains unverified; not proof that historical results are inaccessible."
+    },
+    "provider_permission": false,
+    "internal_policy_exception": "ALLOW_FLASH_RESEARCH_SOURCE_ELIGIBILITY_EXCEPTION_R03",
+    "blockers": [
+      "Native side IDs are proven for three source fixtures; current normalized rich-stat/event/player references remain anonymous and need explicit existing identity workflow binding",
+      "Browser ID census is not complete normalized score/statistic coverage",
+      "No canonical anchors or sportsbook settlement/continuous membership/minute exposure granted",
+      "Native direct pagination has not produced useful retained fixture rows"
+    ]
+  },
+  "acquisition": {
+    "provider": "flashscore",
+    "results": [
+      {
+        "key": "football/england/premier-league/results",
+        "provider": "flashscore",
+        "resource_key": "football/england/premier-league/results",
+        "acquired_at": "2026-11-01T03:00:37.338360+00:00",
+        "sha256": "3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+        "bytes": 1375510,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/3c3c92632927fa62ef5e5ea20a22d5a32170bdc16c2684f3b97d14184475ce5a",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD"
+        },
+        "original_operating_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "84777835-654a-5ab6-9c31-573853e10ffe",
+        "source_snapshot_id": "2ddebf12-5629-5fb5-8972-3732c650e848",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/8f6ce0c444386fcf030d886e93f70a1eb7d55e01384d2e2c4a376a07527be928.json",
+        "report_sha256": "8f6ce0c444386fcf030d886e93f70a1eb7d55e01384d2e2c4a376a07527be928",
+        "work_id": "6d4faf0a-9eff-544a-b23a-6f6523c0a1b7",
+        "replay_identical": true,
+        "observations": 675,
+        "contracts": {
+          "CompetitionObservationV2": 2,
+          "TeamObservationV2": 390,
+          "FixtureObservationV2": 195,
+          "ResultObservationV2": 88
+        },
+        "findings": {}
+      },
+      {
+        "key": "football/england/premier-league-2024-2025/results",
+        "provider": "flashscore",
+        "resource_key": "football/england/premier-league-2024-2025/results",
+        "acquired_at": "2026-11-01T03:06:28.224468+00:00",
+        "sha256": "a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+        "bytes": 988962,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/a889869130e13d2e6c37cd3d59b5a2c342963f06e2462c9503bd048fc517fa3f",
+        "resource_type": "league",
+        "scope": {
+          "competition_native_id": "dYlOSQOD"
+        },
+        "original_operating_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "c76a1611-1ddb-5faa-a241-d1303e1005fd",
+        "source_snapshot_id": "080cc024-da9b-5503-b1c7-1b84830c2246",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/02e8d404a216478f87594e992783a95d41065b400c11456e5362fd4a68a9d28c.json",
+        "report_sha256": "02e8d404a216478f87594e992783a95d41065b400c11456e5362fd4a68a9d28c",
+        "work_id": "9723c78f-a2e5-52fe-b770-5e843a0c6715",
+        "replay_identical": true,
+        "observations": 437,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 218,
+          "FixtureObservationV2": 109,
+          "ResultObservationV2": 109
+        },
+        "findings": {
+          "MF_NORM_FEED_EMPTY": 1
+        }
+      },
+      {
+        "key": "match/bRXj39aJ",
+        "provider": "flashscore",
+        "resource_key": "match/bRXj39aJ",
+        "acquired_at": "2026-11-01T03:20:56.082910+00:00",
+        "sha256": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+        "bytes": 892653,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+        "resource_type": null,
+        "scope": {
+          "fixture_native_id": "bRXj39aJ"
+        },
+        "original_operating_resource_id": "f7367c8a-70a7-5115-b804-4a5b99e5c66a",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "d91d6b8a-9ae1-512e-a2f9-ed527d9dbe65",
+        "source_snapshot_id": "b89dafb2-fbc5-5e3e-a57f-ef607c78363e"
+      },
+      {
+        "key": "df_st_1_bRXj39aJ",
+        "provider": "flashscore",
+        "resource_key": "df_st_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+        "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "bytes": 6073,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "resource_type": "statistics",
+        "scope": {
+          "fixture_native_id": "bRXj39aJ"
+        },
+        "original_operating_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "4ea441b4-42b7-5487-8071-c46022cce624",
+        "source_snapshot_id": "74fbf326-b8fe-59b1-a95f-410674c58b48",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/09ff05f83c0f90c4e92483d44d4092a6eeb04c3053936ecc7c8b0e09338d6009.json",
+        "report_sha256": "09ff05f83c0f90c4e92483d44d4092a6eeb04c3053936ecc7c8b0e09338d6009",
+        "work_id": "227579f9-47a4-544c-b2bf-e216b7479d54",
+        "replay_identical": true,
+        "observations": 8,
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_STATISTIC_VALUE_UNQUALIFIED": 36,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 66,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        }
+      },
+      {
+        "key": "df_sui_1_bRXj39aJ",
+        "provider": "flashscore",
+        "resource_key": "df_sui_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:23.063184+00:00",
+        "sha256": "58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "bytes": 5950,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/58ed912288aa2277e88074fb052043abb1e833e15e057edaf47f3d7bbd9eb43d",
+        "resource_type": "events",
+        "scope": {
+          "fixture_native_id": "bRXj39aJ"
+        },
+        "original_operating_resource_id": "2c31dbe7-c4f3-5d1f-9e92-9fc0f78f602e",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "2ae9284d-0c7e-5055-ba0c-7f21b99ac7b1",
+        "source_snapshot_id": "72f9d447-1d24-568b-a1ed-23101353135a",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/02b65868ccae8e4ff660d127c090c9bc4548fd53fdfd329afd7611ed36f15825.json",
+        "report_sha256": "02b65868ccae8e4ff660d127c090c9bc4548fd53fdfd329afd7611ed36f15825",
+        "work_id": "c8ae3449-7e85-5b04-a4e2-a20da0ccb9dc",
+        "replay_identical": true,
+        "observations": 16,
+        "contracts": {
+          "EventObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_EVENT_ACTOR_TYPE_UNSUPPORTED": 13,
+          "MF_NORM_EVENT_TEAM_ROLE_UNKNOWN": 1
+        }
+      },
+      {
+        "key": "df_li_1_bRXj39aJ",
+        "provider": "flashscore",
+        "resource_key": "df_li_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:23.708282+00:00",
+        "sha256": "749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "bytes": 15506,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/749b13db880a546cf3316ceec833b64a5f31da62a4aaf765efb5b23958d510c3",
+        "resource_type": "lineups",
+        "scope": {
+          "fixture_native_id": "bRXj39aJ"
+        },
+        "original_operating_resource_id": "e28b5dba-8e39-54c7-aad3-f9556ecbd8f3",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "48379583-fbe2-5529-b579-f007e067fc13",
+        "source_snapshot_id": "1d71667c-25d7-5282-98bf-1a9e8646bba9",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/da6893928f089a9a0ed6bf12c8cbe56075aad9510c73bb41572cbf6267b3c690.json",
+        "report_sha256": "da6893928f089a9a0ed6bf12c8cbe56075aad9510c73bb41572cbf6267b3c690",
+        "work_id": "200e61b7-3a35-5162-b078-fb501cc7cb09",
+        "replay_identical": true,
+        "observations": 44,
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "CoachObservationV2": 2,
+          "LineupObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 2
+        }
+      },
+      {
+        "key": "df_sur_1_bRXj39aJ",
+        "provider": "flashscore",
+        "resource_key": "df_sur_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:41:24.268932+00:00",
+        "sha256": "2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "bytes": 262,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/2cc892a5033ec5e7f0b127bbc7d648061a73ebccfaf63424dc82f939ab18133a",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "bRXj39aJ"
+        },
+        "original_operating_resource_id": "847c5405-b32c-5bb3-b558-4d2f4cece116",
+        "acquisition_action": "REPLAY_RETAINED; ZERO_NEW_PROVIDER_REQUESTS",
+        "source_resource_id": "5e3eea20-2392-5499-bf69-829a93df0c9e",
+        "source_snapshot_id": "9ff367e1-9b5a-5237-8317-13369f277040",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/72fb75846d2ab0e10b23820a18a3db447b68602ec1f4bebb6ee83ea98fdb9f8c.json",
+        "report_sha256": "72fb75846d2ab0e10b23820a18a3db447b68602ec1f4bebb6ee83ea98fdb9f8c",
+        "work_id": "7dabe03c-a86b-5f88-8835-22cf04b387e1",
+        "replay_identical": true,
+        "observations": 3,
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "findings": {}
+      },
+      {
+        "key": "history/2015-2016",
+        "provider": "flashscore",
+        "resource_key": "football/england/premier-league-2015-2016/results",
+        "acquired_at": "2026-11-01T19:56:27.930183+00:00",
+        "sha256": "9dedc695c5a0188d1a9142ae8d2647c043b9c8e804a226931477228e87cfb7f9",
+        "bytes": 978563,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/9dedc695c5a0188d1a9142ae8d2647c043b9c8e804a226931477228e87cfb7f9",
+        "resource_type": "league",
+        "scope": {},
+        "source_resource_id": "fc2d365c-0a30-55e8-9ff2-14ba9f19329e",
+        "source_snapshot_id": "c94f9e90-efad-5747-9735-cc330ee74ee2",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/d5184b81f349a81a0fcbb1af24cd421a2821b424f5c4af5e4181a1d457ccef98.json",
+        "report_sha256": "d5184b81f349a81a0fcbb1af24cd421a2821b424f5c4af5e4181a1d457ccef98",
+        "work_id": "e6aefb3a-b155-5691-be78-9f5eabbac1ae",
+        "replay_identical": true,
+        "observations": 429,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 214,
+          "FixtureObservationV2": 107,
+          "ResultObservationV2": 107
+        },
+        "findings": {
+          "MF_NORM_FEED_EMPTY": 1
+        }
+      },
+      {
+        "key": "match/bsZIXK2G",
+        "provider": "flashscore",
+        "resource_key": "match/bsZIXK2G",
+        "acquired_at": "2026-11-01T19:56:32.043809+00:00",
+        "sha256": "c0e868ca814a55f5f382039aac76d2f6355808d9c669ba9603abd71b168aaf1f",
+        "bytes": 892069,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/c0e868ca814a55f5f382039aac76d2f6355808d9c669ba9603abd71b168aaf1f",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "b8fd592d-1111-506c-8886-a844345cd21a",
+        "source_snapshot_id": "4ff6bfd8-fc80-5edd-8042-4f458bb16416"
+      },
+      {
+        "key": "statistics/bsZIXK2G",
+        "provider": "flashscore",
+        "resource_key": "df_st_1_bsZIXK2G",
+        "acquired_at": "2026-11-01T19:56:32.623407+00:00",
+        "sha256": "23a188c31e47f0d00e46c5ed35fbec85e6db20de3078d349e05991d603632f96",
+        "bytes": 1979,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/23a188c31e47f0d00e46c5ed35fbec85e6db20de3078d349e05991d603632f96",
+        "resource_type": "statistics",
+        "scope": {
+          "fixture_native_id": "bsZIXK2G"
+        },
+        "source_resource_id": "a1214781-4f78-5393-afaa-8ccd5d6fe279",
+        "source_snapshot_id": "e2097af0-ac27-57cd-a3a7-498556019e7f",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/311ab7f75b4e0d1c4c38180687902e92ef92936c8206674f5b8210cdbf4af163.json",
+        "report_sha256": "311ab7f75b4e0d1c4c38180687902e92ef92936c8206674f5b8210cdbf4af163",
+        "work_id": "dca71bcd-8f5b-552c-a8fc-bb7e98f3a525",
+        "replay_identical": true,
+        "observations": 6,
+        "contracts": {
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_STATISTIC_REPEATED": 18,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 6
+        }
+      },
+      {
+        "key": "events/bsZIXK2G",
+        "provider": "flashscore",
+        "resource_key": "df_sui_1_bsZIXK2G",
+        "acquired_at": "2026-11-01T19:56:33.567995+00:00",
+        "sha256": "2c6ecb67dd4707fd8a3d22804499b97f18f0d83901118280b94bd7293fda68a9",
+        "bytes": 4182,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/2c6ecb67dd4707fd8a3d22804499b97f18f0d83901118280b94bd7293fda68a9",
+        "resource_type": "events",
+        "scope": {
+          "fixture_native_id": "bsZIXK2G"
+        },
+        "source_resource_id": "021d386c-2506-5c79-8ca2-126b0b6a0543",
+        "source_snapshot_id": "72473900-996e-53b5-bdf6-d9f007b3fea6",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/3e53c45e1de256c77a0a8587b498db8b79be0f08e4badb5d38980ce53460c2fb.json",
+        "report_sha256": "3e53c45e1de256c77a0a8587b498db8b79be0f08e4badb5d38980ce53460c2fb",
+        "work_id": "fe123b06-8444-5325-afa3-7792424502fc",
+        "replay_identical": true,
+        "observations": 11,
+        "contracts": {
+          "EventObservationV2": 11
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_EVENT_ACTOR_TYPE_UNSUPPORTED": 10,
+          "MF_NORM_EVENT_TEAM_ROLE_UNKNOWN": 1
+        }
+      },
+      {
+        "key": "lineups/bsZIXK2G",
+        "provider": "flashscore",
+        "resource_key": "df_li_1_bsZIXK2G",
+        "acquired_at": "2026-11-01T19:56:34.661100+00:00",
+        "sha256": "69813933b66acd38f55706638b790c365403b9e80a62764eee2be067d45a5407",
+        "bytes": 13365,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/69813933b66acd38f55706638b790c365403b9e80a62764eee2be067d45a5407",
+        "resource_type": "lineups",
+        "scope": {
+          "fixture_native_id": "bsZIXK2G"
+        },
+        "source_resource_id": "7fc49cce-df63-5518-8dbb-e00ba8572da9",
+        "source_snapshot_id": "8490b029-5dfc-5a55-af1c-dc8b27e8754e",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/92f68e85017b27a558015e69188481de6f7724fb58388a24a301796465f7eaa2.json",
+        "report_sha256": "92f68e85017b27a558015e69188481de6f7724fb58388a24a301796465f7eaa2",
+        "work_id": "adaad07f-1584-594a-9bf1-be2cc2d4101b",
+        "replay_identical": true,
+        "observations": 40,
+        "contracts": {
+          "PlayerObservationV2": 36,
+          "CoachObservationV2": 2,
+          "LineupObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 2
+        }
+      },
+      {
+        "key": "summary/bsZIXK2G",
+        "provider": "flashscore",
+        "resource_key": "df_sur_1_bsZIXK2G",
+        "acquired_at": "2026-11-01T19:56:35.573862+00:00",
+        "sha256": "a87453715981ce61683c0edcb8f30caea55ddedecdae9550d01fd83012c896c3",
+        "bytes": 229,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/a87453715981ce61683c0edcb8f30caea55ddedecdae9550d01fd83012c896c3",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "bsZIXK2G"
+        },
+        "source_resource_id": "251b5dd9-12c5-59ef-a118-565db30e369f",
+        "source_snapshot_id": "8ed2eb42-c8fe-5873-9db1-c7833ab151bf",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/555dd6b6bebdb133f0894c8cdf0831dddaf108fd8c97e46dd00382000898727c.json",
+        "report_sha256": "555dd6b6bebdb133f0894c8cdf0831dddaf108fd8c97e46dd00382000898727c",
+        "work_id": "209dab2c-5f7a-524b-b15d-a47a73407bda",
+        "replay_identical": true,
+        "observations": 3,
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "findings": {}
+      },
+      {
+        "key": "history/2023-2024",
+        "provider": "flashscore",
+        "resource_key": "football/england/premier-league-2023-2024/results",
+        "acquired_at": "2026-11-01T19:56:37.340990+00:00",
+        "sha256": "8c7ee609136e294077b6904585e637b9afb6108315825bb70cd27e839e662930",
+        "bytes": 983144,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/8c7ee609136e294077b6904585e637b9afb6108315825bb70cd27e839e662930",
+        "resource_type": "league",
+        "scope": {},
+        "source_resource_id": "24ec1d88-30d1-5b2c-b295-8cc0ff7aa837",
+        "source_snapshot_id": "30135b66-6d6e-5c2d-84fb-6a85ed21e159",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/da7e21d3f8213a9fa1905b515f6282b7400beb0aee5257ba0069b59dc0aff8c2.json",
+        "report_sha256": "da7e21d3f8213a9fa1905b515f6282b7400beb0aee5257ba0069b59dc0aff8c2",
+        "work_id": "dd6e181e-8456-57e5-988c-0a3b7f4e8295",
+        "replay_identical": true,
+        "observations": 413,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 206,
+          "FixtureObservationV2": 103,
+          "ResultObservationV2": 103
+        },
+        "findings": {
+          "MF_NORM_FEED_EMPTY": 1
+        }
+      },
+      {
+        "key": "match/jXP8f29S",
+        "provider": "flashscore",
+        "resource_key": "match/jXP8f29S",
+        "acquired_at": "2026-11-01T19:56:42.135507+00:00",
+        "sha256": "374e01061e32eef036f74077a5331df8d2da9036f615b4b0cd2b2bdf79de7c4d",
+        "bytes": 891956,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/374e01061e32eef036f74077a5331df8d2da9036f615b4b0cd2b2bdf79de7c4d",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "5c3d2772-ffa5-5726-b7fd-b6b2bc1bc4db",
+        "source_snapshot_id": "555f785f-cfe9-5827-bdb6-f9d96c526581"
+      },
+      {
+        "key": "statistics/jXP8f29S",
+        "provider": "flashscore",
+        "resource_key": "df_st_1_jXP8f29S",
+        "acquired_at": "2026-11-01T19:56:42.662364+00:00",
+        "sha256": "72e1fc526fc36f51a41246295d42114efa3f7b33f3b90c4b500dbf113cb63a98",
+        "bytes": 2706,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/72e1fc526fc36f51a41246295d42114efa3f7b33f3b90c4b500dbf113cb63a98",
+        "resource_type": "statistics",
+        "scope": {
+          "fixture_native_id": "jXP8f29S"
+        },
+        "source_resource_id": "76d48389-b0d7-5cfc-8a6e-cefb5eaac2fd",
+        "source_snapshot_id": "9b81cb4d-6e01-5fee-9a91-436b4947ab44",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/1c0c2f9f585dacc72e02f00faba0e72413791690093f18997c7a2aaf50bfdbd8.json",
+        "report_sha256": "1c0c2f9f585dacc72e02f00faba0e72413791690093f18997c7a2aaf50bfdbd8",
+        "work_id": "d5c9afbf-789f-58f2-9e1d-237e00e1bd0a",
+        "replay_identical": true,
+        "observations": 8,
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_STATISTIC_VALUE_UNQUALIFIED": 12,
+          "MF_NORM_STATISTIC_REPEATED": 24,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 6,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        }
+      },
+      {
+        "key": "events/jXP8f29S",
+        "provider": "flashscore",
+        "resource_key": "df_sui_1_jXP8f29S",
+        "acquired_at": "2026-11-01T19:56:43.696659+00:00",
+        "sha256": "1903e7f3c33c3f860385b304b844b0f42cd76a72109d2ddfd8fe891635fc2df0",
+        "bytes": 5221,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/1903e7f3c33c3f860385b304b844b0f42cd76a72109d2ddfd8fe891635fc2df0",
+        "resource_type": "events",
+        "scope": {
+          "fixture_native_id": "jXP8f29S"
+        },
+        "source_resource_id": "230db679-4906-5439-b9ff-c13c9acac73f",
+        "source_snapshot_id": "1e39ca40-efd4-5ab2-83de-e33590295a4e",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/111950ff13dea608c397aafe8fd9624526673c3c7b890b04c401e76d572df401.json",
+        "report_sha256": "111950ff13dea608c397aafe8fd9624526673c3c7b890b04c401e76d572df401",
+        "work_id": "04c415e8-75f0-5ba4-987f-9ff85882dd9d",
+        "replay_identical": true,
+        "observations": 16,
+        "contracts": {
+          "EventObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_EVENT_ACTOR_TYPE_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "lineups/jXP8f29S",
+        "provider": "flashscore",
+        "resource_key": "df_li_1_jXP8f29S",
+        "acquired_at": "2026-11-01T19:56:44.875117+00:00",
+        "sha256": "6bcc2f4fd70deb2d6fe8426e317d5f5e1bce2d3464e2597fe8caca81fd6f3384",
+        "bytes": 14885,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/6bcc2f4fd70deb2d6fe8426e317d5f5e1bce2d3464e2597fe8caca81fd6f3384",
+        "resource_type": "lineups",
+        "scope": {
+          "fixture_native_id": "jXP8f29S"
+        },
+        "source_resource_id": "4c618e45-875d-5998-abd7-4e2cdcba4899",
+        "source_snapshot_id": "73be504b-47cb-5411-83e3-f77c354f8935",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/26b8917926e4ad3a77d8496c92f37f6640609200096a50975706127960eb91bd.json",
+        "report_sha256": "26b8917926e4ad3a77d8496c92f37f6640609200096a50975706127960eb91bd",
+        "work_id": "46af586f-e800-5670-8320-9e7745116d64",
+        "replay_identical": true,
+        "observations": 44,
+        "contracts": {
+          "PlayerObservationV2": 40,
+          "CoachObservationV2": 2,
+          "LineupObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 2
+        }
+      },
+      {
+        "key": "summary/jXP8f29S",
+        "provider": "flashscore",
+        "resource_key": "df_sur_1_jXP8f29S",
+        "acquired_at": "2026-11-01T19:56:45.658961+00:00",
+        "sha256": "a200fe958369e5ca9a2bb72a262c964d2305a1de86a0c19bee65ec1f47810df5",
+        "bytes": 231,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/a200fe958369e5ca9a2bb72a262c964d2305a1de86a0c19bee65ec1f47810df5",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "jXP8f29S"
+        },
+        "source_resource_id": "88d83b44-e0d1-5520-a30e-90662942b9ef",
+        "source_snapshot_id": "41504a04-bd63-5fe0-9aef-341beb33b1d7",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/0d412ffc2f5cffff9d75aa1610c5aedfa8c4beb85f0cdd4b6431969824eb0aa4.json",
+        "report_sha256": "0d412ffc2f5cffff9d75aa1610c5aedfa8c4beb85f0cdd4b6431969824eb0aa4",
+        "work_id": "38828e69-7874-537e-b7b3-8540e7eae57d",
+        "replay_identical": true,
+        "observations": 3,
+        "contracts": {
+          "PeriodScoreObservationV3": 2,
+          "RefereeObservationV3": 1
+        },
+        "findings": {}
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_2_0_en_1",
+        "provider": "flashscore",
+        "resource_key": "df_tr_1_198_dYlOSQOD_165_2_0_en_1",
+        "acquired_at": "2026-11-01T19:57:27.421333+00:00",
+        "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "bytes": 1,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "2d7c58b8-c077-52a3-b6e4-d9f7872993ec",
+        "source_snapshot_id": "20bbef81-a815-5df5-88b0-7d17f089d55f"
+      },
+      {
+        "key": "client/LeaguesEventsUpdater.B6PjsUh.js",
+        "provider": "flashscore",
+        "resource_key": "client/LeaguesEventsUpdater.B6PjsUh.js",
+        "acquired_at": "2026-11-01T19:58:50.450747+00:00",
+        "sha256": "6810b10a241262e2093411da983162ac588b8597d8b0d69449631a77d46e5fd5",
+        "bytes": 104842,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/6810b10a241262e2093411da983162ac588b8597d8b0d69449631a77d46e5fd5",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "3f73540e-eb63-5676-ab53-04f1a4d23705",
+        "source_snapshot_id": "54b7e52b-0da7-5293-b968-e5cdcd5c9245"
+      },
+      {
+        "key": "client/InitialDataOnlyUpdater.lt1MOsn.js",
+        "provider": "flashscore",
+        "resource_key": "client/InitialDataOnlyUpdater.lt1MOsn.js",
+        "acquired_at": "2026-11-01T19:58:52.085268+00:00",
+        "sha256": "fe1f6c048c569426291376e3b4edb73e0c9d0663f92a4e8860f08f174c861d62",
+        "bytes": 79445,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/fe1f6c048c569426291376e3b4edb73e0c9d0663f92a4e8860f08f174c861d62",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "5e0fdabe-481e-5ea7-bc11-b6a9001f68d0",
+        "source_snapshot_id": "d80d1a34-73ed-5f41-9c8b-818084bd42a5"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_1_en_1",
+        "provider": "flashscore",
+        "resource_key": "df_tr_1_198_dYlOSQOD_165_1_en_1",
+        "acquired_at": "2026-11-01T19:59:33.399111+00:00",
+        "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "bytes": 1,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "4eef9ca7-335d-527a-bd6b-a1b0ef06ee72",
+        "source_snapshot_id": "38d42df0-1d0c-5967-8382-14b5b6dc59b0"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_183_1_en_1",
+        "provider": "flashscore",
+        "resource_key": "df_tr_1_198_dYlOSQOD_183_1_en_1",
+        "acquired_at": "2026-11-01T19:59:34.418474+00:00",
+        "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "bytes": 1,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "ec57b250-93d4-5a63-a517-2614fd8913ac",
+        "source_snapshot_id": "206c5a66-03fb-5093-b0a6-9e716d274a1e"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_1_0_en_1",
+        "provider": "flashscore",
+        "resource_key": "df_tr_1_198_dYlOSQOD_165_1_0_en_1",
+        "acquired_at": "2026-11-01T20:03:04.885933+00:00",
+        "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "bytes": 1,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "resource_type": null,
+        "scope": {},
+        "source_resource_id": "5eb71195-3422-51f1-adbf-409751daef78",
+        "source_snapshot_id": "2a504bf8-27f2-50c9-a9af-035a008bcfd5"
+      },
+      {
+        "key": "browser/football/england/premier-league-2015-2016/results/native-fixture-ids.txt",
+        "provider": "flashscore",
+        "resource_key": "browser/football/england/premier-league-2015-2016/results/native-fixture-ids.txt",
+        "acquired_at": "2026-11-01T20:04:32.793525+00:00",
+        "sha256": "2b6a3248877a1e3238d3bd4c03b8a7752d97ed17077756bc0ed2812c41051258",
+        "bytes": 3420,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/flashscore/2b6a3248877a1e3238d3bd4c03b8a7752d97ed17077756bc0ed2812c41051258",
+        "resource_type": null,
+        "scope": {},
+        "capture": "Exact native ID text from rendered DOM after three native Show more matches clicks; not HTTP response bytes",
+        "native_fixture_ids": 380,
+        "browser_crc32": "5aced062",
+        "source_resource_id": "fe75b597-451d-5b4c-807d-26be42eae00e",
+        "source_snapshot_id": "ca833d96-5b63-5d4c-9ecf-7cc987cf5a77"
+      }
+    ],
+    "attempts": [
+      {
+        "key": "history/2015-2016",
+        "started_at": "2026-11-01T19:56:25.851549+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "match/bsZIXK2G",
+        "started_at": "2026-11-01T19:56:30.040615+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "statistics/bsZIXK2G",
+        "started_at": "2026-11-01T19:56:32.054282+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "events/bsZIXK2G",
+        "started_at": "2026-11-01T19:56:32.743242+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "lineups/bsZIXK2G",
+        "started_at": "2026-11-01T19:56:33.692926+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/bsZIXK2G",
+        "started_at": "2026-11-01T19:56:34.969747+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "history/2023-2024",
+        "started_at": "2026-11-01T19:56:35.696085+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "match/jXP8f29S",
+        "started_at": "2026-11-01T19:56:39.391202+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "statistics/jXP8f29S",
+        "started_at": "2026-11-01T19:56:42.142868+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "events/jXP8f29S",
+        "started_at": "2026-11-01T19:56:42.820972+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "lineups/jXP8f29S",
+        "started_at": "2026-11-01T19:56:43.817820+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/jXP8f29S",
+        "started_at": "2026-11-01T19:56:45.087050+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_2_0_en_1",
+        "started_at": "2026-11-01T19:57:26.978992+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "client/LeaguesEventsUpdater.B6PjsUh.js",
+        "started_at": "2026-11-01T19:58:49.942982+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "client/InitialDataOnlyUpdater.lt1MOsn.js",
+        "started_at": "2026-11-01T19:58:50.452470+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_1_en_1",
+        "started_at": "2026-11-01T19:59:32.953902+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_183_1_en_1",
+        "started_at": "2026-11-01T19:59:33.414361+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "df_tr_1_198_dYlOSQOD_165_1_0_en_1",
+        "started_at": "2026-11-01T20:03:04.398105+00:00",
+        "status": "FETCHED"
+      }
+    ],
+    "requests": 18,
+    "access_disposition": {
+      "new_requests": "OWNER_INTERNAL_POLICY_EXCEPTION",
+      "policy": "docs/source-acquisition.md; AUTHORIZE_PUBLIC_DEVELOPMENT_DATA_ACQUISITION_V1 requires applicable source conditions",
+      "terms_url": "https://www.flashscore.com/terms-of-use/",
+      "clauses": [
+        "2.9",
+        "2.10"
+      ],
+      "technical_access_recheck": "NOT_RUN; no access failure fabricated",
+      "decision_ref": "docs/evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json",
+      "provider_permission": false
+    }
+  },
+  "normalized_contracts": {
+    "CompetitionObservationV2": 5,
+    "TeamObservationV2": 1028,
+    "FixtureObservationV2": 514,
+    "ResultObservationV2": 407,
+    "ExpectedGoalsObservationV2": 4,
+    "TeamStatisticObservationV3": 18,
+    "EventObservationV2": 43,
+    "PlayerObservationV2": 116,
+    "CoachObservationV2": 6,
+    "LineupObservationV2": 6,
+    "PeriodScoreObservationV3": 6,
+    "RefereeObservationV3": 3
+  },
+  "experimental_isolation": {
+    "database": "football_v4_expansion_r03_20261101",
+    "system_identifier": "7679328148388241450",
+    "oid": 52291857,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "acquisition_and_publication_method": [
+    {
+      "path": ".local/reports/v4/expansion-r03/acquire.py",
+      "sha256": "05f484072ba9b4cb455797842b2ec3e474023eef935ee5f58680049be8e7a58d"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/flashscore_run.py",
+      "sha256": "1833b59d503f88d353acb5953542eb40f60c9756142ce936054edaf1b9ea4173"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_expand.py",
+      "sha256": "fb430ce1f909c62623eb708e670f9890a412790f18cfbf055f70506067df228a"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_pages_probe.py",
+      "sha256": "510bd534db0342e941463fb800a7d7fa8e2bd2a2fe98afde64a8a1fc84fe9235"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_pages.py",
+      "sha256": "04e52ca0e350e29c5fc53831cba64a667fa582cf09f5ad1e89936dee3a852504"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_pages_first.py",
+      "sha256": "4ad3d5250c9bf0a7f60e9870fb1d1b3b7fc9b4361b6ea561a5caa30d4e0820d0"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_client.py",
+      "sha256": "dbaa9e53051268b5c88115a391be95aa16668ee28e8739d249dea4be82fde8b4"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_register_raw.py",
+      "sha256": "fe94e11944a832bb36bb731eb35f6df3175be72f80a502c80b243b94275ac19a"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/flashscore_measure.py",
+      "sha256": "322e275c3fc29a83a6132d1797562b636eaedf15164d4e0aef26f177d96510cd"
+    }
+  ],
+  "verification": {
+    "focused_tests": {
+      "path": ".local/reports/v4/expansion-r03/phase-e-tests.log",
+      "sha256": "5cbff49bb62cdb66a31be9ca64e455f0f9b98b0ac34effebe96aab22d55d67ce"
+    },
+    "architecture_and_status": {
+      "path": ".local/reports/v4/expansion-r03/phase-e-checks.log",
+      "sha256": "94b34c5651ea1da1c3b52ff65f72c91be328c13605baa59f672699cf2c1d2847"
+    },
+    "focused_tests_passed": 49
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "qualified_market_labels_delta": 0,
+  "historical_feature_knowledge_backdated": false,
+  "model_changes": 0,
+  "restrictions": "Bounded development evidence only; no authentication or technical restriction bypass. No distribution permission or sportsbook settlement equivalence inferred.",
+  "source_policy_exception_ref": "docs/evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json"
+}

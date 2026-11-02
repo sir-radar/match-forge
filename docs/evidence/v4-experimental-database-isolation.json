@@ -1,0 +1,72 @@
+{
+  "phase": "R01-C",
+  "status": "PASS",
+  "recorded_at": "2026-11-01T15:40:45.851408+00:00",
+  "prerequisite_commits": {
+    "R01-A": "ebdc900",
+    "R01-B": "b6c834f"
+  },
+  "mechanism": {
+    "owner": "football.storage.experimental.experimental_connection",
+    "targets": "Explicit --database-url and --operating-database-url; no experimental environment fallback",
+    "identity": "Actual PostgreSQL pg_control_system().system_identifier plus pg_database.oid. Equivalent hostnames/URLs do not establish separation.",
+    "intended_role": "pg_db_role_setting setdatabase=current database OID, setrole=0, setconfig contains matchforge.database_role=experimental. Not a session GUC or name suffix.",
+    "order": "Validate connection settings; read-only operating identity; read-only target identity and persistent role; log credential-free target identity; enable writes on that same target connection; then provider/publication work.",
+    "launcher": "Verify before subprocess; pin resolved hostaddr/port/dbname/user; replace DATABASE_URL and FOOTBALL_DATABASE_URL; remove PG* defaults from child. Reject routing PG* settings, libpq service/options, multihost and incomplete/nested targets.",
+    "limits": "Launcher supplies connection settings to cooperating phase scripts. It is not a sandbox for arbitrary code. Scripts must not reload .env or independently override database settings. Shared registries retain provider-neutral caller-owned connections; supported experimental entrypoints enforce selection.",
+    "ordinary_operations": "Product operational provider sync, admin authorization, provider quota owners, worker publication fences, protected research and parity/cutover gates unchanged."
+  },
+  "entrypoints": [
+    "football.providers.normalization.cli --persist",
+    "football.observations.cli store",
+    "football.storage.experimental -- <experimental acquisition/backfill/research command>"
+  ],
+  "runbook": "docs/testing.md#experimental-v4-database-selection",
+  "schema_migrations": [],
+  "new_env_example_variables": [],
+  "operating_database_writes": 0,
+  "operating_database_role_markers_written": 0,
+  "test_target_markers": "Only newly provisioned disposable test targets; deleted with their owned databases by existing harness.",
+  "verification": {
+    "red": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_experimental_database.py",
+      "exit_code": 2,
+      "reason": "New experimental module absent before implementation; collection failure retained in isolation-red.log"
+    },
+    "focused": {
+      "command": "sh .local/reports/v4/isolation-r01/test_database.sh tests/integration/test_experimental_database_storage.py python/football/tests/test_experimental_database.py tests/integration/test_v4_development_isolation.py tests/integration/test_operational_provider_sync.py tests/integration/test_api_football_budget.py tests/integration/test_worker_publication_fencing.py python/football/tests/test_provider_runtime_policy.py",
+      "exit_code": 0,
+      "passed": 60,
+      "receipt": ".local/reports/v4/isolation-r01/isolation-focused.log",
+      "receipt_sha256": "99e1335670115fe0472333e67a976e3151dbc88508a62b231b4daf386675e45d"
+    },
+    "ruff": {
+      "exit_code": 0
+    },
+    "strict_mypy": {
+      "exit_code": 0,
+      "files": 4
+    },
+    "architecture_check": {
+      "exit_code": 0
+    },
+    "diff_check": {
+      "exit_code": 0
+    }
+  },
+  "proved": [
+    "Missing explicit target refuses before connect/launch/files",
+    "Operating alias refuses before command or publication",
+    "Unmarked different physical database refuses",
+    "Marked separate database allows observation/normalization publication",
+    "Both verification connections are read-only; operating probe unchanged",
+    "Environment cannot override target; child sees pinned target and no PG* defaults",
+    "Capability worker policy conflicts remain enforced; tests use a source-only fixture rather than weaken retry policy",
+    "Existing operational sync, quota and worker fencing cases pass"
+  ],
+  "initial_test_corrections": [
+    "Distinct unit/integration module basenames avoid pytest import collision.",
+    "WorkConflict from incompatible test retry policy was retained as correct behavior; source-only setup now tests normal CLI publication.",
+    "Source-only initial count assertion corrected to expect newly published artifacts."
+  ]
+}

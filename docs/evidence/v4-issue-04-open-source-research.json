@@ -1,0 +1,298 @@
+{
+  "phase": "R04-A",
+  "status": "PASS_WITH_WARNINGS",
+  "recorded_at": "2026-11-02T00:34:30.433735Z",
+  "starting_sha": "61f1c95f0d46bedf598a96b9bea1a13978d013ee",
+  "projects": [
+    {
+      "repository": "https://github.com/probberechts/soccerdata",
+      "source_url": "https://github.com/probberechts/soccerdata/tree/b507432742119ba3897533895c92ac3a4f2b9259",
+      "revision_or_release": "b507432742119ba3897533895c92ac3a4f2b9259",
+      "licence": "Apache-2.0 with incorporated MIT notice (pinned LICENSE.rst; code only)",
+      "implementation_language": "Python",
+      "acquisition_method": "Legacy anonymous CSV API; issue #977 proposes website Vega-Lite datasets",
+      "resource_types": "date rankings, club rating histories",
+      "actual_data_availability": "CSV reader is obsolete for present access; home and Bayern website requests returned 403",
+      "provider_identity": "clubelo",
+      "reusable_components": "Retain API/website distinction and native rating dates; no copied client",
+      "technical_limitations": "No website bytes recovered; chart-history depth remains unverified locally",
+      "compliance_limitations": "Code licence does not license ClubElo data",
+      "recommended_integration": "Only implement chart normalization after an accessible authentic resource is obtained",
+      "archived": false
+    },
+    {
+      "repository": "https://github.com/tunjayoff/sofascore_scraper",
+      "source_url": "https://github.com/tunjayoff/sofascore_scraper/tree/dd9f061be2c64f01a6d3a50fb34d55a102d7107b",
+      "revision_or_release": "dd9f061be2c64f01a6d3a50fb34d55a102d7107b",
+      "licence": "PolyForm Noncommercial 1.0.0 (pinned LICENSE)",
+      "implementation_language": "Python",
+      "acquisition_method": "Tournament seasons, rounds or last/next event pagination; raw JSON exports and versioned normalized exports",
+      "resource_types": "events, statistics, incidents, lineups, player/team slices",
+      "actual_data_availability": "Pinned public research samples include original URL, fetched_at_utc, HTTP status, trimmed and body",
+      "provider_identity": "sofascore",
+      "reusable_components": "Resource definitions and retained raw envelopes; implement independently in existing pipeline",
+      "technical_limitations": "Current transport solves browser challenges; it must not be reused. Export containers differ from raw provider bodies",
+      "compliance_limitations": "Code licence and public samples do not establish provider permission or redistribution rights",
+      "recommended_integration": "Recover bounded published raw samples, retain third-party wrapper, and test ordinary source access without challenge solving",
+      "archived": false
+    },
+    {
+      "repository": "https://github.com/ChrisMusson/FBRef_DB",
+      "source_url": "https://github.com/ChrisMusson/FBRef_DB/tree/a09f314d8f88602ef233ae4d3ae1cf46628538f8",
+      "revision_or_release": "a09f314d8f88602ef233ae4d3ae1cf46628538f8",
+      "licence": "No repository licence declared; archive reuse permission unresolved",
+      "implementation_language": "Python",
+      "acquisition_method": "Stored match-report HTML parsed into SQLite using BeautifulSoup/pandas; basic schedule scraping",
+      "resource_types": "Match, player summary, goalkeeper, passing, pass_types, defensive_actions, possession, miscellaneous",
+      "actual_data_availability": "Public Drive listing has six league ZIPs and master.db; listing alone does not verify file contents",
+      "provider_identity": "fbref",
+      "reusable_components": "Native report/player/team identifiers and table definitions; do not copy unlicensed code",
+      "technical_limitations": "Archived 2026-01-21; parser expects at least ten historical tables and cannot be assumed compatible with current basic site",
+      "compliance_limitations": "Original advanced feed removed at supplier request; local research policy is not external consent",
+      "recommended_integration": "Inspect actual archive downloads; distinguish current basic, archived original HTML and third-party SQLite derived rows",
+      "archived": true
+    },
+    {
+      "repository": "https://github.com/withqwerty/reep",
+      "source_url": "https://github.com/withqwerty/reep/tree/0ec59faa5d81615b7a8200ae6121023a3bc14ce3",
+      "revision_or_release": "0ec59faa5d81615b7a8200ae6121023a3bc14ce3",
+      "licence": "CC0-1.0",
+      "implementation_language": "TypeScript; distributed CSV/Parquet/DuckDB",
+      "acquisition_method": "Dated v1 provider/namespace/external_id bridges, entities, redirects, matches and edges",
+      "resource_types": "entities, bridges, redirects, matches, edges, provider aliases, separate Wikidata overlay",
+      "actual_data_availability": "Verified current download pointer selects 2026-10-31.1, newer than website cached 2026-10-25.1 description",
+      "provider_identity": "external identity evidence",
+      "reusable_components": "Thin exact-ID evidence reader; use existing Resolution Center review and original admissions",
+      "technical_limitations": "Public release manifest reports gate_passed=false, failed detected_conflicts and lineup_coverage; no automatic trust",
+      "compliance_limitations": "CC0 distribution is not proof of correct identity or historical PIT eligibility",
+      "recommended_integration": "Verify file hashes; join exact namespace/native ID only; reject conflicts, retain redirect chain; produce candidates without admissions",
+      "archived": false
+    }
+  ],
+  "supplementary_source": "https://github.com/withqwerty/football-docs/blob/b1fb1c175226b9726ac31524bf232d54cf960745/docs/free-sources/overview.md",
+  "fbref_official_announcement": {
+    "url": "https://www.sports-reference.com/blog/2026/01/fbref-stathead-data-update/",
+    "verified": true,
+    "date": "2026-01-20",
+    "finding": "Supplier ended advanced feeds and required deletion. Basic historical data remains; advanced data is unavailable from Sports Reference."
+  },
+  "reep_release": {
+    "stamp": "2026-10-31.1",
+    "pointer_sha256": "065460204615112fb79578e2a775d0913b67acb34025063ec864cbb8f44c45ff",
+    "release_sha256": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+    "manifest_sha256": "97b65b76a0c8f9d2c177e652c6641f981cc44bac79a3cb60973d2cfa1f538d9b",
+    "gate_passed": false,
+    "bridges": 15879646,
+    "redirects": 12917,
+    "appearances": 0
+  },
+  "source_receipts": [
+    {
+      "key": "reep-latest",
+      "url": "https://data.reep.football/releases/latest.json",
+      "acquired_at": "2026-11-02T00:32:18.742617+00:00",
+      "status": 200,
+      "bytes": 586,
+      "sha256": "065460204615112fb79578e2a775d0913b67acb34025063ec864cbb8f44c45ff",
+      "final_url": "https://data.reep.football/releases/latest.json"
+    },
+    {
+      "key": "reep-readme",
+      "url": "https://raw.githubusercontent.com/withqwerty/reep/main/README.md",
+      "acquired_at": "2026-11-02T00:32:18.743897+00:00",
+      "status": 200,
+      "bytes": 28914,
+      "sha256": "226f206627befd1127976d8da2942d18f7753873e9dad011225fc574ae0786d4",
+      "final_url": "https://raw.githubusercontent.com/withqwerty/reep/main/README.md"
+    },
+    {
+      "key": "sofascore-readme",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/main/README.md",
+      "acquired_at": "2026-11-02T00:32:18.744475+00:00",
+      "status": 200,
+      "bytes": 29176,
+      "sha256": "b7f3d029db507d02e8385f8c32a27913fedde0fe54c6622392183213cb1176e0",
+      "final_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/main/README.md"
+    },
+    {
+      "key": "fbref-readme",
+      "url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/main/README.md",
+      "acquired_at": "2026-11-02T00:32:19.554135+00:00",
+      "status": 200,
+      "bytes": 3298,
+      "sha256": "13bdacaf3195f405fbaeadfc67e85d62f1c0bb6ab74155a9427a3260affa6854",
+      "final_url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/main/README.md"
+    },
+    {
+      "key": "soccerdata-clubelo",
+      "url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/clubelo.py",
+      "acquired_at": "2026-11-02T00:32:19.645610+00:00",
+      "status": 200,
+      "bytes": 6131,
+      "sha256": "9cd96368a90af53f31598bd47b74d72e41596472decb6b127f6d9418074c0b0c",
+      "final_url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/clubelo.py"
+    },
+    {
+      "key": "soccerdata-issue",
+      "url": "https://api.github.com/repos/probberechts/soccerdata/issues/977",
+      "acquired_at": "2026-11-02T00:32:20.012637+00:00",
+      "status": 200,
+      "bytes": 4056,
+      "sha256": "b0a1ae3261a2389cacb5536c76ceca4fca351bec936719100d39989a33bd4c6d",
+      "final_url": "https://api.github.com/repos/probberechts/soccerdata/issues/977"
+    },
+    {
+      "key": "football-docs",
+      "url": "https://raw.githubusercontent.com/withqwerty/football-docs/main/docs/free-sources/overview.md",
+      "acquired_at": "2026-11-02T00:32:20.239630+00:00",
+      "status": 200,
+      "bytes": 12727,
+      "sha256": "2ee18c799e64b34e2dc99dde9775be19fedd92c3ab5324a5698816e3541746a7",
+      "final_url": "https://raw.githubusercontent.com/withqwerty/football-docs/main/docs/free-sources/overview.md"
+    },
+    {
+      "key": "clubelo-bayern",
+      "url": "https://clubelo.com/Bayern",
+      "acquired_at": "2026-11-02T00:32:20.317948+00:00",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    },
+    {
+      "key": "clubelo-home",
+      "url": "https://clubelo.com/",
+      "acquired_at": "2026-11-02T00:32:20.664468+00:00",
+      "error": "HTTPError: HTTP Error 403: Forbidden"
+    },
+    {
+      "key": "fbref-announcement",
+      "url": "https://www.sports-reference.com/blog/2026/01/fbref-stathead-data-update/",
+      "acquired_at": "2026-11-02T00:32:20.701738+00:00",
+      "status": 200,
+      "bytes": 110870,
+      "sha256": "ae6243f012c05ed84097bb08cf5b9fd2dccf116671301691e045285e32199b84",
+      "final_url": "https://www.sports-reference.com/blog/2026/01/fbref-stathead-data-update/"
+    },
+    {
+      "key": "reep-LICENSE",
+      "url": "https://raw.githubusercontent.com/withqwerty/reep/0ec59faa5d81615b7a8200ae6121023a3bc14ce3/LICENSE",
+      "status": 200,
+      "bytes": 6555,
+      "sha256": "2fb5e423d614313817097977094bac11ac8996498e210175c9470f96b272d55a"
+    },
+    {
+      "key": "sofascore-LICENSE",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/LICENSE",
+      "status": 200,
+      "bytes": 4669,
+      "sha256": "d272cdbb0ce89e27935917a3c33c400b0ca8990ee84e3ed856eea95fb432c2e5"
+    },
+    {
+      "key": "sofascore-docs_design_04-schema-v1.md",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/docs/design/04-schema-v1.md",
+      "status": 200,
+      "bytes": 108913,
+      "sha256": "81aa89660e2aae5959c3bf0108f2e10de91e67b666d2660738dac813d235a03b"
+    },
+    {
+      "key": "sofascore-sofascore_scraper_client_endpoints.py",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/sofascore_scraper/client/endpoints.py",
+      "status": 200,
+      "bytes": 6229,
+      "sha256": "66db71b991f5dc2321e2b002611bcc30e2b7b5a07282c82e4e8d82766544b859"
+    },
+    {
+      "key": "sofascore-tests_test_detail_endpoints_characterization.py",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/tests/test_detail_endpoints_characterization.py",
+      "status": 200,
+      "bytes": 7234,
+      "sha256": "60f167c3325c14bc56ce7fad23956392da035249d46dd350af04f2b1d4d60359"
+    },
+    {
+      "key": "fbref-matches.py",
+      "url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/a09f314d8f88602ef233ae4d3ae1cf46628538f8/matches.py",
+      "status": 200,
+      "bytes": 2364,
+      "sha256": "693581941c662a92b5d1eb0919315704b04c978de4670568cec4fd5f97a76912"
+    },
+    {
+      "key": "fbref-players.py",
+      "url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/a09f314d8f88602ef233ae4d3ae1cf46628538f8/players.py",
+      "status": 200,
+      "bytes": 4779,
+      "sha256": "b71c5f0f7968b3cd3f62bc71ac032fafedc2ec3773c858428dd343855687dacd"
+    },
+    {
+      "key": "fbref-create_database.py",
+      "url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/a09f314d8f88602ef233ae4d3ae1cf46628538f8/create_database.py",
+      "status": 200,
+      "bytes": 411,
+      "sha256": "f11cb204961504fad9ca0365431a9769da0694c6d65d74966b832d631f3c2b4c"
+    },
+    {
+      "key": "fbref-db_helper.json",
+      "url": "https://raw.githubusercontent.com/ChrisMusson/FBRef_DB/a09f314d8f88602ef233ae4d3ae1cf46628538f8/db_helper.json",
+      "status": 200,
+      "bytes": 6479,
+      "sha256": "bba0ac2a5a726cf13f5d90357bcdd56d45c13dd3288756bcc79949eebe4482f7"
+    },
+    {
+      "key": "reep-release",
+      "url": "https://data.reep.football/releases/2026-10-31.1/release.json",
+      "status": 200,
+      "bytes": 7216,
+      "sha256": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333"
+    },
+    {
+      "key": "fbref-drive",
+      "url": "https://drive.google.com/drive/folders/1t34zhIvlk-2M0F_2v-7wvdf1mep9Kq-C",
+      "status": 200,
+      "bytes": 374944,
+      "sha256": "55dc9fedc3e026b86731e738bac8bfdab8e20c60b3a70f622e9a13213f3765f1"
+    },
+    {
+      "key": "reep-manifest",
+      "url": "https://data.reep.football/releases/2026-10-31.1/objects/03a631a3-c5b4-4455-a178-d52c23b9241e/manifest.json",
+      "sha256": "97b65b76a0c8f9d2c177e652c6641f981cc44bac79a3cb60973d2cfa1f538d9b",
+      "bytes": 7687
+    },
+    {
+      "key": "sofascore-sofascore_scraper_services_tournaments.py",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/sofascore_scraper/services/tournaments.py",
+      "sha256": "f180ad3e1d262c5d77b3eb993b569c06c2cb462adf131564643bf69b64409111",
+      "bytes": 9853
+    },
+    {
+      "key": "sofascore-sofascore_scraper_services_export.py",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/sofascore_scraper/services/export.py",
+      "sha256": "4ceaae05728eca24ef6ec2c997e57b71a217897d52582ba312b9cf37a7ffd894",
+      "bytes": 54132
+    },
+    {
+      "key": "sofascore-sofascore_scraper_client_transport.py",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/sofascore_scraper/client/transport.py",
+      "sha256": "a7031994e18b85399b95281f5bc6a47a8283fb4bea46f0ee459018b1f796e627",
+      "bytes": 30452
+    },
+    {
+      "key": "sofascore-research_all_sports_samples_football_event-id__1.json",
+      "url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id__1.json",
+      "sha256": "6c3116329f86b5a673f59937e34b7709da0de43321981595fd1677631b492e4a",
+      "bytes": 6521
+    },
+    {
+      "url": "https://raw.githubusercontent.com/probberechts/soccerdata/b507432742119ba3897533895c92ac3a4f2b9259/LICENSE.rst",
+      "sha256": "e52180f25ab58ac501f04b590f6de3b6afd1e00e7112c1780a2bd22bea11b238",
+      "bytes": 1384,
+      "status": 200
+    }
+  ],
+  "request_limits": "At most 3 concurrent public research requests; 25-30 second timeout; 4 MB read ceiling for documents; no retries or bypass",
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "operating_writes": 0,
+  "models_trained": 0,
+  "identities_admitted": 0,
+  "verification": {
+    "release_and_manifest_hashes": "PASS",
+    "implementation_dispositions": "four projects inspected; actual source files pinned",
+    "git_diff_check": "PASS"
+  }
+}

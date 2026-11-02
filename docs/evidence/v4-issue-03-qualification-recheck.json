@@ -1,0 +1,236 @@
+{
+  "phase": "R03-G",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "011e9c4b43e5eea432de25f2420cd42b4e3daaf5",
+  "report": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/qualification/8944bf55365d0fbc1ab86b75a440c6bf2d0d9ee4b0388282b1cb1a915952092b.json",
+    "sha256": "8944bf55365d0fbc1ab86b75a440c6bf2d0d9ee4b0388282b1cb1a915952092b"
+  },
+  "track_a": {
+    "admitted_owner_proofs": 0,
+    "competition": "2",
+    "historically_eligible": 0,
+    "identity_qualified": 0,
+    "local_clocks_without_utc_proof": 380,
+    "mapping_checks": 21,
+    "market_label_qualified": 0,
+    "normalized_fixture_units": 380,
+    "normalized_observations": 41729,
+    "provider": "statsbomb_open_data",
+    "raw_fixtures": 380,
+    "season": "27",
+    "semantic_and_identity_qualified": 0,
+    "source_utc_proof_from_other_providers": "Available as native claims only; no exact independently accepted fixture binding to apply those clocks",
+    "time_and_identity_qualified": 0
+  },
+  "track_b": {
+    "canonical_membership_intervals": 0,
+    "canonical_minutes": 0,
+    "canonical_player_admissions": 0,
+    "competition": "700",
+    "fixture_native_id": "704279",
+    "historically_eligible": 0,
+    "identity_owner_checks": [
+      {
+        "admitted_proofs": [],
+        "blocker": "NO_RECORDED_MAPPING",
+        "entity_type": "competition",
+        "mapping_claims": 0,
+        "native_id": "700",
+        "provider": "espn"
+      },
+      {
+        "admitted_proofs": [],
+        "blocker": "NO_RECORDED_MAPPING",
+        "entity_type": "team",
+        "mapping_claims": 0,
+        "native_id": "360",
+        "provider": "espn"
+      },
+      {
+        "admitted_proofs": [],
+        "blocker": "NO_RECORDED_MAPPING",
+        "entity_type": "team",
+        "mapping_claims": 0,
+        "native_id": "370",
+        "provider": "espn"
+      }
+    ],
+    "identity_qualified": 0,
+    "market_diagnostics": "CANONICAL_SCOPE_UNADMITTED; no invented canonical competition/season UUID",
+    "market_label_qualified": 0,
+    "native_players": 40,
+    "native_utc_with_timeValid": true,
+    "normalized_fixture_units": 1,
+    "provider": "espn",
+    "raw_fixtures": 1,
+    "season": "2024",
+    "semantic_and_identity_qualified": 0,
+    "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+    "source_sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+    "time_and_identity_qualified": 0
+  },
+  "native_source_utc_fixture_counts_including_replayed_baseline": {
+    "espn": 37,
+    "flashscore": 514,
+    "soccerway": 218,
+    "whoscored": 38
+  },
+  "native_exposure": {
+    "understat_reported_time_fields": 53,
+    "matching_rendered_player_time_values": 53,
+    "canonical_qualified_minutes": 0,
+    "continuous_membership_or_transfer_intervals": 0,
+    "interpretation": "Source-specific displayed time claims are retained. No universal stoppage/rounding/void rule or canonical player identity granted."
+  },
+  "source_definitions": {
+    "statsbomb": {
+      "kickoff_timezone": "Not specified by the inspected match-data definition; no UTC conversion granted",
+      "path": ".local/reports/v4/expansion-r03/definitions/statsbomb-spec.pdf",
+      "settlement_equivalence": "NOT_ESTABLISHED",
+      "sha256": "d5a8267939c5db35a9501b1a272cc9861a2bb3bef2f53c723d4a43ec1f5ef477",
+      "shot_outcome_115": "Saved by goalkeeper while off target; cannot be treated as SOT merely because saved",
+      "url": "https://raw.githubusercontent.com/statsbomb/open-data/master/doc/StatsBomb%20Open%20Data%20Specification%20v1.1.pdf",
+      "visually_checked_pages": [
+        6,
+        31
+      ]
+    }
+  },
+  "qualification_delta": {
+    "independently_accepted_canonical_identity_anchors": 0,
+    "utc_and_identity_qualified_fixtures": 0,
+    "historically_eligible_fixtures": 0,
+    "qualified_market_labels": 0,
+    "canonical_player_admissions": 0,
+    "qualified_membership_intervals": 0,
+    "qualified_minutes": 0,
+    "market_families_unlocked": 0
+  },
+  "market_status_counts": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "registry_counts": {
+    "canonical_resource_coverage": 0,
+    "canonical_resource_resolutions": 0,
+    "provider_resource_capabilities": 60,
+    "provider_resource_coverage": 38,
+    "resolution_decisions": 0,
+    "resource_observation_artifacts": 9704
+  },
+  "provider_capability_scopes": 36,
+  "append_only_capability_clock_clarifications": 24,
+  "clarification_reason": "Initial provider-level clock descriptions were too broad for detail resources. Append-only corrections explicitly distinguish resource clocks from linked fixture evidence.",
+  "source_reports_replayed": 60,
+  "owner_review_cases": [
+    {
+      "case_key": "team:01a0f3af-a21f-7ba4-85d1-b39e601b8aee",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "status": "BLOCKED",
+      "evidence_version": "cb85351c0fe98882eec03a2d22367e0d1a018c447fcafb10fac6ba5085955843",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "team:01a0f3af-a264-7312-89ae-dcc1e1af04e0",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "status": "BLOCKED",
+      "evidence_version": "063693c10919d8d8d2564a103c42b34ca507269e3a7f258b97c9285ab7b15ce2",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "team:01a0f3b0-2043-752b-8aa4-74debd2448fb",
+      "reason": "ORIGIN_UUID_MISMATCH",
+      "status": "BLOCKED",
+      "evidence_version": "f547ab5452914e10191e165f7e71945f4a9720fc658acb638d27cda41ec1098b",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a12ac1-0225-7f0f-b0be-d9241b662872",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "status": "BLOCKED",
+      "evidence_version": "bfaba85d70516344eab32677d671a35cc24155b7963ad3cf605c8ed6559bec36",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a129b2-cc1f-7013-90cb-1995f3e1e067",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "status": "BLOCKED",
+      "evidence_version": "3168a7fb289cfbd75a459c3160954f4c7f0329129ec82d066906ea11783af3d9",
+      "approval_required": true,
+      "applied": false
+    },
+    {
+      "case_key": "competition:01a129b2-cc65-7d42-a95e-2bdc9c2c5d42",
+      "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+      "status": "BLOCKED",
+      "evidence_version": "6d92fb805696f8089c638557f7d1a671427b84588f3db1a1b3e78826f5b63a01",
+      "approval_required": true,
+      "applied": false
+    }
+  ],
+  "new_ready_for_approval_cases": 0,
+  "remaining_owner_action": "Obtain exact independently accepted source/canonical anchors and target proof before Resolution Center approval. New native resources and UTC fields do not authorize aliases or UUID-origin overrides.",
+  "verification": {
+    "focused_tests": {
+      "passed": 110,
+      "exit_code": 0,
+      "path": ".local/reports/v4/expansion-r03/phase-g-tests.log",
+      "sha256": "e08ea623e4a689f3927724c00f1fefd32582c00f56264610dd625ff926d8db69"
+    },
+    "architecture_and_status": {
+      "path": ".local/reports/v4/expansion-r03/phase-g-checks.log",
+      "sha256": "94b34c5651ea1da1c3b52ff65f72c91be328c13605baa59f672699cf2c1d2847"
+    },
+    "repeat_publication": {
+      "exit_code": 0,
+      "identical_report_sha256": "8944bf55365d0fbc1ab86b75a440c6bf2d0d9ee4b0388282b1cb1a915952092b",
+      "path": ".local/reports/v4/expansion-r03/recheck-repeat.log",
+      "sha256": "0f7a875dbb704ce051708398a5bdc37dcd1b27e0b72d1bb3327502a110fee2c5"
+    },
+    "primary_pdf_visual_checks": {
+      "pages": [
+        6,
+        31
+      ],
+      "renderer": "Bundled pypdfium2",
+      "pdf_text_reader": "Bundled pypdf",
+      "system_pdftotext": "Unavailable; bundled reader/renderer used without repository dependency changes"
+    }
+  },
+  "methods": [
+    {
+      "path": ".local/reports/v4/expansion-r03/recheck_run.py",
+      "sha256": "e0f7dfa1ae8d4d5d910014829dc9133bae8c98fa1f6c47cb0370773565be0764"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/recheck_capability_clocks.py",
+      "sha256": "a3e5f88f337c5a4356e650e38483932a71f717a56e880659b4e19f29022f8141"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/recheck-input.json",
+      "sha256": "894ca4bd5b6083295c7dbe7c5cc335676a5c04c54036ccbd994bd517f1266eb4"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/capability-clock-correction-input.json",
+      "sha256": "f5bb68240b3930bbf3bed1ce0cab5c64e75670ed6f6f9f31713172b4f7aa87af"
+    }
+  ],
+  "operating_writes": 0,
+  "canonical_writes": 0,
+  "model_changes": 0,
+  "issue_2_can_be_reopened_for_final_qualification": false,
+  "remaining_proof": [
+    "Exact independently accepted source/canonical fixture, team, competition and player anchors",
+    "Verified timezone for original StatsBomb clocks after exact fixture identity proof",
+    "Regulation/ET and sportsbook target completeness/correction/void meaning",
+    "Canonical player identity, continuous membership/transfer bounds and exposure semantics"
+  ],
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "owner_intervening_commit": "3bb5d0193cde6328955e499ac716082787cd0018",
+  "source_policy_ref": "docs/source-acquisition.md"
+}

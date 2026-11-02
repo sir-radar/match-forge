@@ -1,0 +1,190 @@
+{
+  "phase": "14",
+  "starting_sha": "6d42c2cca0b9376194257a9ce0a3c8a9b1552550",
+  "recorded_at": "2026-11-01T04:51:39.348143Z",
+  "status": "PARTIAL_FUNCTIONAL",
+  "engineering_gate": "PASS_WITH_WARNINGS",
+  "full_phase_complete": false,
+  "implemented": [
+    "V3 canonical comparison contexts and existing identity-owner binding checks",
+    "Read-only per-field and exact native-player mapping coverage",
+    "Resumable feature-scoped normalization through existing work fencing",
+    "Retained StatsBomb lineups, supported events, shots/xG, results, referee and manager observations",
+    "Optional absent foul/card metadata no longer falsely quarantines ordinary unbooked fouls; explicit null remains invalid"
+  ],
+  "coverage_ref": "docs/evidence/matchforge-v4-phase-14-coverage-2026-11-01.json",
+  "coverage_sha256": "ac0719fb425026c1719995808e389fa2b506c22e0f49440e4b5bc78ad03bcd2a",
+  "operating_audit": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-14/reports/provider-data-audit/a7984a077d91864fce63e55ce2de2b71becc476e884d03dd61158d7fe43e92c3.json",
+    "sha256": "a7984a077d91864fce63e55ce2de2b71becc476e884d03dd61158d7fe43e92c3"
+  },
+  "shadow_audit": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-14/shadow-audit/reports/provider-data-audit/096fb0bac6b36ff77f43834092c3576bb691f3812360547e204c950984e81262.json",
+    "sha256": "096fb0bac6b36ff77f43834092c3576bb691f3812360547e204c950984e81262"
+  },
+  "shadow_backfill": {
+    "database": "football_v4_phase14_shadow_20261101",
+    "artifact_root": ".local/shadow-v4/phase-14",
+    "raw_resources": 1524,
+    "source_lineup_resources": 760,
+    "source_event_resources": 760,
+    "source_match_resources": 4,
+    "retained_match_rows": 1034,
+    "observations": 84610,
+    "contracts": {
+      "ShotObservationV2": 19075,
+      "ExpectedGoalsObservationV2": 19075,
+      "EventObservationV2": 9890,
+      "TeamObservationV2": 3588,
+      "PlayerObservationV2": 27353,
+      "LineupObservationV2": 1520,
+      "ResultObservationV2": 1034,
+      "RefereeObservationV3": 1000,
+      "CoachObservationV2": 2075
+    },
+    "succeeded_normalization_work": 3044,
+    "first_pass": {
+      "path": ".local/reports/v4/phase-14/retained-backfill-receipt.json",
+      "sha256": "70505264958940c3b510be62fc558d28a38289047dcffe0b31f998dc6507b3a3",
+      "bytes": 1411064
+    },
+    "correction": {
+      "path": ".local/reports/v4/phase-14/retained-correction-receipt.json",
+      "sha256": "cdb063295379d15fc0b7c1770d53d64babe0cec6ac346475ec93ceec78c22192",
+      "bytes": 473301
+    },
+    "findings_after_event_correction_and_match_enrichment": {
+      "MF_NORM_EVENT_TYPE_UNSUPPORTED": 2598398,
+      "MF_NORM_EVENT_TYPE_UNKNOWN": 839,
+      "MF_NORM_PROVIDER_TIMESTAMP_UNRESOLVED": 1034,
+      "MF_NORM_KICKOFF_TIMEZONE_UNRESOLVED": 1034
+    },
+    "event_observation_preservation": "All 760 event reports retain exactly the original observation ID/checksum/version lists; only findings changed. Earlier reports remain immutable.",
+    "integrity": "All 84,610 observation files loaded through the existing checksum and observation-identity verifier during the final read-only shadow audit.",
+    "year_floor": null,
+    "provider_requests": 0,
+    "operating_application_writes": 0,
+    "canonical_identity_changes": 0,
+    "forecast_or_model_writes": 0,
+    "provider_enablement": false,
+    "cutover": false
+  },
+  "player_identity": {
+    "existing_native_players": 1240,
+    "exact_unique_recorded_mapping_claims": 1240,
+    "ambiguous_claims": 0,
+    "unmapped_statsbomb_native_players": 0,
+    "cross_provider_admissions": 0,
+    "new_source_player_references": [
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "api_football"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "espn"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "flashscore"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "fotmob"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "pitchapi"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 40,
+        "pit_eligible": null,
+        "provider": "soccerway"
+      },
+      {
+        "claimed_canonical_players": 0,
+        "identity_qualified": null,
+        "native_players_with_recorded_mapping_claim": 0,
+        "observed_native_players": 32,
+        "pit_eligible": null,
+        "provider": "understat"
+      }
+    ],
+    "claim_artifact": {
+      "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-14/player-claims/0b4ddb5b37d7bd6f3e3e432f4f63c21af28e532b18bce2cbfc5e622d47baf478.json",
+      "sha256": "0b4ddb5b37d7bd6f3e3e432f4f63c21af28e532b18bce2cbfc5e622d47baf478"
+    },
+    "qualified_continuous_membership": null,
+    "qualified_transfers": null
+  },
+  "remaining_requirements": [
+    {
+      "requirement": "Qualified historical eligibility and target semantics",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "next_action": "Establish source-specific football time, identity and period/settlement proof through existing owners; do not substitute acquisition time or local kickoff for verified event time."
+    },
+    {
+      "requirement": "Cross-provider player identity, continuous memberships and transfers",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "next_action": "Acquire explicit native-ID crosswalk and time-bounded membership/transfer evidence; submit decisions requiring approval through the existing workflow."
+    },
+    {
+      "requirement": "Historical Elo",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "evidence_ref": "docs/evidence/matchforge-v4-phase-07-2026-11-01.json",
+      "next_action": "Acquire a verified dated archive through permitted public access; no current-rating substitution."
+    }
+  ],
+  "isolation_deviation": {
+    "status": "RECORDED; FURTHER_NORMALIZATION_ISOLATED",
+    "rule": "docs/architecture.md resource-normalization instructions require isolated shadow persistence until cutover.",
+    "earlier_actual_state": "Earlier V4 phases registered 12,310 normalized observation artifacts in operating football rather than an isolated shadow database.",
+    "effect": "No production V2 routing or cutover was performed. Additive registrations remain immutable evidence. This did not follow the isolation instruction.",
+    "correction": "Phase 14 writes only to isolated shadow/test databases. Earlier immutable registrations are preserved; owner disposition is required before any destructive remediation or production cutover.",
+    "operating_observation_count_change_in_phase_14": 0
+  },
+  "verification": {
+    "focused_disposable_tests": {
+      "passed": 187,
+      "log": {
+        "path": ".local/reports/v4/phase-14/tests.log",
+        "sha256": "41e62bf00222dccc6137436cbfc87bfc8681cb09602dacad4ccee9b85b8b1d56",
+        "bytes": 260
+      }
+    },
+    "ruff_format_lint_complexity": "PASS; ten changed Python files",
+    "mypy": "PASS; four changed production files",
+    "architecture_boundaries": "PASS",
+    "project_status_governance": {
+      "status": "PASS",
+      "tests": 24,
+      "governance_log_sha256": "12784721e0280443291002b595b03384e8588476665647b621a862f07297e08f",
+      "status_log_sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a"
+    },
+    "diff_check": "PASS"
+  },
+  "next_phase": "15 market taxonomy and semantics; independent engineering only; Phase 14 qualification requirements remain open"
+}

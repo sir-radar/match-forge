@@ -1,7 +1,8 @@
-"""API-Football v3 fixture, lineup and availability observations."""
+"""API-Football v3 fixture, lineup, availability and standings observations."""
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Literal
 
 from football.contracts.observations_v2 import (
@@ -11,12 +12,15 @@ from football.contracts.observations_v2 import (
     FixtureObservationV2,
     LineupMemberV2,
     ResultObservationV2,
+    StandingObservationV2,
 )
 from football.providers.native.api_football import (
     ApiFootballCompetition,
     ApiFootballFixture,
     ApiFootballInjury,
+    ApiFootballLeague,
     ApiFootballLineup,
+    ApiFootballStanding,
 )
 from football.providers.native.reader import native_record
 from football.providers.normalization.common import (
@@ -202,3 +206,53 @@ def lineups(output: ObservationCollector, payload: object) -> None:
                 formation=row.get("formation"),
                 confirmed=True,
             )
+
+
+def standings(output: ObservationCollector, payload: object) -> None:
+    for index, raw in enumerate(_rows(payload)):
+        path = f"json:/response/{index}/league"
+        with output.record(path):
+            source = object_value(object_value(raw).get("league"))
+            league = native_record(ApiFootballLeague, source)
+            year = league.get("season")
+            if year is None:
+                raise ValueError("API-Football standings require the source season")
+            if output.context.competition_native_id not in (None, str(league["id"])):
+                raise ValueError("standing competition conflicts with requested scope")
+            if output.context.season_label not in (None, str(year)):
+                raise ValueError("standing season conflicts with requested scope")
+            groups = array(source.get("standings"))
+            if len(groups) != 1:
+                output.finding(
+                    "STANDING_SCOPE_UNSUPPORTED",
+                    path,
+                    "Multiple or absent source groups cannot establish global competition ranks",
+                )
+                continue
+            for ri, value in enumerate(array(groups[0])):
+                field = f"{path}/standings/0/{ri}"
+                with output.record(field):
+                    row = native_record(ApiFootballStanding, value)
+                    total = row["all"]
+                    goals = object_value(total.get("goals"))
+                    team = emit_team(output, row["team"], field + "/team")
+                    time = output.context.time
+                    if row.get("update") is not None:
+                        time = replace(time, provider_updated_at=timestamp(row.get("update")))
+                    output.emit(
+                        StandingObservationV2,
+                        field,
+                        row["team"]["id"],
+                        observation_time=time,
+                        competition=output.context.reference(league["id"], path),
+                        team=team,
+                        season_label=str(year),
+                        rank=row["rank"],
+                        played=total.get("played"),
+                        won=total.get("win"),
+                        drawn=total.get("draw"),
+                        lost=total.get("lose"),
+                        goals_for=goals.get("for"),
+                        goals_against=goals.get("against"),
+                        points=row["points"],
+                    )

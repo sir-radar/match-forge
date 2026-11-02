@@ -311,3 +311,15 @@ def test_daily_group_uses_explicit_primary_competition_id() -> None:
     data["leagues"][0]["primaryId"] = True
     with pytest.raises(FotmobPayloadError):
         normalize_daily_matches(grouped)
+
+
+def test_reported_half_time_clock_also_sets_status_when_reason_is_absent() -> None:
+    status = {
+        "utcTime": "2026-10-09T20:00:00Z",
+        "started": True,
+        "finished": False,
+        "cancelled": False,
+        "liveTime": {"short": "HT", "long": "45:00 + 3:52"},
+    }
+    row = normalize_daily_matches(response([match(status=status)]))[0]
+    assert (row.status, row.period, row.minute, row.added_time) == ("HALF_TIME", "HT", 45, 3)

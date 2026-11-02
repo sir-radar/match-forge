@@ -16,18 +16,78 @@ Canonical ingestion consumes this boundary only after re-verifying the immutable
 
 ## Project use policy
 
-MatchForge is a private, non-commercial research project and is not intended
-for distribution or external publication. Provider qualification therefore
-does not require commercial-use or redistribution rights.
+MatchForge is a local, private, non-commercial experimental research project. This document establishes a **standing internal owner authorization** to investigate, request, acquire, and locally retain football data needed for development and unfinished research tasks. This authorization applies to all providers, competitions, seasons, and technically accessible public routes; it is not limited to specific named sources or a single task.
 
-Terms review must still confirm that private research access, automated or bulk
-acquisition, processing, and required retention are permitted. Attribution,
-rate limits, credential controls, and other applicable usage restrictions remain
-in force. Third-party source data must not be published unless its terms permit
-publication. A publicly viewable source is not eligible for automated or bulk
-acquisition when its terms prohibit that use or permission remains unresolved.
+**Local experimental acquisition is allowed by MatchForge's internal policy even when provider terms have not been reviewed, permission is unresolved, or published terms restrict automated or bulk acquisition.** Do not stop local experimental acquisition solely because a provider's terms status is `UNKNOWN`, `UNRESOLVED`, `RESTRICTED`, or `PROHIBITED`, and do not repeatedly seek an owner decision for the same policy question. This rule removes an _internal research-eligibility gate_; it does **not** constitute provider consent, override an external contract or law, or establish that the activity is permitted by the provider.
+
+Before or during acquisition, record the provider, source URL or route, terms and permission status, known restrictions, purpose, request limits, acquisition time, and compliance limitations in source evidence. Keep those limitations visible; never relabel restricted or unresolved access as provider-approved. Treat actual access failures, missing credentials, source unavailability, explicit operational stops, and immutable-data or security checks as real blockers rather than falsely reporting successful acquisition.
+
+Acquisition remains bounded and local. Respect configured rate and concurrency budgets, backoff, quotas, caching, credential handling, and provenance. Do not bypass authentication, CAPTCHAs, paywalls, access controls, or anti-bot protections. Never distribute or externally publish third-party raw data unless the applicable rights permit it. The local research authorization does not enable production collection, public release, Evaluation V2 qualification, model promotion, or production cutover; these retain their separate scientific and operational gates.
+
+### Development acquisition routes
+
+The [current owner decision](evidence/owner-decision-public-development-data-access-2026-10-31.json) and the standing project-use policy above authorize investigation and bounded local acquisition from technically viable football-data routes without a new per-provider or per-task approval. Official API documentation or a commercial integration is not a prerequisite for internal experimental acquisition. Routes may include official APIs, undocumented public JSON and browser endpoints, public HTML and embedded state, CSV/JSON feeds, open datasets, maintained community wrappers/scrapers, and normal public request formats implemented directly in MatchForge.
+
+Record the actual access route separately from resource capability, provider permission status, and downstream qualification. Inspect the source, make bounded requests, preserve exact bytes and observation time, and measure coverage. An unofficial endpoint, wrapper, or scraper is not by itself an unavailable source. A failed request is evidence for that tested route and scope, not proof that every resource is inaccessible. A restrictive or unresolved terms status must be recorded as a compliance limitation, not silently converted into a technical acquisition failure or a provider-approval claim.
+
+Use the existing cache, immutable storage, request budgets, quotas, cooldowns, schema validation, and shared work orchestration. Do not defeat authentication, CAPTCHAs, paywalls, technical access restrictions, or anti-bot controls. Identity, semantic, and point-in-time qualification remain prerequisites for canonical/model use; public access alone does not qualify data or establish earlier historical knowledge. Label new data collected under this standing exception `EXPERIMENTAL_ONLY` until separately qualified.
+
+This policy concerns external football data. MatchForge's own admin/API authentication, private-local checks, browser Origin checks, owner approvals for consequential operations, and request validation remain governed by their existing contracts. Historical decisions and frozen evaluation scopes are preserved; this standing experimental acquisition authorization applies prospectively and does not reopen closed scientific routes.
+
+### Flashscore and Soccerway under the standing experimental policy
+
+The [R03 owner decision](evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json) is an earlier source-specific example of the standing experimental policy. Flashscore and Soccerway are eligible for bounded **local experimental acquisition under MatchForge's internal rules** even where provider permission is unresolved or automated-acquisition restrictions have been identified. The same internal rule now applies to other providers; no further exception is required for each experimental task.
+
+Record the named provider restrictions and unresolved permission accurately in acquisition evidence. Internal owner authorization is not provider permission and does not erase external compliance risk. Do not bypass authentication, access controls, CAPTCHAs, paywalls, or anti-bot protections. Preserve request bounds, source isolation, identity and point-in-time checks, and `EXPERIMENTAL_ONLY` classification until independent qualification.
+
+## WhoScored historical requests
+
+`WhoScoredSource.season` accepts the native region, tournament, season and slug
+from retained league-selector links. Its optional stage ID selects the linked
+monthly fixtures page. Normalization checks both requested season and stage IDs
+against the embedded fixture payload. A reachable season page or month is not
+complete-season coverage. Native UTC values and source-side IDs still require
+independent canonical identity and target qualification before historical use.
+
+## Auditing retained provider data
+
+Run a read-only inventory against the configured database:
+
+```sh
+set -a; . ./.env; set +a
+. ./scripts/toolchain.sh
+uv run --locked python -m football.providers.data_audit --artifact-root .local/provider-audits
+```
+
+The command writes a content-addressed diagnostic report through the existing
+immutable file store. It reads existing registrations, observation tables and
+registry counts; it makes no provider requests or qualification decisions.
+Native statistic fields are measured separately by provider, stored competition
+and season IDs, and period. Current competition display labels never supply a
+historical season. Missing scope IDs remain unknown.
+
+Resource revisions, repeated measurements and distinct stored fixtures have
+separate counts. Numeric zero remains distinct from an unreported value. A
+recognized normalizer field does not prove physical raw-byte retention,
+semantic/identity/PIT qualification or model support. Those unknown states remain
+null. Use existing capability, authority and coverage owners for qualification;
+this diagnostic report is not another registry or a historical feature reader.
 
 ## Provider capability registry
+
+Understat's development adapter uses its public JSON resources after the ordinary
+anonymous page/session bootstrap. Cookie values remain private and ephemeral.
+Every HTTP request can use the existing scheduler/budget guard. Wire bytes and
+checksums remain immutable; gzip expansion uses the established source byte limit
+before strict JSON/native validation. The existing historical manifest and
+registration owners support retained resources without inventing Git revisions.
+
+Use the existing normalization CLI with `results` or `shots` after registration;
+shot decoding requires the explicit native fixture scope. Unknown source timezones
+remain DATE_ONLY fixture metadata with no inferred event time. Shot assistant
+names and final match scores do not become identities or before-shot context.
+Coordinate frames and market/PIT/identity qualification remain separate. Adapter
+availability and scoped sample capability do not enable production collection.
 
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
 records terms status, supported competition/season scopes, resource-level historical coverage,
@@ -50,20 +110,11 @@ trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
 
 ### Research and Evaluation V2 are separate qualification levels
 
-Ordinary private research may use a provider only where published terms and
-the current account entitlement explicitly permit the intended access and use.
-Public accessibility is not permission. If automation, retention, attribution,
-or another needed activity is unclear, exclude that activity rather than infer
-authority. Additional live API calls require a documented request budget and
-explicit owner approval.
+For **local experimental research**, the standing project-use policy permits bounded acquisition without a provider-terms approval gate. Public accessibility is not proof of permission: retain the actual provider terms/entitlement status, known restrictions, and any unresolved compliance limitations, including when automation or retention is prohibited or uncertain. Do not infer that MatchForge's internal authorization grants rights against a provider. Do not treat a terms-only concern as a reason to abandon unrelated acquisition, adapter implementation, missing-data recovery, or research tasks.
 
-Research contract fixtures and sanitized, bounded technical checks do not
-qualify a provider for Evaluation V2. Evaluation qualification additionally
-requires complete frozen coverage, exact source and xG-series identity,
-permitted immutable retention, correction/revision lineage, stable traceable
-identifiers, source hashes, and every applicable corpus and firewall rule.
-Experimental outputs must be labelled `EXPERIMENTAL_ONLY` and cannot be used as
-Evaluation V2, promotion, or production evidence.
+Live requests still require a documented request budget within the standing owner-authorized research scope. The V4 programme's bounded investigation authorization remains in effect, so routine requests do not require repeated approval. Frozen research/evaluation budgets and separate scientific or production-cutover approvals remain binding. Access-control bypass and unsafe or unbounded requests remain prohibited.
+
+Research contract fixtures and sanitized, bounded technical checks do not qualify a provider for Evaluation V2. Evaluation qualification additionally requires complete frozen coverage, exact source and xG-series identity, appropriate rights for immutable retention, correction/revision lineage, stable traceable identifiers, source hashes, and every applicable corpus and firewall rule. Outputs obtained under the experimental exception must be labelled `EXPERIMENTAL_ONLY` and cannot be used as Evaluation V2, promotion, or production evidence unless independently admitted under the stricter applicable qualification requirements.
 
 `validate_pitchapi_audit` is the offline PitchAPI qualification boundary. It
 accepts externally supplied fixture manifests, match-scoped shot responses, a
@@ -94,11 +145,9 @@ Git-specific `SourceManifestV1` and `DatasetManifestV1` must not represent an
 API snapshot with a fabricated Git SHA. See the [contingency preparation
 record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
 
-TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
-API (`/v1/`). It is not enabled until credentials, account timezone/language,
-coverage scopes, and private research-use and access-terms approval are
-recorded. Its aggregate statistics cannot substitute for Tier A event geometry,
-and provider-defined fields such as `dangerous_attacks` retain provider provenance.
+TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST API (`/v1/`). Bounded local experimental acquisition can proceed when required credentials, account timezone/language, and coverage scopes are configured, without requiring separate private-research or access-terms approval. Record actual terms and entitlement status as evidence, not as a claim of permission.
+
+This does not enable production or Evaluation V2 use. Its aggregate statistics cannot substitute for Tier A event geometry, and provider-defined fields such as `dangerous_attacks` retain provider provenance.
 
 Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
 resource and competition/season scope to configurable discovery cadence,
@@ -379,3 +428,77 @@ Checksum conflicts use the stable `SB_SOURCE_CHECKSUM_MISMATCH` code defined by 
 ## Storage evolution
 
 `ImmutableRawStore` currently provides the local filesystem implementation used for development and deterministic tests. A later object-store implementation must preserve the same exclusive publication, checksum, path, manifest, retry, and attribution contracts.
+
+## Reep identity evidence
+
+Use the dated v1 download distribution, not the frozen v0 CSV interfaces. The
+packaging schema currently calls its selection/release documents
+`reep-public-selection/v1` and `reep-public-release/v4`; these are distinct from
+the register's v1 data model. Verify the pinned release hash and the declared
+length/hash of `bridges.csv.gz` and `redirects.csv.gz` before extracting evidence:
+
+```sh
+uv run --locked python -m football.identity.reep \
+  --release /path/to/release.json --release-sha256 <verified-release-sha256> \
+  --inventory /path/to/exact-native-ids.json --artifact-root /experimental/root
+```
+
+The inventory is a JSON array with exact `provider`, `namespace`, and
+`external_id` strings. Translate provider codes explicitly when constructing it
+(for example MatchForge `statsbomb_open_data` to Reep `statsbomb` with
+`offline_team`, `offline_competition`, `offline_match` or `offline_player` for
+the corresponding open-data IDs; ESPN athletes use `person`). Extra fields
+can identify existing Resolution Center cases. The reader keeps release hashes,
+original bridge fields and redirect chains, rejects conflicting IDs, and writes
+immutable review evidence through the existing file store. It never writes
+mapping or admission decisions. Confidence and a shared Reep ID cannot override
+UUID-origin contradictions, missing source anchors, historical knowledge times
+or player membership/minute requirements. Check the release's own quality gates
+separately; downloadable does not mean qualified.
+
+ClubElo's `ratings_archive` normalizer consumes the inspected seven-column CSV
+format through the existing normalization CLI. Keep the archive repository,
+revision, original URL and acquired bytes in source evidence. `From` is the
+rating's source calendar date; `To` stays in the raw CSV and does not establish
+intraday availability or a MatchForge membership interval. Acquisition/knowledge
+time remains the actual collection time. Daily CSV labels differ from website
+slugs, so team references remain anonymous until the identity owner accepts an
+exact mapping. This archived path does not establish current website/Vega access,
+complete rating history, or permission to redistribute provider data.
+
+Sofascore's `retained_event`, `retained_statistics`, `retained_lineups` and
+`retained_incidents` resources read the inspected upstream research envelopes.
+Keep the Git revision/URL, exact envelope, original provider URL/fetch clock and
+`trimmed` flag. The reader validates fixture/family scope and reports
+`__trimmed__` omissions. Source fetch time never becomes MatchForge knowledge
+time. These samples do not prove live access, complete seasons or full lineups.
+Player `teamId` can identify a club outside the sampled fixture, so it does not
+bind the match team or establish historical membership. Unsupported measurements
+and periods remain findings; partial-period xG is not a match-total observation.
+Football score `period1` supplies the first-half count. The inspected contract
+does not define football `period2` as second-half goals, so it remains an explicit
+unsupported-field finding. No upstream browser challenge-solving transport is used.
+
+FBref's `archived_match_html` resource consumes retained original match pages.
+Archive containers and extracted members keep separate hashes/registrations;
+member keys include the parent archive hash and the native match ID. The parser
+checks the original canonical URL, scorebox team/competition IDs and match-specific
+summary table IDs before emitting observations. It reads visible or commented
+HTML tables without running scripts. Player minutes, shots, cards, passing and
+other supported fields come from individual match rows; footer aggregates are
+excluded. An explicit venue Unix epoch provides a native UTC claim. A venue date
+without that epoch remains `DATE_ONLY`. Score/status and settlement qualification
+remain unknown where the source does not establish them. Acquisition/knowledge
+time remains the archive's actual local acquisition time.
+
+Classify these pages as `FBREF_ARCHIVED_HISTORICAL`. A community SQLite export is
+`THIRD_PARTY_FBREF_DERIVED`; inspecting its tables does not turn it into an official
+current response. Neither archive establishes current basic-table access or
+restores the advanced feed removed in January 2026. Keep original-provider and
+archive reuse limitations visible, and obtain independent identity, time and
+target-use decisions before historical modelling.
+
+Some archived FBref scoreboxes use a competition URL without a season. Those
+pages retain native match/team/player facts with a null season and an explicit
+finding. A requested season still requires matching source evidence; neither the
+match date nor the archive directory is converted into an observed season label.

@@ -134,6 +134,18 @@ class ApiFootballSource:
         fixture = numeric_identifier(provider_match_id)
         return _api(self.client.injuries(fixture), {"fixture": str(fixture)})
 
+    def statistics(self, provider_match_id: str) -> ProviderPayload:
+        fixture = numeric_identifier(provider_match_id)
+        return _api(self.client.statistics(fixture), {"fixture": str(fixture)})
+
+    def events(self, provider_match_id: str) -> ProviderPayload:
+        fixture = numeric_identifier(provider_match_id)
+        return _api(self.client.events(fixture), {"fixture": str(fixture)})
+
+    def player_statistics(self, provider_match_id: str) -> ProviderPayload:
+        fixture = numeric_identifier(provider_match_id)
+        return _api(self.client.fixture_players(fixture), {"fixture": str(fixture)})
+
     def standings(self, provider_competition_id: str, season: str) -> ProviderPayload:
         league, year = numeric_identifier(provider_competition_id), numeric_identifier(season)
         return _api(

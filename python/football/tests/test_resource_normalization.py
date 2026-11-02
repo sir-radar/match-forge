@@ -9,6 +9,8 @@ from uuid import UUID
 
 import pytest
 from football.contracts.observations import ObservationProvenance, ObservationTime
+from football.contracts.observations_v2 import CoachObservationV2, EventObservationV2
+from football.contracts.observations_v3 import RefereeObservationV3
 from football.providers.normalization.common import NormalizationContext, NormalizationResult, count
 from football.providers.normalization.pipeline import normalize_resource
 
@@ -16,7 +18,14 @@ NOW = datetime(2026, 10, 16, 12, tzinfo=UTC)
 SOURCE = UUID("794637be-a42e-4f7b-a06c-869bf010a4bf")
 
 
-def normalize(provider: str, resource: str, payload: object, **scope: str) -> NormalizationResult:
+def normalize(
+    provider: str,
+    resource: str,
+    payload: object,
+    *,
+    v3_contracts: tuple[str, ...] = (),
+    **scope: str,
+) -> NormalizationResult:
     raw = json.dumps(payload).encode()
     context = NormalizationContext(
         provenance=ObservationProvenance(
@@ -39,7 +48,9 @@ def normalize(provider: str, resource: str, payload: object, **scope: str) -> No
     for item in result.observations:
         assert item.provenance.source_resource_id == SOURCE
         assert item.provenance.source_sha256 == hashlib.sha256(raw).hexdigest()
-        assert item.versions.observation_contract_version == "2"
+        assert item.versions.observation_contract_version == (
+            "3" if item.CONTRACT in v3_contracts else "2"
+        )
         assert item.versions.normalizer_version
         assert item.time.known_at == NOW
     return result
@@ -612,7 +623,7 @@ def test_canonical_statsbomb_reader_verifies_manifest_and_exact_resource(tmp_pat
         SourceResource,
         SourceSnapshot,
     )
-    from football.providers.normalization.cli import _statsbomb_payload
+    from football.ingestion.registration import read_registered_statsbomb_resource
     from football.storage.raw import ImmutableFileStore, ImmutableRawStore
 
     root = tmp_path / "data"
@@ -649,16 +660,18 @@ def test_canonical_statsbomb_reader_verifies_manifest_and_exact_resource(tmp_pat
         written.sha256,
         len(raw),
     )
-    assert _statsbomb_payload(root, row) == raw
+    assert read_registered_statsbomb_resource(root, row) == raw
     with pytest.raises(ValueError, match="manifest checksum"):
-        _statsbomb_payload(root, (row[0], "f" * 64, *row[2:]))
+        read_registered_statsbomb_resource(root, (row[0], "f" * 64, *row[2:]))
     changed = replace(manifest, resources=(replace(entry, raw_path="elsewhere.json"),))
     alternate = files.publish("manifests/changed.json", changed.to_bytes())
     with pytest.raises(ValueError, match="pinned storage"):
-        _statsbomb_payload(root, (alternate.relative_path, alternate.sha256, *row[2:]))
+        read_registered_statsbomb_resource(
+            root, (alternate.relative_path, alternate.sha256, *row[2:])
+        )
     written.path.write_bytes(b"tampered")
     with pytest.raises(ValueError, match="resource checksum"):
-        _statsbomb_payload(root, row)
+        read_registered_statsbomb_resource(root, row)
 
 
 def test_normalization_report_preserves_findings_versions_and_determinism() -> None:
@@ -840,3 +853,79 @@ def test_repeated_catalog_facts_keep_unique_identities_and_distinct_rows() -> No
     assert len([o for o in result.observations if o.CONTRACT == "CompetitionObservationV2"]) == 1
     assert len([o for o in result.observations if o.CONTRACT == "ResultObservationV2"]) == 2
     assert result.records_seen == 2
+
+
+def test_statsbomb_unbooked_foul_does_not_require_optional_card_metadata() -> None:
+    row = {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "index": 1,
+        "period": 1,
+        "timestamp": "00:01:00.000",
+        "minute": 1,
+        "second": 0,
+        "type": {"id": 22, "name": "Foul Committed"},
+        "team": {"id": 1, "name": "Team"},
+    }
+    result = normalize("statsbomb_open_data", "events", [row], fixture_native_id="42")
+    assert not result.observations
+    assert [(f.rule_code, f.severity) for f in result.findings] == [
+        ("MF_NORM_EVENT_TYPE_UNSUPPORTED", "INFO")
+    ]
+    row["foul_committed"] = None
+    result = normalize("statsbomb_open_data", "events", [row], fixture_native_id="42")
+    assert not result.observations
+    assert result.findings[0].rule_code == "MF_NORM_SOURCE_RECORD_INVALID"
+    row["foul_committed"] = {"card": {"name": "Yellow Card"}}
+    result = normalize("statsbomb_open_data", "events", [row], fixture_native_id="42")
+    assert isinstance(result.observations[0], EventObservationV2)
+    assert result.observations[0].event_type == "YELLOW_CARD"
+    assert not result.findings
+
+
+def test_statsbomb_retained_match_context_keeps_referee_and_fixture_scoped_managers() -> None:
+    row = {
+        "match_id": 42,
+        "competition": {"competition_id": 7, "competition_name": "League"},
+        "season": {"season_id": 8, "season_name": "2015/2016"},
+        "home_team": {
+            "home_team_id": 1,
+            "home_team_name": "Home",
+            "managers": [
+                {"id": 12, "name": "Same name"},
+                {"id": True, "name": "Invalid ID"},
+            ],
+        },
+        "away_team": {
+            "away_team_id": 2,
+            "away_team_name": "Away",
+            "managers": [
+                {"id": 13, "name": "Same name"},
+            ],
+        },
+        "referee": {"id": 223, "name": "Reported referee"},
+        "home_score": 1,
+        "away_score": 0,
+    }
+    result = normalize(
+        "statsbomb_open_data",
+        "results",
+        [row],
+        competition_native_id="7",
+        v3_contracts=("RefereeObservationV3",),
+    )
+    referee = next(o for o in result.observations if o.CONTRACT == "RefereeObservationV3")
+    assert isinstance(referee, RefereeObservationV3)
+    assert referee.fixture.provider_native_id == "42"
+    assert referee.referee.provider_native_id == "223"
+    assert referee.name == "Reported referee" and referee.time.event_time is None
+    managers = [o for o in result.observations if isinstance(o, CoachObservationV2)]
+    assert len(managers) == len(
+        [o for o in result.observations if o.CONTRACT == "CoachObservationV2"]
+    )
+    assert [(o.coach.provider_native_id, o.team.provider_native_id) for o in managers] == [
+        ("12", "1"),
+        ("13", "2"),
+    ]
+    assert all(o.time.valid_from is None and o.time.valid_to is None for o in managers)
+    assert len([f for f in result.findings if f.rule_code == "MF_NORM_SOURCE_RECORD_INVALID"]) == 1
+    assert any(o.CONTRACT == "ResultObservationV2" for o in result.observations)

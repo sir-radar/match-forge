@@ -29,6 +29,10 @@ Never claim work is complete without evidence from the final repository state.
 
 ## 1. Sources of Truth
 
+For any frontend work under `./web`, follow `docs/frontend-engineering.md` before making changes. The matching `./web/ui-designs/*.html` files are the authoritative UI design references; images and screenshots are secondary, subject to explicit owner requirements and approved functional contracts.
+
+For backend work (Python data/modelling, Rust simulation, Go serving/operations, SQL migrations, persistence, and background jobs), follow `docs/backend-engineering.md` before making changes. The root guide and approved architecture, contracts, and phase gates remain authoritative.
+
 Resolve implementation conflicts in this order unless the repository owner explicitly changes the priority:
 
 1. Current repository-owner requirements and corrections.
@@ -141,12 +145,19 @@ Prefer simple, concrete language over academic, legalistic, consultancy-style, o
 Do not invent abstract terminology such as:
 
 ```text
+
 X surface
+
 X substrate
+
 X authority
+
 X evidence layer
+
 X semantic layer
+
 X decision topology
+
 ```
 
 unless the repository already defines that exact term and using it is necessary.
@@ -170,11 +181,17 @@ For detailed writing rules and examples, read `docs/writing-style.md` when produ
 MatchForge has deliberate language boundaries:
 
 ```text
+
 Python  = football data and modelling
+
 Rust    = deterministic high-volume simulation
+
 Go      = serving and operations
+
 SQL     = database schema and persistence
+
 Schemas = cross-language contracts
+
 ```
 
 ### Python
@@ -307,9 +324,13 @@ Historical forecasts may use only information legitimately available before the 
 Keep these concepts separate:
 
 ```text
+
 football_cutoff
+
 knowledge_cutoff
+
 knowledge_mode
+
 ```
 
 Do not replace them with an ambiguous `as_of` field.
@@ -317,7 +338,9 @@ Do not replace them with an ambiguous `as_of` field.
 Historical queries must not rely on current-state shortcuts such as:
 
 ```sql
+
 WHERE known_to IS NULL
+
 ```
 
 by themselves, or on "latest" records without an explicit historical contract.
@@ -375,13 +398,21 @@ Models consume eligible MatchForge inputs. They do not decide which historical f
 Preferred flow:
 
 ```text
+
 point-in-time dataset provider
+
         ↓
+
 eligible MatchForge history
+
         ↓
+
 model
+
         ↓
+
 forecast
+
 ```
 
 Do not let models query providers or databases for their own history.
@@ -407,11 +438,17 @@ Published fitted artifacts are immutable.
 Keep these concepts separate:
 
 ```text
+
 fit run
+
 model artifact
+
 human version label
+
 promotion event
+
 forecast
+
 ```
 
 Every authoritative artifact must record or resolve the applicable:
@@ -486,15 +523,25 @@ Do not create documentation for ordinary bug fixes, routine refactors, tests, or
 Prefer executable and machine-readable sources of truth:
 
 ```text
+
 schemas/contracts
+
         ↓
+
 code
+
         ↓
+
 tests
+
         ↓
+
 machine-readable evidence
+
         ↓
+
 human-readable documentation
+
 ```
 
 Maintain current project state in the repository's tracked project-status authority, currently `docs/project-status.json` where that contract remains applicable.
@@ -513,7 +560,7 @@ If on the base branch, create a task branch using the repository convention.
 
 Do not mix unrelated concerns.
 
-For changes limited to prose documentation (`*.md`, `*.mdx`, or `*.rst`), skip `make check`, integration, build, lint, type, static-analysis, and code-test commands. Review the changed text and run `git diff --check`; run a documentation-specific validator only when the changed document has one. Treat machine-readable contracts and project-status files as code-related for verification. If any code-related file changes, run the applicable checks below.
+For changes limited to prose documentation (`\*.md`, `\*.mdx`, or `\*.rst`), skip `make check`, integration, build, lint, type, static-analysis, and code-test commands. Review the changed text and run `git diff --check`; run a documentation-specific validator only when the changed document has one. Treat machine-readable contracts and project-status files as code-related for verification. If any code-related file changes, run the applicable checks below.
 
 Before every commit:
 
@@ -574,9 +621,13 @@ When working from a Wayfinder map, track the whole current map, not only the cur
 After each implementation ticket, report one of:
 
 ```text
+
 Wayfinder map: IN PROGRESS
+
 Wayfinder map: BLOCKED
+
 Wayfinder map: COMPLETE
+
 ```
 
 Before reporting `COMPLETE`, verify:
@@ -594,41 +645,55 @@ Before reporting `COMPLETE`, verify:
 If the map is incomplete, report:
 
 ```text
+
 WAYFINDER MAP IMPLEMENTATION NOT COMPLETE
 
 Blocker:
+
 <exact blocker>
 
 Next required action:
+
 <exact action>
+
 ```
 
 If all implementation work and acceptance requirements are complete, report:
 
 ```text
+
 WAYFINDER MAP IMPLEMENTATION COMPLETE
+
 ```
 
 Then include:
 
 ```text
+
 Map:
+
 <map name or destination>
 
 Status:
+
 COMPLETE
 
 Delivered:
+
 - ...
 
 Verification:
+
 - ...
 
 Acceptance evidence:
+
 - ...
 
 Remaining work inside this map:
+
 NONE
+
 ```
 
 After reporting map completion, stop.
@@ -650,7 +715,9 @@ Use the lowest-cost model that can safely complete the work.
 Default implementation model:
 
 ```text
+
 gpt-5.6-terra
+
 ```
 
 Before substantial work, classify the task using `docs/engineering/model-routing.md`.
@@ -677,26 +744,47 @@ Model escalation does not authorize scope expansion.
 ## Core Principles
 
 ```text
+
 Raw source is immutable.
+
 Identity is provider-neutral.
+
 Historical forecasts are point-in-time safe.
+
 Target outcomes stay sealed until prediction.
+
 Models do not choose their own historical universe.
+
 Related probabilities come from one coherent distribution.
+
 Artifacts are immutable.
+
 Forecasts bind exact artifacts.
+
 Raw probabilities are never overwritten.
+
 Calibration uses prior out-of-sample predictions only.
+
 Retries converge.
+
 Lineage reaches the source.
+
 Evaluation is chronological.
+
 Simple baselines remain the benchmark.
+
 Complexity must earn its place.
+
 Every production abstraction must earn its place.
+
 Task-introduced obsolete code is removed.
+
 Phase gates are real gates.
+
 Wayfinder completion returns control to the owner.
+
 Evidence is required for completion.
+
 ```
 
 ## Supporting Documents
@@ -704,15 +792,29 @@ Evidence is required for completion.
 Load these only when relevant to the current task:
 
 ```text
+
 docs/architecture.md
+
 docs/backtesting.md
+
 docs/model-governance.md
+
 docs/git-delivery.md
+
 docs/engineering/model-routing.md
+
 docs/pr-template.md
+
 docs/review-checklist.md
+
 docs/testing.md
+
 docs/writing-style.md
+
+docs/frontend-engineering.md  # required for changes under ./web
+
+docs/backend-engineering.md  # required for backend changes
+
 ```
 
 ## Token-Efficient Validation Policy
@@ -726,3 +828,14 @@ docs/writing-style.md
 - Capture verbose logs, report concise summaries, and preserve full failure details.
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
+
+Implement the current task in CURRENT_TASK.md from start to finish, use CURRENT_TASK_STATUS.md to track the status.
+
+### Independent Research & Decision-Making
+
+- **Research before deciding:** Proactively use internet search, official documentation, and codebase inspection to resolve unclear requirements, verify data accuracy, and identify best practices.
+- **Make independent technical decisions:** Choose and implement well-supported, secure, efficient, and maintainable solutions without unnecessary user intervention.
+- **Limits of autonomy:** Independently decide implementation details, architecture, algorithms, tooling, and routine fixes within the established project scope. Do not independently change business requirements, core product behavior, or previously approved architectural decisions.
+- **Require approval for high-impact actions:** Escalate decisions involving irreversible or destructive operations, significant costs, security compromises, legal or compliance risks, or major scope changes.
+- **Handle uncertainty:** Prefer evidence-backed decisions over assumptions. Ask questions only when research cannot reliably resolve an issue or when explicit user authorization is required.
+- **Document significant decisions:** Briefly record important findings, trade-offs, sources, and reasoning. Continue working on independent tasks while awaiting required approvals.

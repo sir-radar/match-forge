@@ -1,0 +1,354 @@
+{
+  "phase": "06",
+  "provider": "understat",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "edfc232d84523e3b63106b0924fd7fdea60977aa",
+  "recorded_at": "2026-11-01T02:02:00.018135+00:00",
+  "development_access_decision_ref": "docs/evidence/owner-decision-public-development-data-access-2026-10-31.json",
+  "route": "PUBLIC_JSON_WITH_ORDINARY_ANONYMOUS_SESSION",
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T01:23:50.083788+00:00",
+      "provider": "understat",
+      "results": [
+        {
+          "family": "league",
+          "url": "https://understat.com/league/EPL/2024",
+          "requested_at": "2026-11-01T01:23:33.142319+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463",
+          "bytes": 18685,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463"
+        },
+        {
+          "family": "wrapper_documentation",
+          "url": "https://soccerdata.readthedocs.io/en/latest/reference/understat.html",
+          "requested_at": "2026-11-01T01:23:34.297248+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "e5b19fa62116f3037722accdc01dfea27ecbe27e64102e1124d69c18697738a3",
+          "bytes": 37522,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/e5b19fa62116f3037722accdc01dfea27ecbe27e64102e1124d69c18697738a3"
+        }
+      ]
+    },
+    "discovery-receipt.json": {
+      "recorded_at": "2026-11-01T01:24:38.731436+00:00",
+      "provider": "understat",
+      "results": [
+        {
+          "family": "client_script",
+          "url": "https://understat.com/js/league.min.js?t=1765269520",
+          "requested_at": "2026-11-01T01:24:22.304369+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "application/javascript",
+          "sha256": "6ef9fabcf1b219958fa9dd29bc8bd38778c9f72c1be28557d1908b3521192d24",
+          "bytes": 23961,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/6ef9fabcf1b219958fa9dd29bc8bd38778c9f72c1be28557d1908b3521192d24"
+        },
+        {
+          "family": "wrapper_source",
+          "url": "https://soccerdata.readthedocs.io/en/latest/_modules/soccerdata/understat.html",
+          "requested_at": "2026-11-01T01:24:23.140802+00:00",
+          "http_failures": [
+            {
+              "http_status": 404,
+              "sha256": "1fdf0510336b7f214a0d5c762e25a4bcda7e3a2c3beaca11888ea4db03b621f5",
+              "bytes": 2552,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/1fdf0510336b7f214a0d5c762e25a4bcda7e3a2c3beaca11888ea4db03b621f5"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://soccerdata.readthedocs.io/en/latest/_modules/soccerdata/understat.html: attempt 1/4; exception=HTTPError; http_status=404; HTTP Error 404: Not Found"
+        }
+      ]
+    },
+    "data-receipt.json": {
+      "recorded_at": "2026-11-01T01:26:09.055899+00:00",
+      "provider": "understat",
+      "results": [
+        {
+          "family": "league_data",
+          "url": "https://understat.com/getLeagueData/EPL/2024",
+          "requested_at": "2026-11-01T01:25:26.274009+00:00",
+          "http_failures": [
+            {
+              "http_status": 404,
+              "sha256": "2edafc5987d69b0e0eb4d012485980a6c9783ec5469670fa166a03ba96ca7798",
+              "bytes": 461,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/2edafc5987d69b0e0eb4d012485980a6c9783ec5469670fa166a03ba96ca7798"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://understat.com/getLeagueData/EPL/2024: attempt 4/4; exception=HTTPError; http_status=404; HTTP Error 404: Not Found"
+        }
+      ]
+    },
+    "ajax-receipt.json": {
+      "recorded_at": "2026-11-01T01:28:15.800111+00:00",
+      "results": [
+        {
+          "family": "public_ajax",
+          "url": "https://understat.com/getLeagueData/EPL/2024",
+          "requested_at": "2026-11-01T01:27:00.992855+00:00",
+          "request_headers": {
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://understat.com/league/EPL/2024"
+          },
+          "status": "FAILED",
+          "error_type": "URLError",
+          "detail": "<urlopen error timed out>"
+        },
+        {
+          "family": "wrapper_source",
+          "url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/understat.py",
+          "requested_at": "2026-11-01T01:27:16.015338+00:00",
+          "request_headers": {
+            "Accept": "text/plain"
+          },
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "030f4a525c1f3cc0364cd6377f5cf37300551a55a26a2c2d0e62b6789359bb60",
+          "bytes": 28378,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/030f4a525c1f3cc0364cd6377f5cf37300551a55a26a2c2d0e62b6789359bb60"
+        }
+      ]
+    },
+    "session-receipt.json": {
+      "recorded_at": "2026-11-01T01:30:35.350098+00:00",
+      "results": [
+        {
+          "family": "anonymous_page",
+          "url": "https://understat.com/league/EPL/2024",
+          "requested_at": "2026-11-01T01:30:33.014590+00:00",
+          "anonymous_cookie_names": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463",
+          "bytes": 18685,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463"
+        },
+        {
+          "family": "anonymous_ajax",
+          "url": "https://understat.com/getLeagueData/EPL/2024",
+          "requested_at": "2026-11-01T01:30:34.170144+00:00",
+          "anonymous_cookie_names": [
+            "PHPSESSID",
+            "UID"
+          ],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524",
+          "bytes": 96113,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524"
+        }
+      ]
+    },
+    "shot-access-receipt.json": {
+      "recorded_at": "2026-11-01T01:39:14.184456+00:00",
+      "results": [
+        {
+          "family": "anonymous_page",
+          "url": "https://understat.com/league/EPL/2024",
+          "requested_at": "2026-11-01T01:39:12.740537+00:00",
+          "anonymous_cookie_names": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/html",
+          "sha256": "753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463",
+          "bytes": 18685,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/753fc1c72bb28b6fedf1bb2ecc4b8186691bc33cba2d6d8604112e0787325463"
+        },
+        {
+          "family": "anonymous_ajax",
+          "url": "https://understat.com/getMatchData/26602",
+          "requested_at": "2026-11-01T01:39:13.578334+00:00",
+          "anonymous_cookie_names": [
+            "PHPSESSID",
+            "UID"
+          ],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/javascript",
+          "sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+          "bytes": 4373,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-06/raw/50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b"
+        }
+      ]
+    }
+  },
+  "adapter_transport_checks": [
+    {
+      "attempt": 1,
+      "status": "TRANSIENT_TCP_CONNECT_TIMEOUT_BEFORE_BOOTSTRAP_RESPONSE",
+      "log_sha256": "5eafa64e0d74671d94348ea784c452c93d79b692629843fd971920f211095c50"
+    },
+    {
+      "attempt": 2,
+      "status": "TRANSIENT_TCP_CONNECT_TIMEOUT_BEFORE_BOOTSTRAP_RESPONSE",
+      "log_sha256": "5eafa64e0d74671d94348ea784c452c93d79b692629843fd971920f211095c50"
+    }
+  ],
+  "publication": {
+    "recorded_at": "2026-11-01T01:52:36.440302+00:00",
+    "observations_before": 7408,
+    "observations_after": 9769,
+    "results": [
+      {
+        "resource": "results",
+        "source_resource_id": "2de93633-dbb2-59b9-b74a-f7c3916adc83",
+        "source_snapshot_id": "0c76932d-5508-5a88-a447-96ecc1bc64f7",
+        "source_sha256": "fd696ce4e2b77f066d76ef391e1f7bcc347abc3f71c6e1fbbd13c2e7cfabd524",
+        "manifest_path": "understat/manifests/4761a391fc63954f803e49f6569b25047e88ce80ee79e8b4e71b7512c631887c.json",
+        "report_sha256": "303f74fca4bd8669a0e60c4e1c743c1337635222b35caaed920a95764681a2dd",
+        "known_at": "2026-11-01T01:30:35.350098+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 760,
+          "FixtureObservationV2": 380,
+          "ResultObservationV2": 380,
+          "ExpectedGoalsObservationV2": 760
+        },
+        "findings": {},
+        "work_id": "d52dbf21-611b-5ee8-9643-b524942d250a",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "9148790f42bd516f9654d697c0e677fed26e473601c3b69b3ef5dc0161822c3d",
+        "retry_rows": 2281,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "a872beb2-4444-58dc-9586-1fc6fc1ce00b",
+        "capability_decision_sha256": "299fae585d66328c343f6300e3746a5a121b5fca2b5cdd6252aa578106cfc4b7",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      },
+      {
+        "resource": "shots",
+        "source_resource_id": "168959cb-e055-5a5c-9db5-1ced1b8d3151",
+        "source_snapshot_id": "3a60b820-da8b-5d1a-a183-2c7a24130f7d",
+        "source_sha256": "50bed4fb53a5c5dc56bf63780cbfa8f45a22e3d1e5efe007b240f7237241746b",
+        "manifest_path": "understat/manifests/651dbaea4b65ffc7a30f0f068f72e3d3a1a00097a7a7ff56052d3b61536b568b.json",
+        "report_sha256": "eb7cb211515db090b9737eee9ac957dd8ae56f6876545d584eb42d9fcb552d22",
+        "known_at": "2026-11-01T01:39:14.184456+00:00",
+        "contracts": {
+          "PlayerObservationV2": 32,
+          "ShotObservationV3": 24,
+          "ExpectedGoalsObservationV2": 24
+        },
+        "findings": {
+          "MF_NORM_ASSIST_ID_UNAVAILABLE": 19,
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 24
+        },
+        "work_id": "80bcb453-eb0c-53b9-babf-f5bc5eeb6817",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "78237ff3fddcbe508f9855349e64c94f83fb5c7a00e3f78ecc0a1975cb86a8a3",
+        "retry_rows": 80,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "cb0d9f27-9a8c-5c82-9b82-e6d919e779fc",
+        "capability_decision_sha256": "fb8311af219d4d0dc63bf2a8eb5c8fe58217ad82d1d2e19731c163f167b413e9",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0,
+    "automatic_provider_enablement": false
+  },
+  "capability_metadata_correction": {
+    "recorded_at": "2026-11-01T01:55:05.643702+00:00",
+    "scope": {
+      "provider": "understat",
+      "resource_type": "shots",
+      "competition": "EPL",
+      "season": "2024"
+    },
+    "previous_decision_id": "cb0d9f27-9a8c-5c82-9b82-e6d919e779fc",
+    "corrective_decision_id": "8655f480-d5e8-5943-a939-8cc2497e3cc9",
+    "corrective_decision_sha256": "8d96cea7618c46a5ddb3070b1aed2f581e46715e86e59c62e4b757ed1ef5296d",
+    "primary_shot_normalizer_version": "understat-shots-v2",
+    "mismatched_processing_version_was_rejected": true,
+    "matching_processing_version_allowed_after_append": true,
+    "operating_capability_decisions": 10,
+    "understat_inferred_event_times": 0,
+    "observation_changes": 0,
+    "canonical_identity_changes": 0,
+    "forecast_model_or_routing_changes": 0
+  },
+  "final_replay": {
+    "recorded_at": "2026-11-01T02:00:24.505648+00:00",
+    "access": "READ_ONLY",
+    "checks": [
+      {
+        "resource": "results",
+        "final_normalization_report_sha256": "303f74fca4bd8669a0e60c4e1c743c1337635222b35caaed920a95764681a2dd",
+        "published_outputs_unchanged": true
+      },
+      {
+        "resource": "shots",
+        "final_normalization_report_sha256": "eb7cb211515db090b9737eee9ac957dd8ae56f6876545d584eb42d9fcb552d22",
+        "published_outputs_unchanged": true
+      }
+    ]
+  },
+  "coverage": {
+    "native_competition": "EPL",
+    "native_season": "2024",
+    "fixture_count": 380,
+    "fixture_date_start": "2024-08-16 19:00:00",
+    "fixture_date_end": "2025-05-25 15:00:00",
+    "native_team_histories": 20,
+    "native_team_history_rows": 760,
+    "native_xga_values_retained": 760,
+    "shot_matches": 1,
+    "shots": 24,
+    "reported_player_refs": 32,
+    "other_seasons": "NOT_REQUESTED; NO_GLOBAL_2020_CEILING"
+  },
+  "qualification": {
+    "canonical_identity": "NOT_ADMITTED",
+    "market_semantics": "UNASSESSED",
+    "football_event_times": "UNKNOWN; ZERO_INFERRED",
+    "source_intraday_timezone": "UNKNOWN; FIXTURE_DATE_ONLY",
+    "shot_coordinate_frame": "UNVERIFIED; RAW_X_Y_RETAINED",
+    "shot_assist_identity": "NAME_ONLY_RETAINED; NOT_MAPPED",
+    "model_eligibility": "NOT_CLAIMED",
+    "automatic_production_enablement": false
+  },
+  "verification": {
+    "final_disposable_suite_passed": 140,
+    "additional_final_boundary_suite_passed": 9,
+    "initial_red": "Missing Understat source module; later invalid deflate stream failed before error conversion fix",
+    "static_type_architecture_shell": "PASS",
+    "native_model_inventory": 33,
+    "normalizer_providers": 8,
+    "normalizer_routes": 39,
+    "database_scope": "DISPOSABLE_TEST_DATABASE; OPERATING_ADDITIVE_SOURCE_PUBLICATION_AND_READ_ONLY_FINAL_REPLAY",
+    "actual_retry_and_byte_checks": "ALL_2361_UNDERSTAT_OBSERVATIONS_VERIFIED",
+    "normalization_work": "TWO_SUCCEEDED_FENCED_SHARED_WORK_ITEMS"
+  },
+  "limits": [
+    "Fresh integrated-client bootstrap checks hit two TCP connection timeouts; separate ordinary anonymous page/AJAX flows fetched real season and match bytes",
+    "Coordinate frame, native team-history xGA reconciliation, canonical identities and source/market/PIT qualification remain for Phase 14/15",
+    "No assistant IDs inferred from names and final shot-payload scores are not before-shot context",
+    "Provider forecasts and scheduled-fixture result/xG placeholders do not enter observations",
+    "Wrapper code license is not treated as data redistribution permission; no production collection or routing enabled",
+    "Existing R3, scientific and production-cutover/retirement gates remain unchanged"
+  ],
+  "operating_identity_forecast_model_or_routing_changes": 0,
+  "validation_incidents": [
+    "Native model completeness test initially failed until all four new real shapes were added to EXAMPLES; assertion retained",
+    "Initial fenced-work integration used an open rollback transaction; corrected the disposable test to respect idle control connections",
+    "Automatic permission review timed out before anonymous-flow script creation; approved retry first found no script; prerequisite fixed and approved read-only flow succeeded without an outstanding approval blocker"
+  ]
+}

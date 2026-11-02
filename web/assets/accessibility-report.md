@@ -36,3 +36,7 @@ and forced-colors presence. A separate browser journey uses the real Go/Python
 backend in a disposable database. No manual screen-reader claim is made.
 
 Phase 4 real desktop browser batch review passed axe with zero violations before approval. Native labeled selection checkboxes and per-case preview disclosures remain keyboard accessible. Cross-page selection and qualified/blocked result announcements are covered by component tests.
+
+## V4 Phase 22 — market readiness
+
+Scope: the new Data Sync readiness form/disclosures and current related Admin states. Chromium 141.0.7390.37 desktop 1440×1000 and WebKit 26.0 iPhone 13 390×664: axe has zero violations; native labels, headings, buttons, disclosures and row/column headers preserve names/relationships. Keyboard disclosure, retry and horizontal table scrolling pass; 320px document reflow, reduced motion and forced colors pass. Disclosure targets are at least 36px. This covers relevant structure, focus, keyboard, reflow and status behavior, not the full WCAG A/AA set. Physical VoiceOver/Safari and browser zoom interactions were not run and remain unverified; no conformance claim. No known P0/P1 finding remains in the tested scope.

@@ -58,12 +58,14 @@ def enqueue_parity(
         "case_key": case_key,
         "scope": "CURRENT_REGISTERED_DATA_AND_EXISTING_ARCHITECTURE_V2_COMPARISONS",
     }
+    stamp = connection.execute("SELECT clock_timestamp()").fetchone()
+    assert stamp is not None
     request = WorkRequest(
         work_type=WorkType.READ_MODEL_PROJECTION,
         semantic_key=f"resolution-parity:{UUID(request_id)}",
         input_hash=sha256_json(inputs),
         priority=0,
-        available_at=datetime.now(UTC),
+        available_at=stamp[0],
         max_attempts=2**31 - 1,
         retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
         dependencies=(parent,) if parent else (),

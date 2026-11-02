@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from football.contracts.source import PROVIDER_PATTERN, canonical_json_bytes
@@ -202,6 +202,34 @@ class CanonicalCoverage:
     @property
     def report_id(self) -> UUID:
         return uuid5(NAMESPACE_URL, "matchforge:coverage:CanonicalCoverage:" + self.sha256)
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> CanonicalCoverage:
+        """Reconstruct exact registered bytes without trusting supplied metric totals."""
+        try:
+            scope = payload["scope"]
+            if not isinstance(scope["resource_type"], str):
+                raise CoverageError("canonical coverage resource must be text")
+            report = cls(
+                scope=CanonicalCoverageScope(
+                    competition_id=UUID(scope["competition_id"]),
+                    season_id=UUID(scope["season_id"]),
+                    resource_type=scope["resource_type"],
+                ),
+                knowledge_cutoff=datetime.fromisoformat(payload["knowledge_cutoff"]),
+                expected_units=tuple(UUID(unit) for unit in payload["expected_units"])
+                if payload["expected_units"] is not None
+                else None,
+                qualified_support=tuple(
+                    (UUID(unit), provider) for unit, provider in payload["qualified_support"]
+                ),
+                evidence_refs=tuple(payload["evidence_refs"]),
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            raise CoverageError("invalid canonical coverage document") from error
+        if report.to_dict() != payload:
+            raise CoverageError("canonical coverage document differs from its unit evidence")
+        return report
 
 
 def _common(report: ProviderCoverage | CanonicalCoverage) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -16,7 +17,7 @@ from football.contracts.source import (
 )
 from football.ingestion.acquisition import AcquisitionResult
 from football.ingestion.errors import CanonicalIngestionError
-from football.storage.raw import ImmutableRawStore
+from football.storage.raw import ImmutableFileStore, ImmutableRawStore
 
 MAX_SOURCE_RESOURCE_BYTES = 128 * 1024 * 1024
 MAX_SOURCE_MANIFEST_BYTES = 16 * 1024 * 1024
@@ -123,6 +124,37 @@ def _read_bounded(path: Path, max_bytes: int, label: str) -> bytes:
             f"{label} exceeds {max_bytes} bytes",
         )
     return payload
+
+
+def read_registered_statsbomb_resource(root: Path, row: tuple[Any, ...]) -> bytes:
+    """Read the nine registered manifest/resource columns in the existing source reader order."""
+    files = ImmutableFileStore(root)
+    path = _regular_path_beneath(root.resolve(), files.path_for(row[0]), "source manifest")
+    manifest_raw = _read_bounded(path, MAX_SOURCE_MANIFEST_BYTES, "source manifest")
+    if hashlib.sha256(manifest_raw).hexdigest() != row[1]:
+        raise ValueError("registered source manifest checksum mismatch")
+    manifest = SourceManifest.from_bytes(manifest_raw)
+    if (manifest.snapshot.provider, manifest.snapshot.source_git_sha) != (
+        "statsbomb_open_data",
+        row[3],
+    ):
+        raise ValueError("source manifest differs from the registered snapshot")
+    matches = [resource for resource in manifest.resources if resource.path == row[6]]
+    if len(matches) != 1 or (matches[0].sha256, matches[0].size_bytes) != (row[7], row[8]):
+        raise ValueError("source manifest resource differs from its registration")
+    resource = matches[0]
+    expected_path = ImmutableRawStore(root).relative_path(
+        manifest.snapshot, SourceResource(resource.path, resource.media_type)
+    )
+    if resource.raw_path != expected_path:
+        raise ValueError("source manifest raw path differs from the pinned storage layout")
+    path = _regular_path_beneath(
+        root.resolve(), files.path_for(resource.raw_path), "source resource"
+    )
+    raw = _read_bounded(path, MAX_SOURCE_RESOURCE_BYTES, "source resource")
+    if hashlib.sha256(raw).hexdigest() != resource.sha256 or len(raw) != resource.size_bytes:
+        raise ValueError("registered source resource checksum mismatch")
+    return raw
 
 
 class PostgresSourceRegistry:

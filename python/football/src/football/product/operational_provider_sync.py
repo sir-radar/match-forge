@@ -35,7 +35,12 @@ from football.product.identity_admission import (
     verify_source_identifier,
 )
 from football.product.identity_crosswalks import OPERATIONAL_COMPETITION_CROSSWALKS
-from football.product.live_resources import normalize_events, normalize_statistics
+from football.product.live_resources import (
+    LiveUpdate,
+    live_update_order,
+    normalize_events,
+    normalize_statistics,
+)
 from football.providers.fotmob import (
     FotmobClient,
     FotmobLiveScore,
@@ -2491,21 +2496,7 @@ class OperationalProviderSync:
         self, row: FixtureObservation, snapshot_id: UUID, fixture_id: UUID | None
     ) -> bool:
         provider_status = row.provider_status or None
-        semantic = sha256_json(
-            {
-                "provider": self.provider_code,
-                "match_id": row.provider_match_id,
-                "canonical_fixture_id": str(fixture_id) if fixture_id else None,
-                "status": row.status,
-                "provider_status": provider_status,
-                "scores": [row.home_score, row.away_score],
-                "result_score_basis": row.result_score_basis,
-                "clock": [row.minute, row.added_time, row.period],
-                "source_updated_at": (
-                    row.source_updated_at.isoformat() if row.source_updated_at else None
-                ),
-            }
-        )
+        semantic = _fixture_observation_sha256(self.provider_code, row, fixture_id)
         cache_expires = getattr(row, "cache_expires_at", None)
         stale_after = max(
             row.observed_at + self.stale_after,
@@ -2586,15 +2577,16 @@ class OperationalProviderSync:
         incoming_at = row.source_updated_at or row.observed_at
         with self.connection.cursor() as cursor:
             current = cursor.execute(
-                """SELECT status, updated_at FROM football.product_fixtures
+                """SELECT status, updated_at,home_score,away_score FROM football.product_fixtures
                     WHERE fixture_id = %s FOR UPDATE""",
                 (fixture_id,),
             ).fetchone()
-            if (
-                current is None
-                or incoming_at < current[1]
-                or not _valid_transition(current[0], row.status)
-            ):
+            if current is None or not _valid_transition(current[0], row.status):
+                return 0
+            if (current[0], current[2], current[3]) == (row.status, row.home_score, row.away_score):
+                return 0
+            previous, incoming = self._live_update_evidence(row, fixture_id, current)
+            if live_update_order(previous, incoming) not in {"NEWER", "SAME"}:
                 return 0
             cursor.execute(
                 """UPDATE football.product_fixtures
@@ -2617,6 +2609,68 @@ class OperationalProviderSync:
             )
             return cursor.rowcount
 
+    def _live_update_evidence(
+        self, row: FixtureObservation, fixture_id: UUID, current: tuple[Any, ...]
+    ) -> tuple[LiveUpdate, LiveUpdate]:
+        semantic = _fixture_observation_sha256(self.provider_code, row, fixture_id)
+        incoming_known = self.connection.execute(
+            "SELECT observed_at FROM football.product_provider_fixture_observations "
+            "WHERE semantic_sha256=%s",
+            (semantic,),
+        ).fetchone()
+        source = self.connection.execute(
+            """SELECT provider_code,canonical_status,
+            home_score,away_score,match_minute,added_time,source_updated_at,observed_at,
+            provider_status,period
+            FROM football.product_provider_fixture_observations
+            WHERE (canonical_fixture_id=%s OR (provider_code=%s AND provider_match_id=%s))
+                AND kickoff_at=%s
+                AND canonical_status=%s AND home_score IS NOT DISTINCT FROM %s
+                AND away_score IS NOT DISTINCT FROM %s AND semantic_sha256<>%s
+            ORDER BY match_minute DESC NULLS LAST,added_time DESC NULLS LAST,
+                CASE WHEN provider_code=%s THEN 0 ELSE 1 END,
+                CASE WHEN source_updated_at<=observed_at THEN source_updated_at END
+                DESC NULLS LAST,observed_at DESC,observation_id DESC LIMIT 1""",
+            (
+                fixture_id,
+                self.provider_code,
+                row.provider_match_id,
+                row.kickoff_at,
+                current[0],
+                current[2],
+                current[3],
+                semantic,
+                self.provider_code,
+            ),
+        ).fetchone()
+        # Without a retained source, the canonical receipt is only an upper bound.
+        # It never stands in for a provider football update timestamp.
+        previous = LiveUpdate(
+            provider=source[0] if source else "",
+            status=current[0],
+            home_score=current[2],
+            away_score=current[3],
+            minute=source[4] if source else None,
+            added_time=source[5] if source else None,
+            source_updated_at=source[6] if source else None,
+            known_by=source[7] if source else current[1],
+        )
+        # Earlier FotMob rows retained the explicit HT marker but called its status LIVE.
+        # Reconcile that interpretation without claiming a newer football timestamp.
+        if source and source[0] == "fotmob" and source[8] == "HT" and source[9] == "HT":
+            previous = replace(previous, status="HALF_TIME")
+        incoming = LiveUpdate(
+            provider=self.provider_code,
+            status=row.status,
+            home_score=row.home_score,
+            away_score=row.away_score,
+            minute=row.minute,
+            added_time=row.added_time,
+            source_updated_at=row.source_updated_at,
+            known_by=incoming_known[0] if incoming_known else row.observed_at,
+        )
+        return previous, incoming
+
     def _apply_finished_result(
         self, row: FixtureObservation, fixture_id: UUID, snapshot_id: UUID
     ) -> int:
@@ -2636,8 +2690,16 @@ class OperationalProviderSync:
                 return 0
             existing_status, existing_home, existing_away, existing_updated_at = existing
             incoming_at = row.source_updated_at or row.observed_at
-            if incoming_at < existing_updated_at:
-                return 0
+            if existing_status != "FINISHED":
+                previous, incoming = self._live_update_evidence(
+                    row,
+                    fixture_id,
+                    (existing_status, existing_updated_at, existing_home, existing_away),
+                )
+                if not _valid_transition(existing_status, row.status) or live_update_order(
+                    previous, incoming
+                ) not in {"NEWER", "SAME"}:
+                    return 0
             if (
                 existing_status == "FINISHED"
                 and existing_home is not None
@@ -2992,3 +3054,23 @@ def _normalize_competition_name(value: str) -> str:
     normalized = re.sub(r"\bj league\b", "j1 league", normalized)
     normalized = re.sub(r"\bliga nacional apertura\b", "liga nacional", normalized)
     return normalized
+
+
+def _fixture_observation_sha256(
+    provider_code: str, row: FixtureObservation, fixture_id: UUID | None
+) -> str:
+    return sha256_json(
+        {
+            "provider": provider_code,
+            "match_id": row.provider_match_id,
+            "canonical_fixture_id": str(fixture_id) if fixture_id else None,
+            "status": row.status,
+            "provider_status": row.provider_status or None,
+            "scores": [row.home_score, row.away_score],
+            "result_score_basis": row.result_score_basis,
+            "clock": [row.minute, row.added_time, row.period],
+            "source_updated_at": (
+                row.source_updated_at.isoformat() if row.source_updated_at else None
+            ),
+        }
+    )

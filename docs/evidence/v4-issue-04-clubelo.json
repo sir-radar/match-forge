@@ -1,0 +1,125 @@
+{
+  "phase": "R04-C",
+  "status": "PASS_WITH_WARNINGS",
+  "provider_classification": "PARTIAL_FUNCTIONAL",
+  "recorded_at": "2026-11-02T00:46:34.923113Z",
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "website_chart": {
+    "status": "BLOCKED_WITH_EVIDENCE",
+    "direct_home_and_bayern": "HTTP 403",
+    "other_requests": [
+      {
+        "key": "clubelo-www",
+        "url": "https://www.clubelo.com/Bayern",
+        "acquired_at": "2026-11-02T00:42:26.409934+00:00",
+        "error": "<urlopen error timed out>"
+      },
+      {
+        "key": "clubelo-http",
+        "url": "http://clubelo.com/Bayern",
+        "acquired_at": "2026-11-02T00:42:26.410422+00:00",
+        "status": 403,
+        "sha256": "ac0abc7e1ea1a5835f93c9601bc323e331f37b034950b3bbdf96c1d9b7173c5f",
+        "bytes": 5280,
+        "error": "HTTP Error 403: Forbidden"
+      }
+    ],
+    "restriction": "Cloudflare challenge returned on ordinary HTTP route; no script execution or challenge solving attempted",
+    "vega_payload_recovered": false,
+    "website_history_depth_verified": false,
+    "vega_parser_implemented": false,
+    "resume_point": "Obtain accessible original website HTML containing populated Vega datasets; inspect actual schema before implementing deterministic extraction."
+  },
+  "archive": {
+    "key": "archived-api-csv/a4f1239a2bc8d0550408a5f8ee1cebb2f1815138",
+    "provider": "clubelo",
+    "resource_key": "github/Hicruben/theopenmodel/a4f1239a2bc8d0550408a5f8ee1cebb2f1815138/data/clubelo-latest.csv",
+    "acquired_at": "2026-11-02T00:43:17.237287+00:00",
+    "sha256": "bf503fdcef33ff272e792dbf978da51ff2d2917fb9a659293bed09ab2f39ad98",
+    "bytes": 33373,
+    "media_type": "text/csv",
+    "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/acquired/clubelo/bf503fdcef33ff272e792dbf978da51ff2d2917fb9a659293bed09ab2f39ad98",
+    "resource_type": "ratings_archive",
+    "scope": {},
+    "source_url": "https://raw.githubusercontent.com/Hicruben/theopenmodel/a4f1239a2bc8d0550408a5f8ee1cebb2f1815138/data/clubelo-latest.csv",
+    "source_resource_id": "15946660-1055-5b52-a1dc-b5497c6cb015",
+    "source_snapshot_id": "d2d0ac4a-bb56-54a7-bbee-e537efcf4d56",
+    "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/6e80b8ba41e0fb8304e0f77bb1fc267cc90debedbefff9cef58a055dac203dbf.json",
+    "report_sha256": "6e80b8ba41e0fb8304e0f77bb1fc267cc90debedbefff9cef58a055dac203dbf",
+    "work_id": "a64db1b5-f212-580c-88ad-ec1454151e2c",
+    "replay_identical": true,
+    "observations": 1188,
+    "contracts": {
+      "TeamObservationV2": 594,
+      "TeamRatingObservationV3": 594
+    },
+    "findings": {},
+    "kind": "RETAINED_THIRD_PARTY_CLUBELO_API_CSV",
+    "original_provider_attribution": "Inspected fetch-clubelo.mjs fetches ClubElo daily CSV and appends missing clubs from a 21-day-earlier snapshot; no ratings are calculated by that script. Original upstream response hashes and historical collection clock are unavailable.",
+    "repository": "Hicruben/theopenmodel",
+    "revision": "a4f1239a2bc8d0550408a5f8ee1cebb2f1815138",
+    "source_code_sha256": "fbaf2a9750df396982aa161225fba7af51f7276c658722a06f4a93c8164dd8fa",
+    "code_licence": "MIT",
+    "provider_data_rights": "UNRESOLVED; code licence does not establish ClubElo permission; bounded private local research only",
+    "source_labels": 594,
+    "rating_observations": 594,
+    "calendar_dates": [
+      "2026-08-31"
+    ],
+    "earliest": "2026-08-31",
+    "latest": "2026-08-31",
+    "gaps": "Single retained snapshot with mixed-source fallback possible, not full club histories; no 2015/16 observations",
+    "native_club_ids_verified": 0,
+    "canonical_bridges_admitted": 0,
+    "reconstructed_values_created": 0
+  },
+  "other_archives": [
+    {
+      "repository": "manganite/bundesliga",
+      "revision": "d7ddc80a1d52f402fe4f4b857791436d0451f179",
+      "disposition": "Derived snapshots keyed by internal teams; no original API rows recovered from inspected tree; not imported as original ClubElo."
+    },
+    {
+      "repository": "xgabora/Club-Football-Match-Data",
+      "disposition": "Author documents remapped club names and twice-monthly sampling; not imported as original native club IDs."
+    }
+  ],
+  "isolation": {
+    "database": "football_v4_access_r04_20261102",
+    "system_identifier": "7679328148388241450",
+    "oid": 53668853,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "verification": {
+    "red": {
+      "exit_code": 1,
+      "failed": 1,
+      "passed": 6,
+      "log": ".local/issue04/clubelo-red.log"
+    },
+    "focused": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_clubelo_archive.py python/football/tests/test_resource_normalization.py",
+      "exit_code": 0,
+      "passed": 52,
+      "log": ".local/issue04/clubelo-green.log"
+    },
+    "strict_mypy": "PASS (2 files)",
+    "ruff_format_lint_complexity": "PASS",
+    "source_checksum_verified": true,
+    "immutable_replay_same_work_and_observation_count": true,
+    "initial_publication_failure": {
+      "log": ".local/issue04/clubelo-publication.log",
+      "reason": "Absolute URL rejected as provider path by established relative POSIX contract",
+      "resolution": "Retained pinned GitHub relative path plus original URL receipt; no contract changed"
+    },
+    "publication_retry": {
+      "exit_code": 0,
+      "log": ".local/issue04/clubelo-publication-retry.log"
+    }
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "model_changes": 0
+}

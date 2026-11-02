@@ -1,0 +1,153 @@
+{
+  "phase": "17",
+  "starting_sha": "dc8ffa9f23e8152c5c84895c6b7cc5c1b85c7bbb",
+  "recorded_at": "2026-11-01T09:54:56.287754Z",
+  "status": "PASS_WITH_WARNINGS",
+  "scope": "Pure deterministic products from existing exact score atoms; no new fit, period model or publication.",
+  "products": [
+    "Draw no bet, with draw push",
+    "Signed home-minus-away winning margin",
+    "Selected-side signed Asian handicap; quarter lines split equally over adjacent half lines",
+    "Integer European three-way handicap",
+    "Explicit match/home/away goal totals, with integer push and split-stake outcomes",
+    "Inclusive match/home/away goal ranges",
+    "Result by strict total-goal condition; not split-stake settlement",
+    "Result by BTTS, original reference section 64 coverage refinement"
+  ],
+  "numerics": {
+    "source": "Existing validated ModelForecast.score_matrix",
+    "legacy_censored_support": "UNSUPPORTED_CENSORED_SUPPORT; no exact atom is inferred from N+",
+    "tail": "Every partition retains the existing unresolved probability; lower is resolved mass, upper is its sum with tail intersected with [0,1]. These are marginal bounds, not a simultaneously attainable allocation.",
+    "renormalization": false,
+    "probability_tolerance": 1e-10,
+    "tolerance_source": "Existing PROBABILITY_TOLERANCE; unchanged",
+    "existing_forecast_serialization_and_hashes": "UNCHANGED",
+    "existing_64_target_semantic_hashes": "All equal to frozen Phase 15 definition_sha256; regression test PASS"
+  },
+  "cli": {
+    "command": "football models products --forecast PATH [--goal-line L] [--asian-handicap H] [--european-handicap I] [--goal-range MIN MAX]",
+    "lines": "Optional and repeatable; no guessed default line. Finite quarter increments, nonnegative totals, whole European handicaps and inclusive nonnegative integer ranges.",
+    "writes": 0,
+    "activation": "Mathematical projections only; existing target qualification/evaluation/publication gates remain."
+  },
+  "period_qualification": [
+    {
+      "market_id": "FIRST_HALF_RESULT",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "FIRST_HALF_TOTALS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "FIRST_HALF_BTTS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "SECOND_HALF_RESULT",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "SECOND_HALF_TOTALS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "SECOND_HALF_BTTS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "HT_FT",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null,
+        "regulation_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "HIGHEST_SCORING_HALF",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "period_score": null
+      },
+      "model": null
+    },
+    {
+      "market_id": "SCORING_INTERVALS",
+      "status": "DATA_COLLECTION_REQUIRED",
+      "qualified_coverage": {
+        "goal_events": null
+      },
+      "model": null
+    }
+  ],
+  "period_decision": "No qualified period model/evaluation is available. Existing full-time intensities are not divided or repurposed. Existing Phase 15 definitions/readiness continue to suppress period products.",
+  "market_families": 65,
+  "new_family": "RESULT_BTTS",
+  "references": [
+    {
+      "url": "https://help.bet365.com/s/en/sportsrules/soccer/asian-handicap",
+      "role": "Primary settlement example for split-stake quarter lines only. No SportyBet/Opta equivalence; no in-play score-reset semantics applied."
+    }
+  ],
+  "verification": {
+    "focused_tests": 95,
+    "final_semantic_tests": 28,
+    "final_semantic_tests_overlap_previous_suite": 27,
+    "new_unique_focused_tests_total": 96,
+    "static": "Ruff/format, mypy for three production files, architecture PASS; final status/governance/diff checks required before commit.",
+    "warnings": "Three existing penaltyblog NumPy shape deprecations; no failed final tests.",
+    "initial_failures": "New red suite failed before implementation; missing champion test filename corrected; a new exact floating-point comparison was aligned with the existing 1e-10 numerical contract after a 3e-17 rounding difference. No existing gate changed.",
+    "governance_tests": 24,
+    "project_status": "PASS",
+    "diff_check": "PASS",
+    "logs": {
+      "tests.log": {
+        "sha256": "4fb2cd04709e901cf42dcefe4ac9448b7d5eaf066c850f97ac4c8abe5dde262c",
+        "bytes": 1787
+      },
+      "semantic-check.log": {
+        "sha256": "6c9740ef75947af256b31a23e3751bd959287f46e044b88652d9a88d207afa5e",
+        "bytes": 99
+      },
+      "governance-tests.log": {
+        "sha256": "1d27a19d7a90c6ab4a4e471426b6a5f0d5e152ea9845d479d1ab2acc06b4ff7e",
+        "bytes": 99
+      }
+    }
+  },
+  "preservation": {
+    "operating_writes": 0,
+    "provider_requests": 0,
+    "authoritative_model_fits": 0,
+    "published_forecasts": 0,
+    "model_promotions": 0,
+    "production_cutover": false,
+    "unit_tests": "Existing synthetic model-fitting tests ran as regressions; not authoritative evaluation."
+  },
+  "next_phase": "18"
+}

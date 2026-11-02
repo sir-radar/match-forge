@@ -55,6 +55,33 @@ fixture ID. The fixture registry binds processing attempts to that source class.
 Normal analytical dataset creation rejects fixture snapshots, so fixture rows
 cannot become model input through the dataset path.
 
+## Rich resource observations
+
+`resource-observations-v3.schema.json` adds richer team/player statistics, shot
+context and xGOT, explicit period scores, referee assignments and dated source
+ratings. The V1/V2 schemas and serialized artifacts remain unchanged. Existing
+resource scopes and `ObservationArtifactStore` retain acquisition, source hashes,
+native/source-record references, processing versions and separate football/known
+times; no competing table or migration mechanism is introduced.
+
+Optional measurements remain null when unreported; zero is an observed value.
+V3 checks compatible shot/count subsets, complete shot score context, explicit
+period/score basis and meaningful referee references. A referee name is retained
+as source data with a source-field reference, never converted into a MatchForge
+identity. Period observations do not manufacture halves from full-match totals.
+
+`semantic_version` is nullable. Neither a populated field nor a non-null version
+claim grants identity, semantic, historical or market qualification; the existing
+owners must establish that separately. Shot categories remain source-reported
+until qualified. Provider terminology is not assumed equivalent to sportsbook
+settlement definitions.
+
+A rating's `rating_date` is a calendar date, separate from acquisition and
+knowledge time. It does not imply an exact publication or football event time.
+The existing temporal reader excludes unknown event ordering when football
+history is requested; a dated rating cannot bypass that rule. Models continue to
+consume centrally eligible inputs, not source observations directly.
+
 ## Canonical and historical records
 
 Canonical tables contain stable identity and relationships only. Mutable names, match status, scores, provider metadata, and similar source facts live in observation tables.

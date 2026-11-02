@@ -1,0 +1,492 @@
+{
+  "phase": "R02-H",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "30f24c44a007961771b379f3fee8da15fb7979f5",
+  "source_verification": {
+    "statsbomb_pilot_native_identities_before": 0,
+    "statsbomb_pilot_native_identities_after": 21,
+    "espn_identifiers_verified": 4,
+    "statsbomb_mapping_checks": [
+      {
+        "mapping_id": "01a051db-5565-73ca-b461-3de984216d04",
+        "canonical_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+        "entity_type": "competition",
+        "provider_id": "2",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5456-70a2-b637-d2840cfaf9c2",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "2",
+          "source_resource_id": "01a051db-545a-7337-9aaa-d9ad55f52184",
+          "sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+          "acquired_at": "2026-08-30T08:48:35.855412+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a1f-7a47-82c4-908f7d33d776",
+        "canonical_id": "01a051db-5a1d-7d5a-aafc-99446175859c",
+        "entity_type": "team",
+        "provider_id": "26",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "26",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+        "canonical_id": "01a051db-5a27-7bd7-a036-0a0c1ecdbaf3",
+        "entity_type": "team",
+        "provider_id": "28",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "28",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+        "canonical_id": "01a051db-5a48-78d5-b313-eb17f70a03bf",
+        "entity_type": "team",
+        "provider_id": "33",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "33",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a4c-79ed-a00c-cef1f2c25966",
+        "canonical_id": "01a051db-5a4c-7222-8cca-178f69c8a8d5",
+        "entity_type": "team",
+        "provider_id": "40",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "40",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a59-7c13-acac-85b521f5208e",
+        "canonical_id": "01a051db-5a59-72f8-bfea-74440545bdf6",
+        "entity_type": "team",
+        "provider_id": "37",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "37",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+        "canonical_id": "01a051db-5a5d-7942-b41b-2c56349f52a2",
+        "entity_type": "team",
+        "provider_id": "29",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "29",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a6c-7b32-b41a-5f8544e650f0",
+        "canonical_id": "01a051db-5a6c-72c5-9778-9c25c78b75ea",
+        "entity_type": "team",
+        "provider_id": "41",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "41",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a79-7834-a02d-a92525d1515d",
+        "canonical_id": "01a051db-5a79-70bd-82d2-b457afa0ae99",
+        "entity_type": "team",
+        "provider_id": "1",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "1",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a85-7b6d-bd58-5aac5d43815e",
+        "canonical_id": "01a051db-5a85-745b-b656-00578f24f7a5",
+        "entity_type": "team",
+        "provider_id": "23",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "23",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a88-7987-95c9-eca6eab916a9",
+        "canonical_id": "01a051db-5a88-71cb-80e5-35fbb11bee33",
+        "entity_type": "team",
+        "provider_id": "30",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "30",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5a95-7513-a32e-c7af8bc47909",
+        "canonical_id": "01a051db-5a94-7cf6-9ddb-3e687d0e74d6",
+        "entity_type": "team",
+        "provider_id": "25",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "25",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+        "canonical_id": "01a051db-5a9f-7b3a-9cf1-20ef467acc55",
+        "entity_type": "team",
+        "provider_id": "31",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "31",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5ab4-74d7-b528-592695b1795b",
+        "canonical_id": "01a051db-5ab3-7ba9-9e67-a99f2b99b6e1",
+        "entity_type": "team",
+        "provider_id": "59",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "59",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+        "canonical_id": "01a051db-5abd-7993-b014-222dcda3ef5b",
+        "entity_type": "team",
+        "provider_id": "22",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "22",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5acd-7dba-a362-f32450b941ec",
+        "canonical_id": "01a051db-5acd-78c4-9b3f-25ab572d67ad",
+        "entity_type": "team",
+        "provider_id": "24",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "24",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5ae1-75fc-8928-a2be57126f37",
+        "canonical_id": "01a051db-5ae1-7156-9569-5522f1cac756",
+        "entity_type": "team",
+        "provider_id": "38",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "38",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5af6-7b1d-824c-34502a2e2831",
+        "canonical_id": "01a051db-5af6-77fc-a4ac-30cc00a11d7f",
+        "entity_type": "team",
+        "provider_id": "36",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "36",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5b00-7052-b946-5468c594ba27",
+        "canonical_id": "01a051db-5aff-7d08-990c-af541f9f60ad",
+        "entity_type": "team",
+        "provider_id": "56",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "56",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5b30-7e46-baa2-e7357c3af53b",
+        "canonical_id": "01a051db-5b30-7b57-965b-3129c84cf8ba",
+        "entity_type": "team",
+        "provider_id": "39",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "39",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      },
+      {
+        "mapping_id": "01a051db-5b41-71c7-ac36-f912fc78fcc1",
+        "canonical_id": "01a051db-5b40-7ea5-8fde-ba3b39b734bf",
+        "entity_type": "team",
+        "provider_id": "27",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM",
+        "source_snapshot_id": "01a051db-5a11-7fa0-a8f9-a4fe1425552f",
+        "evidence": {
+          "provider": "statsbomb_open_data",
+          "provider_entity_id": "27",
+          "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+          "sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+          "acquired_at": "2026-08-30T08:48:43.916791+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED",
+          "policy_version": "ProductIdentityTrustV1"
+        }
+      }
+    ],
+    "espn_proofs": [
+      {
+        "entity_type": "competition",
+        "native_id": "700",
+        "proof": {
+          "provider": "espn",
+          "provider_entity_id": "700",
+          "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+          "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+          "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED"
+        }
+      },
+      {
+        "entity_type": "match",
+        "native_id": "704279",
+        "proof": {
+          "provider": "espn",
+          "provider_entity_id": "704279",
+          "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+          "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+          "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED"
+        }
+      },
+      {
+        "entity_type": "team",
+        "native_id": "360",
+        "proof": {
+          "provider": "espn",
+          "provider_entity_id": "360",
+          "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+          "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+          "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED"
+        }
+      },
+      {
+        "entity_type": "team",
+        "native_id": "370",
+        "proof": {
+          "provider": "espn",
+          "provider_entity_id": "370",
+          "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+          "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+          "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+          "country": null,
+          "manifest_classification": "BYTE_VERIFIED"
+        }
+      }
+    ]
+  },
+  "implementation": {
+    "shared_reader": "football.ingestion.registration.read_registered_statsbomb_resource",
+    "reused_from": "football.providers.normalization.cli._statsbomb_payload; old implementation removed",
+    "formats": [
+      "StatsBomb competitions.json",
+      "StatsBomb competition/season match indexes",
+      "StatsBomb match lineups",
+      "ESPN one exact summary event/header"
+    ],
+    "unsupported_formats": "StatsBomb arbitrary/event-only JSON and ESPN scoreboard/unrelated nested IDs do not provide identity proof.",
+    "origin_policy_changed": false,
+    "canonical_uuids_rewritten": false,
+    "native_verification_is_canonical_admission": false
+  },
+  "research": {
+    "espn_question": "Does the retained summary explicitly bind league, event and team IDs?",
+    "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=704279",
+    "revision_date": null,
+    "retrieved_at": "2026-11-02",
+    "schema": "Retained ESPN summary native shape; source resource and SHA in espn_proofs",
+    "competing_explanations": [
+      "Any nested numeric id is a team identity",
+      "Only the exact event header and competitor IDs are authoritative for this summary"
+    ],
+    "observed": "Internet tool could not access the live endpoint. Actual retained, registered bytes match exact event query, league slug, header/competition IDs and two competitor/team IDs.",
+    "selected": "Bounded summary-only extraction; reject query, league, competitor and shape conflicts.",
+    "reason": "Retained provider evidence is stronger than unrelated or unavailable public schema examples.",
+    "tests": "Four actual retained identifiers verified; five failing regression tests before implementation.",
+    "remaining_uncertainty": "No missing canonical mapping or admission is created by source extraction."
+  },
+  "verification": {
+    "statsbomb_red": "5 expected failures before implementation",
+    "espn_red": "5 expected failures before implementation",
+    "focused_command": "uv run --locked --no-sync pytest -q python/football/tests/test_retained_native_identity.py python/football/tests/test_identity_trust.py python/football/tests/test_resource_normalization.py",
+    "focused_exit_code": 0,
+    "native_final_command": "uv run --locked --no-sync pytest -q python/football/tests/test_retained_native_identity.py",
+    "native_final_exit_code": 0,
+    "native_final_tests": 18,
+    "integration_command": "sh .local/reports/v4/isolation-r01/test_database.sh tests/integration/test_product_identity_admission.py tests/integration/test_resolution_identity_database.py tests/integration/test_v4_development_isolation.py",
+    "integration_exit_code": 0,
+    "integration_tests": 51,
+    "ruff_format_lint_complexity": "PASS; configured maximum 10",
+    "strict_mypy": "PASS; six changed Python files",
+    "architecture_check": "PASS"
+  },
+  "operating_writes": 0,
+  "new_canonical_admissions": 0,
+  "remaining_blocker": "All 21 original StatsBomb mappings now reach UNSUPPORTED_ORIGIN_ALGORITHM. Verified source IDs do not prove an accepted canonical target."
+}
