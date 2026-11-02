@@ -798,6 +798,10 @@ source proof and revocations remain blocked; contradictions remain explicit.
 Alias candidates never authorize admission. The result includes bounded fixture
 impacts, retained correction contexts and an evidence hash for later operator
 review. Historical reads continue to use the cutoff-aware identity owners above.
+Operational ingestion retains original team names and native IDs when a name
+has no usable search alias, such as `AFC` or a non-Latin name. It logs the
+provider/team/source context and omits the empty optional alias; canonical
+identity checks and existing mappings remain unchanged.
 
 ## Decision records
 
