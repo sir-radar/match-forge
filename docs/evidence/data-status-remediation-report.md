@@ -1,7 +1,7 @@
 # MatchForge data status audit and remediation plan
 
 Audit date: **2026-11-02**. Source checkout: `e5b9b88` (`ft/data-status-audit`).
-The original audit is preserved below. **Execution checkpoints added on 2026-11-02 are in section L; its results supersede the audit-only delivery state for subsequent remediation work.**
+The original audit is preserved below. **Execution checkpoints added on 2026-11-02 are in sections L and M; the latest checkpoint supersedes earlier delivery and operating counts within its stated scope.**
 
 Delivery of the original audit: audit and plan only. **No database changes, recovery jobs, acquisition, migrations, model fits, evaluations, publication, or cutover were performed by this audit.** Local audit evidence and this report were written. Existing workers continued independently.
 
@@ -1983,3 +1983,52 @@ This run recovered **zero football facts, identity mappings, player qualificatio
 The actual operating Admin read endpoint also returns HTTP 200 with **12,510 blocked fixture records** and 20 first-page items, in 21.00 seconds. The request uses the existing configured CLI credential without logging it. The initial unauthenticated probe was denied; no access check or browser-origin requirement was weakened. This verifies the corrected read query through the running Go/Python bridge. Build identity remains unknown, so this is not a claim that all branch changes were deployed.
 
 Phase D/E: **PASS_WITH_WARNINGS** for the bounded cohort; operating remediation remains incomplete. Receipt `report-batches.json` SHA-256 `45f517661dc2a7822fb97fd4e01018aa729d60d7b2b2053ec3bb7c3476252d4b` contains every selected ID, publication state, timing and checkpoint. `operating-review-api.json` SHA-256 `0583479f63a6ebf484e61571a17aeb79e33454aec55ef5664ee84485fa4d14bf` retains the authenticated read result. Final preservation, accounting and aggregate verification follow this committed checkpoint.
+
+### M5. Final accounting, verification and remaining work
+
+Continuation implementation and verification: **PASS_WITH_WARNINGS**. **Operating remediation: NOT COMPLETE.** The final read-only accounting snapshot is 17:08:06 UTC; its collection ends at 17:09:03 UTC. The following counts use distinct review keys unless explicitly labelled entries. No recovered football facts or accepted relationships are attributed to concurrent workers.
+
+| Resolution History metric | Initial continuation snapshot | Final snapshot | Change |
+| --- | ---: | ---: | --- |
+| Historical entries | 2,882,267 | 2,889,595 | +7,328 concurrent entries |
+| Distinct history keys | 467,743 | 467,743 | 0 |
+| Keys needing current review in History | 52,421 | 63,186 | +10,765 previously hidden quarantines exposed |
+| Accepted current relationships | 62,881 | 62,881 | 0 |
+| Outside current review scope | 352,441 | 341,676 | -10,765 corrected visibility; no historical deletion |
+| Resolved with new authoritative evidence | 0 | 0 | 0 |
+| Resolved with independent corroboration | 0 | 0 | 0 |
+| Newly resolved with retained internal evidence | 0 | 0 | 0; all qualified mappings already trusted |
+| Evidence-incomplete current history keys | 50,031 | 50,031 | 0 |
+| Contradictory current history keys | 639 | 639 | 0 |
+| Blocked current history keys | 1,751 | 12,516 | +10,765 exposed by the query fix |
+| Current review keys without History | 45,239 | 45,239 | 0 |
+
+External dependencies and human decisions are not disjoint case-key populations and are not added to this table. The final current views contain 20,805 entity relationships and 150,501 fixture relationships/records. They account for 108,425 current review keys, including the 45,239 absent from History; these still must not be added or reported as unique affected football matches. The 341,676 keys outside current review retain the M1 limitation: exclusion from a queue is not independent factual verification.
+
+The remaining native fixture reasons are unchanged from M1/M3. The final operating inventory retains 873 pending, 338 failed, 11 deferred and two succeeded provider-history scopes. Shared work retains 517 historical-acquisition waits, 1,035 failed provider-acquisition items, and one failed plus one waiting forecast-refresh item; these are different owners and overlapping workflows, not additional unique affected matches. Competition availability remains 220 available, 1,022 with insufficient history, 361 source-incomplete and 54 without fixtures. External predictions remain 47 matched, seven ambiguous and 1,289 unmatched; none has a native binding key. Source-result conflicts remain 1,845 historical events over 19 fixture IDs. No market/model readiness gate was advanced.
+
+All 25 previously missing dataset paths remain missing: 22 manifests across 22 versions and three registered data files. All 26 previously missing model manifests also remain missing. The 33 impossible raw hash/size registrations retain their earlier exact constraint proof; no registration or exclusion is rewritten. These are artifact/path cohorts with overlapping dependencies, not additional History case totals. Historical fixture/result recovery, player qualification and identity correction in this continuation are all zero. The actual data operation is the 963 derived reports in M4. A later independent snapshot has 166,252 pending context rows out of 228,608, zero recorded worklist errors and an oldest pending timestamp on 2026-10-28; the additional decrease after M4 belongs to existing workers.
+
+The 17:08:05 UTC preservation snapshot compares complete baseline row hashes. All 66,017 source snapshots, 67,825 raw registrations, 5,230 model registrations, 9,990 forecast/artifact composite rows, four promotion events and 17 retirement events remain present and unchanged. There are 229 concurrent new source snapshots and 229 new raw registrations, separately counted. The champion checksum is unchanged. No provider acquisition, published model/forecast mutation, scientific execution, operating restart/migration or architecture route transition was performed by this continuation.
+
+The final `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration` exits **0** after the last code change. It passes formatting, lint/complexity, strict Mypy on 446 files, Rust Clippy, Go vet/lint, SQL validation, architecture/project-status checks, builds, 1,793 Python unit tests, 16 Rust tests, Go tests, 107 web tests, all **851 disposable storage cases**, and PostgreSQL 18.6 / Redis 8.10 / Go operational API integration. The final serial run covers both formerly timed-out browser journeys and the eight new quarantine regressions. Seven existing Python dependency warnings and one existing ESLint warning remain; no gate, assertion, timeout or security check was weakened. The initial aggregate remains explicitly failed, with its original log retained.
+
+Final review against `docs/review-checklist.md` finds no task-introduced dead code, duplicate workflow, new dependency, migration, configuration, secret or unrelated tracked change. The production change is limited to History wording and the existing current-case read query/detail projection; regression tests verify active/inactive handling and preserved domain rows. `.env`, immutable artifacts, scientific mathematics and `docs/project-status.json` are unchanged. Final prose changes use review and `git diff --check`; no code checks are repeated after prose-only changes. The phase commits precede subsequent work; Git delivery and final SHA are recorded in the ignored `CURRENT_TASK_STATUS.md` and the PR handoff.
+
+Remaining decisions and dependencies, in priority order:
+
+1. **Ordinary rollout authorization:** review PR #179, then authorize the existing backup/migration/build procedure through `202611020200`, coordinated with PR #178's separate `202611020100`. Verify the deployed code/lock hashes and preserve current routes/settings. Existing rehearsals and full verification are ready; this is not authorization for cutover or model promotion. The deployed read query is verified, but the missing later-schema capabilities and unknown build metadata prevent a full rollout claim.
+2. **Source permission and capacity:** obtain the applicable source-specific rights and historical entitlement, or select a permitted source for an exact missing scope. No new account, expenditure or provider contact was made. Public technical availability does not resolve the recorded rights or zero-budget blockers.
+3. **Exact relationship evidence:** continue from the retained ID/root-cause receipts when genuinely new permitted evidence exists. No evidence-complete identity proposal currently awaits a human click; approval cannot replace missing source-to-target proof, season context, player exposure or independent provenance. Do not repeatedly retry unchanged evidence gaps.
+4. **Authentic originals:** provide a matching backup/locator for the missing registered files, or independently establish the provenance needed for a separately authorized narrow disposition. Reconstructed facts cannot replace original bytes or their checksums. No deletion/retirement proposal is made without that proof.
+5. **Existing context backlog:** continue ordinary bounded worker processing and monitor pending generations, oldest age and actual errors. The controlled cohort passed; the remaining backlog and upstream data gaps are still open. No new background automation or completion promise is created by this report.
+
+Final receipts under `.local/data-status-continuation/`:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `accounting-final.json` | `9499f21be07707b6b9c70389a9cc0aee547ab7e62ab58b605eb91756fad8d73f` |
+| `preservation-after.json` | `0e789b3177193a154f625a67007630e701e3afa355d4986df4c6ba1ade8a60ba` |
+| `quarantine-red.log` | `5232ecc3ad7d99bdce7829cef721f448f71b3ff324531be2569b0bc01446e63e` |
+| `check-integration.log` (initial failed aggregate) | `55bc74be6108fdeb9e24497a43f6531566a4f5590219602ac73a5ac65f4a435a` |
+| `check-integration-final.log` (exit 0) | `439987a15df3c0b78aa72e30e106d28f4bd615159b1e2a884dd3fd0d88c28222` |
