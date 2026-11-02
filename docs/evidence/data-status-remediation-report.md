@@ -2279,3 +2279,27 @@ IDs: `remaining-operating-replay.json`, SHA-256
 `record-creation-proof.json` records new versus previously existing canonical
 IDs and creation times. No production code changed after the passing full
 gate; this checkpoint uses prose review and `git diff --check`.
+
+### N6. Bounded context-report processing
+
+After committing the retained-scope checkpoint as `6ad0e0a`, the existing
+context worker selects 1,024 work entries in 32 normal batches of 32. From
+18:23:13 to 18:27:25 UTC it publishes **979 context reports**; 45 entries are
+already complete or claimed elsewhere. There are zero failures and lease
+losses. Four repeated scopes retain identical input/output report hashes and
+return already-complete results without duplicate publication.
+
+The worklist remains 228,877 rows. Pending work changes from 164,406 to
+163,383; requested generations increase by one and completed generations by
+1,328. These changing totals include concurrent/coalesced work and are not
+attributed entirely to this controlled run. Only its 979 measured publications
+are counted. The oldest pending timestamp remains on 2026-10-28, with zero
+recorded worklist errors. The large backlog is not declared complete.
+
+These publications are derived context reports, separate from the 269 new
+fixture records, 209 new history rows and two identity admissions. No provider
+request, larger batch limit, scheduler setting, model gate or route change is
+introduced. Phase 4: **PASS_WITH_WARNINGS**. Receipt: `report-batches.json`,
+SHA-256 `acf0ff9a017d1fbcb925c6aff07f31e7b70dbc4cf0d29432135e2d4cf015ee6c`.
+No production code changed after the passing full gate; this checkpoint uses
+prose review and `git diff --check`.
