@@ -41,11 +41,12 @@ def _statsbomb_index(payload: bytes, path: str) -> dict[tuple[str, str | None], 
         }
     if scope := _LINEUP_PATH.fullmatch(path):
         lineup = _parse_lineup(payload, path, scope.group(1))
+        players = [player.provider_id for team in lineup.teams for player in team.players]
+        if len(players) != len(set(players)):
+            raise ValueError("native player appears for multiple teams in one lineup")
         return {
             ("team", None): {team.provider_id for team in lineup.teams},
-            ("player", None): {
-                player.provider_id for team in lineup.teams for player in team.players
-            },
+            ("player", None): set(players),
         }
     return {}
 

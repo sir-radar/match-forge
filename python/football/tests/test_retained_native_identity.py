@@ -264,3 +264,15 @@ def test_registered_statsbomb_verification_returns_exact_immutable_resource_proo
         "England",
         verifier,
     )
+
+
+def test_statsbomb_player_cannot_appear_for_both_sides_of_one_retained_lineup() -> None:
+    player = {"player_id": 22, "player_name": "Player", "positions": [], "cards": []}
+    raw = json.dumps(
+        [
+            {"team_id": 1, "team_name": "Home", "lineup": [player]},
+            {"team_id": 2, "team_name": "Away", "lineup": [player]},
+        ]
+    ).encode()
+    with pytest.raises(ValueError, match="multiple teams"):
+        _identity_index("statsbomb_open_data", raw, "data/lineups/42.json", "source")

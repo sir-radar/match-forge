@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T05:07:20.745780Z",
+  "updated_at": "2026-11-02T05:10:28.329662Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3268,7 +3268,7 @@
     },
     "historical_qualification_unblocking": {
       "status": "IN_PROGRESS",
-      "phase": "R02-K",
+      "phase": "R02-L",
       "starting_sha": "eb4f810",
       "scope": "R02-G through R02-M; CURRENT_TASK.md research-verified Issue 2 unblocking",
       "data_classification": "EXPERIMENTAL_ONLY",
@@ -3276,7 +3276,8 @@
         "R02-G": "30f24c44a007961771b379f3fee8da15fb7979f5",
         "R02-H": "37295332a04963a8de310d3d541c3b95dfff7b9a",
         "R02-I": "960ce949596519df346a66e7139e0c55bf8c5263",
-        "R02-J": "a42825cfdbc8890e1928251294c00cdb9d8c4a2f"
+        "R02-J": "a42825cfdbc8890e1928251294c00cdb9d8c4a2f",
+        "R02-K": "d5c848142ba99f25616a7499d8796ad1ff2e660f"
       },
       "root_cause_ref": "docs/evidence/v4-issue-02-root-cause-research.json",
       "source_verification_ref": "docs/evidence/v4-issue-02-source-verification.json",
@@ -3297,7 +3298,11 @@
       "reverified_existing_canonical_fixtures": 5,
       "research_qualified_score_pairs": 5,
       "research_qualified_goal_labels": 10,
-      "bookmaker_equivalent_labels": 0
+      "bookmaker_equivalent_labels": 0,
+      "player_exposure_ref": "docs/evidence/v4-issue-02-player-exposure.json",
+      "native_player_ids_verified": 644,
+      "canonical_player_admissions": 0,
+      "qualified_minute_exposures": 0
     }
   }
 }
