@@ -476,3 +476,22 @@ Player `teamId` can identify a club outside the sampled fixture, so it does not
 bind the match team or establish historical membership. Unsupported measurements
 and periods remain findings; partial-period xG is not a match-total observation.
 No upstream browser challenge-solving transport is used.
+
+FBref's `archived_match_html` resource consumes retained original match pages.
+Archive containers and extracted members keep separate hashes/registrations;
+member keys include the parent archive hash and the native match ID. The parser
+checks the original canonical URL, scorebox team/competition IDs and match-specific
+summary table IDs before emitting observations. It reads visible or commented
+HTML tables without running scripts. Player minutes, shots, cards, passing and
+other supported fields come from individual match rows; footer aggregates are
+excluded. An explicit venue Unix epoch provides a native UTC claim. A venue date
+without that epoch remains `DATE_ONLY`. Score/status and settlement qualification
+remain unknown where the source does not establish them. Acquisition/knowledge
+time remains the archive's actual local acquisition time.
+
+Classify these pages as `FBREF_ARCHIVED_HISTORICAL`. A community SQLite export is
+`THIRD_PARTY_FBREF_DERIVED`; inspecting its tables does not turn it into an official
+current response. Neither archive establishes current basic-table access or
+restores the advanced feed removed in January 2026. Keep original-provider and
+archive reuse limitations visible, and obtain independent identity, time and
+target-use decisions before historical modelling.

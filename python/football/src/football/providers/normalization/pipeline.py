@@ -13,6 +13,7 @@ from football.providers.normalization import (
     api_football_rich,
     clubelo,
     espn,
+    fbref,
     files,
     flashscore,
     flashscore_events,
@@ -35,6 +36,7 @@ from football.providers.normalization.common import (
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
     ("clubelo", "ratings_archive"): clubelo.ratings_archive,
+    ("fbref", "archived_match_html"): fbref.archived_match_html,
     ("sofascore", "retained_event"): sofascore.event,
     ("sofascore", "retained_statistics"): sofascore.statistics,
     ("sofascore", "retained_lineups"): sofascore.lineups,
@@ -110,7 +112,7 @@ def normalize_resource(
         )
         return output.result()
     payload: object
-    if context.provenance.provider in {"football_data_uk", "clubelo"} or (
+    if context.provenance.provider in {"football_data_uk", "clubelo", "fbref"} or (
         context.provenance.provider in {"flashscore", "soccerway"}
         and resource in {"statistics", "events", "lineups", "summary"}
     ):
@@ -171,6 +173,7 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
         "understat": r"^getMatchData/([1-9][0-9]*)$",
+        "fbref": r"^archive/[a-f0-9]{64}/matches/([a-f0-9]{8})\.html$",
         "flashscore": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
         "soccerway": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
     }
