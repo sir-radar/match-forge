@@ -2032,3 +2032,51 @@ Final receipts under `.local/data-status-continuation/`:
 | `quarantine-red.log` | `5232ecc3ad7d99bdce7829cef721f448f71b3ff324531be2569b0bc01446e63e` |
 | `check-integration.log` (initial failed aggregate) | `55bc74be6108fdeb9e24497a43f6531566a4f5590219602ac73a5ac65f4a435a` |
 | `check-integration-final.log` (exit 0) | `439987a15df3c0b78aa72e30e106d28f4bd615159b1e2a884dd3fd0d88c28222` |
+
+## N. Research-driven operating recovery — 2026-11-02
+
+### N1. Deployment preparation
+
+Continued on `ft/data-status-remediation` from `c11e473` under the updated
+`CURRENT_TASK.md`. The owner authorizes phase-by-phase recovery and commits;
+the ignored `CURRENT_TASK_STATUS.md` tracks execution. No Wayfinder map is
+claimed, and existing architecture and scientific gate dispositions remain.
+
+PR #179 CI run [41489550659](https://github.com/sir-radar/match-forge/actions/runs/41489550659)
+passes at `c11e4733a1473a87c1339c2f3355dad941b0ff69`. PR #178 remains a separate
+open draft at `463ec15a8a0720fb48e842af5a009cf140545f90`; its CI run
+[41433195398](https://github.com/sir-radar/match-forge/actions/runs/41433195398)
+passes. Neither PR was merged. The 17:31:47 UTC read-only operating preflight
+still finds schema `202610310500` and unknown runtime build/lock metadata.
+
+The rollout bundle includes all current migrations plus PR #178's exact
+`202611020100_provider_native_mapping_method.sql`, verified against Git blob
+`266bea6efefb4770f5b5bc83046cbb36cb9e85ab`. The older local rehearsal copy
+differs only by one trailing blank line; the new bundle uses the exact remote
+bytes. The migration must precede this branch's `202611020200`. The pinned
+[Goose 3.27.1 documentation](https://github.com/pressly/goose/blob/v3.27.1/README.md#hybrid-versioning)
+explains that introducing an earlier migration after applying a later version
+fails by default. Do not bypass that check or renumber an applied migration.
+
+The exact combined bundle validates, upgrades a fresh disposable database to
+the deployed version, then upgrades through `202611020200` and repeats `up`
+successfully. Both history-failure signatures exist; all 13 stage routes stay
+`LEGACY`. The disposable database was removed. This is SQL compatibility and
+deployment preparation, not a full merge of PR #178 or operating deployment.
+
+For ordinary rollout, retain a fresh consistent operating backup and verify
+its isolated restore using the established procedure; preserve the current
+routes and history settings; deploy the reviewed combined migration bundle
+in version order; build the approved code with its Git/lock metadata; verify
+`/version`, health, schema signatures and the exact retained recovery cohorts.
+Stop on a failed prerequisite. The previous populated dump/restore remains
+historical rehearsal evidence, not a fresh deployment backup. Operating
+migration/restart, architecture cutover and scheduler retirement were not run.
+
+Phase 1: **PASS_WITH_WARNINGS**. CI and preparation pass; ordinary rollout
+remains an owner deployment decision. Exact SQL, file hashes, isolated command
+results and read-only preflight are retained under `.local/data-recovery-current/`.
+The initial sandbox-denied connection made no database change; reviewed local
+access succeeded. No source, identity decision, model or forecast was changed
+by this phase. Prose review and `git diff --check` are the applicable commit
+checks; the migration rehearsal is separately recorded operational evidence.
