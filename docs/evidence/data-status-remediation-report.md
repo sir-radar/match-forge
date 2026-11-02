@@ -2303,3 +2303,122 @@ introduced. Phase 4: **PASS_WITH_WARNINGS**. Receipt: `report-batches.json`,
 SHA-256 `acf0ff9a017d1fbcb925c6aff07f31e7b70dbc4cf0d29432135e2d4cf015ee6c`.
 No production code changed after the passing full gate; this checkpoint uses
 prose review and `git diff --check`.
+
+### N7. Final coverage, proof eligibility and preservation
+
+The final read-only, repeatable-read metric collection runs from 18:29:40 to
+18:30:11 UTC. Scope statuses and review populations remain separate from
+physical rows and model-history eligibility.
+
+| Metric | Before / initial cutoff | Final measurement |
+| --- | ---: | ---: |
+| New canonical fixture records attributable to retained recovery | 0 | 269 |
+| New retained history rows on those matches | 0 | 209 |
+| Currently eligible history rows among those 209 | 0 | 25 |
+| Evidence-complete team relationships newly admitted | 0 | 2 |
+| Controlled context-report publications | 0 | 979 |
+| Current entity mappings / review keys | 20,805 / 5,056 | 20,806 / 5,055 |
+| Current fixture relationships/records / review keys | 150,501 / 103,369 | 150,723 / 103,357 |
+| Total current review keys | 108,425 | 108,412 |
+| Forecast-available competitions | 220 | 220 |
+| Forecast-available fixtures | 3,668 | 3,668 |
+| Succeeded provider-history scopes | 2 | 2 |
+
+Availability baselines use the earlier S1/S2 audit; current-review baselines
+use N2. Recovered-row eligibility uses this task's explicit initial cutoff.
+These measurements are not one simultaneous global snapshot.
+
+The 25 recovered eligible rows are measured with the established historical
+eligibility function at an explicit current knowledge cutoff. At the initial
+17:35:01 cutoff the same IDs yield zero rows. The remaining 184 recovered
+history rows do not pass current eligibility and remain excluded. No complete
+season, market support, new forecast availability or scientific acceptance is
+inferred from raw row recovery. The two Brazilian admissions separately retain
+their unchanged earlier-cutoff 41-row history check in N3.
+
+The net review-key decrease is 13, across a live population with new keys and
+updated fixture classifications. It is not a claim of 13 independently proven
+team identities or of 13 unique football matches. Only the two individually
+researched team admissions are counted as new evidence-complete relationships.
+The largest remaining fixture reasons are 43,252 provisional identities,
+23,603 without an exact canonical candidate, 21,120 without a provider season
+label and 10,504 team/timestamp quarantines. Their required proof is retained.
+
+The fresh retained-proof audit verifies all 20,806 active mappings: 14,193
+origin anchors and 1,558 crosswalks are already trusted; 4,946 unresolved,
+108 contradictory and one revoked mapping remain. **Zero qualified unadmitted
+mapping IDs remain available for automatic admission.** This is an evidence
+boundary, not permission to admit the unresolved population by name or score.
+
+At 18:29:37 UTC, complete row hashes preserve every baseline record: 66,481
+source snapshots, 68,289 raw registrations, 22,515 identity decisions, 5,230
+models, 9,990 forecast/artifact pairs, four promotions and 17 retirements.
+There are no missing or changed baseline keys. The two new identity decisions
+are the task's approved admissions. An additional 474 source snapshots/raw
+registrations are observed while existing workers continue; they are excluded
+from task recovery counts. The champion checksum remains
+`e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+All 25 missing registered dataset paths and 26 missing model manifests remain
+missing; no substitute original bytes, hash rewrite or retirement is invented.
+
+Receipts under `.local/data-recovery-current/`:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `final-metrics.json` | `7adaef813fd5fda6da945705b65de69242e4df80ccc5599a94f2cb51afee1c7a` |
+| `identity-eligibility-final.json` | `97b23aeec6219e1b4ee522a9adcf684571a822215b8bd552f3f215fd7453c414` |
+| `preservation-after.json` | `5f11752ec0735a086c30d39472ee340496572fa0dbf0eca388c608b6fd376dad` |
+| `missing-originals-final.json` | `e34191b142320f1aebf29a629d016ce3d542aa336220c6ba54ec8f60d93aa0d8` |
+
+### N8. Fresh populated rollout rehearsal and handoff
+
+A new read-only PostgreSQL export uses the 18:30:06 UTC synchronized snapshot,
+following the established procedure and PostgreSQL 18's
+[documented snapshot support](https://www.postgresql.org/docs/18/app-pgdump.html).
+The custom-format dump is 1,751,142,953 bytes, SHA-256
+`73d71c8626569390f0959afff2f12729df09c8a4f344ee2daf68ecc081535d47`.
+Its directory is mode `0700`; the dump is `0600`. It is retained only under
+`.local/data-recovery-current/rollout-backup/`, not committed.
+
+The dump restores successfully into a newly created disposable database.
+Complete registration-row digests match the same exported source snapshot:
+66,956 source snapshots, 68,764 raw resources, 22,517 identity admissions,
+5,230 models, 9,990 forecast/artifact pairs, four promotions and 17 retirement
+events. The one additional source/resource relative to N7 belongs to this
+later snapshot and is not attributed to task recovery.
+
+The exact combined migration bundle then upgrades this populated copy from
+`202610310500` through `202611020200` and repeats `up` successfully. All seven
+registration digests remain identical after the upgrade; all 13 routes remain
+`LEGACY`. The disposable database is removed. Local PostgreSQL backup,
+restore and combined upgrade verification: **PASS**, completed at 18:37:35 UTC.
+The manifest SHA-256 is
+`3f19c5904b02d6e1887c3e6aef8d5a7bcb379fcf1215836798cfcee6bca1b00d`.
+The dump contains database state, not the external immutable source/model
+files or a complete disaster-recovery solution. It does not restore missing
+original files or establish full Architecture V2 parity.
+
+PR #178 is rechecked at the unchanged `463ec15` head. Ordinary rollout remains
+an owner deployment decision: use the reviewed migration bundle in order,
+preserve settings/routes and verify the approved build's code/lock metadata
+and operating health. No operating migration, restart, route switch,
+scheduler retirement, model fitting/evaluation command or promotion occurs
+in this continuation. A final clean build and Git delivery are recorded in
+`CURRENT_TASK_STATUS.md` and PR #179 after this documentation checkpoint.
+
+Scoped recovery and verification: **PASS_WITH_WARNINGS**. **Overall operating
+remediation: NOT COMPLETE.** Remaining blockers are the 108,412 current review
+keys requiring evidence, partial provider seasons, source rights/capacity,
+missing authentic originals, the large ordinary report backlog, and ordinary
+runtime/schema rollout with its separately verified parity requirements.
+The retained verifier has zero further proof-complete unadmitted mappings;
+both approved recovery inventories are fully processed. No unsupported case
+is force-admitted or relabelled complete. Architecture V2/V4 and scientific
+gate dispositions remain unchanged; `docs/project-status.json` is unchanged.
+
+Final review follows `docs/review-checklist.md`: the only new production data
+is two operational crosswalk entries with current consumers and independent
+official fixture evidence. No task-introduced dead symbol, duplicate workflow,
+dependency, migration, configuration, secret or unrelated change remains.
+The successful full code gate in N3 covers the final production source;
+later tracked changes are prose reviewed with `git diff --check`.
