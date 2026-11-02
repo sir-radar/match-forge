@@ -1902,3 +1902,44 @@ Local receipts are ignored and remain available in this checkout. The report is 
 | `check-integration-final.log` | `5c017acccceef8acba24eb22308a5fe7ab2b62a0752b20709b1c07b93e2cfd79` |
 | `check-integration-delivery.log` | `227de670abf2744c3cccdb439502f1338e40057097d6e64b818345dbeb3e4594` |
 | `check-integration-verified.log` | `20a1ee81939e0382a759cec1ef198b47f585662c43dff45e0e7eaae35be14d44` |
+
+## M. Continued Resolution History remediation — 2026-11-02
+
+### M1. Phase A — Refreshed scope and exhaustive history accounting
+
+Continued on `ft/data-status-remediation` from `1040c35`, with a clean worktree. The ignored `CURRENT_TASK_STATUS.md` was empty and has been restored as the execution tracker. Earlier checkpoints and receipts remain unchanged. This continuation is L3 work because it concerns cross-provider identity and immutable decision history; it does not claim an active Wayfinder map or advance architecture or scientific gates.
+
+The 13:41:44–13:42:35 UTC read-only, repeatable-read census uses the production `HISTORY_CASES`, `MAPPING_CASES` and `FIXTURE_CASES` queries, including the optional deployed review-event table. Resolution History contains **2,882,267 entries**, **467,743 distinct case keys**, and **2,882,267 distinct event IDs**. The requested 2,880,315 is an earlier display value: the fresh total is 1,952 higher. A case key identifies a review relationship or fixture representation, not a unique football match.
+
+| History source | Entries | Distinct case keys |
+| --- | ---: | ---: |
+| Provider fixture-mapping decisions | 2,505,858 | 94,956 |
+| Entity identity admissions | 22,515 | 20,002 |
+| Fixture-resolution records | 353,894 | 352,785 |
+| Review events | 0 | 0 |
+| Total | 2,882,267 | 467,743 |
+
+The frontend labels this total as cases, although the API explicitly describes decision history and fixture-resolution records. **2,414,524 entries are additional entries for already represented keys**, not additional unresolved cases. Preserve them. History order uses event recording time; current native fixture decisions use observed time and a deterministic decision-ID tie-break. Taking the most recently recorded history row would produce a different current-state diagnosis and is not used here.
+
+A second declared read-only snapshot at 13:44:07 UTC joins each history key to the existing current-review queries. Each history entry and key appears in exactly one row below; the totals reconcile exactly. These are reporting categories, not new persisted statuses.
+
+| Current review classification | Distinct history keys | History entries |
+| --- | ---: | ---: |
+| Accepted current relationship (`VERIFIED`, `AUTO_ACCEPTED`, `MANUAL_ACCEPTED`) | 62,881 | 373,235 |
+| Evidence-incomplete current review | 50,031 | 2,138,098 |
+| Contradictory current review | 639 | 14,719 |
+| Blocked current review | 1,751 | 1,752 |
+| Outside the current review scope | 352,441 | 354,951 |
+| Total | 467,743 | 2,882,267 |
+
+Thus **52,421 distinct history keys currently require review**. The final row includes historical/inactive relationships and fixture records excluded by the existing current-review predicates; absence from that queue is not independent proof that every historical fact is correct. These records are preserved, not relabelled or removed. There are also **45,239 current review keys without a history entry**. History is therefore neither a count of unresolved work nor an exhaustive inventory of current cases.
+
+The census separately measures 20,805 active entity mappings: 15,749 verified, 4,942 unresolved, 108 contradictory and six blocked. Fixture Review has 139,736 distinct keys: 46,586 automatically accepted, 546 manually accepted, 47,293 requiring review, 531 contradictory, 43,035 provisional fixture records needing review and 1,745 blocked fixture records. Entity mappings, provider-native fixture relationships and canonical fixture records remain separate units; their sum must not be presented as distinct affected matches.
+
+The largest native fixture causes are no exact canonical candidate (23,654), unavailable provider season label (21,331), missing explicit cross-provider evidence (1,840), team-mapping contradiction (516), historical admission failure (338), ambiguous exact candidates (124), competition-mapping contradiction (14), missing canonical geography (six), and contradiction with reviewed fixture context (one). These counts partition the 47,824 unresolved/contradictory native relationships; provisional fixture records are a separate population.
+
+PR #179 remains open and mergeable, with successful CI run `41452758175` at `1040c35`. PR #178 remains a separate open, mergeable draft, with successful CI run `41433195398` at `463ec15`. Neither is merged. Operating PostgreSQL remains 18.6 at migration `202610310500`; `/version` still reports `dev` and unknown code, lock and worktree metadata. No migration, restart or deployment was performed. The observed context backlog is 168,308 pending out of 228,607 work rows, with zero recorded worklist errors. API-Football's current budget remains 99 used, zero remaining and zero historical requests. Those prerequisites are not resolved by refreshing diagnostics.
+
+Phase A: **PASS** for scope reconciliation; operating remediation remains **IN PROGRESS**. A collector initially assumed the review-event table was absent and stopped before its accounting queries. The corrected collector checks the actual table and includes it exactly as production does; the initial failure log remains retained. The earlier sandbox-denied localhost attempt also made no database change.
+
+Receipts under `.local/data-status-continuation/` contain exact SQL, parameters, snapshot IDs and results: `census.json` SHA-256 `b4129847ee049da49c561e5a5b0b57bcda5db6c816a96fa1b7587c610e4336a5`; `accounting.json` SHA-256 `acf3fa005f563251b8d9f15d746ac1a7cba1bd9d1bd1a09ede760e2e948b44a4`. No source, decision, model or forecast row was changed by these reads. Prose review and `git diff --check` pass; code checks are not applicable to this checkpoint.
