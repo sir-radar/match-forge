@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T04:56:35.412447Z",
+  "updated_at": "2026-11-02T04:58:07.757244Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3268,12 +3268,13 @@
     },
     "historical_qualification_unblocking": {
       "status": "IN_PROGRESS",
-      "phase": "R02-H",
+      "phase": "R02-I",
       "starting_sha": "eb4f810",
       "scope": "R02-G through R02-M; CURRENT_TASK.md research-verified Issue 2 unblocking",
       "data_classification": "EXPERIMENTAL_ONLY",
       "phase_commits": {
-        "R02-G": "30f24c44a007961771b379f3fee8da15fb7979f5"
+        "R02-G": "30f24c44a007961771b379f3fee8da15fb7979f5",
+        "R02-H": "37295332a04963a8de310d3d541c3b95dfff7b9a"
       },
       "root_cause_ref": "docs/evidence/v4-issue-02-root-cause-research.json",
       "source_verification_ref": "docs/evidence/v4-issue-02-source-verification.json",
@@ -3282,7 +3283,9 @@
       "operating_writes": 0,
       "issue_2_complete": false,
       "model_promotions": 0,
-      "production_cutover": false
+      "production_cutover": false,
+      "crosswalk_proposals_ref": "docs/evidence/v4-issue-02-crosswalk-proposals.json",
+      "review_ready_proposals": 0
     }
   }
 }
