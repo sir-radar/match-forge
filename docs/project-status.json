@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T10:43:38.714879Z",
+  "updated_at": "2026-11-02T10:58:51.210141Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3071,7 +3071,7 @@
       "superseded": 7,
       "missing": 10
     },
-    "required_next_action": "Return to repository owner for review of exact Resolution Center proposals and source/reuse limits. Qualification requires independently accepted original UUID/source/canonical anchors, original timezone and settlement proof, and canonical player membership/exposure. Keep Issue 2 blocked. No subsequent issue/phase is authorized by this completion.",
+    "required_next_action": "Owner handoff. Obtain an independently verifiable exact relationship/source packet for one StatsBomb team and its accepted canonical candidate first (for example offline_team:1 to API-Football team:42). A bounded reviewed multi-field policy would require an explicit owner decision before use; no invalid identity proposal is submitted for approval. Then implement only the missing prospective correction compatibility, separately for team and competition where needed. Do not start Issue 5, scientific evaluation, cutover or retirement.",
     "completed_phase_scope": "Committed scoped engineering/provider checkpoints; individual phase statuses and full_programme_complete govern acceptance. Partial/blocked functionality is not complete.",
     "verification_corrections": [
       {
@@ -3317,8 +3317,8 @@
       "required_next_action": "Owner handoff: retain the five-fixture research-only pilot. Obtain exact independently verified source/canonical relationships before submitting valid Resolution Center proposals; any later Issue 5 scientific study requires separate authorization. No further phase, cutover or retirement starts."
     },
     "identity_admission_recovery": {
-      "status": "IN_PROGRESS",
-      "phase": "IDR-E",
+      "status": "BLOCKED_WITH_EVIDENCE",
+      "phase": "IDR-F",
       "starting_sha": "e5b9b88b33212e542ebbd98ae5558a56b41c1e46",
       "root_cause_ref": "docs/evidence/v4-identity-recovery-root-cause.json",
       "source_verified_legacy_mappings": 21,
@@ -3333,7 +3333,8 @@
         "IDR-A": "ff592523f163b6deeb7996976690808d3e83d2a8",
         "IDR-B": "7082432642a1cdbfc81d5d86e1271156f924ae9f",
         "IDR-C": "c22e16f436a1a252fb890fad9ba46fb1bce03acf",
-        "IDR-D": "676584078c582715cd199ef604bd47a89c10aff3"
+        "IDR-D": "676584078c582715cd199ef604bd47a89c10aff3",
+        "IDR-E": "554d09e50e8aa2af297b1d4295599cbf98b778bb"
       },
       "relationship_proof_ref": "docs/evidence/v4-identity-recovery-relationship-proof.json",
       "relationship_status": "BLOCKED_WITH_EVIDENCE",
@@ -3348,7 +3349,26 @@
       "accepted_pilot_preservation": "PASS",
       "existing_research_qualified_fixtures_preserved": 5,
       "existing_research_qualified_goal_labels_preserved": 10,
-      "isolated_statsbomb_corrections": 0
+      "isolated_statsbomb_corrections": 0,
+      "phase_statuses": {
+        "IDR-A": "PASS_WITH_WARNINGS",
+        "IDR-B": "BLOCKED_WITH_EVIDENCE",
+        "IDR-C": "BLOCKED_WITH_EVIDENCE",
+        "IDR-D": "BLOCKED_WITH_EVIDENCE",
+        "IDR-E": "BLOCKED_WITH_EVIDENCE",
+        "IDR-F": "PASS_WITH_WARNINGS"
+      },
+      "recurrence_prevention_status": "PASS",
+      "narrow_identity_correction_milestone_passed": false,
+      "independently_executable_work_complete": true,
+      "requested_identity_recovery_complete": false,
+      "full_issue_2_can_be_closed": false,
+      "final_verification_status": "PASS_WITH_WARNINGS",
+      "report_ref": "docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md",
+      "final_verification_ref": "docs/evidence/v4-identity-recovery-final.json",
+      "phase_f_commit_resolution": "Commit containing this final evidence; self SHA resolved from Git after commit, never fabricated",
+      "accepted_competition_target_candidates": 1,
+      "required_next_action": "Owner handoff. Obtain an independently verifiable exact relationship/source packet for one StatsBomb team and its accepted canonical candidate first (for example offline_team:1 to API-Football team:42). A bounded reviewed multi-field policy would require an explicit owner decision before use; no invalid identity proposal is submitted for approval. Then implement only the missing prospective correction compatibility, separately for team and competition where needed. Do not start Issue 5, scientific evaluation, cutover or retirement."
     }
   }
 }
