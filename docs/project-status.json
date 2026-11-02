@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-02T05:10:28.329662Z",
+  "updated_at": "2026-11-02T05:44:10.953250Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -3267,8 +3267,8 @@
       "required_next_action": "Return to repository owner for review of exact Resolution Center proposals and source/reuse limits. Qualification requires independently accepted original UUID/source/canonical anchors, original timezone and settlement proof, and canonical player membership/exposure. Keep Issue 2 blocked. No subsequent issue/phase is authorized by this completion."
     },
     "historical_qualification_unblocking": {
-      "status": "IN_PROGRESS",
-      "phase": "R02-L",
+      "status": "PASS_WITH_WARNINGS",
+      "phase": "R02-M",
       "starting_sha": "eb4f810",
       "scope": "R02-G through R02-M; CURRENT_TASK.md research-verified Issue 2 unblocking",
       "data_classification": "EXPERIMENTAL_ONLY",
@@ -3277,11 +3277,12 @@
         "R02-H": "37295332a04963a8de310d3d541c3b95dfff7b9a",
         "R02-I": "960ce949596519df346a66e7139e0c55bf8c5263",
         "R02-J": "a42825cfdbc8890e1928251294c00cdb9d8c4a2f",
-        "R02-K": "d5c848142ba99f25616a7499d8796ad1ff2e660f"
+        "R02-K": "d5c848142ba99f25616a7499d8796ad1ff2e660f",
+        "R02-L": "2d9a8a355d142a33f860ab2d3380e5e61e429118"
       },
       "root_cause_ref": "docs/evidence/v4-issue-02-root-cause-research.json",
       "source_verification_ref": "docs/evidence/v4-issue-02-source-verification.json",
-      "source_identifiers_verified": 25,
+      "source_identifiers_verified": 669,
       "canonical_admissions": 0,
       "operating_writes": 0,
       "issue_2_complete": false,
@@ -3302,7 +3303,18 @@
       "player_exposure_ref": "docs/evidence/v4-issue-02-player-exposure.json",
       "native_player_ids_verified": 644,
       "canonical_player_admissions": 0,
-      "qualified_minute_exposures": 0
+      "qualified_minute_exposures": 0,
+      "technical_work_complete": true,
+      "narrow_historical_milestone_passed": true,
+      "source_identifier_count_scope": "21 StatsBomb team/competition + four ESPN summary + 644 StatsBomb native player identifiers",
+      "new_canonical_fixture_facts": 0,
+      "experimental_research_required_bound_market_families": 1,
+      "history_sufficiency": "UNASSESSED",
+      "experimental_database": "football_v4_unblocking_r02_replay_20261102",
+      "final_verification_ref": "docs/evidence/v4-issue-02-unblocking-final.json",
+      "report_ref": "docs/V4_ISSUE_02_UNBLOCKING_REPORT.md",
+      "phase_m_commit_location": "Commit containing final_verification_ref; exact SHA in CURRENT_TASK_STATUS.md and final handoff",
+      "required_next_action": "Owner handoff: retain the five-fixture research-only pilot. Obtain exact independently verified source/canonical relationships before submitting valid Resolution Center proposals; any later Issue 5 scientific study requires separate authorization. No further phase, cutover or retirement starts."
     }
   }
 }
