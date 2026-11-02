@@ -47,12 +47,19 @@ def test_event_uses_native_ids_epoch_and_unknown_score_basis() -> None:
             "awayTeam": {"id": 2, "name": "Away"},
             "startTimestamp": 1791489600,
             "status": {"type": "finished", "code": 100},
-            "homeScore": {"current": 0, "period1": 0},
-            "awayScore": {"current": 0, "period1": 0},
+            "homeScore": {"current": 0, "period1": 0, "period2": 4},
+            "awayScore": {"current": 0, "period1": 0, "period2": 3},
         }
     }
     result = normalize(body, "event")
-    assert not result.findings
+    assert not any(f.severity == "QUARANTINE" for f in result.findings)
+    periods = [
+        o.to_dict()["period"]
+        for o in result.observations
+        if o.CONTRACT == "PeriodScoreObservationV3"
+    ]
+    assert periods == ["FIRST_HALF"]
+    assert any("SCORE_PERIOD_UNVERIFIED" in f.rule_code for f in result.findings)
     assert sum(o.CONTRACT == "FixtureObservationV2" for o in result.observations) == 1
     assert (
         next(

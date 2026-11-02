@@ -199,17 +199,23 @@ def _scores(output: ObservationCollector, row: Mapping[str, Any]) -> None:
         score_basis="UNKNOWN",
         status="FINISHED",
     )
-    for field, period in [("period1", "FIRST_HALF"), ("period2", "SECOND_HALF")]:
-        if home.get(field) is not None and away.get(field) is not None:
-            output.emit(
-                PeriodScoreObservationV3,
-                "json:/body/event/score/" + field,
-                fixture=output.context.fixture(),
-                period=period,
-                score_basis="UNKNOWN",
-                home_goals=count(home[field]),
-                away_goals=count(away[field]),
-            )
+    if home.get("period1") is not None and away.get("period1") is not None:
+        output.emit(
+            PeriodScoreObservationV3,
+            "json:/body/event/score/period1",
+            fixture=output.context.fixture(),
+            period="FIRST_HALF",
+            score_basis="UNKNOWN",
+            home_goals=count(home["period1"]),
+            away_goals=count(away["period1"]),
+        )
+    if "period2" in home or "period2" in away:
+        output.finding(
+            "SCORE_PERIOD_UNVERIFIED",
+            "json:/body/event/score/period2",
+            "Football period2 has no verified second-half goal meaning",
+            severity="WARNING",
+        )
 
 
 def statistics(output: ObservationCollector, payload: object) -> None:

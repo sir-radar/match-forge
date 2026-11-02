@@ -475,7 +475,9 @@ time. These samples do not prove live access, complete seasons or full lineups.
 Player `teamId` can identify a club outside the sampled fixture, so it does not
 bind the match team or establish historical membership. Unsupported measurements
 and periods remain findings; partial-period xG is not a match-total observation.
-No upstream browser challenge-solving transport is used.
+Football score `period1` supplies the first-half count. The inspected contract
+does not define football `period2` as second-half goals, so it remains an explicit
+unsupported-field finding. No upstream browser challenge-solving transport is used.
 
 FBref's `archived_match_html` resource consumes retained original match pages.
 Archive containers and extracted members keep separate hashes/registrations;
