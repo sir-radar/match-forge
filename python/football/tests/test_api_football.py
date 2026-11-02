@@ -200,12 +200,15 @@ def test_client_records_http_429_in_persistent_budget() -> None:
         raise urllib.error.HTTPError("https://provider.test", 429, "limited", headers, None)
 
     client = ApiFootballClient("secret", transport=rate_limited, request_budget=budget)
-    with pytest.raises(ApiFootballError, match="request failed"):
+    before = datetime.now(UTC)
+    with pytest.raises(ApiFootballError, match="request failed") as caught:
         client.competitions()
 
     assert budget.detail == "HTTP 429 rate limit"
     assert budget.quota == (50, 0)
     assert budget.retry_after == "120"
+    assert caught.value.retry_after is not None
+    assert caught.value.retry_after >= before + timedelta(seconds=120)
 
 
 def test_client_classifies_plan_restriction_without_claiming_unsupported() -> None:

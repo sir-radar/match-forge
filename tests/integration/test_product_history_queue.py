@@ -809,7 +809,10 @@ def test_shared_history_claim_and_completion_drive_legacy_detail_atomically() ->
             )
 
 
-def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work() -> None:
+@pytest.mark.parametrize("provider_cooldown", [False, True])
+def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work(
+    provider_cooldown: bool,
+) -> None:
     from football.product.history_work import claim_history_request, fail_history_request
     from football.work.contracts import RetryClassification, WorkState
     from football.work.storage import WorkRegistry
@@ -829,6 +832,7 @@ def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work() -> N
             )
             assert claim is not None
             before = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+            cooldown = before + timedelta(hours=2) if provider_cooldown else None
             assert (
                 fail_history_request(
                     connection,
@@ -836,6 +840,7 @@ def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work() -> N
                     RetryClassification.RETRYABLE,
                     error_code="PROVIDER_TEMPORARY",
                     error_message="retry after provider failure",
+                    provider_cooldown=cooldown,
                 )
                 == WorkState.RETRY_WAIT
             )
@@ -849,6 +854,8 @@ def test_shared_history_failure_keeps_domain_retry_deadline_equal_to_work() -> N
             assert row is not None
             assert row[0:2] == ("PENDING", 3)
             assert row[2] == row[3] and row[2] >= before + timedelta(seconds=240)
+            if cooldown is not None:
+                assert row[2] >= cooldown
             assert row[4] == "retry after provider failure"
             next_batch = connection.execute("SELECT clock_timestamp()").fetchone()[0]
             assert (

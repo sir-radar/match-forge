@@ -1742,7 +1742,7 @@ Implementation changes and focused tests are prepared for the next verified comm
 | --- | --- | --- | --- | --- | --- | --- |
 | DS01 | AUTONOMOUS | Fresh read-only census, exact-ID candidate manifest and active/native denominators | PASS | 0 | 199 census queries; identity/file audits | snapshot.json; candidates.json; identity-audit.json |
 | DS02 | AUTONOMOUS | Trace missing parents and exact existing retirement overlap; prove invalid raw hash/size pairs | PASS_WITH_WARNINGS | 0 | Exact-byte checks; 13/13 retirement overlap; exhaustive hash checks | files.json; safety-tail.json; sentinel-hash-proof.json |
-| DS03 | AUTONOMOUS_PREPARATION | Preflight missing recovery tables/history deadline signature; rehearse upgrade twice in disposable database | IMPLEMENTED_PENDING_FINAL_CHECKS_AND_ROLLOUT | 0 | Focused upgrade and pre-migration regressions pass | focused-deadlines.log; runtime.json |
+| DS03 | AUTONOMOUS_PREPARATION | Preflight missing recovery tables/history deadline signature; rehearse upgrade twice in disposable database | VERIFIED_CODE_PENDING_ROLLOUT | 0 | Focused upgrade and pre-migration regressions pass | focused-deadlines.log; runtime.json |
 | DS04 | RESEARCH_DEPENDENT | Refresh official source terms and preserve exact existing retention decisions | RESEARCH_COMPLETE_WITH_RIGHTS_GAPS | 0 | No provider data requests made | Report L sources; runtime.json |
 | DS05 | AUTONOMOUS_DIAGNOSTICS | Inspect local settings, unknown runtime build, quotas and suppressed history cohorts | DIAGNOSTICS_COMPLETE | 0 | 495 quota waits; 11 identity waits remain; no budget/config changes | detail.json; runtime.json |
 | DS06 | RESEARCH_DEPENDENT | Replay both retained failed PitchAPI scopes twice in disposable database | BLOCKED_IDENTITY_VERIFIED | 0 canonical; 119 native observations in disposable database only | Both runs converge without network requests | scope-replay.json |
@@ -1753,7 +1753,7 @@ Implementation changes and focused tests are prepared for the next verified comm
 | DS11 | RESEARCH_DEPENDENT | Identify all four retained unmapped types; add versioned mappings; replay exact old score cases | IMPLEMENTED_PENDING_FINAL_CHECKS | 0 published; 1,499 mapping candidates | Normalization regressions pass; current score checks pass 38/38 | quality-research.json; quality-score-replay.json; event-types.log |
 | DS12 | RESEARCH_DEPENDENT | Inspect exact binding prerequisites for every prediction | NO_NEW_EXACT_BINDING_PROVED | 0 | All 1,304 lack native provider binding keys; existing 47 legacy matches preserved | runtime.json |
 | DS13 | RESEARCH_DEPENDENT | Inspect current observation score bases and retained conflict cohorts | CONFLICTS_PRESERVED_PENDING_PROOF | 0 | 1,845 events cover 19 fixture IDs; 1,835 FotMob events cover ten IDs | candidates.json; safety-tail.json |
-| DS14 | AUTONOMOUS | Classify deterministic/transient failures; atomically project proven quota deadlines | IMPLEMENTED_PENDING_FINAL_CHECKS_AND_ROLLOUT | 0 | No-repeat blocking, release/projection, quota deadline and fencing regressions pass | focused-deadlines.log; history-unit.log |
+| DS14 | AUTONOMOUS | Classify deterministic/transient failures; atomically project proven quota deadlines | VERIFIED_CODE_PENDING_ROLLOUT | 0 | No-repeat blocking, release/projection, quota deadline and fencing regressions pass | focused-deadlines.log; history-unit.log |
 | DS15 | AUTONOMOUS | Preserve specific cause before generic JSON; redact nested summaries and streamed logs | IMPLEMENTED_PENDING_FINAL_CHECKS | 0 | Go process/cancellation/redaction tests pass | go-sync-final.log; go-lint.log |
 | DS16 | AUTONOMOUS_WITHIN_BOUNDS | Run four existing 32-item context batches; repeat four immutable reports | BOUNDED_COHORT_PASS_BACKLOG_REMAINS | 128 context reports; 0 football facts | 128 published; zero failures/lease losses; four stable repeated hashes | report-drain.json |
 | DS17 | AUTONOMOUS | Mark unsupported lifecycle measurements explicitly; retain circuit enum compatibility | IMPLEMENTED_PENDING_FINAL_CHECKS | 0 | Unit/integration measurement-state assertions pass | unit.log; focused-integration.log |
@@ -1781,3 +1781,10 @@ Implementation changes and focused tests are prepared for the next verified comm
 | [local quality-score-replay.json](../../.local/data-status-remediation/quality-score-replay.json) | `8a425c757d2646df8caa8af264895856c8a5d6771ac8bd7e4f5a307ee2b391e8` |
 | [local scope-replay.json](../../.local/data-status-remediation/scope-replay.json) | `da5a2097189d8b4e00727279447602ed7324afe9c7b6c1341e1a554ab7e222f2` |
 | [local report-drain.json](../../.local/data-status-remediation/report-drain.json) | `565bb1168f87c8cc9068da9341c9858e2dfcc253a4fdca356b3496aba266bfa8` |
+
+### L5. Commit checkpoints
+
+- `f015973`: inventory/research report committed before continuing the preserved implementation batch.
+- DS03/DS14 code checkpoint: 83 focused unit tests and 62 disposable-database cases pass. Scoped Ruff lint/format, Mypy (eight files), SQL migration validation and whitespace checks pass. The schema upgrade was applied twice in a disposable database; pre-migration work is blocked and all 13 stage routes remain `LEGACY`. This checkpoint does not deploy the operating runtime or rewrite its old attempts.
+
+DS14 adds one migration because the deployed history failure adapter discarded the shared retry/cooldown arguments. Both the original seven-argument API and the new deadline-aware API use the same fenced implementation. Rate-limit body errors and HTTP `Retry-After` remain retryable; unknown integrity/protocol failures remain non-retryable. The release regression uses the existing release and projection functions in one transaction, preserving queue/shared deadline agreement.

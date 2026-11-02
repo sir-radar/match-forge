@@ -141,13 +141,25 @@ def qualify_operation(
     if kind == "stage":
         return qualify_stage(request, detail)
     if kind == "parity" and request["action"] == "RECHECK_PARITY":
+        require_capability(connection, "resolution_parity_work")
         return {
             "status": "QUALIFIED",
             "reason": "READ_ONLY_DIAGNOSTICS_AND_RETAINED_PARITY_RECHECK",
         }
     if kind in {"resource", "dataset"}:
+        if request["action"] == "RECOVER":
+            require_capability(connection, "resolution_file_recovery_work")
         return qualify_data(root, request, detail)
     raise ValueError("unsupported control action")
+
+
+def require_capability(connection: Connection[Any], table: str) -> None:
+    row = connection.execute("SELECT to_regclass(%s)", ("football." + table,)).fetchone()
+    if not row or row[0] is None:
+        raise ValueError(
+            f"Recovery capability unavailable: football.{table}; "
+            "deploy the required migration before queueing work"
+        )
 
 
 def qualify_data(root: Path, request: dict[str, Any], detail: dict[str, Any]) -> dict[str, Any]:

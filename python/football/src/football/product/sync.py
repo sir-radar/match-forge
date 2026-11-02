@@ -762,8 +762,8 @@ class ProductSync:
                         OSError,
                     ) as error:
                         worker.connection.rollback()
-                        worker._retry_history_job(job_id, attempt_count, error)
-                        counts["pending_retry"] += 1
+                        state = worker._retry_history_job(job_id, attempt_count, error)
+                        counts["pending_retry" if state == "RETRY_WAIT" else "failed"] += 1
                     except Exception as error:
                         worker.connection.rollback()
                         worker._fail_history_job(job_id, error)

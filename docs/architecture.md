@@ -326,6 +326,19 @@ identities. An immutable result receipt binds the request hash, source snapshots
 resource checksums and result counts. Cancellation or expiry prevents subsequent
 publication. Legacy recovery applies only to requests without shared bindings.
 
+History failures distinguish transient transport/database conditions from invalid
+inputs and integrity guards. The exact unresolved fixture-identity guard blocks
+shared work until evidence changes; repeated scheduling does not consume another
+attempt. Releasing that work through `release_blocked_work` must project
+`project_history_work` in the same transaction so the queue retains the shared
+deadline. Quota suppression and HTTP/body rate-limit failures carry the provider
+deadline into the fenced failure transaction. The later of shared backoff and
+provider cooldown controls the next claim. Migration `202611020100` adds these
+deadline arguments while retaining the original seven-argument SQL API. Workers
+check for the new capability before claiming; rolling deployment must migrate
+before starting the updated worker. Missing file-recovery/parity tables likewise
+block the corresponding Resolution Center preview before work can be queued.
+
 `product_provider_scope_work` associates current league/season detail with shared
 work without changing retained scope columns. Claims use shared lease tokens;
 explicit heartbeats renew them between committed history rows. Each publication

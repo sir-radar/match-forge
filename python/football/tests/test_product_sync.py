@@ -238,8 +238,9 @@ def test_transient_queue_failure_returns_to_pending_retry(
         def _complete_history_job(self, _job_id: UUID) -> None:
             raise AssertionError("unexpected completion")
 
-        def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> None:
+        def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> str:
             retries.append((job_id, attempt_count, str(error)))
+            return "RETRY_WAIT"
 
         def _fail_history_job(self, *_args: object) -> None:
             raise AssertionError("transient failure must not become FAILED")
