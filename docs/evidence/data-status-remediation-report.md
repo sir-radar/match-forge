@@ -2422,3 +2422,52 @@ official fixture evidence. No task-introduced dead symbol, duplicate workflow,
 dependency, migration, configuration, secret or unrelated change remains.
 The successful full code gate in N3 covers the final production source;
 later tracked changes are prose reviewed with `git diff --check`.
+
+## O. Forecast recovery follow-up — 2026-11-02
+
+### O1. Refreshed baseline and priority
+
+This continuation starts from `cbc26fa` on `ft/data-status-remediation`.
+`CURRENT_TASK_STATUS.md` was empty and has been restored as the local phase
+tracker. No Wayfinder route is claimed. The task is L3 / Sol because identity
+proof and historical eligibility require review against their existing rules.
+
+The read-only, repeatable-read operating snapshot begins at 20:52:56 UTC and
+finishes at 20:55:37 UTC. It finds schema `202610310500`, 20,806 current entity
+mappings with **5,055 review keys**, and 150,723 current fixture relationships
+and records with **103,357 review keys**. Availability remains **220
+competitions and 3,668 fixtures**. The fixture counters include past fixtures;
+they are not a count of currently upcoming forecast targets.
+
+The largest fixture reasons remain 43,252 provisional identities, 23,612
+without an exact candidate, 21,200 without a provider season label, and
+10,504 team/timestamp quarantines. These are review keys across different
+owners, not unique football matches. History scopes retain 873 pending,
+338 failed, 11 deferred and two succeeded entries. Context processing has
+161,333 pending entries among 228,877 rows, with zero recorded errors and
+the oldest pending timestamp on October 28. API-Football has zero remaining
+requests and zero historical requests used for November 2.
+
+The highest-impact unresolved competition mappings include PitchAPI
+`l_0ALvwF` (7,830 represented fixture rows), `l_4DWyTT` (6,995), `l_3FJFUl`
+(6,719), `l_1Isor4` (6,262), and `l_0275VP` (5,910). Shared competition IDs
+make these counts overlap with other providers; they are prioritization
+counts, not promises of newly available forecasts. The next batch checks
+their retained native-ID proof and exact fixture context before proposing
+any identity admission.
+
+The operating database occupies 12,462,675,647 bytes. Its largest relations
+include competition state, event observations and mapping history; size
+does not make them disposable. Source files, recovery backups, published
+artifacts and decision history remain protected. PR #179 CI succeeds at
+`cbc26fa`; PR #178 remains a separate draft with successful CI at `463ec15`.
+No operating migration or deployment is performed.
+
+Phase 1: **PASS_WITH_WARNINGS**. Exact query text, parameters, IDs and counts
+are in `.local/data-recovery-followup/baseline.json`, SHA-256
+`cc48cca2a4ad4c734205452dea5b983c70e72cb3b63eb751fa09602de3439b31`.
+The initial sandboxed database connection was denied; reviewed local access
+then completed the read-only collection. The broad filesystem size scan was
+stopped after returning sufficient candidate sizes; its partial output is
+not presented as a complete storage census. Applicable checks for this
+prose-only checkpoint are text review and `git diff --check`.
