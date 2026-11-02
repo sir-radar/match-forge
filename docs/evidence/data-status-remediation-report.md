@@ -1736,7 +1736,7 @@ The two retained failed PitchAPI scopes `l_0275VP/2026/2027` and `l_0ALvwF/2026/
 
 Four normal context-worker batches selected 32 items each and published 128 context reports, with zero failures or lost leases. Four selected immutable reports were repeated through the normal worker and retained identical input/output hashes. During the declared 11:29:44–11:30:05 UTC sample, pending entries fell from 172,620 to 172,492; the total worklist stayed 228,606 and the oldest pending age remained substantial. Cumulative completed-generation increments include coalesced generations and concurrent work and are not counted as recovered football facts. This is a bounded accepted cohort, not completion of the whole backlog.
 
-Implementation changes and focused tests are prepared for the next verified commit checkpoints. Final aggregate verification, final task dispositions and delivery remain pending. No whole-programme, scientific or architecture phase completion is claimed.
+Implementation checkpoints are committed and the final aggregate passes. The table records verified task outcomes and remaining operating prerequisites; L9–L11 contain the final evidence and handoff. No scientific or architecture phase completion is claimed.
 
 | Task | Original status | Action taken | Final status | Records recovered | Tests | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
