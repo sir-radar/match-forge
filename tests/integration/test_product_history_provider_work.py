@@ -451,7 +451,9 @@ def test_parent_history_queue_projects_provider_failure_through_shared_work(
 
         def finished_fixtures(self, *_args: Any) -> ApiResponse:
             if retryable:
-                raise ApiFootballError("provider temporarily unavailable")
+                raise ApiFootballError("provider temporarily unavailable") from TimeoutError(
+                    "provider connection timed out"
+                )
             raise ValueError("invalid provider result")
 
     monkeypatch.setattr(cli, "ApiFootballClient", Client)
@@ -598,14 +600,15 @@ def test_identity_guard_blocks_history_without_repeating_provider_attempts(
         # An explicit owner release through the existing registry permits a new claim.
         with connection.transaction():
             connection.execute(
-                "SELECT football.release_blocked_work(%s,%s)", (row[0], datetime.now(UTC))
+                "SELECT football.release_blocked_work(%s,clock_timestamp())", (row[0],)
             )
             connection.execute("SELECT football.project_history_work(%s)", (row[0],))
+            claim_cutoff = connection.execute("SELECT clock_timestamp()").fetchone()[0]
         claim = claim_history_request(
             connection,
             job,
             "reviewed-recovery",
-            datetime.now(UTC),
+            claim_cutoff,
             lease_duration=HISTORY_JOB_LEASE,
         )
         assert claim is not None and claim.attempt_count == 2

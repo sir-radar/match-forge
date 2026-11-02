@@ -99,7 +99,7 @@ def test_recovery_preview_blocks_before_missing_migration_can_queue_work(tmp_pat
         assert not (tmp_path / path).exists()
         c.commit()
         worker = HistorySyncWorker(c, None, tmp_path, tmp_path / "unused")
-        with pytest.raises(WorkContractError, match="202611020100"):
+        with pytest.raises(WorkContractError, match="202611020200"):
             worker._claim_history_job(datetime.now(UTC))
         _migrate(url, "up")
         _migrate(url, "up")

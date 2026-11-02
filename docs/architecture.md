@@ -333,7 +333,7 @@ attempt. Releasing that work through `release_blocked_work` must project
 `project_history_work` in the same transaction so the queue retains the shared
 deadline. Quota suppression and HTTP/body rate-limit failures carry the provider
 deadline into the fenced failure transaction. The later of shared backoff and
-provider cooldown controls the next claim. Migration `202611020100` adds these
+provider cooldown controls the next claim. Migration `202611020200` adds these
 deadline arguments while retaining the original seven-argument SQL API. Workers
 check for the new capability before claiming; rolling deployment must migrate
 before starting the updated worker. Missing file-recovery/parity tables likewise

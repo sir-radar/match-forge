@@ -76,9 +76,9 @@ def test_history_queue_deduplicates_recovers_and_claims_once(tmp_path: Path) -> 
                 is None
             )
 
-            first_sync._retry_history_job(
-                first_job[0], first_job[3], ApiFootballError("temporary provider failure")
-            )
+            failure = ApiFootballError("temporary provider failure")
+            failure.__cause__ = TimeoutError("provider connection timed out")
+            first_sync._retry_history_job(first_job[0], first_job[3], failure)
             second_sync._complete_history_job(second_job[0])
 
         with psycopg.connect(DATABASE_URL) as connection, connection.cursor() as cursor:

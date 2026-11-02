@@ -77,7 +77,7 @@ class HistorySyncWorker(ProductSync):
             if not ready or ready[0] is None:
                 raise WorkContractError(
                     "history failure deadlines unavailable; "
-                    "deploy migration 202611020100 before claiming work"
+                    "deploy migration 202611020200 before claiming work"
                 )
             cursor.execute(
                 """SELECT queue.job_id FROM football.product_history_sync_queue queue

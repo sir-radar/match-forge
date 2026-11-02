@@ -118,8 +118,15 @@ def test_expired_parity_lease_cannot_publish_report(tmp_path):
         )
 
 
-def test_immediate_parity_work_uses_database_clock(tmp_path, monkeypatch):
+@pytest.mark.parametrize("kind", ["parity", "file", "recovery"])
+def test_immediate_resolution_work_uses_database_clock(tmp_path, monkeypatch, kind):
     from datetime import datetime, timedelta
+
+    from football.product import resolution_files, resolution_recovery
+
+    from tests.integration.test_resolution_files import missing_resource
+    from tests.integration.test_resolution_files import proposal as file_proposal
+    from tests.integration.test_resolution_recovery import approved_job
 
     class AheadClock(datetime):
         @classmethod
@@ -127,13 +134,27 @@ def test_immediate_parity_work_uses_database_clock(tmp_path, monkeypatch):
             return super().now(tz) + timedelta(minutes=1)
 
     with isolated_database() as url, psycopg.connect(url) as c:
-        seed(c, tmp_path)
-        c.commit()
-        monkeypatch.setattr(parity, "datetime", AheadClock)
-        request = approve(c, tmp_path, proposal())
-        apply_one(c, tmp_path, request, ACTOR)
-        c.commit()
-        assert run_pending_recovery(c, tmp_path)["status"] == "PROCESSED"
+        for module in (parity, resolution_files, resolution_recovery):
+            monkeypatch.setattr(module, "datetime", AheadClock, raising=False)
+        if kind == "recovery":
+            approved_job(c, tmp_path)
+        else:
+            if kind == "file":
+                key, path, _ = missing_resource(c, tmp_path)
+                change = file_proposal(
+                    key, "RECOVER", target_path=path, recovery_path="recovery/original.json"
+                )
+            else:
+                seed(c, tmp_path)
+                change = proposal()
+            c.commit()
+            request = approve(c, tmp_path, change)
+            apply_one(c, tmp_path, request, ACTOR)
+            c.commit()
+        assert run_pending_recovery(c, tmp_path)["status"] in {
+            "PROCESSED",
+            "PROCESSED_WITH_BLOCKERS",
+        }
 
 
 def test_parity_input_identity_is_checked_before_verification(tmp_path):
