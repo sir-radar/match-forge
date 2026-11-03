@@ -9,9 +9,9 @@ model fit, evaluation, promotion, cutover or deployment is part of this task.
 
 | Phase | Scope | Result |
 | --- | --- | --- |
-| 1 | Current requirements, main synchronization, operating baseline and prior-target accounting | PASS_WITH_WARNINGS; baseline collected, detailed cause investigation continues |
-| 2 | Source/code traces, identity, coverage, parity and external research | PASS_WITH_WARNINGS; all 196 targets assigned; data proof and isolated profiling gaps recorded |
-| 3 | Actionable issue specifications, dependencies, acceptance review and delivery | PENDING |
+| 1 | Current requirements, main synchronization, operating baseline and prior-target accounting | PASS_WITH_WARNINGS; commit `a28e16f` |
+| 2 | Source/code traces, identity, coverage, parity and external research | PASS_WITH_WARNINGS; commit `677a646`; data proof and isolated profiling gaps recorded |
+| 3 | Actionable issue specifications, dependencies and acceptance review | PASS_WITH_WARNINGS; prose, links, IDs, receipt hashes and whitespace checks PASS |
 
 ## 1. Executive summary
 
@@ -29,6 +29,10 @@ The universe moves with time, provider discovery and background workers.
 Stored availability is a diagnostic label; later sections separately test identity
 and history prerequisites. Provisional records and multiple representations must
 not be added to a promise of unique forecast gains.
+
+The handoff freshness check has **190** verified upcoming blockers; six B1 targets
+have passed their kickoff without changing availability (section 12). The frozen
+196-target inventory remains the basis for issue accounting.
 
 There are **226** competitions marked available and **301,307** eligible
 historical results at the baseline cutoff. The five historical parity jobs
@@ -411,6 +415,785 @@ Every original/current verified target is assigned in Appendix A. Secondary
 causes may remain after the first cause is resolved. An issue is not complete
 merely because its diagnostic status or queue becomes empty.
 
+## 7. Detailed implementation specifications
+
+All specifications describe **later authorized work**. Each must start with a
+fresh, frozen affected-ID inventory and finish with a separate verified commit.
+Use Appendix A for target IDs and Appendix B for mapping/source inventories.
+Shared verification requirements in section 10 apply in addition to the explicit
+criteria below. Do not turn evidence collection into an unreviewed operating fix.
+
+### FR-001 — Reconstruct Ghana fixtures stranded on replaced team mappings
+
+**Identification.** High severity, P1; identity/history; RESEARCH for exact old/new
+relationship proof, then DEPENDENT implementation. Thirty original Ghana targets
+are listed as FR-001 in Appendix A. Section 3 gives both generations of team UUIDs,
+native IDs and mapping closure times. This is systemic participant reconciliation,
+not thirty unrelated missing-history fixes.
+
+**Problem and evidence.** Current native mappings qualify against new UUIDs while
+old scheduled fixtures do not reach them. There are 210 retained results involving
+old Medeama and six involving old Port City; these participant counts are not
+added into a distinct-match total. The dated functions return the old participant when no unique effective
+admitted identity exists. Provider acquisition alone cannot update that chain.
+R3 supports club participation; it does not independently authorize a UUID merge.
+Fresh current-mapping verification is recorded in the final receipt. Confidence
+in the mismatch is high; sufficiency of every old-to-new relationship is unproved.
+
+**Preferred solution and alternatives.** Preserve stored football facts and all
+old decisions. Reuse the existing linked correction fields
+`corrects_decision_id`/`target_mapping_id`, dated effective-identity functions,
+review events and recovery queues where a narrowly defined same-native-ID
+reconstruction can be qualified. First prove the original and replacement native
+IDs in their exact source/season context. A direct native-history import is a
+valid alternative where it yields history on the accepted identity, but does not
+by itself repair old scheduled participants. Reject bulk UUID replacement,
+re-admission of revoked rows and a generic origin allowlist expansion.
+
+**Implementation sequence.**
+
+1. Freeze the 30 targets, their match mappings, old/new team mapping IDs and all
+   dated decisions. Verify both source registrations and actual fixture participants;
+   explicitly check native-ID reuse, country, senior status and club continuity.
+2. Characterize the existing correction rejection with a failing isolated test.
+   Add only the missing proof-backed compatibility case to the existing identity
+   owner after its evidence prerequisite is met. Keep the FDO-specific path intact.
+3. Bind the review to exact source hashes, original decision and target mapping.
+   Append a prospective correction and use existing scoped history/fixture recovery;
+   do not edit old participant facts or republish existing forecasts.
+4. Reconstruct eligible history on both sides and rerun the unchanged champion
+   preview. Acquire additional Port City history through FR-004 if still short.
+
+**Verification and acceptance.** Extend `test_team_identity_correction.py`,
+`test_product_identity_admission.py` and `test_resolution_recovery.py` under
+`tests/integration/`: old-cutoff ID/history hashes unchanged; wrong native ID,
+senior/youth mismatch, reused ID, missing bytes and conflicting targets rejected;
+retry event/work IDs stable; revocation removes future eligibility; concurrent
+correction/recovery respects existing ordered locks. Acceptance requires all 30
+targets individually dispositioned with exact remaining causes, not all declared
+available. **Impact:** up to 30 target records conditional on identity/history;
+zero guaranteed new forecasts. **Risks:** admission fanout FR-006, lost old-cutoff
+meaning, false club continuity. No migration is presumed; justify one only if
+existing linked fields cannot represent the proven case.
+
+### FR-002 — Complete exact native relationship evidence for other target identities
+
+**Identification.** High, P1; provider identity; RESEARCH. Eighteen B1 targets
+outside Ghana fail `fixture_identity_blockers`; five already satisfy history,
+while thirteen also need history. Exact fixtures/native IDs are in Appendix A.
+
+**Problem and evidence.** Current provider-derived targets require admitted home,
+away and competition mappings for their source provider. Large canonical history
+under the same displayed name cannot establish that link. Fresh verification of
+English API-Football mappings including `37`, `61`, `1339` and `1349` fails the
+explicit-crosswalk/context requirement. R1/R3/R5/R12 supply research methods and
+context, not missing native relationship assertions. Confidence is high in the
+failed predicate; specific data approvals remain unproved.
+
+**Solution and steps.** Begin with the five history-sufficient fixtures in section
+3. Use `mapping_detail`, `mapping_candidates` and `qualify_operation` in the
+existing Resolution Center. Trace each native match to its original payload and
+both team IDs, then to the accepted counterpart through an exact fixture/season
+proof. Distinguish unavailable proof from an actually incorrect crosswalk. Use
+existing `APPROVE`/fixture review only if the preview qualifies; otherwise retain
+RESEARCH. Extend correction compatibility only if a proven relationship fails a
+specific existing contract, following FR-001 rather than adding a competing
+review path. Recheck all mappings for the source provider, since its aggregate
+qualification can fail despite a different provider's valid history.
+
+**Verification and acceptance.** Existing identity/decision/recovery integration
+suites must reject name-only, confidence-only, wrong home/away, reserve/women's
+substitution, missing raw bytes and stale evidence versions. Five candidate
+fixtures must pass exact identities and the unchanged forecast preview before
+claiming five potential unlocks; all eighteen receive a final per-target cause.
+No new migration or library is expected for ordinary qualified reviews.
+**Impact:** zero proven gains; up to five require identity alone, thirteen require
+additional history. **Risks/dependencies:** FR-003/004 and source independence.
+No owner decision is needed merely to research or prepare a qualified preview.
+
+### FR-003 — Recover retained results by the exact failed eligibility predicate
+
+**Identification.** High, P1; dated history; DEPENDENT. Twenty-six history-only
+B1 targets have at least ten retained rows per side; fifteen identity-blocked
+ones share that retained-sufficiency condition. These populations are disjoint
+from FR-004's raw-deficient group but overlap FR-001/002.
+
+**Problem and evidence.** Retained counts overstate model inputs. Examples are
+Mainz women 10/7, Cannes 11/4, Rudes 50/9, Da Nang 73/5 and Fakirerpool 16/3
+(retained/eligible). Existing `product_match_history_decisions` and
+`product_eligible_history_at` are authoritative. A generic
+`ProductIdentityTrustV1` reason does not identify which team, competition, source
+or fixture predicate failed. R8/R11/R12 offer factual leads, not blanket admission.
+
+**Solution and steps.** For each deficient team in Appendix A, export its exact
+retained fixture/source IDs and latest decisions at a frozen cutoff. Evaluate
+existing source validation, team/competition admission, effective participants,
+fixture representative/quarantine and source-known predicates separately.
+Group identical failed upstream mappings; address them once through the existing
+owner. Reuse `record_product_history_decisions` only for affected fixture IDs
+after a valid prospective change; use the existing source replay for missing
+imports. Do not add a second eligibility engine or flip `eligible` directly.
+Existing diagnostics may be extended to expose the failing existing predicates
+and bound evidence, rather than inventing a replacement contract.
+
+**Verification and acceptance.** Extend `test_history_diagnostics_api.py`,
+`test_product_identity_admission.py` and recovery suites: one missing predicate
+keeps the row excluded; non-played/unknown score basis stays excluded; date-only
+same-day, same-kickoff, future source knowledge and target fixture are excluded.
+Before/after fixture-ID sets and hashes must match at the earlier cutoff, and
+new eligible rows must each resolve exact source and admission lineage. Report
+all 41 target records without double-counting identity work. **Impact:** 26
+history-only candidates plus fifteen dependent records, with no assured yield.
+**Risks:** stale admissions and FR-005/006/016; no schema change is assumed.
+
+### FR-004 — Acquire genuinely missing eligible history, scoped to current teams
+
+**Identification.** High, P1; acquisition/coverage; RESEARCH or EXTERNAL per
+provider. At least one current participant has fewer than ten retained results
+in 122 history-only targets and 28 identity-blocked targets. Their current
+identity scopes cannot meet the minimum by reclassifying existing rows alone.
+
+**Problem and research.** Garudayaksa has nine retained/five eligible rows across
+ten targets; Bắc Ninh six/three across four; Dhaka Wanderers nine/two across six;
+City Club four/four across four. Other youth, reserve, women's, promoted and
+small-league teams occur in Appendix A. R4/R6/R7/R9–R12 identify coverage leads.
+The official Garudayaksa 27-match table establishes prior senior participation,
+not 27 already importable match records. VPF identifies earlier Bắc Ninh fixtures.
+Bangladesh season labels remain contradictory across public reports.
+
+**Preferred approach.** Reuse existing provider-specific acquisition, immutable
+manifests and historical importers. Prefer exact native history from an already
+supported provider over a new scraped dataset or speculative cross-provider
+correction. First inspect retained resources and season lists; then request only
+the missing eligible team/season slices within existing entitlements. Where an
+official source has no supported adapter, first prepare exact dated match evidence
+and a minimal native-resource/parser specification; do not introduce a general
+scraper. Preserve source-only facts until identity and regulation-score semantics
+qualify. Scope any new adapter/migration as a separate reviewed implementation.
+
+**Steps and acceptance.** Freeze deficient team IDs/counts; verify exact senior,
+reserve, age/gender and season; exhaust retained eligible native resources;
+perform bounded permitted acquisition and source registration; dry-run parsing,
+identity and import in an isolated restore; only then run authorized scoped
+recovery. Test partial/empty seasons, plan denial, 429, corrupt payloads,
+unknown enums, timezone/date-only values, same-batch exclusion and duplicate
+replay. A completed scope must bind its full expected native-ID list and explain
+omissions; ten rows cannot be fabricated from a season total. **Impact:** up to
+150 target records conditional on qualification, overlapping FR-001/002; no
+new competition count is established. **Risks:** paid/unsupported coverage,
+source rights, FR-009/010 and historically unknown facts. Keep each denied scope
+explicitly blocked while independent work proceeds.
+
+### FR-005 — Reconcile Scottish World namespaces without rewriting history
+
+**Identification.** Critical integrity risk, P1; parsing/identity; READY for a
+bounded revalidation census, RESEARCH for relationships and ambiguous succession.
+Forty-one active World mappings and three competition scopes are identified in
+Appendix B; the original 30 are the 2000/01 archive participants in section 3.
+
+**Problem and root cause.** The fixed `_DIVISIONS` entries change fresh source
+country/tier interpretation, but prior admitted country-dependent origin UUIDs
+remain World. `origin_id` includes country for Football-Data.co.uk, so changing
+a product country alone would create UUID mismatch rather than correct lineage.
+All 41 fresh checks fail while stored decisions say ORIGIN_ANCHOR. R1 validates
+participation; R2 shows why Airdrie/Clydebank and similar successors cannot be
+collapsed. Confidence is high in namespace failure, conditional in successor links.
+
+**Implementation.** Preserve original CSV bytes, parsed identifiers, decisions
+and IDs. Inventory every retained SC1/2/3 source and all affected aliases/periods,
+not only the first archive. Revalidate each current mapping with the corrected
+parser and record prospective invalidation through the existing admission owner
+only after its downstream consequences are rehearsed. For verified same-club
+relationships, use an explicitly supported linked correction/reconstruction to
+Scotland-scoped identities; characterize the current FDO-only rejection first.
+Keep Airdrie (pre-2002), Airdrie United, historical/new Clydebank, Gretna and
+ambiguous aliases separate until exact period/continuity proof qualifies.
+Reconcile dependent fixtures/history before admitting more competition scope.
+Do not revoke the newly admitted SC2 or assume its 5,137 rows are all defective.
+
+**Acceptance.** Existing parser, admission, correction and recovery suites cover
+all three codes; original30 and expanded41 inventories; old cutoff unchanged;
+wrong-country and tampered ZIP rejection; alias collisions and succession
+negative tests; dated revocation/retry behavior; no leaked same-day date-only
+history. Freeze all SC2 eligible IDs and verify any later exclusions/additions
+individually. Scope completion requires every affected mapping disposition and
+no unsupported automatic merge. **Impact:** 540 original source rows are an
+investigation cohort, not promised new history; later archives overlap and
+current forecast gain is unmeasured. **Dependencies/risks:** FR-006 and exact
+identity policy; coordinate any required additive migration with PR #178.
+
+### FR-006 — Remove excessive admission-to-refresh fanout
+
+**Identification.** High, P1; SQL/recovery concurrency; READY for isolated profiling.
+FDO DED/PD/BSA source-backed competition admissions previously rolled back during
+downstream enqueue; eight other native competition mappings are currently present.
+
+**Root cause and research.** The deployed `record_product_admission_change`
+requalifies a competition's retained history. Each inserted history decision can
+call `enqueue_product_context_for_history`, scanning future targets and resolving
+effective participants. Prior receipts establish deadline failure; deployed SQL
+establishes repeated fanout. They do not identify the exact expensive plan node.
+R13 supports statement-level transition relations; R14 preserves transaction
+and visibility requirements. This distinction avoids optimizing an assumed cause.
+
+**Implementation sequence.** Restore the latest approved populated snapshot into
+a disposable database with operating isolation checked. Reproduce DED/PD/BSA
+admission under the existing deadline and capture query/lock plans and affected
+refresh keys. Compare a scoped set-based writer with `AFTER INSERT` transition
+relations. Prefer the smallest plan that deduplicates refresh keys across one
+history statement and uses existing queue functions, ordered locks and generation
+increments. Keep qualification and durable invalidation atomic; do not move
+synchronous eligibility off-thread without a separately reviewed consistency
+contract. Introduce a new additive SQL migration only after checking current PR
+migration order; never edit accepted migrations.
+
+**Tests and acceptance.** Extend admission, public-report and recovery integration
+suites with representative DED/PD/BSA-sized cohorts, concurrent history writes,
+revocation, lease loss, retry and a target requested while a worker completes.
+Require unchanged eligible decision set, exact required refresh-key set, no lost
+pending generation, bounded memory/locks and completion within the unchanged
+existing deadline on the same populated restore. Publish before/after timings
+and plans; a higher timeout is not acceptance. **Impact:** three admission scopes
+potentially recoverable; numerical history/forecast yield must be measured, not
+assumed. **Dependencies:** none for profiling; identity/source proof before actual
+admission. **Risk:** lost invalidation or reversed lock ordering.
+
+### FR-007 — Stop treating rolling CSV row positions as stable match identity
+
+**Identification.** Critical, P1; Football-Data.co.uk parsing/ingestion compatibility;
+READY for a failing regression and contract design. There are 730 recorded
+provider-ID reuse conflicts over ten snapshots; Appendix B gives query/inventory
+references. These may include repeated observations of the same real fixture.
+
+**Root cause.** `parse_csv_resource` builds `source_path#row_number`. Replacing or
+reordering `Latest_Results.csv` makes the same provider key describe a different
+match. The canonical guard correctly preserves the old mapping. This is not
+missing team-name matching or a reason to relax uniqueness. R6 establishes the
+alternative of pinned seasonal resources where available; existing immutable
+source/snapshot contracts supply the correct occurrence context.
+
+**Solution and steps.** Reproduce with two retained-style rolling responses whose
+row 2 changes or moves. Inventory every consumer and uniqueness constraint of
+`provider_match_id` in `historical_backfill`, `match_provider_mappings`, fixture
+identity evidence and source observations. Prefer immutable season files for
+ordinary backfill. For rolling inputs, keep original row keys as source occurrence
+identifiers bound to snapshot/resource/version, and resolve the real fixture
+through existing exact participant/date/competition evidence. Never reinterpret
+or rewrite an already published old row ID. If the current registration contract
+cannot distinguish source occurrences, document the necessary additive mapping
+compatibility before implementing it; a new opaque ID format alone is insufficient.
+
+**Acceptance.** Tests cover row insertion/reordering, corrected scores on the
+same match, a new match at the old row number, reversed orientation, same-team
+schedule collision and identical-byte retry. Old mappings, decision history,
+source hashes and earlier-cutoff forecasts remain unchanged. Each of the 730
+conflict records receives either an exact resolved occurrence or a reason it
+remains held; deduplicate real matches before reporting recovery. **Impact:**
+unknown number of distinct results; zero measured target unlocks. **Risks:**
+cross-module ID compatibility and FR-008/016; do not globally change all archive
+keys or add fuzzy fixture identity.
+
+### FR-008 — Resolve canonical team/timestamp collisions from exact original rows
+
+**Identification.** High, P2; fixture reconciliation; RESEARCH. Two rejected
+API-Football Málaga rows (`1217677`, `1217899`), the unimported 46-row Coventry
+season and 151 Football-Data.co.uk team/timestamp conflict records are explicit
+cohorts; they are not assumed to share one factual resolution.
+
+**Root cause and evidence.** `guard_product_history_fixture_identity` refuses an
+incoming representation inconsistent with retained team/kickoff identity.
+The prior shadow attempt rolled back; current observations contain neither
+rejected Málaga native ID. Section 3 and Appendix B bind source snapshots/hashes.
+The guard is functioning, while the exact real-fixture representative or time
+precision remains unresolved. R5/R6/R14 support native source and dated comparison;
+public name agreement does not establish a duplicate.
+
+**Steps.** Read each rejected original row; retrieve every existing participant,
+kickoff claim, match mapping, source result and active fixture resolution in its
+bounded neighborhood. Classify true duplicate, reschedule, date-only overlap,
+wrong competition/orientation, source correction or contradictory source.
+Use existing `RESOLVE_DUPLICATE`, `fixture_identity_resolutions` and canonical
+resource resolution only when their proofs qualify; keep both source records.
+Replay the retained rejected row through its original importer after the linked
+resolution, since no stored operational observation exists to replay. Do not
+expand the kickoff tolerance or replace a stable canonical fixture ID.
+
+**Acceptance.** Extend historical-backfill, operational-sync and resolution
+integration tests for exact/date-only collisions, conflicting scores, wrong
+orientation, retries and old-cutoff reconstruction. Each accepted row must map
+to a verified unique representative and source; unresolved rows stay quarantined.
+Report two Málaga outcomes and the exact accepted/rejected Coventry subset.
+**Impact:** at most two additional Málaga native observations in that named
+subset, not two new forecasts; broader yield is unmeasured. **Dependencies:**
+FR-001/002/007 if an identity or rolling-ID defect is found. No new schema is
+presumed; independent source proof remains the main limitation.
+
+### FR-009 — Replay exact season metadata and current unresolved observations
+
+**Identification.** High, P2; operational normalization/reconciliation; READY for
+bounded diagnostics and proven metadata replay; data admission is DEPENDENT.
+Latest-observation-only unmatched FINISHED counts are 9,576 FotMob and 1,508
+PitchAPI, while historical revision counts are larger.
+
+**Root cause.** `_usable_provider_season_label` cannot create a valid fixture
+when season metadata is absent, and `_record_failed_observation` preserves the
+failure rather than fabricating a season. Other rows lack exact canonical
+candidates or contradict admitted mappings. A latest decision may say matched
+while an old unmatched observation remains immutable. R7 and the native season
+catalogues are the evidence route; source-name/date inference is not.
+
+**Implementation.** Build a deterministic inventory keyed by provider/native
+match, latest observation and current resolution state. Exclude already-resolved
+historical revisions from active recovery. Group by missing metadata versus
+identity/canonical/score failures. For missing seasons, recover the exact retained
+league-season response/checkpoint and bind its resource, native competition,
+season and participant scope through existing replay code. If authentic metadata
+is absent, acquire that bounded resource through the existing adapter. Never use
+current season as a historical fallback. Reuse `prepare_targets`, bounded recovery
+pages and existing importer owners once evidence qualifies.
+
+**Acceptance.** Extend operational-sync, provider-work and history-diagnostics
+suites: missing/unknown and conflicting season remain explicit; valid stored
+season replay produces the same IDs on retry; old unmatched revisions remain
+unchanged; one native ID counts once; no relabeled LIVE/CANCELLED result becomes
+a played label. Prove full source-to-history lineage for each recovered row and
+rerun only affected target previews. **Impact:** 11,084 latest finished native
+IDs are a diagnostic maximum, not distinct new canonical matches or forecast
+promises. **Risks/dependencies:** FR-001/002/008/016; partial source seasons must
+remain partial. No new registry or generic replay engine is needed.
+
+### FR-010 — Treat scope failures, quotas and live-priority deferrals separately
+
+**Identification.** High, P2; work orchestration/acquisition; READY for scoped
+operational diagnosis, DEPENDENT for identity/source cases. B1 has 1,224 native
+scopes and 643 legacy queue rows, with exact state/error groups in section 3.
+
+**Problem and research.** Only two native scopes are SUCCEEDED; most pending
+work is not ready-to-run valid history. `BLOCKED_IDENTITY`, failed retained-row
+replay, unavailable native lists, 429, quota exhaustion and
+`LIVE_SYNC_HAS_PRIORITY` require different actions. R4/R5/R7 confirm provider
+coverage and rate-limit constraints. A status rename or broad retry cannot
+satisfy missing proof, and deliberately live-first scheduling is not by itself
+a scheduler defect. Starvation duration must be measured before changing policy.
+
+**Steps.** Inspect `provider_history_scopes`, `history_work`, `history_worker` and
+`history_requests` for each current queue key. Bind shared work IDs, due times,
+last source/checkpoint and exact error classification. Replay proven retained
+rows offline first; retry transport/quota failures only at existing deadlines;
+leave deterministic identity failures held under the existing classification.
+Measure deferral age and safe available capacity in an isolated workload. Add a
+bounded fairness change only if reproducible starvation violates the current
+policy, retaining live priority and persistent quotas. Mark SUCCEEDED only when
+native expected-ID coverage and import receipts prove completion.
+
+**Acceptance.** Existing history acquisition/queue/provider-work integration
+suites cover lease expiry, old worker fencing, crash before/after import,
+partial-season completion, cancellation, deterministic held failures and repeated
+429/deferral. Retry must converge to one import without busy-looping or quota
+bypass. Measure queue age/completed scopes separately from retrieved/eligible
+rows and forecasts. **Impact:** no numerical forecast gain can be attributed to
+queue draining alone. **Dependencies:** FR-006/008/009 and source proof.
+**Risk:** starving live sync or falsely completing partial scopes; no new scheduler
+or broad runtime cutover is recommended.
+
+### FR-011 — Restore exact missing originals or retain honest lifecycle blockers
+
+**Identification.** Critical, P1; source/artifact integrity; EXTERNAL for missing
+bytes and OWNER for any new lifecycle disposition. Current checks find 33 suspect
+raw registrations still BLOCKED through the legacy-aware verifier, 22 missing
+manifests among 24 datasets, and 26 missing manifests among 5,230 model
+registrations. The models have 18 artifact links across thirteen baseline
+forecasts. Appendix B records exact IDs and paths.
+
+**Root cause and limits.** Registrations include repeated placeholder-shaped
+checksums and historic test lineage. A published registration is not proof of
+physical bytes or safe current dependency. Earlier evidence says the thirteen
+forecasts were already retired; this investigation rechecks the dependency IDs
+and missing manifests, not every retirement event or all 5,204 other models.
+The Scottish ZIP is verified present through its registered legacy path and is
+explicitly excluded. R14 and existing immutable file contracts govern restoration.
+
+**Steps.** Use `resolution_data.resource_check`, `PostgresIntegrityVerifier`,
+`resolution_files.recovery_plan` and `publish_file`. Search registered paths and
+known backups for exact matching bytes; validate hash, size, manifest and complete
+input lineage in an isolated restore. Restore only bytes that match the original
+registration. If absent, acquire authentic replacement data as a new source and
+build a new dataset/artifact only under separately authorized build contracts.
+Keep the original failed registration and append the existing exclusion/retirement
+or unresolved disposition as appropriate; never replace the expected checksum,
+forge a manifest or delete old registrations to make parity green.
+
+**Acceptance.** File-recovery and integrity integration suites reject wrong
+bytes, symlinks/path escape, partial publication, stale lease and conflicting
+recovery requests; exact retry converges. Every candidate receives a hash-backed
+restore or explicit absent-original outcome, with all active dependency checks
+performed before operational claims. All unchanged models/forecasts remain
+byte-identical. **Impact:** integrity/parity recovery; no current target unlock
+has been proved. **Risks:** historical synthetic test records can remain global
+gate blockers even when unreachable; only the owner can approve a necessary new
+lifecycle policy, and that policy must not weaken frozen scientific evidence.
+
+### FR-012 — Complete full-scope parity evidence rather than rerunning five reports
+
+**Identification.** Critical for rollout, P1; Architecture V2 verification;
+DEPENDENT on upstream source/identity/coverage fixes, OWNER for cutover. Five
+report IDs and all eleven failing/unrun contract groups are listed in section 4.
+
+**Root cause.** `migration_report` consumes frozen tracked comparison evidence;
+`verify_parity` refreshes diagnostics and checks retained hashes. Neither executes
+all missing production comparisons. The worker may succeed while
+`overall_status` correctly stays BLOCKED. Existing tables and LEGACY stage routes
+show this is no longer an absent-parity-table problem. R14 supports stable
+comparisons; complete-runtime parity must follow the repository's existing
+Phase 35 contracts, not a new smaller acceptance universe.
+
+**Steps.** Disposition every retained difference and bind fresh accepted evidence
+for acquisition, parsing, identity, canonical state, coverage/quality, serving,
+API, feature inputs and work ownership. Execute the three previously NOT_RUN
+history/report/artifact-routing comparisons over the complete required scopes in
+an isolated populated runtime. Use existing migration evidence builders and
+tracked receipts with exact Git/lock/source hashes. Recheck all eleven groups;
+then run the existing Phase 35 readiness gate. An accepted narrow forecast-data
+fix does not itself authorize that programme's later phases.
+
+**Acceptance.** Existing parity gate/integration/stage suites must preserve
+BLOCKED for incomplete scopes, missing bytes, wrong evidence hash, unresolved
+identity, stale database identity and retained arithmetic changes. Require the
+full required group set with `required_runtime_scopes_complete=true`, all
+original thresholds, individually explained differences, and the existing gate's
+actual result. Do not relabel 59 Elo or 327 retained history exceptions as fixed
+using current target counts. **Impact:** rollout readiness only; zero direct new
+forecasts demonstrated. **Risks:** stale evidence, scope shrinkage and premature
+cutover; FR-011 missing authentic bytes may remain a real external blocker.
+
+### FR-013 — Finish bounded report generations and measure remaining throughput
+
+**Identification.** Medium, P2; derived reports/operations; READY for existing
+bounded workers, performance changes conditional on measurements. B1 has 148,095
+pending context rows, seven performance rows and zero comparison rows, with no
+recorded errors in these queues.
+
+**Root cause and evidence.** The backlog is persisted requested generations not
+yet projected; it is not evidence that football history or forecasts are missing.
+[`public_reports.py`](../../python/football/src/football/product/public_reports.py),
+existing report scheduling and generation-aware work own publication. The
+admission/history fanout in FR-006 can keep requesting new generations. R13
+informs deduplication, but a global bulk update is not safe completion.
+
+**Steps.** Freeze report kind, scope, requested generation and oldest age. Measure
+arrival/completion rate, runtime and representative slow queries. Reuse existing
+bounded CLI/worker processing with current lease/generation checks; prioritize
+relevant target scopes within existing scheduling. Inspect genuinely failing
+items separately from merely pending ones. Optimize only measured query/fanout
+hotspots. Do not set completed generations manually or add another report queue.
+
+**Acceptance.** Extend existing public-report and recovery suites for a new
+request during projection, rollback, retry, stale lease, missing football data
+and shutdown between pages. A frozen generation cohort reaches completion or
+has an exact blocker, and fresh public detail/list/history reports agree with
+source hashes and availability. Report new arrivals separately from backlog
+burn-down. **Impact:** fresher diagnostics and consumer reports; zero forecast
+gain should be attributed without a separately changed eligible input.
+**Risks/dependencies:** FR-006, query pressure and concurrent background work;
+no migration is expected for use of existing workers.
+
+### FR-014 — Keep StatsBomb recurrence prevention separate from legacy recovery
+
+**Identification.** High, P2; canonical identity/V4; DEPENDENT on PR #178,
+RESEARCH for independent relationships. Twenty-one legacy team/competition
+mappings and their 380-fixture competition chain remain blocked under that PR's
+pinned evidence. Those are not 380 newly forecastable operating targets.
+
+**Root cause and research.** The original StatsBomb writer allocated UUIDv7 IDs
+but labeled native mappings deterministic. PR #178 uses `provider_native` for new
+rows and preserves old ones; it implements no proof-free correction. Its pinned
+[identity report](https://github.com/sir-radar/match-forge/blob/463ec15a8a0720fb48e842af5a009cf140545f90/docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md)
+was inspected. [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-7)
+does not make a generated UUID a provider-derived origin. [Reep's coverage](https://reep.football/coverage/)
+distinguishes bridge-only IDs and shared feeds; its pinned release's failed
+quality gate cannot be replaced with present website advertising. A fresh
+[StatsBomb repository](https://github.com/hudl/open-data) read confirms the public
+resource route, not the missing cross-provider relationship.
+
+**Steps.** Coordinate PR #178 migration/writer order and final source revision;
+do not duplicate or cherry-pick an incomplete correction design into this branch.
+Obtain one exact independently verifiable legacy-source-to-accepted-target
+relationship, including competition, season, senior/gender, native IDs and raw
+hashes. Only then specify the minimum missing prospective team or competition
+correction in its existing owner. Team and competition semantics must remain
+separate. Extend the proven case incrementally; preserve the five-fixture NPFL
+research-only pilot and keep unproved mappings blocked.
+
+**Acceptance.** Reuse that PR's native-ID, correction, review and historical
+boundary regressions: no old UUID/method/source history rewrite, wrong or
+same-feed evidence rejected, old-cutoff identity unchanged, revoked relationship
+excluded and idempotent corrected replay. Actual legacy recovery requires a
+positive qualified case, not only recurrence tests. **Impact:** no baseline
+forecast gain established; player appearances/minutes and model sufficiency
+remain unqualified. **Risks:** method honesty being mistaken for admission,
+unsupported origin allowlists and unauthorized V4/scientific continuation.
+
+### FR-015 — Qualify source and player inputs before claiming broader market readiness
+
+**Identification.** High, P3; market/source/model qualification; RESEARCH/EXTERNAL,
+with scientific release OWNER. The previously recorded bounded diagnostic has
+53 DATA_COLLECTION_REQUIRED and fourteen INSUFFICIENT_PLAYER_DATA families.
+These are retained diagnostic counts, not a fresh global market census or 67
+missing baseline goal forecasts.
+
+**Root cause and research.** Fixture/result history cannot establish player
+exposure, appearances, injury knowledge, event semantics or bookmaker settlement
+rules. PR #178's five-fixture/ten-goal-label research pilot remains a bounded
+source/target qualification. R4/R6/R7 and the StatsBomb resource documentation
+show materially different provider capabilities. More results from OpenFootball
+cannot manufacture player/event features; a prediction API does not qualify
+baseline features or a frozen evaluation.
+
+**Steps.** Reuse current capability/observation/market diagnostics from the V4
+branch and explicit required-input definitions. For each family, freeze target
+scope, provider semantics, identity, coverage, football/knowledge cutoffs and
+settlement-equivalence requirements. Acquire only missing supported input types,
+retain unknown minutes/exposure as unknown, and rerun data qualification in an
+isolated experiment. Design/model/evaluation work requires the programme's
+separate authorized scientific stage after data acceptance; do not fold it into
+this remediation roadmap as an automatic next phase.
+
+**Acceptance.** Existing native observation, coverage and market-diagnostic tests
+must distinguish missing, unsupported, research-compatible and accepted inputs.
+Require exact player identities/participation, prior knowledge, complete declared
+coverage and source-equivalent outcomes before changing a market's readiness.
+One coherent joint goal distribution and immutable raw probabilities remain
+required. **Impact:** unquantified broader-market feasibility, no additional B1
+forecast count. **Risks/dependencies:** FR-004/011/014, account entitlements and
+scientific insufficiency; no new model or prediction endpoint is authorized here.
+
+### FR-016 — Resolve quarantines and result disagreements without treating them as transport errors
+
+**Identification.** Critical integrity risk, P2; source quality/fixture identity;
+RESEARCH. B1 contains 2,686 active ambiguous-quarantined and 11,806 active
+impossible-schedule-quarantined member decisions. The later quality census has
+38 QUARANTINE and 2,146 WARNING findings, plus 1,845 source-result conflict rows:
+1,835 FotMob/FotMob, six Football-Data.co.uk/OpenFootball, two FotMob/API-Football
+and two Football-Data.co.uk self-conflicts. Counts overlap source revisions and
+fixtures; they are not additive target losses.
+
+**Root cause and evidence.** Multiple representations, revised results, period
+semantics and incompatible team/kickoff evidence are deliberately excluded.
+`OperationalProviderSync._insert_qualified_history` requires qualified played
+scores; conflict publication preserves previous and incoming source values.
+The current inventory does not prove that all conflicts are parser defects or
+that latest-provider values are correct. R1/R5/R7/R12 identify official matching
+context and native semantics; secondary aggregators may share a feed.
+
+**Steps.** Prioritize conflicts in the bounded neighborhoods of B1 targets and
+FR-003/008 candidates. Group by exact source pair, fixture and reason. Compare
+original regulation/extra-time/penalty values, reschedule history, orientation,
+team season and genuinely independent official evidence. Reuse existing
+canonical resource decisions, fixture review and quarantine reprocessing only
+when proof resolves the exact rule. Leave original facts and exclusions visible;
+corrected data is a new observation/version, not an overwrite. Do not retry
+identity/quality failures as network errors or automatically prefer the newest
+source.
+
+**Acceptance.** Extend existing operational-sync, historical-backfill, resolution
+view/recovery and quality tests: impossible schedules remain held, ambiguous
+candidates are not arbitrarily chosen, regulation labels never use shootout
+scores, a new source correction affects only later knowledge, and retry creates
+no duplicate decision. Each targeted conflict receives exact evidence and a
+source-specific disposition. **Impact:** no defensible global forecast estimate;
+measure only independently qualified target changes. **Risks/dependencies:**
+FR-007/008, provider semantics and truly unavailable originals; no broad quarantine
+release or scientific threshold change is recommended.
+
+## 8. Prioritized backlog and dependency-aware execution roadmap
+
+The ordering favors evidence-backed shared engineering work while exact identity
+research proceeds. It does not convert any later phase into current authority.
+
+| Execution phase | Tasks and dependency | Concrete exit evidence |
+| --- | --- | --- |
+| A — Freeze and prepare proof | Refresh B1 target IDs; FR-001/002 exact-source packets; FR-005 full Scottish periods/aliases; FR-003 failed-predicate inventory | Each target/mapping has a current owner, source hashes and a reproducible first cause; no approvals inferred from names |
+| B — Remove shared blockers | FR-006 populated admission profiling/optimization; FR-007 rolling-resource regression and approved compatibility; qualified FR-001/002 cases only after A | Existing deadlines met, refresh-key parity and migration compatibility pass; each proof-complete case has a positive/revocation/retry test |
+| C — Recover current eligible history | FR-003 and qualified FR-005; FR-008 exact fixture cases; FR-009 exact metadata replay; FR-004 targeted native acquisition with FR-010 quota/retry control | Source/fixture/identity/history lineage per accepted row; earlier-cutoff hash unchanged; no duplicates; actual target previews |
+| D — Derived reporting and integrity | FR-013 bounded refresh; FR-011 authentic-byte search/restore and owner-reviewed lifecycle gaps; FR-016 scoped conflicts | Frozen report generations handled; exact file checks; all exclusions retained or explicitly qualified |
+| E — Forecast-readiness verification | Re-run exact affected target prerequisites and unchanged champion previews/publication through existing owners, only when separately authorized | Unique newly available/published targets counted once; unchanged prior forecasts/artifacts; remaining causes explicit |
+| F — Architecture/scientific handoff | FR-012 complete-scope programme evidence; FR-014 relationship prerequisite; FR-015 separately authorized market/scientific qualification | Existing phase gate records actual PASS/PASS_WITH_WARNINGS/FAIL and returns control to owner; no automatic cutover or later research |
+
+Explicit dependencies: `FR-006 → large FR-001/003/005 admissions`;
+`FR-007 → rolling-source subset of FR-008`;
+`FR-001/002/005 → affected FR-003/009`;
+`FR-004 + FR-010 → newly acquired FR-003`;
+`FR-008/016 → contested history`;
+`accepted history → FR-013 + target preview`;
+`FR-011 + accepted upstream production scopes → FR-012`;
+`independent relationship proof + PR #178 → FR-014`;
+`qualified data + separate scientific authority → FR-015`.
+
+Safe parallel opportunities for a future authorized team are evidence gathering
+by independent provider/club scope, isolated FR-006 profiling, and FR-011 backup
+inventory. They must not share operating mutations, schema ownership, correction
+transactions or the same branch edits. This investigation uses no subagents.
+
+Ready engineering work: FR-006 profiling/optimization with a reproduced failing
+case; FR-007 regression/compatibility inventory; FR-009 current-observation and
+exact-season diagnostics; FR-010 scoped work diagnosis; FR-013 existing bounded
+worker execution. FR-005 revalidation census is ready, but changing 41 admissions
+is dependent on a rehearsed dated correction/disposition plan. The remaining data
+actions need proof, authentic bytes or an existing programme gate before they
+can be called ready. No new external account, subscription or spend is recommended.
+
+## 9. Forecast impact without double-counting
+
+| Measurement | Defensible interpretation |
+| --- | --- |
+| Coventry 29 + Málaga 20 + Armenia 13 | 62 already available original targets; **zero prospective gain** from redoing them |
+| Five FR-002 fixtures with sufficient eligible history | Up to five conditional unlocks after qualified native identity; none is proof-ready merely from current counts |
+| Twenty-six FR-003 history-only records | Up to 26 conditional targets from retained history qualification; no promise that every retained row is scientifically admissible |
+| Ghana 30 | Up to 30 conditional identity/reconstruction targets; Port City and some opponents also need history |
+| Other identity-blocked thirteen | Need both identity and history; not additional to the FR-004 population |
+| FR-004 raw-deficient 150 | Includes 122 history-only and 28 identity-blocked records; overlaps Ghana/FR-002 |
+| Entire B1 verified blocked set | **196 unique target records is the upper ceiling for this frozen inventory**, not an expected gain |
+| Provisional upcoming 3,759 | Requires separate identity/representation/coverage qualification; not counted toward the 196 or any promised recovery |
+| 730 rolling-ID conflicts; 11,084 latest finished unmatched native IDs | Recovery candidates with duplication/qualification uncertainty; cannot be added to forecast counts |
+| Newly available competitions | No evidence-backed number; a fixture gain within an already available competition adds zero competitions |
+
+**Confirmed new forecasts from this investigation: zero. Guaranteed future
+unlocks: zero.** A reasonable first measurement cohort is the five history-ready
+identity candidates, followed by the 26 retained-history candidates and the
+proof-complete Ghana cases. Prefer actual qualified gains to a speculative total.
+All recovery attribution must exclude time passage and background-worker gains.
+
+## 10. Verification and acceptance plan
+
+### Required evidence for every later implementation task
+
+1. Freeze exact affected fixture, mapping, source, work and artifact IDs with the
+   starting code SHA, dependency lock hash, schema versions, football cutoff,
+   knowledge cutoff and knowledge mode. Preserve original bytes and baseline
+   history/forecast hashes. Identify whether each result is a source observation,
+   canonical match, eligible history row or target forecast.
+2. Write a focused failing behavior test where a defect is confirmed; retain
+   real evidence failures as blocked fixtures rather than fabricate proof.
+   Exercise both success and rejected branches, unchanged earlier-cutoff queries,
+   same-kickoff/date-only exclusions, target-outcome absence and revoked mappings.
+3. Use a disposable populated restore for database mutations, replay, profiling
+   and migrations. Verify operating/shadow database identity and file root before
+   connecting mutation paths; enforce read-only on all operating diagnostics.
+   No broad migration or unbounded recovery command belongs in the preflight.
+4. Validate idempotency, atomic rollback, concurrent corrections, request UUID
+   reuse, generation changes during projection, stale leases and source tampering.
+   Never bypass locks, increase acceptance deadlines, suppress checks or recast
+   partial coverage as complete.
+5. During development run focused existing suites for the changed owner. After
+   final code changes, inspect the Makefile graph and run one applicable
+   `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+   aggregate in its disposable harness. Add relevant browser journeys only for
+   changed Admin flows. Do not rerun targets already included in the aggregate.
+6. Compare before/after at the same earlier cutoff (identical ID sets and hashes)
+   and at the explicit later admission cutoff (only source-backed additions or
+   justified prospective exclusions). Preserve prior published forecast/model
+   bytes, artifact bindings, champion checksum and raw probabilities.
+7. Reuse existing bounded forecast/recovery/public-report owners after separately
+   authorized rollout. Confirm detail, fixture list and forecast history agree
+   on actual publication/input hashes. Retry creates zero duplicates. A dry-run
+   readiness result is not a published forecast.
+8. Publish unique affected-target outcomes and explain all remaining blockers.
+   A task passes only its defined scope; a phase/map passes only its full frozen
+   acceptance conditions. Record actual PASS, PASS_WITH_WARNINGS or FAIL, commit
+   before the next authorized task, and return control at programme gates.
+
+For this prose-only investigation, repository policy requires text/reference
+review and `git diff --check`, not production lint/build/test/integration runs.
+Read-only SQL and existing verifier executions are investigation evidence, not
+claims that future fixes pass these implementation tests.
+
+## 11. Remaining gaps, decisions and limits
+
+- Full exact relationship packets remain missing for the old/new Ghana
+  participants, eighteen other native targets, Scottish successors/aliases and
+  StatsBomb legacy mappings. Native IDs shared across revisions and official
+  club participation narrow research; they do not remove club-continuity checks.
+- The 26 retained-history targets need row-specific failed eligibility predicates;
+  Appendix A proves shortage and retained opportunity, not a complete admissible
+  replacement history. The remaining provisional/global backlog has aggregate
+  and shared-root investigation, not an exhaustive per-record proof review.
+- DED/PD/BSA deadline failure is established, but the exact execution-plan share
+  and chosen SQL optimization need isolated profiling. No profiling mutation was
+  performed in the operating database or an unverified clone.
+- Missing authentic originals may exist outside this workstation. No remote
+  object store, provider dashboard, paid entitlement, inaccessible private case
+  packet or remote production runtime was audited. Generic repeated hashes are
+  not proof of recoverable source bytes. The 5,204 physically present model
+  manifests were not all logically reverified in this task.
+- BFF direct historical match evidence and exact provider-season bindings remain
+  incomplete despite official-document, local-name and independent-archive
+  searches. Visit a new primary match register, retained season response or
+  genuinely independent exact-ID source before repeating equivalent searches.
+- Airdrie/Clydebank/Gretna succession may require an explicit owner identity-policy
+  decision if existing rules cannot represent the proven relationship. Genuine
+  missing-original lifecycle policy, new spend/access, scientific release,
+  architecture cutover and retirement also remain owner decisions. Research,
+  isolated characterization and routine supported implementation choices do not
+  require repeated owner approval.
+- No “exhaustive” claim is made for all 178,151 ineligible rows, 3,759 provisional
+  upcoming records, every quarantine or every external data source. All original
+  153 and current 196 verified blockers are inventoried and assigned; broad
+  populations have distinct root-cause tasks and explicit next evidence actions.
+- Project-status authority is unchanged: investigation completion does not mean
+  forecast remediation, Architecture V2, V4, a Wayfinder map or a scientific
+  phase is complete. Stop after delivering this plan; subsequent fixes need
+  their own authorized tasks.
+
+## 12. Investigation acceptance and freshness
+
+Investigation result: **PASS_WITH_WARNINGS**. All original 153 targets and all
+196 B1 verified blockers have exact fixture/native IDs, effective participant
+IDs, retained/eligible counts and issue assignments. The union has 258 records:
+62 previously available, 30 FR-001, eighteen FR-002, 26 FR-003 and 122 FR-004.
+All five parity reports are assessed against each of eleven contract groups.
+Sixteen distinct issues have implementation steps, current owners/dependencies,
+verification requirements and bounded impact statements. Scope limits are in
+section 11; this is not exhaustive per-record qualification of every stored row.
+
+The final target freshness read F1 is **2026-11-03 15:21:44.955089 UTC**
+(16:21:44 Africa/Lagos), snapshot `17952802:17952802:`, read-only. It finds
+**190** verified upcoming blockers (142 history, 48 source-incomplete), 2,362
+verified available and 3,759 provisional records. All 196 frozen B1 target
+availability labels are unchanged; six no longer meet the future-kickoff query.
+The falling count therefore does not demonstrate six recovered forecasts.
+B1 remains the exact remediation cohort; F1 is the handoff freshness measurement.
+No investigation operation changed football data or created a forecast.
+
+A separate final source/schema read at 15:14:01 UTC verifies current Ghana
+mappings as two ORIGIN_ANCHOR and two CROSSWALK. All thirteen stages remain
+LEGACY. Applied recent migrations are `202610310500/600/700/800` and
+`202611020200`; **`202611020100` from PR #178 is absent**. The highest migration
+number alone would conceal this gap. Apply/validate that migration before its
+new writer in any future authorized rollout; no migration was applied here.
+
+Current integrity follow-up confirms 33 suspect raw resources BLOCKED and the
+Scottish resource PASS using the legacy-aware owner. Twenty-two dataset
+manifests and 26 model manifests remain missing. Later quality counts are
+reported separately from B1. The first detailed collector's final conflict query
+used nonexistent `detected_at`; prior successful results remain valid and the
+separate follow-up uses the actual schema. An initial quality query used
+`disposition` rather than the actual finding columns and rolled back; its
+corrected read-only run completed. Failed collector attempts are retained locally;
+none is counted as a passing diagnostic. No production check or future acceptance
+condition was weakened to obtain these findings.
+
+Prose review covers the task's research-completeness checklist and
+[`docs/review-checklist.md`](../review-checklist.md). Local file links, stable issue
+IDs, target uniqueness, cohort arithmetic, appendix-to-receipt equality, applied
+migration membership and Markdown structure are checked before commit.
+`python3 .local/forecast-readiness-investigation/validate_report.py` passes:
+258 unique targets, sixteen issues, twelve valid local links, 41 Scottish mapping
+IDs, five parity report IDs, thirteen receipt hashes and balanced Markdown fences.
+`git diff --check` passes at each prose checkpoint. Production test/build
+commands are intentionally omitted under AGENTS.md's documentation-only rule.
+The investigation and codebase/phase/scientific status are separate: no project
+phase or map is declared complete.
+
 ## Appendix A. Exact target inventory
 
 B1 selects fixtures; B2 supplies effective participants, eligible/retained counts and identity reasons. `O` means in the original 153, `N` means an additional B1 blocker. `DONE` means already available before this investigation. Counts are eligible/retained per effective participant, not newly recovered rows. Every row records stable MatchForge UUIDs and current native match IDs; source bytes stay private.
@@ -675,3 +1458,270 @@ B1 selects fixtures; B2 supplies effective participants, eligible/retained count
 | `e990d33c-c70b-50b1-b3da-0fcff8d5c2c5` / 2027-05-23 15:00:00 | fotmob:5973116 | Gandzasar / `58850c8a-be75-576b-9568-60244f126640` / 49-72 | Sardarapat / `96bb48e5-4015-516f-b2cd-168971de6bd3` / 10-14 | O / DONE |
 | `8d30924c-a64e-5a96-ad69-fd54db62a5a1` / 2027-05-28 15:00:00 | fotmob:5973121 | Sardarapat / `96bb48e5-4015-516f-b2cd-168971de6bd3` / 10-14 | FC Urartu / `6f6e92d0-4ace-5939-b586-06caa8eb0442` / 155-230 | O / DONE |
 | `62b5ad98-ec43-5555-93a9-3c0ffbcc1490` / 2027-05-30 15:00:00 | fotmob:5795801 | Coventry City FC / `21c6f977-cea1-5551-bb07-8ff204ddbf26` / 45-49 | Nottingham Forest / `b183150a-bcef-5b34-b406-bd8b55f8e005` / 129-147 | O / DONE |
+
+## Appendix B. Mapping, source and integrity inventories
+
+### Scottish current World mappings
+
+All 41 current rows below retain stored ORIGIN_ANCHOR but fresh corrected-parser verification returns UNRESOLVED. This is the expanded current set; 30 labels occur in the pinned 2000/01 archive. Native IDs are labels in this provider, so country/period evidence remains essential.
+
+| Provider team ID | Mapping ID | MatchForge team ID |
+| --- | --- | --- |
+| Airdrie | `01a0f3bd-b29a-76a5-8c98-dfd623ce81f9` | `5b2de215-0535-528e-8e9b-5d4de5adf466` |
+| Airdrie Utd | `01a0f3bf-1d72-7f86-9ba4-4f8f6d47072e` | `4dcd62b3-e174-5ea0-add6-5d6cf6202a6e` |
+| Albion Rvs | `01a0f3bd-b649-76e7-a092-86f00886f5c4` | `08d8b042-e740-5d24-b06d-bc83aad6d8d3` |
+| Alloa | `01a0f3bd-b2a3-73a9-bba4-7f21eb68d9a1` | `38dbf69f-513c-5b4f-99b3-c5b8d56acf43` |
+| Annan Athletic | `01a0f3c4-2797-7b3f-add1-99b79ffe2fb0` | `ef113d64-ce47-5ce6-aa6b-8eea1d754916` |
+| Arbroath | `01a0f3bd-b46e-7450-94f8-b1e45da31ee5` | `1dc83978-1241-53a0-a771-16e546f6a567` |
+| Ayr | `01a0f3bd-b290-7dfd-90a7-b13948cb1bbe` | `2b566a39-ec5d-538b-ae2d-b565fcc5dd3b` |
+| Berwick | `01a0f3bd-b474-7daa-b448-13a235f60990` | `5ed26603-823b-5189-9d22-2c8c67dff1b8` |
+| Bonnyrigg Rose | `01a0f3d2-1359-7063-9aa9-16befc275b2a` | `50f4c343-046b-5481-8318-ab736cc3b094` |
+| Brechin | `01a0f3bd-b64e-7de2-be42-5ab5f4a0226b` | `e543ae09-78ce-5827-b5d1-c6840a8a88f7` |
+| Clyde | `01a0f3bd-b295-7541-9909-c509133293c6` | `dfac365d-03e2-51f1-9aad-799b56c69fc3` |
+| Clydebank | `01a0f3bd-b47d-7805-9235-24fe27526e62` | `13cd2a72-6d1d-5ce9-838c-3c1f32206b49` |
+| Cove Rangers | `01a0f3ce-dfd4-7f4d-8b74-1813b20ee01e` | `5cb8bc44-705e-58e2-8e9d-b1ddb8201a2c` |
+| Cowdenbeath | `01a0f3bd-b655-763a-80f8-90705c1f2dc5` | `16c3ac53-0171-5e62-b2d7-70758698eff7` |
+| Dumbarton | `01a0f3bd-b65a-7f56-866e-de824e320a66` | `9ddd3806-9033-5ccc-8c2c-e5d02e8bafaa` |
+| East Fife | `01a0f3bd-b64a-7f3b-a13f-80f12e3b0743` | `7b47eae4-2404-510e-89b6-44bfc65e12dc` |
+| East Kilbride | `01a0f3d5-6285-791a-add0-535ece8a8368` | `be08b654-fd29-57c8-bc85-de9470ddbfcf` |
+| East Stirling | `01a0f3bd-b653-7d70-b7ae-55cf311c7ed8` | `7fd73d77-82d6-5416-a030-4f452a057b10` |
+| Edinburgh City | `01a0f3cb-dc49-7071-b73e-76997003d7f9` | `3cf98ddc-bab5-5c3d-b7b9-61cb30a21074` |
+| Elgin | `01a0f3bd-b650-770f-a724-d5cf92296171` | `20193503-8d8b-5a21-bc05-a2dfca78627c` |
+| Falkirk | `01a0f3bd-b296-7542-9d2f-b5d19abe02eb` | `f2c099cf-2e1e-5548-93bf-d95a2496e5c2` |
+| FC Edinburgh | `01a0f3d2-101e-7b17-b781-1466d862bb64` | `7a2579f6-aef9-573e-8693-ded028bb422e` |
+| Forfar | `01a0f3bd-b481-7a22-8ae1-698685044e8f` | `d3bb2f86-9d6a-5850-b4c4-d550015716c6` |
+| Gretna | `01a0f3bf-2020-7092-a97f-3c3785c1a1af` | `8f3ad23b-8033-53e0-8077-c6131360bba0` |
+| Hamilton | `01a0f3bd-b659-7310-9540-8fcd283d40f5` | `bf3c185b-9bee-510b-9e86-5f49bc5808c5` |
+| Inverness C | `01a0f3bd-b299-72b6-ac75-bed29e30504d` | `b71255ec-d72c-5eba-b7de-31b9f3aaeccc` |
+| Kelty Hearts | `01a0f3d0-fb16-71fe-81ec-ab7151403155` | `27e06111-4681-5f39-aaec-34333ce2508b` |
+| Livingston | `01a0f3bd-b29e-7880-9a82-69908828d9c7` | `f814b078-0308-5996-8819-8428d988123c` |
+| Montrose | `01a0f3bd-b660-758d-a875-4c0932a8cfda` | `fb646e41-d479-5a06-9ec4-58379f07dba0` |
+| Morton | `01a0f3bd-b29d-742c-a300-c321f3ae56e6` | `df5014b6-1362-57fe-891e-c66b3fa702e3` |
+| Partick | `01a0f3bd-b46f-7d68-9df2-b171dd98404c` | `fba5be4d-a1d8-5704-b30e-c12d9b3d22f1` |
+| Peterhead | `01a0f3bd-b65e-7c33-89e9-d82e1a4491a9` | `9929afdf-3391-53b1-b6bd-729f6bdd3b87` |
+| Queen of Sth | `01a0f3bd-b479-74f9-b7ce-1e7f0dfe1710` | `28eeee93-2556-59bb-ae6d-92e2f969a815` |
+| Queens Park | `01a0f3bd-b473-7884-9114-49fb50979939` | `1ab37fda-7f51-5a3d-ba80-31ca40695113` |
+| Raith | `01a0f3c0-af45-777c-a7ea-0216922ff01b` | `9f8b6db1-d3b3-5db9-97be-2150506af8ba` |
+| Raith Rvs | `01a0f3bd-b2a1-7bfb-b286-5cb4a2561724` | `283f88d4-462a-56d8-a91e-2c37672e39a2` |
+| Ross County | `01a0f3bd-b292-71fa-b683-e5d70ce704e8` | `f43e0dbd-0d1c-527e-894c-1bb4240ef8a8` |
+| Spartans | `01a0f3d3-3389-7578-9590-f8dc0b9c0451` | `29c98c66-6d9c-5c10-a971-2dbbeb8abc7c` |
+| Stenhousemuir | `01a0f3bd-b478-740b-9fa9-a944e414ea75` | `b04f9521-625f-5127-bf31-c3c04e51a30a` |
+| Stirling | `01a0f3bd-b47c-7735-be50-c1e02cfabee7` | `5b428309-48ee-5e99-85ca-0de329242bc6` |
+| Stranraer | `01a0f3bd-b480-7656-9887-6550221bbf57` | `3788030d-951e-5f58-87b3-8bdb73328490` |
+
+### Ghana mapping generations
+
+Closed and current mapping records are retained separately. Current four source-backed admissions verify as two ORIGIN_ANCHOR and two CROSSWALK in the final read.
+
+| Team / provider / native ID | Mapping ID | MatchForge team ID | State |
+| --- | --- | --- | --- |
+| Medeama / api_football / 12255 | `01a1422c-9686-7f50-9dae-616b6d13b26b` | `95464491-fd01-54e3-b2bf-4994571d86d2` | CURRENT ORIGIN_ANCHOR |
+| Medeama / api_football / 12255 | `01a0eef4-a758-78c5-a351-24f566d97061` | `a2c3853c-e62b-5e64-8260-1ddf9a3899d2` | CLOSED 2026-10-16 00:46:20.757404+00:00 |
+| Medeama / fotmob / 106975 | `01a14230-cade-7a4a-b79e-6d53984decf4` | `95464491-fd01-54e3-b2bf-4994571d86d2` | CURRENT CROSSWALK |
+| Medeama / fotmob / 106975 | `01a12ac1-490f-7548-8e0f-4c3df7a839a5` | `a2c3853c-e62b-5e64-8260-1ddf9a3899d2` | CLOSED 2026-10-16 00:50:56.222825+00:00 |
+| Port City / api_football / 26805 | `01a1422c-9940-7940-ba67-b8d00b29aebd` | `6bcd1a34-f170-56a4-8901-32bb82e88847` | CURRENT ORIGIN_ANCHOR |
+| Port City / api_football / 26805 | `01a0eef4-a759-7b02-ba59-96426365c4b9` | `eace79b0-415c-5d1e-92e1-f75568c227b0` | CLOSED 2026-10-16 00:46:21.460775+00:00 |
+| Port City / fotmob / 2103806 | `01a14230-cd0a-76d8-bfe0-0c088e6cbdf7` | `6bcd1a34-f170-56a4-8901-32bb82e88847` | CURRENT CROSSWALK |
+| Port City / fotmob / 2103806 | `01a12ac1-4903-79bc-a5a7-8353dc4edd48` | `eace79b0-415c-5d1e-92e1-f75568c227b0` | CLOSED 2026-10-16 00:50:56.875162+00:00 |
+
+### Rejected native recovery inputs
+
+The existing `.local/provider-wide-acquisition/target-recovery-operating.json` receipt binds these source responses. No new acquisition occurred here.
+
+| Provider | Source snapshot | Resource SHA-256 | Remaining qualification |
+| --- | --- | --- | --- |
+| football_data_org | `080c9e2f-037a-57b0-b3f9-49ab726125f8` | `1127cc75acd1a7c78dc4948865597a85ef967f58ced2ed4370ac424b294b446a` | 46 selected Coventry rows not imported; earlier retained history recovered separately |
+| api_football | `6e172d9e-5343-5c9a-9eb6-3287c44c5152` | `9c6841462d0b4697c90085227d9b5e78ccf7f1741dea5a833163a1d26a74ad42` | Two rejected native rows 1217677 / 1217899 |
+
+### Suspect registered source resources
+
+The legacy-aware resource check returns BLOCKED for the following 33 resource IDs. The exact registered path/hash and provider are in `integrity-followup.json`. Repeated c/f hashes are a warning about registration provenance, not a replacement payload.
+
+| Resource ID | Source snapshot ID | Registered checksum pattern |
+| --- | --- | --- |
+| `01a06fc4-d5b5-7386-bd19-1c972e3df61d` | `01a06fc4-d5b1-78b7-b24d-ec4d69c4543d` | `f` repeated 64 times |
+| `01a06fc4-d5ed-740f-abb0-ced7684f41c1` | `01a06fc4-d5ec-79a3-b558-d9e35361856b` | `c` repeated 64 times |
+| `01a06fc4-d5fd-7e1f-97e6-e64caa810ac5` | `01a06fc4-d5fd-73de-98ba-6cd18fa1d803` | `c` repeated 64 times |
+| `01a06fc4-d67b-7663-b440-26ad852f6c56` | `01a06fc4-d67a-7b30-8cdb-f9efb84b36fc` | `c` repeated 64 times |
+| `01a04db4-fb6d-719e-8ecc-5c8411bdd3bc` | `01a04db4-fb6b-7e5e-a613-bc19191e4e5a` | `c` repeated 64 times |
+| `01a051c0-2b85-7eda-8826-6118450cedeb` | `01a051c0-2b80-7394-ac08-fb1132a56fe6` | `c` repeated 64 times |
+| `01a051c4-88dc-742c-9c9d-5e416bffa63b` | `01a051c4-88da-7a9f-a852-c64e3a1ff459` | `c` repeated 64 times |
+| `01a06fc4-d554-7482-900b-c671252fddb5` | `01a06fc4-d550-78c4-8296-a38a0833b0d8` | `c` repeated 64 times |
+| `01a06fc4-d584-7f0e-be0b-9d67f1f4c7f1` | `01a06fc4-d584-7902-b70c-f60250ac661a` | `f` repeated 64 times |
+| `01a06fc4-d5b8-74c5-be3d-bd8d81361eb8` | `01a06fc4-d5b7-7e9b-83d7-c0c58ff2a5e7` | `f` repeated 64 times |
+| `01a06fc4-d623-7d0d-98fa-5507c99deb1a` | `01a06fc4-d622-75d9-bb9d-04a47154256c` | `c` repeated 64 times |
+| `01a06fc4-d649-75fd-aecf-3902bbb0542d` | `01a06fc4-d648-7d42-aaf2-b3ca5621e5a3` | `c` repeated 64 times |
+| `01a05718-f3e5-709d-8b73-96ac7b2e7a63` | `01a05718-f3d0-799b-8499-77bdc422010d` | `c` repeated 64 times |
+| `01a04fc0-1018-774c-89b1-fa3285959dc7` | `01a04fc0-1015-75d2-995a-307f74431133` | `c` repeated 64 times |
+| `01a04db8-2440-76a7-87bb-bacd660f7e38` | `01a04db8-243e-728d-824e-4cbaa7be65e1` | `c` repeated 64 times |
+| `01a051c0-2bba-79ad-bce2-e8e4ac91fcbb` | `01a051c0-2bb9-7246-9cf9-a73e91f7305a` | `c` repeated 64 times |
+| `01a051c4-88aa-7535-b639-b2d79100cc42` | `01a051c4-88a8-706c-9322-e6db27b554f6` | `c` repeated 64 times |
+| `01a051c4-8905-7609-885a-63bbf6c1e5c1` | `01a051c4-8903-7e88-b132-81fa7c75063d` | `c` repeated 64 times |
+| `01a06fc4-d746-7342-9f1a-59d48d423e0d` | `01a06fc4-d742-7c0b-a213-e6187c1741f6` | `c` repeated 64 times |
+| `01a06fc4-d7e5-7138-8611-f031e2d83326` | `01a06fc4-d7e4-74c1-92d8-5cab0c8536fe` | `c` repeated 64 times |
+| `01a06fc4-d64a-71f0-8e93-ed297ced8c56` | `01a06fc4-d649-7dd3-a2f7-a4ed3cebc2b8` | `c` repeated 64 times |
+| `01a06fc4-d6af-747f-abbd-132e26237aae` | `01a06fc4-d6ae-7975-a116-ef1cadc75d4f` | `c` repeated 64 times |
+| `01a04db8-2442-78d8-8e17-2a06e5e00cde` | `01a04db8-2441-7dea-9789-8b8d5c59cd28` | `c` repeated 64 times |
+| `01a04fc8-d210-7af0-bdab-f51b0a6a2d2b` | `01a04fc8-d20e-74aa-a6ec-8717935dde9d` | `c` repeated 64 times |
+| `01a051c0-2be1-7ffe-abf8-509643d03ee0` | `01a051c0-2be1-758d-9532-1fefd53ecf0f` | `c` repeated 64 times |
+| `01a06fc4-d801-71c9-b388-0d26a491e9e2` | `01a06fc4-d800-74d2-bf1d-ab33a5868825` | `c` repeated 64 times |
+| `01a06fc4-d7e6-7356-bf4c-cdf19d9838ba` | `01a06fc4-d7e5-7e2a-b469-e05a06717951` | `c` repeated 64 times |
+| `01a06fc4-d583-7c57-a31b-a6c09db2e8d5` | `01a06fc4-d582-7e87-aeb3-b593f68fe209` | `c` repeated 64 times |
+| `01a06fc4-d5a7-7e0f-ac42-65ff4b9c883b` | `01a06fc4-d5a4-780c-a6dd-0c8b6e3fa49b` | `c` repeated 64 times |
+| `01a06fc4-d65c-7d59-87b5-942f9b2c01ec` | `01a06fc4-d65c-7320-bd55-e0ebd755613b` | `c` repeated 64 times |
+| `01a04db4-fb69-7f6d-921b-4ee6615ca179` | `01a04db4-fb68-71d8-b6e1-c790ee3a5aa3` | `c` repeated 64 times |
+| `01a04fc8-2e55-7896-8e30-96d893fa2879` | `01a04fc8-2e52-7ff5-a7d5-9ae77ebf9605` | `c` repeated 64 times |
+| `01a04fd2-a0a2-7f5b-955d-094aa6b85041` | `01a04fd2-a09f-746a-ad99-4f7252900ae2` | `c` repeated 64 times |
+
+### Dataset/model missing-manifest registrations
+
+Dataset results use the existing full dataset verifier; model checks here establish manifest absence and exact forecast dependency links, without rerunning any fit or all other model logical verifications. The thirteen dependent forecast IDs follow the table.
+
+| Kind | Registration ID | Registered manifest path |
+| --- | --- | --- |
+| Dataset | `01a04fc0-101b-7125-a6a3-82e611bb0ef8` | `manifests/01a04fc0-101b-7125-a6a3-82e611bb0ef8.json` |
+| Dataset | `01a04fc8-2e57-732a-8cfe-a14064909ca9` | `manifests/01a04fc8-2e57-732a-8cfe-a14064909ca9.json` |
+| Dataset | `01a04fc8-d211-7bf3-91f8-2abe9fed2866` | `manifests/01a04fc8-d211-7bf3-91f8-2abe9fed2866.json` |
+| Dataset | `01a04fd2-a0a9-7b46-a1ab-5321a5bc0f8c` | `manifests/01a04fd2-a0a9-7b46-a1ab-5321a5bc0f8c.json` |
+| Dataset | `01a051c0-2b89-773f-b7dc-6be22a8290fd` | `manifests/01a051c0-2b89-773f-b7dc-6be22a8290fd.json` |
+| Dataset | `01a051c0-2bbb-7439-92c5-dd16c24e7910` | `manifests/01a051c0-2bbb-7439-92c5-dd16c24e7910.json` |
+| Dataset | `01a051c0-2be2-75c7-8155-be1a640bb2c5` | `manifests/01a051c0-2be2-75c7-8155-be1a640bb2c5.json` |
+| Dataset | `01a051c4-88ab-7952-ab2e-6c2b6b437e6a` | `manifests/01a051c4-88ab-7952-ab2e-6c2b6b437e6a.json` |
+| Dataset | `01a051c4-88de-7049-9bf2-9c0a27fd5226` | `manifests/01a051c4-88de-7049-9bf2-9c0a27fd5226.json` |
+| Dataset | `01a051c4-8906-7261-867c-2f585016229a` | `manifests/01a051c4-8906-7261-867c-2f585016229a.json` |
+| Dataset | `01a05718-f3ee-7378-9eef-12c8b9e1ae62` | `manifests/01a05718-f3ee-7378-9eef-12c8b9e1ae62.json` |
+| Dataset | `01a06fc4-d65d-7437-9f0f-35d0556b599d` | `manifests/01a06fc4-d65d-7437-9f0f-35d0556b599d.json` |
+| Dataset | `01a06fc4-d67b-7cb8-9121-15339add482e` | `manifests/01a06fc4-d67b-7cb8-9121-15339add482e.json` |
+| Dataset | `01a06fc4-d6af-7ba3-b019-86779522f26e` | `manifests/01a06fc4-d6af-7ba3-b019-86779522f26e.json` |
+| Dataset | `01a06fc4-d748-718a-8c90-5346138ab6b5` | `manifests/01a06fc4-d748-718a-8c90-5346138ab6b5.json` |
+| Dataset | `04841642-3bf2-49ff-8bca-4d8285d31296` | `manifests/04841642-3bf2-49ff-8bca-4d8285d31296.json` |
+| Dataset | `258ebad5-e836-43b8-aa56-fc5d2fa16adc` | `manifests/258ebad5-e836-43b8-aa56-fc5d2fa16adc.json` |
+| Dataset | `55607513-725b-4a4f-86a8-6460248c62f5` | `manifests/55607513-725b-4a4f-86a8-6460248c62f5.json` |
+| Dataset | `81e98fea-26cd-4e3c-849b-ae5a189baf98` | `manifests/dataset.json` |
+| Dataset | `8865f579-de5b-495c-aa0e-f64c1ef8068a` | `manifests/8865f579-de5b-495c-aa0e-f64c1ef8068a.json` |
+| Dataset | `af194735-3881-4d8e-ad4d-1f7b234950f6` | `manifests/af194735-3881-4d8e-ad4d-1f7b234950f6.json` |
+| Dataset | `ca6ad090-c918-4544-90a1-e09299e243a4` | `manifests/ca6ad090-c918-4544-90a1-e09299e243a4.json` |
+| Model | `01a04fc0-101b-7b71-b680-9428aae28320` | `models/family=dixon_coles_goals/artifact=01a04fc0-101b-7b71-b680-9428aae28320/model-artifact-manifest-v1.json` |
+| Model | `01a04fc8-2e57-73a5-a24b-8e40a014694e` | `models/family=dixon_coles_goals/artifact=01a04fc8-2e57-73a5-a24b-8e40a014694e/model-artifact-manifest-v1.json` |
+| Model | `01a04fc8-2e57-73ae-acd4-3018d63d7dce` | `models/family=team_elo/artifact=01a04fc8-2e57-73ae-acd4-3018d63d7dce/model-artifact-manifest-v1.json` |
+| Model | `01a04fc8-d211-7c27-8e6a-afbcb633bf37` | `models/family=dixon_coles_goals/artifact=01a04fc8-d211-7c27-8e6a-afbcb633bf37/model-artifact-manifest-v1.json` |
+| Model | `01a04fc8-d211-7c30-a894-204cedcb8db3` | `models/family=team_elo/artifact=01a04fc8-d211-7c30-a894-204cedcb8db3/model-artifact-manifest-v1.json` |
+| Model | `01a04fd2-a0a9-7b7c-8b30-e2e9831b4fdd` | `models/family=dixon_coles_goals/artifact=01a04fd2-a0a9-7b7c-8b30-e2e9831b4fdd/model-artifact-manifest-v1.json` |
+| Model | `01a051c0-2b89-7cb6-a303-a26761b684a9` | `models/family=dixon_coles_goals/artifact=01a051c0-2b89-7cb6-a303-a26761b684a9/model-artifact-manifest-v1.json` |
+| Model | `01a051c0-2bbb-745a-bd73-c1ec042c4960` | `models/family=dixon_coles_goals/artifact=01a051c0-2bbb-745a-bd73-c1ec042c4960/model-artifact-manifest-v1.json` |
+| Model | `01a051c0-2bbb-7463-9b85-92bf63d36b84` | `models/family=team_elo/artifact=01a051c0-2bbb-7463-9b85-92bf63d36b84/model-artifact-manifest-v1.json` |
+| Model | `01a051c0-2be2-75d4-baa4-ba5888709c42` | `models/family=dixon_coles_goals/artifact=01a051c0-2be2-75d4-baa4-ba5888709c42/model-artifact-manifest-v1.json` |
+| Model | `01a051c4-88ac-7172-b3f0-1020d84ac909` | `models/family=dixon_coles_goals/artifact=01a051c4-88ac-7172-b3f0-1020d84ac909/model-artifact-manifest-v1.json` |
+| Model | `01a051c4-88de-70fb-b68e-11e749a0e119` | `models/family=dixon_coles_goals/artifact=01a051c4-88de-70fb-b68e-11e749a0e119/model-artifact-manifest-v1.json` |
+| Model | `01a051c4-88de-7104-8e3c-c2710a90a838` | `models/family=team_elo/artifact=01a051c4-88de-7104-8e3c-c2710a90a838/model-artifact-manifest-v1.json` |
+| Model | `01a051c4-8906-729e-af90-d8d8105f0dee` | `models/family=dixon_coles_goals/artifact=01a051c4-8906-729e-af90-d8d8105f0dee/model-artifact-manifest-v1.json` |
+| Model | `01a06fc4-d65d-76aa-bdd0-3d13d527cf44` | `models/family=dixon_coles_goals/artifact=01a06fc4-d65d-76aa-bdd0-3d13d527cf44/model-artifact-manifest-v1.json` |
+| Model | `01a06fc4-d67b-7cc8-97d2-420766e4f372` | `models/family=dixon_coles_goals/artifact=01a06fc4-d67b-7cc8-97d2-420766e4f372/model-artifact-manifest-v1.json` |
+| Model | `01a06fc4-d67b-7ccc-9379-16bfb6b9ca50` | `models/family=team_elo/artifact=01a06fc4-d67b-7ccc-9379-16bfb6b9ca50/model-artifact-manifest-v1.json` |
+| Model | `01a06fc4-d748-725e-853e-359f4b651cbb` | `models/family=dixon_coles_goals/artifact=01a06fc4-d748-725e-853e-359f4b651cbb/model-artifact-manifest-v1.json` |
+| Model | `08422434-1e03-5281-abd9-57b120492225` | `models/family=team_elo/artifact=08422434-1e03-5281-abd9-57b120492225/model-artifact-manifest-v1.json` |
+| Model | `0c62e7a4-db73-5b56-bf09-1e8fadb68424` | `models/family=dixon_coles_goals/artifact=0c62e7a4-db73-5b56-bf09-1e8fadb68424/model-artifact-manifest-v1.json` |
+| Model | `12d07754-24e3-54f9-b573-43a3e91704a2` | `models/family=corner_poisson/artifact=12d07754-24e3-54f9-b573-43a3e91704a2/model-artifact-manifest-v1.json` |
+| Model | `55cbd422-014c-551f-9b59-7b5fd5c57d7f` | `models/family=corner_negative_binomial/artifact=55cbd422-014c-551f-9b59-7b5fd5c57d7f/model-artifact-manifest-v1.json` |
+| Model | `760c4a72-35f6-5607-99a0-11d8e9da8992` | `models/family=corner_negative_binomial/artifact=760c4a72-35f6-5607-99a0-11d8e9da8992/model-artifact-manifest-v1.json` |
+| Model | `80780dca-38f1-53b3-b4c6-514355935223` | `models/family=team_elo/artifact=80780dca-38f1-53b3-b4c6-514355935223/model-artifact-manifest-v1.json` |
+| Model | `9b156570-143d-5b91-99ea-8f72b30a1d05` | `models/family=corner_poisson/artifact=9b156570-143d-5b91-99ea-8f72b30a1d05/model-artifact-manifest-v1.json` |
+| Model | `e944a1a5-ec59-5d5a-859b-32a551151393` | `models/family=dixon_coles_goals/artifact=e944a1a5-ec59-5d5a-859b-32a551151393/model-artifact-manifest-v1.json` |
+
+Dependent baseline forecast IDs: `01a04fc8-2e57-73b6-93e3-fada57fc8e48`, `01a04fc8-d211-7c37-904c-0a039563d937`, `01a051c0-2bbb-746a-bf55-49204667e289`, `01a051c4-88de-710d-accd-73caca66ccfe`, `01a06fc4-d67b-7ccf-a4f7-b4985e895ee8`, `0eae5c6a-ba99-549c-a95c-763fa7eeaf77`, `0ffb6be5-3dfc-5a82-b941-de7d9cc01bc6`, `390d365d-055e-5f98-a29f-5c7409c798cc`, `412ad71a-5b7d-5434-9d16-63c83b94fad6`, `42716031-6b19-5fad-8b45-18dfb85238c1`, `4cb447db-7edd-5ee0-ad61-cce81cd5ad1f`, `9d1a91df-e26c-5fe2-ad67-27d4ac359269`, `ac4e45c2-bdb6-573b-91f1-a773d350726f`.
+
+
+## Appendix C. Read-only reproduction recipes
+
+Use a read-only connection with `default_transaction_read_only=on`, begin the
+transaction below, retain its cutoff/snapshot and finish with ROLLBACK. Do not
+substitute an application clock or use mutation/recovery entry points.
+
+```sql
+BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT transaction_timestamp() AS knowledge_cutoff, pg_current_snapshot(),
+       current_database(), current_setting('transaction_read_only');
+
+SELECT identity_status, forecast_availability, count(*)
+FROM football.product_fixtures
+WHERE status='SCHEDULED' AND kickoff_at>transaction_timestamp()
+GROUP BY identity_status, forecast_availability;
+
+-- Inspect actual applied versions; max(version_id) is insufficient.
+SELECT version_id FROM public.goose_db_version
+WHERE is_applied ORDER BY version_id;
+
+-- Execution status and domain outcome are separate.
+SELECT p.work_id,p.request_id,w.state,p.inputs,
+       p.outcome->'report'->>'status' AS parity_status,
+       p.outcome->>'report_sha256' AS report_sha256
+FROM football.resolution_parity_work p
+JOIN football.work_items w USING(work_id)
+ORDER BY w.requested_at,p.work_id;
+
+SELECT provider_code,status,last_error,count(*)
+FROM football.product_provider_history_scopes
+GROUP BY provider_code,status,last_error;
+
+SELECT provider_code,conflict_reason,count(*),
+       count(DISTINCT source_snapshot_id)
+FROM football.fixture_identity_ingestion_conflicts
+GROUP BY provider_code,conflict_reason;
+
+-- One latest decision per fixture, explicitly dated.
+WITH latest AS (
+  SELECT DISTINCT ON(fixture_id) fixture_id,eligible,reason
+  FROM football.product_match_history_decisions
+  WHERE decided_at<=transaction_timestamp()
+  ORDER BY fixture_id,decided_at DESC,decision_id DESC
+)
+SELECT eligible,reason,count(*) FROM latest GROUP BY eligible,reason;
+ROLLBACK;
+```
+
+For target-side counts, materialize
+`product_eligible_history_at(transaction_timestamp())` once. Select the explicit
+fixture UUIDs from Appendix A, resolve both participants with
+`product_fixture_team_at(fixture_id, source_team_id, transaction_timestamp())`,
+and count history involving that effective UUID with
+`known_at<=transaction_timestamp()`. Require `kickoff_at<target.kickoff_at` for
+EXACT and strictly earlier UTC calendar date for DATE_ONLY, as the current
+production caller does. Count retained rows separately from
+`product_team_match_history`; do not call them eligible. The exact executed
+SQL/parameters are retained in `details.json`. Call the existing
+`fixture_identity_blockers` and `classify_mapping` on the same read-only
+transaction; do not use `admit_provider_mappings`, `refresh_forecasts` or an Admin
+apply operation as a diagnostic.
+
+For unmatched work, first select latest observation per
+`(provider_code,provider_match_id)` ordered by `observed_at,observation_id`, then
+inspect its canonical fixture and latest dated mapping decision. Include native
+source snapshots and scope completion metadata in any proposed replay. The
+aggregate historical unmatched query is a different population and must retain
+that label.
+
+Private receipt hashes below bind executed queries and results. Exact football
+payloads, credentials, `.env`, backups and local task status are not committed.
+The report carries the actionable ID inventory so future implementation can
+refresh operating facts rather than depend on an expired PostgreSQL snapshot.
+
+
+### Private receipt checksums
+
+All paths below are under `.local/forecast-readiness-investigation/`.
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `baseline.json` | `34a43b55a708cd385d06260ca5ca71cd7336eeb932a06a9df7eea11f14fa3aae` |
+| `details.json` | `1ce6e5e0f19b404e94c64b8cb8767fca69fd8782aa90e0d5d7c921b896c19c65` |
+| `followup.json` | `0bfcf1ccbae6ad74e467f4411b39810e24edc2c08a01fcbf10267d481ec29552` |
+| `verification.json` | `36b4a71691c57e6090a90031212b233b024bfb4c7575d9345ab8c31336e4b218` |
+| `scottish-bytes.json` | `0b65afdb0bb84d99cee6323ff9bf2839223095caa3176358afe1591a38202e31` |
+| `extra.json` | `520f669784f3504acbb2b9f1c8c9a29f8fd8afdaaedd7da562933515a1329ae6` |
+| `integrity-followup.json` | `059a9156d7b6c2cdea7b4cb9dda9f483192bd020ee526125ee0e63f2dc46e9e3` |
+| `models.json` | `7a2891a065261ef86b1b74a98c58a28c99301ff4c0fece739277aa61162d4272` |
+| `final-read.json` | `0e7ca66f577f8f775521f98bc46886eccc133a401cd521db8a8863c6b568837d` |
+| `freshness.json` | `31ef30ed0595a78236233d2c467870e2533a4647e8343a11ddf7a6ba6af87f10` |
+| `pr178.json` | `2837039b52aebb85ec0b3d172619695ee390881302728bab88be8e69a9e3073f` |
+| `pr179.json` | `ea7515940518ac4d2836b24f748a127cb417639d83089f46e948ef5db1916ad3` |
+| `pr178-identity-report.md` | `0fb8ef06adeed5cad843c313ec40e4593a8d6be3cf946bb04ee585a377e52891` |
