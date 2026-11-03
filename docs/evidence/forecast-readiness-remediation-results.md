@@ -383,3 +383,53 @@ complexity/architecture checks, builds and complete disposable storage/API
 integration. Existing seven Python warnings and one ESLint warning remain.
 Private proof, acquisition and fresh-shadow receipts stay under the existing
 execution directory. No operating forecast gain is claimed at this checkpoint.
+
+
+### FR-002 operating checkpoint
+
+Committed policy `0dff481` passes the same 15 fresh qualified previews against
+operating state. Separate Resolution Center transactions append prospective
+reviews; exact UUID request retries return the original events. No historical
+mapping, original history row or prior decision is edited. All 13 checked groups
+of original source, mapping, history, admission, model and forecast registrations
+retain their row hashes; the earlier-cutoff eligible-history digest is unchanged.
+
+The reviews qualify **1,150 existing retained results** (not new raw imports).
+Each new eligible fixture resolves its exact source and a prospective eligible
+decision. All **38** contributing original resources, totaling **16,508,336
+bytes**, are re-read and match their registered SHA256 checksums. The private
+verification receipt contains every new fixture/source/decision relationship.
+
+The unchanged champion publishes **four new forecasts** at **2026-11-03
+17:58:24.720046 UTC**, before their 19:00/19:45 UTC kickoffs:
+
+| Frozen target | Fixture ID | New forecast ID |
+| --- | --- | --- |
+| Rochdale–Doncaster | `ae988ae0-adc1-5335-9fc4-ff02bc44c51a` | `93469cdf-7d4e-5284-be6f-6e76c83edab5` |
+| Huddersfield–Luton | `073b77c4-a7e6-5fbc-8957-2caffbc8e391` | `2830fc03-08c7-5ce9-87d4-b2da0276e022` |
+| Northampton–Oldham | `8e72c406-288c-5dcf-ac8a-b3ae4f2f09eb` | `ac814b39-caaf-5a18-93fd-4284f0937a19` |
+| Wigan–Mansfield | `993b50d0-3c38-52b7-8f62-bdee6cf6d637` | `183bfeee-fad1-5c09-8eba-b19685d2662e` |
+
+All four public forecast-history and forecast-detail reads return HTTP 200.
+Independent recomputation at each stored knowledge cutoff reproduces the exact
+artifact, predictive-input and payload hashes, with target outcomes excluded.
+The repeated bounded refresh creates **zero** additional forecasts. Champion
+bytes remain `e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+These four frozen-cohort gains exclude all earlier Coventry, Málaga and Armenian
+recoveries. Their kickoffs elapsed before the later owner resume; the gains are
+verified pre-match publications, not a claim that they remain upcoming.
+
+The remaining 18-target dispositions are unchanged: six require eligible history
+and eight retain specific identity proof/reconstruction blockers. Follow-up work
+freezes 4,184 fixture-target and 14 observation-target records over 15 requests;
+these overlap and are not 4,198 unique football fixtures. Scoped canonical pages
+use the existing 32-target owner, source rechecks, ordered locks, leases and
+receipts. Parity children remain for Phase D. Full FR-002 completion is not claimed
+while those dependencies and follow-up remain. Operating checkpoint:
+**PASS_WITH_WARNINGS**. Context errors remain zero and all 13 routes `LEGACY`.
+
+Executed operating receipts: `fr002-operating-admissions.json` and
+`fr002-operating-verification.json`; the tracked identity inventory binds the
+verification receipt checksum. The initial verification assertion used a wrong
+availability label; corrected verification uses the actual
+`FORECAST_AVAILABLE` contract and passes. No production enum or check changed.

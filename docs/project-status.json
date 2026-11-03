@@ -1295,7 +1295,7 @@
       "baseline_pending_context_reports": 146765,
       "operating_migrations": 1,
       "operating_runtime_updated": false,
-      "verified_new_forecast_availability": 0,
+      "verified_new_forecast_availability": 4,
       "issue_statuses": {
         "FR-001": "NOT_STARTED",
         "FR-002": "IN_PROGRESS",
@@ -1386,7 +1386,7 @@
         "running_api_restarted": false
       },
       "fr002": {
-        "status": "VERIFIED_IN_FRESH_SHADOW",
+        "status": "OPERATING_QUALIFIED_SUBSET_VERIFIED",
         "evidence_ref": "docs/evidence/forecast-readiness-fr002-identities.json",
         "native_relationships": 14,
         "archive_bridge_relationships": 1,
@@ -1394,13 +1394,24 @@
         "shadow_forecastable_targets": 4,
         "shadow_history_blocked_targets": 6,
         "shadow_identity_blocked_targets": 8,
-        "operating_new_forecasts": 0,
+        "operating_new_forecasts": 4,
         "prior_cutoff_preserved": true,
         "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
         "verification_exit_code": 0,
         "python_unit_tests_passed": 1819,
         "rust_tests_passed": 16,
-        "web_tests_passed": 107
+        "web_tests_passed": 107,
+        "new_eligible_history_rows": 1150,
+        "operating_reviews": 15,
+        "source_resources_byte_verified": 38,
+        "forecasts_issued_before_kickoff_at": "2026-11-03T17:58:24.720046Z",
+        "repeat_refresh_new_forecasts": 0,
+        "original_cutoff_forecasts_reproduced": true,
+        "public_forecast_history_and_detail_verified": true,
+        "remaining_identity_blocked_targets": 8,
+        "remaining_history_blocked_targets": 6,
+        "scoped_followup": "IN_PROGRESS",
+        "parity": "DEFERRED_TO_PHASE_D"
       }
     }
   },

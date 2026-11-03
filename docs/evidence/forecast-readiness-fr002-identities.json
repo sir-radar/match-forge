@@ -1541,5 +1541,133 @@
         }
       ]
     }
-  ]
+  ],
+  "operating_validation": {
+    "status": "PASS_WITH_WARNINGS",
+    "policy_commit": "0dff481",
+    "reviews": 15,
+    "new_eligible_history_rows": 1150,
+    "new_forecasts_issued_before_kickoff": 4,
+    "issued_at": "2026-11-03T17:58:24.720046Z",
+    "verification_at": "2026-11-03 18:01:20.774382+00:00",
+    "repeat_forecasts_created": 0,
+    "unchanged_prior_rows": true,
+    "earlier_cutoff_history_preserved": true,
+    "forecasts": [
+      {
+        "fixture_id": "993b50d0-3c38-52b7-8f62-bdee6cf6d637",
+        "forecast_id": "183bfeee-fad1-5c09-8eba-b19685d2662e",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "89074150542a7abf34e6078d99c72d67b112922d59bb3eadbb3b609470082af4",
+        "payload_sha256": "f21b4564e2daba011147fe2ad9c78d479f436b42c3339ae20cdf43134bfc8ae0",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "073b77c4-a7e6-5fbc-8957-2caffbc8e391",
+        "forecast_id": "2830fc03-08c7-5ce9-87d4-b2da0276e022",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "806523660bff6cec4172ec2c5439e73c9f05404519bcfcca6b5529af2d7f26eb",
+        "payload_sha256": "f5fcb02a883bb3ff9d228ae5c2d15723e0764ea97189c7d5fabe9628238d8329",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "ae988ae0-adc1-5335-9fc4-ff02bc44c51a",
+        "forecast_id": "93469cdf-7d4e-5284-be6f-6e76c83edab5",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "a3d84702fbb2b71428e98799fa6b3987ac83669bf629a7e58baefcc7ec47d034",
+        "payload_sha256": "e61e49c0c53db300f37c2bc512a5ce74cb00a93d32aa9bddd18f8f652efcdc1d",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "8e72c406-288c-5dcf-ac8a-b3ae4f2f09eb",
+        "forecast_id": "ac814b39-caaf-5a18-93fd-4284f0937a19",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "5a9b44a928a09d49df91502e1954d0982480814135f81d81adee15ae597f7565",
+        "payload_sha256": "4e31e52bb28afc02fa11645cf48ead44dc4025682a89b9eb8055b8ff371ae407",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      }
+    ],
+    "scoped_followup_target_records": 4198,
+    "scoped_followup_unique_fixtures_not_claimed": true,
+    "parity_left_for_phase_d": true,
+    "receipt_sha256": "f0a98627e73f282d646e6ca039d6e780f2ba4d037166b68147fbc6bca2d32b96",
+    "source_resources_byte_verified": 38,
+    "source_bytes_verified": 16508336
+  }
 }
