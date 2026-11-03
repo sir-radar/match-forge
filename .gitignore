@@ -25,3 +25,6 @@ skills-lock.json
 CURRENT_TASK.md
 TASKS_TO_CONTINUE.md
 CURRENT_TASK_STATUS.md
+
+# Local code-intelligence snapshots; persistent caches live under .local/.
+.codebase-memory/

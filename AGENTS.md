@@ -726,3 +726,47 @@ docs/writing-style.md
 - Capture verbose logs, report concise summaries, and preserve full failure details.
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
+
+## Token-Efficient Codebase Navigation
+
+Ordinary source navigation is the default. Use targeted `rg`, `rg --files`, Git
+inspection and direct source reads; do not start or index CBM for routine work.
+
+1. Start with task requirements and applicable repository instructions. Search
+   exact symbols, paths, references or filenames in relevant directories before
+   widening the search. Read the smallest useful code sections, not entire large files.
+2. Reuse discoveries from the current task. Avoid repeated searches, dependency
+   exploration and re-reading instructions or code already inspected. For complex
+   work, keep concise notes without creating redundant summaries or documentation.
+3. When needed, consult existing architecture documentation, neighboring
+   implementations, interfaces, schemas, contracts and tests. Trace dependencies
+   when a change could affect multiple modules; do not reconstruct known architecture.
+4. Use optional `codebase-memory-mcp` only when complex call chains, cross-module
+   relationships or large refactoring impact make it useful. Storage/recovery and
+   frontend/design investigations benefited in some earlier benchmarks. Known paths,
+   exact text, simple fixes and small changes should normally use direct navigation.
+5. CBM is disabled in project configuration. To opt in for one investigation, run
+   `codex -c 'mcp_servers.matchforge_code.enabled=true'` from this checkout. Exit that
+   session when finished. `sh scripts/code-intelligence.sh status` reports native
+   clients; `sh scripts/code-intelligence.sh stop` safely stops an unused daemon and
+   refuses while clients remain. Setup and limitations: `docs/engineering/code-intelligence.md`.
+6. When activated, the launcher reconciles offline/Git changes and enables native
+   synchronization. Check `index_status` and relevant `check_index_coverage` paths
+   before trusting freshness; a ready status alone is insufficient. Refresh with
+   `index_repository(mode=full, doc_candidates=false)` when needed, reusing unchanged
+   files. Keep `.cbmignore` exclusions; avoid repeated indexing and optional downloads.
+   No hosted indexing or uploads.
+7. Keep optional graph queries focused: `search_graph(limit=8, max_output_tokens=1200)`;
+   `trace_path(depth=2, limit=20, max_output_tokens=1200)`. Reuse results. On missing,
+   ambiguous or stale results, inspect source; retain synchronization errors and retry
+   once after addressing them. Never delete shared locks or caches to bypass a failure.
+8. Indexed relationships are navigation hints. Verify critical facts in actual SQL
+   migrations, JSON Schema `$ref`/`$defs`, serializers, code and tests. SQL/PLpgSQL and
+   cross-language relationships can be incomplete; no graph callers does not prove dead code.
+9. Before frontend UI changes, locate the relevant authoritative
+   `web/ui-designs/**/*.html` reference (currently `<design>/code.html`) with a focused
+   filename search and read its content. Do not substitute screenshots or inferred layout.
+10. Avoid broad exploration of known areas, oversized outputs, complete directory
+    trees and verbose logs/reports. Token savings never justify weaker investigation,
+    testing, correctness, reproducibility, determinism, source traceability,
+    point-in-time integrity or MatchForge's quality and phase gates.

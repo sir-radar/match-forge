@@ -1,0 +1,22 @@
+# Keep current source, tests, schemas, migrations and engineering documents.
+# Data, generated assets and historical evidence do not aid routine navigation.
+docs/evidence/
+docs/evaluation/
+# HTML designs are authoritative; screenshots add no navigable source.
+web/ui-designs/**/*.png
+.codegraph/
+graphify-out/
+.codebase-memory/
+.local/
+.tools/
+.venv/
+**/node_modules/
+**/.next/
+**/target/
+**/dist/
+**/coverage/
+**/playwright-report/
+**/test-results/
+.env
+.env.*
+!.env.example
