@@ -16,16 +16,57 @@ Canonical ingestion consumes this boundary only after re-verifying the immutable
 
 ## Project use policy
 
-MatchForge is a private, non-commercial research project and is not intended
-for distribution or external publication. Provider qualification therefore
-does not require commercial-use or redistribution rights.
+MatchForge is a private, local, non-commercial experimental research project,
+not intended for distribution, resale, or external publication of provider data.
+Commercial-use and redistribution rights are not sought for this research scope;
+this does not imply that other provider restrictions cease to apply.
 
-Terms review must still confirm that private research access, automated or bulk
-acquisition, processing, and required retention are permitted. Attribution,
-rate limits, credential controls, and other applicable usage restrictions remain
-in force. Third-party source data must not be published unless its terms permit
-publication. A publicly viewable source is not eligible for automated or bulk
-acquisition when its terms prohibit that use or permission remains unresolved.
+### Standing owner decision: provider-wide research acquisition
+
+The repository owner has expressly authorized MatchForge to **pursue automated,
+including bulk, research acquisition across every configured or future football
+data provider**, not only FotMob. The decision covers discovery, historical
+backfills, incremental synchronization, raw retention, validation, normalization,
+identity reconciliation, and eligible downstream recovery, within MatchForge's
+existing architecture and scientific gates.
+
+The owner's instruction is to proceed autonomously with technically accessible
+research acquisition, even where published provider terms restrict automated or
+bulk access, rather than repeatedly requesting the same owner approval. This
+records the owner's risk decision; **it is not a statement that a provider has
+given consent, a licence, or a contractual waiver**. Maintain an accurate,
+source-specific record of terms, permissions, account entitlements, retention
+limits, attribution obligations, and any unresolved legal or contractual risk.
+Do not describe the access as provider-authorized unless independent evidence
+establishes that fact.
+
+Do not bypass authentication, CAPTCHAs, anti-bot protections, paywalls, account
+boundaries, or other technical access controls. Respect enforced rate limits,
+provider quotas, and the existing `ProviderRuntimePolicyV1`; never use account
+multiplication, credential misuse, or technical circumvention to increase
+capacity. Research and use legitimately available alternative sources whenever
+access is denied or unavailable. Third-party data must not be redistributed or
+published unless the corresponding rights permit it.
+
+This standing owner decision replaces the need for repeated **project-owner**
+approval of the same acquisition objective. It does not approve new paid plans,
+new credentials, additional spending, technical bypasses, destructive data
+changes, scientific evaluation, model promotion, or Architecture V2/V4 cutover.
+Document genuinely new decisions separately. Provider-specific restrictions
+remain recorded as facts, but should not repeatedly halt unrelated research,
+recovery, or provider work.
+
+### Source verification and recovery priority
+
+Prefer primary/official sources for missing historical facts. When primary
+records are unavailable, two genuinely independent credible sources may support
+a corroborated factual observation if existing identity, provenance, temporal,
+and validation contracts permit it. Mere agreement in names or scores does not
+establish a provider-native identity. Preserve source URLs, observation times,
+independence analysis, original bytes and immutable hashes. Never represent
+newly corroborated data as a replacement for a missing, checksum-registered
+original. Prioritize data that measurably improves eligible football history and
+forecast readiness; never weaken qualification gates to improve status counts.
 
 ## Provider capability registry
 
@@ -50,12 +91,22 @@ trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
 
 ### Research and Evaluation V2 are separate qualification levels
 
-Ordinary private research may use a provider only where published terms and
-the current account entitlement explicitly permit the intended access and use.
-Public accessibility is not permission. If automation, retention, attribution,
-or another needed activity is unclear, exclude that activity rather than infer
-authority. Additional live API calls require a documented request budget and
-explicit owner approval.
+Ordinary private research follows the provider-wide standing owner decision
+under **Project use policy**. Research acquisition and technical feasibility
+must be evaluated separately from third-party contractual permission. Record
+published terms, current account entitlements, source capabilities, restrictions,
+and observed technical access accurately; do not infer provider consent from
+public accessibility or from non-commercial project status. Within existing
+approved request budgets, Codex may research and execute bounded acquisition
+without repeatedly asking for the same project-owner approval. New spending,
+new accounts, expanded paid quotas, bypasses of access controls, and any other
+separately governed actions remain subject to their existing authorization rules.
+
+Research acquisition is not Evaluation V2 qualification or publication
+approval. Provider-specific source limits, immutable retention evidence, model
+provenance, point-in-time requirements, and the evaluation firewall remain
+independent gates. A source unsuitable for Evaluation V2 can still be studied
+and reported as experimental evidence without silently promoting its outputs.
 
 Research contract fixtures and sanitized, bounded technical checks do not
 qualify a provider for Evaluation V2. Evaluation qualification additionally
@@ -95,10 +146,13 @@ API snapshot with a fabricated Git SHA. See the [contingency preparation
 record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
 
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
-API (`/v1/`). It is not enabled until credentials, account timezone/language,
-coverage scopes, and private research-use and access-terms approval are
-recorded. Its aggregate statistics cannot substitute for Tier A event geometry,
-and provider-defined fields such as `dangerous_attacks` retain provider provenance.
+API (`/v1/`). Technical enablement still requires valid credentials, account
+timezone/language, documented coverage scopes, and a compliant provider runtime
+configuration. Record its access terms and any restrictions separately under
+the provider-wide standing owner decision; do not misstate owner authorization
+as provider consent. Its aggregate statistics cannot substitute for Tier A event
+geometry, and provider-defined fields such as `dangerous_attacks` retain provider
+provenance. Evaluation V2 qualification remains separately gated.
 
 Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
 resource and competition/season scope to configurable discovery cadence,
