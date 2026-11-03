@@ -74,6 +74,15 @@ def test_provider_status_reads_real_lifecycle_evidence_and_excludes_fixture_data
     assert snapshot["last_successful_publication_at"] == "2026-09-05T11:45:00+00:00"
     assert snapshot["quarantine_count"] == 1
     assert snapshot["processing_failure_count"] == 1
+    assert "circuit_state" in snapshot["unmeasured_fields"]
+    assert "processing_latency_ms" in snapshot["unmeasured_fields"]
+    assert "processing_failure_count" not in snapshot["unmeasured_fields"]
+    assert "PROVIDER_MEASUREMENTS_UNAVAILABLE" in snapshot["alert_conditions"]
+    assert snapshot["current_state_fields"] == [
+        "discovered_count",
+        "retry_count",
+        "processing_failure_count",
+    ]
     assert snapshot["fetched_count"] == 2
     assert snapshot["bytes_acquired"] == 30
     assert snapshot["change_set_emission_count"] == 1
@@ -179,6 +188,10 @@ def test_provider_status_reports_no_history_and_rejects_unknown_run_policy(
     assert empty_snapshot["last_successful_acquisition_at"] is None
     assert empty_snapshot["last_successful_validation_at"] is None
     assert empty_snapshot["last_successful_publication_at"] is None
+    assert empty_snapshot["fetched_count"] == 0
+    assert "fetched_count" not in empty_snapshot["unmeasured_fields"]
+    assert "circuit_state" in empty_snapshot["unmeasured_fields"]
+    assert "PROVIDER_MEASUREMENTS_UNAVAILABLE" in empty_snapshot["alert_conditions"]
 
     unknown_provider = "provider_observability_unknown"
     _real_lifecycle(connection, unknown_provider, policy_version="unknown-policy-v7")

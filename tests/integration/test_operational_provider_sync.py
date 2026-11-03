@@ -34,7 +34,11 @@ DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
 def geography_fixture(
-    connection: Connection[Any], root: Path, provider: str, country: str
+    connection: Connection[Any],
+    root: Path,
+    provider: str,
+    country: str,
+    team_names: tuple[str, str] = ("Geography Home", "Geography Away"),
 ) -> tuple[UUID | None, UUID]:
     sync = OperationalProviderSync(connection, root, provider_code=provider)
     league_id = "530" if provider == "fotmob" else "l_Geo001"
@@ -54,8 +58,8 @@ def geography_fixture(
         provider_competition_id=league_id,
         provider_home_team_id="t_Geo001",
         provider_away_team_id="t_Geo002",
-        home_team_name="Geography Home",
-        away_team_name="Geography Away",
+        home_team_name=team_names[0],
+        away_team_name=team_names[1],
         kickoff_at=now + timedelta(days=1),
         status="SCHEDULED",
         provider_status="scheduled",
@@ -81,6 +85,65 @@ def geography_fixture(
         "SELECT competition_id FROM football.product_fixtures WHERE fixture_id=%s", (fixture,)
     ).fetchone()[0]
     return competition, snapshot
+
+
+@pytest.mark.parametrize(
+    ("names", "aliases", "missing_aliases"),
+    [(("نادي الرياض", "FC"), 0, 2), (("AFC", "Geography Away"), 1, 1)],
+)
+def test_names_without_search_alias_do_not_abort_native_identity_storage(
+    connection: Connection[Any],
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    names: tuple[str, str],
+    aliases: int,
+    missing_aliases: int,
+) -> None:
+    competition, _ = geography_fixture(connection, tmp_path, "pitchapi", "MAR", names)
+    assert competition is not None
+    fixture = connection.execute(
+        "SELECT fixture_id,home_team_id,away_team_id FROM football.product_fixtures "
+        "WHERE competition_id=%s",
+        (competition,),
+    ).fetchone()
+    assert fixture is not None
+    fixture_id, home_id, away_id = fixture
+    assert {
+        row[0]
+        for row in connection.execute(
+            "SELECT name FROM football.product_teams WHERE team_id=ANY(%s)",
+            ([home_id, away_id],),
+        )
+    } == set(names)
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_team_aliases WHERE team_id=ANY(%s)",
+        ([home_id, away_id],),
+    ).fetchone() == (aliases,)
+    assert connection.execute(
+        "SELECT identity_status FROM football.product_fixtures WHERE fixture_id=%s",
+        (fixture_id,),
+    ).fetchone() == ("PROVISIONAL",)
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_team_match_history WHERE fixture_id=%s",
+        (fixture_id,),
+    ).fetchone() == (0,)
+    assert caplog.text.count("search alias unavailable") == missing_aliases
+    assert geography_fixture(connection, tmp_path, "pitchapi", "MAR", names)[0] == competition
+    assert (
+        connection.execute(
+            "SELECT fixture_id,home_team_id,away_team_id FROM football.product_fixtures "
+            "WHERE competition_id=%s",
+            (competition,),
+        ).fetchone()
+        == fixture
+    )
+    assert connection.execute(
+        "SELECT count(*) FROM football.match_provider_mappings m "
+        "JOIN football.providers p ON p.id=m.provider_id "
+        "WHERE p.code='pitchapi' AND m.provider_match_id='m_Geo001' "
+        "AND m.valid_to IS NULL AND m.match_id=%s",
+        (fixture_id,),
+    ).fetchone() == (1,)
 
 
 @pytest.mark.parametrize(

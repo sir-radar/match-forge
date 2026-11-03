@@ -20,8 +20,10 @@ import pytest
 from football.product.domain import stable_id
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.identity_admission import (
+    RetainedIdentityVerifier,
     admit_provider_mappings,
     classify_mapping,
+    fixture_identity_blockers,
     mapping_rows,
 )
 from football.product.identity_correction import (
@@ -258,6 +260,7 @@ def retained(connection: Connection[Any]) -> dict[str, Any]:
         "product_provider_resource_observations",
         "match_provider_mappings",
         "product_fixtures",
+        "product_team_match_history",
         "source_snapshots",
         "source_resources",
         "product_forecasts",
@@ -269,6 +272,460 @@ def retained(connection: Connection[Any]) -> dict[str, Any]:
         ).fetchall()
         for table in tables
     }
+
+
+def seed_replaced_native(
+    connection: Connection[Any],
+    root: Path,
+    *,
+    old_home_name: str = "Brentford",
+    new_home_name: str = "Brentford",
+    old_country: str = "ENG",
+    old_league: int = 47,
+) -> TeamIdentityCorrection:
+    """A synthetic same-native replacement leaves the old participant stored."""
+    initial, _ = seed(connection, root)
+    old_team = stable_id("team", "football_data_org", "402")
+    target_team = stable_id("team", "api_football", "55")
+    away_team = stable_id("team", "api_football", "40")
+    kickoff = KICKOFF + timedelta(days=7)
+    acquired = kickoff + timedelta(hours=4)
+    native_fixture = {
+        "id": "1880030111",
+        "home": {"id": "9937", "name": new_home_name, "score": 2},
+        "away": {"id": "8650", "name": "Liverpool", "score": 1},
+        "status": {
+            "utcTime": kickoff.isoformat(),
+            "started": True,
+            "finished": True,
+            "cancelled": False,
+            "reason": {"short": "FT"},
+            "scoreStr": "2 - 1",
+        },
+    }
+    old_payload = {
+        "leagues": [
+            {
+                "id": old_league,
+                "name": "Premier League",
+                "ccode": old_country,
+                "matches": [
+                    {
+                        **native_fixture,
+                        "home": {**native_fixture["home"], "name": old_home_name},
+                    }
+                ],
+            }
+        ]
+    }
+    new_payload = {
+        "details": {
+            "id": 47,
+            "name": "Premier League",
+            "country": "ENG",
+            "selectedSeason": "2026/2027",
+        },
+        "fixtures": {"allMatches": [native_fixture]},
+    }
+    store = HistoricalBackfillStore(connection, "fotmob", "Synthetic FotMob", "replacement-test")
+    sources = {}
+    for label, payload in [("old", old_payload), ("new", new_payload)]:
+        sources[label] = snapshot(
+            store,
+            root,
+            source_identity=(
+                "league-47-synthetic-replacement"
+                if label == "new"
+                else "fixtures-synthetic-replacement-old"
+            ),
+            source_revision="test",
+            acquired_at=acquired,
+            manifest_path=f"raw/replacement-{label}.json",
+            payload=json.dumps(payload).encode(),
+        )
+    connection.execute(
+        """UPDATE football.competition_provider_mappings SET source_snapshot_id=%s
+           WHERE provider_competition_id='47' AND provider_id=(
+             SELECT id FROM football.providers WHERE code='fotmob') AND valid_to IS NULL""",
+        (sources["new"],),
+    )
+    connection.execute(
+        "UPDATE football.product_teams SET country='England' WHERE team_id=%s", (old_team,)
+    )
+    if new_home_name != "Brentford":
+        connection.execute(
+            "UPDATE football.product_teams SET name=%s WHERE team_id=%s",
+            (new_home_name, old_team),
+        )
+    previous_end = connection.execute(
+        """UPDATE football.team_provider_mappings SET valid_to=clock_timestamp()
+           WHERE provider_team_id='9937' AND provider_id=(
+             SELECT id FROM football.providers WHERE code='fotmob') AND valid_to IS NULL
+           RETURNING valid_to"""
+    ).fetchone()[0]
+    source = connection.execute(
+        """INSERT INTO football.team_provider_mappings
+           (team_id,provider_id,provider_team_id,valid_from,first_seen_at,last_seen_at,mapping_method,
+            mapping_confidence,source_snapshot_id)
+           SELECT %s,id,'9937',%s,%s,%s,'deterministic',1,%s FROM football.providers
+           WHERE code='fotmob' RETURNING id""",
+        (old_team, previous_end, acquired, acquired, sources["old"]),
+    ).fetchone()[0]
+    admit_provider_mappings(connection, root, "fotmob")
+    closed = connection.execute(
+        "UPDATE football.team_provider_mappings SET valid_to=clock_timestamp() "
+        "WHERE id=%s RETURNING valid_to",
+        (source,),
+    ).fetchone()[0]
+    target = connection.execute(
+        """INSERT INTO football.team_provider_mappings
+           (team_id,provider_id,provider_team_id,valid_from,first_seen_at,last_seen_at,
+            mapping_method,mapping_confidence,source_snapshot_id)
+           SELECT %s,id,'9937',%s,%s,%s,'explicit_crosswalk',1,%s FROM football.providers
+           WHERE code='fotmob' RETURNING id""",
+        (target_team, closed, acquired, acquired, sources["new"]),
+    ).fetchone()[0]
+    admit_provider_mappings(connection, root, "fotmob")
+    season = connection.execute(
+        "SELECT season_id FROM football.matches WHERE id=("
+        "SELECT match_id FROM football.match_provider_mappings WHERE id=%s)",
+        (initial.fixture_registration_id,),
+    ).fetchone()[0]
+    competition = stable_id("competition", "api_football", "39")
+    fixture = uuid4()
+    connection.execute(
+        "INSERT INTO football.matches(id,competition_id,season_id) VALUES(%s,%s,%s)",
+        (fixture, competition, season),
+    )
+    connection.execute(
+        """INSERT INTO football.product_fixtures
+           (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,status,
+            home_score,away_score,forecast_availability,updated_at,result_score_basis)
+           VALUES(%s,%s,%s,%s,%s,'FINISHED',2,1,'NOT_ENOUGH_HISTORY',%s,'REGULATION_90')""",
+        (fixture, competition, old_team, away_team, kickoff, acquired),
+    )
+    registration = connection.execute(
+        """INSERT INTO football.match_provider_mappings
+           (match_id,provider_id,provider_match_id,first_seen_at,last_seen_at,mapping_method,
+            mapping_confidence,source_snapshot_id)
+           SELECT %s,id,'1880030111',%s,%s,'deterministic',1,%s FROM football.providers
+           WHERE code='fotmob' RETURNING id""",
+        (fixture, acquired, acquired, sources["new"]),
+    ).fetchone()[0]
+    connection.execute(
+        """INSERT INTO football.product_team_match_history
+           (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+            source_provider_code,source_snapshot_id,source_kickoff_precision)
+           VALUES(%s,%s,%s,%s,%s,2,1,'fotmob',%s,'EXACT')""",
+        (fixture, competition, old_team, away_team, kickoff, sources["old"]),
+    )
+    from football.product.operational_provider_sync import _fotmob_season_rows
+    from football.providers.fotmob import FotmobResponse
+
+    raw = json.dumps(new_payload).encode()
+    response = FotmobResponse(
+        "/synthetic/replacement", acquired, hashlib.sha256(raw).hexdigest(), raw, new_payload
+    )
+    observation = _fotmob_season_rows(response, "47", "2026/2027")[0]
+    assert (
+        OperationalProviderSync(connection, root, provider_code="fotmob")._resolve_fixture(
+            observation, sources["new"]
+        )
+        is None
+    )
+    original = connection.execute(
+        """SELECT decision_id FROM football.product_provider_mapping_decisions
+           WHERE candidate_fixture_id=%s AND disposition='CONTRADICTORY'""",
+        (fixture,),
+    ).fetchone()[0]
+    return TeamIdentityCorrection(source, target, original, registration, "HOME")
+
+
+def test_replaced_native_mapping_correction_preserves_prior_identity_and_history(
+    tmp_path: Path,
+) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        before = retained(c)
+        cutoff = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        earlier = history(c, cutoff)
+        fixture = c.execute(
+            "SELECT match_id FROM football.match_provider_mappings WHERE id=%s",
+            (request.fixture_registration_id,),
+        ).fetchone()[0]
+        assert fixture_identity_blockers(c, [fixture], cutoff)[fixture] is not None
+        assert qualify_team_correction(c, tmp_path, request)["status"] == "QUALIFIED"
+        with (
+            pytest.raises(RuntimeError, match="rollback native correction"),
+            c.transaction(),
+        ):
+            correct_team_identity(c, tmp_path, request)
+            raise RuntimeError("rollback native correction")
+        assert identity(c, request, c.execute("SELECT clock_timestamp()").fetchone()[0]) is None
+        decision = correct_team_identity(c, tmp_path, request)
+        assert decision["corrects_decision_id"] == str(request.original_decision_id)
+        assert identity(c, request, cutoff) is None
+        assert identity(c, request, decision["decided_at"]) == stable_id(
+            "team", "api_football", "55"
+        )
+        assert correct_team_identity(c, tmp_path, request)["decision_id"] == decision["decision_id"]
+        assert history(c, cutoff) == earlier
+        current = history(c, c.execute("SELECT clock_timestamp()").fetchone()[0])
+        assert len(current) == len(earlier) + 1
+        admitted = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        assert fixture_identity_blockers(c, [fixture], admitted)[fixture] is None
+        revoke_team_correction(c, UUID(decision["decision_id"]), "OPERATOR_REVOKED")
+        withdrawn = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        assert fixture_identity_blockers(c, [fixture], withdrawn)[fixture] is not None
+        assert history(c, c.execute("SELECT clock_timestamp()").fetchone()[0]) == earlier
+        assert history(c, admitted) == current
+        assert correct_team_identity(c, tmp_path, request)["disposition"] == "REVOKED"
+        assert retained(c) == before
+
+
+@pytest.mark.parametrize("bad", ["missing", "tampered"])
+def test_reconstructed_fixture_rechecks_closed_source_bytes(tmp_path: Path, bad: str) -> None:
+    from football.product.resolution_recovery import verify_fixture_admissions
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        correct_team_identity(c, tmp_path, request)
+        fixture = c.execute(
+            "SELECT match_id FROM football.match_provider_mappings WHERE id=%s",
+            (request.fixture_registration_id,),
+        ).fetchone()[0]
+        verify_fixture_admissions(c, tmp_path, fixture, RetainedIdentityVerifier(tmp_path))
+        original = tmp_path / "raw/replacement-old.json"
+        if bad == "missing":
+            original.unlink()
+        else:
+            original.write_bytes(b"tampered closed source")
+        with pytest.raises(ValueError, match="lost retained proof"):
+            verify_fixture_admissions(c, tmp_path, fixture, RetainedIdentityVerifier(tmp_path))
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "wrong_native",
+        "not_closed",
+        "non_adjacent",
+        "confidence",
+        "target_confidence",
+        "country",
+        "youth_reuse",
+        "youth_in_both_sources",
+        "country_reuse",
+        "competition_reuse",
+        "missing_old",
+        "tampered_new",
+        "orientation",
+        "missing_label",
+    ],
+)
+def test_replaced_native_correction_fails_closed(tmp_path: Path, bad: str) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(
+            c,
+            tmp_path,
+            old_home_name=(
+                ""
+                if bad == "missing_label"
+                else "Brentford U21"
+                if bad in {"youth_reuse", "youth_in_both_sources"}
+                else "Brentford"
+            ),
+            new_home_name="Brentford U21" if bad == "youth_in_both_sources" else "Brentford",
+            old_country="SCO" if bad == "country_reuse" else "ENG",
+            old_league=42 if bad == "competition_reuse" else 47,
+        )
+        if bad == "wrong_native":
+            target = c.execute(
+                """SELECT id FROM football.team_provider_mappings WHERE provider_team_id='8650'
+                   AND provider_id=(SELECT id FROM football.providers WHERE code='fotmob')
+                   AND valid_to IS NULL"""
+            ).fetchone()[0]
+            request = replace(request, target_mapping_id=target)
+        if bad == "not_closed":
+            request = replace(request, source_mapping_id=request.target_mapping_id)
+        if bad == "non_adjacent":
+            c.execute(
+                "UPDATE football.team_provider_mappings "
+                "SET valid_to=valid_to-interval '1 microsecond' "
+                "WHERE id=%s",
+                (request.source_mapping_id,),
+            )
+        if bad in {"confidence", "target_confidence"}:
+            key = request.source_mapping_id if bad == "confidence" else request.target_mapping_id
+            c.execute(
+                "UPDATE football.team_provider_mappings SET mapping_confidence=.9 WHERE id=%s",
+                (key,),
+            )
+        if bad == "country":
+            c.execute(
+                "UPDATE football.product_teams SET country='Scotland' WHERE team_id=("
+                "SELECT team_id FROM football.team_provider_mappings WHERE id=%s)",
+                (request.source_mapping_id,),
+            )
+        if bad == "missing_old":
+            (tmp_path / "raw/replacement-old.json").unlink()
+        if bad == "tampered_new":
+            (tmp_path / "raw/replacement-new.json").write_bytes(b"tampered")
+        if bad == "orientation":
+            request = replace(request, orientation="AWAY")
+        count = c.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
+        assert qualify_team_correction(c, tmp_path, request)["status"] == "UNRESOLVED"
+        with pytest.raises(ValueError):
+            correct_team_identity(c, tmp_path, request)
+        assert (
+            c.execute("SELECT count(*) FROM football.product_identity_admissions").fetchone()
+            == count
+        )
+
+
+@pytest.mark.parametrize("bad", ["missing_period", "wrong_period"])
+def test_replaced_native_requires_registered_season_period(tmp_path: Path, bad: str) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        start = None if bad == "missing_period" else "2025-08-21"
+        end = "2027-05-30" if bad == "missing_period" else "2026-05-30"
+        c.execute(
+            "UPDATE football.seasons SET start_date=%s,end_date=%s WHERE id=("
+            "SELECT season_id FROM football.matches WHERE id=("
+            "SELECT match_id FROM football.match_provider_mappings WHERE id=%s))",
+            (start, end, request.fixture_registration_id),
+        )
+        assert qualify_team_correction(c, tmp_path, request)["status"] == "UNRESOLVED"
+        with pytest.raises(ValueError):
+            correct_team_identity(c, tmp_path, request)
+
+
+def test_replaced_native_cannot_override_operator_withdrawal(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        c.execute(
+            """INSERT INTO football.product_identity_admissions
+               (entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                disposition,reason,source_snapshot_id,source_observed_at,evidence,evidence_sha256)
+               SELECT entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                 'REVOKED','OPERATOR_REVOKED',source_snapshot_id,source_observed_at,
+                 evidence,evidence_sha256 FROM football.product_identity_admissions
+               WHERE mapping_id=%s ORDER BY decided_at DESC,decision_id DESC LIMIT 1""",
+            (request.source_mapping_id,),
+        )
+        assert qualify_team_correction(c, tmp_path, request)["status"] == "UNRESOLVED"
+        with pytest.raises(ValueError):
+            correct_team_identity(c, tmp_path, request)
+
+
+def test_replaced_native_cannot_activate_future_mapping_versions(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        future = c.execute("SELECT clock_timestamp()+interval '1 day'").fetchone()[0]
+        c.execute(
+            "UPDATE football.team_provider_mappings SET valid_from=%s WHERE id=%s",
+            (future, request.target_mapping_id),
+        )
+        c.execute(
+            "UPDATE football.team_provider_mappings SET valid_to=%s WHERE id=%s",
+            (future, request.source_mapping_id),
+        )
+        admit_provider_mappings(c, tmp_path, "fotmob")
+        blocked = qualify_team_correction(c, tmp_path, request)
+        assert blocked["status"] == "UNRESOLVED" and "not yet" in blocked["reason"]
+        with pytest.raises(ValueError):
+            correct_team_identity(c, tmp_path, request)
+
+
+def test_closed_native_case_uses_correction_preview_and_blocks_ordinary_approval(
+    tmp_path: Path,
+) -> None:
+    from football.product.resolution_actions import preview
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        candidate = {
+            "target_mapping_id": str(request.target_mapping_id),
+            "original_decision_id": str(request.original_decision_id),
+            "fixture_registration_id": str(request.fixture_registration_id),
+            "orientation": request.orientation,
+        }
+        review = {
+            "case_key": f"team:{request.source_mapping_id}",
+            "action": "CORRECT",
+            "reason": "Synthetic exact native replacement review",
+            "candidate": candidate,
+        }
+        prepared = preview(c, tmp_path, review)
+        assert prepared["allowed"] is True
+        assert prepared["detail"]["mapping_closed_at"]
+        assert str(request.target_mapping_id) in {
+            row["mapping_id"] for row in prepared["detail"]["candidates"]
+        }
+        assert preview(c, tmp_path, {**review, "action": "APPROVE"})["allowed"] is False
+
+
+@pytest.mark.parametrize("bad", ["prior_revocation", "source_closed", "native_bridge_source"])
+def test_database_rejects_forged_native_replacement_lineage(tmp_path: Path, bad: str) -> None:
+    from football.product.domain import sha256_json
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        qualified = qualify_team_correction(c, tmp_path, request)
+        assert qualified["status"] == "QUALIFIED"
+        evidence = qualified["evidence"]
+        if bad == "prior_revocation":
+            evidence["replacement"]["prior_revocation_id"] = str(uuid4())
+        elif bad == "source_closed":
+            evidence["replacement"]["source_valid_to"] = ACQUIRED.isoformat()
+        else:
+            evidence["replacement"]["native_fixture_bridge"]["old_resource"][
+                "source_snapshot_id"
+            ] = str(uuid4())
+        with (
+            pytest.raises(psycopg.errors.RaiseException, match="exact contradiction"),
+            c.transaction(),
+        ):
+            c.execute(
+                """INSERT INTO football.product_identity_admissions
+                       (entity_type,mapping_id,canonical_id,provider_code,provider_entity_id,
+                        disposition,reason,source_snapshot_id,source_observed_at,evidence,
+                        evidence_sha256,corrects_decision_id,target_mapping_id)
+                       VALUES('team',%s,%s,'fotmob',%s,'CROSSWALK',%s,%s,%s,%s,%s,%s,%s)""",
+                (
+                    request.source_mapping_id,
+                    qualified["canonical_id"],
+                    qualified["provider_id"],
+                    qualified["reason"],
+                    qualified["source_snapshot_id"],
+                    qualified["source_observed_at"],
+                    Jsonb(evidence),
+                    sha256_json(evidence),
+                    request.original_decision_id,
+                    request.target_mapping_id,
+                ),
+            )
+        assert identity(c, request, c.execute("SELECT clock_timestamp()").fetchone()[0]) is None
+
+
+def test_replaced_native_target_revocation_removes_only_future_eligibility(tmp_path: Path) -> None:
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        request = seed_replaced_native(c, tmp_path)
+        decision = correct_team_identity(c, tmp_path, request)
+        admitted = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        frozen = history(c, admitted)
+        assert len(frozen) == 1
+        c.execute(
+            """UPDATE football.team_provider_mappings SET mapping_confidence=.9 WHERE id=%s""",
+            (request.target_mapping_id,),
+        )
+        withdrawn = c.execute("SELECT clock_timestamp()").fetchone()[0]
+        assert identity(c, request, withdrawn) is None
+        assert history(c, withdrawn) == []
+        assert history(c, admitted) == frozen
+        assert identity(c, request, decision["decided_at"]) == stable_id(
+            "team", "api_football", "55"
+        )
 
 
 def identity(
@@ -450,6 +907,66 @@ def isolated_database(version: str | None = None) -> Iterator[str]:
             yield url
         finally:
             admin.execute(SQL("DROP DATABASE {} WITH (FORCE)").format(Identifier(name)))
+
+
+def test_concurrent_replaced_native_requests_publish_one_decision(tmp_path: Path) -> None:
+    with isolated_database() as url:
+        with psycopg.connect(url) as c:
+            request = seed_replaced_native(c, tmp_path)
+            before = retained(c)
+            cutoff = c.execute("SELECT clock_timestamp()").fetchone()[0]
+
+        def apply() -> str:
+            with psycopg.connect(url) as c:
+                return str(correct_team_identity(c, tmp_path, request)["decision_id"])
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            decisions = list(pool.map(lambda _: apply(), range(2)))
+        assert len(set(decisions)) == 1
+        with psycopg.connect(url) as c:
+            assert history(c, cutoff) == []
+            assert len(history(c, c.execute("SELECT clock_timestamp()").fetchone()[0])) == 1
+            assert retained(c) == before
+
+
+def test_populated_replaced_native_upgrade_is_prospective_and_idempotent(tmp_path: Path) -> None:
+    with isolated_database("202611030100") as url:
+        with psycopg.connect(url) as c:
+            request = seed_replaced_native(c, tmp_path)
+            before = retained(c)
+            cutoff = c.execute("SELECT clock_timestamp()").fetchone()[0]
+            admissions = c.execute(
+                "SELECT to_jsonb(a) FROM football.product_identity_admissions a "
+                "ORDER BY decision_id"
+            ).fetchall()
+            histories = c.execute(
+                "SELECT to_jsonb(d) FROM football.product_match_history_decisions d "
+                "ORDER BY decision_id"
+            ).fetchall()
+            blocked = qualify_team_correction(c, tmp_path, request)
+            assert blocked["status"] == "UNRESOLVED" and "202611030200" in blocked["reason"]
+        _migrate(url, "up-to", "202611030200")
+        _migrate(url, "up")
+        with psycopg.connect(url) as c:
+            assert retained(c) == before
+            assert (
+                c.execute(
+                    "SELECT to_jsonb(a) FROM football.product_identity_admissions a "
+                    "ORDER BY decision_id"
+                ).fetchall()
+                == admissions
+            )
+            assert (
+                c.execute(
+                    "SELECT to_jsonb(d) FROM football.product_match_history_decisions d "
+                    "ORDER BY decision_id"
+                ).fetchall()
+                == histories
+            )
+            assert history(c, cutoff) == []
+            correct_team_identity(c, tmp_path, request)
+            assert history(c, cutoff) == []
+            assert len(history(c, c.execute("SELECT clock_timestamp()").fetchone()[0])) == 1
 
 
 def test_concurrent_identical_requests_return_one_decision(tmp_path: Path) -> None:

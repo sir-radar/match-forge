@@ -1430,7 +1430,7 @@ def test_publishes_and_registers_normalized_event_dataset_idempotently(
         "normalized",
         "v1",
         "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18",
-        "statsbomb-normalizer-v1",
+        "statsbomb-normalizer-v2",
         "published",
         str(first.manifest_path.relative_to(tmp_path)),
         first.manifest_sha256,
@@ -1706,9 +1706,17 @@ def test_dataset_publication_reconciles_files_after_database_rollback(
     assert registered == (1,)
 
 
+@pytest.mark.parametrize(
+    "normalizer_version", ["statsbomb-normalizer-v1", "statsbomb-normalizer-v2"]
+)
 def test_validates_normalized_event_dataset_and_registers_idempotent_run(
-    connection: Connection[Any], tmp_path: Path
+    connection: Connection[Any],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    normalizer_version: str,
 ) -> None:
+    # This fixture uses only event types shared by both normalizer versions.
+    monkeypatch.setattr("football.datasets.events.NORMALIZER_VERSION", normalizer_version)
     acquisition = _acquire_bundle(
         tmp_path,
         source_git_sha="1" * 40,

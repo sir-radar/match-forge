@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from uuid import UUID, uuid4
 
@@ -28,6 +29,7 @@ from tests.integration.test_live_context import (
     _seed_fixture,
 )
 from tests.integration.test_product_analytics import _revision
+from tests.integration.test_product_identity_upgrade import _migrate
 from tests.integration.test_team_identity_correction import isolated_database
 
 PREDICTION = UUID(int=9010)
@@ -292,6 +294,183 @@ def test_eligible_history_change_requeues_later_fixture_context(report_database)
             FROM football.product_context_report_refresh_work WHERE fixture_id=%s""",
             (FIXTURE,),
         ).fetchone() == (True,)
+
+
+@pytest.mark.parametrize("eligible", [True, False])
+def test_history_statement_requests_one_context_generation_per_target(report_database, eligible):
+    with psycopg.connect(report_database) as connection:
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (FIXTURE,),
+        ).fetchone()[0]
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+            SELECT %s,%s,%s,%s,%s - n*interval '1 day',2,1,
+                   'live_context_test',%s,'EXACT',%s,'batch history',clock_timestamp()
+            FROM generate_series(1,40) n""",
+            (FIXTURE, COMPETITION, HOME, AWAY, KICKOFF, SNAPSHOT, eligible),
+        )
+        # The changed history fixture itself is excluded, even for a multirow statement.
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (FIXTURE,),
+        ).fetchone() == (before,)
+        target = uuid4()
+        clone_fixture(connection, target, KICKOFF + timedelta(days=1))
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone()[0]
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+            SELECT %s,%s,%s,%s,%s - n*interval '1 day',2,1,
+                   'live_context_test',%s,'EXACT',%s,'batch history',clock_timestamp()
+            FROM generate_series(1,40) n""",
+            (FIXTURE, COMPETITION, HOME, AWAY, KICKOFF, SNAPSHOT, eligible),
+        )
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone() == (before + 1,)
+
+
+@pytest.mark.parametrize(
+    ("precision", "history_delta", "knowledge_delta", "expected"),
+    [
+        ("EXACT", timedelta(hours=-1), timedelta(days=-1), True),
+        ("EXACT", timedelta(), timedelta(days=-1), False),
+        ("DATE_ONLY", timedelta(hours=-1), timedelta(days=-1), False),
+        ("DATE_ONLY", timedelta(days=-1), timedelta(days=-1), True),
+        ("EXACT", timedelta(days=-1), timedelta(days=1), False),
+        ("EXACT", timedelta(days=-1), timedelta(), True),
+    ],
+)
+def test_batched_context_invalidation_preserves_time_boundaries(
+    report_database, precision, history_delta, knowledge_delta, expected
+):
+    target = uuid4()
+    with psycopg.connect(report_database) as connection:
+        clone_fixture(connection, target)
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone()[0]
+        with connection.transaction(force_rollback=True):
+            connection.execute(
+                """INSERT INTO football.product_match_history_decisions
+                (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+                 source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+                SELECT %s,%s,%s,%s,%s,2,1,'live_context_test',%s,%s,true,'batch history',%s
+                FROM generate_series(1,3)""",
+                (
+                    FIXTURE,
+                    COMPETITION,
+                    HOME,
+                    AWAY,
+                    KICKOFF + history_delta,
+                    SNAPSHOT,
+                    precision,
+                    KICKOFF + knowledge_delta,
+                ),
+            )
+            assert connection.execute(
+                "SELECT generation FROM football.product_context_report_refresh_work "
+                "WHERE fixture_id=%s",
+                (target,),
+            ).fetchone() == (before + int(expected),)
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone() == (before,)
+
+
+def test_concurrent_history_batches_preserve_pending_context_generation(report_database):
+    targets = [uuid4(), uuid4()]
+    with psycopg.connect(report_database) as connection:
+        for target in targets:
+            clone_fixture(connection, target, KICKOFF + timedelta(days=1))
+        captured = dict(
+            connection.execute(
+                "SELECT fixture_id,generation FROM football.product_context_report_refresh_work "
+                "WHERE fixture_id=ANY(%s)",
+                (targets,),
+            ).fetchall()
+        )
+
+    def write_batch(_):
+        with psycopg.connect(report_database) as connection:
+            connection.execute("SET LOCAL statement_timeout='5s'")
+            connection.execute(
+                """INSERT INTO football.product_match_history_decisions
+                (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+                 source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+                SELECT %s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                       'concurrent history',clock_timestamp() FROM generate_series(1,5)""",
+                (FIXTURE, COMPETITION, HOME, AWAY, KICKOFF, SNAPSHOT),
+            )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        list(executor.map(write_batch, range(2)))
+    with psycopg.connect(report_database) as connection:
+        for target, generation in captured.items():
+            # A worker completing its captured generation cannot consume later requests.
+            connection.execute(
+                "UPDATE football.product_context_report_refresh_work SET completed_generation=%s "
+                "WHERE fixture_id=%s",
+                (generation, target),
+            )
+            assert connection.execute(
+                "SELECT generation,completed_generation "
+                "FROM football.product_context_report_refresh_work "
+                "WHERE fixture_id=%s",
+                (target,),
+            ).fetchone() == (generation + 2, generation)
+
+
+def test_history_context_upgrade_preserves_decisions_forecasts_and_queue():
+    with isolated_database("202611020200") as url:
+        with psycopg.connect(url) as connection:
+            _seed_fixture(connection)
+            _insert_forecast(connection, uuid4(), "a" * 64, "b" * 64)
+            connection.execute(
+                """INSERT INTO football.product_match_history_decisions
+                (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+                 source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,source_known_at)
+                VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                       'prior decision',clock_timestamp())""",
+                (FIXTURE, COMPETITION, HOME, AWAY, KICKOFF, SNAPSHOT),
+            )
+            tables = (
+                "product_match_history_decisions",
+                "product_forecasts",
+                "product_context_report_refresh_work",
+            )
+            before = {
+                table: connection.execute(f"SELECT to_jsonb(t) FROM football.{table} t").fetchall()
+                for table in tables
+            }
+        _migrate(url, "up")
+        _migrate(url, "up")
+        with psycopg.connect(url) as connection:
+            # An empty statement has no invalidations; migration never rebuilds old rows.
+            connection.execute(
+                "INSERT INTO football.product_match_history_decisions "
+                "SELECT * FROM football.product_match_history_decisions WHERE false"
+            )
+            assert {
+                table: connection.execute(f"SELECT to_jsonb(t) FROM football.{table} t").fetchall()
+                for table in tables
+            } == before
 
 
 def test_upcoming_fixture_refresh_change_requeues_earlier_context(report_database):

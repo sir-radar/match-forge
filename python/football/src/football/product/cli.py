@@ -12,6 +12,7 @@ import urllib.error
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
+from functools import partial
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -86,7 +87,9 @@ def build_parser() -> argparse.ArgumentParser:
         backfill.add_argument("--refresh", action="store_true")
         backfill.add_argument("--provider-scope-budget", type=int, default=8)
         backfill.add_argument("--provider-discovery-budget", type=int, default=8)
-        backfill.add_argument("--provider-only", choices=("fotmob", "pitchapi"))
+        backfill.add_argument(
+            "--provider-only", choices=("fotmob", "pitchapi", "openfootball", "football_data_uk")
+        )
         if name == "backfill-history":
             backfill.add_argument("--scheduled", action="store_true")
         backfill.add_argument(
@@ -549,27 +552,30 @@ def _history_backfill(
     scheduled = getattr(args, "scheduled", False)
     if scheduled and os.environ.get("MATCHFORGE_HISTORY_SYNC_ENABLED", "false") != "true":
         raise ValueError("automatic history acquisition is disabled")
+    if scheduled and args.provider_only not in (None, "fotmob", "pitchapi"):
+        raise ValueError("scheduled history requires a FotMob or PitchAPI provider")
     errors: dict[str, str] = {}
     providers = {
-        provider: _operational_history(connection, args, provider, errors)
+        provider: _run_sync_step(
+            connection,
+            provider,
+            partial(_operational_history, connection, args, provider, errors),
+            errors,
+        )
         for provider in ("pitchapi", "fotmob")
         if args.provider_only in (None, provider)
     }
     openfootball = football_data_uk = None
-    if args.provider_only is None and not scheduled:
+    if not scheduled and args.provider_only in (None, "openfootball"):
         openfootball = _run_sync_step(
             connection, "openfootball", lambda: _openfootball(connection, args), errors
         )
+    if not scheduled and args.provider_only in (None, "football_data_uk"):
         football_data_uk = _run_sync_step(
             connection, "football-data-uk", lambda: _football_data_uk(connection, args), errors
         )
-    scope_failures = any(
-        scope["status"] == "FAILED"
-        for provider in providers.values()
-        for scope in provider["acquired"]
-    )
     return {
-        "status": "COMPLETED_WITH_ERRORS" if errors or scope_failures else "COMPLETED",
+        "status": "COMPLETED_WITH_ERRORS" if errors else "COMPLETED",
         "errors": errors,
         "openfootball": openfootball,
         "football_data_uk": football_data_uk,
@@ -590,7 +596,7 @@ def _operational_history(
         stored = _run_sync_step(
             connection, f"{provider}-stored", sync.backfill_stored_history, errors
         )
-    result: dict[str, Any] = {"stored": stored, "acquired": []}
+    result: dict[str, Any] = {"stored": stored, "discovery": None, "acquired": []}
     if os.environ.get(f"MATCHFORGE_{provider.upper()}_ENABLED", "false") != "true":
         return result
     scopes, discovery = _history_limits(args, provider)
@@ -621,7 +627,7 @@ def _operational_history(
         )
     )
     if discovery:
-        _run_sync_step(
+        result["discovery"] = _run_sync_step(
             connection,
             f"{provider}-discovery",
             lambda: _discover_history(sync, client, args, discovery),

@@ -15,10 +15,11 @@ from psycopg.pq import TransactionStatus
 from psycopg.rows import tuple_row
 
 from football.contracts.source import canonical_json_bytes
-from football.product.api_football import ApiFootballClient, ApiResponse
+from football.product.api_football import ApiFootballClient, ApiFootballError, ApiResponse
 from football.product.football_data_org import FootballDataOrgClient, FootballDataResponse
 from football.product.history_work import (
     claim_history_request,
+    classify_history_failure,
     complete_history_request,
     fail_history_request,
     heartbeat_history_request,
@@ -31,7 +32,7 @@ from football.product.sync import (
 )
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 from football.storage.raw import ImmutableFileStore
-from football.work.contracts import RetryClassification, WorkClaim, WorkContractError
+from football.work.contracts import RetryClassification, WorkClaim, WorkContractError, WorkState
 from football.work.storage import WorkConflict, WorkLeaseLost, WorkRegistry
 
 
@@ -69,6 +70,15 @@ class HistorySyncWorker(ProductSync):
         if self._claim is not None:
             raise WorkContractError("history worker already owns a request")
         with self.connection.transaction(), self.connection.cursor(row_factory=tuple_row) as cursor:
+            ready = cursor.execute(
+                "SELECT to_regprocedure('football.fail_history_work(uuid,text,uuid,bigint,"
+                "text,text,text,timestamp with time zone,timestamp with time zone)')"
+            ).fetchone()
+            if not ready or ready[0] is None:
+                raise WorkContractError(
+                    "history failure deadlines unavailable; "
+                    "deploy migration 202611020200 before claiming work"
+                )
             cursor.execute(
                 """SELECT queue.job_id FROM football.product_history_sync_queue queue
                 WHERE queue.updated_at<%s AND (queue.job_status='PENDING' OR
@@ -226,6 +236,12 @@ class HistorySyncWorker(ProductSync):
         with self._database_step():
             return super()._competition_id(provider_competition_id, snapshot_id)
 
+    def _fallback_competition_mapping(
+        self, code: str, competition_id: UUID, snapshot_id: UUID, observed_at: datetime
+    ) -> None:
+        with self._database_step():
+            super()._fallback_competition_mapping(code, competition_id, snapshot_id, observed_at)
+
     def _store_standings(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
@@ -298,19 +314,23 @@ class HistorySyncWorker(ProductSync):
         self._claim = None
         self._job_id = None
 
-    def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> None:
-        self._failure(job_id, error, RetryClassification.RETRYABLE)
+    def _retry_history_job(self, job_id: UUID, attempt_count: int, error: Exception) -> WorkState:
+        return self._failure(job_id, error, classify_history_failure(error))
 
     def _fail_history_job(self, job_id: UUID, error: Exception) -> None:
         self._failure(job_id, error, RetryClassification.NON_RETRYABLE)
 
-    def _failure(self, job_id: UUID, error: Exception, classification: RetryClassification) -> None:
-        fail_history_request(
+    def _failure(
+        self, job_id: UUID, error: Exception, classification: RetryClassification
+    ) -> WorkState:
+        state = fail_history_request(
             self.connection,
             self._owned(job_id),
             classification,
             error_code=type(error).__name__,
             error_message=str(error) or type(error).__name__,
+            provider_cooldown=error.retry_after if isinstance(error, ApiFootballError) else None,
         )
         self._claim = None
         self._job_id = None
+        return state

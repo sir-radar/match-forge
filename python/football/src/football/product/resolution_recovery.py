@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
@@ -162,12 +162,14 @@ def enqueue_page(
 ) -> UUID:
     request_id = str(UUID(request_id))
     inputs = page_inputs(request_id, inventory, cursor_kind, cursor_id)
+    now = connection.execute("SELECT clock_timestamp()").fetchone()
+    assert now is not None
     request = WorkRequest(
         work_type=WorkType.CANONICAL_RECONCILIATION,
         semantic_key=f"resolution-recovery:{request_id}:{cursor_kind}:{cursor_id}",
         input_hash=sha256_json(inputs),
         priority=0,
-        available_at=datetime.now(UTC),
+        available_at=now[0],
         max_attempts=2**31 - 1,
         retry_policy=RetryPolicy(timedelta(), timedelta(), 1, lease_expiry_delay=timedelta()),
         dependencies=(parent,) if parent else (),
@@ -236,20 +238,32 @@ def verify_fixture_admissions(
     mappings = connection.execute(
         """WITH scopes AS (SELECT * FROM football.product_effective_fixtures
                           WHERE fixture_id=ANY(%s::uuid[]))
-           SELECT DISTINCT 'team',m.id FROM football.product_effective_team_mappings m
-           WHERE m.valid_to IS NULL AND EXISTS (SELECT 1 FROM scopes f
+           SELECT DISTINCT 'team',m.id,m.valid_to IS NOT NULL
+           FROM football.product_effective_team_mappings m
+           WHERE (m.valid_to IS NULL OR EXISTS (
+               SELECT 1 FROM football.product_identity_admissions a
+               WHERE a.entity_type='team' AND a.mapping_id=m.id
+                 AND a.corrects_decision_id IS NOT NULL
+                 AND a.disposition='CROSSWALK'
+                 AND a.reason='REPLACED_NATIVE_MAPPING_CORRECTED'
+                 AND a.canonical_id=m.effective_team_id
+                 AND NOT EXISTS(SELECT 1 FROM football.product_identity_admissions later
+                   WHERE later.entity_type='team' AND later.mapping_id=m.id
+                     AND (later.decided_at,later.decision_id)>(a.decided_at,a.decision_id))))
+             AND EXISTS (SELECT 1 FROM scopes f
                WHERE m.team_id IN(f.home_team_id,f.away_team_id)
                   OR m.effective_team_id IN(f.home_team_id,f.away_team_id))
              AND football.product_mapping_trusted('team',m.id,m.effective_team_id)
-           UNION SELECT DISTINCT 'competition',m.id FROM football.competition_provider_mappings m
+           UNION SELECT DISTINCT 'competition',m.id,false
+           FROM football.competition_provider_mappings m
            WHERE m.valid_to IS NULL AND m.competition_id IN(SELECT competition_id FROM scopes)
              AND football.product_mapping_trusted('competition',m.id,m.competition_id)
            ORDER BY 1,2""",
         (list(neighbors),),
     ).fetchall()
-    for kind, key in mappings:
+    for kind, key, closed in mappings:
         entity = cast(Literal["team", "competition"], kind)
-        rows = mapping_rows(connection, entity, mapping_id=key)
+        rows = mapping_rows(connection, entity, mapping_id=key, include_closed=closed)
         if not rows or classify_mapping(connection, entity, rows[0], root, verifier)[
             "disposition"
         ] not in {"ORIGIN_ANCHOR", "CROSSWALK"}:

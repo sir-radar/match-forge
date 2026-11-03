@@ -2,6 +2,11 @@
 
 ## Boundary
 
+The provider-wide [research acquisition policy](source-acquisition.md#project-use-policy)
+applies before ingestion. It does not imply that every provider supports this
+StatsBomb-specific canonical importer; other adapters retain their established
+normalization and product-history owners.
+
 `football.ingestion.StatsBombCanonicalIngestor` consumes an `AcquisitionResult` and a PostgreSQL connection. It supports StatsBomb competition, season-match, lineup, and event resources. 360 resources are registered with pending processing state for a later phase.
 
 Before opening a database transaction, ingestion re-reads the immutable manifest and every declared raw resource. Paths must remain beneath the configured data root, symlinks are rejected, reads are bounded, and sizes and SHA-256 checksums must match the manifest.

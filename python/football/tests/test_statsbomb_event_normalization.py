@@ -131,3 +131,28 @@ def test_rejects_payload_that_conflicts_with_canonical_catalogue() -> None:
             {"779": TEAM_ID},
             {"5503": PLAYER_ID},
         )
+
+
+@pytest.mark.parametrize(
+    ("provider_id", "name", "canonical"),
+    [
+        (20, "Own Goal Against", "own-goal-against"),
+        (25, "Own Goal For", "own-goal-for"),
+        (37, "Error", "error"),
+        (41, "Referee Ball-Drop", "referee-ball-drop"),
+    ],
+)
+def test_maps_retained_documented_event_types(provider_id: int, name: str, canonical: str) -> None:
+    event = _event(FIRST_PROVIDER_EVENT_ID, 1, event_type_id=provider_id, event_type_name=name)
+    reference = replace(
+        _reference(FIRST_EVENT_ID, FIRST_PROVIDER_EVENT_ID, 1), provider_event_type=name
+    )
+    rows = normalize_statsbomb_events(
+        json.dumps([event]).encode(),
+        "3869685",
+        {FIRST_PROVIDER_EVENT_ID: reference},
+        {"779": TEAM_ID},
+        {"5503": PLAYER_ID},
+    )
+    assert rows[0]["canonical_event_type_id"] == canonical
+    assert json.loads(rows[0]["provider_payload_json"])["type"] == event["type"]

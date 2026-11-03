@@ -454,6 +454,9 @@ class ProductSync:
             return None
         snapshot = self._record_fallback_response(f"history-{league_id}-{season}", response)
         competition_id = self._competition_id(str(league_id), snapshot)
+        self._fallback_competition_mapping(
+            FOOTBALL_DATA_COMPETITIONS[league_id], competition_id, snapshot, response.fetched_at
+        )
         stored = self._store_fallback_history(
             response.rows,
             competition_id,
@@ -762,8 +765,8 @@ class ProductSync:
                         OSError,
                     ) as error:
                         worker.connection.rollback()
-                        worker._retry_history_job(job_id, attempt_count, error)
-                        counts["pending_retry"] += 1
+                        state = worker._retry_history_job(job_id, attempt_count, error)
+                        counts["pending_retry" if state == "RETRY_WAIT" else "failed"] += 1
                     except Exception as error:
                         worker.connection.rollback()
                         worker._fail_history_job(job_id, error)

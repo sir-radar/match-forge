@@ -1,0 +1,1673 @@
+{
+  "scope": "FR-002 proof-backed explicit crosswalks; original bytes private; approvals prospective through existing Resolution Center",
+  "proof_cutoff": "2026-11-03 17:41:32.707985+00:00",
+  "native_links": [
+    {
+      "native_provider": "api_football",
+      "native_team_id": "37",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Huddersfield",
+      "mapping_case_key": "team:01a1044a-313c-7c97-be64-a90c12856042",
+      "canonical_team_id": "ce58e06a-10ce-5b69-8837-a8870ee869f6",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "37",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Huddersfield"
+        }
+      },
+      "exact_fixture_matches": 32,
+      "examples": [
+        {
+          "native_fixture_id": 1216411,
+          "native_team_id": "37",
+          "native_opponent_id": "1368",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#18",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216424,
+          "native_team_id": "37",
+          "native_opponent_id": "1352",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#32",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216440,
+          "native_team_id": "37",
+          "native_opponent_id": "73",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-31 11:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#39",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "61",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Wigan",
+      "mapping_case_key": "team:01a1044a-30dd-71b6-9177-b98fcd07e1bd",
+      "canonical_team_id": "50781f0e-f73a-561c-9c3a-40179364d540",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "61",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Wigan"
+        }
+      },
+      "exact_fixture_matches": 32,
+      "examples": [
+        {
+          "native_fixture_id": 1216405,
+          "native_team_id": "61",
+          "native_opponent_id": "1335",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-10 16:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#12",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216415,
+          "native_team_id": "61",
+          "native_opponent_id": "53",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#22",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216428,
+          "native_team_id": "61",
+          "native_opponent_id": "1362",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#35",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "73",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Rotherham",
+      "mapping_case_key": "team:01a1044a-30f3-77ff-b944-5be3218fb451",
+      "canonical_team_id": "665fcbb8-75f3-52c5-af05-417128b86be1",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "73",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Rotherham"
+        }
+      },
+      "exact_fixture_matches": 32,
+      "examples": [
+        {
+          "native_fixture_id": 1216430,
+          "native_team_id": "73",
+          "native_opponent_id": "1358",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#37",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216440,
+          "native_team_id": "73",
+          "native_opponent_id": "37",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-31 11:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#39",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216446,
+          "native_team_id": "73",
+          "native_opponent_id": "1335",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 5",
+            "standings": true
+          },
+          "kickoff_at": "2024-09-07 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#51",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1337",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Northampton",
+      "mapping_case_key": "team:01a1044a-30ce-785d-be70-ba7b7aa7a0d1",
+      "canonical_team_id": "416a68ff-f97b-5636-8d64-3cdadfe97b27",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1337",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Northampton"
+        }
+      },
+      "exact_fixture_matches": 32,
+      "examples": [
+        {
+          "native_fixture_id": 1216419,
+          "native_team_id": "1337",
+          "native_opponent_id": "747",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#28",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216461,
+          "native_team_id": "1337",
+          "native_opponent_id": "1358",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 6",
+            "standings": true
+          },
+          "kickoff_at": "2024-09-14 11:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#54",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216471,
+          "native_team_id": "1337",
+          "native_opponent_id": "37",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 7",
+            "standings": true
+          },
+          "kickoff_at": "2024-09-21 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E2.csv#70",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1339",
+      "target_provider": "openfootball",
+      "target_identifier": "Rochdale AFC",
+      "mapping_case_key": "team:01a1044a-30eb-71d1-9ffd-eb29b31128ab",
+      "canonical_team_id": "5d90e0cf-65cf-5e37-91d1-bdea187ebb1e",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1339",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "openfootball",
+          "provider_entity_id": "Rochdale AFC"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237234,
+          "native_team_id": "1339",
+          "native_opponent_id": "8146",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-10 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#4",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237266,
+          "native_team_id": "1339",
+          "native_opponent_id": "1828",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-20 18:45:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#37",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237276,
+          "native_team_id": "1339",
+          "native_opponent_id": "1378",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#47",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1349",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Oldham",
+      "mapping_case_key": "team:01a1044a-3149-746e-a96c-fcf39bfb4ceb",
+      "canonical_team_id": "dddd2e86-63a7-5dca-a353-2067f8f10ab3",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1349",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Oldham"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237252,
+          "native_team_id": "1349",
+          "native_opponent_id": "8663",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#23",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237260,
+          "native_team_id": "1349",
+          "native_opponent_id": "1839",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-20 18:45:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#31",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237284,
+          "native_team_id": "1349",
+          "native_opponent_id": "1823",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 5",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-26 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#55",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1354",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Doncaster",
+      "mapping_case_key": "team:01a1044a-30a7-797e-8e49-685098041b61",
+      "canonical_team_id": "2066f0f6-0549-5c1a-a7c1-d67134543beb",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1354",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Doncaster"
+        }
+      },
+      "exact_fixture_matches": 38,
+      "examples": [
+        {
+          "native_fixture_id": 1216967,
+          "native_team_id": "1354",
+          "native_opponent_id": "1367",
+          "orientation": "away",
+          "native_league": {
+            "id": 42,
+            "name": "League Two",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/42.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E3.csv#22",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216977,
+          "native_team_id": "1354",
+          "native_opponent_id": "1375",
+          "orientation": "home",
+          "native_league": {
+            "id": 42,
+            "name": "League Two",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/42.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E3.csv#34",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1216991,
+          "native_team_id": "1354",
+          "native_opponent_id": "1351",
+          "orientation": "away",
+          "native_league": {
+            "id": 42,
+            "name": "League Two",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/42.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-31 11:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E3.csv#39",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1359",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Luton",
+      "mapping_case_key": "team:01a1044a-3169-73ea-a6a0-1c56fb172f96",
+      "canonical_team_id": "fe357f9e-e0fc-50bb-8e50-89a492f686af",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1359",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Luton"
+        }
+      },
+      "exact_fixture_matches": 38,
+      "examples": [
+        {
+          "native_fixture_id": 1215854,
+          "native_team_id": "1359",
+          "native_opponent_id": "44",
+          "orientation": "home",
+          "native_league": {
+            "id": 40,
+            "name": "Championship",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/40.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-12 19:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E1.csv#13",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1215861,
+          "native_team_id": "1359",
+          "native_opponent_id": "1355",
+          "orientation": "away",
+          "native_league": {
+            "id": 40,
+            "name": "Championship",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/40.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 11:30:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E1.csv#16",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1215872,
+          "native_team_id": "1359",
+          "native_opponent_id": "59",
+          "orientation": "away",
+          "native_league": {
+            "id": 40,
+            "name": "Championship",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/40.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!E1.csv#33",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1366",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Hartlepool",
+      "mapping_case_key": "team:01a1044a-3153-77fd-bc59-b3e980b3b247",
+      "canonical_team_id": "ece32478-593b-5b4a-83ba-d1d6d67a3b90",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1366",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Hartlepool"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237248,
+          "native_team_id": "1366",
+          "native_opponent_id": "1341",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#19",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237262,
+          "native_team_id": "1366",
+          "native_opponent_id": "7752",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-20 18:45:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#33",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237275,
+          "native_team_id": "1366",
+          "native_opponent_id": "8663",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#46",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1374",
+      "target_provider": "openfootball",
+      "target_identifier": "Mansfield Town",
+      "mapping_case_key": "team:01a1044a-30a0-75a4-9659-8f6f1ebe977a",
+      "canonical_team_id": "1910ba4b-246f-510c-9600-a0121c8b7594",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1374",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "openfootball",
+          "provider_entity_id": "Mansfield Town"
+        }
+      },
+      "exact_fixture_matches": 24,
+      "examples": [
+        {
+          "native_fixture_id": 1216395,
+          "native_team_id": "1374",
+          "native_opponent_id": "747",
+          "orientation": "away",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-09 19:00:00+00:00",
+          "archive_record": "2024-25/en.3.json#1",
+          "archive_country": "England",
+          "archive_season": "2024-25",
+          "archive_resource_id": "06c571b8-2d28-538b-9288-aa0056dc1103"
+        },
+        {
+          "native_fixture_id": 1216413,
+          "native_team_id": "1374",
+          "native_opponent_id": "748",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "2024-25/en.3.json#19",
+          "archive_country": "England",
+          "archive_season": "2024-25",
+          "archive_resource_id": "06c571b8-2d28-538b-9288-aa0056dc1103"
+        },
+        {
+          "native_fixture_id": 1216436,
+          "native_team_id": "1374",
+          "native_opponent_id": "4686",
+          "orientation": "home",
+          "native_league": {
+            "id": 41,
+            "name": "League One",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/41.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-31 14:00:00+00:00",
+          "archive_record": "2024-25/en.3.json#43",
+          "archive_country": "England",
+          "archive_season": "2024-25",
+          "archive_resource_id": "06c571b8-2d28-538b-9288-aa0056dc1103"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1823",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Gateshead",
+      "mapping_case_key": "team:01a1044a-3147-7240-83c1-a5bbf3c2bc9c",
+      "canonical_team_id": "da6c6954-094b-56b8-9fba-4408b512a5dd",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1823",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Gateshead"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237253,
+          "native_team_id": "1823",
+          "native_opponent_id": "1836",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#24",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237284,
+          "native_team_id": "1823",
+          "native_opponent_id": "1349",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 5",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-26 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#55",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237298,
+          "native_team_id": "1823",
+          "native_opponent_id": "1822",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 6",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-31 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#68",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "1836",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Woking",
+      "mapping_case_key": "team:01a1044a-310a-73a4-af3d-063200c237b0",
+      "canonical_team_id": "96897116-9bca-5c87-b56c-7cbd712b840a",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "1836",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Woking"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237233,
+          "native_team_id": "1836",
+          "native_opponent_id": "4700",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-10 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#3",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237253,
+          "native_team_id": "1836",
+          "native_opponent_id": "1823",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#24",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237288,
+          "native_team_id": "1836",
+          "native_opponent_id": "1366",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 5",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-26 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#59",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "8146",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Boston Utd",
+      "mapping_case_key": "team:01a1044a-3131-7004-8fa9-445d19725745",
+      "canonical_team_id": "be3e802e-a2f2-5406-817b-7cead02291f6",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "8146",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Boston Utd"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237234,
+          "native_team_id": "8146",
+          "native_opponent_id": "1339",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 1",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-10 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#4",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237243,
+          "native_team_id": "8146",
+          "native_opponent_id": "1378",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#14",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237261,
+          "native_team_id": "8146",
+          "native_opponent_id": "1341",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 3",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-20 18:45:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#32",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    },
+    {
+      "native_provider": "api_football",
+      "native_team_id": "8663",
+      "target_provider": "football_data_uk",
+      "target_identifier": "Wealdstone",
+      "mapping_case_key": "team:01a1044a-30f1-7b8a-812c-1214d571ac92",
+      "canonical_team_id": "63961a7a-8867-563e-b6b2-90f5e13cef0b",
+      "qualification_reason": "VERIFIED_EXPLICIT_CROSSWALK",
+      "qualification_source": {
+        "provider": "api_football",
+        "provider_entity_id": "8663",
+        "source_resource_id": "dfd94869-af71-5b81-b108-0a60aa0dd267",
+        "sha256": "2ee6c6bb5792676be40c73d92eac2002482e84e114da479f96b518811cd267e9",
+        "acquired_at": "2026-10-03T15:49:46.833871+00:00",
+        "country": "England",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1",
+        "crosswalk_target": {
+          "provider": "football_data_uk",
+          "provider_entity_id": "Wealdstone"
+        }
+      },
+      "exact_fixture_matches": 30,
+      "examples": [
+        {
+          "native_fixture_id": 1237252,
+          "native_team_id": "8663",
+          "native_opponent_id": "1349",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 2",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-17 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#23",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237275,
+          "native_team_id": "8663",
+          "native_opponent_id": "1366",
+          "orientation": "away",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 4",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-24 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#46",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        },
+        {
+          "native_fixture_id": 1237287,
+          "native_team_id": "8663",
+          "native_opponent_id": "1839",
+          "orientation": "home",
+          "native_league": {
+            "id": 43,
+            "name": "National League",
+            "country": "England",
+            "logo": "https://media.api-sports.io/football/leagues/43.png",
+            "flag": "https://media.api-sports.io/flags/gb-eng.svg",
+            "season": 2024,
+            "round": "Regular Season - 5",
+            "standings": true
+          },
+          "kickoff_at": "2024-08-26 14:00:00+00:00",
+          "archive_record": "mmz4281/2425/data.zip!EC.csv#58",
+          "archive_country": "England",
+          "archive_season": "2024-2025",
+          "archive_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f"
+        }
+      ]
+    }
+  ],
+  "resource_proofs": [
+    {
+      "provider": "football_data_uk",
+      "provider_path": "mmz4281/2425/data.zip",
+      "raw_sha256": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+      "source_revision": "4dc3abfdc48a6b7e507873f356e9ef84c24e86e6dd654995a050e1aa5ed9f0de",
+      "git_sha": null,
+      "source_resource_id": "71678fe4-7b99-52d7-982e-fcb1add7b67f",
+      "acquired_at": "2026-09-30 19:14:10.024347+00:00"
+    },
+    {
+      "provider": "openfootball",
+      "provider_path": "2024-25/en.3.json",
+      "raw_sha256": "726b0f387ccf05c354948733504959ddf7ce2e143676ea98d3254c56987fd66e",
+      "source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "git_sha": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "source_resource_id": "06c571b8-2d28-538b-9288-aa0056dc1103",
+      "acquired_at": "2026-09-30 19:06:18.909009+00:00"
+    },
+    {
+      "provider": "openfootball",
+      "provider_path": "2015-16/en.3.json",
+      "raw_sha256": "ab6c9d9c547af20ff8b91c83430ce49541441fc5fa7fb491a3cc0840741b7666",
+      "source_revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "git_sha": "e6744429ee395bc86f247348c6184bb08d4eb361",
+      "source_resource_id": "042cf948-0304-562c-82e2-f444ce876744",
+      "acquired_at": "2026-09-30 19:06:18.909009+00:00"
+    },
+    {
+      "provider": "football_data_uk",
+      "provider_path": "mmz4281/1516/data.zip",
+      "raw_sha256": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+      "source_revision": "8d97b6f0a987d1ee208e21c95e00a0b7d53dcaa23c5d72601638a5c35c7f5e6c",
+      "git_sha": null,
+      "source_resource_id": "4f1f3584-0599-5537-bbeb-78dd3454e059",
+      "acquired_at": "2026-09-30 19:14:10.024347+00:00"
+    }
+  ],
+  "rochdale_archive_bridge": {
+    "exact_matches": 20,
+    "examples": [
+      {
+        "open_record": "2015-16/en.3.json#14",
+        "csv_record": "mmz4281/1516/data.zip!E2.csv#15",
+        "date": "2015-08-15",
+        "names": [
+          "Blackpool FC",
+          "Rochdale AFC",
+          "Blackpool",
+          "Rochdale"
+        ],
+        "score": [
+          0,
+          2
+        ]
+      },
+      {
+        "open_record": "2015-16/en.3.json#32",
+        "csv_record": "mmz4281/1516/data.zip!E2.csv#33",
+        "date": "2015-08-18",
+        "names": [
+          "Rochdale AFC",
+          "Walsall FC",
+          "Rochdale",
+          "Walsall"
+        ],
+        "score": [
+          1,
+          2
+        ]
+      },
+      {
+        "open_record": "2015-16/en.3.json#39",
+        "csv_record": "mmz4281/1516/data.zip!E2.csv#40",
+        "date": "2015-08-22",
+        "names": [
+          "Chesterfield FC",
+          "Rochdale AFC",
+          "Chesterfield",
+          "Rochdale"
+        ],
+        "score": [
+          0,
+          0
+        ]
+      }
+    ],
+    "open_resource_id": "042cf948-0304-562c-82e2-f444ce876744",
+    "csv_resource_id": "4f1f3584-0599-5537-bbeb-78dd3454e059"
+  },
+  "held": {
+    "api_football:545": "No exact kickoff-time agreement in retained native/archive comparison; FR-008 investigation required",
+    "api_football:7752": "Fixture relationship demonstrated, but existing canonical origin does not match the proposed file-provider root; participant reconstruction required"
+  },
+  "source_acquisition": {
+    "api_football_native_2024_leagues": [
+      42,
+      43
+    ],
+    "requests": 2,
+    "workflow": "Existing ApiFootballClient/PostgresApiFootballBudget/ProductSync immutable response registration",
+    "history_admissions_during_acquisition": 0
+  },
+  "shadow_validation": {
+    "scope": "Fresh verified operating backup restored into an owned isolated database",
+    "status": "PASS",
+    "prospective_case_transactions": 15,
+    "same_request_retries_preserved": true,
+    "earlier_cutoff_history_preserved": true,
+    "champion_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "before_forecastable": 0,
+    "after_forecastable": 4,
+    "before_identity_blocked": 18,
+    "after_identity_blocked": 8
+  },
+  "frozen_target_dispositions": [
+    {
+      "fixture_id": "0e7f724a-6894-5599-a8f6-6f30c7f8dec8",
+      "native_match_id": "1644365",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a1044a-309a-7cd3-8c3b-26828000ae6d",
+          "provider": "api_football",
+          "native_team_id": "545",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "fixture_id": "293f2bf7-4c35-5173-937a-8e004a58c5f9",
+      "native_match_id": "1619524",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "2a26261c-563c-5691-a3cf-eb63a826275e",
+      "native_match_id": "1619516",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "56e90f27-d965-59a9-9a30-2a3f319b3886",
+      "native_match_id": "1588831",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "78c6f7a5-b421-55a9-944b-ff330868b8b7",
+      "native_match_id": "1623283",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a0eef4-a880-7bbf-8e90-03623b3e440d",
+          "provider": "api_football",
+          "native_team_id": "11910",
+          "reason": "ORIGIN_UUID_MISMATCH"
+        }
+      ]
+    },
+    {
+      "fixture_id": "95cdb24b-a5a4-5900-a166-2ee0cb089c92",
+      "native_match_id": "1619520",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a1044a-30ee-7bad-ac7f-821d81e6923a",
+          "provider": "api_football",
+          "native_team_id": "7690",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "fixture_id": "99395bf4-3b6d-5b80-bb03-2274004c61d8",
+      "native_match_id": "1619521",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a1044a-3117-7c1a-b972-022c02956ade",
+          "provider": "api_football",
+          "native_team_id": "1340",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "fixture_id": "ae988ae0-adc1-5335-9fc4-ff02bc44c51a",
+      "native_match_id": "1588858",
+      "shadow_status": "FORECASTABLE",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "cf1db11d-1bec-5b4d-ad84-3ceb3a03f01b",
+      "native_match_id": "1619518",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "e8339a6a-af2e-5b66-bb5d-f6da06706515",
+      "native_match_id": "1619519",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "073b77c4-a7e6-5fbc-8957-2caffbc8e391",
+      "native_match_id": "1564322",
+      "shadow_status": "FORECASTABLE",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "14efb0ef-0359-50ef-8975-b467bf2f172d",
+      "native_match_id": "1619528",
+      "shadow_status": "INSUFFICIENT_ELIGIBLE_HISTORY",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "2c94c310-176c-5904-9b3b-10294a8b7a5b",
+      "native_match_id": "1619529",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a1044a-309f-7377-839c-b54be790c0db",
+          "provider": "api_football",
+          "native_team_id": "7761",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "fixture_id": "325c815b-0b39-5357-a5f6-8b395c8fb35a",
+      "native_match_id": "1619527",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a1044a-30ff-72b1-b989-684a3dfbe92c",
+          "provider": "api_football",
+          "native_team_id": "7752",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "fixture_id": "8e72c406-288c-5dcf-ac8a-b3ae4f2f09eb",
+      "native_match_id": "1563787",
+      "shadow_status": "FORECASTABLE",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "993b50d0-3c38-52b7-8f62-bdee6cf6d637",
+      "native_match_id": "1564342",
+      "shadow_status": "FORECASTABLE",
+      "remaining_identity_predicates": []
+    },
+    {
+      "fixture_id": "e7a70350-6a1a-5e86-8f19-de2618594a92",
+      "native_match_id": "1610755",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a0eef4-a8e6-72b8-94d9-0d8831b1336f",
+          "provider": "api_football",
+          "native_team_id": "15495",
+          "reason": "ORIGIN_UUID_MISMATCH"
+        },
+        {
+          "case_key": "team:01a0eef4-a8e9-7971-b165-96baf6ac1059",
+          "provider": "api_football",
+          "native_team_id": "20512",
+          "reason": "ORIGIN_UUID_MISMATCH"
+        }
+      ]
+    },
+    {
+      "fixture_id": "1398c034-f813-501d-9e84-db86e8f3b396",
+      "native_match_id": "6054838",
+      "shadow_status": "IDENTITY_BLOCKED",
+      "remaining_identity_predicates": [
+        {
+          "case_key": "team:01a12fd0-75dc-7793-a8e8-2053cf633dfb",
+          "provider": "fotmob",
+          "native_team_id": "6628",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        },
+        {
+          "case_key": "team:01a12fd0-8867-7b46-81e4-0b9cf3ecd4d8",
+          "provider": "fotmob",
+          "native_team_id": "194011",
+          "reason": "VERIFIABLE_CROSSWALK_AND_CONTEXT_REQUIRED"
+        }
+      ]
+    }
+  ],
+  "operating_validation": {
+    "status": "PASS_WITH_WARNINGS",
+    "policy_commit": "0dff481",
+    "reviews": 15,
+    "new_eligible_history_rows": 1150,
+    "new_forecasts_issued_before_kickoff": 4,
+    "issued_at": "2026-11-03T17:58:24.720046Z",
+    "verification_at": "2026-11-03 18:01:20.774382+00:00",
+    "repeat_forecasts_created": 0,
+    "unchanged_prior_rows": true,
+    "earlier_cutoff_history_preserved": true,
+    "forecasts": [
+      {
+        "fixture_id": "993b50d0-3c38-52b7-8f62-bdee6cf6d637",
+        "forecast_id": "183bfeee-fad1-5c09-8eba-b19685d2662e",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "89074150542a7abf34e6078d99c72d67b112922d59bb3eadbb3b609470082af4",
+        "payload_sha256": "f21b4564e2daba011147fe2ad9c78d479f436b42c3339ae20cdf43134bfc8ae0",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "073b77c4-a7e6-5fbc-8957-2caffbc8e391",
+        "forecast_id": "2830fc03-08c7-5ce9-87d4-b2da0276e022",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "806523660bff6cec4172ec2c5439e73c9f05404519bcfcca6b5529af2d7f26eb",
+        "payload_sha256": "f5fcb02a883bb3ff9d228ae5c2d15723e0764ea97189c7d5fabe9628238d8329",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "ae988ae0-adc1-5335-9fc4-ff02bc44c51a",
+        "forecast_id": "93469cdf-7d4e-5284-be6f-6e76c83edab5",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "a3d84702fbb2b71428e98799fa6b3987ac83669bf629a7e58baefcc7ec47d034",
+        "payload_sha256": "e61e49c0c53db300f37c2bc512a5ce74cb00a93d32aa9bddd18f8f652efcdc1d",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      },
+      {
+        "fixture_id": "8e72c406-288c-5dcf-ac8a-b3ae4f2f09eb",
+        "forecast_id": "ac814b39-caaf-5a18-93fd-4284f0937a19",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "5a9b44a928a09d49df91502e1954d0982480814135f81d81adee15ae597f7565",
+        "payload_sha256": "4e31e52bb28afc02fa11645cf48ead44dc4025682a89b9eb8055b8ff371ae407",
+        "history_matches": 20,
+        "dated_reproduction": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "public_detail_top_keys": [
+          "created_at",
+          "expected_away_goals",
+          "expected_home_goals",
+          "fixture_id",
+          "football_cutoff",
+          "id",
+          "knowledge_cutoff",
+          "knowledge_mode",
+          "model_algorithm_version",
+          "model_label",
+          "probabilities",
+          "publication_mode",
+          "score_matrix",
+          "score_matrix_version"
+        ]
+      }
+    ],
+    "scoped_followup_target_records": 4198,
+    "scoped_followup_unique_fixtures_not_claimed": true,
+    "parity_left_for_phase_d": true,
+    "receipt_sha256": "f0a98627e73f282d646e6ca039d6e780f2ba4d037166b68147fbc6bca2d32b96",
+    "source_resources_byte_verified": 38,
+    "source_bytes_verified": 16508336
+  }
+}

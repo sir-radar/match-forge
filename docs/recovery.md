@@ -11,6 +11,14 @@ Reports bind a policy version, code Git SHA, and dependency-lock checksum. They
 are evidence, not a backup implementation: operators must populate them from
 an actual restore and integrity run, and historical artifacts remain immutable.
 
+Recovery across providers follows the standing [research acquisition policy](source-acquisition.md#project-use-policy)
+and its source-specific access register. Search retained resources before new
+requests. New factual evidence cannot replace a missing checksum-registered
+original or backdate a newly recovered observation. Use existing identity,
+fixture and file-recovery owners for evidence-complete cases. Before cleanup,
+check registrations, dependencies, retention and verified rollback bytes; retain
+historical decisions, unresolved evidence and published model/source artifacts.
+
 ## Immutable byte verification
 
 `football integrity raw <source_resource_id>`, `football integrity dataset <dataset_id>`,

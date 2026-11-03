@@ -1,5 +1,11 @@
 # MVP research pause and resume point
 
+Current acquisition authorization is recorded in the standing
+[provider-wide source policy](source-acquisition.md#project-use-policy). It permits
+ordinary data discovery, historical acquisition and evidence-complete recovery
+across providers. The model experiments and protected evaluations described
+below remain paused; collecting new data does not reopen their terminal routes.
+
 Status: `MODEL_RESEARCH_PAUSED_FOR_MVP`
 
 The owner paused H2H model research, further H2H data acquisition, V6, Dixon-Coles, new xG models, calibration experiments, StatsBomb evaluation, player models, xT, VAEP, advanced simulation research, confirmation experiments, and all new forecasting experiments on 29 September 2026. None of the prior evidence or results was changed.

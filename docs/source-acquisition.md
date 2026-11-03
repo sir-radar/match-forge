@@ -16,18 +16,92 @@ Canonical ingestion consumes this boundary only after re-verifying the immutable
 
 ## Project use policy
 
-MatchForge is a private, non-commercial research project and is not intended
-for distribution or external publication. Provider qualification therefore
-does not require commercial-use or redistribution rights.
+MatchForge is a private, local, non-commercial experimental research project,
+not intended for distribution, resale, or external publication of provider data.
+Commercial-use and redistribution rights are not sought for this research scope;
+this does not imply that other provider restrictions cease to apply.
 
-Terms review must still confirm that private research access, automated or bulk
-acquisition, processing, and required retention are permitted. Attribution,
-rate limits, credential controls, and other applicable usage restrictions remain
-in force. Third-party source data must not be published unless its terms permit
-publication. A publicly viewable source is not eligible for automated or bulk
-acquisition when its terms prohibit that use or permission remains unresolved.
+### Standing owner decision: provider-wide research acquisition
+
+The repository owner has expressly authorized MatchForge to **pursue automated,
+including bulk, research acquisition across every configured or future football
+data provider**, not only FotMob. The decision covers discovery, historical
+backfills, incremental synchronization, raw retention, validation, normalization,
+identity reconciliation, and eligible downstream recovery, within MatchForge's
+existing architecture and scientific gates.
+
+The owner's instruction is to proceed autonomously with technically accessible
+research acquisition, even where published provider terms restrict automated or
+bulk access, rather than repeatedly requesting the same owner approval. This
+records the owner's risk decision; **it is not a statement that a provider has
+given consent, a licence, or a contractual waiver**. Maintain an accurate,
+source-specific record of terms, permissions, account entitlements, retention
+limits, attribution obligations, and any unresolved legal or contractual risk.
+Do not describe the access as provider-authorized unless independent evidence
+establishes that fact.
+
+Do not bypass authentication, CAPTCHAs, anti-bot protections, paywalls, account
+boundaries, or other technical access controls. Respect enforced rate limits,
+provider quotas, and the existing `ProviderRuntimePolicyV1`; never use account
+multiplication, credential misuse, or technical circumvention to increase
+capacity. Research and use legitimately available alternative sources whenever
+access is denied or unavailable. Third-party data must not be redistributed or
+published unless the corresponding rights permit it.
+
+This standing owner decision replaces the need for repeated **project-owner**
+approval of the same acquisition objective. It does not approve new paid plans,
+new credentials, additional spending, technical bypasses, destructive data
+changes, scientific evaluation, model promotion, or Architecture V2/V4 cutover.
+Document genuinely new decisions separately. Provider-specific restrictions
+remain recorded as facts, but should not repeatedly halt unrelated research,
+recovery, or provider work.
+
+### Source verification and recovery priority
+
+Prefer primary/official sources for missing historical facts. When primary
+records are unavailable, two genuinely independent credible sources may support
+a corroborated factual observation if existing identity, provenance, temporal,
+and validation contracts permit it. Mere agreement in names or scores does not
+establish a provider-native identity. Preserve source URLs, observation times,
+independence analysis, original bytes and immutable hashes. Never represent
+newly corroborated data as a replacement for a missing, checksum-registered
+original. Prioritize data that measurably improves eligible football history and
+forecast readiness; never weaken qualification gates to improve status counts.
 
 ## Provider capability registry
+
+### Provider-wide execution and access register
+
+The standing decision above applies to each row below and to future adapters.
+This register was checked against provider documentation on 3 November 2026.
+Advertised coverage is not proof of retained coverage or this account's access.
+
+| Provider | Existing acquisition owner and resources | Coverage and access limits |
+| --- | --- | --- |
+| API-Football | `ProductSync` / `HistorySyncWorker`; fixtures, results, standings and enabled lineup/injury context; additional capability ports | League/season coverage and credentials are account-specific. Keep `API_FOOTBALL_MAX_HISTORY_SEASON` and persistent daily/minute quotas. [Official rate limits](https://www.api-football.com/news/post/how-ratelimit-works) and [coverage guidance](https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide) do not authorize a larger plan. |
+| football-data.org | Existing explicit-crosswalk history fallback; competition fixtures, results and standings | v4 resources and historical access depend on subscription. The free plan advertises ten calls/minute; history is separately offered in paid plans. Keep the existing client pacing and entitlement failures. [API reference](https://www.football-data.org/documentation/quickstart), [plans](https://www.football-data.org/pricing). |
+| FotMob | `OperationalProviderSync`, `provider_history_scopes` and `FotmobSource`; calendar/season results and match, team and player resources | Seasons come from native catalogues; detail depth varies. [Published terms](https://www.fotmob.com/tos.txt) restrict automated/systematic use. The owner decision is recorded separately; ordinary access failures stop that source without bypasses. |
+| PitchAPI | Existing operational client, season checkpoints and `PitchApiSource`; results, events, shots, statistics, lineups and ratings | [Reference](https://pitchapi.dev/) advertises catalogue history from 2021 and no daily allowance, with a fair-use burst guard and `Retry-After`. Missing analytics remain missing. Current access does not establish historical knowledge or compatible xG-series identity. |
+| OpenFootball | Existing commit-pinned mirror and bulk JSON importer | [football.json](https://github.com/openfootball/football.json) publishes public-domain fixtures/results, with season directories from 2010/11. File coverage and update completeness vary; it does not supply event, player, injury or xG data. |
+| Football-Data.co.uk | Existing bounded CSV/ZIP discovery, immutable manifests and bulk importer | Results/statistics columns differ by country and season; odds remain outside baseline features. [Column notes](https://www.football-data.co.uk/notes.txt) and the [fair-use policy](https://football-data.co.uk/contact.php) distinguish personal/academic use and light automated downloads (at most twice weekly) from heavy automated training projects. The catalogue returned HTTP 429 during this review; do not evade it or infer a complete current catalogue. |
+| StatsBomb Open Data | `SourceAcquirer`, pinned adapter and canonical ingestion | [Open repository](https://github.com/statsbomb/open-data) supplies selected competition/seasons, events, lineups and selected 360 files. Preserve its licence and attribution. Broader acquisition does not resume paused model research, protected evaluation, 360 normalization or automatic product-history admission. |
+| Flashscore | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.flashscore.com/terms-of-use/) restrict substantial extraction and automated requests. Public pages are research evidence, not an undocumented API contract or provider-native crosswalk. |
+| Soccerway | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.soccerway.com/terms-of-use/) impose extraction/automation restrictions. Flashscore and Soccerway are both Livesport services: do not assume their agreement supplies independent corroboration. |
+| TotalCorner | Documented candidate; no configured production adapter | [Official API](https://www.totalcorner.com/page/api) requires a VIP token and account timezone/language; it advertises history from 2014 and 30 requests/minute in ten-second windows. No new subscription, token or paid boost is authorized by this task. |
+| Sportmonks | Existing external-prediction integration, not a general historical import adapter | [Football API](https://www.sportmonks.com/football-api/) offers results, player/context resources and optional xG. An existing prediction token does not establish historical data entitlements. Keep prediction collection separate from model inputs. |
+
+Use the existing provider-specific command or capability port rather than adding
+a second acquisition engine. Before enabling a new provider, establish its native
+resource/schema contract, actual credentials and coverage, runtime policy,
+immutable retention/provenance and normalization support. Unknown support stays
+unknown. Resource capabilities and source registrations do not by themselves
+admit identities, complete a season or qualify forecasting markets.
+
+For measurements, count retrieved resources, parsed records, admitted identities,
+eligible history and newly available forecasts separately. Live background-worker
+additions are not attributable to a controlled recovery run. Preserve a fixed
+knowledge cutoff for before/after historical comparisons and record the actual
+later admission time.
 
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
 records terms status, supported competition/season scopes, resource-level historical coverage,
@@ -50,12 +124,22 @@ trust priority. StatsBomb Open Data is currently declared as `tier_a` only.
 
 ### Research and Evaluation V2 are separate qualification levels
 
-Ordinary private research may use a provider only where published terms and
-the current account entitlement explicitly permit the intended access and use.
-Public accessibility is not permission. If automation, retention, attribution,
-or another needed activity is unclear, exclude that activity rather than infer
-authority. Additional live API calls require a documented request budget and
-explicit owner approval.
+Ordinary private research follows the provider-wide standing owner decision
+under **Project use policy**. Research acquisition and technical feasibility
+must be evaluated separately from third-party contractual permission. Record
+published terms, current account entitlements, source capabilities, restrictions,
+and observed technical access accurately; do not infer provider consent from
+public accessibility or from non-commercial project status. Within existing
+approved request budgets, Codex may research and execute bounded acquisition
+without repeatedly asking for the same project-owner approval. New spending,
+new accounts, expanded paid quotas, bypasses of access controls, and any other
+separately governed actions remain subject to their existing authorization rules.
+
+Research acquisition is not Evaluation V2 qualification or publication
+approval. Provider-specific source limits, immutable retention evidence, model
+provenance, point-in-time requirements, and the evaluation firewall remain
+independent gates. A source unsuitable for Evaluation V2 can still be studied
+and reported as experimental evidence without silently promoting its outputs.
 
 Research contract fixtures and sanitized, bounded technical checks do not
 qualify a provider for Evaluation V2. Evaluation qualification additionally
@@ -94,11 +178,19 @@ Git-specific `SourceManifestV1` and `DatasetManifestV1` must not represent an
 API snapshot with a fabricated Git SHA. See the [contingency preparation
 record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
 
+That qualification restriction concerns the Evaluation V2 adapter. The existing
+operational PitchAPI client and historical season checkpoints use their separate
+contracts, as listed in the provider register above; their acquisition is not
+Evaluation V2 qualification.
+
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
-API (`/v1/`). It is not enabled until credentials, account timezone/language,
-coverage scopes, and private research-use and access-terms approval are
-recorded. Its aggregate statistics cannot substitute for Tier A event geometry,
-and provider-defined fields such as `dangerous_attacks` retain provider provenance.
+API (`/v1/`). Technical enablement still requires valid credentials, account
+timezone/language, documented coverage scopes, and a compliant provider runtime
+configuration. Record its access terms and any restrictions separately under
+the provider-wide standing owner decision; do not misstate owner authorization
+as provider consent. Its aggregate statistics cannot substitute for Tier A event
+geometry, and provider-defined fields such as `dangerous_attacks` retain provider
+provenance. Evaluation V2 qualification remains separately gated.
 
 Enabled providers also require an immutable `ProviderSyncPolicyV1`. It binds
 resource and competition/season scope to configurable discovery cadence,
@@ -190,6 +282,15 @@ successful resources, open circuits, and present validation, quarantine,
 conflict, publication, or reconciliation failures. Spike and drop thresholds
 remain versioned operational configuration; consumers compare these snapshots
 without changing the recorded evidence.
+
+Snapshots from the PostgreSQL lifecycle reader include `unmeasured_fields` and
+`PROVIDER_MEASUREMENTS_UNAVAILABLE` when that scope has no durable measurement
+for a field. Consumers must treat the named fields as unavailable, including
+zero counters and the legacy `CLOSED` circuit value. These placeholders do not
+establish provider health. Measured snapshots without missing fields keep their
+existing serialization and digest. The reader also lists `current_state_fields`
+for job discovery, retry and processing-failure counts. These describe current
+job state; an earlier observation time does not reconstruct their past values.
 
 Phase 2B extends the same snapshot with schema-compatibility failures, quota
 exhaustion, resolution-review backlog, dataset-rebuild queue depth, stale

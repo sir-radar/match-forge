@@ -270,8 +270,6 @@ def test_retained_bytes_are_verified_before_coordination_locks(tmp_path, monkeyp
 
 
 def test_work_input_hash_mismatch_blocks_publication(tmp_path):
-    from datetime import UTC, datetime
-
     from football.work.contracts import RetryPolicy, WorkRequest
 
     with isolated_database() as url, psycopg.connect(url) as c:
@@ -281,7 +279,7 @@ def test_work_input_hash_mismatch_blocks_publication(tmp_path):
             semantic_key="corrupt-input-binding",
             input_hash="b" * 64,
             priority=1,
-            available_at=datetime.now(UTC),
+            available_at=c.execute("SELECT clock_timestamp()").fetchone()[0],
             max_attempts=1,
             retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
         )

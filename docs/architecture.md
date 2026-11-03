@@ -81,6 +81,13 @@ For offline inspection, `uv run --locked python -m football.providers.native.cli
 
 ### Provider acquisition capabilities
 
+The standing [provider-wide acquisition policy](source-acquisition.md#project-use-policy)
+applies to all current and future adapters. Its access register distinguishes
+configured acquisition paths from retained research pages and unimplemented
+candidates. Provider-specific clients, normalization and shared work ownership
+remain in place; a broad research authorization does not imply runtime cutover
+or common support for every resource type.
+
 `football.providers.sources.contracts` defines narrow fixture, result, competition, team, player, coach, lineup, availability, event, shot, xG, statistic, standing and odds ports. Implementations expose only acquisition methods backed by their existing clients. They return `ProviderPayload`: original immutable bytes, provider/resource identity, acquisition time, media type and available revision/cache/quota metadata. Football fields stay in the native payload until resource-specific normalization. A method's presence does not prove scoped coverage, access approval or historical eligibility.
 
 HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football and football-data.org clients. Queries and native season labels stay inside this boundary; football-data.org requires an explicit competition scope, and API-Football's current-only catalog filter remains in the resource key. FotMob's detailed capabilities share its physical match-details response; PitchAPI's xG capability uses its shot resource. Preserve those original bytes rather than creating synthetic provider responses. Coach and odds ports have no standalone acquisition implementation at this stage.
@@ -255,8 +262,12 @@ serializes publication, cancellation and replacement. Cancellation clears lease
 rights before recording its terminal state.
 
 Public fixture-context reports use a durable per-fixture refresh queue. Fixture,
-eligible history, identity, coach and lineup changes enqueue affected fixtures;
-the Go service schedules a bounded Python projection job in a separate public-report lane.
+eligible history, identity, coach and lineup changes enqueue affected fixtures.
+one history decision statement requests at most one context generation per affected
+fixture, including eligibility revocations. Effective participants are resolved once
+per possible target, with unchanged knowledge and kickoff boundaries. Qualification
+and invalidation remain atomic, and target UUID order determines enqueue lock order.
+The Go service schedules a bounded Python projection job in a separate public-report lane.
 Each minute the worker can attempt at most 32 scopes per report kind. Half of
 context capacity is reserved for oldest eligible backlog work; the rest prefers
 fixtures from the preceding 24 hours through the next 72 hours. Attempts rotate
@@ -326,6 +337,19 @@ identities. An immutable result receipt binds the request hash, source snapshots
 resource checksums and result counts. Cancellation or expiry prevents subsequent
 publication. Legacy recovery applies only to requests without shared bindings.
 
+History failures distinguish transient transport/database conditions from invalid
+inputs and integrity guards. The exact unresolved fixture-identity guard blocks
+shared work until evidence changes; repeated scheduling does not consume another
+attempt. Releasing that work through `release_blocked_work` must project
+`project_history_work` in the same transaction so the queue retains the shared
+deadline. Quota suppression and HTTP/body rate-limit failures carry the provider
+deadline into the fenced failure transaction. The later of shared backoff and
+provider cooldown controls the next claim. Migration `202611020200` adds these
+deadline arguments while retaining the original seven-argument SQL API. Workers
+check for the new capability before claiming; rolling deployment must migrate
+before starting the updated worker. Missing file-recovery/parity tables likewise
+block the corresponding Resolution Center preview before work can be queued.
+
 `product_provider_scope_work` associates current league/season detail with shared
 work without changing retained scope columns. Claims use shared lease tokens;
 explicit heartbeats renew them between committed history rows. Each publication
@@ -338,6 +362,12 @@ explicit refresh retains its existing eligibility and cooldown rules.
 
 Operator run transitions delegate to shared work through SQL triggers. Existing
 lanes, command launch, logs, summaries and manual retry-as-new-run behavior remain.
+The command runner redacts credential values and credential-bearing URLs from
+both output streams before writing private run logs. It also redacts nested
+summary values. A nonzero exit with a generic failed summary retains the last
+specific process error in that summary, preserving run parameters and log-path
+correlation without changing historical failed runs. Output-read failure stops
+the owned process group before returning the diagnostic error.
 Shared root cancellation serializes with child publication through the existing
 run-control fence. In-flight pre-migration controls may drain through their
 compatibility path; all newly inserted runs receive shared work atomically.
@@ -403,6 +433,12 @@ its existing transaction contract for short composed operations.
 OpenFootball and Football-Data.co.uk backfills own an idle connection and commit
 individual match imports before reading or downloading another resource. CSV/archive
 parsing finishes before registering a successfully parsed resource.
+The product CSV parser versions `Latest_Results.csv` row occurrences as
+`<source_path>#<row>@sha256:<raw_byte_sha256>`. The existing exact participant,
+competition and kickoff checks resolve their canonical fixtures. Original row keys,
+source snapshots and resource checksums remain inspectable; prior mappings are never
+reassigned. Seasonal CSV and archive-member keys keep their existing format. Score,
+orientation and schedule conflicts retain the existing guards and review workflows.
 `product_history_resource_imports` records whether an import has completed; it
 contains no claim, lease or retry policy. Resource registration and a pending
 import record commit together. A partially imported resource remains eligible for
@@ -759,6 +795,15 @@ the original provider mapping, fixture decisions and source observations. Its
 database-stamped `decided_at` makes it eligible prospectively; source acquisition
 is recorded separately and never substituted for an admission time.
 
+A closed FotMob mapping can be reconstructed through the same linked correction
+only when its current replacement has the same native ID and an adjacent validity
+interval. The original mapping-change revocation, a real retained-fixture
+contradiction, independently admitted target and exact native fixture bridge
+must all verify. Country, competition, registered season, orientation and
+participant context must agree. Ordinary approval cannot reopen a closed mapping.
+Only an active linked reconstruction can qualify its closed historical mapping;
+fixture quarantine and duplicate exclusions still apply.
+
 `product_team_identity_at(mapping_id, knowledge_cutoff)` resolves immutable
 admissions at the requested cutoff. Current operational views expose effective
 IDs without rewriting physical records. History qualification appends snapshots
@@ -779,6 +824,10 @@ source proof and revocations remain blocked; contradictions remain explicit.
 Alias candidates never authorize admission. The result includes bounded fixture
 impacts, retained correction contexts and an evidence hash for later operator
 review. Historical reads continue to use the cutoff-aware identity owners above.
+Operational ingestion retains original team names and native IDs when a name
+has no usable search alias, such as `AFC` or a non-Latin name. It logs the
+provider/team/source context and omits the empty optional alias; canonical
+identity checks and existing mappings remain unchanged.
 
 ## Decision records
 

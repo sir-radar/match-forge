@@ -13,6 +13,8 @@ def test_observability_snapshot_is_machine_readable_and_hashable() -> None:
     assert payload["freshness_status"] == "FRESH"
     assert payload["last_successful_validation_at"] == "2026-09-02T11:58:00+00:00"
     assert payload["alert_conditions"] == ["QUARANTINE_ITEMS_PRESENT"]
+    assert "unmeasured_fields" not in payload
+    assert "current_state_fields" not in payload
     assert len(snapshot.sha256) == 64
 
 
@@ -49,6 +51,21 @@ def test_observability_surfaces_processing_failures() -> None:
     snapshot = _snapshot(quarantine_count=0, processing_failure_count=1)
 
     assert snapshot.alert_conditions == ("PROCESSING_FAILURES_PRESENT",)
+
+
+def test_unmeasured_circuit_is_explicit_without_inventing_a_circuit_state() -> None:
+    snapshot = _snapshot(
+        quarantine_count=0, unmeasured_fields=("circuit_state", "processing_latency_ms")
+    )
+    assert snapshot.to_dict()["circuit_state"] == "CLOSED"
+    assert snapshot.to_dict()["unmeasured_fields"] == ["circuit_state", "processing_latency_ms"]
+    assert snapshot.alert_conditions == ("PROVIDER_MEASUREMENTS_UNAVAILABLE",)
+    unavailable_open = _snapshot(
+        quarantine_count=0, circuit_state="OPEN", unmeasured_fields=("circuit_state",)
+    )
+    assert unavailable_open.alert_conditions == ("PROVIDER_MEASUREMENTS_UNAVAILABLE",)
+    with pytest.raises(ProviderObservabilityError, match="snapshot measurements"):
+        _snapshot(unmeasured_fields=("invented_metric",))
 
 
 def test_observability_rejects_invalid_counts_and_timestamps() -> None:

@@ -1,5 +1,12 @@
 # MatchForge implementation plan
 
+> Current acquisition policy, 3 November 2026: the standing provider-wide
+> research decision in [Source acquisition](docs/source-acquisition.md#project-use-policy)
+> supersedes this roadmap's older ordinary-acquisition approval restrictions.
+> Provider terms and account limits remain recorded separately. Historical
+> decisions below remain evidence; their evaluation and model-research gates
+> have not been reopened.
+
 > Revision: 22 September 2026 — added proposed prediction-improvement research candidates to the 21 September repository reconciliation.
 > Status: **TRACKED PROPOSED ROADMAP**. This plan records sequencing and constraints. It does not authorize application code, change a frozen result, or create an owner decision.
 > Authority order: checked-in repository evidence and immutable evaluation records → approved owner decision events → versioned approved contracts → this proposed plan → research proposals. Where they conflict, stop and reconcile rather than overwriting evidence.

@@ -16,11 +16,13 @@ from jsonschema import ValidationError
 from psycopg import Connection
 from psycopg.types.json import Jsonb
 
-from football.product.domain import sha256_json
+from football.product.competition_geography import country_name
+from football.product.domain import normalize_team_name, sha256_json
 from football.product.identity_admission import (
     RetainedIdentityVerifier,
     _objects,
     classify_mapping,
+    mapping_rows,
     verify_source_identifier,
 )
 from football.product.identity_trust import (
@@ -29,6 +31,7 @@ from football.product.identity_trust import (
     origin_id,
     qualify_mapping,
 )
+from football.product.provider_history_scopes import normalize_seasons
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
 
 
@@ -43,7 +46,8 @@ class TeamIdentityCorrection:
 
 def _mapping(connection: Connection[Any], key: UUID) -> dict[str, Any]:
     row = connection.execute(
-        """SELECT to_jsonb(m) || jsonb_build_object('provider',p.code,'country',t.country)
+        """SELECT to_jsonb(m) || jsonb_build_object(
+                  'provider',p.code,'country',t.country,'name',t.name)
            FROM football.team_provider_mappings m JOIN football.providers p ON p.id=m.provider_id
            JOIN football.product_teams t ON t.team_id=m.team_id WHERE m.id=%s""",
         (key,),
@@ -108,6 +112,46 @@ def _registered_payloads(
     return results
 
 
+def _fotmob_context(
+    row: dict[str, Any], metadata: dict[str, Any], payload: dict[str, Any]
+) -> dict[str, Any]:
+    return {
+        "home": str(row["home"]["id"]),
+        "away": str(row["away"]["id"]),
+        "kickoff": datetime.fromisoformat(row["status"]["utcTime"]),
+        "country": metadata.get("country", metadata.get("ccode")),
+        "league": str(metadata.get("id")),
+        "season": metadata.get("selectedSeason", payload.get("selectedSeason")),
+    }
+
+
+def _fotmob_sections(
+    payload: dict[str, Any],
+) -> Iterator[tuple[dict[str, Any], Iterator[dict[str, Any]]]]:
+    details = payload.get("details")
+    if isinstance(details, dict):
+        yield details, _records(payload)
+        return
+    leagues = payload.get("leagues", [])
+    if not isinstance(leagues, list):
+        raise ValueError("native daily league metadata is malformed")
+    for league in leagues:
+        if not isinstance(league, dict) or not isinstance(league.get("matches"), list):
+            raise ValueError("native daily fixture metadata is malformed")
+        yield {**league, "id": league.get("primaryId", league.get("id"))}, iter(league["matches"])
+
+
+def _fotmob_fixtures(
+    resources: list[tuple[dict[str, Any], dict[str, Any]]],
+) -> Iterator[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]]:
+    for payload, proof in resources:
+        for metadata, rows in _fotmob_sections(payload):
+            for row in rows:
+                if not isinstance(row, dict) or not {"home", "away", "status"} <= row.keys():
+                    continue
+                yield _fotmob_context(row, metadata, payload), proof, row
+
+
 def _fixture(
     resources: list[tuple[dict[str, Any], dict[str, Any]]],
     provider: str,
@@ -132,14 +176,7 @@ def _fixture(
                 details = payload.get("details", {})
                 if not isinstance(details, dict):
                     raise ValueError("supporting league metadata is malformed")
-                context = {
-                    "home": str(row["home"]["id"]),
-                    "away": str(row["away"]["id"]),
-                    "kickoff": datetime.fromisoformat(row["status"]["utcTime"]),
-                    "country": details.get("country"),
-                    "league": str(details.get("id")),
-                    "season": details.get("selectedSeason", payload.get("selectedSeason")),
-                }
+                context = _fotmob_context(row, details, payload)
             else:
                 continue
             choices.append((context, proof, row))
@@ -159,12 +196,8 @@ def _records(payload: dict[str, Any]) -> Iterator[dict[str, Any]]:
                 yield item
 
 
-def _source_context(
-    connection: Connection[Any],
-    root: Path,
-    request: TeamIdentityCorrection,
-    source: dict[str, Any],
-    verifier: RetainedIdentityVerifier,
+def _source_registration(
+    connection: Connection[Any], request: TeamIdentityCorrection, source: dict[str, Any]
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     row = connection.execute(
         """SELECT to_jsonb(d),to_jsonb(m),to_jsonb(f),to_jsonb(s)
@@ -192,6 +225,17 @@ def _source_context(
         (fixture["fixture_id"], request.original_decision_id),
     ).fetchone():
         raise ValueError("additional retained contradiction requires separate review")
+    return original, registration, fixture, season
+
+
+def _source_context(
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    source: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    original, registration, fixture, season = _source_registration(connection, request, source)
     context, proof, _ = _fixture(
         _registered_payloads(
             connection, registration["source_snapshot_id"], source["provider"], verifier
@@ -296,6 +340,260 @@ def _target_context(
     raise ValueError("target team has no retained compatible league/season evidence")
 
 
+def _replacement_versions(source: dict[str, Any], target: dict[str, Any]) -> None:
+    if (source["provider"], target["provider"]) != ("fotmob", "fotmob"):
+        raise ValueError("replaced native mappings require the same FotMob provider")
+    if (
+        source["provider_team_id"] != target["provider_team_id"]
+        or source["team_id"] == target["team_id"]
+    ):
+        raise ValueError("replacement requires the same native ID and a different projection")
+    if source["mapping_method"] != "deterministic" or source["mapping_confidence"] != 1:
+        raise ValueError("replacement requires the retained full-confidence legacy projection")
+    if (
+        source["valid_to"] is None
+        or source["valid_to"] != target["valid_from"]
+        or target["valid_to"] is not None
+    ):
+        raise ValueError("replacement mapping versions must be adjacent and the target current")
+    if datetime.fromisoformat(source["valid_to"]) > datetime.now(UTC):
+        raise ValueError("replacement mapping closure is not yet known to be effective")
+
+
+def _replacement_revocation(
+    connection: Connection[Any], request: TeamIdentityCorrection
+) -> dict[str, Any]:
+    row = connection.execute(
+        "SELECT to_jsonb(a) FROM football.product_identity_admissions a "
+        "WHERE entity_type='team' AND mapping_id=%s "
+        "ORDER BY decided_at DESC,decision_id DESC LIMIT 1",
+        (request.source_mapping_id,),
+    ).fetchone()
+    if row is None:
+        raise ValueError("replacement requires the original mapping-change revocation")
+    previous = row[0]
+    if previous["disposition"] == "CROSSWALK" and previous["corrects_decision_id"] == str(
+        request.original_decision_id
+    ):
+        revoked = connection.execute(
+            "SELECT to_jsonb(a) FROM football.product_identity_admissions a WHERE decision_id=%s",
+            (previous["evidence"]["replacement"]["prior_revocation_id"],),
+        ).fetchone()
+        if revoked is None:
+            raise ValueError("original replacement revocation is missing")
+        previous = revoked[0]
+    if (
+        previous["disposition"] != "REVOKED"
+        or previous["reason"] != "MAPPING_CHANGED_REVALIDATION_REQUIRED"
+        or previous["corrects_decision_id"] is not None
+    ):
+        raise ValueError("only the original mapping-change revocation permits reconstruction")
+    return cast(dict[str, Any], previous)
+
+
+def _replacement_target(
+    connection: Connection[Any],
+    root: Path,
+    target: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
+) -> dict[str, Any]:
+    rows = mapping_rows(connection, "team", mapping_id=UUID(target["id"]))
+    if len(rows) != 1:
+        raise ValueError("replacement target is not current")
+    decision = classify_mapping(connection, "team", rows[0], root, verifier)
+    admitted = connection.execute(
+        "SELECT corrects_decision_id,"
+        "football.product_mapping_trusted('team',mapping_id,canonical_id) "
+        "FROM football.product_identity_admissions WHERE entity_type='team' AND mapping_id=%s "
+        "ORDER BY decided_at DESC,decision_id DESC LIMIT 1",
+        (target["id"],),
+    ).fetchone()
+    if admitted is None or admitted[0] is not None or not admitted[1]:
+        raise ValueError("replacement target requires an independently admitted identity")
+    if decision["disposition"] != "CROSSWALK" or decision["canonical_id"] != target["team_id"]:
+        raise ValueError("replacement target lost its retained source qualification")
+    if not isinstance(target["name"], str) or not target["name"].strip():
+        raise ValueError("replacement target has no qualified participant label")
+    return decision
+
+
+def _replacement_scope(
+    context: dict[str, Any],
+    fixture: dict[str, Any],
+    season: dict[str, Any],
+    source: dict[str, Any],
+    target: dict[str, Any],
+) -> str:
+    country = country_name(context["country"])
+    if country is None or source["country"] != country or target["country"] != country:
+        raise ValueError("replacement country conflicts with retained native context")
+    league = explicit_target("competition", "fotmob", context["league"])
+    if league is None:
+        raise ValueError("replacement requires an existing native competition crosswalk")
+    if fixture["competition_id"] != str(origin_id("competition", *league, country)):
+        raise ValueError("replacement competition differs from its registered fixture")
+    if season["start_date"] is None or season["end_date"] is None:
+        raise ValueError("replacement requires the registered season period")
+    start, end = season["start_date"][:4], season["end_date"][:4]
+    label = start if start == end else start + "/" + end
+    if normalize_seasons([context["season"]]) != [label]:
+        raise ValueError("replacement native season conflicts with the registered period")
+    return country
+
+
+def _native_fixture_signature(context: dict[str, Any], row: dict[str, Any]) -> tuple[Any, ...]:
+    names = (row["home"].get("name"), row["away"].get("name"))
+    if not all(isinstance(name, str) and name.strip() for name in names):
+        raise ValueError("same-native fixture bridge requires both retained participant labels")
+    return (
+        context["home"],
+        context["away"],
+        context["kickoff"],
+        context["league"],
+        country_name(context["country"]),
+        normalize_team_name(row["home"]["name"]),
+        normalize_team_name(row["away"]["name"]),
+    )
+
+
+def _replacement_bridge(
+    old_resources: list[tuple[dict[str, Any], dict[str, Any]]],
+    fixture_resources: list[tuple[dict[str, Any], dict[str, Any]]],
+    native: str,
+    country: str,
+    league: str,
+    target_label: str,
+) -> dict[str, Any]:
+    current_ids = {
+        str(row["id"])
+        for context, _, row in _fotmob_fixtures(fixture_resources)
+        if native in (context["home"], context["away"])
+    }
+    choices: list[dict[str, Any]] = []
+    for context, proof, row in _fotmob_fixtures(old_resources):
+        if str(row["id"]) not in current_ids or native not in (context["home"], context["away"]):
+            continue
+        current, current_proof, current_row = _fixture(fixture_resources, "fotmob", str(row["id"]))
+        if _native_fixture_signature(context, row) != _native_fixture_signature(
+            current, current_row
+        ):
+            raise ValueError("same-native fixture context changed across retained sources")
+        if country_name(context["country"]) != country or context["league"] != league:
+            raise ValueError("same-native fixture bridge conflicts with the replacement scope")
+        native_label = row["home" if context["home"] == native else "away"]["name"]
+        # Labels can expose a contradiction; IDs and retained fixture context prove the link.
+        if normalize_team_name(native_label) != normalize_team_name(target_label):
+            raise ValueError(
+                "native participant label contradicts the qualified replacement target"
+            )
+        choices.append(
+            {"fixture_id": str(row["id"]), "old_resource": proof, "current_resource": current_proof}
+        )
+    if not choices:
+        raise ValueError("replacement requires an exact retained same-native fixture bridge")
+    return sorted(choices, key=lambda choice: choice["fixture_id"])[0]
+
+
+def _qualify_replaced_mapping(
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    source: dict[str, Any],
+    target: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
+) -> dict[str, Any]:
+    migration = connection.execute(
+        "SELECT EXISTS(SELECT 1 FROM public.goose_db_version "
+        "WHERE version_id=202611030200 AND is_applied)"
+    ).fetchone()
+    assert migration is not None
+    if not migration[0]:
+        raise ValueError("replaced native corrections require migration 202611030200")
+    _replacement_versions(source, target)
+    revocation = _replacement_revocation(connection, request)
+    target_decision = _replacement_target(connection, root, target, verifier)
+    original, registration, fixture, season = _source_registration(connection, request, source)
+    resources = _registered_payloads(
+        connection, registration["source_snapshot_id"], "fotmob", verifier
+    )
+    context, fixture_proof, _ = _fixture(resources, "fotmob", registration["provider_match_id"])
+    field = {"HOME": "home", "AWAY": "away"}.get(request.orientation)
+    if (
+        field is None
+        or context[field] != source["provider_team_id"]
+        or fixture[field + "_team_id"] != source["team_id"]
+    ):
+        raise ValueError("replacement source orientation contradicts the retained fixture")
+    if context["kickoff"] != datetime.fromisoformat(fixture["kickoff_at"]):
+        raise ValueError("replacement kickoff differs from the retained fixture")
+    country = _replacement_scope(context, fixture, season, source, target)
+    bridge = _replacement_bridge(
+        _registered_payloads(connection, source["source_snapshot_id"], "fotmob", verifier),
+        resources,
+        source["provider_team_id"],
+        country,
+        context["league"],
+        target["name"],
+    )
+    proof = verify_source_identifier(
+        connection,
+        root,
+        UUID(source["source_snapshot_id"]),
+        "fotmob",
+        "team",
+        source["provider_team_id"],
+        country,
+        verifier,
+    )
+    if proof is None or proof["source_resource_id"] != bridge["old_resource"]["source_resource_id"]:
+        raise ValueError("replacement source identifier is not bound to the retained bridge")
+    context = {
+        **context,
+        "country": country,
+        "kickoff": context["kickoff"].isoformat(),
+        "season_start": season["start_date"],
+        "season_end": season["end_date"],
+    }
+    target_proof = {
+        **target_decision["evidence"],
+        "source_snapshot_id": target["source_snapshot_id"],
+        "mapping_id": target["id"],
+    }
+    proof.update(
+        contract="ProductTeamIdentityCorrectionV1",
+        reason="REPLACED_NATIVE_MAPPING",
+        original_decision=original,
+        fixture_registration_id=str(request.fixture_registration_id),
+        orientation=request.orientation,
+        target_evidence=target_proof,
+        context_resources=[bridge["old_resource"], fixture_proof, target_proof],
+        context=context,
+        replacement={
+            "prior_revocation_id": revocation["decision_id"],
+            "source_valid_to": source["valid_to"],
+            "target_valid_from": target["valid_from"],
+            "target_label": target["name"],
+            "native_fixture_bridge": bridge,
+        },
+        policy_version="ProductIdentityTrustV1",
+    )
+    return {
+        "status": "QUALIFIED",
+        "entity_type": "team",
+        "mapping_id": str(request.source_mapping_id),
+        "canonical_id": target["team_id"],
+        "provider": "fotmob",
+        "provider_id": source["provider_team_id"],
+        "source_snapshot_id": source["source_snapshot_id"],
+        "source_observed_at": proof["acquired_at"],
+        "disposition": "CROSSWALK",
+        "reason": "REPLACED_NATIVE_MAPPING_CORRECTED",
+        "evidence": proof,
+        "corrects_decision_id": str(request.original_decision_id),
+        "target_mapping_id": str(request.target_mapping_id),
+    }
+
+
 def _qualify(
     connection: Connection[Any],
     root: Path,
@@ -308,6 +606,19 @@ def _qualify(
         _mapping(connection, request.source_mapping_id),
         _mapping(connection, request.target_mapping_id),
     )
+    if source["provider"] == target["provider"] == "fotmob":
+        return _qualify_replaced_mapping(connection, root, request, source, target, verifier)
+    return _qualify_fdo_mapping(connection, root, request, source, target, verifier)
+
+
+def _qualify_fdo_mapping(
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    source: dict[str, Any],
+    target: dict[str, Any],
+    verifier: RetainedIdentityVerifier,
+) -> dict[str, Any]:
     if source["provider"] != "football_data_org" or target["provider"] != "api_football":
         raise ValueError("this correction requires retained FDO and API-Football mappings")
     if not _target_not_revoked(connection, request.target_mapping_id):
@@ -433,6 +744,48 @@ def qualify_team_correction(
         }
 
 
+def _retry_linked_correction(
+    connection: Connection[Any],
+    root: Path,
+    request: TeamIdentityCorrection,
+    previous: dict[str, Any] | None,
+    prepared: dict[str, Any],
+    reviewed_revalidation: bool,
+    verifier: RetainedIdentityVerifier,
+) -> dict[str, Any] | None:
+    """Replay a linked decision or permit its existing explicit continuation rule."""
+    if previous is None:
+        return None
+    if previous["corrects_decision_id"] is None:
+        if previous["disposition"] == "REVOKED" and (
+            prepared.get("status"),
+            prepared.get("reason"),
+        ) != ("QUALIFIED", "REPLACED_NATIVE_MAPPING_CORRECTED"):
+            raise ValueError("a revoked source mapping requires a new reviewed promotion")
+        return None
+    if (
+        previous["corrects_decision_id"],
+        previous["target_mapping_id"],
+        previous["evidence"]["fixture_registration_id"],
+        previous["evidence"]["orientation"],
+    ) != (
+        str(request.original_decision_id),
+        str(request.target_mapping_id),
+        str(request.fixture_registration_id),
+        request.orientation,
+    ):
+        raise ValueError("existing correction conflicts with the requested operation")
+    if previous["disposition"] == "CROSSWALK":
+        result = qualify_team_correction(connection, root, request, verifier=verifier)
+        if result["status"] != "QUALIFIED":
+            raise ValueError(result["reason"])
+    if reviewed_revalidation and previous["disposition"] == "REVOKED":
+        if previous["reason"] != "MAPPING_CHANGED_REVALIDATION_REQUIRED":
+            raise ValueError("only a mapping-change revocation permits reviewed revalidation")
+        return None
+    return {**previous, "decided_at": datetime.fromisoformat(previous["decided_at"])}
+
+
 def correct_team_identity(
     connection: Connection[Any],
     root: Path,
@@ -448,7 +801,7 @@ def correct_team_identity(
     if not ready or not ready[0]:
         raise ValueError("team identity correction requires migration 202610140100")
     verifier = verifier or RetainedIdentityVerifier(root)
-    qualify_team_correction(connection, root, request, verifier=verifier)
+    prepared = qualify_team_correction(connection, root, request, verifier=verifier)
     verifier.seal()
     with connection.transaction():
         acquire_locks(connection, (IDENTITY_ADMISSION_LOCK,))
@@ -458,33 +811,17 @@ def correct_team_identity(
                ORDER BY decided_at DESC,decision_id DESC LIMIT 1""",
             (request.source_mapping_id,),
         ).fetchone()
-        if previous and previous[0]["corrects_decision_id"] is not None:
-            decision = previous[0]
-            if (
-                decision["corrects_decision_id"],
-                decision["target_mapping_id"],
-                decision["evidence"]["fixture_registration_id"],
-                decision["evidence"]["orientation"],
-            ) != (
-                str(request.original_decision_id),
-                str(request.target_mapping_id),
-                str(request.fixture_registration_id),
-                request.orientation,
-            ):
-                raise ValueError("existing correction conflicts with the requested operation")
-            if decision["disposition"] == "CROSSWALK":
-                result = qualify_team_correction(connection, root, request, verifier=verifier)
-                if result["status"] != "QUALIFIED":
-                    raise ValueError(result["reason"])
-            if reviewed_revalidation and decision["disposition"] == "REVOKED":
-                if decision["reason"] != "MAPPING_CHANGED_REVALIDATION_REQUIRED":
-                    raise ValueError(
-                        "only a mapping-change revocation permits reviewed revalidation"
-                    )
-            else:
-                return {**decision, "decided_at": datetime.fromisoformat(decision["decided_at"])}
-        elif previous and previous[0]["disposition"] == "REVOKED":
-            raise ValueError("a revoked source mapping requires a new reviewed promotion")
+        replayed = _retry_linked_correction(
+            connection,
+            root,
+            request,
+            previous[0] if previous else None,
+            prepared,
+            reviewed_revalidation,
+            verifier,
+        )
+        if replayed is not None:
+            return replayed
         result = qualify_team_correction(connection, root, request, verifier=verifier)
         if result["status"] != "QUALIFIED":
             raise ValueError(result["reason"])

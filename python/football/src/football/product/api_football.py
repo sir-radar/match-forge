@@ -93,7 +93,19 @@ class PostgresApiFootballBudget:
             )
             row = cursor.fetchone()
             if row is None:
-                raise ApiFootballError("API-Football quota or cooldown active; request suppressed")
+                until = cursor.execute(
+                    """SELECT GREATEST(max(deferred_until),
+                        max(CASE WHEN window_date=(clock_timestamp() AT TIME ZONE 'UTC')::date
+                            AND (exhausted OR remaining_requests=0)
+                            THEN (window_date+1)::timestamp AT TIME ZONE 'UTC' END),
+                        max(CASE WHEN minute_remaining=0
+                            THEN minute_window+interval '1 minute' END))
+                    FROM football.provider_request_budgets WHERE provider_code='api_football'"""
+                ).fetchone()
+                raise ApiFootballError(
+                    "API-Football quota or cooldown active; request suppressed",
+                    retry_after=until[0] if until else None,
+                )
             return RequestReservation(*row)
 
     def record_response(
@@ -145,13 +157,11 @@ class PostgresApiFootballBudget:
     def record_rejection(
         self, reservation: RequestReservation, detail: str, retry_after: str | None = None
     ) -> None:
-        lowered = detail.casefold()
-        if not any(
-            marker in lowered for marker in ("request limit", "quota", "rate limit", "ratelimit")
-        ):
+        until = _quota_retry_after(detail, datetime.now(UTC), retry_after)
+        if until is None:
             return
+        lowered = detail.casefold()
         daily = "daily" in lowered or "for the day" in lowered
-        until = retry_after_time(retry_after, datetime.now(UTC)) if not daily else None
         with (
             connect(self.database_url, autocommit=True) as connection,
             connection.cursor() as cursor,
@@ -184,12 +194,34 @@ def _minute_quota(
     return window, reported
 
 
+def _quota_retry_after(
+    detail: str, now: datetime, retry_after: str | None = None
+) -> datetime | None:
+    lowered = detail.casefold()
+    if not any(
+        marker in lowered for marker in ("request limit", "quota", "rate limit", "ratelimit")
+    ):
+        return None
+    if "daily" in lowered or "for the day" in lowered:
+        return datetime.combine(
+            now.astimezone(UTC).date() + timedelta(days=1), datetime.min.time(), UTC
+        )
+    return retry_after_time(retry_after, now)
+
+
 class ApiFootballError(RuntimeError):
     """The provider request or response could not be used safely."""
 
-    def __init__(self, message: str, *, capability_status: CapabilityStatus | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        capability_status: CapabilityStatus | None = None,
+        retry_after: datetime | None = None,
+    ) -> None:
         super().__init__(message)
         self.capability_status = capability_status
+        self.retry_after = retry_after
 
 
 class CapabilityStatus(StrEnum):
@@ -254,7 +286,13 @@ class ApiFootballClient:
             result = self._transport(url, {"x-apisports-key": self._api_key})
         except urllib.error.HTTPError as error:
             self._record_http_error(reservation, error)
-            raise ApiFootballError(f"API-Football request failed for {path}") from error
+            retry = error.headers.get("Retry-After") if error.headers else None
+            raise ApiFootballError(
+                f"API-Football request failed for {path}",
+                retry_after=retry_after_time(retry, datetime.now(UTC))
+                if error.code == 429 and retry
+                else None,
+            ) from error
         except (OSError, urllib.error.URLError, ProviderFetchError) as error:
             raise ApiFootballError(f"API-Football request failed for {path}") from error
         fetched_at = datetime.now(UTC)
@@ -279,6 +317,7 @@ class ApiFootballClient:
             raise ApiFootballError(
                 f"API-Football rejected {path}: {provider_errors}",
                 capability_status=capability_status,
+                retry_after=_quota_retry_after(detail, datetime.now(UTC)),
             )
         response = payload.get("response")
         if not isinstance(response, list):

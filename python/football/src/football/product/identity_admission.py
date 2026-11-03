@@ -330,7 +330,8 @@ def fixture_identity_blockers(
                 FROM football.team_provider_mappings m
                 LEFT JOIN admissions a ON a.entity_type='team' AND a.mapping_id=m.id
                 WHERE m.provider_id=mm.provider_id AND m.team_id=t.home_team_id
-                  AND m.valid_to IS NULL
+                  AND (m.valid_to IS NULL OR (a.corrects_decision_id IS NOT NULL
+                    AND a.reason='REPLACED_NATIVE_MAPPING_CORRECTED'))
             ) home ON true
             LEFT JOIN LATERAL (
                 SELECT bool_and(m.mapping_confidence=1 AND
@@ -340,7 +341,8 @@ def fixture_identity_blockers(
                 FROM football.team_provider_mappings m
                 LEFT JOIN admissions a ON a.entity_type='team' AND a.mapping_id=m.id
                 WHERE m.provider_id=mm.provider_id AND m.team_id=t.away_team_id
-                  AND m.valid_to IS NULL
+                  AND (m.valid_to IS NULL OR (a.corrects_decision_id IS NOT NULL
+                    AND a.reason='REPLACED_NATIVE_MAPPING_CORRECTED'))
             ) away ON true
             LEFT JOIN LATERAL (
                 SELECT bool_and(m.mapping_confidence=1 AND
@@ -414,7 +416,10 @@ def mapping_rows(
     snapshot_id: UUID | None = None,
     *,
     mapping_id: UUID | None = None,
+    include_closed: bool = False,
 ) -> list[tuple[Any, ...]]:
+    if include_closed and (mapping_id is None or entity_type != "team"):
+        raise ValueError("closed team review requires one exact mapping ID")
     table, canonical, identifier, product = TABLES[entity_type]
     corrected = connection.execute(
         "SELECT to_regprocedure('football.product_team_identity_at(uuid,timestamptz)') IS NOT NULL"
@@ -427,19 +432,22 @@ def mapping_rows(
         if entity_type == "team" and corrected and corrected[0]
         else ""
     )
+    if include_closed and not correction:
+        correction = ", NULL::jsonb"
+    closure = ", mapping.valid_to" if include_closed else ""
     return connection.execute(
         f"""SELECT mapping.id, mapping.{canonical}, provider.code, mapping.{identifier},
                    mapping.mapping_method, mapping.mapping_confidence, product.country,
-                   mapping.source_snapshot_id, snapshot.acquired_at {correction}
+                   mapping.source_snapshot_id, snapshot.acquired_at {correction} {closure}
             FROM football.{table} mapping
             JOIN football.providers provider ON provider.id = mapping.provider_id
             JOIN football.source_snapshots snapshot ON snapshot.id = mapping.source_snapshot_id
             LEFT JOIN football.{product} product ON product.{canonical} = mapping.{canonical}
-            WHERE mapping.valid_to IS NULL AND (%s::text IS NULL OR provider.code = %s)
+            WHERE (mapping.valid_to IS NULL OR %s) AND (%s::text IS NULL OR provider.code = %s)
               AND (%s::uuid IS NULL OR mapping.source_snapshot_id = %s)
               AND (%s::uuid IS NULL OR mapping.id = %s)
             ORDER BY mapping.id""",
-        (provider, provider, snapshot_id, snapshot_id, mapping_id, mapping_id),
+        (include_closed, provider, provider, snapshot_id, snapshot_id, mapping_id, mapping_id),
     ).fetchall()
 
 
