@@ -52,8 +52,8 @@ and shadow identities checked independently.
 | FR-003 | NOT_STARTED | Exact retained-history failed predicates |
 | FR-004 | NOT_STARTED | Authentic missing team/season slices |
 | FR-005 | NOT_STARTED | Scottish historical namespace relationships |
-| FR-006 | VERIFIED | Batched context invalidation; operating rollout remains pending |
-| FR-007 | BLOCKED_DEPENDENCY | Rolling fix verified in shadow; 275 held occurrences require FR-005/008 |
+| FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
+| FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | NOT_STARTED | Original-row canonical conflict evidence |
 | FR-009 | NOT_STARTED | Current unmatched revisions and exact season metadata |
 | FR-010 | NOT_STARTED | Scope-specific failure/retry classification |
@@ -246,3 +246,78 @@ qualified evidence; no held record is forced through a guard.
 | `rolling-shadow.json` | `4b391ac4f99e0902108fc28b39b013b38f098cd6adedc5a354a10c10ddaccadb` |
 | `rolling-held-guards.json` | `3feede311570cafdcf7b06d1b125b64602eee90b856288606b3e7ea61dcfe300` |
 | `csv-reuse-dispositions.json` | `e086a0bfcf64cebc9a37daf2fb0abe879dff420b492a16301badeb4e053e4fbb` |
+
+## Phase A: authorized operating rollout
+
+The owner explicitly authorized migration `202611030100` and bounded use of the
+committed rolling parser, conditional on backup recovery, migration compatibility,
+a small initial batch and integrity monitoring. The authorization also permits
+subsequent independently executable remediation. Architecture V2 cutover, route
+changes and model promotion remain outside that authorization.
+
+A fresh exported operating snapshot was captured at **2026-11-03 17:26:17.463926
+UTC**. The custom-format backup is 1,514,478,207 bytes, SHA256
+`e1e0177406cf545e5a438283e3eb25942db313f77dc159a56f2be34ea80ec8f2`.
+The PostgreSQL 18 client restored it completely into an owned isolated database.
+All nine captured source/admission/model/forecast/artifact registration digests
+match. The approved migration changes no captured rows, queue contents or stage
+settings. An isolated Goose forward-repair rehearsal restores the exact captured
+original function and row trigger while preserving those same digests. That
+schema-only repair is an emergency procedure; it was not applied to operating
+state. Restoring the full backup over later operating writes is not a recovery
+step for this additive change.
+
+PR #178's exact pending migration, Git blob
+`266bea6efefb4770f5b5bc83046cbb36cb9e85ab`, and the current branch apply in
+version order in a fresh disposable database; repeated `up` succeeds. Its six
+mapping-method constraints coexist with the statement transition trigger and all
+13 `LEGACY` routes. Operating state already had `202611020200` without pending
+`202611020100` before this task. The new trigger migration has no dependency on
+those pending constraint changes. It applies through ordinary Goose using the
+current branch's migrations. No missing-version override, applied-version
+renumbering or unmerged migration was used. The older gap remains a separate
+PR #178 rollout prerequisite under the existing
+[Goose ordering rule](https://github.com/pressly/goose/blob/v3.27.1/README.md#hybrid-versioning);
+this compatibility check does not declare that pending rollout ready.
+
+Migration `202611030100` applied **once**, with the existing 20-second statement
+deadline and a five-second lock deadline. Readback verifies its sole new Goose
+record and statement transition trigger. All 13 stage settings remain identical
+and `LEGACY`. API health and readiness return HTTP 200. The running API still
+reports `dev` with unknown code/lock metadata; no restart or runtime-deployment
+claim is made. The manual recovery imports code directly from committed
+`941594f`, verifies its parser bytes and version, and does not use the uncommitted
+Phase B crosswalks.
+
+The initial three occurrences pass exact checksum/parser/canonical-ID checks,
+identical retries, conflict guards, preservation of original checked rows and an
+unchanged earlier-cutoff eligible-history hash. All three already exist in the
+operating database. Only the remaining 452 previously successful shadow
+occurrences proceed in five-record transactions. All 275 held occurrences remain
+excluded. The original failed composite-key preflight stopped before any football
+mutation; its receipt is preserved, and the corrected check includes composite
+primary keys without changing the data contract.
+
+The completed operating replay verifies **455 of 455** expected canonical bindings
+and identical retries, with no new conflicts or changed original checked rows.
+All results already existed: retained history remains **479,461**, eligible
+history **301,307**, published product forecasts **14,773**, and verified new
+forecast availability **0**. This differs from the older shadow's 180 additions;
+that restore predates operating acquisition. No shadow count is credited as an
+operating recovery. The earlier-cutoff history count and digest remain identical
+through both batches.
+
+The **17:52:09.874108 UTC** read-only monitor finds 142,641 pending context reports
+and zero recorded context errors. Since migration, existing workers completed
+224 projections and 13 provider-acquisition work items without a recorded failure;
+these background completions are not attributed to this replay. Health, readiness
+and a public forecast-history read return HTTP 200. All 13 routes remain `LEGACY`.
+The 275 held occurrences, pending PR #178 ordering and unknown running-build
+metadata remain explicit limitations. Phase A operating checkpoint:
+**PASS_WITH_WARNINGS**. Continue the independently authorized remediation.
+
+Private receipts include the fresh backup manifest and restore verification,
+`phase-a-migration-compatibility/result.json`, `phase-a-operating-migration.json`,
+`phase-a-operating-small.json`, `phase-a-operating-expand.json` and
+`phase-a-post-rollout.json`. They retain exact state, hashes, executed results and
+per-occurrence bindings without publishing raw data or credentials.

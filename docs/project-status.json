@@ -1293,7 +1293,7 @@
       "frozen_blocked_cohort": 196,
       "baseline_upcoming_verified_blockers": 189,
       "baseline_pending_context_reports": 146765,
-      "operating_migrations": 0,
+      "operating_migrations": 1,
       "operating_runtime_updated": false,
       "verified_new_forecast_availability": 0,
       "issue_statuses": {
@@ -1319,7 +1319,7 @@
       "fr006": {
         "status": "PASS_WITH_WARNINGS",
         "migration": "202611030100",
-        "database_scope": "DISPOSABLE_ONLY",
+        "database_scope": "OPERATING_APPLIED",
         "existing_statement_deadline_seconds": 20,
         "admission_seconds": {
           "DED": 4.118,
@@ -1361,7 +1361,30 @@
         "rust_tests_passed": 16,
         "web_tests_passed": 107
       },
-      "phase_a": "PASS_WITH_WARNINGS"
+      "phase_a": "PASS_WITH_WARNINGS",
+      "operating_phase_a_rollout": {
+        "status": "PASS_WITH_WARNINGS",
+        "migration": "202611030100",
+        "migration_applications": 1,
+        "backup_snapshot_at": "2026-11-03T17:26:17.463926Z",
+        "backup_sha256": "e1e0177406cf545e5a438283e3eb25942db313f77dc159a56f2be34ea80ec8f2",
+        "fresh_restore_verified": true,
+        "schema_recovery_rehearsed": true,
+        "exact_pending_migration_compatibility_verified": true,
+        "missing_migration_override_used": false,
+        "initial_occurrences_verified": 3,
+        "total_occurrences_verified": 455,
+        "new_retained_history_rows": 0,
+        "new_eligible_history_rows": 0,
+        "verified_new_forecast_availability": 0,
+        "prior_checked_rows_and_earlier_cutoff_preserved": true,
+        "held_occurrences": 275,
+        "routes_remain_legacy": 13,
+        "context_errors": 0,
+        "post_rollout_observed_at": "2026-11-03T17:52:09.874108Z",
+        "running_api_build_metadata": "UNKNOWN",
+        "running_api_restarted": false
+      }
     }
   },
   "architecture_v2": {
