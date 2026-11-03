@@ -262,8 +262,12 @@ serializes publication, cancellation and replacement. Cancellation clears lease
 rights before recording its terminal state.
 
 Public fixture-context reports use a durable per-fixture refresh queue. Fixture,
-eligible history, identity, coach and lineup changes enqueue affected fixtures;
-the Go service schedules a bounded Python projection job in a separate public-report lane.
+eligible history, identity, coach and lineup changes enqueue affected fixtures.
+one history decision statement requests at most one context generation per affected
+fixture, including eligibility revocations. Effective participants are resolved once
+per possible target, with unchanged knowledge and kickoff boundaries. Qualification
+and invalidation remain atomic, and target UUID order determines enqueue lock order.
+The Go service schedules a bounded Python projection job in a separate public-report lane.
 Each minute the worker can attempt at most 32 scopes per report kind. Half of
 context capacity is reserved for oldest eligible backlog work; the rest prefers
 fixtures from the preceding 24 hours through the next 72 hours. Attempts rotate

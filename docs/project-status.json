@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-03T05:45:30Z",
+  "updated_at": "2026-11-03T16:10:28Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1282,6 +1282,60 @@
       "task_status_gitignored": true,
       "task_status_absent_from_reachable_history": true,
       "delivery_pr": "https://github.com/sir-radar/match-forge/pull/179"
+    },
+    "forecast_readiness_remediation": {
+      "status": "IN_PROGRESS",
+      "current_phase": "A",
+      "branch": "ft/data-status-remediation",
+      "report_ref": "docs/evidence/forecast-readiness-remediation-results.md",
+      "baseline_observed_at": "2026-11-03T15:43:07.735134Z",
+      "baseline_eligible_history_rows": 301307,
+      "frozen_blocked_cohort": 196,
+      "baseline_upcoming_verified_blockers": 189,
+      "baseline_pending_context_reports": 146765,
+      "operating_migrations": 0,
+      "operating_runtime_updated": false,
+      "verified_new_forecast_availability": 0,
+      "issue_statuses": {
+        "FR-001": "NOT_STARTED",
+        "FR-002": "NOT_STARTED",
+        "FR-003": "NOT_STARTED",
+        "FR-004": "NOT_STARTED",
+        "FR-005": "NOT_STARTED",
+        "FR-006": "VERIFIED",
+        "FR-007": "NOT_STARTED",
+        "FR-008": "NOT_STARTED",
+        "FR-009": "NOT_STARTED",
+        "FR-010": "NOT_STARTED",
+        "FR-011": "NOT_STARTED",
+        "FR-012": "NOT_STARTED",
+        "FR-013": "NOT_STARTED",
+        "FR-014": "NOT_STARTED",
+        "FR-015": "NOT_STARTED",
+        "FR-016": "NOT_STARTED"
+      },
+      "architecture_cutover": false,
+      "model_research_resumed": false,
+      "fr006": {
+        "status": "PASS_WITH_WARNINGS",
+        "migration": "202611030100",
+        "database_scope": "DISPOSABLE_ONLY",
+        "existing_statement_deadline_seconds": 20,
+        "admission_seconds": {
+          "DED": 4.118,
+          "PD": 3.944,
+          "BSA": 3.274
+        },
+        "reference_decision_facts_match": true,
+        "earlier_cutoff_history_preserved": true,
+        "required_refresh_keys_match": true,
+        "verified_new_forecast_availability": 0,
+        "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+        "verification_exit_code": 0,
+        "python_unit_tests_passed": 1818,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 107
+      }
     }
   },
   "architecture_v2": {
