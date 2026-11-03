@@ -137,6 +137,24 @@ registration and verified raw bytes; no operational observation is fabricated.
 API-Football team/league/season evidence is required, but an exact shared future
 fixture is not invented. Names alone never establish equivalence.
 
+Migration `202611030200` also permits a qualified reconstruction of a replaced
+FotMob mapping. The closed source and current target must have the same native
+team ID, different stored projections and adjacent validity intervals. The
+source must retain its original mapping-change revocation. Replay the actual
+retained observation through the existing resolver to record its contradiction;
+never invent that decision. An exact shared native fixture must bind the old
+source bytes to the registered fixture/season bytes, with both participants,
+kickoff, country and competition agreeing. The target must independently pass
+current admission and retained-byte checks. Labels can expose a contradiction;
+they do not establish the identity relationship.
+
+The existing Resolution Center can read the exact closed mapping case and offer
+its same-native current version as a candidate. `CORRECT` still requires the full
+qualified preview; ordinary `APPROVE` remains blocked. The correction appends a
+dated linked admission without reopening or editing the source mapping. Closed
+history participates only while that reconstruction is active, and existing
+fixture quarantine, duplicate, source and forecast-time checks remain in force.
+
 Each request contains `source_mapping_id`, `target_mapping_id`,
 `original_decision_id`, `fixture_registration_id` and `orientation` (`HOME` or
 `AWAY`). `qualify_team_correction` is read-only. `correct_team_identity` inserts

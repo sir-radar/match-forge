@@ -126,6 +126,8 @@ def qualify_action(
         return {"status": "QUALIFIED", "reason": "WITHDRAW_CURRENT_TRUST_PROSPECTIVELY"}
     if action != "APPROVE":
         raise ValueError("action is not supported for this mapping")
+    if detail.get("mapping_closed_at") is not None:
+        raise ValueError("closed mapping requires qualified linked reconstruction")
     allowed = detail["decision"]["disposition"] in {"ORIGIN_ANCHOR", "CROSSWALK"}
     return {
         "status": "QUALIFIED" if allowed else "BLOCKED",

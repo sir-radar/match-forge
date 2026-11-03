@@ -1,0 +1,956 @@
+{
+  "status": "VERIFIED_IN_SHADOW",
+  "scope": "FR-001 exact native reconstruction; all original facts stay intact",
+  "knowledge_cutoff": "2026-11-03 21:25:24.059770+00:00",
+  "frozen_target_ids": [
+    "a49bcd54-0272-53e6-86e7-287dc385c65c",
+    "1e25a517-7f96-5690-85dc-94e0244172b2",
+    "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+    "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+    "3821252c-f534-5799-a761-ab18516f6490",
+    "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+    "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+    "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+    "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+    "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+    "cb09fc37-a457-5101-97c4-c7f63e380cae",
+    "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+    "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+    "0cb391b0-90fd-540f-ab63-b58e41693136",
+    "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+    "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+    "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+    "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+    "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+    "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+    "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+    "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+    "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+    "b23c0761-115a-5b4f-bf01-93b552777de7",
+    "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+    "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+    "a847dbdb-484d-547b-856b-5ac38c522127",
+    "c6391ca0-df34-5033-bf98-5f807641ffd5",
+    "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+    "74fe2710-563e-5fa4-b4da-38053eb6f76b"
+  ],
+  "target_count": 30,
+  "original_mapping_versions": 8,
+  "original_admissions": 12,
+  "relationships": [
+    {
+      "provider": "fotmob",
+      "native_team_id": "106975",
+      "source_mapping_id": "01a12ac1-490f-7548-8e0f-4c3df7a839a5",
+      "target_mapping_id": "01a14230-cade-7a4a-b79e-6d53984decf4",
+      "stored_source_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "target_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "source_closed_at": "2026-10-16 00:50:56.222825+00:00",
+      "target_valid_from": "2026-10-16 00:50:56.222825+00:00",
+      "original_revocation_id": "01a14230-ca79-7310-968a-173c55e38775",
+      "independent_target_admission_id": "01a14230-cb49-733a-b203-496e96426613",
+      "target_primary_snapshot_id": "db675310-3cdd-5faf-b2c4-e1d11131f935",
+      "common_native_fixtures": [
+        {
+          "fixture_id": "5975055",
+          "home": "106975",
+          "away": "102019",
+          "kickoff": "2026-10-11T15:00:00.000Z",
+          "league": "522",
+          "country": "Ghana",
+          "target_season": "2026/2027",
+          "old_source": {
+            "source_resource_id": "c94e4bf9-b5de-57eb-bbe0-3ddc68ee2444",
+            "sha256": "b544e2fa9fcf6464bb8d81dc33f7cfea4a01655976d76b8b7ef762d0274f02a9",
+            "source_snapshot_id": "fb2653f9-74ca-523c-ad09-b73873d1add6",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-11T11:37:51.649346+00:00"
+          },
+          "new_source": {
+            "source_resource_id": "86ecfe35-4565-5bfe-8da3-9dd6af484bcf",
+            "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+            "source_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-14T05:15:27.619014+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "provider": "fotmob",
+      "native_team_id": "2103806",
+      "source_mapping_id": "01a12ac1-4903-79bc-a5a7-8353dc4edd48",
+      "target_mapping_id": "01a14230-cd0a-76d8-bfe0-0c088e6cbdf7",
+      "stored_source_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "target_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "source_closed_at": "2026-10-16 00:50:56.875162+00:00",
+      "target_valid_from": "2026-10-16 00:50:56.875162+00:00",
+      "original_revocation_id": "01a14230-ccf1-7b7f-a2de-5b5c0af51abf",
+      "independent_target_admission_id": "01a14230-cd25-7889-83df-2aae899a1a1d",
+      "target_primary_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+      "common_native_fixtures": [
+        {
+          "fixture_id": "5975053",
+          "home": "102016",
+          "away": "2103806",
+          "kickoff": "2026-10-11T15:00:00.000Z",
+          "league": "522",
+          "country": "Ghana",
+          "target_season": "2026/2027",
+          "old_source": {
+            "source_resource_id": "c94e4bf9-b5de-57eb-bbe0-3ddc68ee2444",
+            "sha256": "b544e2fa9fcf6464bb8d81dc33f7cfea4a01655976d76b8b7ef762d0274f02a9",
+            "source_snapshot_id": "fb2653f9-74ca-523c-ad09-b73873d1add6",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-11T11:37:51.649346+00:00"
+          },
+          "new_source": {
+            "source_resource_id": "86ecfe35-4565-5bfe-8da3-9dd6af484bcf",
+            "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+            "source_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-14T05:15:27.619014+00:00"
+          }
+        }
+      ]
+    }
+  ],
+  "private_receipts_sha256": {
+    "fr001-original-state.json": "08655f827bf5d94374c712f58c65452b6049252d2c14188d1843e977e0a3d20e",
+    "fr001-native-proof.json": "050cd9824edab02f2774189be1eb422163c58fbaaa344830e20fa1acdbf665d2",
+    "fr001-replacement-reproduction.json": "5baeb0f57c1d2edc3af954cb615178afcd9db6f81f3055a855b1b795ee83f443",
+    "fr001-populated-rehearsal.json": "d8b8d057ea3c528ce450d9abe412fdc0e3c122e7915815310d2c669df2b4553c",
+    "fr001-consumer-rehearsal.json": "a9fab5e7312734469a54b44b0ff020a2b9eefc0a527ef69fdc03eb6cfd95af88",
+    "fr001-forward-repair.json": "17e149e852fecbd93df074d46ce944cee28482928e75390364025afdf6304ccd",
+    "fr001-migration-compatibility/result.json": "dd824b54b3778086ff77947db251b44e95b4a058ceea1cb79b82c5eb304e83b2",
+    "operating-backup-before-native-correction/restore-verification.json": "503f40501d36e5bd77795c6d855bf9015d3582397feccdc0eaa4f951fd07f3b8",
+    "fr001-admission-deadlines.json": "bed9cc17642ca0a0327a8d22eac87a90b00ca5e69c654dd1dbe3ba7793ae4276",
+    "fr001-final-check-integration.log": "7d6b88d44228dc5dc5bfbe8c60f618234c03cc6be9ba07f1c4a3340d5b03bb26"
+  },
+  "operating_corrections": 0,
+  "operating_migration_applied": false,
+  "verified_new_forecasts": 0,
+  "backup": {
+    "captured_at": "2026-11-03 22:20:40.531141+00:00",
+    "bytes": 1529811963,
+    "sha256": "62898d0989e23fc196ca82e993534acbe422f6cca1f71e5d84259a1baa0bf40a",
+    "exact_restore": "PASS",
+    "prospective_withdrawal_and_forward_repair": "PASS"
+  },
+  "shadow": {
+    "migration_upgrade_and_retry": "PASS",
+    "unchanged_registration_digests": 9,
+    "changed_original_rows": {
+      "source_snapshots": 0,
+      "source_resources": 0,
+      "product_identity_admissions": 0,
+      "product_match_history_decisions": 0,
+      "product_team_match_history": 0,
+      "model_artifacts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0,
+      "model_promotion_events": 0,
+      "artifact_retirement_events": 0,
+      "team_provider_mappings": 0,
+      "competition_provider_mappings": 0,
+      "match_provider_mappings": 0
+    },
+    "earlier_cutoff_preserved": true,
+    "all_30_physical_fixture_rows_preserved_before_publication": true,
+    "new_eligible_history": 0,
+    "fresh_qualified_targets": 30,
+    "forecasts_published": 15,
+    "original_cutoff_forecasts_reproduced": 15,
+    "repeat_new_forecasts": 0,
+    "context_errors": 0,
+    "routes_legacy": 13,
+    "review_seconds": [
+      4.172,
+      1.883
+    ],
+    "before_knowledge_cutoff": "2026-11-03 22:40:24.326049+00:00",
+    "after_knowledge_cutoff": "2026-11-03 22:46:12.616846+00:00"
+  },
+  "pending_pr178": {
+    "head_sha": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "draft": true,
+    "merged": false,
+    "pending_migration_git_blob": "266bea6efefb4770f5b5bc83046cbb36cb9e85ab",
+    "ordered_combined_upgrade_and_retry": "PASS",
+    "preexisting_operating_ordering_gap_remains": true
+  },
+  "shadow_target_results": [
+    {
+      "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 58,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 58,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "home_eligible": 0,
+        "away_eligible": 46,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "home_eligible": 159,
+        "away_eligible": 46,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "home_eligible": 0,
+        "away_eligible": 86,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "home_eligible": 6,
+        "away_eligible": 86,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+        "home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 108,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+        "home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 108,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "home_eligible": 6,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 0,
+        "away_eligible": 133,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 159,
+        "away_eligible": 133,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 149,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 159,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 58,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 58,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "home_eligible": 0,
+        "away_eligible": 149,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "home_eligible": 159,
+        "away_eligible": 149,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 46,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 46,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 0,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 6,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 0,
+        "away_eligible": 57,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 159,
+        "away_eligible": 57,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 0,
+        "away_eligible": 133,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 6,
+        "away_eligible": 133,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 149,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 86,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 86,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 18,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 6,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 0,
+        "away_eligible": 108,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 159,
+        "away_eligible": 108,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+        "home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+        "home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 149,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 147,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 0,
+        "away_eligible": 57,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 6,
+        "away_eligible": 57,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 0,
+        "away_eligible": 58,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 159,
+        "away_eligible": 58,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 86,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 86,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 46,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 46,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 0,
+        "away_eligible": 108,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 6,
+        "away_eligible": 108,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 147,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+        "home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 133,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+        "home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 133,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "home_eligible": 0,
+        "away_eligible": 149,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "home_eligible": 159,
+        "away_eligible": 149,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+        "home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+        "home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 147,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 0,
+        "away_eligible": 58,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 6,
+        "away_eligible": 58,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    }
+  ],
+  "verification": {
+    "focused_consumer_red_cases": 3,
+    "focused_consumer_green_cases": 3,
+    "final_aggregate": "PASS",
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+    "exit_code": 0,
+    "python_unit_tests": 1819,
+    "rust_tests": 16,
+    "web_tests": 107,
+    "full_storage_and_api_integration": true
+  },
+  "shared_history_deadline_regression": {
+    "status": "PASS",
+    "admission_seconds": {
+      "DED": 7.265,
+      "PD": 6.047,
+      "BSA": 3.746
+    },
+    "reference_decision_facts_match": true,
+    "refresh_key_parity": true,
+    "earlier_cutoffs_preserved": true
+  }
+}

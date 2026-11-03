@@ -795,6 +795,15 @@ the original provider mapping, fixture decisions and source observations. Its
 database-stamped `decided_at` makes it eligible prospectively; source acquisition
 is recorded separately and never substituted for an admission time.
 
+A closed FotMob mapping can be reconstructed through the same linked correction
+only when its current replacement has the same native ID and an adjacent validity
+interval. The original mapping-change revocation, a real retained-fixture
+contradiction, independently admitted target and exact native fixture bridge
+must all verify. Country, competition, registered season, orientation and
+participant context must agree. Ordinary approval cannot reopen a closed mapping.
+Only an active linked reconstruction can qualify its closed historical mapping;
+fixture quarantine and duplicate exclusions still apply.
+
 `product_team_identity_at(mapping_id, knowledge_cutoff)` resolves immutable
 admissions at the requested cutoff. Current operational views expose effective
 IDs without rewriting physical records. History qualification appends snapshots

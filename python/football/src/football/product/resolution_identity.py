@@ -36,7 +36,7 @@ def mapping_detail(
     key: UUID,
     verifier: RetainedIdentityVerifier | None = None,
 ) -> dict[str, Any]:
-    rows = mapping_rows(connection, kind, mapping_id=key)
+    rows = mapping_rows(connection, kind, mapping_id=key, include_closed=kind == "team")
     if len(rows) != 1:
         raise ValueError("current mapping not found")
     row = rows[0]
@@ -83,7 +83,7 @@ def mapping_detail(
             decision["reason"],
         ),
         "decision": decision,
-        "mapping_version": [str(value) if value is not None else None for value in row],
+        "mapping_version": [str(value) if value is not None else None for value in row[:10]],
         "admission": latest[0] if latest else None,
         "candidates": candidates,
         "correction_options": [
@@ -100,6 +100,8 @@ def mapping_detail(
         "historical_effect": "Prospective decisions; earlier knowledge cutoffs stay unchanged.",
         "downstream_status": "NOT_REQUESTED",
     }
+    if len(row) > 10 and row[10] is not None:
+        result["mapping_closed_at"] = row[10].isoformat()
     result["evidence_version"] = sha256_json(result)
     return result
 
@@ -133,9 +135,18 @@ def mapping_candidates(
            LEFT JOIN football.product_team_aliases a ON a.team_id=t.team_id
            WHERE m.valid_to IS NULL AND m.id<>%s AND (
                (p.code=%s AND m.provider_team_id=%s) OR
+               (p.code=%s AND m.provider_team_id=%s) OR
                (a.normalized_name=%s AND lower(coalesce(a.country,''))=lower(coalesce(%s,''))))
            ORDER BY p.code,m.provider_team_id,m.id LIMIT 50""",
-        (row[0], target[0] if target else None, target[1] if target else None, name, row[6]),
+        (
+            row[0],
+            target[0] if target else None,
+            target[1] if target else None,
+            row[2],
+            row[3],
+            name,
+            row[6],
+        ),
     ).fetchall()
     return [
         dict(
@@ -148,9 +159,13 @@ def mapping_candidates(
             method=method,
             source_snapshot_id=str(snapshot),
             admission_permission=False,
-            reason="EXISTING_EXPLICIT_CROSSWALK"
-            if target == (provider, identifier)
-            else "ALIAS_DISCOVERY_ONLY_CATEGORY_AND_FIXTURE_EVIDENCE_REQUIRED",
+            reason=(
+                "SAME_NATIVE_MAPPING_REQUIRES_CONTEXT"
+                if (provider, identifier) == (row[2], row[3])
+                else "EXISTING_EXPLICIT_CROSSWALK"
+                if target == (provider, identifier)
+                else "ALIAS_DISCOVERY_ONLY_CATEGORY_AND_FIXTURE_EVIDENCE_REQUIRED"
+            ),
         )
         for key, team, provider, identifier, label, country, method, snapshot in candidates
     ]

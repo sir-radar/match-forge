@@ -468,3 +468,82 @@ stated current knowledge cutoff and prior football; elapsed fixture records are
 not presented as retrospective forecast recovery. JSON inventory checks,
 project-status validation and `git diff --check` pass. No production code changed
 in this checkpoint; the prior successful code aggregate is not rerun.
+
+## Phase B: FR-001 replaced Ghana participant mappings
+
+All 30 frozen targets retain their original participant facts. The two closed
+FotMob mappings (`106975` Medeama and `2103806` Port City) have adjacent current
+versions pointing to independently admitted API-Football identities. The
+[exact relationship inventory](forecast-readiness-fr001-identities.json) binds
+all eight original mapping versions, 12 prior admissions and checksummed native
+resources. One common native fixture per participant agrees on both opaque team
+IDs, orientation, aware UTC kickoff, country and competition. The registered
+2026/27 season agrees with the current native season resource. The older Medeama
+target resource remains explicitly labelled 2024/25; it is not represented as
+current-season evidence.
+
+The [Ghana FA's 2026/27 club announcement](https://www.ghanafa.org/index.php/eighteen-clubs-confirmed-for-2026-27-ghana-premier-league-season)
+identifies Medeama as returning champion and Port City as a promoted debutant.
+This supports the competition/history classification; it does not establish a
+MatchForge UUID relationship or supply missing match records.
+
+Migration `202611030200` extends the existing linked correction guard and history
+qualification function. A closed deterministic FotMob version requires its
+original mapping-change revocation, adjacent same-native current version,
+independently admitted target and a real retained resolver contradiction. The
+existing Resolution Center reviews the closed case through `CORRECT`; ordinary
+`APPROVE` remains blocked. Source bytes, registered fixture/season context and
+participant labels are checked for contradictions. Labels do not prove identity.
+All original mapping rows stay closed and unchanged. No generic FotMob origin
+permission is added.
+
+The fresh operating backup at **2026-11-03 22:20:40.531141 UTC** is
+1,529,811,963 bytes, SHA256
+`62898d0989e23fc196ca82e993534acbe422f6cca1f71e5d84259a1baa0bf40a`.
+Its owned restore reproduces all nine protected registration digests, original
+function definitions and stage settings. Normal Goose upgrade/retry preserves
+those digests and all 13 `LEGACY` routes. The two real reviewed corrections and
+retries complete in **4.172 s** and **1.883 s** within existing deadlines. All
+13 checked original table populations, all 30 physical fixture rows and the
+earlier eligible-history digest remain unchanged. The corrections add no
+eligible history: old duplicate/quarantine exclusions remain effective.
+
+The initial full preview exposed one additional compatibility defect: forecast
+admission still required open mappings, even after a qualified closed-version
+reconstruction. All 30 remained blocked. Three failing regression cases reproduce
+that forecast check and missing/tampered closed-source rechecks. The existing
+forecast and recovery checks now include only active linked reconstructions;
+all three focused regressions pass. Withdrawal removes current permission, and
+fresh recovery checks reverify the closed source bytes. The completed shadow
+publication verifies all 30 source qualifications and removes every identity
+blocker. Exactly **15** targets satisfy the unchanged champion history rule.
+All 15 shadow forecasts reproduce their exact artifact/input/payload hashes at
+original cutoffs, exclude the target outcome and predate kickoff. Repeated
+refresh creates zero forecasts; prior forecast rows remain unchanged. The other
+15 targets retain insufficient eligible history and proceed through FR-004.
+These are shadow results, not operating forecast gains.
+
+Recovery also passes: prospectively withdraw the two new linked decisions, keep
+their original rows and earlier history intact, and restore the captured prior
+function definitions through an ordinary forward Goose migration/retry. Do not
+restore a dump over concurrent operating data. Scoped publication must stop
+before withdrawal or schema recovery. The exact pending PR #178 migration and
+all branch migrations pass ordered upgrade/retry in a separate empty database;
+its existing operating ordering gap remains a separate prerequisite.
+
+The changed shared history function also passes the original populated DED, PD
+and BSA deadline trials with admission times **7.265 / 6.047 / 3.746 s** under
+the existing 20 s limit. Exact reference decision facts, refresh-key parity and
+earlier-cutoff history all match. Each trial rolls back in the owned earlier
+restore; these measurements are not additional operating admissions.
+
+**Implementation checkpoint: PASS_WITH_WARNINGS.** Final
+`env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits 0 after the final consumer changes: 1,819 Python unit tests, 16 Rust tests,
+107 web tests, strict types/static/complexity checks, builds, all disposable
+storage/migration tests and PostgreSQL/Redis/Go API integration. Seven existing
+Python dependency warnings and the existing ESLint warning remain. The initial
+private rehearsal script field-name error was corrected before any shadow review;
+protected digests were rechecked on restart. No test or guard was weakened.
+Operating migration/corrections and operating forecast gains remain zero at
+this code checkpoint; the owner-authorized bounded rollout follows separately.
