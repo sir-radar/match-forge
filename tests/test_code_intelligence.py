@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts.verify_code_intelligence import Client, wait_coverage, wait_symbol
+
 LAUNCHER = Path(__file__).resolve().parents[1] / "scripts" / "code-intelligence.sh"
 
 
@@ -69,3 +71,47 @@ def test_bad_download_preserves_installed_binary(launcher: tuple[Path, Path]) ->
     assert "checksum mismatch" in result.stderr
     assert binary.read_text() == "existing installation"
     assert not list(binary.parent.glob("download.*"))
+
+
+def test_coverage_waits_for_every_saved_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    responses = iter(
+        [
+            {"paths": [{"freshness": "metadata_match"}]},
+            {"paths": [{"freshness": "metadata_match"}, {"freshness": "changed"}]},
+            {"paths": [{"freshness": "metadata_match"}, {"freshness": "metadata_match"}]},
+        ]
+    )
+    monkeypatch.setattr(Client, "call", lambda *_args, **_kwargs: next(responses))
+    monkeypatch.setattr("scripts.verify_code_intelligence.time.sleep", lambda _seconds: None)
+    result = wait_coverage(object.__new__(Client), Path("/fixture"), ["a.sql", "b.schema.json"])
+    assert len(result["coverage"]["paths"]) == 2
+    with pytest.raises(StopIteration):
+        next(responses)
+
+
+def test_stale_coverage_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = iter([0, 0, 61])
+    monkeypatch.setattr("scripts.verify_code_intelligence.time.monotonic", lambda: next(clock))
+    monkeypatch.setattr("scripts.verify_code_intelligence.time.sleep", lambda _seconds: None)
+    monkeypatch.setattr(Client, "call", lambda *_args, **_kwargs: {"paths": []})
+    with pytest.raises(AssertionError, match="Automatic metadata synchronization failed"):
+        wait_coverage(object.__new__(Client), Path("/fixture"), ["a.sql"])
+
+
+def test_rename_waits_for_obsolete_path_removal(monkeypatch: pytest.MonkeyPatch) -> None:
+    responses = iter(
+        [
+            {
+                "groups": [
+                    {"file": "old.py", "name": "mf_probe"},
+                    {"file": "new.py", "name": "mf_probe"},
+                ]
+            },
+            {"groups": [{"file": "new.py", "name": "mf_probe"}]},
+        ]
+    )
+    monkeypatch.setattr(Client, "call", lambda *_args, **_kwargs: next(responses))
+    monkeypatch.setattr("scripts.verify_code_intelligence.time.sleep", lambda _seconds: None)
+    wait_symbol(object.__new__(Client), Path("/fixture"), "mf_probe", expected_path="new.py")
+    with pytest.raises(StopIteration):
+        next(responses)

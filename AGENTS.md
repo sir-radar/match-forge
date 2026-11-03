@@ -741,12 +741,19 @@ when its index is current and reliable. Setup and limitations:
    `max_output_tokens: 1200`). Use returned qualified names to avoid ambiguity.
 3. Read only the relevant source, contracts and tests identified by the index.
    Reuse valid results; do not load full graphs, architecture exports or archives.
+   For a known path, exact text or small local edit, use focused `rg`/source reads
+   directly; do not add graph calls that cannot help answer the question.
+   When a targeted query misses or cannot resolve a relationship, switch to
+   focused source inspection instead of repeating or broadly widening graph calls.
 4. The native Git watcher maintains new, changed, moved and deleted files and
    recursively discovers new directories while an MCP session is open. Keep
    `auto_watch` and `watcher_enabled` enabled. The launcher reconciles offline
    edits before starting MCP, including after session restarts and Git changes.
 5. Before relying on a potentially stale index, call `index_status(project:
    <absolute checkout path>)`. Check `watch.watched`, scan time and parse warnings.
+   A ready status or recent scan does not prove that a particular edit is indexed.
+   For recent edits, check the relevant paths with `check_index_coverage` and
+   confirm the expected symbols/paths, including removal of obsolete results.
    Polling has a delay. After Git operations or edits relevant to the next query,
    call `index_repository(repo_path: <absolute checkout path>, mode: full,
    doc_candidates: false)` and wait for success when freshness is uncertain.
@@ -756,6 +763,10 @@ when its index is current and reliable. Setup and limitations:
    source, tests, schemas, SQL migrations and approved decisions. Missing or
    ambiguous relationships, parse warnings and JSON Schema references require
    focused direct inspection. A graph with no callers does not prove dead code.
+   SQL/PLpgSQL bodies, constraints and table dependencies are incomplete in 0.12.1.
+   Inspect migration DDL, callers' SQL and relevant integration tests directly.
+   Follow JSON Schema `$ref`/`$defs` and Python/Go/Rust/TypeScript serializers and
+   consumers in source; parse success does not establish these relationships.
 7. If synchronization fails, use authoritative sources directly, retain the error
    and retry `index_repository` once after addressing it. Never trust stale output
    silently. Do not unlock or delete caches while another session uses them.
@@ -763,6 +774,11 @@ when its index is current and reliable. Setup and limitations:
    downloads and documentation scoring (`doc_candidates: false`); no hosted indexing or uploads.
    Token optimization never overrides correctness, reproducibility, determinism,
    source traceability, point-in-time integrity or phase gates.
+9. Before implementing or modifying frontend UI, locate and read its authoritative
+   `web/ui-designs/**/*.html` reference (currently `<design>/code.html`). These HTML
+   files are the frontend UI source of truth. Use a focused `search_graph` file
+   filter such as `web/ui-designs/*markets*/code.html`, then read the matching HTML;
+   do not infer its layout from graph nodes or substitute screenshots for source.
 
 Verified CLI equivalents, run from the checkout root:
 

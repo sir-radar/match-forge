@@ -2,7 +2,8 @@
 # Data, generated assets and historical evidence do not aid routine navigation.
 docs/evidence/
 docs/evaluation/
-web/ui-designs/
+# HTML designs are authoritative; screenshots add no navigable source.
+web/ui-designs/**/*.png
 .codegraph/
 graphify-out/
 .codebase-memory/

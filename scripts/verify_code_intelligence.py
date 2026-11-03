@@ -113,11 +113,48 @@ def wait_symbol(
         if (
             present in rendered
             and (not absent or absent not in json.dumps(old))
-            and (not expected_path or expected_path in rendered)
+            and (
+                not expected_path or {group["file"] for group in data["groups"]} == {expected_path}
+            )
         ):
             return round(time.monotonic() - start, 3)
         time.sleep(1)
     raise AssertionError(f"Automatic synchronization failed: present={present}, absent={absent}")
+
+
+def wait_coverage(client: Client, root: Path, paths: list[str]) -> dict[str, Any]:
+    """Wait for the saved metadata, not a previously indexed schema/file node."""
+    start = time.monotonic()
+    while time.monotonic() - start < 60:
+        coverage = client.call(
+            "check_index_coverage", project=str(root), paths=paths, format="json"
+        )
+        if len(coverage["paths"]) == len(paths) and all(
+            item["freshness"] == "metadata_match" for item in coverage["paths"]
+        ):
+            return {"seconds": round(time.monotonic() - start, 3), "coverage": coverage}
+        time.sleep(1)
+    raise AssertionError(f"Automatic metadata synchronization failed: {paths}")
+
+
+def design_checks(client: Client) -> dict[str, Any]:
+    paths = sorted(
+        str(path.relative_to(ROOT)) for path in (ROOT / "web/ui-designs").rglob("*.html")
+    )
+    assert paths, "Authoritative HTML designs must exist"
+    coverage = wait_coverage(client, ROOT, paths)
+    search = client.call(
+        "search_graph",
+        project=str(ROOT),
+        file_pattern="web/ui-designs/*/code.html",
+        label="File",
+        limit=len(paths),
+        max_output_tokens=2400,
+        format="json",
+    )
+    discovered = {group["file"] for group in search["groups"]}
+    assert set(paths) <= discovered, f"Designs missing from graph: {set(paths) - discovered}"
+    return {"html_files": paths, "discovery": search, **coverage}
 
 
 def fixture_checks(binary: Path, env: dict[str, str], log: Any) -> dict[str, Any]:
@@ -171,9 +208,15 @@ def fixture_checks(binary: Path, env: dict[str, str], log: Any) -> dict[str, Any
             results["burst_seconds"] = wait_symbol(
                 client, root, "mf_probe_burst_29", "mf_probe_moved"
             )
+            moved.unlink()
+            results["deleted_file_seconds"] = wait_symbol(
+                client, root, "mf_probe_stable", "mf_probe_burst_29"
+            )
+            (moved.parent / "remaining.py").write_text("def mf_probe_remaining():\n    return 1\n")
+            results["remaining_file_seconds"] = wait_symbol(client, root, "mf_probe_remaining")
             shutil.rmtree(root / "moved")
             results["deleted_directory_seconds"] = wait_symbol(
-                client, root, "mf_probe_stable", "mf_probe_burst_29"
+                client, root, "mf_probe_stable", "mf_probe_remaining"
             )
             git(root, "checkout", "-q", "alternate")
             results["branch_switch_seconds"] = wait_symbol(
@@ -209,12 +252,39 @@ def fixture_checks(binary: Path, env: dict[str, str], log: Any) -> dict[str, Any
                 item["freshness"] == "metadata_match"
                 for item in results["contract_coverage"]["paths"]
             )
+            for filename, content in {
+                "contract.schema.json": (
+                    '{"title":"Changed contract","type":"object","required":["id"]}'
+                ),
+                "migration.sql": "CREATE TABLE mf_probe_changed_table (id integer);",
+                "design.html": "<!doctype html><html><body>Authoritative probe</body></html>",
+            }.items():
+                (root / filename).write_text(content)
+                results[f"{filename}_saved_metadata"] = wait_coverage(client, root, [filename])
+            results["sql_replacement_seconds"] = wait_symbol(
+                client, root, "mf_probe_changed_table", "mf_probe_table"
+            )
             client.close()
             (root / "offline.py").write_text("def mf_probe_offline():\n    return 4\n")
             client = Client(
                 [str(binary), "--ui=false"], root, env | {"CBM_ALLOWED_ROOT": str(root)}, log
             )
             results["native_restart_seconds"] = wait_symbol(client, root, "mf_probe_offline")
+            client.close()
+            launcher = root / "scripts/code-intelligence.sh"
+            launcher.parent.mkdir()
+            shutil.copyfile(ROOT / "scripts/code-intelligence.sh", launcher)
+            local_binary = root / ".tools/code-intelligence/0.12.1/codebase-memory-mcp"
+            local_binary.parent.mkdir(parents=True)
+            local_binary.symlink_to(binary)
+            cache = root / ".local/code-intelligence"
+            cache.parent.mkdir()
+            cache.symlink_to(env["CBM_CACHE_DIR"], target_is_directory=True)
+            (root / "offline.py").write_text("def mf_probe_launcher_restart():\n    return 5\n")
+            client = Client(["sh", str(launcher), "serve"], root, env, log)
+            results["launcher_restart_seconds"] = wait_symbol(
+                client, root, "mf_probe_launcher_restart", "mf_probe_offline"
+            )
             results["final_status"] = client.call("index_status", project=str(root), format="json")
         finally:
             try:
@@ -236,7 +306,9 @@ def main() -> None:
     output.parent.mkdir(exist_ok=True)
     env = os.environ | {"CBM_CACHE_DIR": str(shared / ".local/code-intelligence")}
     with (output.with_suffix(".log")).open("w") as log:
+        started = time.monotonic()
         client = Client(["sh", str(ROOT / "scripts/code-intelligence.sh"), "serve"], ROOT, env, log)
+        launcher_initialize_seconds = round(time.monotonic() - started, 3)
         try:
             tools = client.request("tools/list", {})
             status = client.call(
@@ -252,11 +324,14 @@ def main() -> None:
             )
             assert "normalization/pipeline.py" in json.dumps(navigation)
             assert "search_graph" in json.dumps(tools)
+            designs = design_checks(client)
         finally:
             client.close()
         results = {
+            "launcher_initialize_seconds": launcher_initialize_seconds,
             "launcher_status": status,
             "navigation": navigation,
+            "designs": designs,
             "synchronization": fixture_checks(binary, env, log),
         }
     output.write_text(json.dumps(results, indent=2) + "\n")

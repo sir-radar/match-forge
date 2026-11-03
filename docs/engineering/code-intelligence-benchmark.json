@@ -4,13 +4,19 @@
   "platform": "macOS ARM64",
   "selected_tool": "codebase-memory-mcp 0.12.1",
   "integration_status": "PASS_WITH_WARNINGS",
-  "model_tokens": "NOT MEASURED",
-  "input_tokens": "NOT MEASURED",
-  "output_tokens": "NOT MEASURED",
+  "model_tokens": "MEASURED_CODEX_CLI; GUI NOT MEASURED",
+  "input_tokens": {
+    "baseline": 1085706,
+    "optimized": 1162824
+  },
+  "output_tokens": {
+    "baseline": 9021,
+    "optimized": 11143
+  },
   "context_window_consumption": "NOT MEASURED",
-  "full_task_files_read": "NOT MEASURED",
-  "peak_process_tree_memory": "NOT MEASURED",
-  "methodology": "Five deterministic symbol-discovery probes per tool, one CLI query per probe, no model. Outputs have different information content and cannot establish end-to-end token savings. Tool-specific excludes omitted historical archives and generated files. CBM full indexing includes more file types than CodeGraph.",
+  "full_task_files_read": "NOT FULLY OBSERVABLE; partial explicit paths recorded per run",
+  "peak_process_tree_memory": "MEASURED finite CBM process samples; see remediation.resource_measurement limitations",
+  "methodology": "Initial five deterministic CLI discovery probes per tool measured output bytes, not model usage. See remediation.codex_benchmark for five actual paired Codex tasks with recorded input/output tokens.",
   "navigation": [
     {
       "task": "normalize_resource",
@@ -533,6 +539,991 @@
     }
   },
   "repository_verification": {
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT UV_NO_SYNC=1 make check integration",
+    "exit_code": 0,
+    "python_unit_tests": 1765,
+    "rust_tests": 16,
+    "frontend_tests": 107,
+    "aggregate_log_sha256": "d5d0b6714432e63100c529ae57c687af6eb131e3067119d7a82a49f32c57c393",
+    "tooling_unit_cases": 7,
+    "strict_tooling_mypy": "PASS",
+    "ruff_complexity_lint": "PASS",
+    "migration_storage_operational_integration": "PASS",
+    "preexisting_frontend_lint_warnings": 1,
+    "real_mcp_verifier": "PASS",
+    "benchmark_event_hash_validation": "PASS",
+    "production_behavior_model_contract_phase_changes": false
+  },
+  "remediation": {
+    "date": "2026-11-03",
+    "base_sha": "307762108605d3d8351b3cf9adb5e06cfe9911b3",
+    "coverage": {
+      "before": {
+        "nodes": 16491,
+        "edges": 74599,
+        "partial_files": 67,
+        "unusable_files": 2,
+        "ui_html_files": 0
+      },
+      "after_ignore_change": {
+        "nodes": 16567,
+        "edges": 74678,
+        "partial_files": 67,
+        "unusable_files": 2,
+        "ui_html_files": 13
+      },
+      "html_paths": [
+        "web/ui-designs/matchforge_desktop_external_predictions_page/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_diagnostics_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_expanded_match_overview/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_forecast_history_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_h2h_context_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_list_collapsed/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_markets_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_scores_matrix_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_simulation_evidence_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_team_statistics_tab/code.html",
+        "web/ui-designs/matchforge_logo/code.html",
+        "web/ui-designs/matchforge_mobile_fixtures_expanded_overview/code.html",
+        "web/ui-designs/matchforge_mobile_fixtures_list_collapsed/code.html"
+      ],
+      "design_discovery": "PASS: all HTML File nodes found with glob; saved metadata matched",
+      "resolved_parser_warnings": 0,
+      "new_design_files_without_recorded_parse_issue": 13,
+      "production_sources_changed_for_parser": false,
+      "final_observed": {
+        "nodes": 16696,
+        "edges": 74833,
+        "files": 1009,
+        "partial_files": 67,
+        "unusable_files": 2,
+        "note": "After verification/doc changes, separate from isolated ignore-change comparison."
+      },
+      "html_metadata_match_paths": [
+        "web/ui-designs/matchforge_mobile_fixtures_expanded_overview/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_simulation_evidence_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_team_statistics_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_h2h_context_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_diagnostics_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_scores_matrix_tab/code.html",
+        "web/ui-designs/matchforge_logo/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_forecast_history_tab/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_list_collapsed/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_expanded_match_overview/code.html",
+        "web/ui-designs/matchforge_mobile_fixtures_list_collapsed/code.html",
+        "web/ui-designs/matchforge_desktop_fixtures_markets_tab/code.html",
+        "web/ui-designs/matchforge_desktop_external_predictions_page/code.html"
+      ],
+      "contract_and_document_freshness": [
+        {
+          "path": "infrastructure/migrations/202608290200_canonical_storage.sql",
+          "status": "partial",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "infrastructure/migrations/202610210100_unknown_season_fixture_reconciliation.sql",
+          "status": "unusable",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "schemas/contracts/fixture-feature-snapshot-v1.schema.json",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "schemas/contracts/pitchapi-v5-execution-receipt-v1.schema.json",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "python/football/src/football/providers/normalization/pipeline.py",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "go/api/internal/app/product.go",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "rust/simulation-core/src/lib.rs",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "web/hooks/use-resource.ts",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "docs/architecture.md",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        },
+        {
+          "path": "docs/backtesting.md",
+          "status": "no_recorded_issue",
+          "freshness": "metadata_match"
+        }
+      ]
+    },
+    "parse_diagnostics": {
+      "partial": [
+        {
+          "path": "Makefile",
+          "error_ranges": "189-189,192-192,195-195,198-198,201-201,204-204,210-210,213-213"
+        },
+        {
+          "path": "infrastructure/migrations/202608290200_canonical_storage.sql",
+          "error_ranges": "6-7,142-146,146-148,171-176,176-178,200-204,204-206,228-232,232-234,256-260,260-262,293-297,297-299,330-334,334-336,368-372,372-374,406-410,410-412,462-466,466-468,502-506,506-508,509-509,510-510,511-511,512-512,512-514,546-550,550-552,646-650,650-652"
+        },
+        {
+          "path": "infrastructure/migrations/202608292000_team_elo.sql",
+          "error_ranges": "22-25,26-29"
+        },
+        {
+          "path": "infrastructure/migrations/202609020700_f3_fixture_persistence.sql",
+          "error_ranges": "27-28,29-31,70-74,81-82,83-86,127-132,133-135,151-151,154-155,156-158"
+        },
+        {
+          "path": "infrastructure/migrations/202609020900_source_correction_dependencies.sql",
+          "error_ranges": "57-72,87-93,109-140"
+        },
+        {
+          "path": "infrastructure/migrations/202609051100_artifact_retirement_evaluations.sql",
+          "error_ranges": "17-17,19-23,25-29,31-35"
+        },
+        {
+          "path": "infrastructure/migrations/202609060100_competition_rule_bindings.sql",
+          "error_ranges": "14-14,27-27"
+        },
+        {
+          "path": "infrastructure/migrations/202609290100_mvp_product.sql",
+          "error_ranges": "85-87,88-90,132-134,135-137,153-153,155-156,157-158,160-162"
+        },
+        {
+          "path": "infrastructure/migrations/202609300100_mvp_completion.sql",
+          "error_ranges": "12-12"
+        },
+        {
+          "path": "infrastructure/migrations/202610040100_explicit_product_team_crosswalks.sql",
+          "error_ranges": "8-8"
+        },
+        {
+          "path": "infrastructure/migrations/202610070100_multi_model_forecasting.sql",
+          "error_ranges": "89-90,91-94,117-117,119-121,143-146,147-147"
+        },
+        {
+          "path": "infrastructure/migrations/202610070200_live_context_revisions.sql",
+          "error_ranges": "130-133,134-138,139-150,178-178,189-189,209-209,211-213,238-243,244-244,245-245"
+        },
+        {
+          "path": "infrastructure/migrations/202610090200_fixture_identity_ingestion_guard.sql",
+          "error_ranges": "19-19,28-29,30-32,42-43,44-44"
+        },
+        {
+          "path": "infrastructure/migrations/202610090300_operational_provider_sync.sql",
+          "error_ranges": "87-87"
+        },
+        {
+          "path": "infrastructure/migrations/202610110400_sync_run_lanes.sql",
+          "error_ranges": "3-3,21-21"
+        },
+        {
+          "path": "infrastructure/migrations/202610120400_provider_history_discovery.sql",
+          "error_ranges": "14-14"
+        },
+        {
+          "path": "infrastructure/migrations/202610120500_active_match_mapping_lookup.sql",
+          "error_ranges": "7-7"
+        },
+        {
+          "path": "infrastructure/migrations/202610121000_worker_publication_fencing.sql",
+          "error_ranges": "10-15,25-58,61-61,62-64,66-67,68-69,75-76,78-78,80-82,83-83,84-85,87-87,88-88,89-89"
+        },
+        {
+          "path": "infrastructure/migrations/202610121100_product_identity_admission.sql",
+          "error_ranges": "28-42,52-52,68-68,110-110,154-154,169-169,266-266,278-278"
+        },
+        {
+          "path": "infrastructure/migrations/202610130100_history_acquisition_policy.sql",
+          "error_ranges": "16-16,28-28"
+        },
+        {
+          "path": "infrastructure/migrations/202610130200_forecast_refresh_worklist.sql",
+          "error_ranges": "22-22,36-39,41-47,84-84,103-103,107-107,108-108,109-109,110-110,111-111,112-112"
+        },
+        {
+          "path": "infrastructure/migrations/202610130300_score_bucket_serialization.sql",
+          "error_ranges": "6-6,23-23"
+        },
+        {
+          "path": "infrastructure/migrations/202610130400_provider_quota_metadata.sql",
+          "error_ranges": "9-9"
+        },
+        {
+          "path": "infrastructure/migrations/202610130500_operational_refresh_state.sql",
+          "error_ranges": "51-51"
+        },
+        {
+          "path": "infrastructure/migrations/202610130600_analytics_selection.sql",
+          "error_ranges": "25-25,68-68,69-69"
+        },
+        {
+          "path": "infrastructure/migrations/202610140100_team_identity_corrections.sql",
+          "error_ranges": "17-18,20-21,22-30,61-61,61-62,63-64,65-66,79-80,81-83,161-161,161-163,163-165,167-167,175-175,177-177,179-183,187-188,242-243,264-265,279-279,340-340"
+        },
+        {
+          "path": "infrastructure/migrations/202610140200_bounded_history_qualification.sql",
+          "error_ranges": "10-10,56-58,62-86"
+        },
+        {
+          "path": "infrastructure/migrations/202610140300_canonical_fixture_geography.sql",
+          "error_ranges": "18-23,35-35,36-37,38-40,50-50,51-52,53-55,65-65"
+        },
+        {
+          "path": "infrastructure/migrations/202610140400_scoped_history_reconciliation.sql",
+          "error_ranges": "29-29"
+        },
+        {
+          "path": "infrastructure/migrations/202610140500_effective_identity_lookup.sql",
+          "error_ranges": "11-11,12-12"
+        },
+        {
+          "path": "infrastructure/migrations/202610140700_history_alias_qualification.sql",
+          "error_ranges": "9-9,75-75,85-86,87-89,96-96"
+        },
+        {
+          "path": "infrastructure/migrations/202610150100_reviewed_correction_revalidation.sql",
+          "error_ranges": "8-9,11-12,13-21,52-52,52-55,82-83,84-85,98-99,100-102,108-108"
+        },
+        {
+          "path": "infrastructure/migrations/202610150200_non_played_history_qualification.sql",
+          "error_ranges": "10-10,72-72,79-79"
+        },
+        {
+          "path": "infrastructure/migrations/202610160100_native_split_history_scopes.sql",
+          "error_ranges": "13-13,14-14,15-15"
+        },
+        {
+          "path": "infrastructure/migrations/202610160200_observation_contract_foundation.sql",
+          "error_ranges": "56-56,62-63,64-66,76-93,94-94"
+        },
+        {
+          "path": "infrastructure/migrations/202610180100_provider_mapping_history.sql",
+          "error_ranges": "5-7,49-49,60-75,84-88,90-99,139-141,152-154,174-179,180-180,181-181"
+        },
+        {
+          "path": "infrastructure/migrations/202610180200_canonical_resource_resolutions.sql",
+          "error_ranges": "45-45,48-53,56-60,61-64,84-84,88-117,118-118"
+        },
+        {
+          "path": "infrastructure/migrations/202610180300_provider_resource_capabilities.sql",
+          "error_ranges": "20-21,21-22,44-44,53-53,56-61,64-70,71-73,82-101,102-102"
+        },
+        {
+          "path": "infrastructure/migrations/202610180400_provider_resource_authority.sql",
+          "error_ranges": "42-42,45-50,53-59,60-62,71-90,91-91"
+        },
+        {
+          "path": "infrastructure/migrations/202610180500_resource_coverage.sql",
+          "error_ranges": "63-66,99-99"
+        },
+        {
+          "path": "infrastructure/migrations/202610180700_work_orchestration.sql",
+          "error_ranges": "15-15,23-24,25-26,27-28,43-44,68-70,72-74,75-85,96-99,110-121,144-166,203-203,204-213,218-218,219-219,223-223,224-224,226-232,232-233,234-236,242-415,416-416"
+        },
+        {
+          "path": "infrastructure/migrations/202610180800_transaction_lock_order.sql",
+          "error_ranges": "8-77,81-81,81-84,86-88,88-88,89-121,131-149,150-150"
+        },
+        {
+          "path": "infrastructure/migrations/202610180900_work_reference_locks.sql",
+          "error_ranges": "9-27,28-28"
+        },
+        {
+          "path": "infrastructure/migrations/202610181000_identity_lock_order.sql",
+          "error_ranges": "9-23,33-33,97-97,98-98,99-99"
+        },
+        {
+          "path": "infrastructure/migrations/202610181100_model_publication_lock_order.sql",
+          "error_ranges": "8-45,46-46"
+        },
+        {
+          "path": "infrastructure/migrations/202610181200_publication_lock_order.sql",
+          "error_ranges": "9-46,47-47"
+        },
+        {
+          "path": "infrastructure/migrations/202610181300_worker_fence_lock_order.sql",
+          "error_ranges": "9-76,78-78,88-137,138-138,140-175,179-222,222-222,223-226,227-229,239-239,241-247,258-258,259-259,260-260"
+        },
+        {
+          "path": "infrastructure/migrations/202610181400_scoped_history_locks.sql",
+          "error_ranges": "9-47,56-86,93-118,120-120,184-185,196-198,199-201,208-209,218-219,260-260"
+        },
+        {
+          "path": "infrastructure/migrations/202610181500_scoped_work_claims.sql",
+          "error_ranges": "8-64,65-65"
+        },
+        {
+          "path": "infrastructure/migrations/202610181600_lease_expiry_retry_policy.sql",
+          "error_ranges": "7-7,12-14,31-31,32-41,46-46,47-47,51-51,52-52,54-60,60-61,62-64,83-132,133-133"
+        },
+        {
+          "path": "infrastructure/migrations/202610181700_history_work_registration.sql",
+          "error_ranges": "8-58,58-58,59-60,71-71,72-72,73-73"
+        },
+        {
+          "path": "infrastructure/migrations/202610181800_history_work_execution.sql",
+          "error_ranges": "15-15,16-25,30-30,31-31,35-35,36-36,38-49,112-112,112-115,115-118,119-126,127-129,130-131,131-133,133-134,135-162,172-179,192-200,208-208,209-209,210-210"
+        },
+        {
+          "path": "infrastructure/migrations/202610181900_history_work_heartbeat.sql",
+          "error_ranges": "10-10,11-12,13-13,19-22,33-34,42-42,43-43,44-44"
+        },
+        {
+          "path": "infrastructure/migrations/202610182000_domain_work_adapters.sql",
+          "error_ranges": "11-11,17-152,153-153,156-156,156-166,216-216,219-219,219-228,236-271,273-273,279-279,280-280,281-281"
+        },
+        {
+          "path": "infrastructure/migrations/202610190200_work_metrics.sql",
+          "error_ranges": "59-59,65-65,68-69,76-140,143-147,150-150,151-153,154-158,168-168,172-172,173-175,176-180,191-204,210-210,211-213,214-218,247-250,267-267,268-268,269-269"
+        },
+        {
+          "path": "infrastructure/migrations/202610190300_runtime_model_registry.sql",
+          "error_ranges": "38-38,40-40,42-42"
+        },
+        {
+          "path": "infrastructure/migrations/202610190400_post_match_evaluation.sql",
+          "error_ranges": "10-10,33-66"
+        },
+        {
+          "path": "infrastructure/migrations/202610200100_public_read_reports.sql",
+          "error_ranges": "26-26,40-40,105-105,117-156"
+        },
+        {
+          "path": "infrastructure/migrations/202610280100_context_report_refresh_worklist.sql",
+          "error_ranges": "30-30,41-41,61-66,68-73,79-82,83-85,91-94,95-97,113-113,115-115,133-136,137-139,152-152,167-169,170-172,185-185,200-202,203-205,216-293,294-294"
+        },
+        {
+          "path": "infrastructure/migrations/202610300100_public_report_scheduling.sql",
+          "error_ranges": "9-9,48-48,63-63,83-106,111-111,111-112,114-115,115-115,116-118,128-128,143-144,145-147,163-163"
+        },
+        {
+          "path": "infrastructure/migrations/202610310100_external_prediction_recovery.sql",
+          "error_ranges": "8-8,23-24,50-50,63-64,65-67,98-98,128-128,130-130,189-189,220-220,222-222,222-224,235-235,237-237,237-239,250-250,254-254,254-256,260-260,260-263,271-271,272-280,281-281,282-282,292-292,317-317"
+        },
+        {
+          "path": "infrastructure/migrations/202610310300_reviewed_external_bindings.sql",
+          "error_ranges": "13-13,31-31,32-34,42-42,44-44,44-46,54-54,74-74"
+        },
+        {
+          "path": "infrastructure/migrations/202610310400_resolution_review_events.sql",
+          "error_ranges": "6-7,10-11,11-11,11-12,12-15,27-27,37-37,38-38,39-39"
+        },
+        {
+          "path": "infrastructure/migrations/202610310500_resolution_recovery_work.sql",
+          "error_ranges": "38-194,200-201,201-202,203-212,235-235"
+        },
+        {
+          "path": "infrastructure/migrations/202610310600_resolution_file_recovery.sql",
+          "error_ranges": "15-19,32-32"
+        },
+        {
+          "path": "infrastructure/migrations/202610310700_resolution_parity.sql",
+          "error_ranges": "18-18"
+        },
+        {
+          "path": "infrastructure/migrations/202610310800_resolution_stage_controls.sql",
+          "error_ranges": "18-20,29-29,32-33,34-35,36-36,45-47,58-79,102-102"
+        }
+      ],
+      "unusable": [
+        {
+          "path": "data/fixtures/statsbomb/sprint1/malformed-events/data/events/1003.json",
+          "whole_file": true,
+          "range_end": 1
+        },
+        {
+          "path": "infrastructure/migrations/202610210100_unknown_season_fixture_reconciliation.sql",
+          "whole_file": true,
+          "range_end": 159
+        }
+      ],
+      "categories": {
+        "partial_postgresql_migrations": 66,
+        "partial_makefile": 1,
+        "intentionally_invalid_json_fixture": 1,
+        "unusable_postgresql_migration": 1
+      },
+      "conclusion": "No supported safe parser configuration resolves these warnings. Generic SQL recovery omits PostgreSQL relationships; Oracle PL/SQL is not a replacement. JSON Schema references/consumers require direct source checks even with no warning."
+    },
+    "native_sync": {
+      "poll_strategy": "git",
+      "formula": "min(60000, 5000 + floor(tracked_files/500)*1000) milliseconds",
+      "event_driven_switch": "NOT SUPPORTED IN INSPECTED 0.12.1",
+      "poll_configuration_changed": false,
+      "new_file_or_definition_can_trigger_full_rebuild": true,
+      "measurements": {
+        "new_file_and_recursive_directory_seconds": 11.157,
+        "modified_seconds": 5.18,
+        "directory_move_seconds": 6.197,
+        "file_rename_seconds": 5.091,
+        "burst_seconds": 6.198,
+        "deleted_file_seconds": 5.276,
+        "remaining_file_seconds": 6.097,
+        "deleted_directory_seconds": 5.212,
+        "branch_switch_seconds": 6.205,
+        "branch_return_seconds": 5.171,
+        "architecture_document_seconds": 6.089,
+        "sql_table_seconds": 0.016,
+        "architecture_change_seconds": 6.206,
+        "sql_replacement_seconds": 0.031,
+        "native_restart_seconds": 11.178,
+        "launcher_restart_seconds": 0.025
+      },
+      "saved_metadata_seconds": {
+        "contract.schema.json_saved_metadata": 5.078,
+        "migration.sql_saved_metadata": 6.099,
+        "design.html_saved_metadata": 6.078
+      },
+      "temporary_repo_removed": true,
+      "latency_note": "One-second observation cadence plus MCP requests; near-zero SQL replacement query follows its independently measured metadata convergence and is not save-to-index latency. Launcher restart query follows completed startup reconciliation.",
+      "actual_desktop_restart": "NOT EXERCISED; disposable launcher restart tested",
+      "launcher_initialize_seconds": 8.921,
+      "final_verifier_sha256": "7564dc9218e19a25b3ff9e60bb3b30785c102e101db3e624a9f68ecee5d8ba3b",
+      "final_result": "PASS",
+      "prior_observed_seconds_range": [
+        6,
+        12
+      ],
+      "current_observed_seconds_range": [
+        5.078,
+        11.178
+      ]
+    },
+    "official_sources": [
+      "https://github.com/DeusData/codebase-memory-mcp/blob/v0.12.1/docs/CONFIGURATION.md",
+      "https://github.com/DeusData/codebase-memory-mcp/blob/v0.12.1/src/watcher/watcher.c",
+      "https://github.com/DeusData/codebase-memory-mcp/blob/v0.12.1/src/pipeline/pipeline_incremental.c",
+      "https://github.com/DeusData/codebase-memory-mcp/blob/v0.12.1/internal/cbm/extract_defs.c",
+      "https://github.com/DeusData/codebase-memory-mcp/blob/v0.12.1/internal/cbm/lang_specs.c",
+      "https://github.com/DeusData/codebase-memory-mcp/issues/2834",
+      "https://github.com/DeusData/codebase-memory-mcp/issues/2835",
+      "https://github.com/DeusData/codebase-memory-mcp/issues/2883",
+      "https://github.com/DeusData/codebase-memory-mcp/pull/2900",
+      "https://learn.chatgpt.com/docs/non-interactive-mode",
+      "https://learn.chatgpt.com/docs/permissions"
+    ],
+    "pinned_source_commit": "a7158ac2f48ca646b4527341b76f930f2aeff87e",
+    "codex_benchmark": {
+      "status": "MEASURED_CODEX_CLI",
+      "model": "gpt-6.1-terra",
+      "reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.166.0-alpha.5.1",
+      "base_sha": "307762108605d3d8351b3cf9adb5e06cfe9911b3",
+      "snapshot_sha": "064408626528419e85d18faa48c84766320f68c9",
+      "snapshot_audit": {
+        "base_sha": "307762108605d3d8351b3cf9adb5e06cfe9911b3",
+        "audit": "All included UTF-8 text scanned for private keys, known token patterns, credential assignments/URLs and high-entropy quoted literals; every candidate file excluded. No provider payload directories, datasets, .env files, archives or binary assets included.",
+        "included_count": 976,
+        "excluded_count": 449,
+        "included_manifest_sha256": "68f215c79e13fd45e200640e99eab730682cb1f55e0d5f2a490b1852fbbcad3b"
+      },
+      "runs_per_task_per_workflow": 1,
+      "scenarios": [
+        {
+          "scenario": "provider_identity",
+          "task": "Trace provider acquisition into normalize_resource and canonical identity mapping. Identify a production entry point, the normalizer caller, where explicit provider-to-MatchForge IDs are resolved, and focused tests for both normalization and cross-provider mapping. Explain why names alone cannot identify a team.",
+          "baseline_total_tokens": 240000,
+          "optimized_total_tokens": 271347,
+          "reduction_percent": -13.061,
+          "correctness": "PASS",
+          "verification": "Both answers checked against the cited source relationships; no fabricated production changes or test results."
+        },
+        {
+          "scenario": "storage_recovery",
+          "task": "Trace canonical persistence and the recovery/quarantine workflow. Identify the canonical storage SQL migration and a Python writer, then the resolution file recovery migration, its consumer and relevant tests. Verify actual SQL constraints/callers directly and distinguish rejected data from replay/recovery.",
+          "baseline_total_tokens": 200155,
+          "optimized_total_tokens": 184035,
+          "reduction_percent": 8.054,
+          "correctness": "PASS",
+          "verification": "Both answers checked against the cited source relationships; no fabricated production changes or test results."
+        },
+        {
+          "scenario": "forecast_contracts",
+          "task": "Trace forecast model routing and a cross-language simulation contract. Find the Python model routing decision, the schema and Python/Rust/Go consumers for a simulation request or result, and relevant contract/parity tests. Explain actual language ownership and any graph gaps; verify serialization in source.",
+          "baseline_total_tokens": 276747,
+          "optimized_total_tokens": 354533,
+          "reduction_percent": -28.107,
+          "correctness": "PASS_WITH_WARNINGS",
+          "verification": "Read-only source relationship and test-discovery review; no production change or test execution requested in the benchmark. Missing V3 standalone schema/Go wire consumer correctly qualified by both arms."
+        },
+        {
+          "scenario": "serving_impact",
+          "task": "Trace Go API serving dependencies for fixture context reports and assess a hypothetical useResource refactor. Identify HTTP handler, storage dependency and API tests; identify the hook, all production consumers and focused frontend tests that need review. Do not implement the refactor.",
+          "baseline_total_tokens": 134214,
+          "optimized_total_tokens": 170081,
+          "reduction_percent": -26.724,
+          "correctness": "PASS",
+          "verification": "Both answers checked against the cited source relationships; no fabricated production changes or test results."
+        },
+        {
+          "scenario": "frontend_design",
+          "task": "Prepare a frontend markets-tab change without editing. Locate the authoritative desktop markets HTML reference, inspect its content, find the existing React markets implementation and its data hook/contract, then identify affected tests. Explain the design-to-component relationship using concrete source evidence. Do not substitute a screenshot for HTML.",
+          "baseline_total_tokens": 243611,
+          "optimized_total_tokens": 193971,
+          "reduction_percent": 20.377,
+          "correctness": "PASS",
+          "verification": "Both answers checked against the cited source relationships; no fabricated production changes or test results."
+        }
+      ],
+      "totals": {
+        "baseline": {
+          "input_tokens": 1085706,
+          "output_tokens": 9021,
+          "cached_input_tokens": 934784,
+          "reasoning_output_tokens": 176,
+          "tool_calls": 44,
+          "elapsed_seconds": 231.429,
+          "total_input_plus_output_tokens": 1094727,
+          "uncached_input_tokens": 150922
+        },
+        "optimized": {
+          "input_tokens": 1162824,
+          "output_tokens": 11143,
+          "cached_input_tokens": 999936,
+          "reasoning_output_tokens": 193,
+          "tool_calls": 97,
+          "elapsed_seconds": 324.676,
+          "total_input_plus_output_tokens": 1173967,
+          "uncached_input_tokens": 162888
+        }
+      },
+      "total_token_reduction_percent": -7.238,
+      "common_prompt": "Read-only MatchForge development navigation benchmark. All repository reads must stay inside the audited snapshot working directory. Do not access home directories, other repositories, accounts, raw logs or skills outside this snapshot. Only transmit focused source excerpts needed for the task; never dump whole files or trees. Some sensitive/data/test files were deliberately excluded; report missing evidence without searching elsewhere. Do not edit files, run providers, access .env, contact external services, install tools or spawn agents. Only inspect repository sources and the local navigation MCP. Verify relationships directly in focused source reads. Return at most 450 words with concrete repository paths and line numbers, actual relationships, affected tests and any uncertainty. Do not read benchmark outputs or other scenarios. Task: ",
+      "workflow_prompts": {
+        "baseline": "Baseline workflow: this explicit experiment overrides AGENTS.md index-first rules. Do not use CBM or MCP; use normal focused rg and repository reads. ",
+        "optimized": "Optimized workflow: follow AGENTS.md query-first rules with matchforge_code MCP for unfamiliar dependencies, reuse results, then verify source. "
+      },
+      "configuration": {
+        "plugins_enabled": false,
+        "command_network_enabled": false,
+        "filesystem": "deny root, allow minimal platform paths and read-only audited snapshot",
+        "mcp_required": true,
+        "mcp_cwd": "audited snapshot",
+        "mcp_allowed_root": "audited snapshot",
+        "mcp_cache": "snapshot-local, no other repository graphs",
+        "ephemeral": true,
+        "ignore_user_config": true,
+        "order": "baseline first for provider/forecast/frontend; optimized first for storage/serving",
+        "optimized_setup": "Launcher reconciles before MCP; measured wall time includes startup. Snapshot graph is warm after required-MCP preflight. Cold indexing not mixed into token totals."
+      },
+      "runs": [
+        {
+          "scenario": "provider_identity",
+          "workflow": "baseline",
+          "exit_code": 0,
+          "elapsed_seconds": 48.293,
+          "usage": {
+            "input_tokens": 238078,
+            "cached_input_tokens": 206336,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1922,
+            "reasoning_output_tokens": 17
+          },
+          "tool_calls": 7,
+          "item_types": {
+            "agent_message": 2,
+            "command_execution": 7
+          },
+          "raw_events_sha256": "4bafa12e1e2422be339eecf5bf5b8be0861ae1d0a8a76f7b1ed8598f305ec2e0",
+          "explicit_shell_source_paths": [
+            "python/football/src/football/ingestion/canonical.py",
+            "python/football/src/football/product/identity_admission.py",
+            "python/football/src/football/product/identity_trust.py",
+            "python/football/src/football/providers/football_data_uk_acquisition.py",
+            "python/football/src/football/providers/football_data_uk_registration.py",
+            "python/football/src/football/providers/native/cli.py",
+            "python/football/src/football/providers/normalization/cli.py",
+            "python/football/src/football/providers/normalization/pipeline.py",
+            "python/football/tests/test_identity_trust.py",
+            "python/football/tests/test_resource_normalization.py"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "provider_identity",
+          "workflow": "optimized",
+          "exit_code": 0,
+          "elapsed_seconds": 50.097,
+          "usage": {
+            "input_tokens": 269282,
+            "cached_input_tokens": 231680,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2065,
+            "reasoning_output_tokens": 45
+          },
+          "tool_calls": 16,
+          "item_types": {
+            "agent_message": 3,
+            "mcp_tool_call": 11,
+            "command_execution": 5
+          },
+          "raw_events_sha256": "5321cc00d1606592aed8bd0e6a43ca116dc958357e62dc20120aa1e21d6ff9aa",
+          "explicit_shell_source_paths": [
+            "python/football/src/football/cli/application.py",
+            "python/football/src/football/ingestion/acquisition.py",
+            "python/football/src/football/ingestion/canonical.py",
+            "python/football/src/football/providers/normalization/cli.py",
+            "python/football/src/football/providers/normalization/pipeline.py",
+            "python/football/tests/test_identity_trust.py",
+            "python/football/tests/test_resource_normalization.py"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "storage_recovery",
+          "workflow": "optimized",
+          "exit_code": 0,
+          "elapsed_seconds": 48.027,
+          "usage": {
+            "input_tokens": 181797,
+            "cached_input_tokens": 143872,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2238,
+            "reasoning_output_tokens": 29
+          },
+          "tool_calls": 15,
+          "item_types": {
+            "agent_message": 3,
+            "mcp_tool_call": 9,
+            "command_execution": 6
+          },
+          "raw_events_sha256": "ddc7914128432c7fa5cf8166ba4f7ac18e5ac5dc5024ae5abc1755c8eb35006a",
+          "explicit_shell_source_paths": [
+            "infrastructure/migrations/202608290200_canonical_storage.sql",
+            "infrastructure/migrations/202609020100_provider_sync_lifecycle.sql",
+            "infrastructure/migrations/202609020600_quarantine_reprocess_requests.sql",
+            "infrastructure/migrations/202610310600_resolution_file_recovery.sql",
+            "python/football/src/football/ingestion/canonical.py",
+            "python/football/src/football/product/resolution_actions.py",
+            "python/football/src/football/product/resolution_files.py",
+            "python/football/src/football/product/resolution_recovery.py"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "storage_recovery",
+          "workflow": "baseline",
+          "exit_code": 0,
+          "elapsed_seconds": 41.282,
+          "usage": {
+            "input_tokens": 198462,
+            "cached_input_tokens": 179584,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1693,
+            "reasoning_output_tokens": 14
+          },
+          "tool_calls": 7,
+          "item_types": {
+            "agent_message": 3,
+            "command_execution": 7
+          },
+          "raw_events_sha256": "f7bfe762a2e5e8b0aafde2dd4bf469317f2c1a80655553ae73bc83f7c32672d9",
+          "explicit_shell_source_paths": [
+            "infrastructure/migrations/202608290200_canonical_storage.sql",
+            "infrastructure/migrations/202609020600_quarantine_reprocess_requests.sql",
+            "infrastructure/migrations/202609020700_f3_fixture_persistence.sql",
+            "infrastructure/migrations/202610310600_resolution_file_recovery.sql",
+            "python/football/src/football/ingestion/registration.py",
+            "python/football/src/football/product/resolution_actions.py",
+            "python/football/src/football/product/resolution_files.py",
+            "python/football/src/football/product/resolution_recovery.py",
+            "tests/integration/test_resolution_files.py"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "forecast_contracts",
+          "workflow": "baseline",
+          "exit_code": 0,
+          "elapsed_seconds": 49.358,
+          "usage": {
+            "input_tokens": 274753,
+            "cached_input_tokens": 219776,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1994,
+            "reasoning_output_tokens": 69
+          },
+          "tool_calls": 9,
+          "item_types": {
+            "agent_message": 3,
+            "command_execution": 9
+          },
+          "raw_events_sha256": "aa90ac07c314dd5014f75f1c5259301af85a3cb38a127d157f25551ca0b66b5f",
+          "explicit_shell_source_paths": [
+            "docs/contracts/simulation-validation-v1.md",
+            "python/football/src/football/forecasting/model_runner.py",
+            "python/football/src/football/forecasting/pitchapi_v3_executor.py",
+            "python/football/src/football/forecasting/pitchapi_v3_runtime.py",
+            "python/football/src/football/forecasting/replacement_holdout.py",
+            "python/football/tests/test_pitchapi_simulation_reference.py",
+            "rust/simulation-core/src/bin/pitchapi_v3_validate.rs",
+            "rust/simulation-core/src/lib.rs",
+            "rust/simulation-core/src/tests.rs",
+            "schemas/contracts/pitchapi-v5-execution-receipt-v1.schema.json"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "forecast_contracts",
+          "workflow": "optimized",
+          "exit_code": 0,
+          "elapsed_seconds": 116.485,
+          "usage": {
+            "input_tokens": 351697,
+            "cached_input_tokens": 313472,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2836,
+            "reasoning_output_tokens": 91
+          },
+          "tool_calls": 30,
+          "item_types": {
+            "agent_message": 3,
+            "mcp_tool_call": 15,
+            "command_execution": 15
+          },
+          "raw_events_sha256": "de6ffe578353a46d9d11d336d2b5ab72fee76d6d53171f21ce5dafc9077e30e4",
+          "explicit_shell_source_paths": [
+            "go/api/internal/app/postgres_store.go",
+            "go/api/internal/app/product.go",
+            "python/football/src/football/forecasting/multimodel_cli.py",
+            "python/football/src/football/forecasting/pitchapi_v3_runtime.py",
+            "python/football/src/football/forecasting/replacement_holdout.py",
+            "python/football/tests/test_pitchapi_simulation_reference.py",
+            "rust/simulation-core/src/bin/pitchapi_v3_validate.rs",
+            "rust/simulation-core/src/lib.rs",
+            "rust/simulation-core/src/tests.rs",
+            "schemas/contracts/pitchapi-v5-evaluation-evidence-v1.schema.json"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "serving_impact",
+          "workflow": "optimized",
+          "exit_code": 0,
+          "elapsed_seconds": 51.377,
+          "usage": {
+            "input_tokens": 168185,
+            "cached_input_tokens": 145792,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1896,
+            "reasoning_output_tokens": 8
+          },
+          "tool_calls": 16,
+          "item_types": {
+            "agent_message": 3,
+            "mcp_tool_call": 8,
+            "command_execution": 8
+          },
+          "raw_events_sha256": "4fb5c4800c61ad5fadf0432331e6d4e3b716998ccd4aa5ccdd3c04ed4e65d004",
+          "explicit_shell_source_paths": [
+            "go/api/internal/app/postgres_store.go",
+            "go/api/internal/app/product.go",
+            "go/api/internal/app/read_reports_test.go",
+            "web/hooks/use-resource.ts"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "serving_impact",
+          "workflow": "baseline",
+          "exit_code": 0,
+          "elapsed_seconds": 39.509,
+          "usage": {
+            "input_tokens": 132606,
+            "cached_input_tokens": 119808,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1608,
+            "reasoning_output_tokens": 20
+          },
+          "tool_calls": 5,
+          "item_types": {
+            "agent_message": 3,
+            "command_execution": 5
+          },
+          "raw_events_sha256": "4dd1403f443458ba1fda1eea6a36844914ddb5a92b2e683a3216f9df5ced1f28",
+          "explicit_shell_source_paths": [
+            "go/api/internal/app/postgres_store.go",
+            "go/api/internal/app/product.go",
+            "go/api/internal/app/read_reports_test.go",
+            "web/hooks/use-resource.ts"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "frontend_design",
+          "workflow": "baseline",
+          "exit_code": 0,
+          "elapsed_seconds": 52.987,
+          "usage": {
+            "input_tokens": 241807,
+            "cached_input_tokens": 209280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1804,
+            "reasoning_output_tokens": 56
+          },
+          "tool_calls": 16,
+          "item_types": {
+            "agent_message": 2,
+            "command_execution": 16
+          },
+          "raw_events_sha256": "9159cd65699e92d4cf30386b2b96dbc94e32db228d74a084551aa6f3918e467a",
+          "explicit_shell_source_paths": [
+            "web/components/expanded-fixture.tsx",
+            "web/components/fixture-explorer.test.tsx",
+            "web/lib/api.ts",
+            "web/lib/contracts.ts",
+            "web/ui-designs/matchforge_desktop_fixtures_markets_tab/code.html"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        },
+        {
+          "scenario": "frontend_design",
+          "workflow": "optimized",
+          "exit_code": 0,
+          "elapsed_seconds": 58.69,
+          "usage": {
+            "input_tokens": 191863,
+            "cached_input_tokens": 165120,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2108,
+            "reasoning_output_tokens": 20
+          },
+          "tool_calls": 20,
+          "item_types": {
+            "agent_message": 3,
+            "mcp_tool_call": 9,
+            "command_execution": 11
+          },
+          "raw_events_sha256": "a0e7056bda622adac1d3f9b0019a4aebb1026da0c7a765001184f304565a365d",
+          "explicit_shell_source_paths": [
+            "web/components/expanded-fixture.tsx",
+            "web/components/fixture-explorer.test.tsx",
+            "web/lib/api.ts",
+            "web/lib/contracts.ts",
+            "web/ui-designs/matchforge_desktop_fixtures_markets_tab/code.html"
+          ],
+          "mcp_source_snippet_paths": [],
+          "mcp_error_tools": []
+        }
+      ],
+      "limitations": [
+        "Five representative tasks covering all ten requested areas, one sample per arm; no statistical significance or universal savings claim.",
+        "Actual desktop GUI token/context-window measurements remain NOT MEASURED; totals come from documented CLI turn.completed.usage.",
+        "Cached input is a subset of input and is reported separately; total=input+output without adding cached or reasoning tokens again. These are not billing/cost measurements.",
+        "Full filesystem reads and irrelevant-file counts are NOT MEASURED. Explicit shell source-read paths and MCP snippet paths are partial observations, excluding broad search reads and implicit runtime reads.",
+        "Pure MCP timing measured separately by local verifier; Codex JSONL does not expose per-call durations here.",
+        "Raw JSONL, answers, audit manifest and generated logs remain ignored/local; only aggregate metrics, task definitions and event hashes are committed.",
+        "Initial optional-MCP trial comparisons were invalid because optimized arms fell back to source; excluded. Required-MCP preflight/pilot excluded. An interrupted run has no complete usage total.",
+        "Sensitive/data exclusions reduce snapshot coverage; absent sources were not recovered from outside the snapshot."
+      ],
+      "recommendation": "REVISE",
+      "recommendation_reason": "Two of five tasks saved tokens, but aggregate usage increased 7.238%, tool calls increased from 44 to 97, and observed wall time increased. Keep graph navigation bounded and permit direct-source navigation for known paths and incomplete relationships; no general token-saving claim is supported.",
+      "partial_explicit_shell_read_path_count_summed_across_tasks": {
+        "baseline": 38,
+        "optimized": 34
+      }
+    },
+    "resource_measurement": {
+      "full_repository_launcher_initialize_seconds": 10.159,
+      "full_repository_watch": {
+        "watched": true,
+        "strategy": "git",
+        "poll_interval_ms": 7000,
+        "last_scan_at": "2026-11-03T06:44:32Z"
+      },
+      "phases": {
+        "fixture_idle": {
+          "sample_count": 35,
+          "seconds": 18.961,
+          "peak_aggregate_rss_kib": 19248,
+          "observed_cpu_seconds": 0.2
+        },
+        "fixture_queries_and_burst": {
+          "sample_count": 21,
+          "seconds": 11.144,
+          "peak_aggregate_rss_kib": 17648,
+          "observed_cpu_seconds": 0.17
+        },
+        "fixture_setup": {
+          "sample_count": 3,
+          "seconds": 1.101,
+          "peak_aggregate_rss_kib": 28704,
+          "observed_cpu_seconds": 0.53
+        },
+        "full_repository_idle": {
+          "sample_count": 36,
+          "seconds": 19.662,
+          "peak_aggregate_rss_kib": 27664,
+          "observed_cpu_seconds": 0.2
+        },
+        "full_repository_startup": {
+          "sample_count": 18,
+          "seconds": 9.805,
+          "peak_aggregate_rss_kib": 222176,
+          "observed_cpu_seconds": 17.62
+        }
+      },
+      "sample_interval_seconds": 0.5,
+      "sample_count": 113,
+      "duration_seconds": 63.034,
+      "peak_aggregate_rss_kib": 222176,
+      "peak_cbm_process_count": 3,
+      "cpu_seconds_observed": 19.08,
+      "idle_seconds": 20.004,
+      "idle_cbm_cpu_seconds": 0.2,
+      "setup_seconds": 1.4,
+      "query_count": 20,
+      "persistent_mcp_query_median_seconds": 0.013125,
+      "persistent_mcp_query_max_seconds": 0.015593,
+      "burst_sync_seconds": 1.058,
+      "watch": {
+        "watched": true,
+        "strategy": "git",
+        "poll_interval_ms": 5000,
+        "last_scan_at": "2026-11-03T06:45:10Z"
+      },
+      "limitations": "Finite full-repository startup/idle and small-fixture edit run; process-tree CPU excludes children that start and exit between samples and Git subprocesses. RSS sums shared pages and is not unique physical memory. Not a sustained full-repository edit benchmark."
+    },
+    "repository_verification": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT UV_NO_SYNC=1 make check integration",
+      "exit_code": 0,
+      "python_unit_tests": 1765,
+      "rust_tests": 16,
+      "frontend_tests": 107,
+      "aggregate_log_sha256": "d5d0b6714432e63100c529ae57c687af6eb131e3067119d7a82a49f32c57c393",
+      "tooling_unit_cases": 7,
+      "strict_tooling_mypy": "PASS",
+      "ruff_complexity_lint": "PASS",
+      "migration_storage_operational_integration": "PASS",
+      "preexisting_frontend_lint_warnings": 1,
+      "real_mcp_verifier": "PASS",
+      "benchmark_event_hash_validation": "PASS",
+      "production_behavior_model_contract_phase_changes": false
+    }
+  },
+  "initial_repository_verification": {
     "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT UV_NO_SYNC=1 make check integration",
     "exit_code": 0,
     "python_unit_tests": 1762,
