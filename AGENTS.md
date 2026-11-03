@@ -726,3 +726,53 @@ docs/writing-style.md
 - Capture verbose logs, report concise summaries, and preserve full failure details.
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
+
+## codebase-memory-mcp — Token-Efficient Codebase Navigation
+
+Use the project-scoped `matchforge_code` MCP server before broad searches,
+recursive reads, repeated dependency exploration or unfamiliar architecture work
+when its index is current and reliable. Setup and limitations:
+`docs/engineering/code-intelligence.md`.
+
+1. Start with focused `search_graph` symbol/file queries. Use `limit: 8` and
+   `max_output_tokens: 1200` by default. Widen only when the task needs it.
+2. Trace callers, callees and impact with `trace_path` (`direction: inbound`,
+   `outbound` or `both`; start at `depth: 2`, `limit: 20`,
+   `max_output_tokens: 1200`). Use returned qualified names to avoid ambiguity.
+3. Read only the relevant source, contracts and tests identified by the index.
+   Reuse valid results; do not load full graphs, architecture exports or archives.
+4. The native Git watcher maintains new, changed, moved and deleted files and
+   recursively discovers new directories while an MCP session is open. Keep
+   `auto_watch` and `watcher_enabled` enabled. The launcher reconciles offline
+   edits before starting MCP, including after session restarts and Git changes.
+5. Before relying on a potentially stale index, call `index_status(project:
+   <absolute checkout path>)`. Check `watch.watched`, scan time and parse warnings.
+   Polling has a delay. After Git operations or edits relevant to the next query,
+   call `index_repository(repo_path: <absolute checkout path>, mode: full,
+   doc_candidates: false)` and wait for success when freshness is uncertain.
+   Native indexing reuses unchanged files; do not force full rebuilds for trivial
+   actions. New conversations load `.codex/config.toml` in trusted checkouts.
+6. Treat the index as navigation only. Verify critical relationships against
+   source, tests, schemas, SQL migrations and approved decisions. Missing or
+   ambiguous relationships, parse warnings and JSON Schema references require
+   focused direct inspection. A graph with no callers does not prove dead code.
+7. If synchronization fails, use authoritative sources directly, retain the error
+   and retry `index_repository` once after addressing it. Never trust stale output
+   silently. Do not unlock or delete caches while another session uses them.
+8. Keep `.cbmignore` exclusions in effect. Avoid optional language-server/model
+   downloads and documentation scoring (`doc_candidates: false`); no hosted indexing or uploads.
+   Token optimization never overrides correctness, reproducibility, determinism,
+   source traceability, point-in-time integrity or phase gates.
+
+Verified CLI equivalents, run from the checkout root:
+
+```sh
+sh scripts/code-intelligence.sh cli index_status --project "$PWD"
+sh scripts/code-intelligence.sh cli search_graph --project "$PWD" --name-pattern '<symbol>' --limit 8 --max-output-tokens 1200
+sh scripts/code-intelligence.sh cli trace_path --project "$PWD" --function-name '<qualified-name>' --direction both --depth 2 --limit 20 --max-output-tokens 1200
+sh scripts/code-intelligence.sh cli index_repository --repo-path "$PWD" --mode full --doc-candidates false
+```
+
+CLI commands do not keep the watcher running after they exit. Use MCP for ongoing
+work; use CLI refresh before standalone exploration. If MCP is unavailable, follow
+these same query-first rules with the CLI, then inspect source as needed.

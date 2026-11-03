@@ -40,24 +40,25 @@ migration-status: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
 format:
-	@$(TOOL_ENV); uv run ruff check --fix python tests experiments
-	@$(TOOL_ENV); uv run ruff format python tests experiments
+	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff format python tests experiments scripts/verify_code_intelligence.py
 	@$(TOOL_ENV); cargo fmt --all
 	@$(TOOL_ENV); find go -type f -name '*.go' -exec gofmt -w {} +
 
 format-check:
-	@$(TOOL_ENV); uv run ruff format --check python tests experiments
+	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts/verify_code_intelligence.py
 	@$(TOOL_ENV); cargo fmt --all --check
 	@$(TOOL_ENV); test -z "$$(find go -type f -name '*.go' -exec gofmt -l {} +)"
 
 lint:
-	@$(TOOL_ENV); uv run ruff check python tests experiments
+	@$(TOOL_ENV); uv run ruff check python tests experiments scripts/verify_code_intelligence.py
 	@$(TOOL_ENV); uv run mypy
+	@$(TOOL_ENV); uv run mypy --strict scripts/verify_code_intelligence.py tests/test_code_intelligence.py
 	@$(TOOL_ENV); cargo clippy --workspace --all-targets --all-features -- -D warnings
 	@$(TOOL_ENV); cd go/api && go vet ./...
 	@$(TOOL_ENV); cd go/api && golangci-lint run ./...
 	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
-	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh
+	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh
 
 test:
 	@$(TOOL_ENV); uv run pytest --ignore=tests/integration

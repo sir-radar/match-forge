@@ -1,0 +1,548 @@
+{
+  "date": "2026-11-03",
+  "base_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
+  "platform": "macOS ARM64",
+  "selected_tool": "codebase-memory-mcp 0.12.1",
+  "integration_status": "PASS_WITH_WARNINGS",
+  "model_tokens": "NOT MEASURED",
+  "input_tokens": "NOT MEASURED",
+  "output_tokens": "NOT MEASURED",
+  "context_window_consumption": "NOT MEASURED",
+  "full_task_files_read": "NOT MEASURED",
+  "peak_process_tree_memory": "NOT MEASURED",
+  "methodology": "Five deterministic symbol-discovery probes per tool, one CLI query per probe, no model. Outputs have different information content and cannot establish end-to-end token savings. Tool-specific excludes omitted historical archives and generated files. CBM full indexing includes more file types than CodeGraph.",
+  "navigation": [
+    {
+      "task": "normalize_resource",
+      "tool": "baseline",
+      "exit": 0,
+      "seconds": 0.038,
+      "output_bytes": 3199,
+      "output_lines": 21,
+      "tool_calls": 1
+    },
+    {
+      "task": "normalize_resource",
+      "tool": "codegraph",
+      "exit": 0,
+      "seconds": 0.355,
+      "output_bytes": 2872,
+      "output_lines": 90,
+      "tool_calls": 1
+    },
+    {
+      "task": "normalize_resource",
+      "tool": "graphify",
+      "exit": 0,
+      "seconds": 0.998,
+      "output_bytes": 4109,
+      "output_lines": 39,
+      "tool_calls": 1
+    },
+    {
+      "task": "normalize_resource",
+      "tool": "cbm",
+      "exit": 0,
+      "seconds": 1.078,
+      "output_bytes": 312,
+      "output_lines": 7,
+      "tool_calls": 1
+    },
+    {
+      "task": "HistoricalSourceManifestV1",
+      "tool": "baseline",
+      "exit": 0,
+      "seconds": 0.018,
+      "output_bytes": 1139,
+      "output_lines": 4,
+      "tool_calls": 1
+    },
+    {
+      "task": "HistoricalSourceManifestV1",
+      "tool": "codegraph",
+      "exit": 0,
+      "seconds": 0.205,
+      "output_bytes": 3,
+      "output_lines": 1,
+      "tool_calls": 1
+    },
+    {
+      "task": "HistoricalSourceManifestV1",
+      "tool": "graphify",
+      "exit": 4,
+      "seconds": 0.858,
+      "output_bytes": 25,
+      "output_lines": 1,
+      "tool_calls": 1
+    },
+    {
+      "task": "HistoricalSourceManifestV1",
+      "tool": "cbm",
+      "exit": 0,
+      "seconds": 1.05,
+      "output_bytes": 185,
+      "output_lines": 7,
+      "tool_calls": 1
+    },
+    {
+      "task": "EloOneXTwoAdapterV1",
+      "tool": "baseline",
+      "exit": 0,
+      "seconds": 0.019,
+      "output_bytes": 1351,
+      "output_lines": 13,
+      "tool_calls": 1
+    },
+    {
+      "task": "EloOneXTwoAdapterV1",
+      "tool": "codegraph",
+      "exit": 0,
+      "seconds": 0.153,
+      "output_bytes": 3449,
+      "output_lines": 112,
+      "tool_calls": 1
+    },
+    {
+      "task": "EloOneXTwoAdapterV1",
+      "tool": "graphify",
+      "exit": 0,
+      "seconds": 0.861,
+      "output_bytes": 4037,
+      "output_lines": 40,
+      "tool_calls": 1
+    },
+    {
+      "task": "EloOneXTwoAdapterV1",
+      "tool": "cbm",
+      "exit": 0,
+      "seconds": 1.05,
+      "output_bytes": 284,
+      "output_lines": 7,
+      "tool_calls": 1
+    },
+    {
+      "task": "useResource",
+      "tool": "baseline",
+      "exit": 0,
+      "seconds": 0.017,
+      "output_bytes": 2713,
+      "output_lines": 22,
+      "tool_calls": 1
+    },
+    {
+      "task": "useResource",
+      "tool": "codegraph",
+      "exit": 0,
+      "seconds": 0.149,
+      "output_bytes": 3099,
+      "output_lines": 112,
+      "tool_calls": 1
+    },
+    {
+      "task": "useResource",
+      "tool": "graphify",
+      "exit": 0,
+      "seconds": 0.945,
+      "output_bytes": 4096,
+      "output_lines": 51,
+      "tool_calls": 1
+    },
+    {
+      "task": "useResource",
+      "tool": "cbm",
+      "exit": 0,
+      "seconds": 1.055,
+      "output_bytes": 225,
+      "output_lines": 7,
+      "tool_calls": 1
+    },
+    {
+      "task": "run_pending_recovery",
+      "tool": "baseline",
+      "exit": 0,
+      "seconds": 0.018,
+      "output_bytes": 4291,
+      "output_lines": 37,
+      "tool_calls": 1
+    },
+    {
+      "task": "run_pending_recovery",
+      "tool": "codegraph",
+      "exit": 0,
+      "seconds": 0.169,
+      "output_bytes": 3474,
+      "output_lines": 112,
+      "tool_calls": 1
+    },
+    {
+      "task": "run_pending_recovery",
+      "tool": "graphify",
+      "exit": 0,
+      "seconds": 0.952,
+      "output_bytes": 4154,
+      "output_lines": 40,
+      "tool_calls": 1
+    },
+    {
+      "task": "run_pending_recovery",
+      "tool": "cbm",
+      "exit": 0,
+      "seconds": 1.065,
+      "output_bytes": 306,
+      "output_lines": 7,
+      "tool_calls": 1
+    }
+  ],
+  "indexing": [
+    {
+      "tool": "CodeGraph 1.6.2",
+      "kind": "initial init",
+      "seconds": 8.01,
+      "files": 687,
+      "nodes": 16272,
+      "edges": 49560,
+      "note": "Tool succeeded. /usr/bin/time emitted sysctl permission error and exited 1 after reporting elapsed time."
+    },
+    {
+      "tool": "Graphify 0.9.101",
+      "kind": "initial update --no-cluster",
+      "seconds": 16.704,
+      "files": 977,
+      "nodes": 13507,
+      "edges": 48000
+    },
+    {
+      "tool": "codebase-memory-mcp 0.12.1",
+      "kind": "initial fast index",
+      "seconds": 12.13,
+      "note": "Fast mode excludes docs/migrations; not comparable full-coverage input."
+    },
+    {
+      "tool": "codebase-memory-mcp 0.12.1",
+      "kind": "warm expansion to full with exclusions",
+      "seconds": 6.5,
+      "nodes": 16298,
+      "edges": 74184,
+      "note": "Not a cold full index."
+    }
+  ],
+  "mcp_launcher": {
+    "handshake": "PASS",
+    "targeted_query": "PASS",
+    "watch": {
+      "watched": true,
+      "strategy": "pending",
+      "poll_interval_ms": 5000
+    },
+    "nodes": 16393,
+    "edges": 74460,
+    "partial_files": 67,
+    "unusable_files": 2,
+    "exact_codex_command_from_nested_directory": "PASS",
+    "enabled_tools_exist": "PASS",
+    "representative_coverage": [
+      {
+        "path": "python/football/src/football/providers/normalization/pipeline.py",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "go/api/internal/app/app.go",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "rust/simulation-core/src/lib.rs",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "web/hooks/use-resource.ts",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "schemas/contracts/historical-source-manifest-v1.schema.json",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "infrastructure/migrations/202608290200_canonical_storage.sql",
+        "status": "partial",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "docs/architecture.md",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      }
+    ]
+  },
+  "synchronization": {
+    "new_file_and_recursive_directory_seconds": 11.167,
+    "modified_seconds": 6.178,
+    "directory_move_seconds": 7.23,
+    "file_rename_seconds": 6.097,
+    "burst_seconds": 6.185,
+    "deleted_directory_seconds": 7.196,
+    "branch_switch_seconds": 6.186,
+    "branch_return_seconds": 7.212,
+    "architecture_document_seconds": 8.155,
+    "sql_table_seconds": 0.014,
+    "architecture_change_seconds": 6.228,
+    "native_restart_seconds": 12.165,
+    "temporary_repo_removed": true,
+    "watch": {
+      "watched": true,
+      "strategy": "git",
+      "poll_interval_ms": 5000,
+      "last_scan_at": "2026-11-03T05:45:52Z"
+    },
+    "contract_coverage": [
+      {
+        "path": "contract.schema.json",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "migration.sql",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      },
+      {
+        "path": "architecture.md",
+        "status": "no_recorded_issue",
+        "freshness": "metadata_match"
+      }
+    ],
+    "timing_note": "Seconds are observed waits from each verification query, not precise file-save latencies. SQL and schema checks share the preceding document-create batch."
+  },
+  "relationship_spot_checks": {
+    "normalize_resource_production_callers": 1,
+    "useResource_production_callers": 5,
+    "source_verified": true,
+    "contract_symbol_queries": "All three graph tools missed HistoricalSourceManifestV1; focused source search required."
+  },
+  "not_exercised": [
+    "Actual Codex GUI restart/new-conversation compliance",
+    "Every individual pull/merge/rebase operation",
+    "Sustained process-tree resource measurements",
+    "Cold full-index comparison with identical eligible input sets",
+    "Exact burst rebuild count"
+  ],
+  "research": {
+    "codegraph": {
+      "source_sha": "f72c9d2efb14454ff4f9fd7b8460abd82f19a287",
+      "recent_releases": [
+        {
+          "tag": "v1.6.2",
+          "published_at": "2026-10-03T06:41:20Z"
+        },
+        {
+          "tag": "v1.6.1",
+          "published_at": "2026-09-29T05:08:55Z"
+        }
+      ],
+      "recent_issue_sample": [
+        {
+          "number": 3223,
+          "title": "Published v1.6.2 still fails to index C++ operator++ references on Windows (related to #2482 / #2769)",
+          "url": "https://github.com/colbymchenry/codegraph/issues/3223"
+        },
+        {
+          "number": 3222,
+          "title": "fix(python): a local built through a module or bound by with has its class",
+          "url": "https://github.com/colbymchenry/codegraph/pull/3222"
+        },
+        {
+          "number": 3220,
+          "title": "fix(swift): read inheritance from the type declaration itself",
+          "url": "https://github.com/colbymchenry/codegraph/pull/3220"
+        },
+        {
+          "number": 3219,
+          "title": "Bundled Node runtime is stale and missing Oct 2026 security fixes (24.16.0 \u2192 needs \u226524.22.1)",
+          "url": "https://github.com/colbymchenry/codegraph/issues/3219"
+        },
+        {
+          "number": 3218,
+          "title": "fix(python): a call through super() reaches the method it runs",
+          "url": "https://github.com/colbymchenry/codegraph/pull/3218"
+        }
+      ]
+    },
+    "graphify": {
+      "source_sha": "8e6a6d2129d4aeffc7a0e9ed79b153f7f057f42b",
+      "recent_releases": [
+        {
+          "tag": "v0.9.101",
+          "published_at": "2026-11-02T19:38:56Z"
+        },
+        {
+          "tag": "v0.9.100",
+          "published_at": "2026-11-01T00:53:21Z"
+        }
+      ],
+      "recent_issue_sample": [
+        {
+          "number": 4969,
+          "title": "fix(extract): report paths skipped by ignore rules",
+          "url": "https://github.com/Graphify-Labs/graphify/pull/4969"
+        },
+        {
+          "number": 4968,
+          "title": "feat(extract): preserve declaration end lines with source provenance",
+          "url": "https://github.com/Graphify-Labs/graphify/pull/4968"
+        },
+        {
+          "number": 4967,
+          "title": "fix(js): resolve calls through default-exported object methods",
+          "url": "https://github.com/Graphify-Labs/graphify/pull/4967"
+        },
+        {
+          "number": 4966,
+          "title": "fix(go): resolve same-file member calls through receiver types",
+          "url": "https://github.com/Graphify-Labs/graphify/pull/4966"
+        },
+        {
+          "number": 4965,
+          "title": "extract silently omits ignored directories without showing the detection summary",
+          "url": "https://github.com/Graphify-Labs/graphify/issues/4965"
+        }
+      ]
+    },
+    "serena": {
+      "source_sha": "ede329aaf0c824bea75455a2926f01420d7aa620",
+      "recent_releases": [
+        {
+          "tag": "v2.1.0",
+          "published_at": "2026-10-19T17:30:43Z"
+        },
+        {
+          "tag": "v2.0.0",
+          "published_at": "2026-10-13T12:25:45Z"
+        }
+      ],
+      "recent_issue_sample": [
+        {
+          "number": 2250,
+          "title": "Optional idle shutdown of language servers",
+          "url": "https://github.com/oraios/serena/issues/2250"
+        },
+        {
+          "number": 2249,
+          "title": "Restart a language server whose launcher died, instead of hanging",
+          "url": "https://github.com/oraios/serena/pull/2249"
+        },
+        {
+          "number": 2248,
+          "title": "Fix Fortran references for prefixed procedure declarations",
+          "url": "https://github.com/oraios/serena/pull/2248"
+        },
+        {
+          "number": 2247,
+          "title": "find_referencing_symbols spends ~40% of its time rebuilding the same file URI",
+          "url": "https://github.com/oraios/serena/issues/2247"
+        },
+        {
+          "number": 2246,
+          "title": "fix(vue): restore component file reference lookups",
+          "url": "https://github.com/oraios/serena/pull/2246"
+        }
+      ]
+    },
+    "GitNexus": {
+      "source_sha": "34dea05ac1b757a3d4e303479575bf04a4659009",
+      "recent_releases": [
+        {
+          "tag": "v1.6.13-rc.197",
+          "published_at": "2026-11-02T12:26:04Z"
+        },
+        {
+          "tag": "v1.6.13-rc.196",
+          "published_at": "2026-11-02T10:54:56Z"
+        }
+      ],
+      "recent_issue_sample": [
+        {
+          "number": 3814,
+          "title": "chore(deps)(deps-dev): bump @babel/generator from 8.0.6 to 8.0.10 in /gitnexus",
+          "url": "https://github.com/abhigyanpatwari/GitNexus/pull/3814"
+        },
+        {
+          "number": 3813,
+          "title": "chore(deps)(deps-dev): bump @babel/parser from 8.0.8 to 8.0.10 in /gitnexus",
+          "url": "https://github.com/abhigyanpatwari/GitNexus/pull/3813"
+        },
+        {
+          "number": 3812,
+          "title": "chore(deps)(deps): bump onnxruntime-common from 1.30.0 to 1.31.1 in /gitnexus",
+          "url": "https://github.com/abhigyanpatwari/GitNexus/pull/3812"
+        },
+        {
+          "number": 3811,
+          "title": "chore(deps)(deps): bump express-rate-limit from 8.7.1 to 8.7.2 in /gitnexus",
+          "url": "https://github.com/abhigyanpatwari/GitNexus/pull/3811"
+        },
+        {
+          "number": 3810,
+          "title": "chore(deps)(deps): bump glob from 14.0.2 to 14.0.3 in /gitnexus",
+          "url": "https://github.com/abhigyanpatwari/GitNexus/pull/3810"
+        }
+      ]
+    },
+    "codebase-memory-mcp": {
+      "source_sha": "5689ea54ceac23d7e5bf59d54b9c718b59ae9ee0",
+      "recent_releases": [
+        {
+          "tag": "v0.12.1",
+          "published_at": "2026-10-16T23:35:48Z"
+        },
+        {
+          "tag": "v0.12.0",
+          "published_at": "2026-10-15T22:08:18Z"
+        }
+      ],
+      "recent_issue_sample": [
+        {
+          "number": 2900,
+          "title": "fix(ts): follow re-export chains through index.ts barrels",
+          "url": "https://github.com/DeusData/codebase-memory-mcp/pull/2900"
+        },
+        {
+          "number": 2899,
+          "title": "macOS: regex_compile_refuses_overlong_pattern fails because system regcomp returns REG_ESPACE above 5,117 bytes",
+          "url": "https://github.com/DeusData/codebase-memory-mcp/issues/2899"
+        },
+        {
+          "number": 2898,
+          "title": "fix(cli): keep Codex tool approval tables during MCP install",
+          "url": "https://github.com/DeusData/codebase-memory-mcp/pull/2898"
+        },
+        {
+          "number": 2896,
+          "title": "fix(cli): accept the emptied hooks: {} mapping in the Hermes hook editor",
+          "url": "https://github.com/DeusData/codebase-memory-mcp/pull/2896"
+        },
+        {
+          "number": 2894,
+          "title": "C#: no read/write direction on member usage, and no ORM (EF6/EF Core) entity\u2192table mapping \u2014 \"which code writes property X / table Y\" cannot be answered",
+          "url": "https://github.com/DeusData/codebase-memory-mcp/issues/2894"
+        }
+      ]
+    }
+  },
+  "repository_verification": {
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT UV_NO_SYNC=1 make check integration",
+    "exit_code": 0,
+    "python_unit_tests": 1762,
+    "rust_tests": 16,
+    "frontend_tests": 107,
+    "aggregate_log_sha256": "a01a6c531a99e7dba69e68be72c7dbe125b3dbc32af4cadfde3d4ddfe5d747e5",
+    "focused_launcher_tests": 4,
+    "strict_tooling_mypy": "PASS",
+    "ruff_complexity_lint": "PASS",
+    "migration_storage_operational_integration": "PASS",
+    "preexisting_frontend_lint_warnings": 1
+  }
+}
