@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-03T05:42:59Z",
+  "updated_at": "2026-11-03T05:45:30Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1203,8 +1203,8 @@
       }
     },
     "provider_wide_acquisition": {
-      "status": "IN_PROGRESS",
-      "current_phase": "3b",
+      "status": "COMPLETE_WITH_WARNINGS",
+      "current_phase": "4",
       "branch": "ft/data-status-remediation",
       "policy_ref": "docs/source-acquisition.md",
       "report_ref": "docs/evidence/data-status-remediation-report.md",
@@ -1270,7 +1270,18 @@
       "operating_schema_version": 202611020200,
       "operating_migrations_executed": 0,
       "operating_runtime_restarted": false,
-      "overall_operating_remediation_complete": false
+      "overall_operating_remediation_complete": false,
+      "phase_4": "PASS_WITH_WARNINGS",
+      "owned_shadow_database_removed": true,
+      "logical_shadow_database_bytes_removed": 8034334399,
+      "retained_verified_dump_bytes": 1786827255,
+      "private_python_cache_bytes_removed": 5421,
+      "host_free_space_attribution": "NOT_ISOLATED",
+      "post_cleanup_integrity": "PASS",
+      "post_cleanup_new_operating_originals_verified": 2,
+      "task_status_gitignored": true,
+      "task_status_absent_from_reachable_history": true,
+      "delivery_pr": "https://github.com/sir-radar/match-forge/pull/179"
     }
   },
   "architecture_v2": {

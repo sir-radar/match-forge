@@ -3040,3 +3040,54 @@ Phase 3b: **PASS_WITH_WARNINGS**. Private receipts under
 Composite code validation remains as recorded in P3. Only status/evidence files
 change after the verified code checkpoint; their validator and diff checks run
 before commit. Safe cleanup and final delivery follow this phase commit.
+
+### P5. Owned cleanup and final handoff checks
+
+Phase 3b was committed as `a4a929a` before cleanup. The disposable database
+`football_provider_shadow_561ecc8c52134c148bc1afb8e84271eb` has no client
+connections and belongs to this task. Its exact dump size, SHA-256, restrictive
+file mode and successful restore registration proof are checked again before
+removal. Only that database is dropped; no operating football record is deleted.
+
+Cleanup removes **8,034,334,399 bytes** of logical PostgreSQL database storage
+(about **7.48 GiB**) and one private Python cache file (5,421 logical bytes /
+8,192 allocated bytes). The **1,786,827,255-byte** database dump remains, together
+with original provider files, manifests, identity decisions, failed/successful
+recovery receipts and reproduction scripts. Docker/APFS allocation and ongoing
+writes prevent attributing a host free-space change to this cleanup.
+
+Final read-only checks confirm the shadow database is absent and both newly
+registered operating originals remain byte-exact. Registration comparisons
+against the original, resumed and pre-cleanup snapshots again find **zero
+missing or changed prior rows**. Champion and schema hashes remain unchanged.
+The final source/resource totals include further live-worker additions; those
+are not additional task recovery gains.
+
+Private cleanup receipt `cleanup-owned-shadow.json` has SHA-256
+`a472dc2816ff876e620f502bb41c5405cc33fcab73f23a01322f065a9e2f25f4`;
+`final-integrity.json` has SHA-256
+`eaec70aa2f86e00c377b1fe55330e3c7b4687204b5d74dae6e9cd2a0aaa277f9`.
+`post-cleanup-resource-check.json` records the two byte checks and database
+absence, SHA-256
+`7f6c0427246ae2ec24890797156241408a47f1527ae9c56ce1e7edb488a153d7`.
+
+Final review uses `docs/review-checklist.md`: existing acquisition and admission
+owners, current consumers, no duplicate engine, no speculative production API,
+no new dependency/migration/configuration variable, unchanged scientific gates,
+no unrelated staged work and no committed credentials or local receipts. The
+code checks and focused repair evidence are recorded in P3; later changes are
+limited to this report and project-status JSON. Project-status validation and
+`git diff --check` pass before the final phase commit. The local ignored task
+status continues tracking delivery. Separate owner edits to `AGENTS.md` remain
+outside the task commits.
+
+Phase 4: **PASS_WITH_WARNINGS**. This provider-wide implementation and bounded
+operating recovery are verified. Overall operating remediation remains
+**incomplete**: 91 verified upcoming coverage/source gaps, the three measured
+enqueue deadline failures, two native fixture conflicts, provider access limits
+and the earlier unresolved identity/original-file dependencies remain explicit.
+Further recovery requires the corresponding missing history or identity proof;
+the three timed-out admissions require downstream execution work before retry.
+Existing live-priority deferrals may resume through their normal schedulers.
+This checkpoint does not claim global research exhaustion, a completed model
+evaluation, architecture cutover, or authorization to cross later phase gates.
