@@ -351,6 +351,10 @@ For detailed temporal/evaluation rules, read `docs/backtesting.md`.
 
 Models consume provider-neutral MatchForge contracts.
 
+Acquisition follows the provider-wide standing research decision and access
+register in `docs/source-acquisition.md`. Keep provider-specific restrictions,
+credentials and entitlements distinct from project-owner authorization.
+
 Provider adapters may differ in coverage, granularity, terminology, event detail, and update timing.
 
 Do not force providers into a shape they cannot support.

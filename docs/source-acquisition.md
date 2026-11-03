@@ -83,7 +83,7 @@ Advertised coverage is not proof of retained coverage or this account's access.
 | FotMob | `OperationalProviderSync`, `provider_history_scopes` and `FotmobSource`; calendar/season results and match, team and player resources | Seasons come from native catalogues; detail depth varies. [Published terms](https://www.fotmob.com/tos.txt) restrict automated/systematic use. The owner decision is recorded separately; ordinary access failures stop that source without bypasses. |
 | PitchAPI | Existing operational client, season checkpoints and `PitchApiSource`; results, events, shots, statistics, lineups and ratings | [Reference](https://pitchapi.dev/) advertises catalogue history from 2021 and no daily allowance, with a fair-use burst guard and `Retry-After`. Missing analytics remain missing. Current access does not establish historical knowledge or compatible xG-series identity. |
 | OpenFootball | Existing commit-pinned mirror and bulk JSON importer | [football.json](https://github.com/openfootball/football.json) publishes public-domain fixtures/results, with season directories from 2010/11. File coverage and update completeness vary; it does not supply event, player, injury or xG data. |
-| Football-Data.co.uk | Existing bounded CSV/ZIP discovery, immutable manifests and bulk importer | Results/statistics columns differ by country and season; odds remain outside baseline features. [Column notes](https://www.football-data.co.uk/notes.txt) are available. The catalogue returned HTTP 429 during this review; do not evade it or infer a complete current catalogue. |
+| Football-Data.co.uk | Existing bounded CSV/ZIP discovery, immutable manifests and bulk importer | Results/statistics columns differ by country and season; odds remain outside baseline features. [Column notes](https://www.football-data.co.uk/notes.txt) and the [fair-use policy](https://football-data.co.uk/contact.php) distinguish personal/academic use and light automated downloads (at most twice weekly) from heavy automated training projects. The catalogue returned HTTP 429 during this review; do not evade it or infer a complete current catalogue. |
 | StatsBomb Open Data | `SourceAcquirer`, pinned adapter and canonical ingestion | [Open repository](https://github.com/statsbomb/open-data) supplies selected competition/seasons, events, lineups and selected 360 files. Preserve its licence and attribution. Broader acquisition does not resume paused model research, protected evaluation, 360 normalization or automatic product-history admission. |
 | Flashscore | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.flashscore.com/terms-of-use/) restrict substantial extraction and automated requests. Public pages are research evidence, not an undocumented API contract or provider-native crosswalk. |
 | Soccerway | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.soccerway.com/terms-of-use/) impose extraction/automation restrictions. Flashscore and Soccerway are both Livesport services: do not assume their agreement supplies independent corroboration. |
@@ -177,6 +177,11 @@ revision, model, correction, ID-migration and retention evidence. The current
 Git-specific `SourceManifestV1` and `DatasetManifestV1` must not represent an
 API snapshot with a fabricated Git SHA. See the [contingency preparation
 record](evidence/pitchapi-contingency-qualification-preparation-2026-09-23.md).
+
+That qualification restriction concerns the Evaluation V2 adapter. The existing
+operational PitchAPI client and historical season checkpoints use their separate
+contracts, as listed in the provider register above; their acquisition is not
+Evaluation V2 qualification.
 
 TotalCorner is a gated `tier_b`/`tier_c` candidate under the official JSON REST
 API (`/v1/`). Technical enablement still requires valid credentials, account

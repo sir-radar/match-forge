@@ -2803,3 +2803,55 @@ other backfills, discovery summaries are discarded, and unmatched history is
 reported only for PitchAPI. Phase 2 will repair those paths without a competing
 acquisition engine or migration. Documentation-only checkpoint verification:
 source/text review and `git diff --check`.
+
+### P2. Provider isolation and complete unmatched-history diagnostics
+
+Historical orchestration now uses the existing `_run_sync_step` boundary for
+each operational provider. A failed client, catalogue, stored replay or scope
+records its real error while independent providers continue. The summary keeps
+the original per-provider data and now includes discovery results. Nested
+failures still make the overall result `COMPLETED_WITH_ERRORS`.
+
+`backfill-history --provider-only openfootball` and
+`--provider-only football_data_uk` select the established archive importers
+without executing unrelated HTTP providers. Scheduled history retains its
+existing FotMob/PitchAPI scope and rejects archive selection before any work.
+API-Football/football-data.org retain their existing shared queue, and StatsBomb
+retains its separate pinned canonical/event path. No second acquisition engine,
+new dependency, new configuration variable or migration was introduced.
+
+`history-coverage` reports unmatched observations from every provider, including
+future providers, under `provider_unmatched`. The new
+`provider_unmatched_matches` counts distinct native matches per provider, keeping
+repeated observations and cross-provider IDs distinct. Original snapshot IDs and
+reasons remain available. The three old PitchAPI fields retain their original
+provider-only meanings. This is a current recovery diagnostic; cutoff-qualified
+forecast history and identity decisions are unchanged.
+
+The regression run first reproduces seven CLI failures and eight database
+reporting failures. After implementation, **28 CLI tests** and **eight isolated
+database reporting cases** pass. The database cases exercise all seven existing
+adapters plus an unknown future provider, repeated native observations, retained
+snapshot references and absence of mapping mutations. Additional unit cases
+verify that nested stored/discovery/acquired failures remain visible.
+
+Policy references now cover instructions, the roadmap, provider operations,
+bulk history, canonical ingestion, recovery/retention and paused model-research
+guidance. The provider register remains the single policy reference. Existing
+decisions and historical evidence are preserved. `.env.example` gains only a
+documentation comment; there is no new variable to copy into local `.env`, and
+all local values remain unchanged.
+
+The final `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits **0**: static/format/complexity/type/architecture/project-status checks,
+builds, 1,808 Python unit tests, 16 Rust tests, 107 web tests, fresh-database
+storage integration and PostgreSQL 18.6 / Redis 8.10 / Go operational API
+integration pass. Disposable migrations reach `202611020200` and a second up
+is idempotent. No operating migration or runtime restart was executed.
+
+Final review against `docs/review-checklist.md` finds two changed production
+files, no new unused abstraction, no duplicate engine, no unrelated diff and no
+weakened check. Ruff enforces the configured complexity limit of ten. All
+provider-specific credential, quota and provenance owners remain in place.
+Phase 2: **PASS**. Full validation output is retained under
+`.local/provider-wide-acquisition/check-integration.log`.

@@ -51,6 +51,11 @@ If a matched source score disagrees with the stored canonical result, MatchForge
 
 ## Commands
 
+All providers follow the standing private-research acquisition decision in
+[Source acquisition](source-acquisition.md#project-use-policy). The provider
+register there identifies actual adapters, capabilities and access constraints;
+this page documents the existing product-history paths.
+
 ```bash
 uv run python -m football.product.cli backfill-openfootball
 uv run python -m football.product.cli backfill-football-data-uk
@@ -60,6 +65,19 @@ uv run python -m football.product.cli sync-all
 ```
 
 Backfill commands accept optional `--season`, `--competition`, and `--country` selectors. With no selector, all discovered usable data is processed. `--refresh` runs missing-forecast generation after a provider backfill.
+
+`backfill-history --provider-only` selects `fotmob`, `pitchapi`, `openfootball`
+or `football_data_uk` without executing unselected providers. API-Football and
+football-data.org continue through the existing shared history queue described
+below; StatsBomb uses its separate pinned acquisition/canonical-ingestion path.
+These are different representations, not interchangeable importers. Scheduled
+history still accepts only the two operational season providers and retains its
+existing enablement and request limits.
+
+Each selected backfill reports its own failure and allows the other providers
+to continue. Operational summaries retain `stored`, `discovery` and `acquired`
+results; an unavailable provider returns `null` with its error recorded. A
+successful command status does not mean every advertised season is qualified.
 
 Equivalent Make targets are:
 

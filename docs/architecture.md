@@ -81,6 +81,13 @@ For offline inspection, `uv run --locked python -m football.providers.native.cli
 
 ### Provider acquisition capabilities
 
+The standing [provider-wide acquisition policy](source-acquisition.md#project-use-policy)
+applies to all current and future adapters. Its access register distinguishes
+configured acquisition paths from retained research pages and unimplemented
+candidates. Provider-specific clients, normalization and shared work ownership
+remain in place; a broad research authorization does not imply runtime cutover
+or common support for every resource type.
+
 `football.providers.sources.contracts` defines narrow fixture, result, competition, team, player, coach, lineup, availability, event, shot, xG, statistic, standing and odds ports. Implementations expose only acquisition methods backed by their existing clients. They return `ProviderPayload`: original immutable bytes, provider/resource identity, acquisition time, media type and available revision/cache/quota metadata. Football fields stay in the native payload until resource-specific normalization. A method's presence does not prove scoped coverage, access approval or historical eligibility.
 
 HTTP implementations reuse the existing guarded FotMob, PitchAPI, API-Football and football-data.org clients. Queries and native season labels stay inside this boundary; football-data.org requires an explicit competition scope, and API-Football's current-only catalog filter remains in the resource key. FotMob's detailed capabilities share its physical match-details response; PitchAPI's xG capability uses its shot resource. Preserve those original bytes rather than creating synthetic provider responses. Coach and odds ports have no standalone acquisition implementation at this stage.

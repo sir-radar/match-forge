@@ -9,6 +9,130 @@ from football.product.api_football import ApiFootballError
 from football.product.history_requests import HistoryDeferred
 
 
+@pytest.mark.parametrize("failed_provider", ["pitchapi", "fotmob"])
+def test_history_backfill_continues_after_one_provider_fails(
+    monkeypatch: pytest.MonkeyPatch, failed_provider: str
+) -> None:
+    calls: list[str] = []
+
+    class Connection:
+        rollbacks = 0
+
+        def commit(self) -> None:
+            pass
+
+        def rollback(self) -> None:
+            self.rollbacks += 1
+
+    def operational(
+        _connection: Any, _args: argparse.Namespace, provider: str, _errors: dict[str, str]
+    ) -> dict[str, object]:
+        calls.append(provider)
+        if provider == failed_provider:
+            raise ValueError("provider catalogue is invalid")
+        return {"stored": None, "acquired": []}
+
+    def archive(_connection: Any, args: argparse.Namespace) -> dict[str, int]:
+        calls.append(args.command)
+        return {"matches_inserted": 2}
+
+    monkeypatch.setattr(cli, "_operational_history", operational)
+    monkeypatch.setattr(cli, "_openfootball", archive)
+    monkeypatch.setattr(cli, "_football_data_uk", archive)
+    args = cli.build_parser().parse_args(["backfill-history"])
+    connection = Connection()
+
+    result = cli._history_backfill(cast(Any, connection), args)
+
+    assert len(calls) == 4
+    assert calls[:2] == ["pitchapi", "fotmob"]
+    assert result["status"] == "COMPLETED_WITH_ERRORS"
+    assert result["errors"] == {failed_provider: "provider catalogue is invalid"}
+    assert result[failed_provider] is None
+    assert result["openfootball"] == result["football_data_uk"] == {"matches_inserted": 2}
+    assert connection.rollbacks == 1
+
+
+@pytest.mark.parametrize("provider", ["pitchapi", "fotmob"])
+def test_operational_history_retains_discovery_summary(
+    monkeypatch: pytest.MonkeyPatch, provider: str
+) -> None:
+    class Connection:
+        def commit(self) -> None:
+            pass
+
+    monkeypatch.setenv(f"MATCHFORGE_{provider.upper()}_ENABLED", "true")
+    monkeypatch.setenv("PITCH_API_TOKEN", "test-token")
+    monkeypatch.setattr(cli, "OperationalProviderSync", lambda *_a, **_kw: object())
+    discovery = {"scopes": 3, "requests": 1, "errors": {"native-league": "missing seasons"}}
+    monkeypatch.setattr(cli, "_discover_history", lambda *_a: discovery)
+    monkeypatch.setattr(cli, "run_scopes", lambda *_a, **_kw: [])
+    args = cli.build_parser().parse_args(["backfill-history", "--scheduled"])
+    args.data_root = Path("retained")
+    errors: dict[str, str] = {}
+
+    result = cli._operational_history(cast(Any, Connection()), args, provider, errors)
+
+    assert result["discovery"] == discovery
+    assert result["acquired"] == []
+    assert errors == {f"{provider}-discovery": "{'native-league': 'missing seasons'}"}
+
+
+@pytest.mark.parametrize("provider", ["openfootball", "football_data_uk"])
+def test_history_backfill_selects_archive_provider_without_http_work(
+    monkeypatch: pytest.MonkeyPatch, provider: str
+) -> None:
+    class Connection:
+        def commit(self) -> None:
+            pass
+
+    def unexpected(*_args: object, **_kwargs: object) -> NoReturn:
+        pytest.fail("unselected provider must not run")
+
+    monkeypatch.setattr(cli, "_operational_history", unexpected)
+    monkeypatch.setattr(cli, "_openfootball", unexpected)
+    monkeypatch.setattr(cli, "_football_data_uk", unexpected)
+    monkeypatch.setattr(cli, f"_{provider}", lambda *_a: {"matches_inserted": 7})
+    args = cli.build_parser().parse_args(["backfill-history", "--provider-only", provider])
+
+    result = cli._history_backfill(cast(Any, Connection()), args)
+
+    assert result[provider] == {"matches_inserted": 7}
+    assert result["status"] == "COMPLETED"
+
+
+def test_scheduled_history_rejects_archive_selection_before_any_work(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MATCHFORGE_HISTORY_SYNC_ENABLED", "true")
+    args = cli.build_parser().parse_args(
+        ["backfill-history", "--scheduled", "--provider-only", "openfootball"]
+    )
+    with pytest.raises(ValueError, match="scheduled.*provider"):
+        cli._history_backfill(cast(Any, object()), args)
+
+
+@pytest.mark.parametrize("stage", ["stored", "discovery", "acquired"])
+def test_history_backfill_propagates_nested_provider_failure(
+    monkeypatch: pytest.MonkeyPatch, stage: str
+) -> None:
+    class Connection:
+        def commit(self) -> None:
+            pass
+
+    failed = {"status": "FAILED", "error": "invalid retained resource"}
+    summary: dict[str, Any] = {"stored": None, "discovery": None, "acquired": []}
+    summary[stage] = [failed] if stage == "acquired" else failed
+    monkeypatch.setattr(cli, "_operational_history", lambda *_a: summary)
+    args = cli.build_parser().parse_args(["backfill-history", "--provider-only", "fotmob"])
+
+    result = cli._history_backfill(cast(Any, Connection()), args)
+
+    assert result["fotmob"] is summary
+    assert result["errors"] == {"fotmob": "invalid retained resource"}
+    assert result["status"] == "COMPLETED_WITH_ERRORS"
+
+
 def test_country_refresh_is_explicit_and_does_not_request_acquisition() -> None:
     args = cli.build_parser().parse_args(
         ["refresh-competition-geography", "--provider", "pitchapi", "--data-root", "retained"]

@@ -35,6 +35,86 @@ from psycopg import Connection
 from tests.integration.test_product_historical_backfill import DATABASE_URL
 
 
+@pytest.mark.parametrize(
+    "provider",
+    [
+        "api_football",
+        "football_data_org",
+        "football_data_uk",
+        "fotmob",
+        "openfootball",
+        "pitchapi",
+        "statsbomb_open_data",
+        "future_provider",
+    ],
+)
+def test_unmatched_history_reports_every_provider_and_counts_native_matches(
+    tmp_path: Path, provider: str
+) -> None:
+    from tests.integration.historical_source_fixture import test_snapshot
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        now = _cutoff(c)
+        store = HistoricalBackfillStore(c, provider, provider, "test-v1", data_root=tmp_path)
+        snapshot = test_snapshot(
+            store,
+            tmp_path,
+            source_identity="unmatched-history-test",
+            source_revision="test",
+            acquired_at=now,
+            manifest_path="raw/unmatched.json",
+        )
+        observation = PitchApiFixture(
+            provider_match_id="unmatched-report-test",
+            provider_competition_id="native-league",
+            provider_home_team_id="native-home",
+            provider_away_team_id="native-away",
+            home_team_name="Unmatched home",
+            away_team_name="Unmatched away",
+            kickoff_at=now - timedelta(days=1),
+            status="FINISHED",
+            provider_status="FT",
+            home_score=2,
+            away_score=1,
+            minute=90,
+            added_time=None,
+            period=None,
+            source_updated_at=None,
+            observed_at=now,
+            provider_competition_name="Unmatched league",
+            result_score_basis="REGULATION_90",
+        )
+        sync = OperationalProviderSync(c, tmp_path, provider_code=provider)
+        sync._store_observation(observation, snapshot, None)
+        sync._store_observation(replace(observation, minute=91), snapshot, None)
+
+        report = history_coverage(c, _cutoff(c))
+
+        rows = [
+            row
+            for row in report["provider_unmatched"]
+            if row["provider_code"] == provider
+            and row["provider_match_id"] == observation.provider_match_id
+        ]
+        assert len(rows) == 2
+        assert {row["source_snapshot_id"] for row in rows} == {str(snapshot)}
+        assert report["provider_unmatched_matches"][provider] >= 1
+        distinct_matches = {
+            row["provider_match_id"]
+            for row in report["provider_unmatched"]
+            if row["provider_code"] == provider
+        }
+        assert report["provider_unmatched_matches"][provider] == len(distinct_matches)
+        assert report["pitchapi_unmatched"] == [
+            row for row in report["provider_unmatched"] if row["provider_code"] == "pitchapi"
+        ]
+        assert c.execute(
+            "SELECT canonical_fixture_id FROM football.product_provider_fixture_observations "
+            "WHERE source_snapshot_id=%s",
+            (snapshot,),
+        ).fetchall() == [(None,), (None,)]
+
+
 def test_scottish_archive_proves_country_scoped_ids_without_changing_source(tmp_path: Path) -> None:
     archive = io.BytesIO()
     with zipfile.ZipFile(archive, "w") as bundle:
