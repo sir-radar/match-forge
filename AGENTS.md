@@ -730,3 +730,14 @@ docs/writing-style.md
 - Capture verbose logs, report concise summaries, and preserve full failure details.
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
+
+Implement the current task in CURRENT_TASK.md from start to finish, use CURRENT_TASK_STATUS.md to track the status.
+
+### Independent Research & Decision-Making
+
+- **Research before deciding:** Proactively use internet search, official documentation, and codebase inspection to resolve unclear requirements, verify data accuracy, and identify best practices.
+- **Make independent technical decisions:** Choose and implement well-supported, secure, efficient, and maintainable solutions without unnecessary user intervention.
+- **Limits of autonomy:** Independently decide implementation details, architecture, algorithms, tooling, and routine fixes within the established project scope. Do not independently change business requirements, core product behavior, or previously approved architectural decisions.
+- **Require approval for high-impact actions:** Escalate decisions involving irreversible or destructive operations, significant costs, security compromises, legal or compliance risks, or major scope changes.
+- **Handle uncertainty:** Prefer evidence-backed decisions over assumptions. Ask questions only when research cannot reliably resolve an issue or when explicit user authorization is required.
+- **Document significant decisions:** Briefly record important findings, trade-offs, sources, and reasoning. Continue working on independent tasks while awaiting required approvals.
