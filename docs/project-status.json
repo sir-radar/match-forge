@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-03T16:10:28Z",
+  "updated_at": "2026-11-03T16:38:39Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1303,7 +1303,7 @@
         "FR-004": "NOT_STARTED",
         "FR-005": "NOT_STARTED",
         "FR-006": "VERIFIED",
-        "FR-007": "NOT_STARTED",
+        "FR-007": "BLOCKED_DEPENDENCY",
         "FR-008": "NOT_STARTED",
         "FR-009": "NOT_STARTED",
         "FR-010": "NOT_STARTED",
@@ -1335,7 +1335,33 @@
         "python_unit_tests_passed": 1818,
         "rust_tests_passed": 16,
         "web_tests_passed": 107
-      }
+      },
+      "fr007": {
+        "implementation_status": "VERIFIED_IN_SHADOW",
+        "verification_status": "PASS",
+        "parser_version": "football-data-uk-product-v2",
+        "dispositions_ref": "docs/evidence/forecast-readiness-fr007-dispositions.json",
+        "frozen_conflict_records": 730,
+        "reconciled_occurrences": 455,
+        "new_shadow_retained_results": 180,
+        "verified_new_operating_forecasts": 0,
+        "held_archive_records": 256,
+        "held_scottish_kickoff_discrepancies": 9,
+        "held_team_timestamp_collisions": 8,
+        "held_cross_provider_relationships": 2,
+        "remaining_dependencies": [
+          "FR-005",
+          "FR-008"
+        ],
+        "original_mappings_and_earlier_cutoff_preserved": true,
+        "identical_retry_duplicates": 0,
+        "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+        "verification_exit_code": 0,
+        "python_unit_tests_passed": 1819,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 107
+      },
+      "phase_a": "PASS_WITH_WARNINGS"
     }
   },
   "architecture_v2": {

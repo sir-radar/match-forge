@@ -53,7 +53,7 @@ and shadow identities checked independently.
 | FR-004 | NOT_STARTED | Authentic missing team/season slices |
 | FR-005 | NOT_STARTED | Scottish historical namespace relationships |
 | FR-006 | VERIFIED | Batched context invalidation; operating rollout remains pending |
-| FR-007 | NOT_STARTED | Rolling occurrence compatibility and 730 conflict dispositions |
+| FR-007 | BLOCKED_DEPENDENCY | Rolling fix verified in shadow; 275 held occurrences require FR-005/008 |
 | FR-008 | NOT_STARTED | Original-row canonical conflict evidence |
 | FR-009 | NOT_STARTED | Current unmatched revisions and exact season metadata |
 | FR-010 | NOT_STARTED | Scope-specific failure/retry classification |
@@ -166,3 +166,83 @@ The approved source dump and original registrations are preserved.
 | `profile-select.json` | `969ca75001f8f15d6d67b7a5d853c33c3d3fdbd999fa1417097f433a12296243` |
 | `profile-after-plans.json` | `17136e9f72070e2d45fe3cd66e828e43363449ee79d2f92401bf2cec739ef106` |
 | `fr006-integration.log` | `530db5cda446467b69e6a47daebfb0784039f943a8eafe0418b8568b1509203e` |
+
+## Phase A: FR-007 rolling CSV occurrences
+
+**Implementation: PASS_WITH_WARNINGS, verified in shadow. Remaining conflict
+recovery: BLOCKED_DEPENDENCY on FR-005/008.** The product parser now emits
+`<source_path>#<row>@sha256:<raw_byte_sha256>` for `Latest_Results.csv` only.
+The source path before `#` remains compatible with the existing fixture-lineage
+reader. Seasonal CSV and ZIP-member identifiers retain their original format;
+existing mapping rows and previously published identifiers are never reassigned.
+New registrations identify the product parser as `football-data-uk-product-v2`;
+the frozen Phase 1B native reader is unchanged.
+
+This identifies a source occurrence, not a real match by itself. The existing
+historical importer still requires exact competition, participant and kickoff
+relationships before reusing a canonical fixture. Score disagreements, reversed
+participants, impossible schedules and unsupported cross-provider relationships
+retain the existing conflict/review paths. No new registry, migration, dependency,
+fuzzy matching or confidence-based admission was added.
+
+The provider [describes its latest file as combined recent results](https://football-data.co.uk/all_new_data.php).
+Two retained-style responses reproduce row reuse; the regression fails before
+the change. Parser tests pass afterward. Disposable integration also verifies
+legacy mapping preservation, unchanged earlier-cutoff eligible history, source
+checksum/path lookup, row insertion/reordering, identical-byte retry, corrected
+scores and orientation/schedule rejection. Both the original source version and a
+reordered version resolve the same real fixture without rewriting the legacy ID.
+
+All **730** frozen `PROVIDER_MATCH_ID_REUSED` records over ten snapshots have
+byte-verified source occurrence dispositions in the machine-readable
+[inventory](forecast-readiness-fr007-dispositions.json). No raw football payload
+is included in that file.
+
+| Final shadow disposition | Records | Remaining dependency |
+| --- | ---: | --- |
+| Exact occurrence reconciled to a canonical fixture | 455 | None for occurrence matching |
+| Scottish archive row-key reuse | 171 | FR-005 and FR-008 |
+| Other archive row-key reuse | 85 | FR-008 |
+| Scottish normalized kickoff differs by one hour | 9 | FR-005 and FR-008 |
+| Team/timestamp collision | 8 | FR-008 |
+| Unreviewed cross-provider fixture relationship | 2 | FR-008 |
+
+The 455 reconciled occurrences resolve **455 distinct canonical fixtures**:
+275 already exist and 180 add authentic retained results in the disposable
+restore. Identical retries return `existing` for all 455; the other ten rolling
+records hit the same guards on retry. The 256 archive occurrences are held
+without changing archive keys, and the nine time discrepancies are not silently
+coerced. **Operating history recovery and verified forecast gain: 0.** No shadow
+retained-row count is represented as eligible history or forecast availability.
+
+The approved restore predates one source registration. The first rehearsal
+explicitly holds its 180 rows. Existing immutable-manifest registration restores
+that source to shadow with exactly the operating snapshot/resource IDs
+`a2bc6000-1bdf-540e-afd5-69b11c0643dd` /
+`caa82b7a-51a5-527e-896b-2cfedbbd34b6` and its verified original checksum. The
+complete rerun then succeeds; no registration or football bytes are fabricated.
+All replay mutations roll back. Source registrations, prior mapping rows,
+historical decisions, model/forecast/artifact registrations, promotions,
+retirements, prior history rows and earlier-cutoff eligible history retain their
+before/after digests. Full failure and successful receipts remain private.
+
+Final `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits **0** after the final parser/test changes: 1,819 Python unit tests, 16 Rust
+tests, 107 web tests, static/type/architecture checks, builds and the complete
+disposable storage/API integration pass. The metadata inventory validates all
+730 unique conflict IDs, 455 successful retry bindings, every remaining dependency
+and the exact parser file checksum. Existing dependency and ESLint warnings
+remain. No browser E2E, scientific evaluation or operating rollout was performed.
+
+**Phase A checkpoint: PASS_WITH_WARNINGS.** Shared-defect implementations are
+verified. Operating rollout and the explicitly held source/identity conflicts
+remain separate from code acceptance. Phase B may proceed with independently
+qualified evidence; no held record is forced through a guard.
+
+| Private receipt | SHA256 |
+| --- | --- |
+| `csv-reuse-inventory.json` | `560c2fbcd6ee3f175a948b77fb046a0da8b2a2d9a1c4341adb39ef078c6aa7f6` |
+| `csv-reuse-source-audit.json` | `3a1be748318fd531f42eb55ceb21b5f2c87db4bb958851e400e130f1f8abfc6b` |
+| `rolling-shadow.json` | `4b391ac4f99e0902108fc28b39b013b38f098cd6adedc5a354a10c10ddaccadb` |
+| `rolling-held-guards.json` | `3feede311570cafdcf7b06d1b125b64602eee90b856288606b3e7ea61dcfe300` |
+| `csv-reuse-dispositions.json` | `e086a0bfcf64cebc9a37daf2fb0abe879dff420b492a16301badeb4e053e4fbb` |

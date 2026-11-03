@@ -433,6 +433,12 @@ its existing transaction contract for short composed operations.
 OpenFootball and Football-Data.co.uk backfills own an idle connection and commit
 individual match imports before reading or downloading another resource. CSV/archive
 parsing finishes before registering a successfully parsed resource.
+The product CSV parser versions `Latest_Results.csv` row occurrences as
+`<source_path>#<row>@sha256:<raw_byte_sha256>`. The existing exact participant,
+competition and kickoff checks resolve their canonical fixtures. Original row keys,
+source snapshots and resource checksums remain inspectable; prior mappings are never
+reassigned. Seasonal CSV and archive-member keys keep their existing format. Score,
+orientation and schedule conflicts retain the existing guards and review workflows.
 `product_history_resource_imports` records whether an import has completed; it
 contains no claim, lease or retry policy. Resource registration and a pending
 import record commit together. A partially imported resource remains eligible for

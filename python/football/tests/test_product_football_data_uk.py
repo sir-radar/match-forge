@@ -80,6 +80,31 @@ def test_csv_parser_handles_bom_old_dates_time_and_incomplete_rows() -> None:
     assert matches[0].country == "England"
 
 
+def test_rolling_csv_rows_bind_the_exact_source_version_without_rewriting_archive_ids() -> None:
+    header = "Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n"
+    first = "E0,01/10/2026,Home One,Away One,2,1\n"
+    second = "E0,02/10/2026,Home Two,Away Two,0,0\n"
+    original = (header + first + second).encode()
+    reordered = (header + second + first).encode()
+    path = "mmz4281/2627/Latest_Results.csv"
+
+    old_rows = parse_csv_resource(original, source_path=path, season="2026-2027")
+    new_rows = parse_csv_resource(reordered, source_path=path, season="2026-2027")
+
+    assert old_rows == parse_csv_resource(original, source_path=path, season="2026-2027")
+    assert {row.provider_match_id for row in old_rows}.isdisjoint(
+        row.provider_match_id for row in new_rows
+    )
+    assert all(row.source_path == path for row in old_rows + new_rows)
+    assert all(row.provider_match_id.startswith(path + "#") for row in old_rows + new_rows)
+    assert (
+        parse_csv_resource(original, source_path="mmz4281/2627/E0.csv", season="2026-2027")[
+            0
+        ].provider_match_id
+        == "mmz4281/2627/E0.csv#2"
+    )
+
+
 def test_catalog_budget_cannot_silently_report_partial_discovery(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
