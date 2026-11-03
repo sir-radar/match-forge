@@ -70,6 +70,39 @@ forecast readiness; never weaken qualification gates to improve status counts.
 
 ## Provider capability registry
 
+### Provider-wide execution and access register
+
+The standing decision above applies to each row below and to future adapters.
+This register was checked against provider documentation on 3 November 2026.
+Advertised coverage is not proof of retained coverage or this account's access.
+
+| Provider | Existing acquisition owner and resources | Coverage and access limits |
+| --- | --- | --- |
+| API-Football | `ProductSync` / `HistorySyncWorker`; fixtures, results, standings and enabled lineup/injury context; additional capability ports | League/season coverage and credentials are account-specific. Keep `API_FOOTBALL_MAX_HISTORY_SEASON` and persistent daily/minute quotas. [Official rate limits](https://www.api-football.com/news/post/how-ratelimit-works) and [coverage guidance](https://www.api-football.com/news/post/how-to-get-started-with-api-football-the-complete-beginners-guide) do not authorize a larger plan. |
+| football-data.org | Existing explicit-crosswalk history fallback; competition fixtures, results and standings | v4 resources and historical access depend on subscription. The free plan advertises ten calls/minute; history is separately offered in paid plans. Keep the existing client pacing and entitlement failures. [API reference](https://www.football-data.org/documentation/quickstart), [plans](https://www.football-data.org/pricing). |
+| FotMob | `OperationalProviderSync`, `provider_history_scopes` and `FotmobSource`; calendar/season results and match, team and player resources | Seasons come from native catalogues; detail depth varies. [Published terms](https://www.fotmob.com/tos.txt) restrict automated/systematic use. The owner decision is recorded separately; ordinary access failures stop that source without bypasses. |
+| PitchAPI | Existing operational client, season checkpoints and `PitchApiSource`; results, events, shots, statistics, lineups and ratings | [Reference](https://pitchapi.dev/) advertises catalogue history from 2021 and no daily allowance, with a fair-use burst guard and `Retry-After`. Missing analytics remain missing. Current access does not establish historical knowledge or compatible xG-series identity. |
+| OpenFootball | Existing commit-pinned mirror and bulk JSON importer | [football.json](https://github.com/openfootball/football.json) publishes public-domain fixtures/results, with season directories from 2010/11. File coverage and update completeness vary; it does not supply event, player, injury or xG data. |
+| Football-Data.co.uk | Existing bounded CSV/ZIP discovery, immutable manifests and bulk importer | Results/statistics columns differ by country and season; odds remain outside baseline features. [Column notes](https://www.football-data.co.uk/notes.txt) are available. The catalogue returned HTTP 429 during this review; do not evade it or infer a complete current catalogue. |
+| StatsBomb Open Data | `SourceAcquirer`, pinned adapter and canonical ingestion | [Open repository](https://github.com/statsbomb/open-data) supplies selected competition/seasons, events, lineups and selected 360 files. Preserve its licence and attribution. Broader acquisition does not resume paused model research, protected evaluation, 360 normalization or automatic product-history admission. |
+| Flashscore | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.flashscore.com/terms-of-use/) restrict substantial extraction and automated requests. Public pages are research evidence, not an undocumented API contract or provider-native crosswalk. |
+| Soccerway | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.soccerway.com/terms-of-use/) impose extraction/automation restrictions. Flashscore and Soccerway are both Livesport services: do not assume their agreement supplies independent corroboration. |
+| TotalCorner | Documented candidate; no configured production adapter | [Official API](https://www.totalcorner.com/page/api) requires a VIP token and account timezone/language; it advertises history from 2014 and 30 requests/minute in ten-second windows. No new subscription, token or paid boost is authorized by this task. |
+| Sportmonks | Existing external-prediction integration, not a general historical import adapter | [Football API](https://www.sportmonks.com/football-api/) offers results, player/context resources and optional xG. An existing prediction token does not establish historical data entitlements. Keep prediction collection separate from model inputs. |
+
+Use the existing provider-specific command or capability port rather than adding
+a second acquisition engine. Before enabling a new provider, establish its native
+resource/schema contract, actual credentials and coverage, runtime policy,
+immutable retention/provenance and normalization support. Unknown support stays
+unknown. Resource capabilities and source registrations do not by themselves
+admit identities, complete a season or qualify forecasting markets.
+
+For measurements, count retrieved resources, parsed records, admitted identities,
+eligible history and newly available forecasts separately. Live background-worker
+additions are not attributable to a controlled recovery run. Preserve a fixed
+knowledge cutoff for before/after historical comparisons and record the actual
+later admission time.
+
 Each provider declares an immutable `ProviderCapabilityV1` before it is enabled. The declaration
 records terms status, supported competition/season scopes, resource-level historical coverage,
 update semantics, cursor/webhook support, rate limits, credential references, and adapter version.

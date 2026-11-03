@@ -2749,3 +2749,57 @@ Final receipts under `.local/data-recovery-followup/`:
 | `cleanup-applied.json` | `1f3af2f608ef6196ad020f439064b891e95223774c1fc085c3f421e6eafe5d66` |
 | `check-integration.log` (initial exit 2) | `68434908f902c0ee434381f926df94ffe7be90806056f3a9d32c832d398f11b4` |
 | `integration-retry.log` (exit 0) | `c5c71fb23ea88d5f04456097ad495c0b90a4c97ca2274b9034af4081a096400c` |
+
+## P. Provider-wide acquisition and recovery — 2026-11-03
+
+### P1. Scope, source research and operating baseline
+
+`CURRENT_TASK.md` now authorizes provider-wide private, local, non-commercial
+research acquisition and evidence-complete recovery. The authoritative policy
+and current primary-source links are in `docs/source-acquisition.md`, including
+all integrated football providers, retained Flashscore/Soccerway evidence and
+TotalCorner/Sportmonks alternatives. Existing research evaluations, identity
+rules, account limits and architecture cutover gates remain separate. Historical
+decisions and the earlier sections of this report are retained.
+
+The repeatable-read, read-only operating baseline at **01:05:52 UTC** is:
+
+| Provider | Registered resources | Retained product results | Cutoff-eligible product results | Retained result range |
+| --- | ---: | ---: | ---: | --- |
+| API-Football | 436 | 58,909 | 58,051 | 2022–2026 |
+| football-data.org | 135 | 5,387 | 127 | 2024–2026 |
+| Football-Data.co.uk | 56 | 236,529 | 131,692 | 1993–2026 |
+| FotMob | 41,262 | 87,702 | 29,778 | 2010–2026 |
+| OpenFootball | 291 | 89,930 | 73,828 | 2010–2026 |
+| PitchAPI | 26,810 | 710 | 16 | 2025–2026 |
+| StatsBomb Open Data | 1,526 | 0 | 0 | Separate canonical/event datasets |
+| Flashscore | 7 | 0 | 0 | Retained research pages |
+| Soccerway | 7 | 0 | 0 | Retained research pages |
+
+Product history totals **479,167 retained / 293,492 eligible rows**. Counts are
+observations in the existing product-history representation, not all acquired
+provider matches or independent cross-provider records. Availability is
+**220 competitions / 3,668 fixture records**, unchanged from O4. Zero product
+results for StatsBomb does not mean its event/player data are missing.
+
+Schema is `202611020200`. Live FotMob and PitchAPI jobs are running; automatic
+history is disabled. The two season queues contain 873 pending, 338 failed,
+11 deferred and two succeeded scopes. The API-Football/football-data.org queue
+contains 506 pending and 135 succeeded jobs. Existing 2024 API-Football history
+entitlement and provider budgets remain binding. Local credentials are present
+for API-Football, football-data.org, PitchAPI and Sportmonks; credential presence
+does not establish every resource entitlement.
+
+Baseline receipt: `.local/provider-wide-acquisition/baseline.json`, SHA-256
+`01fa1731f6eac7d4273461c8d1db82d3fa9d5fa7a9fdba217c7f0d2acbe15c75`.
+The optional `product_model_versions` probe fails because that table does not
+exist; it is not used as champion evidence. The separate preservation collector
+hashes existing registrations and the actual champion artifact. Background
+worker additions will be separated from controlled task effects.
+
+Phase 1: **PASS_WITH_WARNINGS**. Review confirms existing adapter owners and
+three actionable diagnostic/orchestration gaps: provider failures can interrupt
+other backfills, discovery summaries are discarded, and unmatched history is
+reported only for PitchAPI. Phase 2 will repair those paths without a competing
+acquisition engine or migration. Documentation-only checkpoint verification:
+source/text review and `git diff --check`.
