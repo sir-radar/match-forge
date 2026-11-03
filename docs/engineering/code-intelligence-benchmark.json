@@ -2,7 +2,7 @@
   "date": "2026-11-03",
   "base_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
   "platform": "macOS ARM64",
-  "selected_tool": "codebase-memory-mcp 0.12.1",
+  "selected_tool": "ordinary Codex navigation (recommendation; existing CBM integration unchanged)",
   "integration_status": "PASS_WITH_WARNINGS",
   "model_tokens": "MEASURED_CODEX_CLI; GUI NOT MEASURED",
   "input_tokens": {
@@ -1535,5 +1535,333 @@
     "ruff_complexity_lint": "PASS",
     "migration_storage_operational_integration": "PASS",
     "preexisting_frontend_lint_warnings": 1
+  },
+  "alternatives_evaluation": {
+    "date": "2026-11-03",
+    "status": "MEASURED_CODEX_CLI",
+    "recommendation": "REVISE",
+    "selected_workflow": "ordinary Codex navigation; selective CBM remains an option pending PR #180 review",
+    "replacement_selected": false,
+    "permanent_integration_changed": false,
+    "versions": {
+      "codegraph": "1.6.2",
+      "serena-agent": "2.1.0",
+      "gopls": "0.21.1",
+      "rust-analyzer": "0.3.3105-standalone (2026-11-02 release)",
+      "typescript-language-server": "5.1.3",
+      "typescript": "5.9.3"
+    },
+    "model": "gpt-6.1-terra",
+    "reasoning_effort": "medium",
+    "cli_version": "codex-cli 0.166.0-alpha.5.1",
+    "snapshot": {
+      "base_sha": "307762108605d3d8351b3cf9adb5e06cfe9911b3",
+      "prior_snapshot_sha": "064408626528419e85d18faa48c84766320f68c9",
+      "included_count": 976,
+      "excluded_count": 449,
+      "included_manifest_sha256": "68f215c79e13fd45e200640e99eab730682cb1f55e0d5f2a490b1852fbbcad3b",
+      "all_included_source_hashes_verified_per_candidate": true,
+      "copies_differ_only_in_tool_state_and_gitignore_exclusions": true
+    },
+    "scenarios": [
+      "storage_recovery",
+      "forecast_contracts",
+      "frontend_design"
+    ],
+    "task_definitions": "remediation.codex_benchmark.scenarios and common_prompt; unchanged",
+    "runs_per_task_per_workflow": 1,
+    "comparison": "Baseline and CBM reuse prior same-day measurements for these three tasks only; no three-task totals compared to five-task totals.",
+    "conditions": {
+      "fresh_ephemeral_sessions": true,
+      "ignore_user_config": true,
+      "approval_policy": "never",
+      "plugins_enabled": false,
+      "command_network_enabled": false,
+      "shell_filesystem": "deny root; minimal platform paths and read-only audited snapshot only",
+      "mcp_required": true,
+      "mcp_working_directory": "candidate-specific audited snapshot copy",
+      "source_disclosure": "same 976-file audited allowlist; no provider payloads, environment files, external accounts or hosted indexing",
+      "codegraph_telemetry": false,
+      "serena_dashboard": false,
+      "serena_project_read_only": true,
+      "warm_state": "source indexes prebuilt outside task timing; CodeGraph shared daemon warm after MCP preflight; Serena starts language servers against a populated symbol cache. Task wall time includes required MCP startup.",
+      "order": "CodeGraph three tasks, then Serena three tasks; historical baseline/CBM alternated previously. No randomized repetitions."
+    },
+    "workflows": {
+      "codegraph": "Native codegraph_explore, verbatim symbol source reused; direct SQL/schema/HTML reads when coverage or relationships incomplete.",
+      "serena": "Read-only symbol-tool interface; find_symbol, references, overview and pattern search with focused source fallback. Default REPL attempted but rejected under fixed read-only approval conditions; its invalid trial excluded."
+    },
+    "totals": {
+      "baseline": {
+        "input_tokens": 715022,
+        "output_tokens": 5491,
+        "cached_input_tokens": 608640,
+        "reasoning_output_tokens": 139,
+        "total_tokens": 720513,
+        "tool_calls": 32,
+        "elapsed_seconds": 143.627,
+        "token_savings_percent": 0.0,
+        "execution_time_change_percent": 0.0
+      },
+      "optimized": {
+        "input_tokens": 725357,
+        "output_tokens": 7182,
+        "cached_input_tokens": 622464,
+        "reasoning_output_tokens": 140,
+        "total_tokens": 732539,
+        "tool_calls": 65,
+        "elapsed_seconds": 223.202,
+        "token_savings_percent": -1.669,
+        "execution_time_change_percent": 55.404
+      },
+      "codegraph": {
+        "input_tokens": 1120409,
+        "output_tokens": 4653,
+        "cached_input_tokens": 938752,
+        "reasoning_output_tokens": 182,
+        "total_tokens": 1125062,
+        "tool_calls": 30,
+        "elapsed_seconds": 167.618,
+        "token_savings_percent": -56.147,
+        "execution_time_change_percent": 16.704
+      },
+      "serena": {
+        "input_tokens": 939837,
+        "output_tokens": 6264,
+        "cached_input_tokens": 798976,
+        "reasoning_output_tokens": 125,
+        "total_tokens": 946101,
+        "tool_calls": 81,
+        "elapsed_seconds": 153.357,
+        "token_savings_percent": -31.309,
+        "execution_time_change_percent": 6.774
+      }
+    },
+    "index_initialization": {
+      "codegraph": {
+        "exit_code": 0,
+        "elapsed_seconds": 19.056,
+        "files": 677,
+        "nodes": 15922,
+        "edges": 48190
+      },
+      "serena": {
+        "exit_code": 0,
+        "elapsed_seconds": 24.874,
+        "files": 676,
+        "languages": {
+          "go": 33,
+          "python": 572,
+          "typescript": 64,
+          "rust": 7
+        }
+      }
+    },
+    "indexing_note": "Cold source indexing after dependency preparation; installation/downloads, failed setup retries and smoke queries excluded from task totals. Previous CBM cold/full measurements had different coverage and are not compared here.",
+    "smoke": {
+      "codegraph": {
+        "mcp_handshake": "PASS",
+        "navigation": "PASS; Python normalizer and TypeScript hook source found",
+        "auto_sync": {
+          "status": "PASS",
+          "observed_waits": {
+            "initial": 0.369,
+            "move_modify_new_directory_seconds": 1.085,
+            "obsolete_symbol_removed_seconds": 0.005,
+            "delete_seconds": 0.007
+          }
+        }
+      },
+      "serena": {
+        "mcp_handshake": "PASS",
+        "navigation": "PASS; Python symbol/references, Go/Rust/TypeScript overviews and hook consumers verified",
+        "auto_sync": {
+          "status": "PASS",
+          "observed_waits": {
+            "initial": 0.536,
+            "move_modify_new_directory_seconds": 0.115,
+            "obsolete_symbol_removed_seconds": 0.112,
+            "delete_seconds": 0.109
+          }
+        }
+      }
+    },
+    "correctness_review": {
+      "codegraph": "Contract and frontend answers checked against source; SQL/JSON/HTML required direct fallback. Storage answer named CanonicalResolutionRegistry, which writes canonical_resource_resolutions, without establishing the ingestion writer for its cited canonical_storage migration; task incomplete on that point.",
+      "serena": "All three answers checked against source, including StatsBombCanonicalIngestor, recovery constraints, Python/Rust serialization and authoritative markets HTML.",
+      "shared_contract_gap": "Both qualified the absent standalone simulation input schema and Go wire consumer; Go forecast persistence is a different relationship.",
+      "tests": "Discovery/impact tasks inspect tests; no claims of executing production tests."
+    },
+    "runs": [
+      {
+        "scenario": "storage_recovery",
+        "workflow": "codegraph",
+        "exit_code": 0,
+        "elapsed_seconds": 36.833,
+        "usage": {
+          "input_tokens": 308639,
+          "cached_input_tokens": 247168,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1600,
+          "reasoning_output_tokens": 34
+        },
+        "tool_calls": 10,
+        "item_types": {
+          "agent_message": 3,
+          "mcp_tool_call": 4,
+          "command_execution": 6
+        },
+        "raw_events_sha256": "2196dfbec7679ecc4292df0d65de292c70c0371a423d3a2f348fbeccc180ff40",
+        "correctness": "PARTIAL"
+      },
+      {
+        "scenario": "forecast_contracts",
+        "workflow": "codegraph",
+        "exit_code": 0,
+        "elapsed_seconds": 68.539,
+        "usage": {
+          "input_tokens": 453925,
+          "cached_input_tokens": 374016,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1698,
+          "reasoning_output_tokens": 98
+        },
+        "tool_calls": 11,
+        "item_types": {
+          "agent_message": 3,
+          "mcp_tool_call": 6,
+          "command_execution": 5
+        },
+        "raw_events_sha256": "5c3e57635b049c9685fd799a4a6fbfd503e22e3f9ead21a40083f4cf5f902079",
+        "correctness": "PASS_WITH_WARNINGS"
+      },
+      {
+        "scenario": "frontend_design",
+        "workflow": "codegraph",
+        "exit_code": 0,
+        "elapsed_seconds": 62.246,
+        "usage": {
+          "input_tokens": 357845,
+          "cached_input_tokens": 317568,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1355,
+          "reasoning_output_tokens": 50
+        },
+        "tool_calls": 9,
+        "item_types": {
+          "agent_message": 2,
+          "mcp_tool_call": 5,
+          "command_execution": 4
+        },
+        "raw_events_sha256": "2cc91245cb801c755049f32c4339d94a4e3a1768766c65b92b939d47fc084a2d",
+        "correctness": "PASS"
+      },
+      {
+        "scenario": "storage_recovery",
+        "workflow": "serena",
+        "exit_code": 0,
+        "elapsed_seconds": 48.264,
+        "usage": {
+          "input_tokens": 266056,
+          "cached_input_tokens": 196096,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2047,
+          "reasoning_output_tokens": 24
+        },
+        "tool_calls": 25,
+        "item_types": {
+          "agent_message": 3,
+          "mcp_tool_call": 20,
+          "command_execution": 5
+        },
+        "raw_events_sha256": "071fb422935c39026974c877bd4470ecafd4e0a5a58012eaef9b20d9686e82ff",
+        "correctness": "PASS"
+      },
+      {
+        "scenario": "forecast_contracts",
+        "workflow": "serena",
+        "exit_code": 0,
+        "elapsed_seconds": 61.333,
+        "usage": {
+          "input_tokens": 425705,
+          "cached_input_tokens": 382720,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2448,
+          "reasoning_output_tokens": 101
+        },
+        "tool_calls": 34,
+        "item_types": {
+          "agent_message": 3,
+          "mcp_tool_call": 26,
+          "command_execution": 8
+        },
+        "raw_events_sha256": "58295d644fc5ba0534c3d0a8c0b2a2b99cfc0fdb0b50132d8b3b2613b4bbf570",
+        "correctness": "PASS_WITH_WARNINGS"
+      },
+      {
+        "scenario": "frontend_design",
+        "workflow": "serena",
+        "exit_code": 0,
+        "elapsed_seconds": 43.76,
+        "usage": {
+          "input_tokens": 248076,
+          "cached_input_tokens": 220160,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1769,
+          "reasoning_output_tokens": 0
+        },
+        "tool_calls": 22,
+        "item_types": {
+          "agent_message": 3,
+          "mcp_tool_call": 16,
+          "command_execution": 6
+        },
+        "raw_events_sha256": "36fffd846cc0460854a830cc3e2e400853c8356dee57bbb9f99a3c8d200f853a",
+        "correctness": "PASS"
+      }
+    ],
+    "excluded_trials": [
+      {
+        "log": "invalid-config-storage_recovery-codegraph.jsonl",
+        "usage": null,
+        "raw_events_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "reason": "Disabled MCP table lacked command/transport; no model usage."
+      },
+      {
+        "log": "invalid-repl-forecast_contracts-serena.jsonl",
+        "usage": null,
+        "raw_events_sha256": "2712ca9e8daccb7c4ba4b520c7f5de70c922d18468585545c4af4d473d41e6e5",
+        "reason": "REPL editing-capable annotation requires approval; source-fallback or interrupted trial, excluded."
+      },
+      {
+        "log": "invalid-repl-storage_recovery-serena.jsonl",
+        "usage": {
+          "input_tokens": 282247,
+          "cached_input_tokens": 248960,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1740,
+          "reasoning_output_tokens": 59
+        },
+        "raw_events_sha256": "ac57f309b81975663c2e5a9ad828fadb2c0a51741d8a7c61ff3f50bd57f42184",
+        "reason": "REPL editing-capable annotation requires approval; source-fallback or interrupted trial, excluded."
+      }
+    ],
+    "synchronization_limits": "Disposable Python initial discovery plus move/rename/modify/delete checks only. CodeGraph native watcher requires a live MCP/daemon; Serena LSP/cache refresh requires a live project session. No claim about every Git operation, restart path or language. No custom watcher added.",
+    "resource_observation": {
+      "codegraph_tool_allocated_KiB": 289468,
+      "serena_venv_allocated_KiB": 120656,
+      "serena_state_allocated_KiB": 26388,
+      "gopls_and_rust_analyzer_allocated_KiB": 77292,
+      "serena_uv_cache_allocated_KiB": 63112,
+      "note": "Finite du -sk sample; excludes some download/build caches. Peak memory and sustained CPU not measured."
+    },
+    "scope": "Only existing engineering report/evidence updated. Application, AGENTS.md, .codex/config.toml, .cbmignore, current CBM installation and quality gates unchanged. Candidate installs isolated under /tmp; temporary processes stopped after checks.",
+    "limitations": [
+      "One observation per task/arm; no statistical significance or billing/cost claim. Cached input is already included in input and is not added twice.",
+      "Historical same-day controls reused rather than rerun contemporaneously; warm daemon/cache/order and model-service latency can affect timing.",
+      "Only three permitted representative tasks; provider/identity and serving/refactor not rerun because aggregate token regressions were clear.",
+      "Full filesystem-read counts, unnecessary-read counts, peak context and desktop GUI telemetry not measured.",
+      "Serena default REPL could not be measured under the fixed approval policy; classic tools are the valid comparison. Incomplete/interrupted trial usage is not invented."
+    ]
   }
 }

@@ -4,6 +4,10 @@ MatchForge uses [codebase-memory-mcp 0.12.1](https://github.com/DeusData/codebas
 for focused code navigation. This is development tooling; scientific gates,
 production behavior and approved architectural decisions are unchanged.
 
+The focused alternatives benchmark below recommends ordinary Codex navigation.
+The existing integration remains unchanged in open PR #180 for owner review;
+neither CodeGraph nor Serena justified a permanent replacement.
+
 ## Decision and alternatives
 
 Research date: 2026-11-03. Official source, the two latest release entries and
@@ -353,3 +357,87 @@ passed; the disposable repository and graph registration were removed. A final
 bounded coverage check confirmed all 13 HTML designs plus ten contract, language
 and architecture-document paths had matching saved metadata. All ten Codex usage
 records matched their local event logs and SHA-256 hashes.
+
+## Focused alternatives benchmark (2026-11-03)
+
+**Recommendation: REVISE.** Prefer ordinary Codex navigation, with selective CBM
+queries where useful. Neither alternative earned a permanent integration.
+`AGENTS.md`, project configuration, the existing CBM installation and production
+files remain unchanged. PR #180 remains open for owner review.
+
+[CodeGraph 1.6.2](https://github.com/colbymchenry/codegraph/releases/tag/v1.6.2)
+and [Serena 2.1.0](https://github.com/oraios/serena/tree/v2.1.0) were installed
+only in a disposable `/tmp` environment. Both passed MCP handshakes, source
+discovery and representative symbol/dependency checks for Python, Go, Rust and
+TypeScript. CodeGraph used its native `codegraph_explore` workflow. Serena used
+its supported symbol tools with LSP backends: Pyright, gopls, rust-analyzer and
+typescript-language-server. Its default
+[REPL interface](https://oraios.github.io/serena/01-about/035_tools.html#repl-advantages)
+was tried first, but Codex rejected its editing-capable annotation under the
+fixed `approval_policy=never` conditions. That fallback trial and an interrupted
+trial are excluded; the evidence records available trial usage separately.
+
+The three permitted representative tasks were storage/recovery, forecast and
+cross-language contracts, and frontend/HTML discovery. Fresh Codex sessions used
+the same `gpt-6.1-terra`, medium reasoning, CLI `0.166.0-alpha.5.1`, task text and
+read-only restrictions as the earlier comparison. All 976 audited source hashes
+matched in both isolated copies. No additional repository content was disclosed.
+Baseline and CBM values below reuse **only these same three tasks**, rather than
+comparing three new runs with the prior five-task totals.
+
+| Metric, three tasks | Baseline | CBM | CodeGraph | Serena |
+| --- | ---: | ---: | ---: | ---: |
+| Input tokens, including cached | 715,022 | 725,357 | 1,120,409 | 939,837 |
+| Output tokens | 5,491 | 7,182 | 4,653 | 6,264 |
+| Total input + output | 720,513 | 732,539 | 1,125,062 | 946,101 |
+| Cached input, subset of input | 608,640 | 622,464 | 938,752 | 798,976 |
+| Token savings versus baseline | 0% | -1.67% | -56.15% | -31.31% |
+| Tool calls | 32 | 65 | 30 | 81 |
+| Execution seconds | 143.627 | 223.202 | 167.618 | 153.357 |
+| Separate source-index initialization seconds | N/A | Not matched | 19.056 | 24.874 |
+| Answer review | Qualified contract gap | Qualified contract gap | Partial storage write trace | Qualified contract gap |
+
+CodeGraph increased tokens on each task by 55.00%, 64.64% and 47.45%; Serena
+increased them by 33.95%, 54.71% and 2.56%, respectively. The aggregate regressions
+did not justify expansion to all five tasks. CodeGraph made fewer calls than the
+baseline but processed more tokens; call count or response size alone would
+have selected the wrong result.
+
+Source review confirmed the frontend HTML/component relationships and the
+Python/Rust wire path. Both candidates qualified the missing standalone
+simulation input schema and Go wire consumer. CodeGraph's storage answer named
+`CanonicalResolutionRegistry`, which writes `canonical_resource_resolutions`,
+without establishing the ingestion writer for its cited base storage migration.
+Serena identified `StatsBombCanonicalIngestor` and its writer. This is a task
+completeness gap for CodeGraph, even though the cited registry source is real.
+The navigation tasks inspected tests; they did not execute production tests.
+
+Source indexing covered 677 files for CodeGraph and 676 for Serena. Initialization
+timings exclude dependency downloads and failed setup attempts. Task timing uses
+prebuilt indexes and includes required MCP startup; CodeGraph's shared daemon
+was warm, while Serena started language servers with a populated symbol cache.
+The earlier CBM cold/full indexing runs used different coverage and are not a
+matched initialization comparator.
+
+Both disposable Python fixtures refreshed a moved/renamed/modified file, removed
+the old symbol and removed a deleted symbol. Observed waits to find the changed
+symbol were 1.085 seconds for CodeGraph and 0.115 seconds for Serena; these are
+query-observed waits on tiny fixtures, not general freshness guarantees. Native
+watching/LSP refresh requires a live tool session or daemon. This evaluation did
+not establish every Git-operation, restart or cross-language synchronization path.
+Temporary candidate processes were stopped; no custom watcher or permanent MCP
+registration was added.
+
+Verification used real MCP queries, disposable synchronization fixtures, source
+review, all six valid Codex event/usage/hash checks, source-hash checks, JSON
+validation and `git diff --check`. No application/shared configuration changed,
+so the full production suite was not rerun. Machine-readable results are in
+`alternatives_evaluation` in the existing benchmark JSON; raw logs and runners
+remain ignored under `.local/code-intelligence-alternatives/`.
+
+These are single observations per task/arm with same-day historical controls,
+not randomized repetitions or a significance claim. Cached tokens are not added
+twice, and these are not billing estimates. Complete filesystem reads, unnecessary
+reads, peak context, sustained resource use and desktop GUI usage remain
+unmeasured. The comparison supports retaining ordinary navigation, not adopting
+another default index service.
