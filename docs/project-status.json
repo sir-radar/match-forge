@@ -1299,7 +1299,7 @@
       "issue_statuses": {
         "FR-001": "NOT_STARTED",
         "FR-002": "IN_PROGRESS",
-        "FR-003": "NOT_STARTED",
+        "FR-003": "BLOCKED_DEPENDENCY",
         "FR-004": "NOT_STARTED",
         "FR-005": "NOT_STARTED",
         "FR-006": "VERIFIED",
@@ -1412,6 +1412,27 @@
         "remaining_history_blocked_targets": 6,
         "scoped_followup": "IN_PROGRESS",
         "parity": "DEFERRED_TO_PHASE_D"
+      },
+      "fr003": {
+        "status": "BLOCKED_DEPENDENCY",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr003-predicates.json",
+        "knowledge_cutoff": "2026-11-03T21:18:33.759267Z",
+        "frozen_targets": 41,
+        "history_only_targets": 26,
+        "ghana_dependent_targets": 15,
+        "retained_fixture_rows_examined": 4606,
+        "mapping_rows_examined": 434,
+        "failed_current_mappings_classified": 81,
+        "newly_qualified_mapping_candidates": 0,
+        "stale_decision_only_candidates": 0,
+        "eligibility_rules_changed": false,
+        "new_forecast_gain": 0,
+        "dependencies": [
+          "FR-001",
+          "FR-008",
+          "FR-016",
+          "Exact FotMob counterpart evidence"
+        ]
       }
     }
   },

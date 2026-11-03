@@ -48,8 +48,8 @@ and shadow identities checked independently.
 | Issue | Status | Next required evidence or work |
 | --- | --- | --- |
 | FR-001 | NOT_STARTED | Exact Ghana participant continuity and Port City history |
-| FR-002 | IN_PROGRESS | 14 native links qualified; four forecasts pass fresh shadow; operating review next |
-| FR-003 | NOT_STARTED | Exact retained-history failed predicates |
+| FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; 8 identity and 6 history holds; scoped follow-up running |
+| FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
 | FR-004 | NOT_STARTED | Authentic missing team/season slices |
 | FR-005 | NOT_STARTED | Scottish historical namespace relationships |
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
@@ -433,3 +433,38 @@ Executed operating receipts: `fr002-operating-admissions.json` and
 verification receipt checksum. The initial verification assertion used a wrong
 availability label; corrected verification uses the actual
 `FORECAST_AVAILABLE` contract and passes. No production enum or check changed.
+
+
+## Phase B: FR-003 retained-history predicates
+
+The **2026-11-03 21:18:33.759267 UTC**, read-only repeatable-read inventory covers
+all **41** frozen targets: 26 history-only cases and 15 Ghana-dependent cases.
+It exports 4,606 distinct retained fixtures with source/decision IDs and examines
+434 current mapping rows. The [predicate inventory](forecast-readiness-fr003-predicates.json)
+records every target and binds the complete private row exports by SHA256.
+It reports existing decision inputs, not a replacement eligibility engine.
+
+Current exclusions overlap: 2,483 retained fixtures have unverified fixture
+identity, 1,055 are excluded by fixture resolution, 1,072 home and 1,066 away
+inputs lack a current source-provider mapping, 399 home and 408 away inputs have
+untrusted mappings, and four lack trusted competition mapping. These counts are
+not added into a match total. No excluded row has all current inputs passing;
+there is no stale-decision-only recovery to perform. Dated history remains the
+sole authority; no eligibility flag or frozen threshold is edited.
+
+All 81 implicated current mappings pass retained-byte lookup but the existing
+identity owner returns `UNSUPPORTED_ORIGIN_ALGORITHM` for their FotMob
+`deterministic` method. None qualifies for an ordinary approval. An explicit
+counterpart must be demonstrated through original native/context evidence;
+adding FotMob to a generic origin allowlist would not establish that relationship.
+Replaced Ghana participant mappings require FR-001 linked reconstruction;
+quarantined/resolution-excluded rows require FR-008/016 source review. These are
+exact upstream blockers, not missing-history claims or permission requests.
+
+**Checkpoint: BLOCKED_DEPENDENCY; no operating change or new forecast gain.**
+The 15 Ghana dependencies proceed next. The other counterpart and quarantine
+cases remain tracked for their own source-qualified recovery. Counts use the
+stated current knowledge cutoff and prior football; elapsed fixture records are
+not presented as retrospective forecast recovery. JSON inventory checks,
+project-status validation and `git diff --check` pass. No production code changed
+in this checkpoint; the prior successful code aggregate is not rerun.
