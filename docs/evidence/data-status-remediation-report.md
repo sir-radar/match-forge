@@ -2546,3 +2546,117 @@ parser. There is no new production symbol, duplicated workflow, migration or
 dependency. Separate owner edits in `docs/source-acquisition.md` are preserved
 and excluded from this task's commits. The Scottish admission dependency and
 the scoped researched-fixture follow-up remain explicitly open.
+
+### O3. Five exact native fixture reviews and readiness recalculation
+
+After code commit `7835843`, research verifies five PitchAPI fixtures against
+their original checksum-registered bytes, the original API-Football schedules,
+and existing admitted target team/competition IDs. Official records establish
+the senior competition, opponents, home/away orientation and fixture context:
+
+| PitchAPI fixture | API-Football fixture | Official context |
+| --- | --- | --- |
+| `m_0c0woG` | `1550143` | [Lecce–Bologna, October 11, 1–2](https://www.bolognafc.it/lecce-bologna-1-2/) |
+| `m_0Aknsd` | `1563186` | [Southampton–Portsmouth, October 11, Championship](https://www.efl.com/news/2026/october/11/southampton-claim-south-coast-derby-victory/) |
+| `m_08g6fR` | `1552806` | [Nice–Rennes, October 30, 19:00 local, Ligue 1 round 9](https://ligue1.com/fr/articles/l1_article_6009-nice-rennes-avance-au-vendredi-30-octobre-l1-2627) |
+| `m_0AXpZd` | `1575183` | [Köln–Mönchengladbach, October 11, 15:30 local](https://fc.de/aktuelles/news/das-rheinland-schaut-nach-koeln) |
+| `m_0C3SKQ` | `1552493` | [Sochaux–Boulogne, October 9, 20:00 local, Ligue 2](https://www.fcsochaux.fr/match/sochaux-vs-boulogne) |
+
+Exact UTC times, native team IDs, target MatchForge IDs and resource hashes are
+in `native-fixture-proof.json`. Commercial-provider independence is not assumed;
+the official records supply primary identity context. API-Football's original
+records are scheduled observations with null scores, whereas PitchAPI's later
+records contain final results. That chronology is preserved and is not reported
+as a score conflict or independent confirmation of every final score.
+
+All eight prepared Admin previews qualify. The three Scottish competition
+admissions remain withheld for O2's dependent team-proof problem. The five
+fixture actions use the existing authenticated `RESOLVE_DUPLICATE` workflow
+and are applied from 00:30:16 to 00:30:53 UTC on November 3. Each repeated
+request returns the same event ID. This establishes **five competition and ten
+team relationships**, prospectively, with unchanged canonical IDs. Six other
+same-snapshot team checks append `UNRESOLVED` findings; they are not counted
+as successful relationships. No provider request or flat name-based merge occurs.
+
+At the exact pre-operation knowledge cutoff, eligible history across these
+five competition cohorts remains **57,375 rows** before and after. At the later
+current cutoff it becomes **57,377 rows**. The two newly eligible fixture IDs
+are Southampton–Portsmouth `cb34f483-3df0-50bc-abc6-3f729fb09e28` and Nice–Rennes
+`74b7d41e-f770-5e85-af3e-529da6837589`. These are existing canonical fixtures,
+not two newly created matches. All earlier eligible IDs remain included.
+
+Availability remains **220 competitions / 3,668 fixture records**. All 130
+upcoming fixtures involving the ten reviewed teams were already forecast-ready,
+so the history gain is not reported as a forecast-availability gain. A separate
+ranking of actual upcoming blockers finds **153 verified fixtures**: 122 with
+insufficient history and 31 source-incomplete. Recalculation processes all 153
+in five normal batches, using the unchanged champion checksum, no admission pass
+and the existing ten-match rule. It creates **zero forecasts**, with every
+blocked status unchanged. No threshold, historical clock or model is modified.
+
+The five approved recovery inventories contain five fixture targets and six
+retained observation targets. The first worker page checks/reconciles two
+targets without blockers. Its guard then stops on a newly visible parity route.
+A read-only inspection establishes that the operating schema has independently
+advanced to `202611020200` and that the extra work belongs to these same
+approved requests. This continuation did not execute that migration or restart
+the runtime. The resumed helper recognizes the owned parity bindings and
+processes the remaining nine targets without blockers. Current diagnostic
+reports retain **BLOCKED** parity; no cutover, scheduler retirement, scientific
+evaluation or promotion is inferred from successful worker processing.
+
+The 00:34:46 UTC preservation snapshot retains all baseline row hashes:
+68,098 source snapshots, 69,906 raw registrations, 22,517 identity decisions,
+5,230 model registrations, 9,990 forecast/artifact pairs, four promotions and
+17 retirements. No baseline key is missing or changed. Concurrent workers add
+436 sources/resources; these are excluded from task acquisition counts. The
+champion checksum is unchanged. Additional append-only decisions comprise the
+15 qualified relationships and six unresolved findings described above.
+
+The structured research register records exact affected IDs/counts, source URLs,
+retrieval intervals, publication dates where available, distinct searches,
+contradictions, independence reasoning, recommended actions and revisit criteria.
+It distinguishes resolved native fixtures from the blocked Scottish namespaces
+and upcoming-history gaps. No global research-exhaustion claim is made.
+
+The largest verified upcoming history gaps are Coventry (29 fixtures) and Málaga
+(20). Read-only inspection finds retained results under separate provider-origin
+IDs. Official [Premier League scheduling](https://www.premierleague.com/en/news/4725630)
+and [Málaga's fixture record](https://www.malagacf.com/en/matches/season-2026-2027-laliga-ea-sports-12-malaga-cf-vs-r-racing-club-3035)
+confirm current context. [OpenFootball's Championship archive](https://openfootball.github.io/england/2025-26_2-championship.html)
+and [Spanish repository](https://github.com/openfootball/espana) offer historical
+facts, but do not establish the missing provider-origin relationship or authorize
+rewriting old IDs. Existing crosswalk revision preserves `entity_id`; the linked
+correction requires an incorrect explicit FDO crosswalk, which these valid origin
+rows are not. A compatible, evidence-backed relationship/history reconstruction
+or directly bound eligible history is required. No new merge path is invented.
+
+Country-specific research also investigates official Ghanaian promotion records,
+Scottish structures, J.League's AFC schedule, BFF documents, Armenian historical
+tables, public datasets and current provider coverage. For example, the
+[GFA confirms Port City's 2026/27 promotion](https://www.ghanafa.org/index.php/port-city-fc-clinch-ghana-premier-league-qualification-with-four-games-to-spare).
+Such a fact does not create ten eligible past results or prove a legacy native-ID
+link. [API-Football's current guide](https://www.api-football.com/news/post/how-to-get-all-data-from-a-league-with-api-football)
+distinguishes plan-specific season availability; public documentation is not
+proof of this account's entitlement. These cases remain explicit evidence or
+coverage gaps, not impossible or research-exhausted cases.
+
+The owned recovery inventory is fully drained: all five canonical work items
+succeed, all 11 targets are checked/reconciled, and all five parity follow-ups
+publish `BLOCKED` diagnostic results. Phase 3: **PASS_WITH_WARNINGS**. Normal
+forecast/history/identity guards remain enforced. The final preservation check
+after readiness recalculation again retains every baseline row hash and the
+champion checksum. The production code has not changed since Phase 2's passing
+checks; this checkpoint uses prose review and `git diff --check`.
+
+Selected receipts under `.local/data-recovery-followup/`:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `native-fixture-proof.json` | `4b8e3153e7f55ec30b65ad71b45bc29281f573fa0bb87478e5694393c6142315` |
+| `admin-apply.json` | `2e8d79a8c274846f5e9e0860af2f2fbe2bbd55284b4148e1c4de3533d9c54205` |
+| `identity-recovery-followup-pages.json` | `8863134bdcc361829e54776c71f8c561954163d858f819361e4844de022879cf` |
+| `fixture-metrics-before.json` | `7b4ac321e8de6bb5a5b5163fc5f5a9a6096d4be6ec5c50edc2024c47a246b91e` |
+| `fixture-metrics-after.json` | `476f89478f25531e3496c65462844f48872bbb7fc891652a9d7b1caaa753a761` |
+| `blocked-forecast-refresh.json` | `122a1157d65da541f775c3538f658cbbaa1d9f8029e4621a95522463852bb347` |
+| `research-register.json` | `4c34fa305e7009983e47dbb40b00df01b1edb8191614e807a7ead3872213a7e2` |
