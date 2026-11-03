@@ -1285,7 +1285,7 @@
     },
     "forecast_readiness_remediation": {
       "status": "IN_PROGRESS",
-      "current_phase": "A",
+      "current_phase": "B",
       "branch": "ft/data-status-remediation",
       "report_ref": "docs/evidence/forecast-readiness-remediation-results.md",
       "baseline_observed_at": "2026-11-03T15:43:07.735134Z",
@@ -1298,7 +1298,7 @@
       "verified_new_forecast_availability": 0,
       "issue_statuses": {
         "FR-001": "NOT_STARTED",
-        "FR-002": "NOT_STARTED",
+        "FR-002": "IN_PROGRESS",
         "FR-003": "NOT_STARTED",
         "FR-004": "NOT_STARTED",
         "FR-005": "NOT_STARTED",
@@ -1384,6 +1384,23 @@
         "post_rollout_observed_at": "2026-11-03T17:52:09.874108Z",
         "running_api_build_metadata": "UNKNOWN",
         "running_api_restarted": false
+      },
+      "fr002": {
+        "status": "VERIFIED_IN_FRESH_SHADOW",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr002-identities.json",
+        "native_relationships": 14,
+        "archive_bridge_relationships": 1,
+        "frozen_targets": 18,
+        "shadow_forecastable_targets": 4,
+        "shadow_history_blocked_targets": 6,
+        "shadow_identity_blocked_targets": 8,
+        "operating_new_forecasts": 0,
+        "prior_cutoff_preserved": true,
+        "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+        "verification_exit_code": 0,
+        "python_unit_tests_passed": 1819,
+        "rust_tests_passed": 16,
+        "web_tests_passed": 107
       }
     }
   },

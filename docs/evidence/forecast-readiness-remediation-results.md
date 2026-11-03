@@ -48,7 +48,7 @@ and shadow identities checked independently.
 | Issue | Status | Next required evidence or work |
 | --- | --- | --- |
 | FR-001 | NOT_STARTED | Exact Ghana participant continuity and Port City history |
-| FR-002 | NOT_STARTED | Native-target relationship proof and unchanged previews |
+| FR-002 | IN_PROGRESS | 14 native links qualified; four forecasts pass fresh shadow; operating review next |
 | FR-003 | NOT_STARTED | Exact retained-history failed predicates |
 | FR-004 | NOT_STARTED | Authentic missing team/season slices |
 | FR-005 | NOT_STARTED | Scottish historical namespace relationships |
@@ -321,3 +321,65 @@ Private receipts include the fresh backup manifest and restore verification,
 `phase-a-operating-small.json`, `phase-a-operating-expand.json` and
 `phase-a-post-rollout.json`. They retain exact state, hashes, executed results and
 per-occurrence bindings without publishing raw data or credentials.
+
+
+## Phase B: FR-002 qualified native identities
+
+**Code and shadow checkpoint: PASS_WITH_WARNINGS. Operating review remains in
+progress.** Four of the five history-sufficient targets have exact source-backed
+native relationships: Rochdale–Doncaster, Huddersfield–Luton, Northampton–Oldham
+and Wigan–Mansfield. The fifth, Pamplona–Eibar, remains held: native/archive
+kickoffs disagree, and no crosswalk is inferred from the club name.
+
+The existing operational crosswalk table now explicitly links 14 API-Football
+native IDs to their already accepted English archive origins, plus the CSV
+Rochdale identifier to its accepted OpenFootball origin. Existing UUIDs,
+historical mappings and source facts are not changed. These links use the
+operational table, whose existing qualification resolves the country-qualified
+archive origin; placing them in the historical importer table would derive the
+wrong UUID. No new qualification rule or general name matcher was added.
+
+The [machine-readable evidence](forecast-readiness-fr002-identities.json) records
+all 14 native IDs, canonical roots, exact resource checksums, representative
+native match/league/season IDs, source row keys and all 18 target dispositions.
+Each relationship has 24–38 exact retained 2024 fixture matches, preserving both
+participants, roles, country, competition, date, available exact time and final
+score. Rochdale's older accepted OpenFootball origin also has 20 exact 2015
+fixture bridges to the CSV identifier. Name normalization locates candidates;
+these exact source/context comparisons establish the relationship.
+
+Existing retained native resources cover leagues 40, 41 and 141. Two missing
+2024 resources (leagues 42 and 43) were acquired through the existing client,
+quota owner and immutable response registration. Requests used move 12→14 and
+remaining allowance 88→86. Acquisition itself imports no history or admissions.
+Legacy archive registrations are verified against their original raw checksums;
+this does not retroactively claim a modern immutable manifest where none exists.
+The provider's [native-ID documentation](https://www.api-football.com/news/post/how-to-find-ids)
+and official fixture announcements support the research; they do not replace
+retained native relationship proof.
+
+The existing Resolution Center qualifies all 15 proposed cases. In the fresh
+populated restore, separate case transactions append prospective approvals and
+replay the same UUID requests without additional events. Earlier-cutoff history
+hashes remain identical. The unchanged champion preview covers all **18** frozen
+targets: **4 forecastable, 6 still short of eligible history, 8 identity-blocked**.
+The older restore has stale schedules and is not used to infer availability.
+The initial disposable request-ID and multi-case transaction attempts fail their
+existing UUID/lock-order guards and roll back; successful execution uses the
+existing per-case transaction contract. No check or lock rule was weakened.
+
+Remaining identity causes are explicit in the inventory: Eibar timing;
+Hornchurch/Scunthorpe/Worthing missing exact counterpart evidence; Tamworth and
+three native IDs with mismatched canonical origins requiring reconstruction;
+and two FotMob identifiers lacking qualified cross-provider context. Those cases
+remain research/dependency work, not approved relationships.
+
+Four focused regressions cover both archive providers, wrong country, an
+unproved native ID with the same name, and tampered original bytes. The two
+positive cases fail before the explicit links and pass afterward. Final
+`env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits **0**: 1,819 Python unit tests, 16 Rust tests, 107 web tests, static/type/
+complexity/architecture checks, builds and complete disposable storage/API
+integration. Existing seven Python warnings and one ESLint warning remain.
+Private proof, acquisition and fresh-shadow receipts stay under the existing
+execution directory. No operating forecast gain is claimed at this checkpoint.
