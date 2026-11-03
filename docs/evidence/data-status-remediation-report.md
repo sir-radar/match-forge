@@ -2423,7 +2423,7 @@ dependency, migration, configuration, secret or unrelated change remains.
 The successful full code gate in N3 covers the final production source;
 later tracked changes are prose reviewed with `git diff --check`.
 
-## O. Forecast recovery follow-up — 2026-11-02
+## O. Forecast recovery follow-up — 2026-11-02–03
 
 ### O1. Refreshed baseline and priority
 
@@ -2471,3 +2471,78 @@ then completed the read-only collection. The broad filesystem size scan was
 stopped after returning sufficient candidate sizes; its partial output is
 not presented as a complete storage census. Applicable checks for this
 prose-only checkpoint are text review and `git diff --check`.
+
+### O2. Scottish archive namespace defect
+
+Phase 1 was committed as `cdb1043` before implementation. The next read-only
+check identifies an actual parser defect behind three blocked competition
+admissions. Original snapshot `c3cb0119-6c75-5d5f-af91-db5f89864e44` is present
+and checksum-verified. Its `SC1.csv`, `SC2.csv` and `SC3.csv` members each contain
+180 completed 2000/01 fixtures. The parser lacks these division codes, so it
+returns country `World` and tiers 1/2/3. The existing competition mappings
+require `Scotland`, making retained-source verification fail despite intact
+original bytes.
+
+The fix adds the three missing entries to the existing division table:
+Championship / tier 2, League One / tier 3, and League Two / tier 4, all in
+Scotland. These are the competitions already covered by the approved
+`SC1/SC2/SC3` crosswalks. [The provider's Scottish download catalogue](https://football-data.co.uk/scotlandm.php)
+and the [SPFL competition structure](https://spfl.co.uk/pages/rules-and-regulations)
+support this interpretation. The provider page's indexed content was available;
+direct page/notes fetches returned HTTP 429 and were not retried to bypass it.
+Native codes, row IDs, source bytes and acquisition timestamps are preserved.
+Date-only observations remain date-only; exact times use the existing London
+timezone rule. No migration, dependency, configuration or identity rule is added.
+
+Three regression cases fail before the fix, showing `World` and the incorrect
+tiers. The focused parser/geography run then passes **30 tests**. A new database
+case proves country-scoped IDs from an authentic ZIP registration, rejects the
+wrong country and tampered bytes, and keeps the original registration unchanged.
+The read-only operating recheck qualifies all three mappings as **CROSSWALK**;
+it does not admit them. The original diagnostic JSON filename was reused during
+the after check, so the preserved original console log is the before evidence;
+the overwritten JSON is not cited as an intact original receipt.
+
+This fix does not repair old team namespaces. The same archive's fresh team
+verification exposes 30 legacy `World` mappings that no longer match the corrected
+Scottish source namespace. Their historical IDs and decisions are retained;
+they require linked evidence/correction and are not automatically revalidated.
+The three Scottish competitions currently contain 554 eligible history rows
+across all providers. This is a baseline, not recovered history or a forecast gain.
+Their competition-only previews pass, but operating admission is withheld:
+enabling additional history while dependent team admissions fail fresh source
+proof would not be a safe complete recovery. The prepared evidence remains;
+linked team namespace/continuity verification is the next required step.
+
+Receipts under `.local/data-recovery-followup/`:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `scotland-before.log` | `3b0b5fbf709084d8262c86e379b19251cbb550de1fcee241cee3c5f2368d23b7` |
+| `scotland-classified.json` | `afbab685e84ad18d0a20786bdf043ad9f9a565a1a43f6a5797c0aff9677a70ff` |
+| `scotland-metrics-before.json` | `948d11b58e66c7ba60b17ad448e2ddb48039faf855b81cfa9688e183b8eed6c0` |
+| `scotland-red.log` | `e59af7bb32cbecb59b471d4fb765419a2996c914878f564b54b27d79c8eda24c` |
+| `scotland-green.log` | `0b6beaf681c5a7c51895491398f126e8933b6b7324f3d34ebf8759b54196b2e0` |
+
+The initial `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+passes static checks, architecture/project-status checks, builds, 1,798 Python
+tests, 16 Rust tests, Go checks/tests and 107 web tests, then fails two existing
+integration cases: a 15-second browser navigation timeout and a mapping validity
+constraint when the application clock is ahead of the database clock. Its exit
+2 and full log remain retained. No assertion, timeout or constraint is weakened.
+The unchanged-source retry,
+`env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make -o build integration`,
+exits **0**. All disposable storage cases, including the new archive proof and
+both previously failed cases, pass, followed by PostgreSQL 18.6 / Redis 8.10 /
+Go operational API integration. This is a successful retry, not a rewrite of
+the initial failed aggregate. Static/unit/build results remain applicable to
+the unchanged production source. Seven existing Python dependency warnings
+and one existing ESLint warning remain.
+
+Phase 2 implementation: **PASS_WITH_WARNINGS**. No operating admission occurs
+before this code checkpoint. Review against `docs/review-checklist.md` confirms
+that the production diff is three table entries consumed by the existing CSV
+parser. There is no new production symbol, duplicated workflow, migration or
+dependency. Separate owner edits in `docs/source-acquisition.md` are preserved
+and excluded from this task's commits. The Scottish admission dependency and
+the scoped researched-fixture follow-up remain explicitly open.

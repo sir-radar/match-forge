@@ -1,5 +1,7 @@
 import hashlib
+import io
 import json
+import zipfile
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -14,7 +16,7 @@ from football.product.football_data_uk import parse_csv_resource
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.historical_manifest import publish_manifest
 from football.product.history_coverage import history_coverage
-from football.product.identity_admission import admit_provider_mappings
+from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
 from football.product.identity_audit import audit_report
 from football.product.operational_provider_sync import (
     OperationalProviderSync,
@@ -31,6 +33,80 @@ from football.providers.pitchapi import (
 from psycopg import Connection
 
 from tests.integration.test_product_historical_backfill import DATABASE_URL
+
+
+def test_scottish_archive_proves_country_scoped_ids_without_changing_source(tmp_path: Path) -> None:
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as bundle:
+        for code in ("SC1", "SC2", "SC3"):
+            bundle.writestr(
+                f"{code}.csv",
+                f"Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n{code},05/08/2000,Home,Away,1,0\n",
+            )
+    raw = archive.getvalue()
+    acquired = datetime(2026, 9, 1, tzinfo=UTC)
+    with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
+        manifest = publish_manifest(
+            tmp_path,
+            provider="football_data_uk",
+            source_identity="test/scotland.zip",
+            source_revision="test",
+            acquired_at=acquired,
+            resources=[("test/scotland.zip", "raw/scotland.zip", raw)],
+        )
+        store = HistoricalBackfillStore(
+            connection, "football_data_uk", "Football Data", "test-v1", data_root=tmp_path
+        )
+        snapshot = store.ensure_snapshot(
+            source_identity="test/scotland.zip",
+            source_revision="test",
+            acquired_at=acquired,
+            manifest_path=manifest,
+        )
+        store.record_resource(
+            snapshot_id=snapshot,
+            provider_path="test/scotland.zip",
+            payload=raw,
+            media_type="application/zip",
+            acquired_at=acquired,
+        )
+        before = connection.execute(
+            "SELECT to_jsonb(r) FROM football.source_resources r WHERE source_snapshot_id=%s",
+            (snapshot,),
+        ).fetchall()
+        for code in ("SC1", "SC2", "SC3"):
+            proof = verify_source_identifier(
+                connection, tmp_path, snapshot, "football_data_uk", "competition", code, "Scotland"
+            )
+            assert proof is not None
+            assert proof["sha256"] == hashlib.sha256(raw).hexdigest()
+            assert proof["acquired_at"] == acquired.isoformat()
+            assert (
+                verify_source_identifier(
+                    connection,
+                    tmp_path,
+                    snapshot,
+                    "football_data_uk",
+                    "competition",
+                    code,
+                    "England",
+                )
+                is None
+            )
+        assert (
+            connection.execute(
+                "SELECT to_jsonb(r) FROM football.source_resources r WHERE source_snapshot_id=%s",
+                (snapshot,),
+            ).fetchall()
+            == before
+        )
+        (tmp_path / "raw/scotland.zip").write_bytes(raw + b"tampered")
+        assert (
+            verify_source_identifier(
+                connection, tmp_path, snapshot, "football_data_uk", "competition", "SC1", "Scotland"
+            )
+            is None
+        )
 
 
 @pytest.mark.parametrize(

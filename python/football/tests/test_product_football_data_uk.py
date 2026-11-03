@@ -108,3 +108,29 @@ def test_csv_parser_accepts_legacy_windows_encoding() -> None:
     )
     matches = parse_csv_resource(payload, source_path="legacy/F1.csv", season="2004-2005")
     assert matches[0].home_team_name == "N\u00eemes"
+
+
+@pytest.mark.parametrize(
+    ("code", "name", "tier"),
+    [("SC1", "Championship", 2), ("SC2", "League One", 3), ("SC3", "League Two", 4)],
+)
+def test_scottish_archive_members_keep_country_tier_and_native_identity(
+    code: str, name: str, tier: int
+) -> None:
+    payload = (
+        "Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG\n"
+        f"{code},05/08/2000,15:00,Home,Away,1,0\n"
+        f"{code},12/08/2000,,Away,Home,0,0\n"
+    ).encode()
+    matches = parse_csv_resource(payload, source_path=f"{code}.csv", season="2000-2001")
+
+    assert len(matches) == 2
+    assert {(match.country, match.competition_name, match.division) for match in matches} == {
+        ("Scotland", name, tier)
+    }
+    assert [match.provider_match_id for match in matches] == [f"{code}.csv#2", f"{code}.csv#3"]
+    assert all(match.provider_competition_id == code for match in matches)
+    assert matches[0].kickoff_at == datetime(2000, 8, 5, 14, tzinfo=UTC)
+    assert matches[0].kickoff_precision == "EXACT"
+    assert matches[1].kickoff_at == datetime(2000, 8, 12, 23, 59, 59, 999999, tzinfo=UTC)
+    assert matches[1].kickoff_precision == "DATE_ONLY"
