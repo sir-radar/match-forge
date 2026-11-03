@@ -2950,3 +2950,93 @@ operating execution still waits for this code checkpoint's commit. Logs include
 `clock-fixture-green.log` and `recovery-api-integration.log` under the task's
 private evidence directory. The three deadline-blocked scopes and two native
 fixture conflicts remain explicit gaps.
+
+### P4. Operating recovery and independently confirmed forecasts
+
+The owner requested removing `CURRENT_TASK_STATUS.md` from every commit that
+mistakenly included it. Only the unpushed phase commits were rewritten:
+`c9d2942` → `053c770`, `8b16699` → `02559c5`, and `0ad88d0` → `95441e5`.
+The status-only removal commit became empty and was dropped. The final tracked
+tree is identical, so prior execution receipts retain their original code SHAs.
+`git log --all -- CURRENT_TASK_STATUS.md` is empty; the local file remains
+excluded by the existing `.gitignore` rule. No remote history was rewritten.
+
+After code checkpoint `95441e5`, a fresh preservation snapshot preceded
+operating mutations. The operating target rehearsal agrees with shadow:
+**40 Málaga native history rows inserted**, one source-backed **ELC** competition
+admission, zero duplicate inserts on replay, and **66 additional eligible rows
+across the target cohorts**. The disputed new Coventry season was not imported.
+The two native fixture conflicts remain blocked. FL1, CLI, CL, PPL, BL1 and SA
+then qualify through the existing admission owner, for **seven new competition
+relationships** in total. All six additional admissions pass; their fixed
+earlier-cutoff history count and hash remain unchanged.
+
+Read-only measurements at 05:40 UTC show:
+
+| Provider | Retained product results | Eligible product results | Eligible competitions | Change since controlled pre-operation snapshot |
+| --- | ---: | ---: | ---: | --- |
+| API-Football | 58,949 | 58,077 | 318 | 40 inserted native rows; 26 additional eligible canonical results |
+| football-data.org | 5,387 | 2,645 | 8 | 2,518 retained results newly eligible; no new result rows imported |
+| Football-Data.co.uk | 236,709 | 136,927 | 20 | No task change |
+| FotMob | 87,731 | 29,805 | 75 | No task change |
+| OpenFootball | 89,930 | 73,828 | 45 | No task change |
+| PitchAPI | 740 | 16 | 3 | No task change |
+
+StatsBomb, Flashscore and Soccerway retain the separate representations described
+in P3; no product-history gain is claimed for them. Sportmonks and TotalCorner
+remain discovery/research candidates without a new importer. Registered source
+resources are now API-Football 437, football-data.org 136, Football-Data.co.uk 58,
+FotMob 41,665, OpenFootball 291, PitchAPI 26,890, StatsBomb 1,526, Flashscore seven
+and Soccerway seven. Concurrent worker additions are included in those totals.
+
+The controlled interval gains **2,544 eligible canonical results**, verified by
+comparing the existing eligibility function at the preserved cutoff and later
+cutoff. Native insert counts and provider observations are not added to this
+number. Global history totals are **479,446 retained / 301,298 eligible**.
+An independent **5,262** eligible-row increase before operating recovery belongs
+to background Football-Data.co.uk/FotMob work and is not attributed to this task.
+
+Availability changes from **220 competitions / 3,733 fixture records** in the
+fresh pre-operation snapshot to **220 / 3,782**, a task gain of **49 fixtures**
+and zero competitions. The original 3,668 baseline had already gained 65 through
+independent work. Existing workers publish all 49 target forecasts between
+05:29:07 and 05:36:07 UTC after recovery. The subsequent bounded refresh and
+immediate retries both create **zero** forecasts. All **14,626** product forecast
+row hashes present before that refresh remain identical afterwards.
+
+Independent public API verification passes for **all 49 forecast histories**,
+including exact artifact, payload and predictive-input hashes. Detail and
+fixture-list responses from both target competitions also confirm available
+forecasts: 53 successful read-only requests. Champion bytes, mathematical
+behavior and publication contracts remain unchanged.
+
+Preservation checks against both the original and fresh pre-operation snapshots
+find **zero missing or changed prior rows** in source snapshots/resources,
+identity admissions, model artifacts, forecast/artifact links, promotions and
+retirements. The fresh comparison contains seven new identity decisions and 35
+new source/resource registrations, including concurrent worker activity. All
+5,230 model registrations, 9,990 forecast/artifact links, four promotions and 17
+retirements are unchanged. Schema remains `202611020200`; no operating migration
+or restart was performed. Earlier-cutoff target and FDO hashes remain identical.
+
+Verified upcoming blockers now total **91**: 60 `NOT_ENOUGH_HISTORY` and 31
+`SOURCE_DATA_INCOMPLETE`. Country counts are Ghana 30, Bangladesh 15, World 15,
+Indonesia ten, Vietnam six, France six, Germany six and Croatia three. Compared
+with the earlier 153-target inventory, 49 recover here; 13 Armenian fixtures
+were independently forecast between 03:16 and 04:35 UTC, before this recovery.
+DED, PD and BSA still require downstream enqueue work to finish within the
+existing SQL deadline. Native fixtures `1217677` and `1217899` still need valid
+canonical team/timestamp evidence. Other gaps require eligible provider history
+or source/identity proof; no unsupported mapping or lower threshold is used.
+
+Phase 3b: **PASS_WITH_WARNINGS**. Private receipts under
+`.local/provider-wide-acquisition/` include:
+
+- `retained-fdo-qualification-operating.json`: SHA-256 `05c9e7210f734a90412bde7fbcda5e244efe18cf5710bb9f8bfa32c95ee5956e`.
+- `target-forecast-api.json`: SHA-256 `1c565350db46664046622bf67624e5da5a6c22915a563044e462d7726bc0ddf7`.
+- `final-metrics.json`: SHA-256 `5b4b306aa8f6becca349ec6bc119760e8b0c7a1e399c2da9932cde380e3a03af`.
+- `preservation-after.json`: SHA-256 `cc9a1c2be26846d98fd9066da0fac656edae542ebb9aefd1889dc6ac70f769cd`.
+
+Composite code validation remains as recorded in P3. Only status/evidence files
+change after the verified code checkpoint; their validator and diff checks run
+before commit. Safe cleanup and final delivery follow this phase commit.

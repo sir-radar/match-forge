@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-03T02:16:51Z",
+  "updated_at": "2026-11-03T05:42:59Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1204,7 +1204,7 @@
     },
     "provider_wide_acquisition": {
       "status": "IN_PROGRESS",
-      "current_phase": "3a",
+      "current_phase": "3b",
       "branch": "ft/data-status-remediation",
       "policy_ref": "docs/source-acquisition.md",
       "report_ref": "docs/evidence/data-status-remediation-report.md",
@@ -1222,7 +1222,7 @@
       "rust_tests_passed": 16,
       "web_tests_passed": 107,
       "phase_3a": "PASS_WITH_WARNINGS",
-      "phase_3b": "NOT_RUN",
+      "phase_3b": "PASS_WITH_WARNINGS",
       "shadow_newly_ready_fixtures": 49,
       "shadow_target_eligible_history_gain": 66,
       "shadow_accepted_native_history_rows": 40,
@@ -1242,14 +1242,35 @@
       "final_code_verification": "PASS_COMPOSITE_WITH_CLOCK_FIXTURE_REPAIR",
       "final_aggregate_exit_code": 2,
       "clock_fixture_recovery_module_tests_passed": 13,
-      "operating_recovery_applied": false,
+      "operating_recovery_applied": true,
       "phase_2_verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
       "phase_2_verification_exit_code": 0,
       "final_verification_commands": [
         "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
         "sh .local/provider-wide-acquisition/test-clock-fixture-green.sh",
         "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT ./scripts/integration.sh"
-      ]
+      ],
+      "operating_accepted_native_history_rows": 40,
+      "operating_competition_relationships_admitted": 7,
+      "operating_target_eligible_history_gain": 66,
+      "operating_net_eligible_history_gain": 2544,
+      "operating_newly_forecast_available_fixtures": 49,
+      "operating_newly_forecast_available_competitions": 0,
+      "operating_forecast_available_competitions": 220,
+      "operating_forecast_available_fixture_records": 3782,
+      "operating_eligible_product_history_rows": 301298,
+      "operating_retained_product_history_rows": 479446,
+      "public_api_verified_forecast_histories": 49,
+      "manual_forecast_refresh_created": 0,
+      "manual_forecast_refresh_retry_created": 0,
+      "prior_product_forecasts_preserved_during_refresh": 14626,
+      "verified_upcoming_blockers_remaining": 91,
+      "prior_registration_hashes_preserved": true,
+      "champion_unchanged": true,
+      "operating_schema_version": 202611020200,
+      "operating_migrations_executed": 0,
+      "operating_runtime_restarted": false,
+      "overall_operating_remediation_complete": false
     }
   },
   "architecture_v2": {
