@@ -454,6 +454,9 @@ class ProductSync:
             return None
         snapshot = self._record_fallback_response(f"history-{league_id}-{season}", response)
         competition_id = self._competition_id(str(league_id), snapshot)
+        self._fallback_competition_mapping(
+            FOOTBALL_DATA_COMPETITIONS[league_id], competition_id, snapshot, response.fetched_at
+        )
         stored = self._store_fallback_history(
             response.rows,
             competition_id,

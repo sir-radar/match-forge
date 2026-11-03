@@ -335,6 +335,10 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
     monkeypatch.setattr(sync, "_record_response", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
+    crosswalks: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        sync, "_fallback_competition_mapping", lambda *args: crosswalks.append(args)
+    )
     monkeypatch.setattr(sync, "_store_history", lambda *_args: 1)
     monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 0)
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
@@ -342,6 +346,7 @@ def test_history_sync_uses_api_football_cap_only_after_alternate_provider(
     result = sync._sync_league_history(39, 2026)
 
     assert fallback.seasons == [2026, 2025]
+    assert crosswalks == [("PL", snapshot, snapshot, observed_at)] * 2
     assert client.seasons == [2024]
     assert result == (snapshot, observed_at, 1)
 
@@ -393,10 +398,15 @@ def test_history_sync_prefers_alternate_current_data_over_capped_api_football(
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: True)
     monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
+    crosswalks: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        sync, "_fallback_competition_mapping", lambda *args: crosswalks.append(args)
+    )
     monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 1)
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
 
     assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 1)
+    assert crosswalks == [("PL", snapshot, snapshot, observed_at)]
 
 
 def test_history_sync_uses_alternate_provider_after_transient_primary_failure(
@@ -425,10 +435,15 @@ def test_history_sync_uses_alternate_provider_after_transient_primary_failure(
     monkeypatch.setattr(sync, "_history_sufficient", lambda *_args: True)
     monkeypatch.setattr(sync, "_record_fallback_response", lambda *_args: snapshot)
     monkeypatch.setattr(sync, "_competition_id", lambda *_args: snapshot)
+    crosswalks: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        sync, "_fallback_competition_mapping", lambda *args: crosswalks.append(args)
+    )
     monkeypatch.setattr(sync, "_store_fallback_history", lambda *_args: 1)
     monkeypatch.setattr(sync, "_record_history_sync_attempt", lambda *_args: None)
 
     assert sync._sync_league_history(39, 2026) == (snapshot, observed_at, 1)
+    assert crosswalks == [("PL", snapshot, snapshot, observed_at)]
 
 
 def test_history_sync_records_plan_restriction_as_unavailable(

@@ -2855,3 +2855,98 @@ weakened check. Ruff enforces the configured complexity limit of ten. All
 provider-specific credential, quota and provenance owners remain in place.
 Phase 2: **PASS**. Full validation output is retained under
 `.local/provider-wide-acquisition/check-integration.log`.
+
+### P3. Bounded acquisition and populated recovery rehearsal
+
+Phase 2 was committed as `8b16699` before provider execution. Bounded calls use
+the existing clients, source capability ports, persistent quotas and immutable
+publication helpers. Raw API responses use `HistoricalSourceManifestV1`; no
+API response receives a fabricated Git SHA. Acquisition receipts and originals
+remain private under `.local/provider-wide-acquisition/`.
+
+| Provider | Actual bounded result | Recovery disposition before operating execution |
+| --- | --- | --- |
+| API-Football | 556 Championship 2024 results and 467 Segunda División 2024 results; two quota-guarded calls, 98 requests reported remaining | The second response contains 42 native Málaga `535` records; the current 2024 cap is preserved. |
+| football-data.org | 557 Championship 2025 and 90 Premier League 2026 results; two calls | The historical response includes 46 Coventry `1076` matches and exact `ELC` competition metadata. |
+| FotMob | Zero new requests/results | Existing historical request guard returns `LIVE_SYNC_HAS_PRIORITY`. No bypass or scheduler change. |
+| PitchAPI | Zero new requests/results | Same live-priority deferral; no repeated request while deferred. |
+| OpenFootball | Seven pinned English/Spanish resources containing 1,551 completed results | Remote revision remains `e6744429ee395bc86f247348c6184bb08d4eb361`, already retained. These are retrieved/verified rows, not newly recovered matches. |
+| StatsBomb Open Data | Catalogue (80 entries), Serie A `12/27` results (380), one events file (3,733 events) and lineup file (two teams) | Four resources pinned to `4b73468fc5b0f1950f9f66fada70ad3a4f9327cb`; offline replay preserves identical manifest hashes. Separate representation; no evaluation or model research resumed. |
+| Football-Data.co.uk | All 56 registered resources pass exact-byte checks; no new downloads | Preserve the documented light-download limit and observed catalogue 429. |
+| Flashscore / Soccerway | All seven registered resources from each service pass exact-byte checks | Retained research evidence, without inventing a bulk adapter or source independence. |
+| Sportmonks | Existing-account discovery returns seven league IDs and 179 remaining league requests | Entitlements are now observed; no generic history importer, new plan or paid feature is enabled. |
+| TotalCorner | Official API/coverage/limits researched; zero requests | No configured credential or adapter; no subscription is purchased. |
+
+All **1,887** registered resources checked across Football-Data.co.uk,
+OpenFootball, StatsBomb, Flashscore and Soccerway pass. This bounded inventory
+does not claim that every registered resource in the whole database is present.
+Acquired counts above overlap and include different record types; they are not
+summed into a count of distinct football matches or eligible model inputs.
+
+A fresh read-only exported-snapshot dump contains **1,786,827,255 bytes**, SHA-256
+`a5ed6d94a583070a1b51641f466f1ef44cabeaba01da10c8a730a194faba7bb7`.
+Its disposable restore exactly reproduces registration hashes for sources,
+resources, identity decisions, models, forecast/artifact links, promotions and
+retirements. Operating DDL and runtime restarts remain zero. Raw files are
+verified separately; they are not implicitly covered by a PostgreSQL dump.
+
+The first shadow-only attempt to import the new Coventry season fails at the
+existing canonical team/timestamp guard and rolls back. That failure and its
+receipt remain retained. Read-only investigation finds a shared root cause:
+the football-data.org history path never registers its approved native
+competition-code mapping. The retained Championship history therefore lacks an
+`ELC` admission even though the API-Football competition is trusted.
+
+The code fix calls the existing `_fallback_competition_mapping` from the history
+path, preserving the declared crosswalk, canonical ID, source snapshot and
+response time. `HistorySyncWorker` wraps that call in its existing fenced
+database step. No provider I/O moves inside a transaction. A focused PostgreSQL
+regression fails first with zero native mappings, then passes with one
+source-verified `CROSSWALK`, unchanged raw bytes and no duplicate on retry.
+Three existing unit doubles require the new persistence call; their updated
+tests additionally assert its exact code, IDs and source time. All 36 focused
+sync tests pass after those updates; the initial aggregate failure is retained.
+
+The revised shadow rehearsal qualifies **one ELC competition relationship**
+through the existing admission owner, recovering eligible retained Coventry
+history without importing the disputed new season. It separately accepts
+**40 Málaga history rows**; API-Football native fixtures `1217677` and `1217899`
+remain blocked by the canonical guard. They are retained as explicit gaps and
+are not counted as recovered. Replaying accepted rows inserts zero duplicates.
+
+At the shadow's fixed pre-operation knowledge cutoff, the target history hash
+and 11 eligible rows remain unchanged. At the later cutoff the target cohorts
+contain **77 eligible rows**, an increase of **66**. The non-persisting forecast
+preview changes from **zero to 49 ready fixtures**. This is rehearsal evidence,
+not 49 published operating forecasts. The champion SHA-256 remains
+`e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4`.
+Final code validation and the Phase 3a commit precede operating recovery.
+
+The same retained-source investigation identifies nine other missing approved
+competition-code mappings. Shadow qualification passes for **FL1, CLI, CL,
+PPL, BL1 and SA**. **DED, PD and BSA** hit the unchanged 120-second SQL deadline
+inside `enqueue_product_context_for_history` / `product_fixture_team_at`; each
+transaction rolls back and remains blocked. No trigger, timeout or admission
+rule is weakened. These are measured downstream execution limits, not repeated
+permission questions. Across that second rehearsal, FDO eligibility increases
+from **549 to 2,645**, while the earlier cutoff count and hash remain identical.
+Only the successful source-backed plans qualify for operating execution.
+
+Final `make check integration` verification passes static/type/complexity,
+architecture, builds, 1,808 Python unit tests, 16 Rust tests, 107 web tests and
+all storage cases except `test_work_input_hash_mismatch_blocks_publication`.
+That existing fixture schedules its corrupt job using the application clock;
+when it leads PostgreSQL, another due job is claimed instead. A controlled
+one-day clock lead reproduces the exact failed `PROCESSED` versus `BLOCKED`
+assertion. The fixture now uses `clock_timestamp()` for job availability. All
+original corruption-rejection, blocked-state and no-publication assertions are
+preserved. The controlled-clock retry and all **13 recovery-module tests** pass;
+the remaining PostgreSQL/Redis/Go API integration also passes. The aggregate's
+exit **2** remains recorded, rather than being relabelled as exit 0.
+
+Phase 3a: **PASS_WITH_WARNINGS**. Composite final verification is complete;
+operating execution still waits for this code checkpoint's commit. Logs include
+`check-integration-recovery-final.log`, `clock-fixture-red-corrected.log`,
+`clock-fixture-green.log` and `recovery-api-integration.log` under the task's
+private evidence directory. The three deadline-blocked scopes and two native
+fixture conflicts remain explicit gaps.

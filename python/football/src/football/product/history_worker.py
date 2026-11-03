@@ -236,6 +236,12 @@ class HistorySyncWorker(ProductSync):
         with self._database_step():
             return super()._competition_id(provider_competition_id, snapshot_id)
 
+    def _fallback_competition_mapping(
+        self, code: str, competition_id: UUID, snapshot_id: UUID, observed_at: datetime
+    ) -> None:
+        with self._database_step():
+            super()._fallback_competition_mapping(code, competition_id, snapshot_id, observed_at)
+
     def _store_standings(
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:

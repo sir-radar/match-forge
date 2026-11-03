@@ -20,7 +20,7 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
-from football.product.football_data_org import FootballDataResponse
+from football.product.football_data_org import FootballDataOrgClient, FootballDataResponse
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import PRODUCT_FORECAST_ALGORITHM_VERSION, ProductSync
@@ -35,6 +35,71 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 def _first(row: Any | None) -> Any:
     assert row is not None
     return row[0]
+
+
+def test_fallback_history_registers_native_competition_and_retries_without_duplicates(
+    tmp_path: Path,
+) -> None:
+    catalogue = {
+        "league": {"id": 40, "name": "Championship", "type": "League"},
+        "country": {"name": "England"},
+        "seasons": [{"year": 2024, "current": True}],
+    }
+    raw = json.dumps(
+        {"competition": {"id": 2016, "code": "ELC", "name": "Championship"}, "matches": []}
+    ).encode()
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        now = _first(c.execute("SELECT clock_timestamp()").fetchone())
+        product = ProductSync(
+            c,
+            ApiFootballClient("retained-only"),
+            tmp_path,
+            MODEL_ARTIFACT_PATH,
+            FootballDataOrgClient("test-token", transport=lambda *_args: raw),
+        )
+        api_raw = json.dumps({"response": [catalogue]}).encode()
+        source = product._record_response(
+            "test-fallback-catalogue", ApiResponse("/leagues", now, api_raw, (catalogue,), None)
+        )
+        product._store_competitions([catalogue], source, now)
+        admit_provider_mappings(c, tmp_path, "api_football", source)
+
+        first = product._football_data_org_history(40, 2024)
+        assert first is not None and first[2] == 0
+        decisions = admit_provider_mappings(c, tmp_path, "football_data_org", first[0])
+        mapping = c.execute(
+            """SELECT m.id,m.competition_id,m.provider_competition_id,m.source_snapshot_id,
+                      football.product_mapping_trusted('competition',m.id,m.competition_id)
+               FROM football.competition_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE p.code='football_data_org' AND m.provider_competition_id='ELC'
+                 AND m.valid_to IS NULL"""
+        ).fetchall()
+        assert len(mapping) == 1
+        assert mapping[0][1:] == (
+            stable_id("competition", "api_football", "40"),
+            "ELC",
+            first[0],
+            True,
+        )
+        assert [decision["disposition"] for decision in decisions] == ["CROSSWALK"]
+        assert (
+            tmp_path
+            / _first(
+                c.execute(
+                    "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (first[0],)
+                ).fetchone()
+            )
+        ).read_bytes() == raw
+
+        second = product._football_data_org_history(40, 2024)
+        assert second is not None and second[0] == first[0] and second[2] == 0
+        assert c.execute(
+            """SELECT count(*) FROM football.competition_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE p.code='football_data_org' AND m.provider_competition_id='ELC'
+                 AND m.valid_to IS NULL"""
+        ).fetchone() == (1,)
 
 
 @pytest.fixture

@@ -120,6 +120,12 @@ series; no alternate MVP provider currently supplies qualified compatible xG.
 If real history remains below the ten-match requirement, MatchForge leaves the
 fixture unavailable instead of manufacturing history or relabelling a season.
 
+football-data.org historical fallback also registers the existing approved native
+competition-code crosswalk against its exact response snapshot. Registration
+does not establish trust: the ordinary retained-source admission checks still
+qualify it. Shared history workers publish this mapping inside their existing
+fenced database step, with provider I/O outside that transaction.
+
 Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
 
 ## Independent team identity corrections
