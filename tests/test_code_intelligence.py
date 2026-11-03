@@ -3,6 +3,7 @@
 import os
 import shutil
 import subprocess
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,12 @@ import pytest
 from scripts.verify_code_intelligence import Client, wait_coverage, wait_symbol
 
 LAUNCHER = Path(__file__).resolve().parents[1] / "scripts" / "code-intelligence.sh"
+
+
+def test_project_mcp_is_disabled_by_default() -> None:
+    config = LAUNCHER.parents[1] / ".codex" / "config.toml"
+    server = tomllib.loads(config.read_text())["mcp_servers"]["matchforge_code"]
+    assert server["enabled"] is False
 
 
 @pytest.fixture
@@ -46,6 +53,19 @@ def test_startup_reconciliation_precedes_mcp(launcher: tuple[Path, Path], index_
     assert result.stdout == ("MCP_READY\n" if index_exit == 0 else "")
     assert "--mode full --doc-candidates false" in result.stderr
     assert "config set auto_watch true" in result.stderr
+    assert "config set auto_index false" in result.stderr
+
+
+@pytest.mark.parametrize("command", ["status", "stop"])
+def test_native_lifecycle_commands_preserve_busy_exit(
+    launcher: tuple[Path, Path], command: str
+) -> None:
+    script, binary = launcher
+    binary.write_text('#!/bin/sh\nprintf "%s\\n" "$*"\nexit 1\n')
+    binary.chmod(0o755)
+    result = subprocess.run(["sh", str(script), command], capture_output=True, text=True)
+    assert result.returncode == 1
+    assert result.stdout == f"daemon {command}\n"
 
 
 def test_bad_download_preserves_installed_binary(launcher: tuple[Path, Path]) -> None:

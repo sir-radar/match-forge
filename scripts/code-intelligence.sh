@@ -47,7 +47,8 @@ fi
 case "${1:-}" in
     serve)
         # Never put startup output on MCP stdout. Reconcile missed edits before queries.
-        "$CBM_BIN" config set auto_index true >&2
+        # Explicit reconciliation owns initial indexing; do not auto-index new projects.
+        "$CBM_BIN" config set auto_index false >&2
         "$CBM_BIN" config set auto_watch true >&2
         "$CBM_BIN" config set watcher_enabled true >&2
         "$CBM_BIN" config set doc_candidates false >&2
@@ -60,5 +61,9 @@ case "${1:-}" in
         cd "$REPO_ROOT"
         exec "$CBM_BIN" cli "$@"
         ;;
-    *) echo 'Usage: sh scripts/code-intelligence.sh {install|serve|cli <tool> [args]}' >&2; exit 2 ;;
+    status|stop)
+        # Native stop refuses to interrupt committed clients in other sessions.
+        exec "$CBM_BIN" daemon "$1"
+        ;;
+    *) echo 'Usage: sh scripts/code-intelligence.sh {install|serve|status|stop|cli <tool> [args]}' >&2; exit 2 ;;
 esac

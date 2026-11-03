@@ -727,68 +727,46 @@ docs/writing-style.md
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
 
-## codebase-memory-mcp — Token-Efficient Codebase Navigation
+## Token-Efficient Codebase Navigation
 
-Use the project-scoped `matchforge_code` MCP server before broad searches,
-recursive reads, repeated dependency exploration or unfamiliar architecture work
-when its index is current and reliable. Setup and limitations:
-`docs/engineering/code-intelligence.md`.
+Ordinary source navigation is the default. Use targeted `rg`, `rg --files`, Git
+inspection and direct source reads; do not start or index CBM for routine work.
 
-1. Start with focused `search_graph` symbol/file queries. Use `limit: 8` and
-   `max_output_tokens: 1200` by default. Widen only when the task needs it.
-2. Trace callers, callees and impact with `trace_path` (`direction: inbound`,
-   `outbound` or `both`; start at `depth: 2`, `limit: 20`,
-   `max_output_tokens: 1200`). Use returned qualified names to avoid ambiguity.
-3. Read only the relevant source, contracts and tests identified by the index.
-   Reuse valid results; do not load full graphs, architecture exports or archives.
-   For a known path, exact text or small local edit, use focused `rg`/source reads
-   directly; do not add graph calls that cannot help answer the question.
-   When a targeted query misses or cannot resolve a relationship, switch to
-   focused source inspection instead of repeating or broadly widening graph calls.
-4. The native Git watcher maintains new, changed, moved and deleted files and
-   recursively discovers new directories while an MCP session is open. Keep
-   `auto_watch` and `watcher_enabled` enabled. The launcher reconciles offline
-   edits before starting MCP, including after session restarts and Git changes.
-5. Before relying on a potentially stale index, call `index_status(project:
-   <absolute checkout path>)`. Check `watch.watched`, scan time and parse warnings.
-   A ready status or recent scan does not prove that a particular edit is indexed.
-   For recent edits, check the relevant paths with `check_index_coverage` and
-   confirm the expected symbols/paths, including removal of obsolete results.
-   Polling has a delay. After Git operations or edits relevant to the next query,
-   call `index_repository(repo_path: <absolute checkout path>, mode: full,
-   doc_candidates: false)` and wait for success when freshness is uncertain.
-   Native indexing reuses unchanged files; do not force full rebuilds for trivial
-   actions. New conversations load `.codex/config.toml` in trusted checkouts.
-6. Treat the index as navigation only. Verify critical relationships against
-   source, tests, schemas, SQL migrations and approved decisions. Missing or
-   ambiguous relationships, parse warnings and JSON Schema references require
-   focused direct inspection. A graph with no callers does not prove dead code.
-   SQL/PLpgSQL bodies, constraints and table dependencies are incomplete in 0.12.1.
-   Inspect migration DDL, callers' SQL and relevant integration tests directly.
-   Follow JSON Schema `$ref`/`$defs` and Python/Go/Rust/TypeScript serializers and
-   consumers in source; parse success does not establish these relationships.
-7. If synchronization fails, use authoritative sources directly, retain the error
-   and retry `index_repository` once after addressing it. Never trust stale output
-   silently. Do not unlock or delete caches while another session uses them.
-8. Keep `.cbmignore` exclusions in effect. Avoid optional language-server/model
-   downloads and documentation scoring (`doc_candidates: false`); no hosted indexing or uploads.
-   Token optimization never overrides correctness, reproducibility, determinism,
-   source traceability, point-in-time integrity or phase gates.
-9. Before implementing or modifying frontend UI, locate and read its authoritative
-   `web/ui-designs/**/*.html` reference (currently `<design>/code.html`). These HTML
-   files are the frontend UI source of truth. Use a focused `search_graph` file
-   filter such as `web/ui-designs/*markets*/code.html`, then read the matching HTML;
-   do not infer its layout from graph nodes or substitute screenshots for source.
-
-Verified CLI equivalents, run from the checkout root:
-
-```sh
-sh scripts/code-intelligence.sh cli index_status --project "$PWD"
-sh scripts/code-intelligence.sh cli search_graph --project "$PWD" --name-pattern '<symbol>' --limit 8 --max-output-tokens 1200
-sh scripts/code-intelligence.sh cli trace_path --project "$PWD" --function-name '<qualified-name>' --direction both --depth 2 --limit 20 --max-output-tokens 1200
-sh scripts/code-intelligence.sh cli index_repository --repo-path "$PWD" --mode full --doc-candidates false
-```
-
-CLI commands do not keep the watcher running after they exit. Use MCP for ongoing
-work; use CLI refresh before standalone exploration. If MCP is unavailable, follow
-these same query-first rules with the CLI, then inspect source as needed.
+1. Start with task requirements and applicable repository instructions. Search
+   exact symbols, paths, references or filenames in relevant directories before
+   widening the search. Read the smallest useful code sections, not entire large files.
+2. Reuse discoveries from the current task. Avoid repeated searches, dependency
+   exploration and re-reading instructions or code already inspected. For complex
+   work, keep concise notes without creating redundant summaries or documentation.
+3. When needed, consult existing architecture documentation, neighboring
+   implementations, interfaces, schemas, contracts and tests. Trace dependencies
+   when a change could affect multiple modules; do not reconstruct known architecture.
+4. Use optional `codebase-memory-mcp` only when complex call chains, cross-module
+   relationships or large refactoring impact make it useful. Storage/recovery and
+   frontend/design investigations benefited in some earlier benchmarks. Known paths,
+   exact text, simple fixes and small changes should normally use direct navigation.
+5. CBM is disabled in project configuration. To opt in for one investigation, run
+   `codex -c 'mcp_servers.matchforge_code.enabled=true'` from this checkout. Exit that
+   session when finished. `sh scripts/code-intelligence.sh status` reports native
+   clients; `sh scripts/code-intelligence.sh stop` safely stops an unused daemon and
+   refuses while clients remain. Setup and limitations: `docs/engineering/code-intelligence.md`.
+6. When activated, the launcher reconciles offline/Git changes and enables native
+   synchronization. Check `index_status` and relevant `check_index_coverage` paths
+   before trusting freshness; a ready status alone is insufficient. Refresh with
+   `index_repository(mode=full, doc_candidates=false)` when needed, reusing unchanged
+   files. Keep `.cbmignore` exclusions; avoid repeated indexing and optional downloads.
+   No hosted indexing or uploads.
+7. Keep optional graph queries focused: `search_graph(limit=8, max_output_tokens=1200)`;
+   `trace_path(depth=2, limit=20, max_output_tokens=1200)`. Reuse results. On missing,
+   ambiguous or stale results, inspect source; retain synchronization errors and retry
+   once after addressing them. Never delete shared locks or caches to bypass a failure.
+8. Indexed relationships are navigation hints. Verify critical facts in actual SQL
+   migrations, JSON Schema `$ref`/`$defs`, serializers, code and tests. SQL/PLpgSQL and
+   cross-language relationships can be incomplete; no graph callers does not prove dead code.
+9. Before frontend UI changes, locate the relevant authoritative
+   `web/ui-designs/**/*.html` reference (currently `<design>/code.html`) with a focused
+   filename search and read its content. Do not substitute screenshots or inferred layout.
+10. Avoid broad exploration of known areas, oversized outputs, complete directory
+    trees and verbose logs/reports. Token savings never justify weaker investigation,
+    testing, correctness, reproducibility, determinism, source traceability,
+    point-in-time integrity or MatchForge's quality and phase gates.

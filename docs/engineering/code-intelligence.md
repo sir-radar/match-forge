@@ -1,14 +1,15 @@
-# Local code intelligence
+# Optional local code intelligence
 
-MatchForge uses [codebase-memory-mcp 0.12.1](https://github.com/DeusData/codebase-memory-mcp/releases/tag/v0.12.1)
-for focused code navigation. This is development tooling; scientific gates,
+MatchForge defaults to targeted `rg`, `rg --files`, Git inspection and focused
+source reads. [codebase-memory-mcp 0.12.1](https://github.com/DeusData/codebase-memory-mcp/releases/tag/v0.12.1)
+is an optional tool for complex dependency investigations. Scientific gates,
 production behavior and approved architectural decisions are unchanged.
 
-The focused alternatives benchmark below recommends ordinary Codex navigation.
-The existing integration remains unchanged in open PR #180 for owner review;
-neither CodeGraph nor Serena justified a permanent replacement.
+The benchmarks below support ordinary navigation as the default. CBM is disabled
+in project configuration; CodeGraph and Serena evaluation installations have been
+removed. Their historical measurements remain below and in the benchmark JSON.
 
-## Decision and alternatives
+## Initial research and alternatives
 
 Research date: 2026-11-03. Official source, the two latest release entries and
 five recent open issues/PRs were inspected for each candidate. These are samples,
@@ -19,9 +20,9 @@ is treated as a MatchForge measurement.
 | --- | --- | --- |
 | [CodeGraph](https://github.com/colbymchenry/codegraph) 1.6.2 | Local MCP/CLI, macOS, Python/Go/Rust/TS/TSX; native debounced watcher, startup reconciliation. Release indexed 687 executable-source files. Its extension map omits SQL, ordinary JSON Schema and Markdown. Current README also documents `init --local-only`, absent from the release. [Issue 3219](https://github.com/colbymchenry/codegraph/issues/3219) reports a stale bundled Node runtime. | Strong code navigator, but incomplete coverage for this repository's contracts. Not installed permanently. |
 | [Graphify](https://github.com/Graphify-Labs/graphify) 0.9.101 | Local AST indexing, budgeted query/path/explain, macOS and target languages; SQL extra. `update --no-cluster` worked without an LLM. Watch is a separate CLI lifecycle; documentation semantics can require an LLM. Codex skill describes parallel extraction, which this task does not authorize. | Benchmarked only its deterministic local path; not selected. |
-| [Serena](https://github.com/oraios/serena) 2.1.0 | Official README names Codex App, MCP and target executable languages. Precise LSP symbol references, file watching and persistent memories; separate language-server dependencies. SQL is absent from its published LSP language list. | Reviewed, not installed or benchmarked. More setup for a mixed-language repository. |
+| [Serena](https://github.com/oraios/serena) 2.1.0 | Official README names Codex App, MCP and target executable languages. Precise LSP symbol references, file watching and persistent memories; separate language-server dependencies. SQL is absent from its published LSP language list. | Initially reviewed only; later benchmarked and rejected as a default. Evaluation installation removed. |
 | [GitNexus](https://github.com/abhigyanpatwari/GitNexus) 1.6.13-rc.197 | Local MCP, Codex and macOS support; `analyze --watch` serializes incremental updates. Node/native graph dependencies and separate watcher lifecycle; current release stream is prerelease. PolyForm Noncommercial license requires separate consideration outside this private experiment. | Reviewed, not installed or benchmarked. No demonstrated benefit over the smaller selected deployment. |
-| [codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp/tree/v0.12.1) 0.12.1 | Single local binary; native MCP, persistent SQLite graph, Git polling, serialized indexing, bounded structural queries, source coverage diagnostics, Markdown/JSON/SQL plus executable languages. No LSP or embedding download needed for this workflow. | Selected. Broader contract coverage and verified session synchronization outweigh slower one-shot CLI queries. |
+| [codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp/tree/v0.12.1) 0.12.1 | Single local binary; native MCP, persistent SQLite graph, Git polling, serialized indexing, bounded structural queries, source coverage diagnostics, Markdown/JSON/SQL plus executable languages. No LSP or embedding download needed for this workflow. | Initial integration retained for optional use; actual Codex measurements do not support making it the default. |
 
 All five projects were active in the sampled release/source history. Free local
 operation does not guarantee perfect call resolution. React and Next.js sources
@@ -30,13 +31,23 @@ best-effort. Native CBM does not collect telemetry. The launcher disables the UI
 no hosted service, model download, external semantic API, agent system or custom
 background watcher is introduced.
 
-## Install and connect
+## Install and activate on demand
 
-From a MatchForge checkout on macOS:
+From a trusted MatchForge checkout on macOS, install once if needed, then opt in
+for one complex investigation:
 
 ```sh
 sh scripts/code-intelligence.sh install
+codex -c 'mcp_servers.matchforge_code.enabled=true'
+```
+
+Ordinary `codex` sessions use `enabled = false` and do not start the project MCP
+launcher or its indexing. The override applies only to the invoked CLI session;
+it does not edit configuration. Check the configured state without launching CBM:
+
+```sh
 codex mcp list --json
+codex -c 'mcp_servers.matchforge_code.enabled=true' mcp get matchforge_code --json
 ```
 
 The installer downloads the official **pinned** macOS ARM64 or AMD64 archive,
@@ -47,14 +58,32 @@ Other platforms fail explicitly; their builds were not validated in this task.
 Upgrade only after reviewing the release, updating the pin/checksums, and rerunning
 verification. Do not run the upstream global installer or automatic updater.
 
-`.codex/config.toml` starts the launcher as the `matchforge_code` stdio MCP server.
+When explicitly enabled, `.codex/config.toml` starts the launcher as the
+`matchforge_code` stdio MCP server.
 The shell resolves the current Git checkout, so nested directories and linked
 worktrees find their own launcher. Existing user MCP settings remain intact.
 Project configuration requires a trusted checkout; see the official
 [Codex configuration documentation](https://developers.openai.com/codex/config-basic)
 and [MCP configuration](https://developers.openai.com/codex/mcp).
-Open a new Codex conversation in the trusted checkout after merging this PR.
-The current conversation's tool registry is not dynamically reloaded.
+Open a new Codex conversation for changed project defaults to apply. Existing
+connections are not hot-reconfigured. Use the CLI override above for on-demand
+activation without making a persistent project or user configuration change.
+The supported settings are documented in the official
+[MCP configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+and [CLI override guidance](https://learn.chatgpt.com/docs/config-file/config-advanced#one-off-overrides-from-the-cli).
+
+Exit the opted-in Codex session when finished. Native CBM is session-managed and
+exits after its last committed client disconnects; no permanent daemon is started
+by this launcher. To inspect or stop an unused native daemon:
+
+```sh
+sh scripts/code-intelligence.sh status
+sh scripts/code-intelligence.sh stop
+```
+
+Native stop refuses while committed clients remain, protecting other sessions.
+Close the reported CBM-enabled sessions and retry; do not kill shared processes
+or delete locks/caches. Do not use `daemon start`, which creates a persistent daemon.
 
 Linked worktrees share the primary checkout's ignored
 `.tools/code-intelligence/0.12.1/` binary and `.local/code-intelligence/` cache.
@@ -67,18 +96,23 @@ No `.env` variables are added.
 
 ## Navigation and synchronization
 
-The root `AGENTS.md` permanently requires focused index queries before broad
-exploration, approximately 1,200-token output budgets, relationship tracing,
-source verification, reuse of results and direct fallback on stale or incomplete
-results. There are no nested tracked `AGENTS.md` files overriding this rule.
+The root `AGENTS.md` makes source navigation the default. Use CBM selectively for
+complex cross-module dependencies, unfamiliar call chains, large refactor impact
+or storage/recovery and frontend/design investigations where it helps. Known
+paths, exact text and small changes should normally use direct inspection.
+Optional queries use approximately 1,200-token budgets, reuse results and fall
+back to source on stale or incomplete relationships. There are no nested tracked
+`AGENTS.md` files overriding this rule.
 The project exposes navigation, coverage and indexing MCP tools; native ADR
 mutation and unrelated analysis tools are not enabled in Codex.
 
-The launcher configures native automatic indexing/watching, reconciles the
+Only an explicitly activated launcher configures native watching and reconciles the
 checkout with `index_repository(mode=full, doc_candidates=false)` before MCP
 starts, then delegates to the native server. Startup fails if reconciliation
 fails, preserving MCP stdout for JSON-RPC. Subsequent changes use CBM's existing
-Git watcher and index locks. No Git hooks or custom background service are needed.
+Git watcher and index locks. Automatic indexing of unknown projects is disabled;
+explicit startup reconciliation handles this checkout. No Git hooks or custom
+background service are needed. Disabled Codex sessions perform none of this work.
 
 CBM polls HEAD and dirty state, including recursive untracked files and repeated
 edits to already-dirty files. It coalesces edits observed within a poll interval,
@@ -90,8 +124,9 @@ directories, moves, deletes, generated source and Git operations all follow the
 same mechanism. Source-control operation types are not special hooks.
 
 `index_status` exposes `watch.watched`, strategy, poll cadence and last scan.
-The watcher runs while MCP sessions are connected. One-shot CLI calls report
-`cli_session` and do not keep watching; refresh before standalone CLI navigation:
+The watcher runs while MCP sessions are connected. Standalone CLI calls exit
+after their query and are useful for a bounded investigation without enabling
+MCP in Codex. Refresh before standalone CLI navigation:
 
 ```sh
 sh scripts/code-intelligence.sh cli index_repository --repo-path "$PWD" --mode full --doc-candidates false
@@ -116,8 +151,9 @@ warnings with `index_status` and `check_index_coverage`. A ready status or recen
 scan alone is insufficient: verify metadata for the changed paths and the expected
 new symbols/paths, including disappearance of obsolete results. On failure, inspect source
 directly, address the reported error, then retry once. Never delete locks or
-caches used by another session. Restarting Codex reconnects the native MCP process
-and reruns launcher reconciliation. Native process restart was tested; the
+caches used by another session. Restarting an explicitly CBM-enabled Codex session
+reconnects the native MCP process and reruns launcher reconciliation. An ordinary
+restart leaves CBM disabled. Native process restart was tested; the
 running desktop application was not restarted because another task is active.
 
 ## Initial discovery probes (PR #180)
@@ -361,9 +397,10 @@ records matched their local event logs and SHA-256 hashes.
 ## Focused alternatives benchmark (2026-11-03)
 
 **Recommendation: REVISE.** Prefer ordinary Codex navigation, with selective CBM
-queries where useful. Neither alternative earned a permanent integration.
-`AGENTS.md`, project configuration, the existing CBM installation and production
-files remain unchanged. PR #180 remains open for owner review.
+queries where useful. Neither alternative earned a permanent integration. At this
+benchmark checkpoint, `AGENTS.md`, project configuration, the existing CBM
+installation and production files were unchanged. The subsequent cleanup makes
+the recommended source-first default explicit; PR #180 remains open for review.
 
 [CodeGraph 1.6.2](https://github.com/colbymchenry/codegraph/releases/tag/v1.6.2)
 and [Serena 2.1.0](https://github.com/oraios/serena/tree/v2.1.0) were installed
@@ -432,8 +469,9 @@ Verification used real MCP queries, disposable synchronization fixtures, source
 review, all six valid Codex event/usage/hash checks, source-hash checks, JSON
 validation and `git diff --check`. No application/shared configuration changed,
 so the full production suite was not rerun. Machine-readable results are in
-`alternatives_evaluation` in the existing benchmark JSON; raw logs and runners
-remain ignored under `.local/code-intelligence-alternatives/`.
+`alternatives_evaluation` in the existing benchmark JSON. Raw logs remain ignored
+under `.local/code-intelligence-alternatives/`; disposable runners were removed
+during the subsequent cleanup.
 
 These are single observations per task/arm with same-day historical controls,
 not randomized repetitions or a significance claim. Cached tokens are not added
@@ -441,3 +479,27 @@ twice, and these are not billing estimates. Complete filesystem reads, unnecessa
 reads, peak context, sustained resource use and desktop GUI usage remain
 unmeasured. The comparison supports retaining ordinary navigation, not adopting
 another default index service.
+
+## Source-first cleanup (2026-11-03)
+
+The owner adopted ordinary navigation as the default. Project MCP configuration
+now disables CBM until explicitly enabled for a session. The launcher retains
+startup reconciliation and native synchronization, disables automatic indexing
+of unknown projects, and exposes native `status`/`stop` commands.
+
+Removed the complete `/tmp/matchforge-navigation-eval` environment: CodeGraph,
+Serena, their graph/symbol caches, language servers, Go build/module caches,
+virtual environment, disposable repositories, wrappers and scripts. Also removed
+the temporary release metadata and copied runner scripts. Historical benchmark
+JSONL logs and their matching checksums remain available. No candidate MCP
+registration or executable remains for MatchForge. Shared package caches and
+the empty user-level `.codegraph/daemons` directory were left intact because
+exclusive evaluation ownership was not established.
+
+Verification passed without model calls or another token benchmark: actual Codex
+startup kept CBM disabled, explicit opt-in connected and queried
+`normalize_resource`, and native stop protected an active client. Closing the
+sole verified pre-existing MatchForge frontend let its session-managed daemon
+exit. Ten focused tooling tests, Ruff, strict mypy, TOML/config checks, shell
+syntax and `git diff --check` passed. Production and shared build/test
+infrastructure are unchanged, so the full application suite was not rerun.

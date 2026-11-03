@@ -2,7 +2,7 @@
   "date": "2026-11-03",
   "base_sha": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
   "platform": "macOS ARM64",
-  "selected_tool": "ordinary Codex navigation (recommendation; existing CBM integration unchanged)",
+  "selected_tool": "ordinary Codex navigation; CBM disabled by default and available on demand",
   "integration_status": "PASS_WITH_WARNINGS",
   "model_tokens": "MEASURED_CODEX_CLI; GUI NOT MEASURED",
   "input_tokens": {
@@ -1863,5 +1863,49 @@
       "Full filesystem-read counts, unnecessary-read counts, peak context and desktop GUI telemetry not measured.",
       "Serena default REPL could not be measured under the fixed approval policy; classic tools are the valid comparison. Incomplete/interrupted trial usage is not invented."
     ]
+  },
+  "workflow_simplification": {
+    "date": "2026-11-03",
+    "status": "PASS",
+    "default_navigation": "targeted rg, rg --files, Git inspection and focused source reads",
+    "cbm_enabled_by_default": false,
+    "activation_command": "codex -c 'mcp_servers.matchforge_code.enabled=true'",
+    "deactivation": "Exit the opted-in session; native session-managed daemon exits after its last committed client disconnects. sh scripts/code-intelligence.sh stop refuses active clients.",
+    "unknown_project_auto_index": false,
+    "active_session_native_sync": true,
+    "exclusions_unchanged": true,
+    "removed_evaluation_roots": [
+      "/private/tmp/matchforge-navigation-eval",
+      "/private/tmp/matchforge-codegraph-release.json"
+    ],
+    "removed_copied_runner_scripts": [
+      "mcp-smoke.py",
+      "run-benchmark.py",
+      "summarize.py",
+      "sync-smoke.py",
+      "verify-runs.py"
+    ],
+    "benchmark_event_logs_and_hashes_preserved": true,
+    "candidate_mcp_registrations": false,
+    "retained_shared_state": [
+      "Shared package caches; evaluation-exclusive ownership not established",
+      "Empty ~/.codegraph/daemons directory; no active registration or executable"
+    ],
+    "verification": {
+      "model_calls": 0,
+      "new_token_benchmarks": 0,
+      "codex_default_startup": "PASS; no tools and no additional CBM processes",
+      "codex_manual_activation": "PASS; actual MCP connection and normalize_resource query",
+      "native_stop_busy_guard": "PASS",
+      "native_last_client_shutdown": "PASS; sole existing MatchForge frontend closed, daemon exited",
+      "tooling_tests": 10,
+      "ruff": "PASS",
+      "strict_mypy": "PASS; verifier and tooling tests",
+      "toml_and_cli_override": "PASS",
+      "shell_syntax": "PASS",
+      "unrelated_agents_instructions_preserved": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "production_and_shared_build_test_changes": false
   }
 }
