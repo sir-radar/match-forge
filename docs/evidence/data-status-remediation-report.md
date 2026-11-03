@@ -2660,3 +2660,92 @@ Selected receipts under `.local/data-recovery-followup/`:
 | `fixture-metrics-after.json` | `476f89478f25531e3496c65462844f48872bbb7fc891652a9d7b1caaa753a761` |
 | `blocked-forecast-refresh.json` | `122a1157d65da541f775c3538f658cbbaa1d9f8029e4621a95522463852bb347` |
 | `research-register.json` | `4c34fa305e7009983e47dbb40b00df01b1edb8191614e807a7ead3872213a7e2` |
+
+### O4. Safe dependency archival and final handoff
+
+Phase 3 was committed as `5eb9667` before cleanup. Storage classification keeps
+all football source bytes, database backups, model/forecast artifacts, decisions,
+unresolved evidence and recovery receipts. No football or database record is
+deleted, retired or excluded. The only cleanup candidate is the obsolete
+`.local/phase2-node-modules-backup` installation from the earlier web toolchain.
+
+The dry-run manifest inventories 26,542 regular files and 31,720 total entries.
+No tracked script/configuration/documentation reference, live dependency symlink,
+source registration, dataset registration/file or model registration points into
+that directory. Its lockfile exactly matches the repository version before
+`596714b`; the corresponding package manifest and installation metadata are
+retained as rollback inputs. An offline regeneration attempt fails because an
+old `@next/env` tarball is absent from the local store. No package is downloaded
+and no install script executes. Consequently the candidate is **ARCHIVE**,
+not disposable without retained bytes.
+
+An archive preserves the exact dependency tree. Isolated extraction verifies
+all file SHA-256 values, modes, symlink targets and entry counts against the
+dry-run manifest, while also checking that the originals have not changed.
+Only then are the old uncompressed copy and this continuation's two disposable
+restore directories removed. The archive remains private under
+`.local/data-recovery-followup/cleanup-rollback/dependencies.tar.gz`, mode `0600`.
+Its SHA-256 is `3a6e9484e2dbcd51eb9b431e9ddf0b90c4bb9bf8d4afd87fbfd8bf4170589f01`.
+
+| Storage measurement | Bytes |
+| --- | ---: |
+| Archived original regular-file payload | 471,406,633 |
+| Original allocated file footprint | 547,856,384 |
+| Compressed archive size / allocation | 124,287,746 / 134,569,984 |
+| Reduction in allocated file footprint | 413,286,400 (about 394 MiB) |
+
+APFS shared extents and concurrent writers prevent an exact physical free-space
+reclamation claim. The measured allocation reduction is not presented as such
+a claim. The live web lockfile remains unchanged and the installed Next version
+still resolves to `16.4.1`; the removed tree was not part of the live dependency
+graph. Cleanup requires no change to production code or repeat of successful
+code checks.
+
+The final repeatable-read operating collection ends at 00:47:04 UTC. Availability
+remains **220 competitions / 3,668 fixture records**. There are 20,806 current
+entity mappings with **5,040 review keys**, and 150,905 current fixture
+relationships/records with **103,547 review keys**. Relative to O1, entity review
+keys decrease by 15 while fixture review keys increase by 190 in the changing
+operating population. Their combined count is **108,587**, up 175; this is not
+reported as a net remediation success or a count of distinct football matches.
+The task's five individual fixture decisions and 15 admitted relationships are
+the separately evidenced outcomes. Other additions/reclassifications are not
+attributed to this controlled recovery.
+
+Context work has 159,829 pending entries out of 228,881 rows, zero recorded
+errors and the same October 28 oldest timestamp. Ordinary workers continue;
+their backlog decrease is not counted as this continuation's publication work.
+Provider-history scope totals remain 873 pending, 338 failed, 11 deferred and
+two succeeded. None is forced complete. Operating schema is now `202611020200`,
+observed after the independent upgrade; no runtime deployment or Architecture
+V2 transition is claimed by this continuation.
+
+Final code verification combines the completed static/unit/build portion of
+`make check integration` with the successful unchanged-source
+`make -o build integration` retry. The initial failed aggregate remains visible.
+The final review finds three production metadata entries with an existing
+consumer, focused regression coverage, no new production abstraction, dependency,
+migration, environment variable, secret or unrelated staged change. Later
+tracked changes are prose reviewed with `git diff --check`. The separate owner
+edit to `docs/source-acquisition.md` retains SHA-256
+`2e17d26cd6d1b766c36f78de8651ec1c6be4529d310b2de6c658deeafcbcbd2c`
+and is excluded from these commits.
+
+Phase 4: **PASS_WITH_WARNINGS**. **Overall operating remediation: NOT COMPLETE.**
+Remaining work includes the linked Scottish team proof, compatible origin/history
+relationships for the 49 Coventry/Málaga targets, the other 104 verified upcoming
+blockers, provisional fixture identities, authentic missing originals, partial
+provider seasons, and the existing report backlog. The current register supplies
+exact IDs, evidence gaps and revisit conditions. No global internet-research
+exhaustion, full parity, model promotion or completed rollout is claimed.
+
+Final receipts under `.local/data-recovery-followup/`:
+
+| Receipt | SHA-256 |
+| --- | --- |
+| `final-metrics.json` | `eac02c7f7e2903b2bea01f0a7c99a94a4f2cb923baecdf988192c7ae9446c200` |
+| `preservation-final.json` | `f06039fa064fa5c1d5c988f3696737aae936872ba3ea4fc4c24ce0fb669ed28e` |
+| `cleanup-dry-run.json` | `419d16f7ffb1093fd92e1974502758b32ec24fbc0880730d886afc248027c6a3` |
+| `cleanup-applied.json` | `1f3af2f608ef6196ad020f439064b891e95223774c1fc085c3f421e6eafe5d66` |
+| `check-integration.log` (initial exit 2) | `68434908f902c0ee434381f926df94ffe7be90806056f3a9d32c832d398f11b4` |
+| `integration-retry.log` (exit 0) | `c5c71fb23ea88d5f04456097ad495c0b90a4c97ca2274b9034af4081a096400c` |
