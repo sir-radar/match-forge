@@ -54,7 +54,7 @@ and shadow identities checked independently.
 | FR-005 | BLOCKED_EVIDENCE | All 41 already revalidated; 33 archive seasons checked; dated counterpart/correction proof remains |
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
-| FR-008 | NOT_STARTED | Original-row canonical conflict evidence |
+| FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | NOT_STARTED | Current unmatched revisions and exact season metadata |
 | FR-010 | NOT_STARTED | Scope-specific failure/retry classification |
 | FR-011 | NOT_STARTED | Exact missing originals/manifests or lifecycle blockers |
@@ -689,3 +689,33 @@ all periods, exact source hashes and rollback/preservation receipts.
 Validation: source/resource and 41-mapping inventory assertions, rollback/retry
 and historical/current fingerprint checks, project-status validation and
 `git diff --check`. Application code and dependencies are unchanged.
+
+## Phase C: FR-008 original-input replay checkpoint
+
+**IN_PROGRESS; operating imports and new forecast gain remain zero.** Both exact
+Málaga inputs reproduce the canonical team/timestamp rejection in the owned
+restore. Each has an OpenFootball history neighbor at the same instant and a
+Football-Data.co.uk neighbor one hour earlier. Exact score agreement does not
+qualify the different participant/competition roots or repair timing claims.
+The originals and all active resolutions remain unchanged.
+
+All 46 retained Coventry inputs were replayed separately with rollback. Four
+native IDs (`540714`, `540933`, `540989`, `541195`) hit the canonical guard.
+A combined shadow batch of the other 42 rows binds every native ID to its exact
+registered source, timestamp and score; 36 are eligible and six remain held.
+Retry inserts zero, and the pre-import knowledge-cutoff history hash is exact.
+This is an importer characterization, not authorization to treat the rows as
+unique real fixtures or claim operating recovery. Exact duplicate/identity
+qualification and the broader CSV conflict inventory remain open.
+
+Inspection also finds that `_store_fallback_fixtures` uses the current competition
+season instead of the explicit older source season. Coventry's retained rows
+carry season ID 2416 and `startDate=2025-08-08`; materializing these against the
+current competition label would produce a different season/fixture identity
+from the history importer. FR-009 will characterize and fix that current source
+metadata defect before any such operational recovery.
+
+[Exact input dispositions](forecast-readiness-fr008-conflicts.json) include the
+complete 46-ID list, two Málaga neighborhoods, shadow eligibility and private
+receipt hashes. Validation: source checksums, per-row rollback, combined native
+lineage/retry/cutoff assertions, project-status validation and `git diff --check`.

@@ -1,0 +1,401 @@
+{
+  "status": "IN_PROGRESS",
+  "scope": "Exact two rejected Malaga native rows and all 46 retained Coventry rows; broader CSV conflict cohort remains open",
+  "cutoff": "2026-11-09 13:50:44.305205+00:00",
+  "sources": [
+    {
+      "provider": "api_football",
+      "snapshot_id": "6e172d9e-5343-5c9a-9eb6-3287c44c5152",
+      "resource_id": "4953f17c-95c7-5b58-ad16-72e78a8eeb0e",
+      "sha256": "9c6841462d0b4697c90085227d9b5e78ccf7f1741dea5a833163a1d26a74ad42",
+      "size": 467114
+    },
+    {
+      "provider": "football_data_org",
+      "snapshot_id": "080c9e2f-037a-57b0-b3f9-49ab726125f8",
+      "resource_id": "e76382f3-1e6a-5819-ba6c-592e4af1e11e",
+      "sha256": "1127cc75acd1a7c78dc4948865597a85ef967f58ced2ed4370ac424b294b446a",
+      "size": 575167
+    }
+  ],
+  "malaga": [
+    {
+      "native_id": 1217677,
+      "expected_fixture_id": "56359413-c48d-51b9-9652-88e0627e4009",
+      "shadow_outcome": "BLOCKED_CANONICAL_TEAM_TIMESTAMP_CONFLICT",
+      "existing_neighbors": [
+        {
+          "fixture_id": "a49479df-ec6f-54f3-b820-c272a54e17be",
+          "provider": "football_data_uk",
+          "kickoff_at": "2024-12-01T12:00:00+00:00",
+          "home_team_id": "953c7675-065b-577e-922c-ce1c1f4816bb",
+          "away_team_id": "a2ae6f71-0500-5852-a215-59e65fe4b355"
+        },
+        {
+          "fixture_id": "9fe7b2d6-eae0-5598-a4f2-195d741a9ccb",
+          "provider": "openfootball",
+          "kickoff_at": "2024-12-01T13:00:00+00:00",
+          "home_team_id": "953c7675-065b-577e-922c-ce1c1f4816bb",
+          "away_team_id": "80c0b812-dd7a-5b0d-aac3-b1e87113cf3b"
+        }
+      ],
+      "remaining_blocker": "OpenFootball and API-Football participants/competition use different admitted roots; exact identity links required before duplicate resolution. CSV neighbor is one hour earlier; preserve original bytes and timing claims."
+    },
+    {
+      "native_id": 1217899,
+      "expected_fixture_id": "41440dfc-e9af-50f5-a2e8-766002e73d1b",
+      "shadow_outcome": "BLOCKED_CANONICAL_TEAM_TIMESTAMP_CONFLICT",
+      "existing_neighbors": [
+        {
+          "fixture_id": "e5ca4606-3182-5c21-978d-6bbf1b062c0e",
+          "provider": "football_data_uk",
+          "kickoff_at": "2025-04-27T15:30:00+00:00",
+          "home_team_id": "a2ae6f71-0500-5852-a215-59e65fe4b355",
+          "away_team_id": "953c7675-065b-577e-922c-ce1c1f4816bb"
+        },
+        {
+          "fixture_id": "5b5c2298-3d9e-51f8-8e9e-51921b09dca8",
+          "provider": "openfootball",
+          "kickoff_at": "2025-04-27T16:30:00+00:00",
+          "home_team_id": "80c0b812-dd7a-5b0d-aac3-b1e87113cf3b",
+          "away_team_id": "953c7675-065b-577e-922c-ce1c1f4816bb"
+        }
+      ],
+      "remaining_blocker": "OpenFootball and API-Football participants/competition use different admitted roots; exact identity links required before duplicate resolution. CSV neighbor is one hour earlier; preserve original bytes and timing claims."
+    }
+  ],
+  "coventry": {
+    "expected_native_ids": [
+      540714,
+      540726,
+      540738,
+      540754,
+      540761,
+      540777,
+      540785,
+      540804,
+      540816,
+      540822,
+      540838,
+      540846,
+      540867,
+      540871,
+      540887,
+      540895,
+      540905,
+      540917,
+      540933,
+      540942,
+      540953,
+      540973,
+      540977,
+      540989,
+      541002,
+      541012,
+      541025,
+      541036,
+      541056,
+      541068,
+      541074,
+      541087,
+      541106,
+      541119,
+      541123,
+      541133,
+      541152,
+      541157,
+      541178,
+      541182,
+      541195,
+      541206,
+      541216,
+      541228,
+      541242,
+      541262
+    ],
+    "shadow_accepted_native_ids": [
+      540726,
+      540738,
+      540754,
+      540761,
+      540777,
+      540785,
+      540804,
+      540816,
+      540822,
+      540838,
+      540846,
+      540867,
+      540871,
+      540887,
+      540895,
+      540905,
+      540917,
+      540942,
+      540953,
+      540973,
+      540977,
+      541002,
+      541012,
+      541025,
+      541036,
+      541056,
+      541068,
+      541074,
+      541087,
+      541106,
+      541119,
+      541123,
+      541133,
+      541152,
+      541157,
+      541178,
+      541182,
+      541206,
+      541216,
+      541228,
+      541242,
+      541262
+    ],
+    "held_canonical_conflict_ids": [
+      540714,
+      540933,
+      540989,
+      541195
+    ],
+    "source_bound_shadow_rows": [
+      {
+        "native_id": 540726,
+        "fixture_id": "ab5b2478-e363-59ed-8b72-1c21bc73653f",
+        "eligible": true
+      },
+      {
+        "native_id": 540738,
+        "fixture_id": "efb03268-cb7a-5dc5-bd44-17b026f14d22",
+        "eligible": true
+      },
+      {
+        "native_id": 540754,
+        "fixture_id": "26a336f8-9b61-53b6-b3b7-90da553fdbc8",
+        "eligible": true
+      },
+      {
+        "native_id": 540761,
+        "fixture_id": "f959d099-973b-5dbb-89f0-ad7180f9ab8b",
+        "eligible": true
+      },
+      {
+        "native_id": 540777,
+        "fixture_id": "34f77638-5982-5fe1-a968-b2d19ad3b03a",
+        "eligible": true
+      },
+      {
+        "native_id": 540785,
+        "fixture_id": "f7778038-833c-5935-af78-2af187c73741",
+        "eligible": false
+      },
+      {
+        "native_id": 540804,
+        "fixture_id": "fc4604db-c949-5c81-9eba-838f4a9d20e9",
+        "eligible": true
+      },
+      {
+        "native_id": 540816,
+        "fixture_id": "034d2499-35a5-5fc0-be17-db9e8a10eef4",
+        "eligible": true
+      },
+      {
+        "native_id": 540822,
+        "fixture_id": "fe7ede0b-f0fa-5af7-82f2-baa8223d8aff",
+        "eligible": true
+      },
+      {
+        "native_id": 540838,
+        "fixture_id": "1649cfb8-d258-50c5-9cab-7af3fe989735",
+        "eligible": true
+      },
+      {
+        "native_id": 540846,
+        "fixture_id": "fa6b7ee1-552e-5d3f-865d-c558c7eab1ba",
+        "eligible": true
+      },
+      {
+        "native_id": 540867,
+        "fixture_id": "33344aa9-9f9b-513e-8bcf-901325c8803a",
+        "eligible": false
+      },
+      {
+        "native_id": 540871,
+        "fixture_id": "ed93b5c4-13a2-5e97-9b56-11533f502ab4",
+        "eligible": true
+      },
+      {
+        "native_id": 540887,
+        "fixture_id": "57ce44c8-2e9e-5f96-b694-9cbbaa2be2c2",
+        "eligible": true
+      },
+      {
+        "native_id": 540895,
+        "fixture_id": "04880ed5-6cb9-5a75-8cae-482182927b59",
+        "eligible": true
+      },
+      {
+        "native_id": 540905,
+        "fixture_id": "396d53f7-afda-5813-a2d7-e00d6ad7b4bb",
+        "eligible": true
+      },
+      {
+        "native_id": 540917,
+        "fixture_id": "480b66fd-e8ee-51b0-a048-a1c5316bcd9a",
+        "eligible": false
+      },
+      {
+        "native_id": 540942,
+        "fixture_id": "bc44d0ed-3652-52d0-bf78-4a0e3e11a542",
+        "eligible": true
+      },
+      {
+        "native_id": 540953,
+        "fixture_id": "fc7352f4-ed6d-56df-a85d-5e1fd2ca739c",
+        "eligible": true
+      },
+      {
+        "native_id": 540973,
+        "fixture_id": "3c36a888-bfeb-594d-a48e-fe68af8705f8",
+        "eligible": true
+      },
+      {
+        "native_id": 540977,
+        "fixture_id": "9d7403c3-105f-5b58-b29c-1f26451c409c",
+        "eligible": true
+      },
+      {
+        "native_id": 541002,
+        "fixture_id": "c920d195-1eef-5a32-bb75-88f9ebcfb197",
+        "eligible": false
+      },
+      {
+        "native_id": 541012,
+        "fixture_id": "f04d49cf-5a62-5719-b88d-2229952c5513",
+        "eligible": false
+      },
+      {
+        "native_id": 541025,
+        "fixture_id": "df37ba54-fbcb-555b-af1c-969e3da94233",
+        "eligible": true
+      },
+      {
+        "native_id": 541036,
+        "fixture_id": "fd6096ac-5344-5a3e-89f7-db6c4859628e",
+        "eligible": true
+      },
+      {
+        "native_id": 541056,
+        "fixture_id": "111a6979-3684-5e80-bb4a-003751350c7a",
+        "eligible": true
+      },
+      {
+        "native_id": 541068,
+        "fixture_id": "d49ee3f7-4735-53ca-ac95-53b73db29f9f",
+        "eligible": true
+      },
+      {
+        "native_id": 541074,
+        "fixture_id": "d69df0b1-40aa-5d89-a521-d0cf739770d0",
+        "eligible": true
+      },
+      {
+        "native_id": 541087,
+        "fixture_id": "cb1beae4-9f67-524f-b612-7204da76cccd",
+        "eligible": true
+      },
+      {
+        "native_id": 541106,
+        "fixture_id": "d562c2c2-b71f-5a55-8f6a-f8e215091b76",
+        "eligible": true
+      },
+      {
+        "native_id": 541119,
+        "fixture_id": "6838c4dc-631b-5ca1-8dfa-14508471871f",
+        "eligible": true
+      },
+      {
+        "native_id": 541123,
+        "fixture_id": "e67ad3e3-c924-5696-b62b-856a80512a5d",
+        "eligible": true
+      },
+      {
+        "native_id": 541133,
+        "fixture_id": "b4598e34-d937-5b58-bead-5f114facb1ec",
+        "eligible": true
+      },
+      {
+        "native_id": 541152,
+        "fixture_id": "0f5f366a-08d2-5fbc-9792-5d86a336eebd",
+        "eligible": true
+      },
+      {
+        "native_id": 541157,
+        "fixture_id": "36ab9364-f794-536a-8dd3-23648e424db9",
+        "eligible": true
+      },
+      {
+        "native_id": 541178,
+        "fixture_id": "b6be9e32-d2c0-5570-9929-68dd072ca0d5",
+        "eligible": true
+      },
+      {
+        "native_id": 541182,
+        "fixture_id": "dfaccff3-2c4f-5ba4-851c-d5afeb20e062",
+        "eligible": true
+      },
+      {
+        "native_id": 541206,
+        "fixture_id": "e43eb593-4d2e-53ca-a4e0-d1673c8bb7de",
+        "eligible": true
+      },
+      {
+        "native_id": 541216,
+        "fixture_id": "8a1f773f-3d39-59f5-b864-552209faffb5",
+        "eligible": true
+      },
+      {
+        "native_id": 541228,
+        "fixture_id": "1ad177ad-13b7-5848-ac8b-4d1885fbe2ca",
+        "eligible": true
+      },
+      {
+        "native_id": 541242,
+        "fixture_id": "98074dc8-f876-5a8a-aaec-cff18b7ed6bb",
+        "eligible": false
+      },
+      {
+        "native_id": 541262,
+        "fixture_id": "9f6fd55d-0edd-542f-a0ce-4b17a15f3db4",
+        "eligible": true
+      }
+    ],
+    "shadow_inserted": 42,
+    "shadow_eligible": 36,
+    "retry_inserted": 0,
+    "historical_cutoff_preserved": true,
+    "operating_imported": 0,
+    "remaining_work": "Qualify unique real-fixture representatives and exact held predicates; fix source-season materialization before recovery. A successful importer is not proof of uniqueness."
+  },
+  "operating_new_forecasts": 0,
+  "csv_conflicts": "NOT_YET_DISPOSITIONED",
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr008-native-conflicts.json",
+      "sha256": "7832606b434b388f5555b002b0b171b7504f4acf38e6532605f3f7d1d7c9d56d"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr008-shadow-replay.json",
+      "sha256": "6a11a352be598cc0e4cc6de4631c7afa9e8a3e57eb798ae961f5c199e952f2e6"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr008-shadow-qualified-subset.json",
+      "sha256": "acf075aeb05667a361f29a841aac102d015559b78416f029ce088b68f8556ac5"
+    }
+  ]
+}

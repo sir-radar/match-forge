@@ -1304,7 +1304,7 @@
         "FR-005": "BLOCKED_EVIDENCE",
         "FR-006": "VERIFIED",
         "FR-007": "BLOCKED_DEPENDENCY",
-        "FR-008": "NOT_STARTED",
+        "FR-008": "IN_PROGRESS",
         "FR-009": "NOT_STARTED",
         "FR-010": "NOT_STARTED",
         "FR-011": "NOT_STARTED",
@@ -1496,6 +1496,18 @@
         "historical_sc2_football_data_uk_rows_preserved": 5137,
         "new_operating_decisions": 0,
         "new_forecasts": 0
+      },
+      "fr008": {
+        "status": "IN_PROGRESS",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr008-conflicts.json",
+        "malaga_native_conflicts_reproduced": 2,
+        "coventry_native_inputs": 46,
+        "coventry_shadow_imported": 42,
+        "coventry_shadow_eligible": 36,
+        "coventry_canonical_holds": 4,
+        "operating_imported": 0,
+        "new_forecasts": 0,
+        "dependency": "FR-009 source-season materialization and exact fixture/identity proof"
       }
     }
   },
