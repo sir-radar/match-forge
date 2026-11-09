@@ -1,6 +1,6 @@
 {
   "knowledge_cutoff": "2026-11-03 21:18:33.759267+00:00",
-  "status": "BLOCKED_DEPENDENCY; recovery continues through exact upstream identity and fixture work",
+  "status": "BLOCKED_DEPENDENCY; 15 Ghana targets recovered through FR-001; 26 frozen targets remain",
   "scope": {
     "targets": 41,
     "history_only_targets": 26,
@@ -3046,5 +3046,58 @@
   "private_receipts_sha256": {
     "fr003-retained-predicates.json": "35f7b33f6488b2b6ed9a3f8971c8af2869419244a30431a0251add640d9963b7",
     "fr003-failed-mapping-qualification.json": "462e10834e1ccfacbddf380c823cb5d1ae801da841f3cb8f2cdcffc32e544623"
+  },
+  "subsequent_recovery": {
+    "knowledge_cutoff": "2026-11-09 12:58:27.948198+00:00",
+    "dependency": "FR-001",
+    "recovered_target_ids": [
+      "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+      "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+      "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+      "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+      "1e25a517-7f96-5690-85dc-94e0244172b2",
+      "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+      "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+      "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+      "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+      "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+      "a49bcd54-0272-53e6-86e7-287dc385c65c",
+      "a847dbdb-484d-547b-856b-5ac38c522127",
+      "b23c0761-115a-5b4f-bf01-93b552777de7",
+      "c6391ca0-df34-5033-bf98-5f807641ffd5",
+      "c979ccf6-b620-5c2a-befe-8e5b93deae05"
+    ],
+    "new_forecasts": 15,
+    "additional_new_eligible_history": 0,
+    "cause": "Exact prospective participant reconstruction exposes already-qualified history under the accepted team IDs; old duplicate/quarantine exclusions remain",
+    "remaining_frozen_target_ids": [
+      "0071f536-b420-5d9f-9369-e14f5fdbda4a",
+      "09727dfd-4c2f-528a-8104-9f36ff571c20",
+      "0ca55ce7-6d96-5bf7-89ed-d46c66c63222",
+      "0e0b2d66-9e79-51ee-ad11-dc67d2821cab",
+      "18c5f1a6-535e-568a-b325-2b2beead0535",
+      "2463acd7-e11e-58b3-ad24-843b6b393c40",
+      "2d82451c-ef21-58d4-8693-9320947edee1",
+      "331b415e-99ce-5c4e-93f7-385e61f47890",
+      "3ea0052e-8a16-525c-bd71-0de1aac8e6dd",
+      "42d6cd94-a116-5b00-bcad-91830ac1f2c8",
+      "439c55ee-d4e0-502f-b9f7-ab24e3abd1d8",
+      "64178e6e-427b-5f39-9394-f8296e3db3d8",
+      "6b335ee2-efbf-5eaa-aa7e-63520a9e1b96",
+      "7b6e9ad1-aeea-5b61-9735-7c619e3ccc48",
+      "7ca27d51-20ac-5721-a490-708f56c1e7ed",
+      "8e8baf76-f72e-5351-848b-6cf4b79cdb3c",
+      "90e5b771-c4e8-5b48-b616-034cd5f18e7c",
+      "966a19c9-f7f6-5720-857c-b01c88703abc",
+      "c3074d67-4219-500e-b8b7-18c2a5555c04",
+      "cb9c89df-015d-5431-a18c-72c0dab50295",
+      "ce15f2c4-f406-555e-99a0-318ac5ba412e",
+      "d34449e4-d8c4-5217-bfd3-63e2262f4f41",
+      "d9f95eb6-9cf2-51c0-91a6-90cf9fcfcdbd",
+      "dc68f7b7-deeb-5266-ac85-c23eebc98329",
+      "ec3bb831-1e79-58d4-b3dc-6254c36e477c",
+      "f261b159-3dfc-535e-a267-1bea722aff2e"
+    ],
+    "counted_in_global_fr001_gain": true
   }
 }

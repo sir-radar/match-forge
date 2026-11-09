@@ -547,3 +547,65 @@ private rehearsal script field-name error was corrected before any shadow review
 protected digests were rechecked on restart. No test or guard was weakened.
 Operating migration/corrections and operating forecast gains remain zero at
 this code checkpoint; the owner-authorized bounded rollout follows separately.
+
+### FR-001 operating verification — 9 November 2026
+
+**PASS_WITH_WARNINGS.** Both proven FotMob replacements now have prospective
+linked corrections. All 30 frozen Ghana targets pass identity qualification.
+Fifteen have new public forecasts; the other 15 report `NOT_ENOUGH_HISTORY`, with
+Port City still at six eligible results against the unchanged ten-match minimum.
+No historical result was added or newly qualified by this reconstruction.
+
+Execution used unchanged, pushed commit `5cb3a1a`. After the interruption, a new
+consistent backup at **2026-11-09 11:31:13.794193 UTC** captured 1,632,319,418 bytes,
+SHA256 `14e1c00d674f4bbe408166c79119ecfd8860ec698ba6ba080a20019295cc88d7`.
+Exact restore, source bridges, populated forecast publication, prospective
+withdrawal/forward repair and pending PR #178 compatibility were reverified.
+The prior full aggregate remains the verified code result; no application code
+or lockfile changed during this data-only execution.
+
+Goose applied `202611030200` once. The first source-checked forecast was issued at
+**12:11:39.689444 UTC**. Execution then stopped when a whole-row check detected
+changed freshness metadata on a different, finished 8 November fixture. Exact
+backup comparison found only `last_fetched_at`, `cache_expires_at` and
+`stale_after` advancing through normal background fetches. Original observation
+time, source registration, identifiers, scores and other football facts matched.
+These cache fields are explicitly mutable in the existing freshness migration
+and writer; they were not rolled back or treated as new football knowledge.
+
+The private checker now verifies original facts separately from those documented
+cache fields. Rolled-back probes reject changed/deleted facts, clock rewinds,
+future fetch clocks and cache edits without a newer fetch. A pristine backup
+reference rechecked all 13 global prior populations and three affected
+observation/decision populations before continuation, and again afterwards.
+Whole-table verification reads use bounded cursor/key batches; application
+statement and lock deadlines remain 20 s / 5 s.
+
+The Port City correction and retry then passed. Fourteen further forecasts were
+issued by **12:56:16.259450 UTC**, making **15 actual new forecasts**, all before
+kickoff. Every forecast passes public history/detail reads, exact original-cutoff
+artifact/input/payload reproduction, target exclusion and byte verification of
+its historical inputs. Twelve original resources qualify those windows.
+Publication uses database-stamped, frozen knowledge cutoffs; repeated refresh
+creates zero forecasts. History-short availability updates use the existing
+forecast owner and cannot publish an unexpected forecast outside the verified set.
+
+Final checks find zero changed original football facts, zero lost eligible
+history, unchanged earlier-cutoff history and zero regressions among **2,250**
+previously available controls. One valid background cache advance is recorded
+separately. All 13 routes remain `LEGACY`; context errors remain zero. Physical
+fixture IDs, participants, competition, kickoff and identity status are retained.
+No API deployment, model promotion, cutover or historical identity rewrite occurred.
+
+These same 15 targets fulfil the 15 Ghana dependencies in FR-003; they are counted
+once. Its remaining 26 targets retain their exact source/identity/resolution
+blockers. Cumulative new availability within the frozen cohort is **19**: four
+English forecasts issued before kickoff on 3 November and these 15 Ghana
+forecasts on 9 November. The four English kickoffs have elapsed; they are not
+currently upcoming gains. Earlier Coventry, Málaga and Armenian recoveries and
+unrelated background additions remain excluded.
+
+The existing [FR-001 inventory](forecast-readiness-fr001-identities.json) records
+all 30 before/after results, forecast lineage, source hashes and private receipt
+checksums. Local execution and forensic receipts remain under
+`resume-20261109`. FR-004 proceeds for the legitimate remaining history gaps.

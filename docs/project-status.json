@@ -1293,11 +1293,11 @@
       "frozen_blocked_cohort": 196,
       "baseline_upcoming_verified_blockers": 189,
       "baseline_pending_context_reports": 146765,
-      "operating_migrations": 1,
+      "operating_migrations": 2,
       "operating_runtime_updated": false,
-      "verified_new_forecast_availability": 4,
+      "verified_new_forecast_availability": 19,
       "issue_statuses": {
-        "FR-001": "IMPLEMENTED",
+        "FR-001": "VERIFIED",
         "FR-002": "IN_PROGRESS",
         "FR-003": "BLOCKED_DEPENDENCY",
         "FR-004": "NOT_STARTED",
@@ -1410,8 +1410,10 @@
         "public_forecast_history_and_detail_verified": true,
         "remaining_identity_blocked_targets": 8,
         "remaining_history_blocked_targets": 6,
-        "scoped_followup": "IN_PROGRESS",
-        "parity": "DEFERRED_TO_PHASE_D"
+        "scoped_followup": "FRESH_CLAIM_PENDING_AFTER_INTERRUPTION",
+        "parity": "DEFERRED_TO_PHASE_D",
+        "persisted_target_results": 879,
+        "changed_context_targets": 4
       },
       "fr003": {
         "status": "BLOCKED_DEPENDENCY",
@@ -1428,31 +1430,45 @@
         "eligibility_rules_changed": false,
         "new_forecast_gain": 0,
         "dependencies": [
-          "FR-001",
           "FR-008",
           "FR-016",
           "Exact FotMob counterpart evidence"
-        ]
+        ],
+        "recovered_through_fr001": 15,
+        "remaining_frozen_targets": 26,
+        "additional_new_eligible_history": 0
       },
       "fr001": {
-        "status": "VERIFIED_IN_SHADOW",
+        "status": "PASS_WITH_WARNINGS",
         "evidence_ref": "docs/evidence/forecast-readiness-fr001-identities.json",
         "frozen_targets": 30,
         "proven_same_native_relationships": 2,
         "migration": "202611030200",
-        "operating_migration_applied": false,
-        "operating_corrections": 0,
-        "verified_new_forecasts": 0,
+        "operating_migration_applied": true,
+        "operating_corrections": 2,
+        "verified_new_forecasts": 15,
         "new_origin_algorithm": false,
         "shadow_fresh_qualified_targets": 30,
         "shadow_forecasts": 15,
         "shadow_new_eligible_history": 0,
         "shadow_repeated_refresh_new_forecasts": 0,
         "shadow_recovery": "PASS",
-        "original_fields_preserved": true,
         "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
         "verification_exit_code": 0,
-        "shared_history_deadline_regression": "PASS"
+        "shared_history_deadline_regression": "PASS",
+        "operating_date": "2026-11-09",
+        "newly_eligible_history": 0,
+        "remaining_history_short_targets": 15,
+        "port_city_eligible_history": 6,
+        "repeat_new_forecasts": 0,
+        "source_resources_byte_verified": 12,
+        "prior_available_controls": 2250,
+        "prior_available_regressions": 0,
+        "original_fact_changes": 0,
+        "valid_background_cache_advances": 1,
+        "context_errors": 0,
+        "original_football_fields_preserved": true,
+        "original_observation_times_preserved": true
       }
     }
   },
