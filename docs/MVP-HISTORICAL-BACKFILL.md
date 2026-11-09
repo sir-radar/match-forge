@@ -271,6 +271,14 @@ Empty advertised seasons report `ADVERTISED_BUT_UNUSABLE`. Stored results withou
 qualified identities or regulation-score evidence remain blocked; they cannot
 mark a history scope complete. Closed retained responses preserve their original
 acquisition times. New observations and admissions use actual execution times.
+
+Native scope work holds typed `BLOCKED_IDENTITY`, `BLOCKED_SCORE_BASIS`,
+`BLOCKED_HISTORY_ADMISSION` and `BLOCKED_RESULT_CONFLICT` results in the shared
+`BLOCKED` state. Background claims skip these scopes. An explicit `--refresh`
+releases only selected scopes whose retry deadline has passed, retaining attempt
+history and advancing the generation to fence old workers. Transient failures,
+empty advertised seasons and live-priority deferrals retain ordinary retries.
+
 Football-Data.co.uk discovery fails explicitly when its page budget leaves
 unvisited catalogue pages. Fixture reconciliation first selects nearby history
 IDs, then reads their latest dated eligibility decisions; historical registration

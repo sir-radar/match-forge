@@ -56,7 +56,7 @@ and shadow identities checked independently.
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
-| FR-010 | NOT_STARTED | Scope-specific failure/retry classification |
+| FR-010 | IN_PROGRESS | Qualification hold policy and populated recovery verified; operating rollout pending |
 | FR-011 | NOT_STARTED | Exact missing originals/manifests or lifecycle blockers |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
 | FR-013 | NOT_STARTED | Bounded backlog processing and measured throughput |
@@ -770,3 +770,47 @@ complete storage/API integration. The [FR-009 evidence](forecast-readiness-fr009
 pins source/test hashes, the native census and all verification receipts.
 Operating replay and remaining exact season/identity/canonical proof are still
 open; no additional operating history or forecast gain is claimed.
+
+## Phase C: FR-010 native scope qualification holds
+
+**IN_PROGRESS; no operating migration, scope replay or forecast gain.** The
+17:57:18 UTC inventory binds all 1,224 native scopes and 656 legacy queue rows to
+their work records. Native results include 238 typed identity failures, 96 mixed
+error results and 17 live-priority deferrals. Both completed scopes still have
+full qualified expected-ID coverage: 179/179 and 132/132. The expired French
+scope has 306 source-verified results and zero currently qualified; an expired
+lease does not qualify its history. Live-sync heartbeats are fresh. Queue age
+alone does not establish continuous deferral or justify a scheduling change.
+
+The shared driver previously retried every failure. Additive migration
+`202611090100` holds the four exact typed qualification failures only when the
+summary agrees with the error. Transient failures, empty advertised seasons,
+mixed results and live-priority deferrals keep their retry deadlines. Claims
+skip held scopes so ready siblings can proceed. The existing explicit refresh
+releases only selected due scopes, preserving attempts and advancing the shared
+generation. Existing failed scopes are not rewritten retrospectively.
+
+Six regression cases fail on the old behavior; eleven final policy cases pass.
+The two focused history integration modules pass all 41 cases. Tests cover
+cooldowns, selected refresh, sibling progress, attempt history and old-worker
+fencing. PostgreSQL's [queue-locking documentation](https://www.postgresql.org/docs/18/sql-select.html)
+supports retaining the existing `FOR UPDATE SKIP LOCKED` claim. No new scheduler,
+quota bypass, entitlement change or completion shortcut is introduced.
+
+A fresh exported-snapshot backup at 18:20:39 UTC contains 1,655,858,955 bytes,
+SHA256 `8b3467c627554feda99e5c01e38c6460403e8bfe2903d0c9198f13a82d12159d`.
+The new isolated restore matches all nine protected registration fingerprints
+and the captured prior function. Normal Goose upgrade/retry, all eleven policy
+cases in that populated restore, and captured-function forward repair/retry
+pass. All nine fingerprints and thirteen LEGACY routes remain exact after each
+stage. The exact pending PR #178 migration also passes normal ordered upgrade
+and retry in a separate empty database, preserving its constraints and the
+statement trigger. No missing-migration override or applied-version rewrite is
+used; the operating migration-order prerequisite remains unchanged.
+
+Final `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+exits **0**, including configured static checks, 1,819 Python unit tests,
+16 Rust tests, 107 web tests, builds, fresh migrations and complete storage/API
+integration. The [FR-010 evidence](forecast-readiness-fr010-scope-policy.json)
+pins the source, test and receipt hashes. Operating rollout remains pending
+the separate authorization required by remediation-plan acceptance step 7.

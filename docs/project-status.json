@@ -1306,7 +1306,7 @@
         "FR-007": "BLOCKED_DEPENDENCY",
         "FR-008": "IN_PROGRESS",
         "FR-009": "IN_PROGRESS",
-        "FR-010": "NOT_STARTED",
+        "FR-010": "IN_PROGRESS",
         "FR-011": "NOT_STARTED",
         "FR-012": "NOT_STARTED",
         "FR-013": "NOT_STARTED",
@@ -1522,6 +1522,22 @@
         "populated_exact_source_season_rows": 46,
         "old_error_shadow_replays": 58,
         "operating_replays": 0,
+        "new_forecasts": 0
+      },
+      "fr010": {
+        "status": "QUALIFICATION_HOLD_POLICY_VERIFIED_ROLLOUT_PENDING",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr010-scope-policy.json",
+        "migration": "202611090100",
+        "operating_migration_applied": false,
+        "native_scopes_examined": 1224,
+        "legacy_rows_examined": 656,
+        "new_policy_cases_passed": 11,
+        "populated_policy_cases_passed": 11,
+        "fresh_restore_and_forward_repair": "PASS",
+        "pending_pr178_compatibility": "PASS",
+        "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+        "verification_exit_code": 0,
+        "new_eligible_history": 0,
         "new_forecasts": 0
       }
     }

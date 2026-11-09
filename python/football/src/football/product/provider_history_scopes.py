@@ -400,6 +400,9 @@ def claim_scope(sync: OperationalProviderSync, competition: str | None, season: 
                  AND (scope.status='PENDING' OR NOT EXISTS (
                      SELECT 1 FROM football.work_items cancelled
                      WHERE cancelled.work_id=binding.work_id AND cancelled.state='CANCELLED'))
+                 AND NOT EXISTS (
+                     SELECT 1 FROM football.work_items held
+                     WHERE held.work_id=binding.work_id AND held.state='BLOCKED')
                  AND scope.next_attempt_at <= now()
                  AND (%s::text IS NULL OR scope.provider_competition_id = %s)
                  AND (%s::text IS NULL OR scope.season_label = %s)
