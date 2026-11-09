@@ -1293,7 +1293,7 @@
       "frozen_blocked_cohort": 196,
       "baseline_upcoming_verified_blockers": 189,
       "baseline_pending_context_reports": 146765,
-      "operating_migrations": 2,
+      "operating_migrations": 3,
       "operating_runtime_updated": false,
       "verified_new_forecast_availability": 19,
       "issue_statuses": {
@@ -1525,10 +1525,10 @@
         "new_forecasts": 0
       },
       "fr010": {
-        "status": "QUALIFICATION_HOLD_POLICY_VERIFIED_ROLLOUT_PENDING",
+        "status": "POLICY_OPERATING_VERIFIED_SCOPE_DEPENDENCIES_REMAIN",
         "evidence_ref": "docs/evidence/forecast-readiness-fr010-scope-policy.json",
         "migration": "202611090100",
-        "operating_migration_applied": false,
+        "operating_migration_applied": true,
         "native_scopes_examined": 1224,
         "legacy_rows_examined": 656,
         "new_policy_cases_passed": 11,
@@ -1538,7 +1538,16 @@
         "verification_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
         "verification_exit_code": 0,
         "new_eligible_history": 0,
-        "new_forecasts": 0
+        "new_forecasts": 0,
+        "operating_scope_replays": 1,
+        "operating_native_results_checked": 2,
+        "operating_new_history_rows": 0,
+        "operating_network_requests": 0,
+        "operating_retry_claim": "NONE_HELD_NO_NEW_ATTEMPT",
+        "operating_original_rows_preserved": true,
+        "operating_earlier_cutoff_preserved": true,
+        "operating_health_http": 200,
+        "operating_readiness_http": 200
       }
     }
   },

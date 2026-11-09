@@ -1,9 +1,9 @@
 {
   "status": "IN_PROGRESS",
-  "implementation": "QUALIFICATION_HOLD_POLICY_VERIFIED",
+  "implementation": "QUALIFICATION_HOLD_POLICY_VERIFIED_OPERATING",
   "migration": "202611090100",
-  "operating_migration_applied": false,
-  "operating_scope_replays": 0,
+  "operating_migration_applied": true,
+  "operating_scope_replays": 1,
   "new_eligible_history": 0,
   "new_forecasts": 0,
   "queue_inventory": {
@@ -180,7 +180,6 @@
     "missing_migration_override_used": false
   },
   "remaining_work": [
-    "Separately authorized operating rollout of the committed policy after fresh prerequisites.",
     "Retained-source replay of exact expired/partial scopes through existing owners; never mark completion without qualified expected-ID coverage.",
     "Identity/source-dependent history and live-priority catalogue acquisition remain held."
   ],
@@ -239,6 +238,91 @@
     {
       "path": ".local/forecast-readiness-execution/resume-20261109/fr010-populated-recovery-verified.log",
       "sha256": "c07df5b5e5347eec5a0006f55a96b398a7900548ac59d39f9565257784dc7d7c"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-shadow.json",
+      "sha256": "4b992ac4bbc861782375cbf283be00b79ea8092c250dcfaa15afb8d09a2e1239"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating.json",
+      "sha256": "34582832eaf2fe567b7bb6ceaef29b1c0a87e0c4748cf7033f71777e361e6702"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating-migration-apply.log",
+      "sha256": "bc526c80b4a9a3362e5f08990fc58105254fa5381f8703bdcbccd1e9defabbe5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating-migration-retry.log",
+      "sha256": "ef84bd578eb55c219c12585300272dcc054ad1031bb4ecc3ef484761e005f307"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-operating-postcheck.json",
+      "sha256": "fc7dd609b5e4d2b03565071709672467f78c7eeddb664c7f7f1fa2a9c7252d1c"
     }
-  ]
+  ],
+  "operating_rollout": {
+    "status": "PASS_WITH_WARNINGS",
+    "owner_authorization": "Explicit bounded rollout approval on 2026-11-09",
+    "code_commit": "a0af2da",
+    "started_at": "2026-11-09 18:43:12.056589+00:00",
+    "finished_at": "2026-11-09 18:44:57.868857+00:00",
+    "scope": {
+      "provider": "fotmob",
+      "competition": "10186",
+      "season": "2021"
+    },
+    "expected_native_ids": [
+      "3747099",
+      "3747100"
+    ],
+    "source_sha256": "43ebbacaef78e3f6024adf3fe6ad562d4199475717de00778f051bc7956296ad",
+    "source_acquired_at": "2026-10-14 13:26:44.132421+00:00",
+    "attempted_network_requests": 0,
+    "fetched": 2,
+    "skipped": 2,
+    "new_history_rows": 0,
+    "qualified_results": 0,
+    "sample_new_forecasts": 0,
+    "shared_state": "BLOCKED",
+    "retry_claim": "NONE_HELD_NO_NEW_ATTEMPT",
+    "original_rows_checked": {
+      "source_snapshots": 79879,
+      "source_resources": 81688,
+      "product_identity_admissions": 22859,
+      "product_match_history_decisions": 857748,
+      "model_artifacts": 5230,
+      "forecast_artifacts": 9990,
+      "product_forecasts": 18066,
+      "model_promotion_events": 4,
+      "artifact_retirement_events": 17
+    },
+    "changed_original_rows": {
+      "source_snapshots": 0,
+      "source_resources": 0,
+      "product_identity_admissions": 0,
+      "product_match_history_decisions": 0,
+      "model_artifacts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0,
+      "model_promotion_events": 0,
+      "artifact_retirement_events": 0
+    },
+    "original_fixture_and_observation_facts_preserved": true,
+    "earlier_cutoff": "2026-11-09 18:43:34.740431+00:00",
+    "earlier_history_before": [
+      311061,
+      "d257f8ebbbe47da12d7d75cd7ae76e19"
+    ],
+    "earlier_history_after": [
+      311061,
+      "d257f8ebbbe47da12d7d75cd7ae76e19"
+    ],
+    "context_errors": 0,
+    "routes_remain_legacy": 13,
+    "migration_applied_records": 1,
+    "health_http": 200,
+    "readiness_http": 200,
+    "function_sha256": "de55c925932b5c49fa51ad23c822f433aee85ee98a81543c181cee2f2b6c65b8",
+    "runtime_restart": false
+  }
 }

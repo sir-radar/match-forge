@@ -56,7 +56,7 @@ and shadow identities checked independently.
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
-| FR-010 | IN_PROGRESS | Qualification hold policy and populated recovery verified; operating rollout pending |
+| FR-010 | IN_PROGRESS | Approved operating hold policy/sample verified; source-dependent scopes remain |
 | FR-011 | NOT_STARTED | Exact missing originals/manifests or lifecycle blockers |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
 | FR-013 | NOT_STARTED | Bounded backlog processing and measured throughput |
@@ -773,7 +773,7 @@ open; no additional operating history or forecast gain is claimed.
 
 ## Phase C: FR-010 native scope qualification holds
 
-**IN_PROGRESS; no operating migration, scope replay or forecast gain.** The
+**IN_PROGRESS; approved policy rollout verified, scope dependencies remain.** The
 17:57:18 UTC inventory binds all 1,224 native scopes and 656 legacy queue rows to
 their work records. Native results include 238 typed identity failures, 96 mixed
 error results and 17 live-priority deferrals. Both completed scopes still have
@@ -812,5 +812,22 @@ Final `env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check
 exits **0**, including configured static checks, 1,819 Python unit tests,
 16 Rust tests, 107 web tests, builds, fresh migrations and complete storage/API
 integration. The [FR-010 evidence](forecast-readiness-fr010-scope-policy.json)
-pins the source, test and receipt hashes. Operating rollout remains pending
-the separate authorization required by remediation-plan acceptance step 7.
+pins the source, test and receipt hashes.
+
+The owner approved bounded rollout under remediation-plan acceptance step 7.
+At 18:43 UTC the operating
+preconditions passed, migration `202611090100` applied once through normal Goose,
+and repeat upgrade was a no-op. The exact closed FotMob `10186/2021` sample was
+first rehearsed in the populated restore, then replayed through the same owner
+in operating. Native IDs `3747099` and `3747100` reuse their authentic retained
+source: two rows skipped, zero HTTP requests, zero new history or eligible
+results, and zero new forecasts. The typed identity result enters shared
+`BLOCKED`; retry returns no claim and adds no attempt.
+
+All nine original populations, both fixtures' football facts, original
+observation facts and the earlier-cutoff history fingerprint remain exact.
+The migration record occurs once, context errors remain zero, all thirteen
+routes stay LEGACY, and health/readiness return HTTP 200. No runtime restart was
+required. This operational checkpoint is **PASS_WITH_WARNINGS**: the hold policy
+works, while the missing identity/source qualifications and expired/partial
+scope recovery remain open. No forecast gain is attributed to queue handling.
