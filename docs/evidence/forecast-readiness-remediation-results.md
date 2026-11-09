@@ -50,7 +50,7 @@ and shadow identities checked independently.
 | FR-001 | VERIFIED | 30 identities repaired; 15 verified forecasts; 15 history gaps remain FR-004 |
 | FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; 8 identity and 6 history holds; scoped follow-up running |
 | FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
-| FR-004 | IN_PROGRESS | Frozen 150 targets; five priority native scopes checked; exact season/source gaps remain |
+| FR-004 | IN_PROGRESS | Native catalogue acquired; exact lower-division requests deferred under existing guards |
 | FR-005 | BLOCKED_EVIDENCE | All 41 already revalidated; 33 archive seasons checked; dated counterpart/correction proof remains |
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
@@ -875,3 +875,22 @@ file hash is unchanged, health/readiness return HTTP 200 and all thirteen routes
 remain LEGACY. A fresh latest-role query finds zero approved missing models.
 No replacement artifact or new lifecycle policy is introduced. This disposition
 is **PASS**; FR-011 remains blocked on the 84 exact original files.
+
+## FR-004 native catalogue follow-up
+
+The guarded retry acquires and registers a genuine 86,027-byte FotMob catalogue
+at 18:57:54 UTC, SHA256
+`6cfddd007ca90c78bf412c885b06241167eda01dbcf4fa1b8459fe799cdf3067`.
+Its four relevant country entries advertise Indonesia Liga 2 `10056`, Vietnam
+qualification `9628` and cup `10161`; Ghana's Division One and Bangladesh's
+second tier are not advertised in this response. These are acquisition leads,
+not approved competition or club relationships.
+
+The first targeted catalogue request defers under `LIVE_SYNC_HAS_PRIORITY` until
+20:01:07 UTC. No retained response is registered under these three catalogue
+keys. The retained PitchAPI catalogue has 77 leagues and no entries for these four countries, using
+its actual `country_code` field. No further provider absence is inferred.
+The [FR-004 evidence](forecast-readiness-fr004-history.json) retains exact native
+IDs, country entries and receipt hashes. History imports, identity admissions and
+forecast gains remain zero for this acquisition checkpoint. Status validation,
+exact source/receipt assertions and `git diff --check` pass; code is unchanged.

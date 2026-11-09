@@ -1478,12 +1478,20 @@
         "elapsed_targets": 104,
         "future_targets": 46,
         "priority_teams": 5,
-        "retained_native_resources_verified": 29,
+        "retained_native_resources_verified": 30,
         "retained_dhaka_native_results": 18,
         "dhaka_missing_season_correspondence": true,
-        "catalogue_acquisition": "DEFERRED_LIVE_SYNC_HAS_PRIORITY",
+        "catalogue_acquisition": "REGISTERED_SOURCE_ONLY",
         "new_history_rows": 0,
-        "new_forecasts": 0
+        "new_forecasts": 0,
+        "lower_catalogue_acquisition": "DEFERRED_LIVE_SYNC_HAS_PRIORITY",
+        "lower_catalogue_deferred_until": "2026-11-09 20:01:07.396030+00:00",
+        "new_catalogue_bytes": 86027,
+        "current_native_lower_scope_ids": [
+          "10056",
+          "9628",
+          "10161"
+        ]
       },
       "fr005": {
         "status": "BLOCKED_EVIDENCE",

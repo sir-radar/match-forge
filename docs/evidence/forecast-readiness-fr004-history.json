@@ -34,7 +34,7 @@
     },
     {
       "team_id": "32ca94e2-5c56-5c31-b481-47003525e727",
-      "name": "Bắc Ninh",
+      "name": "B\u1eafc Ninh",
       "retained_rows": 7,
       "eligible_rows": 3,
       "frozen_targets": 4,
@@ -345,6 +345,16 @@
       "sha256": "7409db6074872d7b08e6bfd5e3b1be337e8f73e3071e8979cb4c9b8774449b4f",
       "size_bytes": 229625,
       "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "6687fff9-8168-5bd4-bf51-2e6669d50a4b",
+      "resource": "all-leagues",
+      "sha256": "6cfddd007ca90c78bf412c885b06241167eda01dbcf4fa1b8459fe799cdf3067",
+      "size_bytes": 86027,
+      "byte_verified": true,
+      "fetched_at": "2026-11-09 18:57:54.950914+00:00",
+      "kind": "CATALOGUE_ONLY"
     }
   ],
   "dhaka_2024_2025": {
@@ -380,12 +390,14 @@
   },
   "catalogue_acquisition": {
     "scope": "FR004 lower-division discovery; source registration only; no history/admission",
-    "status": "DEFERRED",
-    "reason": "LIVE_SYNC_HAS_PRIORITY",
-    "until": "2026-11-09 14:36:29.249498+00:00"
+    "status": "REGISTERED",
+    "snapshot_id": "6687fff9-8168-5bd4-bf51-2e6669d50a4b",
+    "sha256": "6cfddd007ca90c78bf412c885b06241167eda01dbcf4fa1b8459fe799cdf3067",
+    "fetched_at": "2026-11-09 18:57:54.950914+00:00",
+    "raw_bytes": 86027
   },
   "remaining_work": [
-    "Retry native catalogue only under existing live-priority/quota rules; inspect lower-division source scopes for Garudayaksa, Bac Ninh, Port City and City Club",
+    "Acquire native catalogue10056 and relevant9628/10161 only after the recorded20:01:07UTC deadline under existing guards; no Ghana Division One/Bangladesh second-tier scope is advertised by the current FotMob response.",
     "Qualify exact Bangladesh season/native identity evidence before replay; no season inference from dates",
     "Continue remaining deficient team/season slices; this checkpoint does not claim global research exhaustion"
   ],
@@ -3711,6 +3723,34 @@
     {
       "path": ".local/forecast-readiness-execution/resume-20261109/fr004-acquire-catalogue.json",
       "sha256": "20fc0b8dacdaab5aca7d46414c9cd481509cd9f0dcd4f1cddf56c99324684ac6"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-acquire-catalogue-retry-1755.json",
+      "sha256": "6d8a9799c6f1e825e18e8502046705819e4fdd004b34497ff9a1ecbba22866fd"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-acquire-catalogue-retry-after-1855.json",
+      "sha256": "0949be0e909d68c0e389d9661dbebaf16077dbcf98d39e3717ddb254cd1f3574"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-current-catalogue-scopes.json",
+      "sha256": "e4e972fb27593bd71418bb76d1f44ff497fabc8cbbc7480fd7fe9c401827606c"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-native-lower-catalogues.json",
+      "sha256": "1610fd861c3612d3be91254975217215eb44655d0c4fed973affa96239dcd544"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-retained-lower-catalogues.json",
+      "sha256": "2b2ca9bbae990aa5b340e12b1f2015d374e0871da13fb793a8cae96da71dddc0"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-retained-pitchapi-country-codes.json",
+      "sha256": "fb6e4b6574c78334332f12b1cabfb71e27c6b5a94b5df36fb6e6e563b313367f"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-retained-lower-source-keys.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
     }
   ],
   "research": [
@@ -3722,5 +3762,231 @@
       "url": "https://www.api-football.com/documentation-v3",
       "finding": "Official API reference consulted; retained resource and local configured cap, rather than advertised coverage, determine this acquisition scope."
     }
-  ]
+  ],
+  "initial_catalogue_acquisition": {
+    "scope": "FR004 lower-division discovery; source registration only; no history/admission",
+    "status": "DEFERRED",
+    "reason": "LIVE_SYNC_HAS_PRIORITY",
+    "until": "2026-11-09 14:36:29.249498+00:00"
+  },
+  "catalogue_country_scopes": [
+    {
+      "path": [
+        "countries",
+        7
+      ],
+      "entry": {
+        "ccode": "BAN",
+        "name": "Bangladesh",
+        "leagues": [
+          {
+            "id": 10443,
+            "name": "Bangladesh Football League",
+            "localizedName": "Bangladesh Football League",
+            "pageUrl": "/leagues/10443/overview/bangladesh-football-league",
+            "ccode": "BAN"
+          }
+        ],
+        "localizedName": "Bangladesh"
+      }
+    },
+    {
+      "path": [
+        "countries",
+        33
+      ],
+      "entry": {
+        "ccode": "GHA",
+        "name": "Ghana",
+        "leagues": [
+          {
+            "id": 522,
+            "name": "Premier League",
+            "localizedName": "Premier League",
+            "pageUrl": "/leagues/522/overview/premier-league",
+            "ccode": "GHA"
+          }
+        ],
+        "localizedName": "Ghana"
+      }
+    },
+    {
+      "path": [
+        "countries",
+        40
+      ],
+      "entry": {
+        "ccode": "IDN",
+        "name": "Indonesia",
+        "leagues": [
+          {
+            "id": 8983,
+            "name": "Super League",
+            "localizedName": "Super League",
+            "pageUrl": "/leagues/8983/overview/super-league",
+            "ccode": "IDN"
+          },
+          {
+            "id": 10056,
+            "name": "Liga 2",
+            "localizedName": "Liga 2",
+            "pageUrl": "/leagues/10056/overview/liga-2",
+            "ccode": "IDN"
+          },
+          {
+            "id": 10059,
+            "name": "President's Cup",
+            "localizedName": "President's Cup",
+            "pageUrl": "/leagues/10059/overview/presidents-cup",
+            "ccode": "IDN"
+          }
+        ],
+        "localizedName": "Indonesia"
+      }
+    },
+    {
+      "path": [
+        "countries",
+        92
+      ],
+      "entry": {
+        "ccode": "VIE",
+        "name": "Vietnam",
+        "leagues": [
+          {
+            "id": 9088,
+            "name": "V-League",
+            "localizedName": "V-League",
+            "pageUrl": "/leagues/9088/overview/v-league",
+            "ccode": "VIE"
+          },
+          {
+            "id": 10161,
+            "name": "C\u00fap Qu\u1ed1c gia",
+            "localizedName": "C\u00fap Qu\u1ed1c gia",
+            "pageUrl": "/leagues/10161/overview/cup-quoc-gia",
+            "ccode": "VIE"
+          },
+          {
+            "id": 10737,
+            "name": "Super Cup",
+            "localizedName": "Super Cup",
+            "pageUrl": "/leagues/10737/overview/super-cup",
+            "ccode": "VIE"
+          },
+          {
+            "id": 9628,
+            "name": "V-League Qualification",
+            "localizedName": "V-League Qualification",
+            "pageUrl": "/leagues/9628/overview/v-league-qualification",
+            "ccode": "VIE"
+          }
+        ],
+        "localizedName": "Vietnam"
+      }
+    }
+  ],
+  "lower_catalogue_acquisition": {
+    "scope": "SOURCE_ONLY; no history import, identity admission or forecast",
+    "catalogue_sha256": "6cfddd007ca90c78bf412c885b06241167eda01dbcf4fa1b8459fe799cdf3067",
+    "requests": [
+      {
+        "provider_competition_id": "10056",
+        "status": "DEFERRED",
+        "reason": "LIVE_SYNC_HAS_PRIORITY",
+        "until": "2026-11-09 20:01:07.396030+00:00"
+      }
+    ]
+  },
+  "retained_lower_catalogues": {
+    "scope": "RETAINED_CATALOGUE_READ_ONLY; historical metadata only",
+    "resources": [
+      {
+        "id": "10056",
+        "status": "ABSENT",
+        "sha256": null,
+        "fetched_at": null,
+        "details": null,
+        "all_available_seasons": null
+      },
+      {
+        "id": "9628",
+        "status": "ABSENT",
+        "sha256": null,
+        "fetched_at": null,
+        "details": null,
+        "all_available_seasons": null
+      },
+      {
+        "id": "10161",
+        "status": "ABSENT",
+        "sha256": null,
+        "fetched_at": null,
+        "details": null,
+        "all_available_seasons": null
+      }
+    ]
+  },
+  "retained_pitchapi_catalogue_check": {
+    "sha256": "3a10fea98cee050bff375f8045de69e21e76ba49ed02119058a0655bb596cf1b",
+    "fetched_at": "2026-11-06 20:17:00.664661+00:00",
+    "metadata_country_field": "country_code",
+    "country_codes": {
+      "DEN": 2,
+      "INT": 2,
+      "CZE": 1,
+      "SVK": 1,
+      "GER": 3,
+      "AUS": 1,
+      "SWE": 1,
+      "ISL": 1,
+      "AUT": 1,
+      "SUI": 2,
+      "BEL": 2,
+      "INT-2": 3,
+      "ENG": 4,
+      "PAR": 1,
+      "NED": 2,
+      "POL": 1,
+      "NOR": 1,
+      "CRO": 1,
+      "IND": 1,
+      "JPN": 2,
+      "KOR": 2,
+      "ESP": 2,
+      "PER": 1,
+      "ROU": 1,
+      "MEX": 1,
+      "POR": 1,
+      "ARG": 1,
+      "CHI": 1,
+      "ISR": 1,
+      "FRA": 2,
+      "USA": 4,
+      "BRA": 3,
+      "IRL": 1,
+      "EGY": 1,
+      "CAN": 1,
+      "RUS": 1,
+      "RSA": 1,
+      "SCO": 1,
+      "COL": 1,
+      "BOL": 1,
+      "VEN": 1,
+      "UAE": 1,
+      "QAT": 1,
+      "KSA": 3,
+      "ECU": 1,
+      "ITA": 2,
+      "CHN": 1,
+      "GRE": 1,
+      "TUR": 1,
+      "SRB": 1,
+      "THA": 1,
+      "FIN": 1,
+      "LVA": 1
+    },
+    "priority_country_entries": []
+  },
+  "exact_retained_lower_catalogue_or_season_keys": 0
 }
