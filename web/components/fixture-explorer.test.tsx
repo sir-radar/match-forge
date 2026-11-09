@@ -117,7 +117,7 @@ describe("FixtureExplorer", () => {
     } finally { vi.useRealTimers(); }
   });
 
-  it.each(["Unknown", "UNKNOWN"])("labels missing country %s clearly and keeps the API filter value", async (country) => {
+  it.each(["Unknown", "UNKNOWN"])("labels missing country %s clearly and filters it locally", async (country) => {
     const unknown = { ...competition, country, continent: "Unknown", type: "UNKNOWN" };
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const payload = String(input).includes("competitions")
@@ -128,7 +128,8 @@ describe("FixtureExplorer", () => {
     expect(await screen.findByRole("heading", { name: "Country unavailable — Premier League" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Country unavailable" })).toHaveValue(country);
     fireEvent.change(screen.getByLabelText("Country"), { target: { value: country } });
-    await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`country=${country}`))).toBe(true));
+    expect(screen.getByLabelText("Country")).toHaveValue(country);
+    expect(vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/fixtures?"))).toHaveLength(1);
   });
 
   it("keeps the last valid day when the date input is cleared", async () => {
@@ -282,19 +283,20 @@ describe("FixtureExplorer", () => {
     } finally { vi.useRealTimers(); }
   });
 
-  it("clears conflicting geography when selecting another competition from the rail", async () => {
+  it("keeps competition selection in the toolbar and clears it when geography changes", async () => {
     const other = { ...competition, id: "league-2", name: "Serie A", country: "Italy" };
     const original = fetch;
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).includes("/competitions?")
       ? Promise.resolve(new Response(JSON.stringify({ competitions: [competition, other] }))) : original(input, options)));
     render(<FixtureExplorer initialDate="2026-09-29" />);
     await screen.findByRole("option", { name: "England" });
-    fireEvent.change(screen.getByLabelText("Country"), { target: { value: "England" } });
-    fireEvent.click(screen.getByRole("button", { name: /Serie A/ }));
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("competition=league-2"), expect.anything()));
-    const last = vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/fixtures?" )).at(-1)!;
-    expect(new URL(String(last[0])).searchParams.has("country")).toBe(false);
-    expect(screen.getByLabelText("Country")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Competition"), { target: { value: "league-1" } });
+    fireEvent.change(screen.getByLabelText("Country"), { target: { value: "Italy" } });
+    expect(screen.getByLabelText("Competition")).toHaveValue("");
+    expect(screen.queryByRole("option", { name: "Premier League" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Competition coverage" })).not.toBeInTheDocument();
+    expect(screen.getByText("No fixtures found")).toBeInTheDocument();
+    expect(vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/fixtures?"))).toHaveLength(1);
   });
 
   it("retries context after a temporary report miss", async () => {
@@ -445,7 +447,7 @@ describe("FixtureExplorer", () => {
     fireEvent.click(screen.getByRole("button", { name: /Arsenal.*Chelsea/s }));
     expect(await screen.findByRole("heading", { name: "Current match statistics" })).toBeInTheDocument();
     expect(screen.getByText("Ball possession")).toBeInTheDocument();
-    expect(screen.getByText("55%")).toBeInTheDocument();
+    expect(screen.getByText("55%", { selector: ".live-stat b" })).toBeInTheDocument();
   });
 
   it("polls scheduled fixtures and sends the selected display timezone", async () => {
@@ -493,6 +495,69 @@ describe("FixtureExplorer", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("filters published predictions and actual results independently with exact immediate thresholds", async () => {
+    const items = [
+      { ...fixture, id: "won", status: "FINISHED", result_score_basis: "REGULATION_90", home_score: 2, away_score: 0, forecast: { ...fixture.forecast, probabilities: { home: .55, draw: .25, away: .2 } } },
+      { ...fixture, id: "lost", status: "FINISHED", result_score_basis: "REGULATION_90", home_score: 0, away_score: 1, forecast: { ...fixture.forecast, probabilities: { home: .58, draw: .22, away: .2 } } },
+      { ...fixture, id: "draw", status: "FINISHED", result_score_basis: "REGULATION_90", home_score: 0, away_score: 0, forecast: { ...fixture.forecast, probabilities: { home: .2, draw: .58, away: .22 } } },
+      { ...fixture, id: "missing", status: "FINISHED", result_score_basis: "REGULATION_90", home_score: 2, away_score: 0, forecast: null, forecast_availability: "NOT_ENOUGH_HISTORY" },
+      { ...fixture, id: "scheduled" },
+    ];
+    const original = fetch;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).includes("/fixtures?")
+      ? Promise.resolve(new Response(JSON.stringify({ groups: [{ competition, fixtures: items }] }))) : original(input, options)));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    await screen.findByText("5 matching fixtures of 5");
+    const requests = vi.mocked(fetch).mock.calls.length;
+    fireEvent.change(screen.getByLabelText("Predicted outcome"), { target: { value: "home" } });
+    fireEvent.click(screen.getByRole("button", { name: "55%" }));
+    expect(screen.getByText("2 matching fixtures of 5")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Actual match result"), { target: { value: "HOME_WON" } });
+    expect(screen.getByText("1 matching fixture of 5")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Minimum predicted probability (%)"), { target: { value: "58" } });
+    expect(screen.getByText("No fixtures found")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Actual match result"), { target: { value: "AWAY_WON" } });
+    expect(screen.getByText("1 matching fixture of 5")).toBeInTheDocument();
+    expect(screen.getByRole("slider")).toHaveAttribute("aria-valuenow", "58");
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowRight" });
+    expect(screen.getByLabelText("Minimum predicted probability (%)")).toHaveValue(59);
+    fireEvent.change(screen.getByLabelText("Predicted outcome"), { target: { value: "draw" } });
+    fireEvent.change(screen.getByLabelText("Actual match result"), { target: { value: "DRAW" } });
+    fireEvent.change(screen.getByLabelText("Minimum predicted probability (%)"), { target: { value: "58" } });
+    expect(screen.getByText("1 matching fixture of 5")).toBeInTheDocument();
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(requests);
+    fireEvent.click(screen.getByRole("button", { name: "Reset Filters" }));
+    expect(screen.getByText("5 matching fixtures of 5")).toBeInTheDocument();
+    expect(screen.getByLabelText("Predicted outcome")).toHaveValue("either");
+    expect(screen.getByLabelText("Actual match result")).toHaveValue("ALL");
+    expect(screen.getByLabelText("Minimum predicted probability (%)")).toHaveValue(null);
+    fireEvent.change(screen.getByLabelText("Minimum predicted probability (%)"), { target: { value: "0" } });
+    expect(screen.getByText("4 matching fixtures of 5")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Minimum predicted probability (%)"), { target: { value: "" } });
+    expect(screen.getByText("5 matching fixtures of 5")).toBeInTheDocument();
+  });
+
+  it("resets date, geography, team, status, availability and probability together", async () => {
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    await screen.findByText("1 matching fixture of 1");
+    fireEvent.click(screen.getByRole("button", { name: "Next day" }));
+    await screen.findByText("1 matching fixture of 1");
+    fireEvent.change(screen.getByLabelText("Continent"), { target: { value: "Europe" } });
+    fireEvent.change(screen.getByLabelText("Country"), { target: { value: "England" } });
+    fireEvent.change(screen.getByLabelText("Competition"), { target: { value: "league-1" } });
+    fireEvent.change(screen.getByLabelText("Team"), { target: { value: "missing" } });
+    fireEvent.change(screen.getByLabelText("Forecast"), { target: { value: "NOT_ENOUGH_HISTORY" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Finished/ }));
+    fireEvent.click(screen.getByRole("button", { name: "100%" }));
+    expect(screen.getByText("0 matching fixtures of 1")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reset Filters" }));
+    await screen.findByText("1 matching fixture of 1");
+    expect(screen.getByLabelText("Selected date")).toHaveValue("2026-09-29");
+    for (const label of ["Continent", "Country", "Competition", "Team", "Forecast"]) expect(screen.getByLabelText(label)).toHaveValue("");
+    expect(screen.getByRole("button", { name: /^All / })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Any" })).toHaveAttribute("aria-pressed", "true");
   });
 
 });
