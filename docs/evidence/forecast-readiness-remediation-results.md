@@ -51,7 +51,7 @@ and shadow identities checked independently.
 | FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; 8 identity and 6 history holds; scoped follow-up running |
 | FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
 | FR-004 | IN_PROGRESS | Frozen 150 targets; five priority native scopes checked; exact season/source gaps remain |
-| FR-005 | NOT_STARTED | Scottish historical namespace relationships |
+| FR-005 | BLOCKED_EVIDENCE | All 41 already revalidated; 33 archive seasons checked; dated counterpart/correction proof remains |
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | NOT_STARTED | Original-row canonical conflict evidence |
@@ -650,3 +650,42 @@ and current counts, all 18 Dhaka native IDs, source hashes, exact dependencies
 and private receipt hashes. Application code and dependencies are unchanged.
 Validation: evidence inventory/hash assertions, project-status validation and
 `git diff --check`.
+
+## Phase C: FR-005 Scottish revalidation checkpoint — 9 November 2026
+
+**BLOCKED_EVIDENCE.** All 41 affected current `World` mappings already have dated
+`UNRESOLVED: RETAINED_SOURCE_EVIDENCE_REQUIRED` admissions, appended between
+21:20:48 and 21:24:40 UTC on 3 November. Fresh verification agrees. This differs
+from the older investigation's stored `ORIGIN_ANCHOR` snapshot. This checkpoint
+adds no operating decision and does not re-admit a competition or merge clubs.
+
+The source census verifies 45 Scottish archive/CSV resources through the existing
+bounded ZIP/CSV readers. They contain 129 member occurrences over 33 seasons,
+1994/95 through 2026/27, and 50 exact labels. The 17,922 parsed occurrences overlap
+across resources and are neither distinct recovered fixtures nor forecast gains.
+All parsed Scottish rows retain the corrected country, source identifier and
+recorded kickoff precision. The existing 2000/01 cohort remains 180 rows per code.
+
+The full period inventory keeps Airdrie (1994/95–2001/02), Airdrie Utd (2002/03
+onward), historical Clydebank (through 2001/02), Gretna (2002/03–2006/07),
+Edinburgh City/FC Edinburgh and Raith/Raith Rvs as separate labels. These source
+periods are evidence to investigate, not an automatic club-continuity decision.
+
+Rollback-only revalidation in the owned populated restore processes each exact
+mapping twice and appends zero admissions: the existing decisions are already
+current. Both historical and current SC2 fingerprints remain exact. At the frozen
+3 November 15:43:07 cutoff SC2 still reconstructs 5,137 Football-Data.co.uk rows
+plus 186 API-Football rows. At the new cutoff only the 186 API rows are eligible,
+reflecting the already-dated exclusions. The historical 5,137 rows are preserved;
+this checkpoint claims no new exclusion or recovery.
+
+The remaining correction needs an independently qualified dated target for each
+legacy origin. The current linked-correction implementation supports proven FDO
+and replaced FotMob cases, not an unproved Scottish namespace/continuity merge.
+No generic origin allowlist, source-country rewrite or unsupported correction is
+introduced. The [41-mapping census](forecast-readiness-fr005-scottish.json) records
+all periods, exact source hashes and rollback/preservation receipts.
+
+Validation: source/resource and 41-mapping inventory assertions, rollback/retry
+and historical/current fingerprint checks, project-status validation and
+`git diff --check`. Application code and dependencies are unchanged.

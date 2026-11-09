@@ -1301,7 +1301,7 @@
         "FR-002": "IN_PROGRESS",
         "FR-003": "BLOCKED_DEPENDENCY",
         "FR-004": "IN_PROGRESS",
-        "FR-005": "NOT_STARTED",
+        "FR-005": "BLOCKED_EVIDENCE",
         "FR-006": "VERIFIED",
         "FR-007": "BLOCKED_DEPENDENCY",
         "FR-008": "NOT_STARTED",
@@ -1483,6 +1483,18 @@
         "dhaka_missing_season_correspondence": true,
         "catalogue_acquisition": "DEFERRED_LIVE_SYNC_HAS_PRIORITY",
         "new_history_rows": 0,
+        "new_forecasts": 0
+      },
+      "fr005": {
+        "status": "BLOCKED_EVIDENCE",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr005-scottish.json",
+        "affected_mappings": 41,
+        "already_revalidated_mappings": 41,
+        "verified_scottish_resources": 45,
+        "archive_seasons": 33,
+        "shadow_revalidation": "PASS_IDEMPOTENT_ALREADY_REVALIDATED",
+        "historical_sc2_football_data_uk_rows_preserved": 5137,
+        "new_operating_decisions": 0,
         "new_forecasts": 0
       }
     }
