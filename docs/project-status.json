@@ -1307,7 +1307,7 @@
         "FR-008": "IN_PROGRESS",
         "FR-009": "IN_PROGRESS",
         "FR-010": "IN_PROGRESS",
-        "FR-011": "NOT_STARTED",
+        "FR-011": "BLOCKED_EXTERNAL_AND_OWNER_DECISION",
         "FR-012": "NOT_STARTED",
         "FR-013": "NOT_STARTED",
         "FR-014": "NOT_STARTED",
@@ -1548,6 +1548,25 @@
         "operating_earlier_cutoff_preserved": true,
         "operating_health_http": 200,
         "operating_readiness_http": 200
+      },
+      "fr011": {
+        "status": "BLOCKED_EXTERNAL_AND_OWNER_DECISION",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr011-originals.json",
+        "raw_cases_checked": 33,
+        "dataset_cases_checked": 22,
+        "model_cases_checked": 26,
+        "registered_exact_files_missing": 84,
+        "retained_candidate_files_hashed": 10449,
+        "retained_archives_checked": 3,
+        "exact_byte_candidates": 0,
+        "affected_forecast_links": 18,
+        "affected_forecasts": 13,
+        "existing_retirement_events_verified": 13,
+        "affected_current_promotions": 1,
+        "retirement_proposal_rehearsal": "PASS_ROLLBACK_ONLY",
+        "operating_governance_events": 0,
+        "operating_file_publications": 0,
+        "new_forecasts": 0
       }
     }
   },

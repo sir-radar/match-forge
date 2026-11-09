@@ -57,7 +57,7 @@ and shadow identities checked independently.
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
 | FR-010 | IN_PROGRESS | Approved operating hold policy/sample verified; source-dependent scopes remain |
-| FR-011 | NOT_STARTED | Exact missing originals/manifests or lifecycle blockers |
+| FR-011 | BLOCKED_EXTERNAL_AND_OWNER_DECISION | Exact originals absent from searched copies; one unverifiable model still has an approved role |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
 | FR-013 | NOT_STARTED | Bounded backlog processing and measured throughput |
 | FR-014 | NOT_STARTED | Independent StatsBomb native-target proof; account for PR #178 |
@@ -831,3 +831,37 @@ routes stay LEGACY, and health/readiness return HTTP 200. No runtime restart was
 required. This operational checkpoint is **PASS_WITH_WARNINGS**: the hold policy
 works, while the missing identity/source qualifications and expired/partial
 scope recovery remain open. No forecast gain is attributed to queue handling.
+
+## Phase C: FR-011 authentic originals and governance
+
+**BLOCKED_EXTERNAL_AND_OWNER_DECISION.** Fresh read-only checks cover all frozen
+33 raw registrations, 22 datasets and 26 models. All 84 registered file paths
+are missing. A bounded search checks registered basenames, checksum filenames
+and three retained backup archives: 10,449 candidate files and five archive
+members are hashed, with zero exact originals found. Tool caches are excluded;
+arbitrarily renamed files are not exhaustively scanned. The Scottish legacy ZIP
+passes and remains outside the missing-original cohort. No bytes, manifests,
+registrations or historical facts are changed.
+
+The full registered dependency checks confirm 18 model links across thirteen
+forecasts and all thirteen existing retirement events. One missing model,
+`01a06fc4-d748-725e-853e-359f4b651cbb`, still has the latest `BASELINE_APPROVED`
+event for `match_result/baseline`. Forecast retirement does not retire this role
+or restore its model manifest. The product forecast preparer reads its explicit
+artifact file; this audit changes neither that file nor the serving champion.
+
+An append-only `RETIRED` event is prepared through the existing promotion
+registry. Its rollback-only populated rehearsal publishes once, verifies retry,
+preserves every prior promotion and the original 26 model/thirteen forecast rows,
+then rolls back completely. Executing it would leave that role without an
+approved model. [Model governance](../model-governance.md#promotion) requires an
+explicit retirement event; the owner decision remains pending. No replacement
+model or changed evaluation is proposed. Missing source/dataset/model originals
+continue to block integrity and parity independently of this decision.
+
+The [81-case evidence](forecast-readiness-fr011-originals.json) records every
+registered path/hash, dependency, existing retirement, search scope and proposed
+event. Verification uses the existing resource/dataset/model verifiers, exact
+file hashes, read-only dependency queries, rollback/retry assertions,
+project-status validation and `git diff --check`. Production code is unchanged;
+its complete FR-010 aggregate remains valid.
