@@ -126,6 +126,12 @@ does not establish trust: the ordinary retained-source admission checks still
 qualify it. Shared history workers publish this mapping inside their existing
 fenced database step, with provider I/O outside that transaction.
 
+football-data.org fixture materialization uses the returned `season.startDate`
+(`YYYY-MM-DD`) to select the season year. Missing or malformed source season
+metadata is rejected; the current competition label is not a historical fallback.
+A source season that contradicts an existing native match registration is also
+rejected, preserving the registered identity until separately qualified recovery.
+
 Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
 
 ## Independent team identity corrections

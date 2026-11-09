@@ -1435,18 +1435,9 @@ class ProductSync:
             self._fallback_competition_mapping(
                 str(competition["code"]), competition_id, snapshot_id, observed_at
             )
-            with self.connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT season_label FROM football.product_competitions
-                    WHERE competition_id = %s
-                    """,
-                    (competition_id,),
-                )
-                season_row = cursor.fetchone()
-            if season_row is None:
+            if not self._competition_exists(competition_id):
                 continue
-            season = int(season_row[0])
+            season = _football_data_fixture_season(row)
             season_id = stable_id("season", competition_id, season)
             self._ensure_season(competition_id, season_id)
             home = _mapping(row, "homeTeam")
@@ -1457,9 +1448,19 @@ class ProductSync:
                 UTC
             )
             provider_fixture_id = str(_integer(row, "id"))
-            match_id = self._mapped_match_id(
-                FALLBACK_PROVIDER_CODE, provider_fixture_id
-            ) or fixture_identity(competition_id, str(season), kickoff, home_id, away_id)
+            mapped = self._mapped_match_id(FALLBACK_PROVIDER_CODE, provider_fixture_id)
+            if mapped is not None:
+                registered = self.connection.execute(
+                    "SELECT competition_id,season_id FROM football.matches WHERE id=%s",
+                    (mapped,),
+                ).fetchone()
+                if registered != (competition_id, season_id):
+                    raise ValueError(
+                        "football-data.org fixture season contradicts registered match"
+                    )
+            match_id = mapped or fixture_identity(
+                competition_id, str(season), kickoff, home_id, away_id
+            )
             status = _football_data_status(str(row.get("status")))
             score_basis = _football_data_score_basis(row)
             score = _mapping(_mapping(row, "score"), "fullTime")
@@ -2650,6 +2651,20 @@ def _league_seasons(fixtures: Iterable[Mapping[str, Any]]) -> list[tuple[int, in
         for row in fixtures
     }
     return sorted(values, key=lambda item: (item[0] not in FOOTBALL_DATA_COMPETITIONS, item))
+
+
+def _football_data_fixture_season(row: Mapping[str, Any]) -> int:
+    season = _mapping(row, "season")
+    start = season.get("startDate")
+    if not isinstance(start, str):
+        raise ValueError("football-data.org fixture season startDate is required")
+    try:
+        parsed = date.fromisoformat(start)
+        if parsed.isoformat() != start:
+            raise ValueError("season startDate must use YYYY-MM-DD")
+        return parsed.year
+    except ValueError as error:
+        raise ValueError("football-data.org fixture season startDate is invalid") from error
 
 
 def _football_data_status(value: str) -> str:

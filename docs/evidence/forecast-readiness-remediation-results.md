@@ -55,7 +55,7 @@ and shadow identities checked independently.
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
-| FR-009 | NOT_STARTED | Current unmatched revisions and exact season metadata |
+| FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
 | FR-010 | NOT_STARTED | Scope-specific failure/retry classification |
 | FR-011 | NOT_STARTED | Exact missing originals/manifests or lifecycle blockers |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
@@ -719,3 +719,54 @@ metadata defect before any such operational recovery.
 complete 46-ID list, two Málaga neighborhoods, shadow eligibility and private
 receipt hashes. Validation: source checksums, per-row rollback, combined native
 lineage/retry/cutoff assertions, project-status validation and `git diff --check`.
+
+## Phase C: FR-009 source-season implementation
+
+**Source-season fix VERIFIED; FR-009 remains IN_PROGRESS.** FDO fixture
+materialization now uses each returned `season.startDate`, rather than the current
+competition label. The parser requires a real canonical `YYYY-MM-DD` date.
+Missing/malformed metadata and a source season that contradicts an existing
+native registration fail explicitly. Existing registered IDs are preserved.
+No migration, dependency, configuration, forecast mathematics or origin policy
+changes. The existing competition-existence helper is reused.
+
+Seven integration cases failed on the old behavior. Nine final regression cases
+cover historical/current seasons, malformed/missing dates, stable replay after
+a competition label changes, fixture/history identity agreement and rejection
+of a changed season for an existing native ID. All 29 fixture-reconciliation
+cases pass, including the prior mismatch and quarantine safeguards.
+
+In the populated owned restore, all 46 authentic Coventry inputs materialize
+with their explicit 2025 source season, matching the 42 previously characterized
+history IDs. Retry adds zero history; the earlier knowledge-cutoff history
+fingerprint remains exact. These transactions roll back. Coventry operating
+imports remain withheld pending the FR-008 identity/unique-representative proof.
+
+The read-only 14:11:41 UTC native inventory examines 95,402 provider/native keys.
+It separates historical unmatched revisions from 13,292 latest null observations,
+then separates 57 current accepted fixture bindings. The remaining diagnostic
+population is 10,975 FotMob and 2,260 PitchAPI observations, including 10,779 and
+2,083 finished observations respectively. These are diagnostic populations, not
+new canonical matches or forecast promises. The historical diagnostics API
+contract and immutable observations are unchanged. Two initial unbounded
+diagnostic joins time out at the existing 20-second limit; indexed 256-key
+queries complete the census without raising that limit or changing product SQL.
+
+All three source resources behind 58 old missing-function failures verify
+exactly. The function now exists. A combined rollback-only replay through the
+existing owner reconciles all 58 associations and retries to the same fixtures.
+All remain provisional: 25 retain ineligible history, and 33 with unknown score
+basis correctly withhold history. Global eligible history and earlier-cutoff
+fingerprints remain exact. The first private receipt check incorrectly assumed
+every replay should create history; it stopped and rolled back. The corrected
+check records withheld history separately and still requires every fixture to
+remain provisional and never eligible. No production guard was weakened.
+
+Final validation after the last code change:
+`env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration`
+**exits 0**: 1,819 Python unit tests, 16 Rust tests, 107 web tests, configured
+format/lint/type/complexity/architecture checks, builds, fresh migrations and
+complete storage/API integration. The [FR-009 evidence](forecast-readiness-fr009-source-seasons.json)
+pins source/test hashes, the native census and all verification receipts.
+Operating replay and remaining exact season/identity/canonical proof are still
+open; no additional operating history or forecast gain is claimed.
