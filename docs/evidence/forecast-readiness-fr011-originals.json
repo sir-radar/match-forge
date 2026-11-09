@@ -1,10 +1,10 @@
 {
-  "status": "BLOCKED_EXTERNAL_AND_OWNER_DECISION",
+  "status": "BLOCKED_EXTERNAL",
   "observed_at": "2026-11-09 19:09:20.488974+00:00",
   "database_mode": "REPEATABLE_READ_READ_ONLY",
   "operating_file_publications": 0,
   "operating_registration_changes": 0,
-  "operating_governance_events": 0,
+  "operating_governance_events": 1,
   "new_forecasts": 0,
   "registered_file_checks": [
     {
@@ -1824,7 +1824,19 @@
         "dataset_versions",
         "FOREIGN KEY (dataset_version_id, source_snapshot_id) REFERENCES dataset_versions(id, source_snapshot_id)"
       ]
-    ]
+    ],
+    "current_promotions_after_retirement": [
+      {
+        "id": "e20cd209-d4f9-5e65-8d60-789345577327",
+        "role": "match_result/baseline",
+        "created_at": "2026-11-09T19:21:02.6285+00:00",
+        "designation": "RETIRED",
+        "recorded_at": "2026-11-09T19:21:02.619034+00:00",
+        "evaluation_run_id": "01a06fc4-d748-7267-9236-0037c8254c3e",
+        "model_artifact_id": "01a06fc4-d748-725e-853e-359f4b651cbb"
+      }
+    ],
+    "affected_approved_promotions_after_retirement": 0
   },
   "search": {
     "roots": [
@@ -1945,7 +1957,7 @@
     }
   ],
   "governance_proposal": {
-    "status": "ROLLBACK_REHEARSAL_PASS_OWNER_DECISION_REQUIRED",
+    "status": "OWNER_APPROVED_OPERATING_VERIFIED",
     "prior_event": {
       "id": "01a06fc4-d748-726f-9663-0aff42a657e6",
       "role": "match_result/baseline",
@@ -1979,7 +1991,6 @@
   },
   "remaining_work": [
     "Supply authentic bytes or an additional retained backup location for the exact missing registrations.",
-    "Owner decision on the proposed RETIRED event for the unverifiable match_result/baseline model.",
     "Full integrity and parity gates remain blocked; forecast retirement does not restore source/dataset/model bytes."
   ],
   "research": [
@@ -2008,6 +2019,59 @@
     {
       "path": ".local/forecast-readiness-execution/resume-20261109/fr011-retirement-preview.log",
       "sha256": "677948d5e2b9f5c1ad40d4e5865830dde7e77f30b7ff9f735ebb9e9470a90046"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr011-retirement-operating.json",
+      "sha256": "2a7846f85764557496028a1cbe6513aa24f0e25986809766ae9dd5ea38360fe7"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr011-retirement-operating.log",
+      "sha256": "fd2928aa8b9f39dc60c4e890f6fca29e1a240f08b6d0ffe46082e00686ca03a3"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr011-promotions-after-retirement.json",
+      "sha256": "2b2c2cd782bb30309969932b58cd6fe5b4546a8434ccc235ed4cdcd6239aa177"
     }
-  ]
+  ],
+  "operating_retirement": {
+    "status": "PASS",
+    "owner_authorization": "Explicit approval of exact model and role on 2026-11-09",
+    "event": {
+      "promotion_event_id": "e20cd209-d4f9-5e65-8d60-789345577327",
+      "model_artifact_id": "01a06fc4-d748-725e-853e-359f4b651cbb",
+      "evaluation_run_id": "01a06fc4-d748-7267-9236-0037c8254c3e",
+      "role": "match_result/baseline",
+      "designation": "RETIRED",
+      "recorded_at": "2026-11-09 19:21:02.619034+00:00"
+    },
+    "first": "published",
+    "retry": "verified_existing",
+    "event_records": 1,
+    "latest_role_designation": "RETIRED",
+    "prior_promotion_rows_preserved": 4,
+    "original_rows": {
+      "model_artifacts": 5230,
+      "model_artifact_files": 5230,
+      "baseline_forecasts": 9985,
+      "forecast_artifacts": 9990,
+      "product_forecasts": 18075,
+      "artifact_retirement_events": 17
+    },
+    "changed_original_rows": {
+      "model_artifacts": 0,
+      "model_artifact_files": 0,
+      "baseline_forecasts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0,
+      "artifact_retirement_events": 0
+    },
+    "serving_champion_sha256_before_and_after": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "health_http": 200,
+    "readiness_http": 200,
+    "routes_remain_legacy": 13,
+    "started_at": "2026-11-09 19:21:00.037073+00:00",
+    "finished_at": "2026-11-09 19:21:04.972636+00:00",
+    "new_model_or_replacement": false,
+    "file_publications": 0
+  }
 }
