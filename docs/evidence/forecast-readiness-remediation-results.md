@@ -47,10 +47,10 @@ and shadow identities checked independently.
 
 | Issue | Status | Next required evidence or work |
 | --- | --- | --- |
-| FR-001 | NOT_STARTED | Exact Ghana participant continuity and Port City history |
+| FR-001 | VERIFIED | 30 identities repaired; 15 verified forecasts; 15 history gaps remain FR-004 |
 | FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; 8 identity and 6 history holds; scoped follow-up running |
 | FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
-| FR-004 | NOT_STARTED | Authentic missing team/season slices |
+| FR-004 | IN_PROGRESS | Frozen 150 targets; five priority native scopes checked; exact season/source gaps remain |
 | FR-005 | NOT_STARTED | Scottish historical namespace relationships |
 | FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
@@ -609,3 +609,44 @@ The existing [FR-001 inventory](forecast-readiness-fr001-identities.json) record
 all 30 before/after results, forecast lineage, source hashes and private receipt
 checksums. Local execution and forensic receipts remain under
 `resume-20261109`. FR-004 proceeds for the legitimate remaining history gaps.
+
+## Phase B: FR-004 native-history checkpoint — 9 November 2026
+
+**IN_PROGRESS; no new history or forecast gain.** A read-only snapshot at
+13:32:09 UTC preserves all 150 original raw-deficient target IDs, including
+122 history-only and 28 identity-dependent targets. Of these, 104 kickoffs have
+elapsed and 46 remain future. Sixteen now have ten eligible results per team;
+15 are elapsed and the one future target already reports forecast availability.
+These current counts include independent background changes and are not recovery
+attribution. No retrospective forecasts are published.
+
+The existing importers parse all 28 retained FotMob league resources after exact
+SHA256 checks; one API-Football resource in the native-scope inventory is also
+byte-verified. The five priority teams still have six eligible results for Port
+City, five for Garudayaksa, three for Bắc Ninh, two for Dhaka Wanderers and four
+for City Club. Prior top-flight seasons contain no native Port City, Garudayaksa
+or Bắc Ninh participant rows. Lower-division coverage requires further native
+catalogue evidence. The [GFA promotion report](https://www.ghanafa.org/index.php/port-city-fc-clinch-ghana-premier-league-qualification-with-four-games-to-spare)
+confirms Port City's earlier senior participation, without supplying importable
+native match records.
+
+Dhaka's retained FotMob 2024/2025 resource contains 18 exact finished native
+match IDs: six provisional fixture/history rows and 12 unmatched observations.
+The current importer rejects the missing reviewed season correspondence;
+opponent identities also need qualification. The retained API-Football
+`history-398-2024` source was independently byte-verified: its 90 results cover
+December 2023 to May 2024 and exclude Dhaka's native team ID. It is not a
+replacement for the following season. The configured 2024 API season cap is
+preserved; neither season labels nor club links are inferred from dates/names.
+
+One supported-client FotMob `all_leagues` acquisition attempt deferred with
+`LIVE_SYNC_HAS_PRIORITY`, before any HTTP request or source registration. Its
+receipt records 14:36:29 UTC as the next attempt time. No quota, live-priority
+guard, admission or source constraint was changed. Remaining team/season slices
+and lower-division discovery remain open; this is not an exhaustion claim.
+
+The [150-target evidence](forecast-readiness-fr004-history.json) records original
+and current counts, all 18 Dhaka native IDs, source hashes, exact dependencies
+and private receipt hashes. Application code and dependencies are unchanged.
+Validation: evidence inventory/hash assertions, project-status validation and
+`git diff --check`.

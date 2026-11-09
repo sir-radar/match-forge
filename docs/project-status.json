@@ -1300,7 +1300,7 @@
         "FR-001": "VERIFIED",
         "FR-002": "IN_PROGRESS",
         "FR-003": "BLOCKED_DEPENDENCY",
-        "FR-004": "NOT_STARTED",
+        "FR-004": "IN_PROGRESS",
         "FR-005": "NOT_STARTED",
         "FR-006": "VERIFIED",
         "FR-007": "BLOCKED_DEPENDENCY",
@@ -1469,6 +1469,21 @@
         "context_errors": 0,
         "original_football_fields_preserved": true,
         "original_observation_times_preserved": true
+      },
+      "fr004": {
+        "status": "IN_PROGRESS",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr004-history.json",
+        "knowledge_cutoff": "2026-11-09 13:32:09.271471+00:00",
+        "frozen_targets": 150,
+        "elapsed_targets": 104,
+        "future_targets": 46,
+        "priority_teams": 5,
+        "retained_native_resources_verified": 29,
+        "retained_dhaka_native_results": 18,
+        "dhaka_missing_season_correspondence": true,
+        "catalogue_acquisition": "DEFERRED_LIVE_SYNC_HAS_PRIORITY",
+        "new_history_rows": 0,
+        "new_forecasts": 0
       }
     }
   },

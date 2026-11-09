@@ -1,0 +1,3726 @@
+{
+  "status": "IN_PROGRESS",
+  "knowledge_cutoff": "2026-11-09 13:32:09.271471+00:00",
+  "frozen_targets": 150,
+  "original_history_only_targets": 122,
+  "original_identity_dependent_targets": 28,
+  "elapsed_targets": 104,
+  "future_targets": 46,
+  "current_history_sufficient_targets": 16,
+  "current_history_sufficient_future_targets": 1,
+  "gain_attribution": "Current count changes and the already-available future target are not attributed to this task. No retrospective forecast is published.",
+  "new_imported_results": 0,
+  "new_forecasts": 0,
+  "priority_teams": [
+    {
+      "team_id": "c42d4386-d73c-5ed3-b8b3-aee5c5b14384",
+      "name": "Dhaka Wanderers",
+      "retained_rows": 9,
+      "eligible_rows": 2,
+      "frozen_targets": 6,
+      "future_targets": 6,
+      "native_ids": [
+        {
+          "provider": "api_football",
+          "id": "25415",
+          "trusted_at_cutoff": true
+        },
+        {
+          "provider": "fotmob",
+          "id": "1695973",
+          "trusted_at_cutoff": true
+        }
+      ]
+    },
+    {
+      "team_id": "32ca94e2-5c56-5c31-b481-47003525e727",
+      "name": "Bắc Ninh",
+      "retained_rows": 7,
+      "eligible_rows": 3,
+      "frozen_targets": 4,
+      "future_targets": 4,
+      "native_ids": [
+        {
+          "provider": "api_football",
+          "id": "26601",
+          "trusted_at_cutoff": true
+        },
+        {
+          "provider": "fotmob",
+          "id": "1801359",
+          "trusted_at_cutoff": true
+        }
+      ]
+    },
+    {
+      "team_id": "7c545aa8-34d3-5777-a57f-59aa43981ffb",
+      "name": "City Club",
+      "retained_rows": 4,
+      "eligible_rows": 4,
+      "frozen_targets": 4,
+      "future_targets": 4,
+      "native_ids": [
+        {
+          "provider": "api_football",
+          "id": "28429",
+          "trusted_at_cutoff": true
+        },
+        {
+          "provider": "fotmob",
+          "id": "2251316",
+          "trusted_at_cutoff": true
+        }
+      ]
+    },
+    {
+      "team_id": "b8c2ba83-f1d3-5b68-9b83-4a11ccd94462",
+      "name": "Garudayaksa",
+      "retained_rows": 10,
+      "eligible_rows": 5,
+      "frozen_targets": 10,
+      "future_targets": 10,
+      "native_ids": [
+        {
+          "provider": "api_football",
+          "id": "26645",
+          "trusted_at_cutoff": true
+        },
+        {
+          "provider": "fotmob",
+          "id": "1118023",
+          "trusted_at_cutoff": true
+        }
+      ]
+    },
+    {
+      "team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "name": "Port City",
+      "retained_rows": 6,
+      "eligible_rows": 6,
+      "frozen_targets": 15,
+      "future_targets": 15,
+      "native_ids": [
+        {
+          "provider": "api_football",
+          "id": "26805",
+          "trusted_at_cutoff": true
+        },
+        {
+          "provider": "fotmob",
+          "id": "2103806",
+          "trusted_at_cutoff": true
+        }
+      ]
+    }
+  ],
+  "retained_resources": [
+    {
+      "provider": "api_football",
+      "snapshot_id": "d8c4ee02-dd46-57f5-850d-98549161656e",
+      "resource": "history-570-2024",
+      "sha256": "00d4d7ab71f8a408fa76237865caddb18107a6bb11b48c9af53ba290a3dec734",
+      "size_bytes": 288652,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "264fd856-ad23-57eb-8f7a-d996a7da7610",
+      "resource": "league-10443-2022/2023",
+      "sha256": "792df1f8c3e54d48a709522d37c2f05da7b3b4bb0b844db46c79dc9af6807c10",
+      "size_bytes": 266693,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "37f4174e-3598-5585-88b4-80097993f45b",
+      "resource": "league-10443-2023/2024",
+      "sha256": "faf06044e473c471eec002a4597afe94afa4271d065e0d1fc393de61e8452289",
+      "size_bytes": 248523,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "37f50359-0094-5863-a77d-797675abca1b",
+      "resource": "league-10443-2024/2025",
+      "sha256": "422f6e0631dccc315f6f2a54bf87acaa67bafbd19f7bac31037548febf4b1398",
+      "size_bytes": 249830,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "68f92aff-c382-5bde-9113-baf937b69161",
+      "resource": "league-10443-2025/2026",
+      "sha256": "79837943edbb1e496d603a8acad75d28eba856adcb0111b6e2bc0da0402f41bc",
+      "size_bytes": 244877,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "d8064e64-4c84-587e-aab6-8f4621b60db1",
+      "resource": "league-10443-2026/2027",
+      "sha256": "2693b700edc8e3ba850eb85005c12fde72dea760995bbed74cabc525f0896c59",
+      "size_bytes": 197404,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "b19ade17-42f8-5939-aaae-e3595383e3d0",
+      "resource": "league-522-2020/2021",
+      "sha256": "830e4cbacad11239d1fbcdb88dc17ed2a16378cb8f543bdcc83552c89142b7a9",
+      "size_bytes": 640552,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "860fe8a0-334e-5b9b-9613-52f2b0b33311",
+      "resource": "league-522-2021/2022",
+      "sha256": "5889e28cfebf8145d21078a5bb04c09af1c8e4b3978910649ace61ece5bac582",
+      "size_bytes": 637968,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "d10feaa6-6d0e-5314-af45-cea66d35d4e3",
+      "resource": "league-522-2022/2023",
+      "sha256": "b1cbf7f466d6831f593b807ca4b45c4049833f496a5886709c6f072632015c34",
+      "size_bytes": 637879,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "c5744d83-cc58-56d6-aa32-5adfedfde087",
+      "resource": "league-522-2023/2024",
+      "sha256": "4c46b78f457133c857f4e5d1620f61b4c0336a8e96cf4d9f0c4787410153f4a6",
+      "size_bytes": 638021,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "db675310-3cdd-5faf-b2c4-e1d11131f935",
+      "resource": "league-522-2024/2025",
+      "sha256": "7d7f4291f5eff862380e3164e9f9d1deddcc6acc2ead2a6ba50b83e4f962044a",
+      "size_bytes": 487092,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "2b5535a2-e8e5-562e-8e58-32236ca1cc1b",
+      "resource": "league-522-2025/2026",
+      "sha256": "a8f96409ccf51e3c16bc592d3493a642319a2c5fb4a5d46e54bca8d5b261dbb8",
+      "size_bytes": 639234,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+      "resource": "league-522-2026/2027",
+      "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+      "size_bytes": 549319,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "f0a32dab-19b5-5ebd-9d1e-36ae6bdbd0a9",
+      "resource": "league-8983-2020",
+      "sha256": "e888f6ea1291d3db507529e101e2168ebaafe2079a8168a02515533cd37566b4",
+      "size_bytes": 570019,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "22768ff3-4cf6-5466-b110-d62d80aa6df3",
+      "resource": "league-8983-2021/2022",
+      "sha256": "44e4cc08e7be151bea0d80281461dcfaad5695f6b872610399488880531784cd",
+      "size_bytes": 651652,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "92c0a963-f9d9-5927-9b77-dbbd11a96ea6",
+      "resource": "league-8983-2021/2023",
+      "sha256": "0068c02fdc02e45c0647b180aad8c75ed74d1ee5e940105e5adfcad3eb14f371",
+      "size_bytes": 18949,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "52c7e48f-63c7-5a65-9210-19c646f57a30",
+      "resource": "league-8983-2022/2023",
+      "sha256": "5256217c7238ac0a0e39764bc02becef141087430460cd7241baf58c3b8ed57c",
+      "size_bytes": 647832,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "afff546c-1a64-5c95-8c1f-9d589d437e20",
+      "resource": "league-8983-2023/2024",
+      "sha256": "7cf1e67033a1e0c5648646a0851f795a431b558b0b793f005b7ed55825e3046c",
+      "size_bytes": 669935,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "698b8f70-9901-5658-9c19-eb1e1bb4ea4d",
+      "resource": "league-8983-2024/2025",
+      "sha256": "2e4fa8123343ca4a79e10239d2d683c842443e48e00c5f8d51af2c69b672e642",
+      "size_bytes": 643911,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "851cfc43-ca1a-5c14-b486-7edb84cb816a",
+      "resource": "league-8983-2025/2026",
+      "sha256": "27b62ca448298fb8a9a03097b716af7dfcf2db65e7574c43b9b8f554664b7388",
+      "size_bytes": 658246,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "8619819a-e085-50dc-ab57-240ae7183337",
+      "resource": "league-8983-2026/2027",
+      "sha256": "13efdf46e12f10c0e2aa31c961e49cf644e419c998afe4e8a989586c4c12f71c",
+      "size_bytes": 547410,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "9d66c8c3-0726-50b3-a017-2c6e3d945132",
+      "resource": "league-9088-2020",
+      "sha256": "ceeb0eb1f4554b9f2d4f9a7edf4d7f1e34d33e0f0adbdc772511b4d1cd682e27",
+      "size_bytes": 342000,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "b71422ff-46ed-55ef-80da-763444c2a1fe",
+      "resource": "league-9088-2021",
+      "sha256": "b40ac579288a56da99c7d42f7a1cf9b5f33f851ce7dd2a46244153c7d015fa74",
+      "size_bytes": 275338,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "a3dc5585-97ec-5351-9d89-bfd2367dbe14",
+      "resource": "league-9088-2022",
+      "sha256": "77c93caf95b5686bd47aa3a6785e10941afb48348fa3dc506a6e296869d2d2f9",
+      "size_bytes": 367345,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "f355fa83-e2a8-576b-a601-7f6c86f1d981",
+      "resource": "league-9088-2023",
+      "sha256": "3e6fc776eddd7934bd65c8bebeb5f8090a3ff52dbb295ec867b78f4ecc6c5e07",
+      "size_bytes": 342623,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "0a28e54c-c74d-5f74-ad31-4db6ede8a4ce",
+      "resource": "league-9088-2023/2024",
+      "sha256": "245a737c42dff54836ed84200862fce984060afa215534e27d783c27e5c0d49c",
+      "size_bytes": 419256,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "fd44c416-6592-58ff-b3f8-972168dd9bfa",
+      "resource": "league-9088-2024/2025",
+      "sha256": "76cc6f5ae66a5a887fbf38d23ff2cf0d17166fe8160475d5270b4b53562678ea",
+      "size_bytes": 420464,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "46699745-d445-5812-86ab-f6014e4f6e3b",
+      "resource": "league-9088-2025/2026",
+      "sha256": "8589e16585c6efe6061d85a4e6e1abb32bd7a08cc6a82d2a50df2872ed750cd0",
+      "size_bytes": 419875,
+      "byte_verified": true
+    },
+    {
+      "provider": "fotmob",
+      "snapshot_id": "e12b2b9e-719d-54bb-9a40-6563955a93db",
+      "resource": "league-9088-2026/2027",
+      "sha256": "7409db6074872d7b08e6bfd5e3b1be337e8f73e3071e8979cb4c9b8774449b4f",
+      "size_bytes": 229625,
+      "byte_verified": true
+    }
+  ],
+  "dhaka_2024_2025": {
+    "source_snapshot_id": "37f50359-0094-5863-a77d-797675abca1b",
+    "expected_native_match_ids": [
+      "4680088",
+      "4680934",
+      "4681178",
+      "4681183",
+      "4681189",
+      "4681207",
+      "4681210",
+      "4681374",
+      "4681377",
+      "4731024",
+      "4731031",
+      "4731035",
+      "4731040",
+      "4731044",
+      "4731053",
+      "4731071",
+      "4731076",
+      "4731080"
+    ],
+    "expected_finished_matches": 18,
+    "retained_provisional_fixtures": 6,
+    "unmatched_native_matches": 12,
+    "blockers": [
+      "Explicit reviewed native season correspondence absent for 2024/2025",
+      "Provisional fixture/opponent identities require independent qualification"
+    ],
+    "api_football_2024_comparison": "Verified retained 90-result resource covers December 2023 to May 2024 and does not contain native team 25415. Configured season cap is 2024; no later-season request made."
+  },
+  "catalogue_acquisition": {
+    "scope": "FR004 lower-division discovery; source registration only; no history/admission",
+    "status": "DEFERRED",
+    "reason": "LIVE_SYNC_HAS_PRIORITY",
+    "until": "2026-11-09 14:36:29.249498+00:00"
+  },
+  "remaining_work": [
+    "Retry native catalogue only under existing live-priority/quota rules; inspect lower-division source scopes for Garudayaksa, Bac Ninh, Port City and City Club",
+    "Qualify exact Bangladesh season/native identity evidence before replay; no season inference from dates",
+    "Continue remaining deficient team/season slices; this checkpoint does not claim global research exhaustion"
+  ],
+  "targets": [
+    {
+      "fixture_id": "5a4be7e7-f56a-54f4-ab9f-74ed0f816120",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "64d82a8d-b470-5893-a98a-f6b4492fd4f2",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        25
+      ],
+      "original_eligible": [
+        0,
+        25
+      ],
+      "current_retained": [
+        40,
+        25
+      ],
+      "current_eligible": [
+        38,
+        25
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "6f025213-84e6-5855-9fea-780fb8a4bf16",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        8,
+        33
+      ],
+      "original_eligible": [
+        8,
+        33
+      ],
+      "current_retained": [
+        8,
+        33
+      ],
+      "current_eligible": [
+        8,
+        33
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "802d510d-f615-560e-b5a1-80e159c69b40",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        25
+      ],
+      "original_eligible": [
+        0,
+        25
+      ],
+      "current_retained": [
+        38,
+        25
+      ],
+      "current_eligible": [
+        38,
+        25
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "92cd2023-edf9-5efd-abba-e5f12a507eec",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        28,
+        0
+      ],
+      "original_eligible": [
+        28,
+        0
+      ],
+      "current_retained": [
+        28,
+        0
+      ],
+      "current_eligible": [
+        28,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b1ab13ea-5138-5e31-9d98-5d86e71e299e",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        10,
+        8
+      ],
+      "original_eligible": [
+        10,
+        8
+      ],
+      "current_retained": [
+        10,
+        8
+      ],
+      "current_eligible": [
+        10,
+        8
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "da16a76e-f98f-5049-802b-6eb9d3ed03ac",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "0b597b0b-21ea-5113-a313-3dab64dcaff8",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        229,
+        5
+      ],
+      "original_eligible": [
+        73,
+        5
+      ],
+      "current_retained": [
+        231,
+        5
+      ],
+      "current_eligible": [
+        73,
+        5
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "334c3fc0-68c2-5341-a0dc-4ce8ad38632b",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        30,
+        22
+      ],
+      "current_eligible": [
+        30,
+        22
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "577cc243-36d8-5b64-9499-033d4d87bf09",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        4,
+        0
+      ],
+      "original_eligible": [
+        3,
+        0
+      ],
+      "current_retained": [
+        37,
+        0
+      ],
+      "current_eligible": [
+        36,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "667f20af-203f-5909-821e-c0aa24a24832",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        17,
+        0
+      ],
+      "original_eligible": [
+        1,
+        0
+      ],
+      "current_retained": [
+        42,
+        0
+      ],
+      "current_eligible": [
+        25,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "77c82ea7-65ca-5e11-8436-1ae272525240",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        30,
+        30
+      ],
+      "current_eligible": [
+        30,
+        30
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d8574f71-7574-59b6-b4a7-a70ebe89f0d8",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        72,
+        0
+      ],
+      "original_eligible": [
+        72,
+        0
+      ],
+      "current_retained": [
+        73,
+        0
+      ],
+      "current_eligible": [
+        73,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "15dcdb30-8032-5418-9d08-1075c1f68fec",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "2edbf8b7-72e9-58b2-808e-9b1e1347a7a4",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        25,
+        0
+      ],
+      "original_eligible": [
+        23,
+        0
+      ],
+      "current_retained": [
+        25,
+        0
+      ],
+      "current_eligible": [
+        23,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "18951c18-2ac3-558f-919c-60962cec1af5",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        32,
+        33
+      ],
+      "current_eligible": [
+        32,
+        33
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "690c3a28-3e28-5a68-80e5-d9f59c574de5",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b6e56b77-20ac-5a12-8ede-ed316db66ba4",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        7
+      ],
+      "original_eligible": [
+        0,
+        7
+      ],
+      "current_retained": [
+        0,
+        7
+      ],
+      "current_eligible": [
+        0,
+        7
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "c2e28d7c-414a-5ddc-b278-2ac638ce0914",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        1,
+        0
+      ],
+      "current_retained": [
+        35,
+        0
+      ],
+      "current_eligible": [
+        34,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e797e5d9-088c-5d1e-9798-6e1fb06411a7",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "f9854844-ba3d-5d8e-a9ff-efd854d41d05",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        30
+      ],
+      "original_eligible": [
+        0,
+        30
+      ],
+      "current_retained": [
+        0,
+        30
+      ],
+      "current_eligible": [
+        0,
+        30
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "04851fba-1382-5c38-9c5a-99d2886e0937",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        17
+      ],
+      "original_eligible": [
+        0,
+        15
+      ],
+      "current_retained": [
+        0,
+        17
+      ],
+      "current_eligible": [
+        0,
+        15
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "065d8ded-3b9e-5380-be27-79324b5355b8",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        2
+      ],
+      "original_eligible": [
+        1,
+        2
+      ],
+      "current_retained": [
+        1,
+        2
+      ],
+      "current_eligible": [
+        1,
+        2
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1a510a01-dd65-5f9a-99ba-ba52dd905a47",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        1
+      ],
+      "original_eligible": [
+        0,
+        1
+      ],
+      "current_retained": [
+        0,
+        1
+      ],
+      "current_eligible": [
+        0,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "24f081ca-ae29-5328-a089-9a2a3878b202",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        13
+      ],
+      "original_eligible": [
+        0,
+        13
+      ],
+      "current_retained": [
+        0,
+        13
+      ],
+      "current_eligible": [
+        0,
+        13
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "26281652-1be6-50a7-90e8-94b2211e93bc",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        53
+      ],
+      "original_eligible": [
+        0,
+        52
+      ],
+      "current_retained": [
+        32,
+        83
+      ],
+      "current_eligible": [
+        30,
+        82
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4afc1d85-b319-5856-aae1-494adc5b2fb5",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        22
+      ],
+      "current_eligible": [
+        0,
+        22
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "5bbd6652-c0c8-5f14-b63f-8c4598e6ce71",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "6fc2e20a-baa6-5958-8ea1-2a28fd9cd744",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        13,
+        0
+      ],
+      "original_eligible": [
+        13,
+        0
+      ],
+      "current_retained": [
+        13,
+        0
+      ],
+      "current_eligible": [
+        13,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "7c5b0e51-939f-5f4f-9204-3f0e08253e87",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        15,
+        8
+      ],
+      "original_eligible": [
+        15,
+        8
+      ],
+      "current_retained": [
+        15,
+        8
+      ],
+      "current_eligible": [
+        15,
+        8
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "95ef4032-a29f-5d66-91b5-8fafc6158aed",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        1
+      ],
+      "original_eligible": [
+        2,
+        1
+      ],
+      "current_retained": [
+        2,
+        1
+      ],
+      "current_eligible": [
+        2,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "9f637909-a705-50a3-87f1-0e1a7914ee2b",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        1
+      ],
+      "original_eligible": [
+        2,
+        1
+      ],
+      "current_retained": [
+        2,
+        1
+      ],
+      "current_eligible": [
+        2,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "af60dcf3-d6e0-5f37-be86-379b39c8dc0d",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "bf776c0c-c4b0-554a-9394-97af165c2db2",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        25,
+        0
+      ],
+      "original_eligible": [
+        25,
+        0
+      ],
+      "current_retained": [
+        25,
+        38
+      ],
+      "current_eligible": [
+        25,
+        38
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "dca8a710-84b6-55d5-a7c1-0c286e0f7bf7",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        34
+      ],
+      "original_eligible": [
+        0,
+        34
+      ],
+      "current_retained": [
+        0,
+        34
+      ],
+      "current_eligible": [
+        0,
+        34
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "dc4c4ccd-f6ba-5b66-9f65-a061ed2a5d26",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        37,
+        8
+      ],
+      "original_eligible": [
+        36,
+        7
+      ],
+      "current_retained": [
+        37,
+        15
+      ],
+      "current_eligible": [
+        36,
+        14
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "07772a54-a77b-5af9-b4b2-de90fd278a8b",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        4,
+        1
+      ],
+      "original_eligible": [
+        0,
+        1
+      ],
+      "current_retained": [
+        4,
+        1
+      ],
+      "current_eligible": [
+        0,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "0eedf28a-2f99-5675-93e3-5015f9496a48",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "293f2bf7-4c35-5173-937a-8e004a58c5f9",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        288,
+        0
+      ],
+      "original_eligible": [
+        232,
+        0
+      ],
+      "current_retained": [
+        288,
+        0
+      ],
+      "current_eligible": [
+        238,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "2a26261c-563c-5691-a3cf-eb63a826275e",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        110,
+        1
+      ],
+      "original_eligible": [
+        92,
+        1
+      ],
+      "current_retained": [
+        110,
+        1
+      ],
+      "current_eligible": [
+        98,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "3dc5e5ae-5c59-53ba-a3d5-eed57de581ca",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "56e90f27-d965-59a9-9a30-2a3f319b3886",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        1521,
+        0
+      ],
+      "original_eligible": [
+        1072,
+        0
+      ],
+      "current_retained": [
+        1521,
+        0
+      ],
+      "current_eligible": [
+        1088,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "6f3916d9-3ddb-5956-9bf2-8c137aa1845c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "729a5007-c107-5ee8-b9ca-39a20d7021d4",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        1
+      ],
+      "original_eligible": [
+        0,
+        1
+      ],
+      "current_retained": [
+        46,
+        1
+      ],
+      "current_eligible": [
+        40,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "78c6f7a5-b421-55a9-944b-ff330868b8b7",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "932c511a-cb9f-53a4-834a-50a73e1a96b4",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "95cdb24b-a5a4-5900-a166-2ee0cb089c92",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        17,
+        0
+      ],
+      "original_eligible": [
+        15,
+        0
+      ],
+      "current_retained": [
+        63,
+        0
+      ],
+      "current_eligible": [
+        15,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "99395bf4-3b6d-5b80-bb03-2274004c61d8",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        1470,
+        0
+      ],
+      "original_eligible": [
+        1055,
+        0
+      ],
+      "current_retained": [
+        1470,
+        0
+      ],
+      "current_eligible": [
+        1095,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "cf1db11d-1bec-5b4d-ad84-3ceb3a03f01b",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        659,
+        0
+      ],
+      "original_eligible": [
+        565,
+        0
+      ],
+      "current_retained": [
+        659,
+        0
+      ],
+      "current_eligible": [
+        571,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d96209b4-76a3-5998-988a-e602ce2b0d93",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        23,
+        0
+      ],
+      "original_eligible": [
+        20,
+        0
+      ],
+      "current_retained": [
+        23,
+        0
+      ],
+      "current_eligible": [
+        20,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e8339a6a-af2e-5b66-bb5d-f6da06706515",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        1519,
+        0
+      ],
+      "original_eligible": [
+        1160,
+        0
+      ],
+      "current_retained": [
+        1519,
+        0
+      ],
+      "current_eligible": [
+        1196,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e99c739f-0928-50cd-9dee-a91e40009b4a",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        2,
+        0
+      ],
+      "current_retained": [
+        2,
+        0
+      ],
+      "current_eligible": [
+        2,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "f73f0831-bb6a-5f94-9084-3e12e5eeae9f",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        6
+      ],
+      "original_eligible": [
+        1,
+        6
+      ],
+      "current_retained": [
+        1,
+        42
+      ],
+      "current_eligible": [
+        1,
+        42
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "64d3fb08-23c9-5037-990d-9d42eb0cd00f",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d42e4479-5c94-594f-8343-c84f71b34318",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        17,
+        1
+      ],
+      "original_eligible": [
+        17,
+        1
+      ],
+      "current_retained": [
+        20,
+        1
+      ],
+      "current_eligible": [
+        20,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "05440828-c132-59bc-8f9a-eefc181eb71c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        44,
+        0
+      ],
+      "original_eligible": [
+        40,
+        0
+      ],
+      "current_retained": [
+        44,
+        0
+      ],
+      "current_eligible": [
+        40,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "07db0ca2-dfbc-50d0-ae01-836076d2a816",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        1
+      ],
+      "original_eligible": [
+        1,
+        1
+      ],
+      "current_retained": [
+        1,
+        1
+      ],
+      "current_eligible": [
+        1,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "11494738-c65e-5955-8d34-eaf4fe5f9301",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        46
+      ],
+      "original_eligible": [
+        1,
+        44
+      ],
+      "current_retained": [
+        1,
+        46
+      ],
+      "current_eligible": [
+        1,
+        44
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "14efb0ef-0359-50ef-8975-b467bf2f172d",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        782,
+        0
+      ],
+      "original_eligible": [
+        677,
+        0
+      ],
+      "current_retained": [
+        782,
+        0
+      ],
+      "current_eligible": [
+        683,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "23ca761a-0df6-533a-a386-b2ca690b3138",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        2,
+        0
+      ],
+      "current_retained": [
+        2,
+        0
+      ],
+      "current_eligible": [
+        2,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "2c94c310-176c-5904-9b3b-10294a8b7a5b",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        18,
+        0
+      ],
+      "original_eligible": [
+        14,
+        0
+      ],
+      "current_retained": [
+        64,
+        0
+      ],
+      "current_eligible": [
+        14,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "325c815b-0b39-5357-a5f6-8b395c8fb35a",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        424,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        424,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "360d03ce-c405-5682-b62a-aac28bc7f642",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        2,
+        0
+      ],
+      "current_retained": [
+        2,
+        0
+      ],
+      "current_eligible": [
+        2,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "3869e77f-72e8-5485-b165-243bb233cf0c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        3,
+        1
+      ],
+      "original_eligible": [
+        3,
+        1
+      ],
+      "current_retained": [
+        3,
+        1
+      ],
+      "current_eligible": [
+        3,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "38f469b3-55eb-54e5-b740-415079e4e92b",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        1
+      ],
+      "original_eligible": [
+        2,
+        1
+      ],
+      "current_retained": [
+        44,
+        43
+      ],
+      "current_eligible": [
+        44,
+        43
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "392b1049-39c0-545e-a931-700b84931d0c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        1
+      ],
+      "original_eligible": [
+        1,
+        1
+      ],
+      "current_retained": [
+        1,
+        1
+      ],
+      "current_eligible": [
+        1,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "416fa23e-651f-5d23-bb4d-7694692477b1",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        46,
+        0
+      ],
+      "original_eligible": [
+        44,
+        0
+      ],
+      "current_retained": [
+        46,
+        0
+      ],
+      "current_eligible": [
+        44,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4aab2451-0abd-577b-8d8d-4fa0636d4bf7",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        2
+      ],
+      "original_eligible": [
+        1,
+        2
+      ],
+      "current_retained": [
+        47,
+        2
+      ],
+      "current_eligible": [
+        41,
+        2
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4b622420-8610-5988-9d42-204a5e5ed1ec",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        297
+      ],
+      "original_eligible": [
+        1,
+        34
+      ],
+      "current_retained": [
+        1,
+        297
+      ],
+      "current_eligible": [
+        1,
+        34
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4f904d74-2168-5907-9541-eb45095f7ad2",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        5,
+        1
+      ],
+      "original_eligible": [
+        2,
+        1
+      ],
+      "current_retained": [
+        5,
+        1
+      ],
+      "current_eligible": [
+        2,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "516bf5e9-c8f5-540d-8951-263a5314528d",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        1
+      ],
+      "original_eligible": [
+        1,
+        1
+      ],
+      "current_retained": [
+        1,
+        1
+      ],
+      "current_eligible": [
+        1,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "52e216b1-0d15-5e26-a1d3-305eedda57ba",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        40,
+        2
+      ],
+      "original_eligible": [
+        40,
+        2
+      ],
+      "current_retained": [
+        40,
+        2
+      ],
+      "current_eligible": [
+        40,
+        2
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "5c3d1731-afec-5324-a178-0ee4a9e1b736",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        3
+      ],
+      "original_eligible": [
+        0,
+        3
+      ],
+      "current_retained": [
+        0,
+        3
+      ],
+      "current_eligible": [
+        0,
+        3
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "5f72c676-9b77-5fd9-b170-a704c477144b",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        2,
+        0
+      ],
+      "current_retained": [
+        44,
+        42
+      ],
+      "current_eligible": [
+        44,
+        42
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "61230c9b-1d53-52aa-84f5-9c10eef27b0f",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        41
+      ],
+      "original_eligible": [
+        0,
+        38
+      ],
+      "current_retained": [
+        0,
+        41
+      ],
+      "current_eligible": [
+        0,
+        38
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "63066251-bf55-55cf-8ba2-6c0b3cb17e6f",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        4,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        4,
+        0
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "6da4ed31-cd00-5c26-ae9b-319845cc3816",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        8,
+        41
+      ],
+      "original_eligible": [
+        5,
+        37
+      ],
+      "current_retained": [
+        8,
+        41
+      ],
+      "current_eligible": [
+        5,
+        37
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "6da75054-db2c-53f0-a2e6-88f5d84a0f47",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        3
+      ],
+      "original_eligible": [
+        0,
+        3
+      ],
+      "current_retained": [
+        42,
+        3
+      ],
+      "current_eligible": [
+        42,
+        3
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "823612a9-5c52-51a5-8d9c-7b73016cd9f0",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        1
+      ],
+      "original_eligible": [
+        2,
+        1
+      ],
+      "current_retained": [
+        2,
+        1
+      ],
+      "current_eligible": [
+        2,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "8a4c045a-f082-55d4-a5b2-3ef82f78df4d",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        1
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        48,
+        47
+      ],
+      "current_eligible": [
+        40,
+        40
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "95ef751c-49d4-51c4-ac81-652d2327ee0c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        4
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        46,
+        4
+      ],
+      "current_eligible": [
+        40,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "af47d516-c684-5e46-9cf5-40271f0b6658",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        1
+      ],
+      "original_eligible": [
+        0,
+        1
+      ],
+      "current_retained": [
+        0,
+        1
+      ],
+      "current_eligible": [
+        0,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b3411bcd-70d4-58fa-8419-16b42096a66e",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        47
+      ],
+      "original_eligible": [
+        2,
+        43
+      ],
+      "current_retained": [
+        36,
+        47
+      ],
+      "current_eligible": [
+        36,
+        43
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "bdf8082d-e457-5576-95d5-b72faecf0aa3",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        5,
+        41
+      ],
+      "original_eligible": [
+        5,
+        37
+      ],
+      "current_retained": [
+        5,
+        41
+      ],
+      "current_eligible": [
+        5,
+        37
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d1acdd33-1d9c-57e5-854b-c126404373c3",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        3
+      ],
+      "original_eligible": [
+        0,
+        3
+      ],
+      "current_retained": [
+        46,
+        3
+      ],
+      "current_eligible": [
+        40,
+        3
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e5e620b5-20d8-5726-a547-a2d1e7037796",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        42
+      ],
+      "original_eligible": [
+        0,
+        38
+      ],
+      "current_retained": [
+        0,
+        42
+      ],
+      "current_eligible": [
+        0,
+        38
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e5fde629-aeb7-5cd7-849e-ecaf9d661655",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        1
+      ],
+      "original_eligible": [
+        1,
+        1
+      ],
+      "current_retained": [
+        1,
+        1
+      ],
+      "current_eligible": [
+        1,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e7a70350-6a1a-5e86-8f19-de2618594a92",
+      "first_issue": "N / FR-002",
+      "original_retained": [
+        0,
+        4
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        4
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "SOURCE_DATA_INCOMPLETE"
+    },
+    {
+      "fixture_id": "fd751952-c53c-54c4-b9e5-c7c04729ec56",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        7
+      ],
+      "original_eligible": [
+        1,
+        7
+      ],
+      "current_retained": [
+        1,
+        7
+      ],
+      "current_eligible": [
+        1,
+        7
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "137cabf7-75d8-5521-8295-d490ef1d1a42",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        4
+      ],
+      "original_eligible": [
+        0,
+        4
+      ],
+      "current_retained": [
+        0,
+        4
+      ],
+      "current_eligible": [
+        0,
+        4
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1b1ad4d4-a020-5a7c-bed5-9d74b2fa1216",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        0
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        34,
+        34
+      ],
+      "current_eligible": [
+        34,
+        34
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "c2dcc792-7143-58ff-abb5-32fd82b206d2",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        382
+      ],
+      "original_eligible": [
+        1,
+        1
+      ],
+      "current_retained": [
+        1,
+        382
+      ],
+      "current_eligible": [
+        1,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d2e170b1-eb6e-5043-8b9c-d1bc34bdf18c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        20,
+        1
+      ],
+      "original_eligible": [
+        20,
+        1
+      ],
+      "current_retained": [
+        20,
+        1
+      ],
+      "current_eligible": [
+        20,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4b24fe04-2deb-53b7-9f65-562b3deebafc",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        36
+      ],
+      "original_eligible": [
+        0,
+        36
+      ],
+      "current_retained": [
+        30,
+        36
+      ],
+      "current_eligible": [
+        30,
+        36
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b3a3f351-d49b-5677-85d6-ecc61f5ab859",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        1,
+        9
+      ],
+      "original_eligible": [
+        0,
+        7
+      ],
+      "current_retained": [
+        1,
+        9
+      ],
+      "current_eligible": [
+        0,
+        7
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "03a9e427-f352-593f-b044-ca4d08eeeff2",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        2,
+        0
+      ],
+      "original_eligible": [
+        2,
+        0
+      ],
+      "current_retained": [
+        2,
+        0
+      ],
+      "current_eligible": [
+        2,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "34ef39c5-aaa0-5aef-a453-7161623f503c",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        0,
+        2
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        0,
+        2
+      ],
+      "current_eligible": [
+        0,
+        0
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d766aea6-ab04-5c1e-88ac-24be27f898f0",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        8,
+        0
+      ],
+      "original_eligible": [
+        8,
+        0
+      ],
+      "current_retained": [
+        8,
+        1
+      ],
+      "current_eligible": [
+        8,
+        1
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "0d8983e1-0e3f-5329-96cd-d2ae4cb6bbee",
+      "first_issue": "N / FR-004",
+      "original_retained": [
+        6,
+        3
+      ],
+      "original_eligible": [
+        6,
+        3
+      ],
+      "current_retained": [
+        6,
+        3
+      ],
+      "current_eligible": [
+        6,
+        3
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e32d4aab-d858-54a2-9d66-42a1b88d57a5",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        107
+      ],
+      "original_eligible": [
+        3,
+        17
+      ],
+      "current_retained": [
+        5,
+        109
+      ],
+      "current_eligible": [
+        4,
+        19
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "ac3a80c9-0056-5278-bfcc-06c6a0e211ec",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        12,
+        4
+      ],
+      "original_eligible": [
+        3,
+        3
+      ],
+      "current_retained": [
+        13,
+        35
+      ],
+      "current_eligible": [
+        4,
+        34
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "58280732-1507-551e-8ef8-a608b8c77792",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        15,
+        4
+      ],
+      "original_eligible": [
+        3,
+        3
+      ],
+      "current_retained": [
+        16,
+        11
+      ],
+      "current_eligible": [
+        4,
+        10
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1398c034-f813-501d-9e84-db86e8f3b396",
+      "first_issue": "O / FR-002",
+      "original_retained": [
+        5,
+        4
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        21,
+        26
+      ],
+      "current_eligible": [
+        16,
+        22
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "a589bdf3-4401-5f42-a7fe-49c9b8744c48",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        24,
+        7
+      ],
+      "original_eligible": [
+        24,
+        7
+      ],
+      "current_retained": [
+        26,
+        10
+      ],
+      "current_eligible": [
+        26,
+        9
+      ],
+      "elapsed": true,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        146
+      ],
+      "original_eligible": [
+        0,
+        86
+      ],
+      "current_retained": [
+        6,
+        147
+      ],
+      "current_eligible": [
+        6,
+        87
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "a68f87ee-44e7-514f-8b70-b3987538be4d",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        260,
+        4
+      ],
+      "original_eligible": [
+        112,
+        3
+      ],
+      "current_retained": [
+        262,
+        5
+      ],
+      "current_eligible": [
+        114,
+        4
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "133e5b66-da6c-508f-9b90-e01a81058b09",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        4
+      ],
+      "original_eligible": [
+        3,
+        3
+      ],
+      "current_retained": [
+        11,
+        35
+      ],
+      "current_eligible": [
+        10,
+        34
+      ],
+      "elapsed": false,
+      "availability": "FORECAST_AVAILABLE"
+    },
+    {
+      "fixture_id": "cae1589e-967c-5e92-a017-53f033ca15cc",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        10
+      ],
+      "original_eligible": [
+        2,
+        4
+      ],
+      "current_retained": [
+        9,
+        10
+      ],
+      "current_eligible": [
+        2,
+        4
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "19f36866-3024-5ee5-9258-7f571df3a6f1",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        6,
+        73
+      ],
+      "original_eligible": [
+        3,
+        5
+      ],
+      "current_retained": [
+        7,
+        74
+      ],
+      "current_eligible": [
+        3,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        193,
+        6
+      ],
+      "original_eligible": [
+        108,
+        0
+      ],
+      "current_retained": [
+        194,
+        6
+      ],
+      "current_eligible": [
+        109,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "c9c23db5-c111-5881-8102-1278ef129629",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        55
+      ],
+      "original_eligible": [
+        3,
+        41
+      ],
+      "current_retained": [
+        5,
+        56
+      ],
+      "current_eligible": [
+        4,
+        42
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "7d73cbf2-6405-5ab5-9e49-eeaee5ab1044",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        47,
+        9
+      ],
+      "original_eligible": [
+        10,
+        2
+      ],
+      "current_retained": [
+        47,
+        9
+      ],
+      "current_eligible": [
+        10,
+        2
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "fe88e16f-01d2-5ade-b04c-4c5c66ba0b9f",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        46,
+        4
+      ],
+      "original_eligible": [
+        12,
+        4
+      ],
+      "current_retained": [
+        46,
+        4
+      ],
+      "current_eligible": [
+        12,
+        4
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d1da1346-f23d-598a-8bca-5ddb539e0df0",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        6,
+        101
+      ],
+      "original_eligible": [
+        3,
+        14
+      ],
+      "current_retained": [
+        7,
+        102
+      ],
+      "current_eligible": [
+        3,
+        15
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        281
+      ],
+      "original_eligible": [
+        0,
+        147
+      ],
+      "current_retained": [
+        6,
+        282
+      ],
+      "current_eligible": [
+        6,
+        148
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "65f1cad7-d4f8-5e57-a192-e198fabcf524",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        15
+      ],
+      "original_eligible": [
+        3,
+        3
+      ],
+      "current_retained": [
+        35,
+        16
+      ],
+      "current_eligible": [
+        34,
+        4
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "a528b110-38dd-5031-a200-f1efe56478bc",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        12,
+        4
+      ],
+      "original_eligible": [
+        3,
+        3
+      ],
+      "current_retained": [
+        13,
+        11
+      ],
+      "current_eligible": [
+        4,
+        10
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "027a94e2-a117-5ccb-91e1-cfbeff74aae3",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        11,
+        8
+      ],
+      "original_eligible": [
+        2,
+        2
+      ],
+      "current_retained": [
+        12,
+        34
+      ],
+      "current_eligible": [
+        2,
+        28
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "3316c946-aab0-5e95-9cf3-9033b3ceb194",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        7,
+        257
+      ],
+      "original_eligible": [
+        7,
+        140
+      ],
+      "current_retained": [
+        10,
+        258
+      ],
+      "current_eligible": [
+        9,
+        141
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1afbe728-314c-5a94-977e-5d43853f9dba",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        104,
+        6
+      ],
+      "original_eligible": [
+        16,
+        3
+      ],
+      "current_retained": [
+        105,
+        7
+      ],
+      "current_eligible": [
+        17,
+        3
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "3ba7d48d-d530-52fe-b495-26db34008465",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        179
+      ],
+      "original_eligible": [
+        5,
+        77
+      ],
+      "current_retained": [
+        10,
+        180
+      ],
+      "current_eligible": [
+        5,
+        77
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1cdf103c-8fc3-5413-9f28-cf1b4170b6db",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        254,
+        9
+      ],
+      "original_eligible": [
+        115,
+        5
+      ],
+      "current_retained": [
+        255,
+        10
+      ],
+      "current_eligible": [
+        116,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "e4365f34-6f7f-5ac9-90a7-0586a31954d5",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        9
+      ],
+      "original_eligible": [
+        4,
+        2
+      ],
+      "current_retained": [
+        4,
+        9
+      ],
+      "current_eligible": [
+        4,
+        2
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "69a39c45-dd9a-5fa9-b50e-44c73d94fa51",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        6,
+        103
+      ],
+      "original_eligible": [
+        3,
+        19
+      ],
+      "current_retained": [
+        7,
+        104
+      ],
+      "current_eligible": [
+        3,
+        20
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "31c24637-1b55-5ba9-9e59-5774a1c7bde7",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        46
+      ],
+      "original_eligible": [
+        2,
+        11
+      ],
+      "current_retained": [
+        9,
+        46
+      ],
+      "current_eligible": [
+        2,
+        11
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "cf3a7eb6-8f87-5bd9-a580-1b5fe2a09a15",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        31
+      ],
+      "original_eligible": [
+        5,
+        25
+      ],
+      "current_retained": [
+        10,
+        32
+      ],
+      "current_eligible": [
+        5,
+        26
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        98,
+        6
+      ],
+      "original_eligible": [
+        58,
+        0
+      ],
+      "current_retained": [
+        99,
+        6
+      ],
+      "current_eligible": [
+        59,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "17a76f17-8ca8-50bf-8591-84ecff0ff863",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        46
+      ],
+      "original_eligible": [
+        2,
+        12
+      ],
+      "current_retained": [
+        9,
+        46
+      ],
+      "current_eligible": [
+        2,
+        12
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        100,
+        6
+      ],
+      "original_eligible": [
+        46,
+        0
+      ],
+      "current_retained": [
+        101,
+        6
+      ],
+      "current_eligible": [
+        47,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "9f3fdeac-300b-54fe-bfb3-0bfc141ecbbc",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        35,
+        9
+      ],
+      "original_eligible": [
+        11,
+        2
+      ],
+      "current_retained": [
+        35,
+        9
+      ],
+      "current_eligible": [
+        11,
+        2
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "af1ca66c-5a63-53cf-94be-dd770883962b",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        46,
+        4
+      ],
+      "original_eligible": [
+        11,
+        4
+      ],
+      "current_retained": [
+        46,
+        4
+      ],
+      "current_eligible": [
+        11,
+        4
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        210
+      ],
+      "original_eligible": [
+        0,
+        0
+      ],
+      "current_retained": [
+        6,
+        159
+      ],
+      "current_eligible": [
+        6,
+        159
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "2e18706e-f0f4-5ead-b754-a86cdf06239d",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        4,
+        16
+      ],
+      "original_eligible": [
+        4,
+        3
+      ],
+      "current_retained": [
+        4,
+        16
+      ],
+      "current_eligible": [
+        4,
+        3
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        239
+      ],
+      "original_eligible": [
+        0,
+        133
+      ],
+      "current_retained": [
+        6,
+        240
+      ],
+      "current_eligible": [
+        6,
+        134
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "9c8dc408-c2d4-57c9-8bbc-2fb263d5c53e",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        7,
+        15
+      ],
+      "original_eligible": [
+        7,
+        14
+      ],
+      "current_retained": [
+        10,
+        38
+      ],
+      "current_eligible": [
+        9,
+        37
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        281,
+        6
+      ],
+      "original_eligible": [
+        149,
+        0
+      ],
+      "current_retained": [
+        282,
+        6
+      ],
+      "current_eligible": [
+        150,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        282
+      ],
+      "original_eligible": [
+        0,
+        147
+      ],
+      "current_retained": [
+        6,
+        283
+      ],
+      "current_eligible": [
+        6,
+        148
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        282,
+        6
+      ],
+      "original_eligible": [
+        149,
+        0
+      ],
+      "current_retained": [
+        282,
+        6
+      ],
+      "current_eligible": [
+        149,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "73a81a17-2911-573b-afc5-0f642948eba1",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        179,
+        9
+      ],
+      "original_eligible": [
+        77,
+        5
+      ],
+      "current_retained": [
+        180,
+        10
+      ],
+      "current_eligible": [
+        77,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "4b2f2df1-2ab4-50a5-9674-2847145b3d39",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        233
+      ],
+      "original_eligible": [
+        5,
+        104
+      ],
+      "current_retained": [
+        10,
+        234
+      ],
+      "current_eligible": [
+        5,
+        105
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        95
+      ],
+      "original_eligible": [
+        0,
+        57
+      ],
+      "current_retained": [
+        6,
+        95
+      ],
+      "current_eligible": [
+        6,
+        57
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        146,
+        6
+      ],
+      "original_eligible": [
+        86,
+        0
+      ],
+      "current_retained": [
+        147,
+        6
+      ],
+      "current_eligible": [
+        87,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        193
+      ],
+      "original_eligible": [
+        0,
+        108
+      ],
+      "current_retained": [
+        6,
+        194
+      ],
+      "current_eligible": [
+        6,
+        109
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        281,
+        6
+      ],
+      "original_eligible": [
+        147,
+        0
+      ],
+      "current_retained": [
+        282,
+        6
+      ],
+      "current_eligible": [
+        148,
+        6
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "2656698a-f4ad-5257-bee1-3116972b1d8b",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        233
+      ],
+      "original_eligible": [
+        5,
+        104
+      ],
+      "current_retained": [
+        10,
+        233
+      ],
+      "current_eligible": [
+        5,
+        104
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "de6f5ec9-d773-5b38-a35f-a508de7e4b27",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        199,
+        9
+      ],
+      "original_eligible": [
+        98,
+        5
+      ],
+      "current_retained": [
+        200,
+        10
+      ],
+      "current_eligible": [
+        98,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+      "first_issue": "O / FR-001",
+      "original_retained": [
+        6,
+        98
+      ],
+      "original_eligible": [
+        0,
+        58
+      ],
+      "current_retained": [
+        6,
+        99
+      ],
+      "current_eligible": [
+        6,
+        59
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "1e9ed334-7feb-5df7-95de-6b1e5e0441b0",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        260,
+        9
+      ],
+      "original_eligible": [
+        112,
+        5
+      ],
+      "current_retained": [
+        262,
+        10
+      ],
+      "current_eligible": [
+        114,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "85d2155b-98bb-514b-91f3-3793c7e7439c",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        31,
+        9
+      ],
+      "original_eligible": [
+        25,
+        5
+      ],
+      "current_retained": [
+        32,
+        10
+      ],
+      "current_eligible": [
+        26,
+        5
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    },
+    {
+      "fixture_id": "9264f046-f29e-5582-928f-bd28671722f0",
+      "first_issue": "O / FR-004",
+      "original_retained": [
+        9,
+        254
+      ],
+      "original_eligible": [
+        5,
+        115
+      ],
+      "current_retained": [
+        10,
+        255
+      ],
+      "current_eligible": [
+        5,
+        116
+      ],
+      "elapsed": false,
+      "availability": "NOT_ENOUGH_HISTORY"
+    }
+  ],
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-inventory.json",
+      "sha256": "47af45f504ec1b986ae3ed57c80094fbb268cad50bdb87de385de269bc0badc5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-native-scope-audit.json",
+      "sha256": "83d85fcffabbec25a4488cd47150b4757ab2caeb1488966c2a31cf48bbdf02f3"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-parse-retained.json",
+      "sha256": "c9ba24f04b71f2cfe7e32af40b1cbfb5b06cf14bad7576dddc55a54019acc2e1"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-dhaka-audit.json",
+      "sha256": "c33f2c28155351cf980c2994e4d9a2fb5e6e01f2dcebfa7744d2b531de1d3ab1"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr004-acquire-catalogue.json",
+      "sha256": "20fc0b8dacdaab5aca7d46414c9cd481509cd9f0dcd4f1cddf56c99324684ac6"
+    }
+  ],
+  "research": [
+    {
+      "url": "https://www.ghanafa.org/index.php/port-city-fc-clinch-ghana-premier-league-qualification-with-four-games-to-spare",
+      "finding": "Official promotion report confirms earlier senior Division One participation. It does not provide importable dated native match IDs."
+    },
+    {
+      "url": "https://www.api-football.com/documentation-v3",
+      "finding": "Official API reference consulted; retained resource and local configured cap, rather than advertised coverage, determine this acquisition scope."
+    }
+  ]
+}
