@@ -60,6 +60,12 @@ probabilities from an unpublished candidate.
 The selected calendar day is converted to a UTC half-open interval. Existing
 fixture fields remain unchanged; `goal_scorers` is additive.
 
+Fixture rows expose the canonical `result_score_basis`. Actual three-way result
+filters require `FINISHED`, non-negative integer scores and `REGULATION_90`,
+matching the existing settlement contract. Unknown, extra-time and shootout
+scores cannot establish a regulation-time winner. Older API responses without
+the field remain readable but are excluded from active result filters.
+
 `GET /v1/fixtures/{fixture_id}/live` returns the canonical score, status and
 clock plus normalized incidents, current provider statistics, separate
 score/event/statistics provenance, resource availability and a partial-data

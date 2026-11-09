@@ -30,6 +30,11 @@ const liveMatch = {
 };
 
 describe("FixtureExplorer", () => {
+  it.each([undefined, null, "UNKNOWN", "REGULATION_90", "EXTRA_TIME", "PENALTY_SHOOTOUT"])("preserves score basis %s without inferring it", (basis) => {
+    const parsed = parseFixtureGroups({ groups: [{ competition, fixtures: [{ ...fixture, result_score_basis: basis }] }] });
+    expect(parsed[0].fixtures[0].result_score_basis).toBe(basis ?? null);
+  });
+
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

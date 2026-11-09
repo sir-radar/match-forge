@@ -551,6 +551,7 @@ components:
         status: { type: string, enum: [SCHEDULED, LIVE, HALF_TIME, FINISHED, POSTPONED, CANCELLED, ABANDONED, SUSPENDED, INTERRUPTED, AWARDED] }
         home: { $ref: '#/components/schemas/Team' }
         away: { $ref: '#/components/schemas/Team' }
+        result_score_basis: { type: string, enum: [REGULATION_90, EXTRA_TIME, PENALTY_SHOOTOUT, UNKNOWN], description: Basis of the canonical scores; only REGULATION_90 settles three-way results. }
         home_score: { type: [integer, 'null'], minimum: 0 }
         away_score: { type: [integer, 'null'], minimum: 0 }
         venue: { type: [string, 'null'] }
