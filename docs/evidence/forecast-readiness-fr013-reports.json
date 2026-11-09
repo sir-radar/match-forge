@@ -417,7 +417,7 @@
     "error_rows"
   ],
   "context_index_optimization": {
-    "status": "PASS_WITH_WARNINGS_AWAITING_OPERATING_ROLLOUT",
+    "status": "PASS_OPERATING_ROLLOUT",
     "migration": "202611090200_context_fixture_team_indexes.sql",
     "migration_sha256": "5ec54a153fcf8424e50cf4d2b2de98039cde52e62c2071732a7fbaf66c220c32",
     "production_change": "Two participant/kickoff B-tree indexes; no function or data changes",
@@ -517,7 +517,7 @@
     },
     "pending_pr178_exact_blob": "266bea6efefb4770f5b5bc83046cbb36cb9e85ab",
     "pending_pr178_normal_order_and_retry": "PASS",
-    "operating_migration_applied": false,
+    "operating_migration_applied": true,
     "operating_rollout_requires_separate_authorization": "Remediation plan verification and acceptance step 7",
     "validation": {
       "aggregate_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
@@ -615,6 +615,165 @@
         "bytes": 8833,
         "sha256": "b79a835e4ceeaeb85bcbdf4616d2dea049206b319b48f25a0d0f9e29dfb4e29a"
       }
-    ]
+    ],
+    "operating_rollout": {
+      "status": "PASS",
+      "code_commit": "848ff8d78fc86c04f8768e94cc9685aa6ba164ed",
+      "owner_approved": true,
+      "goose_runs": [
+        {
+          "label": "up",
+          "exit": 0,
+          "seconds": 0.512171
+        },
+        {
+          "label": "retry",
+          "exit": 0,
+          "seconds": 0.02639
+        }
+      ],
+      "lock_timeout_milliseconds": 500,
+      "statement_timeout_milliseconds": 20000,
+      "fixture_writers_at_lock_check": 0,
+      "backup_sha256": "3d35a4648520666c08bb778e31b362ef3767786399872cec3c2c932d7ed6a9a6",
+      "health_and_readiness_before_after": "HTTP_200",
+      "postgres_free_bytes_before": 272140173312,
+      "postgres_free_bytes_after_with_temporary_verification_tables": 271006765056,
+      "original_rows_checked": {
+        "source_snapshots": 80372,
+        "source_resources": 82180,
+        "product_identity_admissions": 22859,
+        "product_match_history_decisions": 857750,
+        "model_artifacts": 5230,
+        "forecast_artifacts": 9990,
+        "product_forecasts": 18106,
+        "model_promotion_events": 5,
+        "artifact_retirement_events": 17
+      },
+      "changed_original_rows_after_migration": {
+        "source_snapshots": 0,
+        "source_resources": 0,
+        "product_identity_admissions": 0,
+        "product_match_history_decisions": 0,
+        "model_artifacts": 0,
+        "forecast_artifacts": 0,
+        "product_forecasts": 0,
+        "model_promotion_events": 0,
+        "artifact_retirement_events": 0
+      },
+      "changed_original_rows_after_sample": {
+        "source_snapshots": 0,
+        "source_resources": 0,
+        "product_identity_admissions": 0,
+        "product_match_history_decisions": 0,
+        "model_artifacts": 0,
+        "forecast_artifacts": 0,
+        "product_forecasts": 0,
+        "model_promotion_events": 0,
+        "artifact_retirement_events": 0
+      },
+      "serving_champion_sha256_unchanged": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "function_unchanged": true,
+      "routes": "13_LEGACY",
+      "sample_result": {
+        "status": "COMPLETED",
+        "selected": 32,
+        "published": 32,
+        "busy_or_complete": 0,
+        "lease_lost": 0,
+        "failed": 0
+      },
+      "sample_seconds": 0.756125,
+      "sample_report_inputs_and_bodies_verified": 32,
+      "public_contexts": [
+        {
+          "fixture_id": "a143fde3-9a4c-5618-b929-3281b81ef221",
+          "http": 200,
+          "stored_core_matches": true
+        },
+        {
+          "fixture_id": "8b60980f-7425-55f5-b632-55acf2a30227",
+          "http": 200,
+          "stored_core_matches": true
+        },
+        {
+          "fixture_id": "68b4f8bb-138b-5dbf-878c-7061bb4747ea",
+          "http": 200,
+          "stored_core_matches": true
+        }
+      ],
+      "old_failure_recovered": "a143fde3-9a4c-5618-b929-3281b81ef221",
+      "benchmarks": {
+        "before": {
+          "trial_seconds": [
+            0.178991,
+            0.095683,
+            0.09447,
+            0.098047,
+            0.093765,
+            0.095436
+          ],
+          "warm_median_seconds": 0.095436,
+          "source_fingerprint": "03da131b2892fad47a57c63084295759def7b43183e750a22adaecb6f224f729"
+        },
+        "after": {
+          "trial_seconds": [
+            0.002291,
+            0.000522,
+            0.000481,
+            0.000432,
+            0.000383,
+            0.000406
+          ],
+          "warm_median_seconds": 0.000432,
+          "source_fingerprint": "03da131b2892fad47a57c63084295759def7b43183e750a22adaecb6f224f729"
+        }
+      },
+      "cohort_progress": {
+        "at": "2026-11-09 23:12:57.329092+00:00",
+        "frozen": [
+          135612,
+          128011,
+          0,
+          0
+        ],
+        "global": [
+          244828,
+          128111,
+          "312191",
+          "159255",
+          0
+        ]
+      },
+      "frozen_backlog_continuation": "Authorized for original frozen IDs only, batches<=32; stop on regression, failure, integrity issue or resource constraints; use existing report owner; no new identities or governance changes",
+      "new_forecasts": 0,
+      "private_receipts": [
+        {
+          "path": ".local/forecast-readiness-execution/resume-20261109/fr013-operating-index-rollout.json",
+          "bytes": 21393,
+          "sha256": "bf469e68f55328c6408705778b615d968ebeed2ac17764d4dd775ec3bf5ccecb"
+        },
+        {
+          "path": ".local/forecast-readiness-execution/resume-20261109/fr013-operating-index-rollout.py",
+          "bytes": 11127,
+          "sha256": "cfca4bb5197f917c1b3252037da80e95e6dea9fb5cfe00cc4c97dec0044bc4a4"
+        },
+        {
+          "path": ".local/forecast-readiness-execution/resume-20261109/fr013-operating-index-up.log",
+          "bytes": 165,
+          "sha256": "9b30b768b039d44c8dbe1d0c083c74e6fe2c08f199d376f085c4097282c792fb"
+        },
+        {
+          "path": ".local/forecast-readiness-execution/resume-20261109/fr013-operating-index-retry.log",
+          "bytes": 79,
+          "sha256": "844c0f6bfc8fc4bb63fb91b0b1c18c5177c43433ed6c944375234161fb235c07"
+        },
+        {
+          "path": ".local/forecast-readiness-execution/resume-20261109/fr013-after-index-cohort-progress.json",
+          "bytes": 180,
+          "sha256": "65737023d9ca00d391ce2caaf2a239d6697ce04ce4343a44a23e8aafdd350e80"
+        }
+      ]
+    }
   }
 }

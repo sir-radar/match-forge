@@ -969,3 +969,22 @@ constraint. Both pass in a fresh disposable retry with unchanged code and tests;
 the subsequent PostgreSQL/Redis/API integration checks also pass. No operating
 index migration has been applied. Acceptance step 7 requires separate rollout
 authorization before the bounded operating sample and backlog continuation.
+
+The owner approved the exact index rollout, 32-report sample and bounded
+continuation of the original frozen backlog. Health/readiness, available disk,
+the restored backup hash and migration source pin pass before application. No
+fixture writer holds a conflicting lock at the check; Goose uses a 500 ms lock
+wait limit and the existing 20-second statement deadline. Normal upgrade takes
+0.512 seconds and retry is a no-op. Both indexes are ready/valid; the context
+function is unchanged.
+
+All 32 selected frozen contexts publish in 0.756 seconds. Every input/body hash,
+reproduced body and completion generation verifies. Three public context
+responses agree, including the previously timed-out fixture. All original rows
+in nine registration populations remain exact after migration and after the
+sample, including 18,106 existing product forecasts. Serving champion bytes and
+thirteen LEGACY routes are preserved. Disk space remains above 252 GiB during
+temporary verification; health/readiness return HTTP 200. The elapsed-fixture
+source hash also stays identical in six operating queries per state. The sample
+is **PASS**. Continued projection is limited to the original frozen fixture IDs,
+with bounded batches and automatic stops on failures or integrity/resource issues.
