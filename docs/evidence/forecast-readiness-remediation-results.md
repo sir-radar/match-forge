@@ -59,7 +59,7 @@ and shadow identities checked independently.
 | FR-010 | IN_PROGRESS | Approved operating hold policy/sample verified; source-dependent scopes remain |
 | FR-011 | BLOCKED_EXTERNAL | Approved retirement verified; exact originals remain absent from searched copies |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
-| FR-013 | NOT_STARTED | Bounded backlog processing and measured throughput |
+| FR-013 | IN_PROGRESS | Frozen 196 context/14 performance generations verified; global backlog frozen for continued bounded work |
 | FR-014 | NOT_STARTED | Independent StatsBomb native-target proof; account for PR #178 |
 | FR-015 | NOT_STARTED | Source/player/settlement gaps without release-gate changes |
 | FR-016 | NOT_STARTED | Exact quarantine and schedule evidence |
@@ -894,3 +894,37 @@ The [FR-004 evidence](forecast-readiness-fr004-history.json) retains exact nativ
 IDs, country entries and receipt hashes. History imports, identity admissions and
 forecast gains remain zero for this acquisition checkpoint. Status validation,
 exact source/receipt assertions and `git diff --check` pass; code is unchanged.
+
+## Phase C: FR-013 report projections
+
+**Target cohort PASS; global backlog IN_PROGRESS.** The frozen 196 context scopes
+and fourteen performance scope/horizons all reach their requested generations.
+Seven bounded batches select 181 scopes, publish 174 new context reports and
+reuse seven existing performance inputs, with zero failed projections or lost
+leases. New requests remain protected by the existing generation and source-hash
+checks. No completion counter is set outside the existing report owner.
+
+All 174 new input/body hashes verify and every context body reproduces from its
+stored input. Checks cover 24,022 prior history rows and 100 already-known future
+schedule rows: target outcomes are absent, knowledge cutoffs hold, and same-day
+date-only results stay excluded. Six public context responses, three fixture
+list/detail/history groups and all fourteen public performance horizons agree
+with their stored records, fingerprints and probabilities. Original model and
+forecast rows and the serving champion hash remain exact; thirteen routes remain
+LEGACY. Report processing creates no forecast gain.
+
+During the 16.210-second operator window, the global pending context count moves
+from 136,150 to 135,949. Requested generations advance by two and completed
+generations by 606; these include background work and collapsed requests, so they
+are not report or forecast counts. An initial private selector rejected the
+native `-infinity` timestamp before any projection. Using the database's existing
+due-time comparison resolves that operator error without a production change.
+
+At 19:44:34 UTC the remaining 135,612 context scopes are frozen for continued
+processing through the existing bounded worker. The existing 149,467 reports
+occupy 612,720,640 bytes; local PostgreSQL storage has sufficient available
+capacity. The [report evidence](forecast-readiness-fr013-reports.json) pins the
+complete private scope/generation inventory, receipt hashes, temporal checks,
+public checks and measured counters. No throughput optimization is justified by
+the completed cohort. Validation: full byte/source/cutoff/generation assertions,
+project-status validation and `git diff --check`; production code is unchanged.
