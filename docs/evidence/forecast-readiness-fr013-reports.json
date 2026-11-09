@@ -91,14 +91,60 @@
     "fix": "Use existing SQL retry_at<=clock_timestamp comparison; no deadline/gate change"
   },
   "global_backlog_followup": {
-    "status": "FROZEN_NOT_YET_STARTED",
+    "status": "STOPPED_AT_BATCH_BOUNDARY",
     "cutoff": "2026-11-09 19:44:34.572229+00:00",
     "frozen_context_scopes": 135612,
     "scope_sha256": "bae954ab2d680c5b7991a2d1ff7d2e98f5dfb6e36caa603ba0aa5ab9006fd802",
     "errors_at_freeze": 0,
     "existing_report_rows": 149467,
     "existing_report_storage_bytes": 612720640,
-    "available_postgres_storage_kib": 277467016
+    "available_postgres_storage_kib": 277467016,
+    "operator_before": {
+      "observed_at": "2026-11-09 19:55:41.592885+00:00",
+      "frozen": [
+        135612,
+        135260,
+        0,
+        0
+      ],
+      "global": [
+        244788,
+        135266,
+        "311866",
+        "151783",
+        0
+      ]
+    },
+    "operator_after": {
+      "observed_at": "2026-11-09 22:54:11.275413+00:00",
+      "frozen": [
+        135612,
+        128641,
+        1,
+        0
+      ],
+      "global": [
+        244826,
+        128728,
+        "312149",
+        "158625",
+        1
+      ]
+    },
+    "batches": 207,
+    "selected": 6624,
+    "published": 6243,
+    "busy_or_complete": 380,
+    "failed": 1,
+    "lease_lost": 0,
+    "changed_original_rows": {
+      "model_artifacts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0
+    },
+    "failed_fixture_id": "a143fde3-9a4c-5618-b929-3281b81ef221",
+    "failure": "public_context_source statement deadline; native retry preserved",
+    "stop_reason": "Batch-boundary checkpoint before verified index rollout; no lease or completion bypass"
   },
   "public_context_evidence": [
     {
@@ -369,5 +415,206 @@
     "requested_generations",
     "completed_generations",
     "error_rows"
-  ]
+  ],
+  "context_index_optimization": {
+    "status": "PASS_WITH_WARNINGS_AWAITING_OPERATING_ROLLOUT",
+    "migration": "202611090200_context_fixture_team_indexes.sql",
+    "migration_sha256": "5ec54a153fcf8424e50cf4d2b2de98039cde52e62c2071732a7fbaf66c220c32",
+    "production_change": "Two participant/kickoff B-tree indexes; no function or data changes",
+    "profiled_rows_removed_per_team_before": 225957,
+    "profiled_shared_hit_or_read_blocks_before_approximate": 275270,
+    "candidate_choice": "Two-column indexes. Wider candidate INCLUDE(updated_at) was not used by Bitmap Heap Scan and would add storage/write cost.",
+    "index_definitions": [
+      [
+        "product_fixtures_away_kickoff_idx",
+        "CREATE INDEX product_fixtures_away_kickoff_idx ON football.product_fixtures USING btree (away_team_id, kickoff_at)"
+      ],
+      [
+        "product_fixtures_home_kickoff_idx",
+        "CREATE INDEX product_fixtures_home_kickoff_idx ON football.product_fixtures USING btree (home_team_id, kickoff_at)"
+      ]
+    ],
+    "isolated_index_bytes": [
+      [
+        "product_fixtures_away_kickoff_idx",
+        11051008
+      ],
+      [
+        "product_fixtures_home_kickoff_idx",
+        11051008
+      ]
+    ],
+    "timings": {
+      "before": {
+        "trial_seconds": [
+          0.094022,
+          0.083228,
+          0.081516,
+          0.081763,
+          0.082278,
+          0.102294
+        ],
+        "warm_median_seconds": 0.082278,
+        "source_fingerprint": "03da131b2892fad47a57c63084295759def7b43183e750a22adaecb6f224f729"
+      },
+      "after": {
+        "trial_seconds": [
+          0.005976,
+          0.002137,
+          0.002945,
+          0.002145,
+          0.002984,
+          0.00203
+        ],
+        "warm_median_seconds": 0.002145,
+        "source_fingerprint": "03da131b2892fad47a57c63084295759def7b43183e750a22adaecb6f224f729"
+      }
+    },
+    "warm_median_speedup": 38.35804195804196,
+    "planner_statistics": "ANALYZE football.product_fixtures in the owned restore before either timing state",
+    "used_fixture_indexes": [
+      "product_fixtures_home_kickoff_idx",
+      "product_fixtures_away_kickoff_idx"
+    ],
+    "timing_scope": "Six uninstrumented queries per state on one elapsed fixture; first query excluded from warm median. Measured evidence, not an enforced timing threshold.",
+    "same_statement_contexts_verified": 214,
+    "same_statement_parity_sha256": "e07589f0ff974d1b0752909bef8be10c5090ba16672d819ed2ffbbb15402b738",
+    "parity_scope": "All 196 original target contexts plus 16 frozen global backlog scopes and two profiled/failing fixtures, deduplicated. Each before/create/drop comparison shares one outer SQL statement timestamp, including future-fixture knowledge cutoffs.",
+    "context_function_unchanged": true,
+    "registration_populations_preserved": 9,
+    "legacy_routes": 13,
+    "normal_migration_lifecycle": [
+      {
+        "label": "validate",
+        "exit": 0
+      },
+      {
+        "label": "up",
+        "exit": 0
+      },
+      {
+        "label": "up-retry",
+        "exit": 0
+      },
+      {
+        "label": "down",
+        "exit": 0
+      },
+      {
+        "label": "re-up",
+        "exit": 0
+      },
+      {
+        "label": "re-up-retry",
+        "exit": 0
+      }
+    ],
+    "fresh_backup": {
+      "cutoff": "2026-11-09 20:24:39.542425+00:00",
+      "bytes": 1668627121,
+      "sha256": "3d35a4648520666c08bb778e31b362ef3767786399872cec3c2c932d7ed6a9a6",
+      "restore": "PASS"
+    },
+    "pending_pr178_exact_blob": "266bea6efefb4770f5b5bc83046cbb36cb9e85ab",
+    "pending_pr178_normal_order_and_retry": "PASS",
+    "operating_migration_applied": false,
+    "operating_rollout_requires_separate_authorization": "Remediation plan verification and acceptance step 7",
+    "validation": {
+      "aggregate_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "initial_aggregate_exit": 2,
+      "initial_failures": [
+        "test_real_browser_rehearses_projection_with_preserved_history: browser launch timeout",
+        "test_daily_ingestion_reconciles_retained_history_before_insert: clock-order constraint failure"
+      ],
+      "failed_checks_fresh_disposable_retry": "2 PASS",
+      "api_integration_continuation_exit": 0,
+      "python_unit_tests": 1819,
+      "rust_tests": 16,
+      "web_tests": 107,
+      "other_aggregate_checks": "PASS; no production code or test edits after the aggregate"
+    },
+    "sources": [
+      {
+        "url": "https://www.postgresql.org/docs/18/indexes-bitmap-scans.html",
+        "finding": "PostgreSQL combines separate indexes for OR predicates using a bitmap."
+      },
+      {
+        "url": "https://www.postgresql.org/docs/18/indexes-multicolumn.html",
+        "finding": "Equality on the leading participant column and range on kickoff bound the relevant index portion."
+      }
+    ],
+    "forecast_gain": 0,
+    "private_receipts": [
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-global-projection.json",
+        "bytes": 4818,
+        "sha256": "a2fc97054ed4728e1215bc69e3d0e879489b7ac15516adddb80ea845c54c8d35"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-global-projection-batches.jsonl",
+        "bytes": 39435,
+        "sha256": "c8eda590c59fff801907b93d6564c717cbcf1103f137897d734a39796c6f6184"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-global-error-scopes.json",
+        "bytes": 442,
+        "sha256": "a064ecadf5ddadc8c5dba5b3d52db5b9bba680ab4233544f57baaf58090383d4"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-global-unresolved-scopes.json",
+        "bytes": 40382996,
+        "sha256": "067b875058ded5f3230a163af7297f4865eccac2c6743940541efca2777cefa9"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-context-profile-before.json",
+        "bytes": 233546,
+        "sha256": "4c7876141f7c6f06e0b6c0abd2a475708fa82a8259379f8b6bdf06245bf4632d"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-context-profile-lean.json",
+        "bytes": 65774,
+        "sha256": "d8e2df8a6209bae5df450a0a8842481382bd07be97e1f06c3261e27168c3683a"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-populated-verification.json",
+        "bytes": 34647,
+        "sha256": "144a8eb26fa676226326b8ff5fa1f9b8e36ad40a546851d6e77529b17c90c429"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-final-plan.json",
+        "bytes": 75759,
+        "sha256": "2e85632cbc445f75e6dac21fd06f9dc0b2ff14aafee1ec48236485d6515870a1"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-migration-compatibility/result.json",
+        "bytes": 4633,
+        "sha256": "379bd66c871e4336e1eb9d94fd5f7dd4fdc4f8a2aafbe52058526f9957a5cd75"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-context-indexes/manifest.json",
+        "bytes": 23414,
+        "sha256": "29b005c30b98bcada823c878fc8d6a90911e11b86d98bd96f4c6c2203afbd148"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-context-indexes/restore-verification.json",
+        "bytes": 1143,
+        "sha256": "e171534800bb66a1ee42bb99f9215f6e70de537fab7a367dc32ea09c99ba78de"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-check-integration.log",
+        "bytes": 31143,
+        "sha256": "bb3152dd299a7f53759a908f39d0e936be12609c8c169d757127be57664f08aa"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-failed-tests-retry.log",
+        "bytes": 8893,
+        "sha256": "f06bc53bdbe17ec8149a559fa3e9a7fc413646aeb0e055eb9cf90347d6f8a7e1"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-index-api-integration.log",
+        "bytes": 8833,
+        "sha256": "b79a835e4ceeaeb85bcbdf4616d2dea049206b319b48f25a0d0f9e29dfb4e29a"
+      }
+    ]
+  }
 }

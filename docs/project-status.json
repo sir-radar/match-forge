@@ -1582,7 +1582,7 @@
         "serving_champion_bytes_preserved": true
       },
       "fr013": {
-        "status": "TARGET_COHORT_VERIFIED_GLOBAL_BACKLOG_FROZEN",
+        "status": "INDEX_VERIFIED_AWAITING_OPERATING_ROLLOUT",
         "evidence_ref": "docs/evidence/forecast-readiness-fr013-reports.json",
         "frozen_context_scopes_completed": 196,
         "frozen_performance_scopes_completed": 14,
@@ -1596,7 +1596,14 @@
         "global_backlog_frozen_scopes": 135612,
         "global_backlog_frozen_at": "2026-11-09 19:44:34.572229+00:00",
         "global_backlog_frozen_sha256": "bae954ab2d680c5b7991a2d1ff7d2e98f5dfb6e36caa603ba0aa5ab9006fd802",
-        "global_backlog_errors": 0
+        "global_backlog_errors": 1,
+        "global_backlog_published": 6243,
+        "global_backlog_frozen_remaining": 128641,
+        "context_index_migration": "202611090200",
+        "context_index_operating_applied": false,
+        "same_statement_contexts_verified": 214,
+        "index_warm_median_speedup": 38.36,
+        "index_validation": "PASS_WITH_WARNINGS; two failed checks passed fresh retry; API continuation passed"
       }
     }
   },

@@ -928,3 +928,44 @@ complete private scope/generation inventory, receipt hashes, temporal checks,
 public checks and measured counters. No throughput optimization is justified by
 the completed cohort. Validation: full byte/source/cutoff/generation assertions,
 project-status validation and `git diff --check`; production code is unchanged.
+
+## FR-013 global backlog and context indexes
+
+**Index change PASS_WITH_WARNINGS; operating rollout pending.** The existing
+worker stops cleanly after 207 bounded batches: 6,243 reports published, 380
+already complete or busy, one statement deadline and zero lost leases. Of the
+135,612 frozen generations, 128,641 remain; the global pending count is 128,728.
+Background completions and new requests are recorded separately. All original
+model/forecast rows and serving champion bytes remain exact. The failed fixture
+is retained with its ordinary retry deadline; no completion counter is forced.
+
+Profiling the next-fixture lookup finds 225,957 unrelated fixture rows scanned
+per team. Migration `202611090200` adds two B-tree indexes on participant and
+kickoff. PostgreSQL can [combine the two indexes for the existing OR predicate](https://www.postgresql.org/docs/18/indexes-bitmap-scans.html).
+The wider candidate's included timestamp was unused by the bitmap heap scan, so
+the change retains only the two lookup columns. The function and its ordering,
+football/knowledge cutoffs, history eligibility and generation checks are unchanged.
+
+A fresh 1,668,627,121-byte consistent backup restores with all nine protected
+registration fingerprints and thirteen LEGACY routes intact. All 196 original
+contexts, sixteen frozen backlog contexts and two profiled/failing fixtures
+retain identical inputs before index creation, after creation and after removal.
+Each comparison shares one statement timestamp, preserving future-fixture
+knowledge cutoffs exactly. Normal Goose upgrade/retry, down to the preceding
+version and re-upgrade/retry pass. Exact pending PR #178 migration ordering also
+passes in a separate disposable database.
+
+For one elapsed fixture, six uninstrumented queries per state give warm medians
+of 82.278 ms before and 2.145 ms after, excluding each first query. This is a
+38.36-fold improvement for that query, not an estimate for the entire backlog.
+Its source fingerprint is identical and the final nested plan uses both indexes.
+The [evidence](forecast-readiness-fr013-reports.json) pins the full parity,
+backup, lifecycle, plan and timing receipts.
+
+The aggregate passes static checks, 1,819 Python unit tests, sixteen Rust tests,
+107 web tests and all but two storage checks. The browser check initially fails
+to launch Chromium; the operational fixture check fails its mapping clock-order
+constraint. Both pass in a fresh disposable retry with unchanged code and tests;
+the subsequent PostgreSQL/Redis/API integration checks also pass. No operating
+index migration has been applied. Acceptance step 7 requires separate rollout
+authorization before the bounded operating sample and backlog continuation.
