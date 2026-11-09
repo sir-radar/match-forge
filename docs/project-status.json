@@ -1310,7 +1310,7 @@
         "FR-011": "BLOCKED_EXTERNAL",
         "FR-012": "NOT_STARTED",
         "FR-013": "IN_PROGRESS",
-        "FR-014": "NOT_STARTED",
+        "FR-014": "BLOCKED_DEPENDENCY",
         "FR-015": "NOT_STARTED",
         "FR-016": "NOT_STARTED"
       },
@@ -1606,6 +1606,19 @@
         "index_validation": "PASS_WITH_WARNINGS; two failed checks passed fresh retry; API continuation passed",
         "index_operating_sample_reports": 32,
         "index_operating_sample_seconds": 0.756125
+      },
+      "fr014": {
+        "status": "BLOCKED_DEPENDENCY",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr014-legacy.json",
+        "legacy_mappings_verified_unchanged": 21,
+        "original_sources_byte_verified": 2,
+        "native_results_offline_replayed": 380,
+        "exact_fixture_observations": 0,
+        "unknown_score_basis_results": 380,
+        "independent_relationships_proven": 0,
+        "new_admissions": 0,
+        "new_forecasts": 0,
+        "pending_pr178_head": "463ec15a8a0720fb48e842af5a009cf140545f90"
       }
     }
   },

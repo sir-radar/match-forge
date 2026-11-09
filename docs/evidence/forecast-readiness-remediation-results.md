@@ -988,3 +988,25 @@ temporary verification; health/readiness return HTTP 200. The elapsed-fixture
 source hash also stays identical in six operating queries per state. The sample
 is **PASS**. Continued projection is limited to the original frozen fixture IDs,
 with bounded batches and automatic stops on failures or integrity/resource issues.
+
+## FR-014 exact legacy prerequisite check
+
+**BLOCKED_DEPENDENCY.** All twenty team mappings and the competition mapping in
+PR #178's pinned cohort retain their original UUIDv7 IDs, `deterministic` labels
+and source registrations. Both original source resources pass the existing raw
+integrity verifier; native IDs match the exact competition/season context.
+Offline replay of all 380 EPL 2/27 results emits 380 unknown-basis results and
+380 unresolved-timezone findings, with zero exact fixture observations. No
+admission, correction, operating import or forecast is created.
+
+The [official match specification at the original source revision](https://github.com/hudl/open-data/blob/b0bc9f22dd77c206ddedc1d742893b3bbe64baec/doc/Open%20Data%20Matches%20v3.0.0.pdf)
+is byte-identical to the current PDF. Its inspected page types `kick_off` as
+`Time` without a timezone. The later API UTC release note cannot establish the
+meaning of those historical Git bytes. PR #178 remains draft/unmerged at
+`463ec15a8a0720fb48e842af5a009cf140545f90`. Its honest new-writer method does
+not admit legacy IDs, and this branch does not duplicate that implementation.
+One independently proven source-to-accepted-target relationship, source-time
+qualification and coordinated migration/writer delivery remain prerequisites.
+The [bounded evidence](forecast-readiness-fr014-legacy.json) pins every audit,
+source and specification receipt. Project-status validation and diff checks pass;
+production code is unchanged.

@@ -1,0 +1,113 @@
+{
+  "status": "BLOCKED_DEPENDENCY",
+  "audit_status": "PASS_READ_ONLY",
+  "scope": "Exact 21 legacy StatsBomb team/competition mappings and original EPL competition 2, season 27 resource; not all StatsBomb data or current baseline targets",
+  "observed_at": "2026-11-09 23:21:50.496144+00:00",
+  "pr178": {
+    "url": "https://github.com/sir-radar/match-forge/pull/178",
+    "head": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "state": "OPEN_DRAFT_UNMERGED",
+    "method_migration": "202611020100_provider_native_mapping_method.sql",
+    "operating_method_migration_applied": false,
+    "order": "Migration before updated writer; current branch does not duplicate that writer or legacy correction design"
+  },
+  "legacy_mappings": {
+    "team_cases": 20,
+    "competition_cases": 1,
+    "unchanged_uuids_methods_and_sources": 21,
+    "uuid_version": 7,
+    "recorded_method": "deterministic",
+    "source_native_ids_verified": 21,
+    "dependent_canonical_matches": 380,
+    "dependent_product_fixtures": 0,
+    "new_independent_relationships": 0,
+    "review_ready_cases": 0,
+    "new_corrections": 0
+  },
+  "original_sources": [
+    {
+      "artifact_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "path": "raw/provider=statsbomb_open_data/snapshot=b0bc9f22dd77c206ddedc1d742893b3bbe64baec/data/matches/2/27.json",
+      "expected_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "actual_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "status": "PASS"
+    },
+    {
+      "artifact_id": "01a051db-545a-7337-9aaa-d9ad55f52184",
+      "path": "raw/provider=statsbomb_open_data/snapshot=b0bc9f22dd77c206ddedc1d742893b3bbe64baec/data/competitions.json",
+      "expected_sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+      "actual_sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+      "status": "PASS"
+    }
+  ],
+  "offline_normalization": {
+    "records": 380,
+    "observations": 1140,
+    "result_observations": 380,
+    "exact_fixture_observations": 0,
+    "unknown_score_basis_results": 380,
+    "findings": {
+      "MF_NORM_KICKOFF_TIMEZONE_UNRESOLVED": 380,
+      "MF_NORM_PROVIDER_TIMESTAMP_UNRESOLVED": 380
+    }
+  },
+  "native_naive_kickoff_clocks": 380,
+  "official_open_data_match_spec": {
+    "url": "https://raw.githubusercontent.com/hudl/open-data/b0bc9f22dd77c206ddedc1d742893b3bbe64baec/doc/Open%20Data%20Matches%20v3.0.0.pdf",
+    "path": ".local/forecast-readiness-execution/resume-20261109/fr014-pinned-matches-v3.pdf",
+    "bytes": 161316,
+    "sha256": "a22cb1769ef1762a62e83a437c0eb5757cd6b7e7617a50bb1e6598918cf9656f",
+    "same_as_current_doc": true,
+    "page_reviewed": 1,
+    "version": "v3.0.0; 26 March 2019",
+    "finding": "kick_off is typed Time; no timezone or UTC interpretation is specified. The PDF at the original source Git revision is byte-identical to the current document. This does not qualify historical UTC instants.",
+    "current_api_release_applicability": "The 22 September 2025 API UTC release note does not establish the timezone of the pinned Open Data Git files.",
+    "current_api_release_source": "https://www.hudl.com/releases/statsbomb"
+  },
+  "blocking_requirements": [
+    "Coordinate the unmerged PR #178 migration/writer without rewriting old mapping metadata.",
+    "Obtain one exact independent relationship tying a legacy native ID to an accepted target with competition, season, senior/gender and raw hashes. Existing pinned candidate release failed its quality gate; no new qualified relationship was obtained.",
+    "Resolve original source timezone and regulation-score semantics before exact historical fixture qualification."
+  ],
+  "operating_writes": 0,
+  "new_admissions": 0,
+  "new_forecasts": 0,
+  "legacy_routes": 13,
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-current-legacy-audit.json",
+      "bytes": 10803,
+      "sha256": "234cff3711b67e280b2dd8a5bc6357bf4b8c95b49742af45799df8304e5d9ef3"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-current-legacy-audit.py",
+      "bytes": 5488,
+      "sha256": "92cec902593d72c93bb96b170185e54b15c0b44ada1a742679d28cfb2920ca3c"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-pinned-root-cases.json",
+      "bytes": 158448,
+      "sha256": "9a48e6b0ed4ae0167f3f3d5fca4c6f986bab0c4e3472ed517c152a130a1bd4f5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-pinned-relationship-cases.json",
+      "bytes": 116694,
+      "sha256": "67946cb3dfb2185c0f47af25d20a61c6e6f91ba0b072ee17bbd3eece8765ef58"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-pinned-match-spec-source.json",
+      "bytes": 367,
+      "sha256": "2f3afb1ab1c64e6e22490d2c94c3dfae9e955898573d2ee697b4d044a3b13d0e"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-pinned-matches-v3.pdf",
+      "bytes": 161316,
+      "sha256": "a22cb1769ef1762a62e83a437c0eb5757cd6b7e7617a50bb1e6598918cf9656f"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr014-match-spec-page1.png",
+      "bytes": 164541,
+      "sha256": "6f50ecf69618e1de8724c032f76ead0c99fb5677e2f319790100bafe5031eaf7"
+    }
+  ]
+}
