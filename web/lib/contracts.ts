@@ -44,6 +44,7 @@ export type Fixture = {
   away: Team;
   home_score: number | null;
   away_score: number | null;
+  result_score_basis?: string | null;
   venue: string | null;
   round: string | null;
   forecast_availability: string;
@@ -754,8 +755,7 @@ function parseFixture(value: unknown): Fixture {
     status: parseFixtureStatus(item.status),
     home: parseTeam(item.home),
     away: parseTeam(item.away),
-    home_score: nullableNumber(item.home_score, "home_score"),
-    away_score: nullableNumber(item.away_score, "away_score"),
+    ...parseFixtureResult(item),
     venue: nullableText(item.venue, "venue"),
     round: nullableText(item.round, "round"),
     forecast_availability: text(item.forecast_availability, "forecast_availability"),
@@ -769,6 +769,14 @@ function parseFixture(value: unknown): Fixture {
     freshness: parseFreshness(item.freshness),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
     goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
+  };
+}
+
+function parseFixtureResult(item: Record<string, unknown>): Pick<Fixture, "home_score" | "away_score" | "result_score_basis"> {
+  return {
+    home_score: nullableNumber(item.home_score, "home_score"),
+    away_score: nullableNumber(item.away_score, "away_score"),
+    result_score_basis: nullableText(item.result_score_basis ?? null, "result_score_basis"),
   };
 }
 

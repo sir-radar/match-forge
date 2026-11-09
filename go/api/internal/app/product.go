@@ -143,6 +143,7 @@ type Fixture struct {
 	Home                 Team             `json:"home"`
 	Away                 Team             `json:"away"`
 	HomeScore            *int             `json:"home_score"`
+	ResultScoreBasis     string           `json:"result_score_basis"`
 	AwayScore            *int             `json:"away_score"`
 	Venue                *string          `json:"venue"`
 	Round                *string          `json:"round"`

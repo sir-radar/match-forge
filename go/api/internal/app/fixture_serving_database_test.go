@@ -43,6 +43,28 @@ func TestServingDatabaseFixtureRepresentatives(t *testing.T) {
 	}
 }
 
+func TestServingDatabaseFixtureScoreBasis(t *testing.T) {
+	pool := servingDatabasePool(t)
+	competition, home, away, season := seedServingFixtureIdentities(t, pool, "Score basis")
+	kickoff := time.Date(2031, time.January, 11, 12, 0, 0, 0, time.UTC)
+	fixtureID := seedFixtureForSeason(t, pool, competition, home, away, season, kickoff)
+	store := NewPostgresProductStore(pool)
+	for _, basis := range []string{"REGULATION_90", "EXTRA_TIME", "PENALTY_SHOOTOUT", "UNKNOWN"} {
+		mustExec(t, pool, `UPDATE football.product_fixtures SET status='FINISHED',home_score=0,away_score=0,result_score_basis=$2 WHERE fixture_id=$1`, fixtureID, basis)
+		groups, err := store.Fixtures(context.Background(), FixtureFilters{Start: kickoff.Add(-time.Hour), End: kickoff.Add(time.Hour), CompetitionID: competition})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(groups) != 1 || len(groups[0].Fixtures) != 1 {
+			t.Fatalf("unexpected fixtures: %+v", groups)
+		}
+		fixture := groups[0].Fixtures[0]
+		if fixture.ResultScoreBasis != basis || fixture.HomeScore == nil || *fixture.HomeScore != 0 || fixture.AwayScore == nil || *fixture.AwayScore != 0 {
+			t.Fatalf("score basis or zero scores lost: %+v", fixture)
+		}
+	}
+}
+
 func TestServingDatabaseFixtureHTTPFiltersUnknownSeasons(t *testing.T) {
 	pool := servingDatabasePool(t)
 	date := "2026-10-21"
