@@ -1311,7 +1311,7 @@
         "FR-012": "NOT_STARTED",
         "FR-013": "IN_PROGRESS",
         "FR-014": "BLOCKED_DEPENDENCY",
-        "FR-015": "NOT_STARTED",
+        "FR-015": "BLOCKED_EVIDENCE",
         "FR-016": "NOT_STARTED"
       },
       "architecture_cutover": false,
@@ -1619,6 +1619,20 @@
         "new_admissions": 0,
         "new_forecasts": 0,
         "pending_pr178_head": "463ec15a8a0720fb48e842af5a009cf140545f90"
+      },
+      "fr015": {
+        "status": "BLOCKED_EVIDENCE",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr015-inputs.json",
+        "unbound_market_families_checked": 67,
+        "data_collection_required": 53,
+        "insufficient_player_data": 14,
+        "changed_market_readiness": 0,
+        "lineup_resources_byte_verified": 380,
+        "unique_native_players": 644,
+        "native_lineup_occurrences": 13678,
+        "imputed_minutes": 0,
+        "scientific_stage_started": false,
+        "new_forecasts": 0
       }
     }
   },

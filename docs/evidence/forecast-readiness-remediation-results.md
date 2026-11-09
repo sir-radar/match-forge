@@ -1010,3 +1010,32 @@ qualification and coordinated migration/writer delivery remain prerequisites.
 The [bounded evidence](forecast-readiness-fr014-legacy.json) pins every audit,
 source and specification receipt. Project-status validation and diff checks pass;
 production code is unchanged.
+
+## FR-015 bounded market and player qualification
+
+**BLOCKED_EVIDENCE.** The existing pinned PR #178 diagnostic runs read-only for
+its original EPL 2/27 canonical scope at a fresh knowledge cutoff. All 67 market
+family definitions match the original receipt. Statuses remain 53
+DATA_COLLECTION_REQUIRED and fourteen INSUFFICIENT_PLAYER_DATA; none changes
+readiness. These are unbound families in one scope, not a global market census
+or 67 unavailable baseline forecasts. All source/target compatibility remains
+UNKNOWN and evaluation remains UNASSESSED.
+
+All 380 retained lineup resources pass the existing raw integrity verifier.
+They contain 644 distinct native players and 13,678 occurrences: 8,350 with
+Starting XI evidence, 2,099 with explicit tactical/injury substitution evidence,
+and 3,229 with other or missing start reasons. Of those occurrences, 3,209 have
+no position stints. Across 12,717 stints, 8,364 lack an end; none of the raw player
+records supplies a minutes/exposure field. No zero or ninety-minute exposure is
+imputed. Native facts do not establish canonical player identity, eligible match
+history, exact participation/exposure or settlement equivalence.
+
+The [input evidence](forecast-readiness-fr015-inputs.json) pins all resource
+hashes, exact required-input gaps, unchanged definitions and reproducible
+read-only diagnostic receipts. New probabilities, models, admissions and
+operating writes remain zero. FR-014 relationships and source-time qualification,
+player/field coverage and independently verified target semantics remain
+prerequisites. No additional acquisition is justified merely to duplicate these
+already-retained resources. Scientific evaluation requires its separate stage
+after data acceptance. Project-status validation and diff checks pass;
+production code is unchanged.
