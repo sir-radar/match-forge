@@ -88,11 +88,11 @@ for (const version of ["legacy-compact-index-v1", "compact-buckets-v2"]) {
   });
 }
 
-test("mobile uses the designed compact navigation and hides desktop rail", async ({ page }, testInfo) => {
+test("mobile uses compact navigation with no competition sidebar", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile", "mobile-only assertion");
   await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
-  await expect(page.getByRole("complementary", { name: "Competition coverage" })).toBeHidden();
+  await expect(page.getByRole("complementary", { name: "Competition coverage" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Arsenal.*Chelsea/ })).toBeVisible();
   await page.screenshot({ path: "test-results/mobile-collapsed.png", fullPage: true });
 });
@@ -168,4 +168,65 @@ test("score matrix keeps native row and column relationships at 320px", async ({
   await expect(matrix.locator("td").first()).toHaveCSS("border-top-style", "solid");
   await page.emulateMedia({ forcedColors: "none" });
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
+test("probability and actual-result filters intersect locally and reset accessibly", async ({ page }) => {
+  let fixtureRequests = 0;
+  await page.route("http://127.0.0.1:8080/v1/fixtures?**", async (route) => {
+    fixtureRequests++;
+    const won = { ...fixture, status: "FINISHED", result_score_basis: "REGULATION_90", home_score: 2, away_score: 0, forecast: { ...fixture.forecast, probabilities: { home: .55, draw: .25, away: .2 } } };
+    await route.fulfill({ json: { groups: [{ competition, fixtures: [won,
+      { ...won, id: "lost", home_score: 0, away_score: 1, forecast: { ...won.forecast, probabilities: { home: .58, draw: .22, away: .2 } } },
+      { ...won, id: "missing", forecast: null, forecast_availability: "NOT_ENOUGH_HISTORY" },
+      { ...won, id: "unconfirmed", result_score_basis: "UNKNOWN" },
+    ] }] } });
+  });
+  await page.goto("/");
+  await expect(page.getByText("4 matching fixtures of 4")).toBeVisible();
+  const initialRequests = fixtureRequests;
+  await expect(page.locator(".competition-rail")).toHaveCount(0);
+  const slider = page.getByRole("slider", { name: "Minimum predicted probability slider" });
+  await page.getByLabel("Predicted outcome").selectOption("home");
+  await page.getByRole("button", { name: "55%", exact: true }).click();
+  await page.getByLabel("Actual match result").selectOption("HOME_WON");
+  await expect(page.getByText("1 matching fixture of 4")).toBeVisible();
+  await page.getByLabel("Minimum predicted probability (%)", { exact: true }).fill("58");
+  await expect(page.getByText("No fixtures found", { exact: true })).toBeVisible();
+  await page.getByLabel("Actual match result").selectOption("AWAY_WON");
+  await expect(page.getByText("1 matching fixture of 4")).toBeVisible();
+  await slider.focus(); await slider.press("ArrowRight");
+  await expect(page.getByLabel("Minimum predicted probability (%)", { exact: true })).toHaveValue("59");
+  await slider.press("Home"); await expect(slider).toHaveAttribute("aria-valuenow", "0");
+  await slider.press("End"); await expect(slider).toHaveAttribute("aria-valuenow", "100");
+  await page.getByRole("button", { name: "Reset Filters" }).click();
+  await expect(page.getByText("4 matching fixtures of 4")).toBeVisible();
+  await page.getByLabel("Minimum predicted probability (%)", { exact: true }).fill("0");
+  await expect(page.getByText("3 matching fixtures of 4")).toBeVisible();
+  await page.getByRole("button", { name: "Reset Filters" }).click();
+  await expect(page.getByLabel("Minimum predicted probability (%)", { exact: true })).toHaveValue("");
+  expect(fixtureRequests).toBe(initialRequests);
+  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
+  await page.screenshot({ path: `test-results/${test.info().project.name}-fixture-filters.png`, fullPage: true });
+});
+
+test("fixture toolbar and rows reflow without a sidebar", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: /Arsenal.*Chelsea/ })).toBeVisible();
+  const widths = testInfo.project.name === "desktop" ? [1440, 1024, 768] : [390, 320];
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(page.getByRole("combobox", { name: "Competition", exact: true })).toBeVisible();
+    await expect(page.getByLabel("Actual match result")).toBeVisible();
+    await expect(page.locator(".fixture-summary .xg")).toBeVisible();
+    const geometry = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth, workbench: document.querySelector(".fixture-workbench")!.getBoundingClientRect().width }));
+    expect(geometry.content).toBeLessThanOrEqual(geometry.viewport);
+    expect(geometry.workbench).toBe(geometry.viewport);
+    await page.screenshot({ path: `test-results/fixture-filters-${width}.png`, fullPage: true });
+  }
+  await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+  const slider = page.getByRole("slider");
+  await slider.focus(); await slider.press("ArrowRight");
+  await expect(slider).toBeFocused();
+  await expect(slider).toHaveAttribute("aria-valuenow", "1");
 });
