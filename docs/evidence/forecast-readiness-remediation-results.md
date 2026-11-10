@@ -60,9 +60,9 @@ and shadow identities checked independently.
 | FR-011 | BLOCKED_EXTERNAL | Approved retirement verified; exact originals remain absent from searched copies |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
 | FR-013 | IN_PROGRESS | Frozen 196 context/14 performance generations verified; global backlog frozen for continued bounded work |
-| FR-014 | NOT_STARTED | Independent StatsBomb native-target proof; account for PR #178 |
-| FR-015 | NOT_STARTED | Source/player/settlement gaps without release-gate changes |
-| FR-016 | NOT_STARTED | Exact quarantine and schedule evidence |
+| FR-014 | BLOCKED_DEPENDENCY | Exact 21 legacy mappings audited; native-target proof, source semantics and PR #178 remain |
+| FR-015 | BLOCKED_EVIDENCE | All 67 frozen families diagnosed; native player exposure and settlement evidence remain |
+| FR-016 | BLOCKED_EVIDENCE | Four scoped ambiguous members reviewed; source independence, two CSV guards and one time contradiction remain |
 
 Execution order follows dependencies: shared defects, qualified forecast recovery,
 remaining integrity/recovery work, then parity. Every verified implementation
@@ -1093,3 +1093,35 @@ The operating database remains at `202611090200`, with the previous team-name
 function. No operating name change, identity admission, forecast gain or
 Architecture V2 cutover is attributed to this fix. Exact pins, preservation
 results and receipts are in [the verification evidence](forecast-readiness-fr006-team-name-refresh.json).
+
+## FR-016: exact scoped quarantine review
+
+The frozen priority neighborhood contains 4,850 fixture IDs: the original 196
+targets, exact retained FR-003 history IDs and FR-008 references. It has zero
+source-result or ingestion conflict rows and four active ambiguous members.
+These are scoped results; the global conflict and quarantine populations remain
+outside this measurement.
+
+Registered OpenFootball bytes and existing match mappings identify exact archive
+rows for all four FotMob candidates. Three match the accepted target's ordered
+participants, competition, kickoff and score. The fourth, native `3055925`,
+retains a ten-minute kickoff contradiction and remains held. No rounding or
+configured tolerance is used to admit it. Agreement between these aggregators
+does not establish independent source provenance.
+
+The existing review owner was rehearsed in the populated restore with all
+business writes rolled back. Two candidates, `3609975` and `3610159`, encounter
+original CSV history rows still quarantined for impossible schedules. Their
+guard remains in force; those exact FR-007/008 dependencies must be resolved
+before a review can publish. The single unblocked technical rehearsal,
+`3055816`, passes in 7.225s. Retry adds no mapping-decision, fixture-resolution, admission, history
+decision or fixture-observation rows. The original observation facts, eight
+fixture fact sets, 578 earlier-cutoff history rows and nine registration digests
+remain unchanged after rollback. Original observation comparisons exclude the established mutable cache
+fields; newly appended observations are counted explicitly.
+
+**Disposition: BLOCKED_EVIDENCE.** No operating review, admission, forecast or
+quarantine change was published. The remaining source-independence proof, CSV
+identity dependencies and kickoff contradiction are recorded in
+[the scoped evidence](forecast-readiness-fr016-quarantines.json). A successful
+rollback rehearsal does not remove those prerequisites.

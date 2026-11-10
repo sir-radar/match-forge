@@ -1312,7 +1312,7 @@
         "FR-013": "IN_PROGRESS",
         "FR-014": "BLOCKED_DEPENDENCY",
         "FR-015": "BLOCKED_EVIDENCE",
-        "FR-016": "NOT_STARTED"
+        "FR-016": "BLOCKED_EVIDENCE"
       },
       "architecture_cutover": false,
       "model_research_resumed": false,
@@ -1653,6 +1653,24 @@
         "imputed_minutes": 0,
         "scientific_stage_started": false,
         "new_forecasts": 0
+      },
+      "fr016": {
+        "status": "BLOCKED_EVIDENCE",
+        "evidence_ref": "docs/evidence/forecast-readiness-fr016-quarantines.json",
+        "evidence_sha256": "0fb443249a219cf1933ed9d07818f49dd846af36abf571a5b5b384a523ab4541",
+        "frozen_fixture_count": 4850,
+        "scoped_source_conflicts": 0,
+        "scoped_ingestion_conflicts": 0,
+        "ambiguous_members": 4,
+        "exact_source_context_previews": 3,
+        "single_existing_owner_rollback": "PASS",
+        "idempotent_retry": true,
+        "earlier_cutoff_history_rows_preserved": 578,
+        "operating_business_writes": 0,
+        "new_operating_forecasts": 0,
+        "remaining_source_independence_proof": true,
+        "history_guard_dependencies": 2,
+        "held_exact_time_contradictions": 1
       }
     }
   },
