@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-03T16:38:39Z",
+  "updated_at": "2026-11-10T04:41:32Z",
   "owner_decisions": [
     "RETAIN_SPRINT2_FAIL_CLOSE_SHARED_PACE_AND_AUTHORIZE_PHASE3_RESEARCH_V1",
     "APPROVE_PHASE3A_MINIMAL_XG_FOR_V1_FEATURE_MATHEMATICS_V1",
@@ -1302,7 +1302,7 @@
         "FR-003": "BLOCKED_DEPENDENCY",
         "FR-004": "IN_PROGRESS",
         "FR-005": "BLOCKED_EVIDENCE",
-        "FR-006": "VERIFIED",
+        "FR-006": "BLOCKED_OWNER",
         "FR-007": "BLOCKED_DEPENDENCY",
         "FR-008": "IN_PROGRESS",
         "FR-009": "IN_PROGRESS",
@@ -1334,7 +1334,27 @@
         "verification_exit_code": 0,
         "python_unit_tests_passed": 1818,
         "rust_tests_passed": 16,
-        "web_tests_passed": 107
+        "web_tests_passed": 107,
+        "team_name_refresh": {
+          "status": "VERIFIED_IN_SHADOW",
+          "rollout_status": "PENDING_SEPARATE_OWNER_AUTHORIZATION",
+          "migration": "202611100100",
+          "operating_applied": false,
+          "evidence_ref": "docs/evidence/forecast-readiness-fr006-team-name-refresh.json",
+          "evidence_sha256": "4d6320b78e51ea426f64396473022225f4f678f69c19fb7bf28bfd3e76ab6687",
+          "new_regression_cases": 8,
+          "focused_cases_passed": 9,
+          "full_check_integration_exit_code": 0,
+          "existing_statement_deadline_seconds": 20,
+          "populated_rename_seconds": [
+            2.401459,
+            10.964095,
+            14.17044
+          ],
+          "fresh_restore_rename_seconds": 5.072794,
+          "operating_business_writes": 0,
+          "verified_new_forecasts": 0
+        }
       },
       "fr007": {
         "implementation_status": "VERIFIED_IN_SHADOW",

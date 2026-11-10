@@ -52,7 +52,7 @@ and shadow identities checked independently.
 | FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
 | FR-004 | IN_PROGRESS | Native catalogue acquired; exact lower-division requests deferred under existing guards |
 | FR-005 | BLOCKED_EVIDENCE | All 41 already revalidated; 33 archive seasons checked; dated counterpart/correction proof remains |
-| FR-006 | VERIFIED | Batched context invalidation; authorized operating migration verified |
+| FR-006 | BLOCKED_OWNER | Original fanout rollout verified; team-name follow-up verified in restores, separate rollout pending |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
@@ -1039,3 +1039,57 @@ prerequisites. No additional acquisition is justified merely to duplicate these
 already-retained resources. Scientific evaluation requires its separate stage
 after data acceptance. Project-status validation and diff checks pass;
 production code is unchanged.
+
+## FR-006 follow-up: bounded team-name refresh
+
+The English recovery checkpoint exposed another expensive path: the existing
+team-name trigger repeatedly resolved dated participants and history across all
+fixtures while holding the identity transaction. A populated rollback reproduced
+the unchanged 20-second deadline both with the new context indexes (20.007s)
+and without them (20.005s). Removing the indexes did not resolve this defect.
+
+Migration `202611100100` materializes historical candidates and possible target
+participants once. It keeps **all dated decisions**, including histories later
+withdrawn, and retains the existing dated eligible-history function as the final
+authority. It requests one generation per distinct target and none for an
+unchanged name. The existing trigger and public context-source function remain
+unchanged. The [PostgreSQL 18 CTE documentation](https://www.postgresql.org/docs/18/queries-with.html)
+supports explicit materialization; the measurements below establish its effect
+on this workload.
+
+| Populated rename | Exact target set | Rename elapsed time |
+| --- | ---: | ---: |
+| Málaga | 252 | 2.401s |
+| Doncaster | 104 | 10.964s |
+| Rochdale, highest home-history count | 118 | 14.170s |
+
+The literal previous query was partitioned into 128-target statements to compare
+all 22,348 potentially observable targets under the existing statement limit.
+Another 253,944 targets precede any possible history knowledge in this restore.
+All three target sets agree exactly; completed generations do not change, and
+each required generation increments once. Every name and queue mutation rolls
+back. Partitioned reference elapsed times are correctness evidence, not a
+throughput comparison. Eight new boundary cases and the existing rename case
+cover same-kickoff, date-only, future knowledge, ineligible or withdrawn history,
+duplicate decisions, unchanged names and opponents absent from target teams.
+
+A fresh 1,693,142,515-byte backup at 2026-11-10 00:03:51 UTC has SHA256
+`832f9fb06d35dd4fb2358670024c0f7d4d14de4840cb3ac72c9c6c30bc581950`.
+Its separate populated restore passed normal upgrade/retry, a rollback-only
+Málaga rename in 5.073s, all nine original registration digests and 13 LEGACY
+routes. Normal backout restores the byte-identical prior function; re-upgrade
+and retry pass. A combined normal ordered upgrade with PR #178's exact pending
+migration also passes.
+
+The final `make check integration` aggregate passed in a detached validation
+checkout at `deb3bad` plus the exact SQL/test patches. This isolated the check
+from another task's branch switches and left its CSS work untouched. The first
+aggregate failed when that task temporarily checked out `main`, where a required
+task migration was absent; it is not counted as a successful run.
+
+**Implementation verification: PASS_WITH_WARNINGS. Operating rollout: pending
+separate owner authorization under remediation-plan acceptance step 7.**
+The operating database remains at `202611090200`, with the previous team-name
+function. No operating name change, identity admission, forecast gain or
+Architecture V2 cutover is attributed to this fix. Exact pins, preservation
+results and receipts are in [the verification evidence](forecast-readiness-fr006-team-name-refresh.json).

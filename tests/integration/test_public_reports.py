@@ -535,6 +535,183 @@ def test_historical_team_name_change_requeues_context_with_that_opponent(report_
 
 
 @pytest.mark.parametrize(
+    ("precision", "history_delta", "knowledge_delta", "eligible", "expected"),
+    [
+        ("EXACT", timedelta(hours=-1), timedelta(hours=-2), True, True),
+        ("EXACT", timedelta(), timedelta(hours=-2), True, False),
+        ("DATE_ONLY", timedelta(hours=-1), timedelta(hours=-2), True, False),
+        ("DATE_ONLY", timedelta(days=-1), timedelta(hours=-2), True, True),
+        ("EXACT", timedelta(days=-1), timedelta(hours=1), True, False),
+        ("EXACT", timedelta(days=-1), timedelta(hours=-2), False, False),
+    ],
+)
+def test_team_name_refresh_keeps_dated_eligibility_and_one_generation(
+    report_database, precision, history_delta, knowledge_delta, eligible, expected
+):
+    target, prior = uuid4(), uuid4()
+    with psycopg.connect(report_database) as connection:
+        observed, kickoff = connection.execute(
+            "SELECT clock_timestamp(),date_trunc('day',clock_timestamp())+interval '36 hours'"
+        ).fetchone()
+        clone_fixture(connection, target, kickoff)
+        clone_fixture(connection, prior, kickoff + history_delta)
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,
+             source_known_at)
+            SELECT %s,%s,%s,%s,%s,2,1,'live_context_test',%s,%s,%s,'name refresh history',%s
+            FROM generate_series(1,3)""",
+            (
+                prior,
+                COMPETITION,
+                HOME,
+                AWAY,
+                kickoff + history_delta,
+                SNAPSHOT,
+                precision,
+                eligible,
+                observed + knowledge_delta,
+            ),
+        )
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_teams SET name=name || ' United' WHERE team_id=%s", (HOME,)
+        )
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone() == (before + int(expected),)
+        connection.execute("UPDATE football.product_teams SET name=name WHERE team_id=%s", (HOME,))
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone() == (before + int(expected),)
+
+
+def test_team_name_refresh_keeps_history_eligible_before_later_withdrawal(report_database):
+    target, prior = uuid4(), uuid4()
+    with psycopg.connect(report_database) as connection:
+        observed = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        clone_fixture(connection, target)
+        clone_fixture(connection, prior, observed - timedelta(days=1))
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,
+             source_known_at)
+            VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                   'earlier eligible history',%s)""",
+            (
+                prior,
+                COMPETITION,
+                HOME,
+                AWAY,
+                observed - timedelta(days=1),
+                SNAPSHOT,
+                observed - timedelta(hours=2),
+            ),
+        )
+        kickoff = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_fixtures SET kickoff_at=%s WHERE fixture_id=%s",
+            (kickoff, target),
+        )
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,
+             source_known_at)
+            VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',false,
+                   'later withdrawal',%s)""",
+            (
+                prior,
+                COMPETITION,
+                HOME,
+                AWAY,
+                observed - timedelta(days=1),
+                SNAPSHOT,
+                observed - timedelta(hours=2),
+            ),
+        )
+        assert connection.execute(
+            "SELECT fixture_id FROM football.product_eligible_team_history_at(%s,ARRAY[%s::uuid])",
+            (kickoff, HOME),
+        ).fetchall() == [(prior,)]
+        assert (
+            connection.execute(
+                "SELECT fixture_id FROM football.product_eligible_team_history_at("
+                "statement_timestamp(),ARRAY[%s::uuid])",
+                (HOME,),
+            ).fetchall()
+            == []
+        )
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_teams SET name=name || ' United' WHERE team_id=%s", (HOME,)
+        )
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (target,),
+        ).fetchone() == (before + 1,)
+
+
+def test_team_name_refresh_includes_opponents_absent_from_target_participants(report_database):
+    prior, opponent = uuid4(), uuid4()
+    with psycopg.connect(report_database) as connection:
+        connection.execute(
+            "INSERT INTO football.teams(id,entity_kind) VALUES(%s,'club')", (opponent,)
+        )
+        connection.execute(
+            "INSERT INTO football.product_teams(team_id,name,country,updated_at) "
+            "VALUES(%s,'Opponent','Test',clock_timestamp())",
+            (opponent,),
+        )
+        clone_fixture(connection, prior, KICKOFF - timedelta(days=30))
+        connection.execute(
+            "UPDATE football.product_fixtures SET away_team_id=%s WHERE fixture_id=%s",
+            (opponent, prior),
+        )
+        connection.execute(
+            """INSERT INTO football.product_match_history_decisions
+            (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,away_goals,
+             source_provider_code,source_snapshot_id,source_kickoff_precision,eligible,reason,
+             source_known_at)
+            VALUES(%s,%s,%s,%s,%s,2,1,'live_context_test',%s,'EXACT',true,
+                   'historical opponent',clock_timestamp())""",
+            (prior, COMPETITION, HOME, opponent, KICKOFF - timedelta(days=30), SNAPSHOT),
+        )
+        before = connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (FIXTURE,),
+        ).fetchone()[0]
+        connection.execute(
+            "UPDATE football.product_teams SET name='Opponent United' WHERE team_id=%s", (opponent,)
+        )
+        assert connection.execute(
+            "SELECT generation FROM football.product_context_report_refresh_work "
+            "WHERE fixture_id=%s",
+            (FIXTURE,),
+        ).fetchone() == (before + 1,)
+        source = connection.execute(
+            "SELECT football.public_context_source(%s)", (FIXTURE,)
+        ).fetchone()[0]
+        assert source["history"][0]["away_team"] == "Opponent United"
+
+
+@pytest.mark.parametrize(
     "mutation",
     [
         "UPDATE football.product_read_reports SET horizon='1H'",
