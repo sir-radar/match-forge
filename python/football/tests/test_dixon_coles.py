@@ -339,3 +339,41 @@ def _balanced_training_matches() -> tuple[GoalMatch, ...]:
 
 def _poisson(goals: int, expected_goals: float) -> float:
     return math.exp(-expected_goals) * expected_goals**goals / math.factorial(goals)
+
+
+def _league(first: UUID, second: UUID, start: int) -> tuple[GoalMatch, ...]:
+    scores = ((2, 1), (0, 1), (1, 1), (3, 0), (1, 2), (0, 0))
+    return tuple(
+        GoalMatch(
+            match_id=UUID(int=start + index),
+            kickoff_at=KICKOFF + timedelta(days=start + index),
+            home_team_id=first if index % 2 == 0 else second,
+            away_team_id=second if index % 2 == 0 else first,
+            home_goals=home_goals,
+            away_goals=away_goals,
+        )
+        for index, (home_goals, away_goals) in enumerate(scores)
+    )
+
+
+def test_unregularized_fit_rejects_teams_that_never_meet() -> None:
+    separate = _league(TEAM_A, TEAM_B, 1) + _league(TEAM_C, TEAM_D, 100)
+    unregularized = DixonColesModel(DixonColesConfig(model_version="dc-v2"))
+
+    with pytest.raises(DixonColesContractError, match="linked to every other team"):
+        unregularized.fit(separate)
+
+    bridge = GoalMatch(
+        match_id=UUID(int=500),
+        kickoff_at=KICKOFF + timedelta(days=500),
+        home_team_id=TEAM_B,
+        away_team_id=TEAM_C,
+        home_goals=1,
+        away_goals=1,
+    )
+    assert unregularized.fit((*separate, bridge)).training_match_count == 13
+
+    regularized = DixonColesModel(
+        DixonColesConfig(model_version="dc-v3", effect_regularization=16.0)
+    )
+    assert regularized.fit(separate).converged
