@@ -144,6 +144,9 @@ No second work queue, backup registry or domain scheduler is introduced.
 Activation defaults to disabled. Migration `202611100300` is additive and must
 be rehearsed in disposable databases; applying it to the operating database
 requires separate approval. It does not apply earlier pending migrations itself.
+Migration 300 waits for existing sync-run transactions before locking shared work.
+If shared work is busy (`SQLSTATE 55P03`), the migration rolls back. Let the
+existing transactions finish and retry from the corrected checkout.
 Deploy compatible Go/Python/web readers before separately enabling the action.
 Normal ingestion, forecasting and browsing do not depend on the external drive.
 

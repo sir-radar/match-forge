@@ -1,5 +1,11 @@
 -- +goose Up
 -- Manual backup reuses operator-run and shared-work ownership; no new scheduler/registry.
+-- Sync-run transactions can reach work_items through triggers. Let them finish
+-- before taking the work lock. Work-led readers can take the reverse order, so
+-- fail the transaction rather than waiting for work_items while holding sync runs.
+LOCK TABLE football.product_sync_runs IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE football.work_items IN ACCESS EXCLUSIVE MODE NOWAIT;
+
 ALTER TABLE football.work_items DROP CONSTRAINT work_items_work_type_check;
 ALTER TABLE football.work_items ADD CONSTRAINT work_items_work_type_check CHECK (work_type IN (
  'PROVIDER_ACQUISITION','HISTORICAL_ACQUISITION','NORMALIZATION','IDENTITY_REMEDIATION',
