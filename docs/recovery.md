@@ -230,24 +230,30 @@ name by itself is not a recovery key.
 
 On the new Mac, install the tested Restic and PostgreSQL tools. Authenticate the
 existing repository with the separately retained password; do not initialize it.
-List `restic snapshots --tag matchforge-verified --json`, run `check --read-data`,
-and select an exact snapshot ID. Read its `paths` entry from snapshot metadata and
+List complete points with `restic snapshots --tag matchforge-verified --json`.
+For the verified NTC recoverable point, use `restic snapshots --tag
+matchforge-recoverable-verified --json`. Run `check --read-data` and select an
+exact snapshot ID. Read its `paths` entry from snapshot metadata and
 restore `<snapshot-id>:<captured-payload-path>` with `--target <new-empty-root>
 --verify`. This is a path inside the snapshot; the original working directory is
 not needed. Verify `recovery.json`, all listed checksums and the full file set.
-Restore `application.tar` into a new application directory using a safe data-only
-tar filter, install the locked dependencies, and configure fresh local credentials.
+Extract `application.tar` into a new application directory. Accept only regular
+files and directories with validated relative paths; reject links and special
+entries. Install the locked dependencies and configure fresh local credentials.
 The capture records exact Git/schema/lock identity and non-secret capture-process
 settings; it does not claim an unknown running build was identified.
 
-Run the explicit isolated `verify-restore` command above first. For complete
+Run the explicit isolated `verify-restore` command above first; add
+`--allow-recoverable` for the declared recoverable point. For complete
 cluster recovery, replay `globals.sql` and the dump only in a newly provisioned
 isolated PostgreSQL cluster, preserving owners/ACLs/extensions. Never replay
 globals over an operating cluster as a test. Keep provider schedules/workers
 disabled until separately approved adoption. The integration test restores using
 the archived application from a different directory, rechecks every table and
-historical cutoff, and independently tests global-role/ownership replay. A real
-operating restore drill and measured RTO remain required before claiming them.
+historical cutoff, and independently tests global-role/ownership replay. The
+first operating recoverable drill and measured times are in
+`docs/evidence/operating-recovery-scope.json`; they do not establish full recovery
+or guarantee an RTO.
 
 Retain the latest verified point and at least one earlier independently verified
 point when capacity permits. Measure actual initial and incremental repository

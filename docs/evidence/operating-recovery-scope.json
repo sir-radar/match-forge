@@ -10,11 +10,9 @@
     },
     "external": {
       "capacity_bytes": 1000185528320,
-      "device_id": 16777241,
       "filesystem": "exfat",
       "filesystem_encrypted": false,
-      "free_bytes": 679785529344,
-      "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C"
+      "free_bytes": 679785529344
     },
     "external_headroom_warning": false,
     "internal_free_bytes": 259276468224,
@@ -122,6 +120,143 @@
     }
   ],
   "observed_at": "2026-11-10T20:39:56.744237+00:00",
+  "operating_backup": {
+    "artifact_reader_outcomes": [
+      {
+        "count": 22,
+        "kind": "DATASET",
+        "status": "MISSING"
+      },
+      {
+        "count": 2,
+        "kind": "DATASET",
+        "status": "PASS"
+      },
+      {
+        "count": 26,
+        "kind": "MODEL_ARTIFACT",
+        "status": "MISSING"
+      },
+      {
+        "count": 5204,
+        "kind": "MODEL_ARTIFACT",
+        "status": "PASS"
+      }
+    ],
+    "artifact_reader_results_unchanged": true,
+    "automatic_backups": false,
+    "capture": {
+      "captured_at": "2026-11-10T21:12:12.634285+00:00",
+      "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "clean_worktree": true,
+      "cutoff_count": 2,
+      "database_dump_bytes": 14741497356,
+      "file_count": 115337,
+      "moved_originals_included": 19,
+      "referenced_bytes": 8451146914,
+      "relation_count": 137,
+      "relation_row_counts": {
+        "football.product_forecasts": 18162,
+        "football.source_resources": 83717,
+        "football.source_snapshots": 81909
+      },
+      "scope": "RECOVERABLE_ONLY",
+      "source_commit": "ac5bafc15893e3bf3815503c400f3fcf96d572b5",
+      "source_database": "football",
+      "source_database_allocated_bytes": 14102206143,
+      "unavailable_dependencies": 159,
+      "unavailable_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d"
+    },
+    "capture_seconds": 905.4237889579963,
+    "captured_at": "2026-11-10T21:12:12.634285+00:00",
+    "credential_source": "Current user macOS Keychain via RESTIC_PASSWORD_COMMAND",
+    "data_added_bytes": 24472870999,
+    "data_added_packed_bytes": 3972165723,
+    "external_reserve_bytes": 200037105664,
+    "free_above_reserve_bytes": 475532623872,
+    "full_recovery": false,
+    "independent_row_stream_verification": {
+      "relations_checked": 137,
+      "row_hash_mismatches": []
+    },
+    "logical_bytes": 24462634694,
+    "manual_execution": "OWNER_APPROVED_ONE_TIME_CLI_EXCEPTION",
+    "migration_observation": {
+      "captured_latest_applied": 202611100100,
+      "captured_migration_history_matches_current_prefix": true,
+      "current_unknown_applied": [
+        202610220100
+      ],
+      "observed_new_migration_history": [
+        [
+          202611100200,
+          true,
+          "2026-11-10 21:27:36.777421"
+        ]
+      ],
+      "post_backup_latest_applied": 202611100200,
+      "post_backup_pending": [
+        202611100300
+      ],
+      "prior_unknown_applied": [
+        202610220100
+      ]
+    },
+    "observed_at": "2026-11-10T22:07:58.513216+00:00",
+    "operating_activation": false,
+    "operating_incremental_growth": "NOT_MEASURED_ONE_OPERATING_POINT",
+    "packed_reduction_percent": 83.76,
+    "readback_and_restore_verification_seconds": 2104.963359,
+    "repository_allocated_bytes": 4215537664,
+    "repository_encrypted": true,
+    "repository_file_bytes": 3980126823,
+    "repository_format": 2,
+    "repository_write_seconds": 164.362516,
+    "restic_locks_after_verification": 0,
+    "restoration": {
+      "database_isolated": true,
+      "duration_seconds": 1133.3126486249967,
+      "full_recovery": false,
+      "global_role_restore": {
+        "all_table_row_counts_match": true,
+        "database_owner": "football",
+        "duration_seconds": 510.6599339169916,
+        "extensions": [
+          [
+            "btree_gist",
+            "1.8"
+          ],
+          [
+            "plpgsql",
+            "1.0"
+          ]
+        ],
+        "globals_applied": true,
+        "network": "none",
+        "original_ownership_restored": true,
+        "roles": 18,
+        "status": "PASS",
+        "tables": 137
+      },
+      "status": "PASS_RECOVERABLE",
+      "unavailable_dependencies": 159,
+      "verified_at": "2026-11-10T21:56:33.779129+00:00"
+    },
+    "same_size_additional_point_capacity": 112,
+    "separate_key_retention": "OWNER_ATTESTED",
+    "snapshot_tag": "matchforge-recoverable-verified",
+    "status": "VERIFIED_RECOVERABLE",
+    "total_operator_seconds": 3245.879625,
+    "unavailable_dependencies": 159,
+    "verified_at": "2026-11-10T22:05:13.307172+00:00",
+    "volume_after_verification": {
+      "capacity_bytes": 1000185528320,
+      "filesystem": "exfat",
+      "filesystem_encrypted": false,
+      "free_bytes": 675569729536
+    },
+    "volume_free_space_change_bytes": 4215799808
+  },
   "registered_references": 115242,
   "scope": "RECOVERABLE_ONLY",
   "search_coverage": {
@@ -134,6 +269,10 @@
     "git_blobs_hashed": 4551,
     "git_retained_blobs_final": 4556,
     "git_supplemental_blobs_hashed": 211,
+    "macos_temporary_candidates_hashed": 165,
+    "macos_temporary_files_examined": 26855,
+    "macos_temporary_matches": 0,
+    "macos_temporary_permission_limited_entries": 57,
     "ntc_errors": 0,
     "ntc_files_examined": 7503,
     "other_retained_files_examined": 137563,

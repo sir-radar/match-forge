@@ -404,3 +404,67 @@ architecture, unit, build, project-status, web and storage/API integration check
 passed. Log raw-byte SHA-256: `fa180adf267512c677d387c5c2acff43bd9f5db6b793d9845c0a333b0d977c98`. Existing dependency deprecations and the
 unchanged frontend test-file lint warning remain. Source changes were frozen
 throughout the run.
+
+## Operating NTC recovery result — PASS_WITH_WARNINGS
+
+The approved one-time command invoked the committed manual backup engine at
+`ac5bafc15893e3bf3815503c400f3fcf96d572b5` with the verified inventory and a new local restore
+root. NTC was enrolled using the current user's Keychain and the separately
+retained password. The drive's exFAT filesystem and existing files were preserved.
+This task applied no operating migration and performed no release activation,
+promotion, source repair, scheduling or pruning.
+
+| Observed item | Result |
+| --- | --- |
+| Snapshot time / verified time | 2026-11-10T21:12:12.634285+00:00 / 2026-11-10T22:05:13.307172+00:00 |
+| Registered files | 115,337 / 8,451,146,914 bytes, including 19 moved originals |
+| Database | 14,741,497,356 dump bytes; 137 relations; 2 historical cutoff hashes |
+| Operating capture | 24,462,634,694 logical bytes; 24,472,870,999 uncompressed Restic data added; 3,972,165,723 packed bytes |
+| Initial repository | 3,980,126,823 file bytes; 4,215,537,664 allocated bytes; packed data 83.8% below logical payload |
+| NTC capacity / free after verification | 1,000,185,528,320 / 675,569,729,536 bytes |
+| Capture / encrypted write | 905.4 / 164.4 seconds |
+| Read-back through both drills and tagging | 2105.0 seconds |
+| Database replay, table/cutoff and restored file checks | 1133.3 seconds, excluding initial file/application copy |
+| Separate no-network globals/ownership drill | 510.7 seconds; all table counts and extensions match |
+| Total manual run | 3245.9 seconds |
+
+Restic read all repository data and verified a restored snapshot. The isolated
+restore matched all captured relation and cutoff hashes, restored application
+files, available original bytes, the exact declared gap digest, and the existing
+artifact-reader results. The separately started, network-isolated PostgreSQL
+cluster accepted the captured globals and restored original ownership, extensions
+and all table counts. Neither restore targeted the operating database. All 137
+restored row hash streams also passed a separate SHA-256 comparison. Both local
+and hosted checks passed for the implementation checkpoint.
+
+The 159 unavailable dependencies remain explicit. SQL rows, decisions and all
+18,162 published forecasts were preserved. The associated unavailable artifacts
+prevent complete recovery
+or full artifact replay. The snapshot is tagged `matchforge-recoverable-verified`;
+it does not clear the full-scope Admin reminder. Restic reported no remaining locks.
+The full snapshot ID and manifest are in the protected local receipt and encrypted
+repository, not Git.
+
+An unchanged disposable follow-up backup added zero data blobs. Actual operating
+incremental growth is unmeasured because this was the first operating point. At
+the observation, 475,532,623,872 bytes remained above a 20% reserve; that would fit
+112 more points of today's observed size. This is a capacity comparison,
+not a retention forecast. Keep this point and the next independently verified
+point, measure actual incremental growth, and retain additional monthly points
+only as measured capacity permits. No pruning is authorized.
+
+The final read-only operating check found release identity `UNKNOWN`,
+latest applied migration `202611100200`, pending `202611100300`, LEGACY routes
+and the unchanged champion. The captured migration history hash matches the
+current history prefix through `202611100100`. Migration `202611100200` was applied
+outside this task after capture, at 21:27:36 UTC; the verified backup preserves
+the pre-migration state. Version `202610220100` remains recorded in operating
+history without matching SQL in this branch, as before.
+
+Admin Back Up Now and its 30-day in-app
+reminders are implemented and tested; operating activation still needs separate
+approval. Monthly manual backups do not guarantee a 24-hour recovery point.
+
+Recommended next cohort: P02-01/P02-02, critical identity, fixture and score defects,
+subject to a new owner authorization. Establish release provenance and resolve the
+remaining full-recovery gate before risky operating adoption. No P02 work began.

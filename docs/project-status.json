@@ -3955,7 +3955,7 @@
     }
   },
   "unified_architecture_foundation": {
-    "status": "IN_PROGRESS",
+    "status": "PASS_WITH_WARNINGS",
     "authorized_tickets": [
       "P00-01",
       "P00-02",
@@ -3968,7 +3968,7 @@
     "operating_activation": false,
     "automatic_backups": false,
     "destructive_cleanup": false,
-    "implementation_status": "RESOLVING_OWNER_AUTHORIZED_OPERATING_RECOVERY_SCOPE",
+    "implementation_status": "COMPLETE_AUTHORIZED_FOUNDATION_SCOPE",
     "implemented_tickets": [
       "P00-01",
       "P00-02",
@@ -3977,23 +3977,26 @@
     ],
     "admin_backup_route": "/admin/backup",
     "backup_policy": "MANUAL_ONLY_30_DAY_IN_APP_REMINDER",
-    "operating_recovery_status": "RECOVERABLE_SCOPE_RESOLVED_159_DECLARED_UNAVAILABLE",
+    "operating_recovery_status": "VERIFIED_RECOVERABLE_SCOPE_159_DECLARED_UNAVAILABLE",
     "running_release": "UNKNOWN",
     "pending_operating_migrations": [
-      202611100200,
       202611100300
     ],
     "cleanup_proposal_ref": "docs/recovery-cleanup-proposal.md",
     "implementation_pr": "https://github.com/sir-radar/match-forge/pull/184",
-    "verified_implementation_commit": "c5324c76b997f933b5a57939f9be62a4c9f8cece",
+    "verified_implementation_commit": "ac5bafc15893e3bf3815503c400f3fcf96d572b5",
     "local_aggregate": "PASS_EXPANDED_RECOVERABLE_SCOPE",
-    "external_drive_status": "DIRECTORY_ACCESS_IDENTITY_FILESYSTEM_AND_CAPACITY_VERIFIED",
+    "external_drive_status": "ENROLLED_ENCRYPTED_BACKUP_AND_READBACK_VERIFIED",
     "external_drive_capacity_bytes": 1000185528320,
-    "external_drive_free_bytes_at_observation": 679785529344,
-    "external_drive_observed_at": "2026-11-10T20:44:17Z",
+    "external_drive_free_bytes_at_observation": 675569729536,
+    "external_drive_observed_at": "2026-11-10T22:07:58.513216+00:00",
     "keychain_credential_status": "VERIFIED_CURRENT_USER_PASSWORD_COMMAND",
     "separate_recovery_key_status": "OWNER_ATTESTED_SEPARATE_SECURE_COPY",
-    "enrollment_status": "PREFLIGHT_PASS_READY_FOR_AUTHORIZED_ENROLLMENT",
-    "operating_scope_evidence_ref": "docs/evidence/operating-recovery-scope.json"
+    "enrollment_status": "ENROLLED_RESTIC_V2",
+    "operating_scope_evidence_ref": "docs/evidence/operating-recovery-scope.json",
+    "operating_backup_captured_at": "2026-11-10T21:12:12.634285+00:00",
+    "operating_backup_verified_at": "2026-11-10T22:05:13.307172+00:00",
+    "operating_latest_applied_migration": 202611100200,
+    "backup_captured_latest_applied_migration": 202611100100
   }
 }
