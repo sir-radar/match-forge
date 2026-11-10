@@ -1,0 +1,249 @@
+{
+  "phase": "R03-B",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "d48a75212c240ffe5057e611ba06056629e97121",
+  "recorded_at": "2026-11-01T19:38:09.032980+00:00",
+  "provider": "understat",
+  "before": {
+    "verified_seasons": [
+      "2024"
+    ],
+    "fixtures": 380,
+    "resources": 2,
+    "shots": 24,
+    "normalized_observations": 2361
+  },
+  "after": {
+    "verified_seasons": [
+      "2015",
+      "2016"
+    ],
+    "new_distinct_native_fixtures": 760,
+    "completed_results": 760,
+    "team_xg_values": 1520,
+    "shot_matches": 2,
+    "shots": 53,
+    "native_roster_entries": 53,
+    "verified_utc_kickoffs": 0,
+    "canonical_eligibility": 0,
+    "scope": "New acquisitions only; original EPL 2024/25 resources preserved. Existing season adapter reused without another acquisition framework.",
+    "blockers": [
+      "2015 match 81 and 82 requests failed; 2023 league request failed; no repeated requests to failed keys",
+      "Native datetime has no timezone; kept DATE_ONLY",
+      "No exact independent source/canonical fixture/team/player anchors",
+      "Roster time field retained as native evidence; minute/transfer/settlement meaning not approved"
+    ]
+  },
+  "acquisition": {
+    "provider": "understat",
+    "results": [
+      {
+        "key": "EPL/2015",
+        "provider": "understat",
+        "resource_key": "getLeagueData/EPL/2015",
+        "acquired_at": "2026-11-01T19:35:29.299740+00:00",
+        "sha256": "07198fdc6cb246d26efb98b8dbbb119fd251fa851af1b457f307be7f99a1e684",
+        "bytes": 94592,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/understat/07198fdc6cb246d26efb98b8dbbb119fd251fa851af1b457f307be7f99a1e684",
+        "resource_type": "results",
+        "scope": {
+          "competition_native_id": "EPL",
+          "season_label": "2015"
+        },
+        "source_resource_id": "f9ad758f-15ce-502d-bae6-82cf3b24ecb0",
+        "source_snapshot_id": "0d5234f5-42f8-5fe4-9eeb-71159fd366e9",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/af9d21ed0679380055577b8bb84cad3a86881eac9532c2ee448cf6ad0f094f5c.json",
+        "report_sha256": "af9d21ed0679380055577b8bb84cad3a86881eac9532c2ee448cf6ad0f094f5c",
+        "work_id": "18f39445-149d-5f88-87a1-7d70cb89d608",
+        "replay_identical": true,
+        "observations": 2281,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 760,
+          "FixtureObservationV2": 380,
+          "ResultObservationV2": 380,
+          "ExpectedGoalsObservationV2": 760
+        },
+        "findings": {}
+      },
+      {
+        "key": "match/83",
+        "provider": "understat",
+        "resource_key": "getMatchData/83",
+        "acquired_at": "2026-11-01T19:36:39.997298+00:00",
+        "sha256": "b150c947050860616d287ca46cfe3f6e6f23950f5494a0850ef96e33921ea807",
+        "bytes": 3844,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/understat/b150c947050860616d287ca46cfe3f6e6f23950f5494a0850ef96e33921ea807",
+        "resource_type": "shots",
+        "scope": {
+          "fixture_native_id": "83"
+        },
+        "source_resource_id": "00512d25-4076-5898-a1b5-408c98027c0c",
+        "source_snapshot_id": "ac164218-e2ad-53ef-b546-0eeac29caf04",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/086fec23eb16f8c2e46dd8511fcb6011a4ef0dab4293d720b450b0631aba6932.json",
+        "report_sha256": "086fec23eb16f8c2e46dd8511fcb6011a4ef0dab4293d720b450b0631aba6932",
+        "work_id": "97157c5d-dc04-5b2e-a620-4093facbf770",
+        "replay_identical": true,
+        "observations": 70,
+        "contracts": {
+          "PlayerObservationV2": 28,
+          "ShotObservationV3": 21,
+          "ExpectedGoalsObservationV2": 21
+        },
+        "findings": {
+          "MF_NORM_ASSIST_ID_UNAVAILABLE": 16,
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 21
+        }
+      },
+      {
+        "key": "EPL/2016",
+        "provider": "understat",
+        "resource_key": "getLeagueData/EPL/2016",
+        "acquired_at": "2026-11-01T19:36:41.484095+00:00",
+        "sha256": "016ddc38d5fa72a7c4d337d9b90724756c72619662ac544cf438846224f22c71",
+        "bytes": 94127,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/understat/016ddc38d5fa72a7c4d337d9b90724756c72619662ac544cf438846224f22c71",
+        "resource_type": "results",
+        "scope": {
+          "competition_native_id": "EPL",
+          "season_label": "2016"
+        },
+        "source_resource_id": "4c6d3821-06cb-5d11-af57-0dd2c3419d11",
+        "source_snapshot_id": "c89094c3-49a1-52bf-aa60-5a1add161dd9",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/65da07fd65a21f3c866758eff08fa56e73a41ea680c74705dc2c8fe420e408d0.json",
+        "report_sha256": "65da07fd65a21f3c866758eff08fa56e73a41ea680c74705dc2c8fe420e408d0",
+        "work_id": "fe4a5895-441d-5544-8356-bd3d6536477b",
+        "replay_identical": true,
+        "observations": 2281,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 760,
+          "FixtureObservationV2": 380,
+          "ResultObservationV2": 380,
+          "ExpectedGoalsObservationV2": 760
+        },
+        "findings": {}
+      },
+      {
+        "key": "match/461",
+        "provider": "understat",
+        "resource_key": "getMatchData/461",
+        "acquired_at": "2026-11-01T19:36:52.154697+00:00",
+        "sha256": "27dbe455094d235945bf27843016076869c535c3cd27fef178994f2a021ddfc1",
+        "bytes": 4059,
+        "media_type": "text/javascript",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/understat/27dbe455094d235945bf27843016076869c535c3cd27fef178994f2a021ddfc1",
+        "resource_type": "shots",
+        "scope": {
+          "fixture_native_id": "461"
+        },
+        "source_resource_id": "44d244d3-2f44-5fc4-ac78-2aa63d849c21",
+        "source_snapshot_id": "9c96f00a-e340-56f0-a3f3-d3aee96d671f",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/00edbff9560038729bb07e2d593602cedd54add9f4a6ff27137ab09be833685e.json",
+        "report_sha256": "00edbff9560038729bb07e2d593602cedd54add9f4a6ff27137ab09be833685e",
+        "work_id": "fe950a0c-d71d-5941-974d-60f6f8a0c6c5",
+        "replay_identical": true,
+        "observations": 89,
+        "contracts": {
+          "PlayerObservationV2": 25,
+          "ShotObservationV3": 32,
+          "ExpectedGoalsObservationV2": 32
+        },
+        "findings": {
+          "MF_NORM_ASSIST_ID_UNAVAILABLE": 16,
+          "MF_NORM_COORDINATE_FRAME_UNKNOWN": 32
+        }
+      }
+    ],
+    "attempts": [
+      {
+        "key": "EPL/2015",
+        "started_at": "2026-11-01T19:35:26.977392+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "match/81",
+        "started_at": "2026-11-01T19:35:39.314217+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "Understat resource request failed"
+      },
+      {
+        "key": "match/82",
+        "started_at": "2026-11-01T19:36:09.324603+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "Understat resource request failed"
+      },
+      {
+        "key": "match/83",
+        "started_at": "2026-11-01T19:36:39.335961+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "EPL/2016",
+        "started_at": "2026-11-01T19:36:40.390898+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "match/461",
+        "started_at": "2026-11-01T19:36:51.422205+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "EPL/2023",
+        "started_at": "2026-11-01T19:36:52.491655+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "Understat resource request failed"
+      }
+    ],
+    "requests": 8
+  },
+  "normalized_contracts": {
+    "CompetitionObservationV2": 2,
+    "TeamObservationV2": 1520,
+    "FixtureObservationV2": 760,
+    "ResultObservationV2": 760,
+    "ExpectedGoalsObservationV2": 1573,
+    "PlayerObservationV2": 53,
+    "ShotObservationV3": 53
+  },
+  "experimental_isolation": {
+    "database": "football_v4_expansion_r03_20261101",
+    "system_identifier": "7679328148388241450",
+    "oid": 52291857,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "acquisition_and_publication_method": [
+    {
+      "path": ".local/reports/v4/expansion-r03/acquire.py",
+      "sha256": "05f484072ba9b4cb455797842b2ec3e474023eef935ee5f58680049be8e7a58d"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/understat.py",
+      "sha256": "fa78e36a57edf2183af42847b1ca61f4aedcaccac63053cdfee0cbe1d765d504"
+    }
+  ],
+  "verification": {
+    "focused_tests": {
+      "path": ".local/reports/v4/expansion-r03/phase-b-tests.log",
+      "sha256": "8e46ce84823b63346ea08a2e67c7c06d3a16263dd8f50399dca67862318d2764"
+    },
+    "architecture_and_status": {
+      "path": ".local/reports/v4/expansion-r03/phase-b-checks.log",
+      "sha256": "94b34c5651ea1da1c3b52ff65f72c91be328c13605baa59f672699cf2c1d2847"
+    }
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "qualified_market_labels_delta": 0,
+  "historical_feature_knowledge_backdated": false,
+  "model_changes": 0,
+  "restrictions": "Bounded development evidence only; no authentication or technical restriction bypass. No distribution permission or sportsbook settlement equivalence inferred."
+}

@@ -1,0 +1,287 @@
+{
+  "phase": "R02-F",
+  "phase_status": "PASS_WITH_WARNINGS",
+  "issue_status": "BLOCKED_WITH_EVIDENCE",
+  "issue_2_qualification_complete": false,
+  "recorded_at": "2026-11-01T19:21:13.813164+00:00",
+  "starting_sha": "5716261f4efafdfb670d6ec830fcc6977e0f5613",
+  "branch": "ft/v4-execution-programme",
+  "phase_commits": {
+    "R02-A": "11d3217f94f9e1beb6d4067e60aae35a3f4cf311",
+    "R02-B": "59cd60cb7b45f992188e3292624c3c6ae6bedef7",
+    "R02-C": "1482c88c641825b6dd09f39a63d53a0dc6d4d13c",
+    "R02-D": "0c3917ccc57f8688669bb1c8c42de117d5440675",
+    "R02-E": "6666464be00e50213ba6374e205fe22ab91b5a68"
+  },
+  "ending_commit_location": "Commit containing this evidence and docs/V4_ISSUE_02_QUALIFICATION_REPORT.md; exact SHA in CURRENT_TASK_STATUS.md and final handoff",
+  "qualified_data_delta": {
+    "canonical_identities": 0,
+    "historically_eligible_fixtures": 0,
+    "statistical_labels": 0,
+    "player_identity_admissions": 0,
+    "membership_or_transfer_intervals": 0,
+    "canonical_appearances": 0,
+    "minute_exposures": 0,
+    "player_market_labels": 0,
+    "market_families_unlocked": 0
+  },
+  "retained_population": {
+    "operating_observations": 12310,
+    "operating_capability_decisions": 26,
+    "retained_shadow_observations": 84610,
+    "total_verified_normalized_observations": 96920,
+    "normalized_source_resources": 1552,
+    "pilot_source_resources": 761,
+    "pilot_distinct_native_fixtures": 380,
+    "pilot_native_players": 644,
+    "pilot_normalized_observations": 41729
+  },
+  "final_resource_matrix": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/final-matrix/2b70cf51248e259bcb03538236882d6ca4d8c96831c832333cd5f2b4b46afdfb.json",
+    "sha256": "2b70cf51248e259bcb03538236882d6ca4d8c96831c832333cd5f2b4b46afdfb",
+    "matrix_rows": 1552,
+    "verified_observations": 96920,
+    "statsbomb_native_scope_rows": 1524,
+    "script_sha256": "0061b5ee7b8dbbe00893392ec5fa6d95af3a435843b353bbdfdf380598686e11"
+  },
+  "matrix_native_scope_method": {
+    "script": {
+      "path": ".local/reports/v4/qualification-r02/final_matrix.py",
+      "sha256": "0061b5ee7b8dbbe00893392ec5fa6d95af3a435843b353bbdfdf380598686e11"
+    },
+    "rule": "Exact same-provider fixture IDs link retained match-index competition/season relationships; CSV divisions and native season path keys remain source metadata. No canonical approval inferred.",
+    "matrix_rows": 1552,
+    "statsbomb_native_scope_rows": 1524
+  },
+  "verification": {
+    "aggregate": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "started_at": "2026-11-01T19:03:18.704355+00:00",
+      "finished_at": "2026-11-01T19:17:18.010054+00:00",
+      "exit_code": 0,
+      "log": ".local/reports/v4/qualification-r02/make-check-integration.log",
+      "log_sha256": "ba6a089cf5d9eab3f6ae5b3eade940b7a5d7915ca78326c0b2e1febc7f413bfd",
+      "python_tests": 2023,
+      "strict_mypy_source_files": 487,
+      "rust_tests": 16,
+      "web_tests": 126,
+      "storage_cases": 865,
+      "architecture_check": "PASS; included in make check",
+      "project_status_check": "PASS; included in make check",
+      "format_lint_type_complexity_build": "PASS",
+      "postgres_redis_go_api_integration": "PASS",
+      "database_scope": "DISPOSABLE_STORAGE_AND_API_DATABASES_ONLY",
+      "operating_migrations": 0
+    },
+    "focused_phase_commands": [
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py",
+        "phase": "R02-A",
+        "passed": 3,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_resolution_identity.py",
+        "phase": "R02-B",
+        "passed": 7,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest python/football/tests/test_identity_trust.py python/football/tests/test_identity_repository.py",
+        "phase": "R02-B",
+        "passed": 12,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py python/football/tests/test_resource_normalization.py python/football/tests/test_football_data_uk_normalization.py python/football/tests/test_rich_provider_normalization.py",
+        "phase": "R02-C",
+        "passed": 58,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py",
+        "phase": "R02-C final clock correction",
+        "passed": 4,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py python/football/tests/test_observation_contracts_v2.py python/football/tests/test_observation_contracts_v3.py",
+        "phase": "R02-D",
+        "passed": 36,
+        "exit_code": 0
+      },
+      {
+        "command": "uv run --locked --no-sync pytest tests/test_qualification_audit.py python/football/tests/test_market_capabilities.py",
+        "phase": "R02-E",
+        "passed": 36,
+        "exit_code": 0
+      }
+    ],
+    "changed_script_checks": {
+      "ruff_lint_format_complexity": "PASS; all three scripts and new tests checked in their phases; complexity <=10",
+      "strict_mypy_commands": [
+        "uv run --locked --no-sync mypy --follow-imports=silent scripts/audit_v4_qualification.py",
+        "uv run --locked --no-sync mypy --follow-imports=silent scripts/inspect_v4_pilot.py",
+        "uv run --locked --no-sync mypy --follow-imports=silent scripts/project_v4_qualification.py"
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0
+      ]
+    },
+    "diff_check": "PASS",
+    "review_checklist": "docs/review-checklist.md applied: exact scope, source/identity/time separation, current consumers, no duplicate registry, no migrations/dependencies/env additions, no dead/debug/speculative production code, no frozen gate changes, preserved owner AGENTS.md edit.",
+    "final_project_status_check": {
+      "command": "make project-status-check",
+      "exit_code": 0,
+      "log": ".local/reports/v4/qualification-r02/final-project-status.log",
+      "sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a"
+    }
+  },
+  "operating_preservation": {
+    "access": "READ_ONLY_REPEATABLE_READ",
+    "operating_writes": 0,
+    "receipt": {
+      "path": ".local/reports/v4/qualification-r02/preservation/final-receipt.json",
+      "sha256": "d72a3a99ab2eeaf65450743252dff1a190d907a4782c0de99b3fbfb060f7f3df"
+    },
+    "audit_script": {
+      "path": ".local/reports/v4/qualification-r02/preservation/audit.py",
+      "sha256": "4e395d1a8106cbae1954de472ec3e371038fb34a76589972f99fff4df702155f"
+    },
+    "baseline": {
+      "path": ".local/reports/v4/qualification-r02/preservation/baseline.json",
+      "sha256": "130f34708a697a0efca5451b3160adecf11a7dd6f9dc887d1f1e8dbc2000ee8a"
+    },
+    "comparisons": {
+      "observations": true,
+      "capabilities": true,
+      "champion": true,
+      "protected_relations": {
+        "artifact_retirement_events": {
+          "retained": true,
+          "baseline_rows": 17,
+          "current_rows": 17
+        },
+        "canonical_resource_coverage": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "canonical_resource_resolutions": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "model_artifacts": {
+          "retained": true,
+          "baseline_rows": 5230,
+          "current_rows": 5230
+        },
+        "model_promotion_events": {
+          "retained": true,
+          "baseline_rows": 4,
+          "current_rows": 4
+        },
+        "post_match_evaluations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "product_forecasts": {
+          "retained": true,
+          "baseline_rows": 13550,
+          "current_rows": 13850
+        },
+        "product_identity_admissions": {
+          "retained": true,
+          "baseline_rows": 22090,
+          "current_rows": 22090
+        },
+        "product_provider_mapping_decisions": {
+          "retained": true,
+          "baseline_rows": 2300146,
+          "current_rows": 2320392
+        },
+        "provider_resource_authority": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "runtime_model_registrations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "source_resources": {
+          "retained": true,
+          "baseline_rows": 62496,
+          "current_rows": 63164
+        },
+        "source_snapshots": {
+          "retained": true,
+          "baseline_rows": 60688,
+          "current_rows": 61356
+        }
+      }
+    },
+    "champion": {
+      "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "reload_verified": true
+    },
+    "original_observation_files_verified": 12310,
+    "original_capability_files_verified": 26,
+    "task_source_bytes_verified": 27,
+    "controls": {
+      "recorded_at": "2026-11-01T19:05:48.931661+00:00",
+      "fixture_route": "LEGACY",
+      "stage_controls_installed": false,
+      "operating_experimental_marker": false,
+      "read_only": "on",
+      "current_operating_market_status_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "current_operating_market_families": 67,
+      "player_resolution_decisions": 0,
+      "operating_market_report": {
+        "report": "/Users/radar/Desktop/football-simutation/.local/reports/v4/qualification-r02/operating-markets/12b2fd9853d1aa25d2e0da8f0468197827aae1a67c04b07fc35b37978506ece5.json",
+        "sha256": "12b2fd9853d1aa25d2e0da8f0468197827aae1a67c04b07fc35b37978506ece5"
+      },
+      "retained_phase14_shadow": {
+        "verified_observation_files": 84610,
+        "sorted_id_hashes_sha256": "d5db74038f9f4e5bd56c036aa94200ca0139ae4d95cad12d3916bc8ee2502da4",
+        "source_resources": 1524
+      }
+    },
+    "control_receipt": {
+      "path": ".local/reports/v4/qualification-r02/final-controls.json",
+      "sha256": "c4df6f21ca556dcd2c1ed7b903c638d1f0655b7c942bd15450aa00c2e509b0dc"
+    }
+  },
+  "warnings": [
+    "Seven existing Python dependency deprecation warnings.",
+    "One existing ESLint unused _input warning.",
+    "No standalone frontend E2E run: no UI changed; existing storage harness includes backend/browser cases.",
+    "Raw-only registrations are inventoried, not all byte-verified or treated as qualified.",
+    "No complete pilot identity/time/target chain qualified; this is not Issue 2 success or V4 completion."
+  ],
+  "remaining_owner_decisions": [
+    "Exact independently accepted source/canonical anchors and required Resolution Center approval; no unsupported origin algorithm or UUID mismatch bypass.",
+    "Anonymous source-record publication proof where existing accepted CSV decisions cannot bind the selected observation reference."
+  ],
+  "remaining_data_proof": [
+    "Verified kickoff timezone and provider/publication clock meanings",
+    "Exact target/period/completeness/correction/settlement semantics",
+    "Player identity, time-bounded membership/transfer and participation/exposure proof"
+  ],
+  "issue_3_handoff_ref": "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md",
+  "issue_3_executed": false,
+  "scientific_evaluations": 0,
+  "model_promotions": 0,
+  "production_cutover": false,
+  "legacy_retirement": false
+}

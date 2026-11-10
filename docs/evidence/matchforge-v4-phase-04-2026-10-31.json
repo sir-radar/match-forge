@@ -1,0 +1,78 @@
+{
+  "phase": "04",
+  "status": "PASS",
+  "recorded_at": "2026-10-31T22:09:54.351021+00:00",
+  "starting_sha": "1b431b7fcbdaaa0cc55d146141258a544621e0f1",
+  "scope": "Versioned rich source observation contracts and existing artifact/temporal infrastructure compatibility; no provider or model rollout",
+  "contracts": [
+    "TeamStatisticObservationV3",
+    "PlayerStatisticObservationV3",
+    "ShotObservationV3",
+    "PeriodScoreObservationV3",
+    "RefereeObservationV3",
+    "TeamRatingObservationV3"
+  ],
+  "schema_hashes": {
+    "1": "5028f7b235aded2d7e87b08f25b0b44e4d6d242a720a61ed723bdec940beac14",
+    "2": "f1490653fd46652dd3823309536adeb1baff51f523562d8f9627f24786eecfbc",
+    "3": "eeb6e65f4ad68eaa6bbac0043776312d16c3cea853308611d63da3b90dfab4b5"
+  },
+  "checked_in_schema": "schemas/contracts/resource-observations-v3.schema.json",
+  "schema_file_sha256": "80dd31e6954514e5dbdba2a4b4306e9f382a3086763721c6b9b88e0e5de9b476",
+  "preservation": {
+    "v1_schema": "UNCHANGED",
+    "v2_schema": "UNCHANGED",
+    "v2_published_artifact_bytes_after_v3_publication": "UNCHANGED_IN_DISPOSABLE_INTEGRATION_TEST",
+    "existing_adapter_normalization": "UNCHANGED_VERIFIED",
+    "raw_resources": "NOT_WRITTEN",
+    "canonical_identity": "NOT_MUTATED",
+    "forecasts": "NOT_WRITTEN",
+    "model_artifacts": "NOT_WRITTEN"
+  },
+  "reused": [
+    "ResourceScope provider/resource/native-competition/native-season contract",
+    "Existing immutable raw resources and provenance",
+    "ObservationArtifactStore, contract-schema registry and retry checks",
+    "PointInTimeRepository resource eligibility",
+    "Existing coach/lineup/formation/availability observations and context owners"
+  ],
+  "new_semantics": [
+    "Unknown measurements and semantic versions remain null; no zero fabrication",
+    "Compatible count subsets are validated without clipping",
+    "Period and score-basis combinations are explicit; no inferred half scores",
+    "Shot context scores require both sides; per-shot xGOT must be a probability",
+    "Referee source labels do not become canonical or native IDs",
+    "Rating calendar dates remain separate from observed/acquired/known/event times",
+    "Unknown event ordering remains excluded from requested football history"
+  ],
+  "verification": {
+    "red_test_exit_code": 2,
+    "red_reason": "Missing observations_v3 module before implementation",
+    "focused_command": "sh .local/reports/v4/phase-04/test_database.sh",
+    "focused_exit_code": 0,
+    "focused_passed": 179,
+    "focused_scope": "V1/V2/V3 contracts, validator dispatch, existing resource normalizers, original and rich artifact integration",
+    "database_scope": "DISPOSABLE_DATABASE_AND_DATA_ROOT",
+    "additional_frozen_schema_check": "1 passed after pinning V3 hash",
+    "additional_branch_tests": "3 passed for shot subsets and period/referee/rating-system checks",
+    "ruff": "PASS",
+    "format": "PASS",
+    "mypy": "PASS_4_CHANGED_SOURCE_FILES",
+    "architecture": "PASS",
+    "shell_syntax": "PASS",
+    "local_log": ".local/reports/v4/phase-04/focused-tests.log"
+  },
+  "sql_migrations": [],
+  "operating_mutations": 0,
+  "provider_requests": 0,
+  "model_fits": 0,
+  "model_promotions": 0,
+  "production_cutover": false,
+  "limitations": [
+    "Schema/engineering readiness does not qualify a source or market",
+    "Existing provider decoders still emit their V2 contracts; Phase 05 will extend only measured source fields",
+    "Source categories and semantic-version claims need independent qualification",
+    "Calendar ratings with unknown event ordering remain ineligible for football-history requests",
+    "R3 and production Phase 35/36 blockers remain unchanged"
+  ]
+}

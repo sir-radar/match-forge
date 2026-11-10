@@ -59,7 +59,7 @@ func TestResolutionStrictReadInputs(t *testing.T) {
 }
 
 func TestResolutionOutputIsBounded(t *testing.T) {
-	var output resolutionOutput
+	var output boundedCommandOutput
 	_, err := io.Copy(&output, strings.NewReader(strings.Repeat("x", 2*1024*1024+1)))
 	if err == nil || output.buffer.Len() > 2*1024*1024 {
 		t.Fatal("response cap bypassed")

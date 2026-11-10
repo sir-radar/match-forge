@@ -1,0 +1,258 @@
+{
+  "phase": "02",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "6331628f66951b995ce690121558ac26f23d7003",
+  "database": "football",
+  "access": "READ_ONLY_REPEATABLE_READ",
+  "operating_mutations": 0,
+  "identity_approvals": 0,
+  "task_deltas": {
+    "qualified_identities": 0,
+    "corrected_contradictions": 0,
+    "history_rows_unlocked": 0,
+    "forecastability_changes": 0
+  },
+  "delta_scope": "Task actions only; ordinary background synchronization is not attributed to this phase. No global before/after population comparison is claimed.",
+  "current_recorded_counts": {
+    "CONTRADICTORY": 108,
+    "NEEDS_REVIEW": 0
+  },
+  "cases": [
+    {
+      "case_key": "team:01a0f3af-a21f-7ba4-85d1-b39e601b8aee",
+      "provider": "openfootball",
+      "provider_entity_id": "Nottingham Forest FC",
+      "canonical_id": "ed8ee20d-bf4e-56a3-8e16-e7461521633d",
+      "upcoming_stored_fixtures": 0,
+      "total_stored_fixtures": 301,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "ORIGIN_UUID_MISMATCH"
+      },
+      "evidence_version": "f49325607abfadbf78ea8c19dbdea090aa37ccfd83de6ab681bfeb8f9a18ad4e",
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+      "source_evidence": {
+        "provider": "openfootball",
+        "provider_entity_id": "Nottingham Forest FC",
+        "source_resource_id": "318a24a2-d6bd-562f-a871-bceed312dce8",
+        "sha256": "8d09f0f9846981626cdfec48903e1f21e7c79aabe6f92535c9e092e8e79b808b",
+        "acquired_at": "2026-09-30T19:10:57.094530+00:00",
+        "country": "England",
+        "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": [
+        {
+          "candidate": {
+            "original_decision_id": "01a12fe6-6bd1-7e8e-9708-c032b0ad8d7d",
+            "fixture_registration_id": "01a0f3ba-f25e-74e3-abde-48af7b3cf988",
+            "fixture_id": "c2165302-981b-52df-b5e2-bd5e7ea33347",
+            "orientation": "HOME",
+            "target_mapping_id": "01a12985-826b-744a-93b0-f5aa8d142e3d"
+          },
+          "qualification": {
+            "status": "UNRESOLVED",
+            "reason": "this correction requires retained FDO and API-Football mappings",
+            "source_mapping_id": "01a0f3af-a21f-7ba4-85d1-b39e601b8aee"
+          },
+          "evidence_version": "57f01a7e9bbd1741d956a41e30d14244e61bea754d4e73720047737e3e465058"
+        }
+      ]
+    },
+    {
+      "case_key": "team:01a0f3af-a264-7312-89ae-dcc1e1af04e0",
+      "provider": "openfootball",
+      "provider_entity_id": "Coventry City FC",
+      "canonical_id": "ec2e22c2-311f-5fea-b29d-2a51f0039331",
+      "upcoming_stored_fixtures": 0,
+      "total_stored_fixtures": 293,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "ORIGIN_UUID_MISMATCH"
+      },
+      "evidence_version": "fd4b7daeb09c84be26c56884143eec6369d227e6d6ec0a517aa886adabaa8019",
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+      "source_evidence": {
+        "provider": "openfootball",
+        "provider_entity_id": "Coventry City FC",
+        "source_resource_id": "1b802da3-b47a-5917-8344-7b78f2007d93",
+        "sha256": "630878e082701dc51e36dc48dfe07250c09bdd0a319bef299a278e9d651c55f6",
+        "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+        "country": "England",
+        "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": []
+    },
+    {
+      "case_key": "team:01a0f3b0-2043-752b-8aa4-74debd2448fb",
+      "provider": "openfootball",
+      "provider_entity_id": "Hellas Verona FC",
+      "canonical_id": "440aa1b0-d2ee-569c-ae4a-f62095fafbfa",
+      "upcoming_stored_fixtures": 0,
+      "total_stored_fixtures": 243,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "ORIGIN_UUID_MISMATCH"
+      },
+      "evidence_version": "a4c61d71c84780500d1ffdd1c4ab32dac452a5957b0cbbd2f97bea6af071ff88",
+      "source_snapshot_id": "7389bfe6-2d25-5b4c-b51e-e8f22e159c6d",
+      "source_evidence": {
+        "provider": "openfootball",
+        "provider_entity_id": "Hellas Verona FC",
+        "source_resource_id": "1db17758-f21c-50b4-b6dc-1a9f41221b5d",
+        "sha256": "47734fc8d2ec34c5529ca814c97d1c86ecddc4a2c8095506d9b12f29cb283308",
+        "acquired_at": "2026-09-30T18:52:55.394824+00:00",
+        "country": "Italy",
+        "manifest_classification": "LEGACY_MANIFEST_UNVERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": [
+        {
+          "candidate": {
+            "original_decision_id": "01a13a7f-bc6c-7851-97ee-b542a69f766f",
+            "fixture_registration_id": "01a0f3b3-ee3f-7b27-9f58-d02579294035",
+            "fixture_id": "5a705b3f-188b-5535-b2ad-60523ba8430d",
+            "orientation": "HOME",
+            "target_mapping_id": "01a0ff25-1e43-7187-868e-99415ef32839"
+          },
+          "qualification": {
+            "status": "UNRESOLVED",
+            "reason": "this correction requires retained FDO and API-Football mappings",
+            "source_mapping_id": "01a0f3b0-2043-752b-8aa4-74debd2448fb"
+          },
+          "evidence_version": "ff4dbc78ad75f8753813b548b68b46e9ea0052603994e1ffa50ba010b9ea0f91"
+        }
+      ]
+    },
+    {
+      "case_key": "competition:01a12ac1-0225-7f0f-b0be-d9241b662872",
+      "provider": "pitchapi",
+      "provider_entity_id": "l_0ALvwF",
+      "canonical_id": "3cea18a0-7a31-5ca3-8e93-9f5c260bdd8b",
+      "upcoming_stored_fixtures": 287,
+      "total_stored_fixtures": 7823,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM"
+      },
+      "evidence_version": "82acd00711b3e88677e24e5b4f7bfeeb79da6239e85080f262586039ebb601cd",
+      "source_snapshot_id": "118ec06f-c58f-5770-9de5-a8062c4b84ac",
+      "source_evidence": {
+        "provider": "pitchapi",
+        "provider_entity_id": "l_0ALvwF",
+        "source_resource_id": "0d0d4c9c-2c09-508a-b732-99cfbef60954",
+        "sha256": "e0405a5224c36f4598b23de4419e2f8898e126fa675d194b2b69b7d18767c937",
+        "acquired_at": "2026-10-11T11:37:34.148464+00:00",
+        "country": "Italy",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": []
+    },
+    {
+      "case_key": "competition:01a129b2-cc1f-7013-90cb-1995f3e1e067",
+      "provider": "pitchapi",
+      "provider_entity_id": "l_47077Y",
+      "canonical_id": "fff47edc-b722-5be8-9d48-891761340100",
+      "upcoming_stored_fixtures": 263,
+      "total_stored_fixtures": 3602,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM"
+      },
+      "evidence_version": "d0943552b301fed5796f860335b17b5fe86e8f1ba87c4a31c7b8bc93d096006e",
+      "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+      "source_evidence": {
+        "provider": "pitchapi",
+        "provider_entity_id": "l_47077Y",
+        "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+        "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+        "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+        "country": "Germany",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": []
+    },
+    {
+      "case_key": "competition:01a129b2-cc65-7d42-a95e-2bdc9c2c5d42",
+      "provider": "pitchapi",
+      "provider_entity_id": "l_49KZaB",
+      "canonical_id": "1534eec7-05a7-5909-a701-cb5985ea6f55",
+      "upcoming_stored_fixtures": 255,
+      "total_stored_fixtures": 2714,
+      "count_semantics": "Per-case impacts, not newly qualified units; cases may overlap.",
+      "action": "APPROVE",
+      "qualification": {
+        "status": "BLOCKED",
+        "reason": "UNSUPPORTED_ORIGIN_ALGORITHM"
+      },
+      "evidence_version": "69d8d9c63fe6096fc9940f0a5a41741b7b6a14180a7919254a1b35d7474c2898",
+      "source_snapshot_id": "00017baa-bfbe-5b6f-b48c-3e5025e56b60",
+      "source_evidence": {
+        "provider": "pitchapi",
+        "provider_entity_id": "l_49KZaB",
+        "source_resource_id": "d5c28513-e405-5a8d-90ed-1871f88c6984",
+        "sha256": "ead594ddaa3e6e90ceb68bb17c685bf0d6f83b034dfc248b3d92da8222316540",
+        "acquired_at": "2026-10-11T05:54:18.589844+00:00",
+        "country": "Netherlands",
+        "manifest_classification": "BYTE_VERIFIED",
+        "policy_version": "ProductIdentityTrustV1"
+      },
+      "approval_required": true,
+      "applied": false,
+      "correction_previews": []
+    }
+  ],
+  "local_receipts": [
+    {
+      "path": ".local/reports/v4/phase-02/review.json",
+      "sha256": "f8b49838805aa974a77313c68252811adbcda5e094b81b10bd03cb2616664694"
+    },
+    {
+      "path": ".local/reports/v4/phase-02/prioritized.json",
+      "sha256": "b9500d6220dc4862f64f6fda4c86c0ab965399eac2d654bf1b4ead0a5896c71c"
+    },
+    {
+      "path": ".local/reports/v4/phase-02/prioritized-pending.json",
+      "sha256": "e13eb8fdff00257aae7483d25e2e8692e7f0e4f03850b1fcaf5b9e219a20534d"
+    }
+  ],
+  "blockers": [
+    "Highest-impact unresolved competition previews reject unsupported origin algorithms; no independent target proof was invented.",
+    "Highest-impact contradictory OpenFootball mappings reject ORIGIN_UUID_MISMATCH; existing correction qualification requires retained FDO and API-Football mappings and does not authorize these source cases.",
+    "Case mutations require exact independently qualified previews and explicit owner approval through the existing Resolution Center.",
+    "Missing authentic legacy source/dataset evidence and separately recorded historical-scope/entitlement blockers remain unresolved; R3 acceptance is not met."
+  ],
+  "dependent_scope": "Identity-qualified canonical enrichment and model use of the affected cases; raw/provider capability investigation is independent.",
+  "resume_point": "Obtain exact source-backed identity/crosswalk or origin evidence for the listed native competitions/teams, refresh the existing Resolution Center previews, obtain required owner approval, then execute scoped recovery and remeasure actual eligibility.",
+  "verification": {
+    "read_only_review_exit_code": 0,
+    "prioritized_review_exit_code": 0,
+    "prioritized_pending_review_exit_code": 0,
+    "project_status_check": "PASS_EXIT_0",
+    "diff_check": "PASS_EXIT_0",
+    "implementation_changes": "NONE; existing workflows reused; no new identity algorithm or migration"
+  }
+}

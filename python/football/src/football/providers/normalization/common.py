@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import datetime
@@ -15,7 +15,7 @@ from football.contracts.observations import (
     ObservationProvenance,
     ObservationTime,
 )
-from football.contracts.observations_v2 import EntityReferenceV2, ObservationVersionsV2
+from football.contracts.observations_v2 import EntityReferenceV2
 from football.ingestion.errors import CanonicalIngestionError
 from football.validation.findings import Severity, ValidationFinding
 
@@ -70,7 +70,7 @@ class ObservationCollector:
 
     def emit(
         self,
-        model: Callable[..., Observation],
+        model: type[Observation],
         record_key: str,
         native_id: object = None,
         observation_time: ObservationTime | None = None,
@@ -84,9 +84,13 @@ class ObservationCollector:
                     context.provenance, provider_native_id=native, source_record_key=record_key
                 ),
                 time=observation_time or context.time,
-                versions=ObservationVersionsV2(
+                versions=model.VERSIONS_TYPE(
+                    observation_contract_version=model.VERSIONS_TYPE.VERSION,
                     adapter_version=f"{context.provenance.provider}-resource-adapter-v1",
-                    normalizer_version=f"{context.provenance.provider}-{self.resource}-v1",
+                    normalizer_version=(
+                        f"{context.provenance.provider}-{self.resource}"
+                        f"-v{'1' if model.VERSIONS_TYPE.VERSION == '2' else '2'}"
+                    ),
                     provider_schema_version=context.provider_schema_version,
                 ),
                 **values,

@@ -56,6 +56,19 @@ Document genuinely new decisions separately. Provider-specific restrictions
 remain recorded as facts, but should not repeatedly halt unrelated research,
 recovery, or provider work.
 
+### Development acquisition routes
+
+The existing [development decision](evidence/owner-decision-public-development-data-access-2026-10-31.json)
+also covers ordinary public JSON/browser endpoints, HTML and embedded state,
+CSV/JSON feeds, open datasets and maintained community wrappers. Use the existing
+cache, immutable storage, request budgets, quotas, cooldowns and orchestration.
+Record the actual route and external restrictions separately from technical
+availability. Access-control bypass remains prohibited. New experimental outputs
+remain `EXPERIMENTAL_ONLY` until independently qualified; public access does not
+prove canonical identity, source meaning or historical availability. MatchForge's
+own Admin authentication, Origin checks and consequential-operation approvals
+remain unchanged.
+
 ### Source verification and recovery priority
 
 Prefer primary/official sources for missing historical facts. When primary
@@ -67,6 +80,53 @@ independence analysis, original bytes and immutable hashes. Never represent
 newly corroborated data as a replacement for a missing, checksum-registered
 original. Prioritize data that measurably improves eligible football history and
 forecast readiness; never weaken qualification gates to improve status counts.
+
+## WhoScored historical requests
+
+`WhoScoredSource.season` accepts the native region, tournament, season and slug
+from retained league-selector links. Its optional stage ID selects the linked
+monthly fixtures page. Normalization checks both requested season and stage IDs
+against the embedded fixture payload. A reachable season page or month is not
+complete-season coverage. Native UTC values and source-side IDs still require
+independent canonical identity and target qualification before historical use.
+
+## Auditing retained provider data
+
+Run a read-only inventory against the configured database:
+
+```sh
+set -a; . ./.env; set +a
+. ./scripts/toolchain.sh
+uv run --locked python -m football.providers.data_audit --artifact-root .local/provider-audits
+```
+
+The command writes a content-addressed diagnostic report through the existing
+immutable file store. It reads existing registrations, observation tables and
+registry counts; it makes no provider requests or qualification decisions.
+Native statistic fields are measured separately by provider, stored competition
+and season IDs, and period. Current competition display labels never supply a
+historical season. Missing scope IDs remain unknown.
+
+Resource revisions, repeated measurements and distinct stored fixtures have
+separate counts. Numeric zero remains distinct from an unreported value. A
+recognized normalizer field does not prove physical raw-byte retention,
+semantic/identity/PIT qualification or model support. Those unknown states remain
+null. Use existing capability, authority and coverage owners for qualification;
+this diagnostic report is not another registry or a historical feature reader.
+
+Understat's development adapter uses its public JSON resources after the ordinary
+anonymous page/session bootstrap. Cookie values remain private and ephemeral.
+Every HTTP request can use the existing scheduler/budget guard. Wire bytes and
+checksums remain immutable; gzip expansion uses the established source byte limit
+before strict JSON/native validation. The existing historical manifest and
+registration owners support retained resources without inventing Git revisions.
+
+Use the existing normalization CLI with `results` or `shots` after registration;
+shot decoding requires the explicit native fixture scope. Unknown source timezones
+remain DATE_ONLY fixture metadata with no inferred event time. Shot assistant
+names and final match scores do not become identities or before-shot context.
+Coordinate frames and market/PIT/identity qualification remain separate. Adapter
+availability and scoped sample capability do not enable production collection.
 
 ## Provider capability registry
 
@@ -85,8 +145,8 @@ Advertised coverage is not proof of retained coverage or this account's access.
 | OpenFootball | Existing commit-pinned mirror and bulk JSON importer | [football.json](https://github.com/openfootball/football.json) publishes public-domain fixtures/results, with season directories from 2010/11. File coverage and update completeness vary; it does not supply event, player, injury or xG data. |
 | Football-Data.co.uk | Existing bounded CSV/ZIP discovery, immutable manifests and bulk importer | Results/statistics columns differ by country and season; odds remain outside baseline features. [Column notes](https://www.football-data.co.uk/notes.txt) and the [fair-use policy](https://football-data.co.uk/contact.php) distinguish personal/academic use and light automated downloads (at most twice weekly) from heavy automated training projects. The catalogue returned HTTP 429 during this review; do not evade it or infer a complete current catalogue. |
 | StatsBomb Open Data | `SourceAcquirer`, pinned adapter and canonical ingestion | [Open repository](https://github.com/statsbomb/open-data) supplies selected competition/seasons, events, lineups and selected 360 files. Preserve its licence and attribution. Broader acquisition does not resume paused model research, protected evaluation, 360 normalization or automatic product-history admission. |
-| Flashscore | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.flashscore.com/terms-of-use/) restrict substantial extraction and automated requests. Public pages are research evidence, not an undocumented API contract or provider-native crosswalk. |
-| Soccerway | Retained research resources; no integrated bulk acquisition/normalization adapter | [Terms](https://www.soccerway.com/terms-of-use/) impose extraction/automation restrictions. Flashscore and Soccerway are both Livesport services: do not assume their agreement supplies independent corroboration. |
+| Flashscore | `FlashscoreSource` and native normalizers through the existing source pipeline; experimental retained summaries, events, statistics and lineups | [Terms](https://www.flashscore.com/terms-of-use/) restrict substantial extraction and automated requests. Public pages are research evidence, not an undocumented API contract or provider-native crosswalk. |
+| Soccerway | `SoccerwaySource` through the existing source pipeline and shared native resource contracts; experimental only | [Terms](https://www.soccerway.com/terms-of-use/) impose extraction/automation restrictions. Flashscore and Soccerway are both Livesport services: do not assume their agreement supplies independent corroboration. |
 | TotalCorner | Documented candidate; no configured production adapter | [Official API](https://www.totalcorner.com/page/api) requires a VIP token and account timezone/language; it advertises history from 2014 and 30 requests/minute in ten-second windows. No new subscription, token or paid boost is authorized by this task. |
 | Sportmonks | Existing external-prediction integration, not a general historical import adapter | [Football API](https://www.sportmonks.com/football-api/) offers results, player/context resources and optional xG. An existing prediction token does not establish historical data entitlements. Keep prediction collection separate from model inputs. |
 

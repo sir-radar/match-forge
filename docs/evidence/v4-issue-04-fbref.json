@@ -1,0 +1,582 @@
+{
+  "phase": "R04-E",
+  "status": "PASS_WITH_WARNINGS",
+  "provider_classification": "PARTIAL_FUNCTIONAL",
+  "recorded_at": "2026-11-02T01:16:19.621043Z",
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "current_basic": {
+    "classification": "FBREF_CURRENT_BASIC",
+    "status": "BLOCKED_WITH_EVIDENCE",
+    "request": {
+      "key": "fbref-current-basic",
+      "url": "https://fbref.com/en/comps/9/schedule/Premier-League-Scores-and-Fixtures",
+      "acquired_at": "2026-11-02T00:57:58.503506+00:00",
+      "status": 403,
+      "sha256": "c14681d042c81099ce72aa246e9595c14b1310c76a31d5419c332f5439205105",
+      "bytes": 5640,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    "accessible_current_tables_verified": [],
+    "removed_advanced_feed": "Official 2026-01-20 announcement verified in R04-A; no attempts to request removed advanced current tables."
+  },
+  "archive_origin": {
+    "repository": "https://github.com/ChrisMusson/FBRef_DB",
+    "revision": "a09f314d8f88602ef233ae4d3ae1cf46628538f8",
+    "archived_on": "2026-01-21",
+    "html_classification": "FBREF_ARCHIVED_HISTORICAL",
+    "sqlite_classification": "THIRD_PARTY_FBREF_DERIVED",
+    "code_licence": "No licence declared; upstream code inspected, not copied or run",
+    "provider_and_archive_permission": "UNRESOLVED; public downloadable files are not provider consent. Standing internal policy permits bounded private local research, not redistribution or qualified use.",
+    "official_data_use_check": {
+      "url": "https://www.sports-reference.com/data_use.html",
+      "checked_at": "2026-11-02T01:12:23.318610+00:00",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    "integrity": "Sizes match public folder listing; SHA-256 computed locally, SQLite quick_check=ok, all ZIP member CRCs pass. No upstream signed checksum was found.",
+    "parent_resources": [
+      {
+        "file_id": "1W45dxboX7SA56lqGw_sPfAODXZN4iuMs",
+        "source_url": "https://drive.google.com/file/d/1W45dxboX7SA56lqGw_sPfAODXZN4iuMs/view",
+        "acquired_at": "2026-11-02T01:00:46.592673+00:00",
+        "bytes": 221143040,
+        "sha256": "e3641a0654f0dfafe6f431a01d290b26ea01eae5ce62c23b7f153dc859315174",
+        "media_type": "application/octet-stream",
+        "download_method": "Submitted the public file page normal Download anyway form; no login, CAPTCHA, challenge solver or access-control bypass",
+        "upstream_checksum_published": false,
+        "request_started_at": "2026-11-02T00:59:42.004610+00:00",
+        "source_resource_id": "2de66a99-debf-5882-adaa-0be2802f7c5b",
+        "source_snapshot_id": "4c46e622-7d5b-5e8d-b9f5-2729c1aae27f",
+        "provider_path": "archive/e3641a0654f0dfafe6f431a01d290b26ea01eae5ce62c23b7f153dc859315174/fbref-master.db",
+        "manifest": "fbref/manifests/2622cc8f14e6f14f55e02375486d30550252d7a63cd8e04a15ce761f816dd33a.json",
+        "raw_path": "fbref/raw/e3641a0654f0dfafe6f431a01d290b26ea01eae5ce62c23b7f153dc859315174"
+      },
+      {
+        "file_id": "1D1iCNh2hXCRCO18NdIa55keMecb7itNi",
+        "source_url": "https://drive.google.com/file/d/1D1iCNh2hXCRCO18NdIa55keMecb7itNi/view",
+        "acquired_at": "2026-11-02T01:02:40.274094+00:00",
+        "bytes": 261573633,
+        "sha256": "9ac08d3406b0bc91745dbafc6bba77ab9c45802b3bb9d974a79dd9fe4aa9cf69",
+        "media_type": "application/octet-stream",
+        "download_method": "Submitted the public file page normal Download anyway form; no login, CAPTCHA, challenge solver or access-control bypass",
+        "upstream_checksum_published": false,
+        "request_started_at": "2026-11-02T01:01:06.786625+00:00",
+        "source_resource_id": "0cc8396e-e215-5509-a635-9155bffdd0ff",
+        "source_snapshot_id": "19db5d40-fc5e-5d0d-b5b1-494637c2ce14",
+        "provider_path": "archive/9ac08d3406b0bc91745dbafc6bba77ab9c45802b3bb9d974a79dd9fe4aa9cf69/fbref-premier-league.zip",
+        "manifest": "fbref/manifests/c83cacb7da536a9454959d8727a1dba77ac81b0a9b535cfa1bb060ec9ff96d66.json",
+        "raw_path": "fbref/raw/9ac08d3406b0bc91745dbafc6bba77ab9c45802b3bb9d974a79dd9fe4aa9cf69"
+      }
+    ]
+  },
+  "sqlite_audit": {
+    "path": ".local/issue04/fbref-sqlite-audit.json",
+    "sha256": "5d30748b3e626491c6de6074020a25823e2b821c9bc20b4314dafaab9e46d277",
+    "read_only": true,
+    "query_only": true,
+    "trusted_schema": false,
+    "counts": {
+      "Defensive_Actions": 521261,
+      "Goalkeeper": 35510,
+      "Match": 17551,
+      "Miscellaneous": 521261,
+      "Pass_Types": 521261,
+      "Passing": 521261,
+      "Player_Info": 521261,
+      "Possession": 521261,
+      "Summary": 521261
+    },
+    "scopes": [
+      [
+        "Bundesliga",
+        "2017-2018",
+        306,
+        "2017-08-18",
+        "2018-05-12"
+      ],
+      [
+        "Bundesliga",
+        "2018-2019",
+        306,
+        "2018-08-24",
+        "2019-05-18"
+      ],
+      [
+        "Bundesliga",
+        "2019-2020",
+        306,
+        "2019-08-16",
+        "2020-06-27"
+      ],
+      [
+        "Bundesliga",
+        "2020-2021",
+        306,
+        "2020-09-18",
+        "2021-05-22"
+      ],
+      [
+        "Bundesliga",
+        "2021-2022",
+        305,
+        "2021-08-13",
+        "2022-05-14"
+      ],
+      [
+        "Bundesliga",
+        "2022-2023",
+        306,
+        "2022-08-05",
+        "2023-05-27"
+      ],
+      [
+        "Bundesliga",
+        "2023-2024",
+        306,
+        "2023-08-18",
+        "2024-05-18"
+      ],
+      [
+        "Bundesliga",
+        "2024-2025",
+        305,
+        "2024-08-23",
+        "2025-05-17"
+      ],
+      [
+        "Bundesliga",
+        "2025-2026",
+        150,
+        "2025-08-22",
+        "2026-01-15"
+      ],
+      [
+        "La_Liga",
+        "2017-2018",
+        380,
+        "2017-08-18",
+        "2018-05-20"
+      ],
+      [
+        "La_Liga",
+        "2018-2019",
+        380,
+        "2018-08-17",
+        "2019-05-19"
+      ],
+      [
+        "La_Liga",
+        "2019-2020",
+        380,
+        "2019-08-16",
+        "2020-07-19"
+      ],
+      [
+        "La_Liga",
+        "2020-2021",
+        380,
+        "2020-09-12",
+        "2021-05-23"
+      ],
+      [
+        "La_Liga",
+        "2021-2022",
+        380,
+        "2021-08-13",
+        "2022-05-22"
+      ],
+      [
+        "La_Liga",
+        "2022-2023",
+        380,
+        "2022-08-12",
+        "2023-06-04"
+      ],
+      [
+        "La_Liga",
+        "2023-2024",
+        380,
+        "2023-08-11",
+        "2024-05-26"
+      ],
+      [
+        "La_Liga",
+        "2024-2025",
+        380,
+        "2024-08-15",
+        "2025-05-25"
+      ],
+      [
+        "La_Liga",
+        "2025-2026",
+        189,
+        "2025-08-15",
+        "2026-01-12"
+      ],
+      [
+        "Ligue_1",
+        "2017-2018",
+        380,
+        "2017-08-04",
+        "2018-05-19"
+      ],
+      [
+        "Ligue_1",
+        "2018-2019",
+        380,
+        "2018-08-10",
+        "2019-05-24"
+      ],
+      [
+        "Ligue_1",
+        "2019-2020",
+        279,
+        "2019-08-09",
+        "2020-03-08"
+      ],
+      [
+        "Ligue_1",
+        "2020-2021",
+        380,
+        "2020-08-21",
+        "2021-05-23"
+      ],
+      [
+        "Ligue_1",
+        "2021-2022",
+        380,
+        "2021-08-06",
+        "2022-05-21"
+      ],
+      [
+        "Ligue_1",
+        "2022-2023",
+        380,
+        "2022-08-05",
+        "2023-06-03"
+      ],
+      [
+        "Ligue_1",
+        "2023-2024",
+        306,
+        "2023-08-11",
+        "2024-05-19"
+      ],
+      [
+        "Ligue_1",
+        "2024-2025",
+        305,
+        "2024-08-16",
+        "2025-05-17"
+      ],
+      [
+        "Ligue_1",
+        "2025-2026",
+        153,
+        "2025-08-15",
+        "2026-01-04"
+      ],
+      [
+        "Premier_League",
+        "2017-2018",
+        380,
+        "2017-08-11",
+        "2018-05-13"
+      ],
+      [
+        "Premier_League",
+        "2018-2019",
+        380,
+        "2018-08-10",
+        "2019-05-12"
+      ],
+      [
+        "Premier_League",
+        "2019-2020",
+        380,
+        "2019-08-09",
+        "2020-07-26"
+      ],
+      [
+        "Premier_League",
+        "2020-2021",
+        380,
+        "2020-09-12",
+        "2021-05-23"
+      ],
+      [
+        "Premier_League",
+        "2021-2022",
+        380,
+        "2021-08-13",
+        "2022-05-22"
+      ],
+      [
+        "Premier_League",
+        "2022-2023",
+        380,
+        "2022-08-05",
+        "2023-05-28"
+      ],
+      [
+        "Premier_League",
+        "2023-2024",
+        380,
+        "2023-08-11",
+        "2024-05-19"
+      ],
+      [
+        "Premier_League",
+        "2024-2025",
+        380,
+        "2024-08-16",
+        "2025-05-25"
+      ],
+      [
+        "Premier_League",
+        "2025-2026",
+        210,
+        "2025-08-15",
+        "2026-01-08"
+      ],
+      [
+        "Primeira_Liga",
+        "2018-2019",
+        306,
+        "2018-08-10",
+        "2019-05-19"
+      ],
+      [
+        "Primeira_Liga",
+        "2019-2020",
+        306,
+        "2019-08-09",
+        "2020-07-26"
+      ],
+      [
+        "Primeira_Liga",
+        "2020-2021",
+        306,
+        "2020-09-18",
+        "2021-05-19"
+      ],
+      [
+        "Primeira_Liga",
+        "2021-2022",
+        306,
+        "2021-08-06",
+        "2022-05-15"
+      ],
+      [
+        "Primeira_Liga",
+        "2022-2023",
+        306,
+        "2022-08-05",
+        "2023-05-27"
+      ],
+      [
+        "Primeira_Liga",
+        "2023-2024",
+        306,
+        "2023-08-11",
+        "2024-05-18"
+      ],
+      [
+        "Primeira_Liga",
+        "2024-2025",
+        306,
+        "2024-08-09",
+        "2025-05-17"
+      ],
+      [
+        "Primeira_Liga",
+        "2025-2026",
+        153,
+        "2025-08-08",
+        "2026-01-11"
+      ],
+      [
+        "Serie_A",
+        "2017-2018",
+        380,
+        "2017-08-19",
+        "2018-05-20"
+      ],
+      [
+        "Serie_A",
+        "2018-2019",
+        380,
+        "2018-08-18",
+        "2019-05-26"
+      ],
+      [
+        "Serie_A",
+        "2019-2020",
+        380,
+        "2019-08-24",
+        "2020-08-02"
+      ],
+      [
+        "Serie_A",
+        "2020-2021",
+        379,
+        "2020-09-19",
+        "2021-05-23"
+      ],
+      [
+        "Serie_A",
+        "2021-2022",
+        380,
+        "2021-08-21",
+        "2022-05-22"
+      ],
+      [
+        "Serie_A",
+        "2022-2023",
+        380,
+        "2022-08-13",
+        "2023-06-04"
+      ],
+      [
+        "Serie_A",
+        "2023-2024",
+        380,
+        "2023-08-19",
+        "2024-06-02"
+      ],
+      [
+        "Serie_A",
+        "2024-2025",
+        379,
+        "2024-08-17",
+        "2025-05-25"
+      ],
+      [
+        "Serie_A",
+        "2025-2026",
+        200,
+        "2025-08-23",
+        "2026-01-15"
+      ]
+    ],
+    "player_flag_counts": [
+      [
+        "A",
+        0,
+        67750,
+        1,
+        88,
+        4
+      ],
+      [
+        "A",
+        1,
+        192931,
+        1,
+        90,
+        5
+      ],
+      [
+        "H",
+        0,
+        67665,
+        1,
+        90,
+        2
+      ],
+      [
+        "H",
+        1,
+        192915,
+        1,
+        90,
+        1
+      ]
+    ],
+    "null_minute_rows": 12,
+    "limitations": "Derived text team names are not IDs. Upstream start flag is a parsing heuristic; not admitted as lineup or membership proof. SQLite data is inspected, not mislabeled as an official current response."
+  },
+  "html_archive_scopes": {
+    "2017-2018": 380,
+    "2018-2019": 380,
+    "2019-2020": 380,
+    "2020-2021": 380,
+    "2021-2022": 380,
+    "2022-2023": 380,
+    "2023-2024": 380,
+    "2024-2025": 380,
+    "2025-2026": 210
+  },
+  "html_pages_retained": 3250,
+  "normalized_scope": {
+    "provider_competition_id": "9",
+    "season": "2017-2018",
+    "source_pages": 380,
+    "normalized_observations": 22768,
+    "contracts": {
+      "TeamObservationV2": 760,
+      "CompetitionObservationV2": 380,
+      "FixtureObservationV2": 380,
+      "ResultObservationV2": 380,
+      "PlayerObservationV2": 10434,
+      "PlayerStatisticObservationV3": 10434
+    },
+    "native_ids": {
+      "team": 20,
+      "competition": 1,
+      "fixture": 380,
+      "home_team": 20,
+      "away_team": 20,
+      "player": 515
+    },
+    "native_utc_fixture_claims": 380,
+    "native_player_minute_occurrences": 10433,
+    "original_match_status": "UNKNOWN; source scorebox does not establish final status/settlement",
+    "qualified_canonical_fixtures": 0,
+    "qualified_canonical_utc": 0,
+    "qualified_player_appearances": 0,
+    "qualified_minutes": 0,
+    "qualified_targets": 0
+  },
+  "source_resource_count": 382,
+  "normalized_member_resources": 380,
+  "unprocessed_html_pages_retained": 2870,
+  "resource_index": {
+    "path": ".local/issue04/fbref.json",
+    "sha256": "a82c6749d51e73d38ae016dd1e55b22ba2290cb6eb7d172530aa718c3d7dd73b"
+  },
+  "source_lineage": "Every member provider path carries the verified parent ZIP SHA and native match ID; receipt binds ZIP member, original canonical URL, immutable source/snapshot/report/work IDs and hashes. No season aggregates are converted into match facts.",
+  "verification": {
+    "red": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_fbref_archive.py",
+      "exit_code": 1,
+      "failed": 3,
+      "passed": 1,
+      "log": ".local/issue04/fbref-red.log"
+    },
+    "focused": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_fbref_archive.py python/football/tests/test_resource_normalization.py python/football/tests/test_rich_provider_normalization.py",
+      "exit_code": 0,
+      "passed": 55,
+      "log": ".local/issue04/fbref-green.log"
+    },
+    "strict_mypy": "PASS (3 files)",
+    "ruff_format_lint_complexity": "PASS",
+    "real_archive_preflight": {
+      "exit_code": 0,
+      "pages": 380,
+      "quarantined": 0,
+      "observations": 22768,
+      "path": ".local/issue04/fbref-preflight.json",
+      "sha256": "31ee5714c84638f9f2ff128259aeba1a6a77e3f047249a36ab4b73328be37a72"
+    },
+    "isolated_publication": {
+      "exit_code": 0,
+      "log": ".local/issue04/fbref-publication.log",
+      "replay_same_work_id_all_members": true
+    }
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "model_changes": 0,
+  "resume_point": "Review source rights and independently accepted native/canonical anchors, original time/target rules and player membership before qualified use. Current basic access and full remaining archive normalization are not claimed."
+}

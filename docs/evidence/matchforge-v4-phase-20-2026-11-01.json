@@ -1,0 +1,117 @@
+{
+  "phase": "20",
+  "starting_sha": "36510d9c909d821507b090ba6a64a3580d470e23",
+  "recorded_at": "2026-11-01T10:00:59.754273Z",
+  "status": "PARTIAL_FUNCTIONAL",
+  "complete": false,
+  "engineering_gate": "PASS_WITH_WARNINGS",
+  "implemented": [
+    "Goal result \u00d7 totals and result \u00d7 BTTS use exact joint score cells from Phase 17, not marginal multiplication.",
+    "Added omitted FOULS_CARDS and PARTICIPATION_PLAYER_EVENTS definitions to the existing market catalogue/readiness owner; neither has a model or probabilities.",
+    "All existing semantic definitions remain unchanged; unqualified joint markets are suppressed."
+  ],
+  "joint_target_prerequisites": [
+    {
+      "market_id": "GOALS_CORNERS",
+      "definition_sha256": "c7d2426e55cfe31c82b5f4a0e3f40da3a7aea694c01d139cfc2e1ed7b760c370",
+      "requirements": [
+        "regulation_score",
+        "corners"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "DATA_COLLECTION_REQUIRED",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "GOALS_CARDS",
+      "definition_sha256": "902094335cbacb7cc70c65d79ea9f5b381a131fdd1bcaffcdde3138e091a94b0",
+      "requirements": [
+        "regulation_score",
+        "cards"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "DATA_COLLECTION_REQUIRED",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "CORNERS_CARDS",
+      "definition_sha256": "812c261768dd4afde55e482fbe44cc532df5412fdaaf4a888ce3c22379dac8c0",
+      "requirements": [
+        "corners",
+        "cards"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "DATA_COLLECTION_REQUIRED",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "FOULS_CARDS",
+      "definition_sha256": "4577b6cd38e7651679893a40273f0307ca760945c50a6b75b7d1f32299abac4a",
+      "requirements": [
+        "fouls",
+        "cards"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "DATA_COLLECTION_REQUIRED",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "PARTICIPATION_PLAYER_EVENTS",
+      "definition_sha256": "9a9e980dfaa3d59d9d18ca6de4edb1dff9420f68db47778b4d6d1f60ffc5fe8c",
+      "requirements": [
+        "player_identity",
+        "membership",
+        "participation",
+        "player_statistics"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "INSUFFICIENT_PLAYER_DATA",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "SHOTS_SHOTS_ON_TARGET",
+      "definition_sha256": "c8345078a6d38a56d78dcb40e838297c1a57b9a8dc5ff2079ea05612c8ebbae0",
+      "requirements": [
+        "shots",
+        "shots_on_target"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "DATA_COLLECTION_REQUIRED",
+      "publication_eligible": false
+    },
+    {
+      "market_id": "TEAM_PLAYER",
+      "definition_sha256": "86cf804e851be11062cae3b8a64a4f9c5582e48ff79b294256b6bd3dd93a25d2",
+      "requirements": [
+        "player_identity",
+        "membership",
+        "participation",
+        "player_statistics"
+      ],
+      "implementation": null,
+      "status_with_no_qualified_evidence": "INSUFFICIENT_PLAYER_DATA",
+      "publication_eligible": false
+    }
+  ],
+  "scientific_blockers": [
+    "No qualified aligned joint non-goal/player targets from Phases 14, 18 and 19.",
+    "No frozen, bounded dependence hypothesis or validation authorization.",
+    "Generic TEAM_PLAYER requires quantity-specific team/player linkage and component semantic proof before any model/evaluation can qualify; an appearance alone does not qualify it."
+  ],
+  "invariants": {
+    "marginal_products_assumed_independent": false,
+    "new_simulation_engine": false,
+    "rust_workspace_expanded": false,
+    "authoritative_fit_or_evaluation": false,
+    "operating_writes": 0,
+    "provider_requests": 0,
+    "new_publication_grants": 0
+  },
+  "verification": {
+    "focused_tests": 66,
+    "ruff_and_mypy": "PASS",
+    "architecture_status_governance_diff": "PASS: architecture, ProjectStatusV2, 24 governance tests and diff check",
+    "tests_sha256": "b311db55130630cadc8c0021c59d979227bfe6bdccc299ea3e35f1308b78df5b"
+  },
+  "next_phase": "Independent Phase 21 outcome/forecast prerequisites; no scientific gate crossed."
+}

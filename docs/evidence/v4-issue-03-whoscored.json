@@ -1,0 +1,211 @@
+{
+  "phase": "R03-D",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "d589e4afda256bf7e33c649dba276786949bde6a",
+  "recorded_at": "2026-11-01T19:53:29.962219+00:00",
+  "provider": "whoscored",
+  "before": {
+    "resources": 1,
+    "fixtures": 10,
+    "completed_results": 8,
+    "verified_native_seasons": [
+      "2026/2027"
+    ],
+    "normalized_observations": 55
+  },
+  "after": {
+    "season_links_discovered": 28,
+    "verified_native_seasons": [
+      "2015/2016",
+      "2026/2027"
+    ],
+    "distinct_native_fixtures": 38,
+    "historical_2015_16_fixtures": 28,
+    "native_utc_kickoffs": 38,
+    "completed_results": 37,
+    "native_incident_occurrences_in_resource_payloads": 127,
+    "native_incident_player_ids": 138,
+    "detail_match_requests": 0,
+    "source_scope_correction": "Retained selector verifies region 252, tournament 2, season 5826, stage 12496. R03-A speculative region 206 candidate was never used as identity proof.",
+    "blockers": [
+      "Historical fixture page is one observed calendar month (28 matches), not a complete 380-fixture season",
+      "Known detailed-match HTTP 403 route not retried; no new detail/player/tactical capability claimed",
+      "Incident type/subtype and player roles retained without guessed event enums",
+      "Native UTC does not admit StatsBomb or canonical fixture identity",
+      "Score/statistical settlement and canonical memberships/minutes remain unqualified"
+    ]
+  },
+  "acquisition": {
+    "provider": "whoscored",
+    "results": [
+      {
+        "key": "current",
+        "provider": "whoscored",
+        "resource_key": "Regions/252/Tournaments/2",
+        "acquired_at": "2026-11-01T19:47:11.510149+00:00",
+        "sha256": "f48663ebac3532f5595ae99f16f2b15e504a4381afd710ae506b7f13d59660fa",
+        "bytes": 554010,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/whoscored/f48663ebac3532f5595ae99f16f2b15e504a4381afd710ae506b7f13d59660fa",
+        "resource_type": "fixtures",
+        "scope": {},
+        "source_resource_id": "abbb8fda-975c-5918-80c2-9d9dbc56f7a4",
+        "source_snapshot_id": "7bf34552-6f4c-5d49-84de-5222563a2f1e",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/2402f797846f0a4a3b0f1ee9875df80721e4561928b5b6f7762d67edd47d53d4.json",
+        "report_sha256": "2402f797846f0a4a3b0f1ee9875df80721e4561928b5b6f7762d67edd47d53d4",
+        "work_id": "33c72a43-0074-5190-8c45-e3ca7e317231",
+        "replay_identical": true,
+        "observations": 58,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 20,
+          "FixtureObservationV2": 10,
+          "ResultObservationV2": 9,
+          "TeamStatisticObservationV2": 18
+        },
+        "findings": {}
+      },
+      {
+        "key": "/Regions/252/Tournaments/2/Seasons/5826/england-premier-league",
+        "provider": "whoscored",
+        "resource_key": "Regions/252/Tournaments/2/Seasons/5826/england-premier-league",
+        "acquired_at": "2026-11-01T19:48:13.680721+00:00",
+        "sha256": "8c7bdfc2bb768c0f28123affc0a7d6bab30cbca29563b47db523d17d1c0d6a3e",
+        "bytes": 579516,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/whoscored/8c7bdfc2bb768c0f28123affc0a7d6bab30cbca29563b47db523d17d1c0d6a3e",
+        "resource_type": "fixtures",
+        "scope": {
+          "competition_native_id": "2",
+          "season_label": "2015/2016"
+        },
+        "source_resource_id": "b3777261-a5f7-51d8-8f33-48e37b539d87",
+        "source_snapshot_id": "d562e47d-21d5-5f16-80ad-442ca8abea2a",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/643a992c7ca45047ff260b99cb8f4c9be46e744776c84b2dead767f32ea280fe.json",
+        "report_sha256": "643a992c7ca45047ff260b99cb8f4c9be46e744776c84b2dead767f32ea280fe",
+        "work_id": "b75b3da5-1a8a-5005-b055-92c60f88dd1b",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {}
+      },
+      {
+        "key": "/regions/252/tournaments/2/seasons/5826/stages/12496/fixtures/england-premier-league-2015-2016",
+        "provider": "whoscored",
+        "resource_key": "regions/252/tournaments/2/seasons/5826/stages/12496/fixtures/england-premier-league-2015-2016",
+        "acquired_at": "2026-11-01T19:50:08.176929+00:00",
+        "sha256": "a9af4b80214dc4291bbf0b306915f843b965f37450922304b095f13b37865b5e",
+        "bytes": 222607,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/whoscored/a9af4b80214dc4291bbf0b306915f843b965f37450922304b095f13b37865b5e",
+        "resource_type": "fixtures",
+        "scope": {
+          "competition_native_id": "2",
+          "season_label": "2015/2016"
+        },
+        "source_resource_id": "bdc7f162-f15e-57db-93c7-acc4e43cacbe",
+        "source_snapshot_id": "e2e40c62-10d7-577f-8221-2d55b3a0b99c",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/9ae3d9247a3a59811e0391855dd35b4ef4058f47a47b7c9bdb67160209ac9cdc.json",
+        "report_sha256": "9ae3d9247a3a59811e0391855dd35b4ef4058f47a47b7c9bdb67160209ac9cdc",
+        "work_id": "2cb68020-ca20-54eb-9e71-b2396bd8234f",
+        "replay_identical": true,
+        "observations": 169,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 56,
+          "FixtureObservationV2": 28,
+          "ResultObservationV2": 28,
+          "TeamStatisticObservationV2": 56
+        },
+        "findings": {}
+      }
+    ],
+    "attempts": [
+      {
+        "key": "current",
+        "started_at": "2026-11-01T19:46:40.367652+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "/Regions/252/Tournaments/2/Seasons/5826/england-premier-league",
+        "started_at": "2026-11-01T19:47:12.102065+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "/regions/252/tournaments/2/seasons/5826/stages/12496/fixtures/england-premier-league-2015-2016",
+        "started_at": "2026-11-01T19:50:07.152752+00:00",
+        "status": "FETCHED"
+      }
+    ],
+    "requests": 3
+  },
+  "normalized_contracts": {
+    "CompetitionObservationV2": 3,
+    "TeamObservationV2": 78,
+    "FixtureObservationV2": 39,
+    "ResultObservationV2": 38,
+    "TeamStatisticObservationV2": 76
+  },
+  "experimental_isolation": {
+    "database": "football_v4_expansion_r03_20261101",
+    "system_identifier": "7679328148388241450",
+    "oid": 52291857,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "acquisition_and_publication_method": [
+    {
+      "path": ".local/reports/v4/expansion-r03/acquire.py",
+      "sha256": "05f484072ba9b4cb455797842b2ec3e474023eef935ee5f58680049be8e7a58d"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/whoscored_run.py",
+      "sha256": "9f807903e741c241ceb19629b0a41d9c281f112fa04ba464f86f39ea6246695a"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/whoscored_publish.py",
+      "sha256": "a29eb48283578444d51e5fb21d9cb8067f39db074c1b53fd0c0e8a8794acb10f"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/whoscored_fixtures.py",
+      "sha256": "10d6892a2eab1ff7d86dd9d608e308c540d267f2a8de536118191db5d047a4a3"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/whoscored_stage_publish.py",
+      "sha256": "97af19f94a6afaea0011e679f623259ab8696b885bc9ceeaa4737a5d9708b325"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/whoscored-season-links.json",
+      "sha256": "02976ac2b43a2dd619ebfa38dce7f076e1c69ff2574e57fce6fa402859a41d87"
+    }
+  ],
+  "verification": {
+    "focused_tests": {
+      "path": ".local/reports/v4/expansion-r03/phase-d-tests.log",
+      "sha256": "6e9b62ca252a2309f89910ec0546dff1da9d59efb3137f554f33c3ef1f11ddca"
+    },
+    "typing": {
+      "path": ".local/reports/v4/expansion-r03/phase-d-types.log",
+      "sha256": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8"
+    },
+    "architecture_and_status": {
+      "path": ".local/reports/v4/expansion-r03/phase-d-checks.log",
+      "sha256": "94b34c5651ea1da1c3b52ff65f72c91be328c13605baa59f672699cf2c1d2847"
+    },
+    "tests_passed": 14,
+    "red_tests": "Two focused tests failed before implementation: absent season source API and rejected historical scope."
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "qualified_market_labels_delta": 0,
+  "historical_feature_knowledge_backdated": false,
+  "model_changes": 0,
+  "restrictions": "Bounded development evidence only; no authentication or technical restriction bypass. No distribution permission or sportsbook settlement equivalence inferred."
+}

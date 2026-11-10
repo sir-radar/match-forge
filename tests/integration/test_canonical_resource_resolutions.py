@@ -468,3 +468,38 @@ def test_prepared_canonical_registration_performs_no_filesystem_access(
         "SELECT count(*) FROM football.canonical_resource_resolutions WHERE decision_id=%s",
         (resolution.decision.decision_id,),
     ).fetchone() == (1,)
+
+
+def test_rich_period_resolution_publishes_with_existing_fixture_identity(connection, tmp_path):
+    from football.contracts.observations_v2 import EntityReferenceV2
+    from football.contracts.observations_v3 import ObservationVersionsV3, PeriodScoreObservationV3
+
+    old = _resolution(connection, tmp_path)
+    original = old.candidates[0]
+    period = PeriodScoreObservationV3(
+        provenance=original.observation.provenance,
+        time=original.observation.time,
+        versions=ObservationVersionsV3(adapter_version="test", normalizer_version="period-test"),
+        fixture=EntityReferenceV2(original.observation.fixture.provider_native_id),
+        period="FIRST_HALF",
+        score_basis="REGULATION_90",
+        home_goals=0,
+        away_goals=0,
+        period_complete=True,
+    )
+    ObservationArtifactStore(connection, tmp_path).publish(period)
+    candidate = replace(original, observation=period)
+    choice = replace(
+        old.selection,
+        subject_type=f"PeriodScoreObservation:{candidate.canonical_subject_id}",
+        observation_refs=(str(period.observation_id),),
+        selected_observation_ref=str(period.observation_id),
+    )
+    result = resolve_canonical_resource((candidate,), choice, knowledge_cutoff=NOW)
+    registry = CanonicalResolutionRegistry(connection)
+    prepared = prepare_canonical_resolution(tmp_path, result)
+    identifier = registry.register(result, prepared)
+    assert registry.register(result, prepared) == identifier
+    assert load_canonical_decision(tmp_path, identifier, result.decision.sha256) == result.decision
+    assert result.resource_type == "PeriodScoreObservation"
+    assert result.selected.observation.home_goals == 0

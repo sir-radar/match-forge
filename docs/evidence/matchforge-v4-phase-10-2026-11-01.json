@@ -1,0 +1,78 @@
+{
+  "phase": "10",
+  "provider": "fbref",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "428b1f9162c9ce50027e91987d2079e31432c81b",
+  "recorded_at": "2026-11-01T02:55:11.949324+00:00",
+  "access_evidence": {
+    "recorded_at": "2026-11-01T02:54:02.311559+00:00",
+    "provider": "fbref",
+    "results": [
+      {
+        "family": "historical_league_statistics",
+        "url": "https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats",
+        "requested_at": "2026-11-01T02:53:44.963321+00:00",
+        "http_failures": [
+          {
+            "http_status": 403,
+            "sha256": "1f67efe98fa0bf53e68e61c3976e40f1f2d67d3377520e60aec3d165e74d4db3",
+            "bytes": 5674,
+            "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-10/raw/1f67efe98fa0bf53e68e61c3976e40f1f2d67d3377520e60aec3d165e74d4db3"
+          }
+        ],
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+      },
+      {
+        "family": "current_league_statistics",
+        "url": "https://fbref.com/en/comps/9/Premier-League-Stats",
+        "requested_at": "2026-11-01T02:54:00.723137+00:00",
+        "http_failures": [
+          {
+            "http_status": 403,
+            "sha256": "bd4646101d40bafff03704b1b9ff38b3c3f2a5e596b8f128081942b6c21cf895",
+            "bytes": 5567,
+            "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-10/raw/bd4646101d40bafff03704b1b9ff38b3c3f2a5e596b8f128081942b6c21cf895"
+          }
+        ],
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://fbref.com/en/comps/9/Premier-League-Stats: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+      },
+      {
+        "family": "primary_wrapper_source",
+        "url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/fbref.py",
+        "requested_at": "2026-11-01T02:54:01.089341+00:00",
+        "http_failures": [],
+        "status": "FETCHED",
+        "http_status": 200,
+        "media_type": "text/plain",
+        "sha256": "1ff1ff3f19ebdea0084eb00a3fce7468b33673ba223e70ae883c837f865bedd8",
+        "bytes": 45722,
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-10/raw/1ff1ff3f19ebdea0084eb00a3fce7468b33673ba223e70ae883c837f865bedd8"
+      }
+    ]
+  },
+  "retained_inventory_ref": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json",
+  "findings": [
+    "Historical and current public league statistics pages both returned HTTP 403",
+    "Primary soccerdata FBref implementation fetched and inspected; same fbref.com host",
+    "Wrapper source is implementation evidence, not acquired football statistics"
+  ],
+  "football_resources_acquired": 0,
+  "operating_mutations": 0,
+  "resume_actions": [
+    "Obtain permitted reachable page access or separately verified retained statistics",
+    "Validate native IDs, season and shooting/passing/defending/goalkeeping tables from actual bytes",
+    "Qualify player identity, historical time and target definitions before model use"
+  ],
+  "restrictions": "No proxy, browser fingerprint spoofing, CAPTCHA or challenge bypass",
+  "verification": {
+    "response_bytes_sha256": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests": "21 passed",
+    "diff_check": "PASS"
+  },
+  "next_independent_phase": "11 WhoScored"
+}

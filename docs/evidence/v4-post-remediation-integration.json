@@ -1,0 +1,1656 @@
+{
+  "status": "PASS_WITH_WARNINGS",
+  "baseline_main": "5ab0569b910c12aa45dd49e1917ba8528f8990e1",
+  "pr_179_merge": "5ab0569b910c12aa45dd49e1917ba8528f8990e1",
+  "pr_178_head": "463ec15a8a0720fb48e842af5a009cf140545f90",
+  "merge_base": "8b82dd637449a18ea6086853344e8bc7b0e0f2e2",
+  "textual_conflicts": [
+    "AGENTS.md",
+    "docs/project-status.json",
+    "docs/source-acquisition.md",
+    "python/football/src/football/product/resolution_files.py",
+    "python/football/src/football/product/resolution_parity.py",
+    "python/football/src/football/product/resolution_recovery.py"
+  ],
+  "overlap_paths": [
+    "AGENTS.md",
+    "docs/api/openapi.yaml",
+    "docs/architecture.md",
+    "docs/project-status.json",
+    "docs/source-acquisition.md",
+    "go/api/internal/app/postgres_store.go",
+    "go/api/internal/app/product.go",
+    "python/football/src/football/product/api_football.py",
+    "python/football/src/football/product/identity_admission.py",
+    "python/football/src/football/product/operational_provider_sync.py",
+    "python/football/src/football/product/resolution_files.py",
+    "python/football/src/football/product/resolution_parity.py",
+    "python/football/src/football/product/resolution_recovery.py",
+    "tests/integration/test_canonical_ingestion.py",
+    "tests/integration/test_operational_provider_sync.py",
+    "tests/integration/test_resolution_recovery.py",
+    "web/components/fixture-explorer.test.tsx",
+    "web/lib/contracts.ts"
+  ],
+  "pr_178_file_inventory": [
+    {
+      "path": "AGENTS.md",
+      "additions": "114",
+      "deletions": "1"
+    },
+    {
+      "path": "README.md",
+      "additions": "5",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_IDENTITY_ADMISSION_RECOVERY_REPORT.md",
+      "additions": "197",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_IMPLEMENTATION_REPORT.md",
+      "additions": "1473",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_ISSUE_02_QUALIFICATION_REPORT.md",
+      "additions": "222",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_ISSUE_02_UNBLOCKING_REPORT.md",
+      "additions": "187",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_ISSUE_03_PROVIDER_EXPANSION_REPORT.md",
+      "additions": "259",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/V4_ISSUE_04_ACCESS_RECOVERY_REPORT.md",
+      "additions": "111",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/api/openapi.yaml",
+      "additions": "57",
+      "deletions": "1"
+    },
+    {
+      "path": "docs/architecture.md",
+      "additions": "119",
+      "deletions": "4"
+    },
+    {
+      "path": "docs/backend-engineering.md",
+      "additions": "55",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/data-model.md",
+      "additions": "27",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-00-2026-10-31.json",
+      "additions": "203",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-02-2026-10-31.json",
+      "additions": "258",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-03-2026-10-31.json",
+      "additions": "2385",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-04-2026-10-31.json",
+      "additions": "78",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-05a-2026-10-31.json",
+      "additions": "48",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-05b-2026-10-31.json",
+      "additions": "226",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-05c-2026-11-01.json",
+      "additions": "635",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-05d-2026-11-01.json",
+      "additions": "61",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-06-2026-11-01.json",
+      "additions": "354",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-07-2026-11-01.json",
+      "additions": "170",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-08-2026-11-01.json",
+      "additions": "114",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json",
+      "additions": "193",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-09-validation-correction-2026-11-01.json",
+      "additions": "16",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-10-2026-11-01.json",
+      "additions": "78",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-11-2026-11-01.json",
+      "additions": "140",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-12a-2026-11-01.json",
+      "additions": "416",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-12b-2026-11-01.json",
+      "additions": "130",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-12c-2026-11-01.json",
+      "additions": "296",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-13-2026-11-01.json",
+      "additions": "482",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-14-2026-11-01.json",
+      "additions": "190",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-14-coverage-2026-11-01.json",
+      "additions": "14017",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-15-2026-11-01.json",
+      "additions": "1663",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-16-2026-11-01.json",
+      "additions": "90",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-17-2026-11-01.json",
+      "additions": "153",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-18-2026-11-01.json",
+      "additions": "495",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-19-2026-11-01.json",
+      "additions": "240",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-20-2026-11-01.json",
+      "additions": "117",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-21-2026-11-01.json",
+      "additions": "48",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-22-2026-11-01.json",
+      "additions": "113",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-23-2026-11-01.json",
+      "additions": "871",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/matchforge-v4-phase-23-coverage-2026-11-01.json",
+      "additions": "1127",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/owner-decision-flashscore-soccerway-research-exception-2026-11-01.json",
+      "additions": "37",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/owner-decision-public-development-data-access-2026-10-31.json",
+      "additions": "39",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-development-observation-eligibility-audit.json",
+      "additions": "184",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-experimental-database-isolation.json",
+      "additions": "72",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-correction-contract.json",
+      "additions": "96",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-final.json",
+      "additions": "779",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-qualification-impact.json",
+      "additions": "673",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-relationship-proof.json",
+      "additions": "2856",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-resolution-center.json",
+      "additions": "802",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-identity-recovery-root-cause.json",
+      "additions": "3284",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-baseline.json",
+      "additions": "399",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-canonical-pilot.json",
+      "additions": "1471",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-coverage.json",
+      "additions": "115",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-crosswalk-proposals.json",
+      "additions": "2003",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-final-verification.json",
+      "additions": "287",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-identity.json",
+      "additions": "100",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-player-exposure.json",
+      "additions": "345",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-players.json",
+      "additions": "130",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-qualified-targets.json",
+      "additions": "96",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-root-cause-research.json",
+      "additions": "2220",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-source-verification.json",
+      "additions": "492",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-time-targets.json",
+      "additions": "128",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-02-unblocking-final.json",
+      "additions": "704",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-espn.json",
+      "additions": "1165",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-final-verification.json",
+      "additions": "720",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-flashscore.json",
+      "additions": "910",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-proof-acquisition-plan.json",
+      "additions": "436",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-qualification-recheck.json",
+      "additions": "236",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-soccerway.json",
+      "additions": "530",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-understat.json",
+      "additions": "249",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-03-whoscored.json",
+      "additions": "211",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-clubelo.json",
+      "additions": "125",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-fbref.json",
+      "additions": "582",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-final-verification.json",
+      "additions": "766",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-identity-bridge-results.json",
+      "additions": "278",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-open-source-research.json",
+      "additions": "298",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-qualification-impact.json",
+      "additions": "323",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-issue-04-sofascore.json",
+      "additions": "421",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-operating-isolation-final-verification.json",
+      "additions": "453",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/evidence/v4-operating-isolation-root-cause.json",
+      "additions": "3897",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/frontend-engineering.md",
+      "additions": "45",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/project-status.json",
+      "additions": "480",
+      "deletions": "2"
+    },
+    {
+      "path": "docs/references/matchforge-v4-original-110-section-prompt.md",
+      "additions": "2856",
+      "deletions": "0"
+    },
+    {
+      "path": "docs/source-acquisition.md",
+      "additions": "151",
+      "deletions": "28"
+    },
+    {
+      "path": "docs/testing.md",
+      "additions": "49",
+      "deletions": "0"
+    },
+    {
+      "path": "go/api/internal/app/app.go",
+      "additions": "1",
+      "deletions": "0"
+    },
+    {
+      "path": "go/api/internal/app/live_ordering_database_test.go",
+      "additions": "90",
+      "deletions": "0"
+    },
+    {
+      "path": "go/api/internal/app/market_capabilities.go",
+      "additions": "115",
+      "deletions": "0"
+    },
+    {
+      "path": "go/api/internal/app/market_capabilities_test.go",
+      "additions": "95",
+      "deletions": "0"
+    },
+    {
+      "path": "go/api/internal/app/postgres_store.go",
+      "additions": "47",
+      "deletions": "12"
+    },
+    {
+      "path": "go/api/internal/app/product.go",
+      "additions": "9",
+      "deletions": "6"
+    },
+    {
+      "path": "go/api/internal/app/resolution_center.go",
+      "additions": "4",
+      "deletions": "4"
+    },
+    {
+      "path": "go/api/internal/app/resolution_center_test.go",
+      "additions": "1",
+      "deletions": "1"
+    },
+    {
+      "path": "infrastructure/migrations/202611020100_provider_native_mapping_method.sql",
+      "additions": "66",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/canonical_resources/resolution.py",
+      "additions": "13",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/contracts/observation_codec.py",
+      "additions": "63",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/contracts/observation_schema.py",
+      "additions": "7",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/contracts/observations_v3.py",
+      "additions": "125",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/coverage/resources.py",
+      "additions": "30",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/forecasting/market_catalogue.py",
+      "additions": "584",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/forecasting/multimodel_cli.py",
+      "additions": "57",
+      "deletions": "3"
+    },
+    {
+      "path": "python/football/src/football/forecasting/products.py",
+      "additions": "214",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/identity/reep.py",
+      "additions": "227",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/ingestion/canonical.py",
+      "additions": "1",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/ingestion/registration.py",
+      "additions": "37",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/observations/cli.py",
+      "additions": "7",
+      "deletions": "4"
+    },
+    {
+      "path": "python/football/src/football/product/api_football.py",
+      "additions": "9",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/product/identity_admission.py",
+      "additions": "16",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/product/live_resources.py",
+      "additions": "91",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/product/market_capabilities.py",
+      "additions": "372",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/product/market_capability_cli.py",
+      "additions": "186",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/product/operational_provider_sync.py",
+      "additions": "106",
+      "deletions": "24"
+    },
+    {
+      "path": "python/football/src/football/product/resolution_files.py",
+      "additions": "4",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/product/resolution_parity.py",
+      "additions": "3",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/product/resolution_recovery.py",
+      "additions": "5",
+      "deletions": "2"
+    },
+    {
+      "path": "python/football/src/football/product/retained_identities.py",
+      "additions": "94",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/data_audit.py",
+      "additions": "405",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/fotmob.py",
+      "additions": "3",
+      "deletions": "4"
+    },
+    {
+      "path": "python/football/src/football/providers/native/espn.py",
+      "additions": "40",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/flashscore.py",
+      "additions": "131",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/fotmob.py",
+      "additions": "3",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/models.py",
+      "additions": "34",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/pitchapi.py",
+      "additions": "3",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/reader.py",
+      "additions": "20",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/understat.py",
+      "additions": "44",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/native/whoscored.py",
+      "additions": "31",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/api_football.py",
+      "additions": "55",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/api_football_rich.py",
+      "additions": "166",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/cli.py",
+      "additions": "81",
+      "deletions": "36"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/clubelo.py",
+      "additions": "47",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/common.py",
+      "additions": "9",
+      "deletions": "5"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/espn.py",
+      "additions": "174",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/espn_details.py",
+      "additions": "220",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/fbref.py",
+      "additions": "325",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/files.py",
+      "additions": "42",
+      "deletions": "7"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/flashscore.py",
+      "additions": "199",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/flashscore_events.py",
+      "additions": "136",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/flashscore_lineups.py",
+      "additions": "99",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/flashscore_statistics.py",
+      "additions": "98",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/flashscore_summary.py",
+      "additions": "65",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/fotmob.py",
+      "additions": "8",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/measurements.py",
+      "additions": "77",
+      "deletions": "7"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/pipeline.py",
+      "additions": "69",
+      "deletions": "19"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/pitchapi.py",
+      "additions": "8",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/sofascore.py",
+      "additions": "355",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/statsbomb.py",
+      "additions": "44",
+      "deletions": "1"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/understat.py",
+      "additions": "189",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/normalization/whoscored.py",
+      "additions": "163",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/espn.py",
+      "additions": "52",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/flashscore.py",
+      "additions": "139",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/http.py",
+      "additions": "12",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/soccerway.py",
+      "additions": "10",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/understat.py",
+      "additions": "93",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/providers/sources/whoscored.py",
+      "additions": "67",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/src/football/storage/experimental.py",
+      "additions": "154",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_api_football_rich_resources.py",
+      "additions": "182",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_api_football_standings.py",
+      "additions": "71",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_canonical_resource_resolution.py",
+      "additions": "56",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_clubelo_archive.py",
+      "additions": "61",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_derived_goal_products.py",
+      "additions": "165",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_espn.py",
+      "additions": "283",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_experimental_database.py",
+      "additions": "87",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_fbref_archive.py",
+      "additions": "88",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_flashscore.py",
+      "additions": "150",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_flashscore_details.py",
+      "additions": "154",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_flashscore_statistics.py",
+      "additions": "148",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_forecast_products.py",
+      "additions": "22",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_fotmob_provider.py",
+      "additions": "12",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_live_update_order.py",
+      "additions": "101",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_market_capabilities.py",
+      "additions": "351",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_observation_contracts_v3.py",
+      "additions": "186",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_provider_data_audit.py",
+      "additions": "141",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_provider_native_records.py",
+      "additions": "91",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_provider_sources.py",
+      "additions": "3",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_reep_evidence.py",
+      "additions": "160",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_resource_normalization.py",
+      "additions": "96",
+      "deletions": "7"
+    },
+    {
+      "path": "python/football/tests/test_retained_native_identity.py",
+      "additions": "300",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_rich_match_resources.py",
+      "additions": "236",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_rich_provider_normalization.py",
+      "additions": "80",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_soccerway.py",
+      "additions": "121",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_sofascore_retained.py",
+      "additions": "186",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_understat.py",
+      "additions": "245",
+      "deletions": "0"
+    },
+    {
+      "path": "python/football/tests/test_whoscored.py",
+      "additions": "208",
+      "deletions": "0"
+    },
+    {
+      "path": "schemas/contracts/resource-observations-v3.schema.json",
+      "additions": "1098",
+      "deletions": "0"
+    },
+    {
+      "path": "scripts/audit_v4_qualification.py",
+      "additions": "209",
+      "deletions": "0"
+    },
+    {
+      "path": "scripts/inspect_v4_accepted_history.py",
+      "additions": "238",
+      "deletions": "0"
+    },
+    {
+      "path": "scripts/inspect_v4_pilot.py",
+      "additions": "441",
+      "deletions": "0"
+    },
+    {
+      "path": "scripts/project_v4_qualification.py",
+      "additions": "169",
+      "deletions": "0"
+    },
+    {
+      "path": "scripts/storage-integration.sh",
+      "additions": "5",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_canonical_ingestion.py",
+      "additions": "91",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_canonical_resource_resolutions.py",
+      "additions": "35",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_experimental_database_storage.py",
+      "additions": "197",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_market_capability_report.py",
+      "additions": "154",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_operational_provider_sync.py",
+      "additions": "63",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_provider_data_audit_storage.py",
+      "additions": "104",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_resolution_recovery.py",
+      "additions": "46",
+      "deletions": "1"
+    },
+    {
+      "path": "tests/integration/test_rich_observation_artifacts.py",
+      "additions": "86",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_understat_pipeline.py",
+      "additions": "278",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/integration/test_v4_development_isolation.py",
+      "additions": "230",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/test_qualification_audit.py",
+      "additions": "242",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/test_resolution_identity.py",
+      "additions": "19",
+      "deletions": "0"
+    },
+    {
+      "path": "tests/test_v4_accepted_history_audit.py",
+      "additions": "88",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/accessibility-report.md",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/api-contract-report.md",
+      "additions": "18",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/api-state-matrix.md",
+      "additions": "18",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/component-decision-record.md",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/component-inventory.md",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/fallow-remediation-record.md",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/frontend-review-report.md",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/assets/visual-report.md",
+      "additions": "8",
+      "deletions": "0"
+    },
+    {
+      "path": "web/components/data-sync-admin.tsx",
+      "additions": "2",
+      "deletions": "0"
+    },
+    {
+      "path": "web/components/expanded-fixture.tsx",
+      "additions": "3",
+      "deletions": "2"
+    },
+    {
+      "path": "web/components/fixture-explorer.test.tsx",
+      "additions": "16",
+      "deletions": "2"
+    },
+    {
+      "path": "web/components/market-readiness-admin.module.css",
+      "additions": "4",
+      "deletions": "0"
+    },
+    {
+      "path": "web/components/market-readiness-admin.test.tsx",
+      "additions": "51",
+      "deletions": "0"
+    },
+    {
+      "path": "web/components/market-readiness-admin.tsx",
+      "additions": "66",
+      "deletions": "0"
+    },
+    {
+      "path": "web/e2e/market-readiness.spec.ts",
+      "additions": "71",
+      "deletions": "0"
+    },
+    {
+      "path": "web/lib/api.ts",
+      "additions": "7",
+      "deletions": "1"
+    },
+    {
+      "path": "web/lib/contracts.test.ts",
+      "additions": "12",
+      "deletions": "0"
+    },
+    {
+      "path": "web/lib/contracts.ts",
+      "additions": "73",
+      "deletions": "2"
+    },
+    {
+      "path": "web/lib/fixture-contract-drift.test.ts",
+      "additions": "9",
+      "deletions": "0"
+    },
+    {
+      "path": "web/lib/market-capabilities.test.ts",
+      "additions": "42",
+      "deletions": "0"
+    },
+    {
+      "path": "web/test-fixtures/market-capability-summary.json",
+      "additions": "113",
+      "deletions": "0"
+    }
+  ],
+  "operating_writes": 0,
+  "operating_migrations": 0,
+  "provider_requests": 0,
+  "tests": {
+    "focused": {
+      "passed": 62,
+      "exit": 0
+    },
+    "aggregate": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "exit": 2,
+      "python_unit_passed": 2157,
+      "python_warnings": 7,
+      "rust_passed": 16,
+      "web_passed": 181,
+      "storage_passed": 973,
+      "storage_failed": 2,
+      "failure_cause": "The two added migration tests used a pre-Phase-15 locking fixture on a current schema. Production code and existing tests passed."
+    },
+    "browser": {
+      "passed": 42,
+      "skipped": 26,
+      "exit": 0
+    },
+    "corrected_migration_tests": {
+      "command": "uv run --offline pytest tests/integration/test_provider_native_upgrade.py",
+      "passed": 2,
+      "exit": 0,
+      "change": "Use the real current locking path; remove the incompatible legacy fixture override."
+    },
+    "remaining_api_integration": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT ./scripts/integration.sh",
+      "exit": 0
+    },
+    "final_storage_cases_passed_across_runs": 975
+  },
+  "preserved_main_migrations": 113,
+  "legacy_migration_sha256": "bb4c438501730148563d2ec93305faf49da1062eef0c65fef3a62540a171af70",
+  "verification_notes": [
+    "All baseline migration files byte-exact",
+    "Original legacy migration byte-exact outside active Goose directory"
+  ],
+  "backup": {
+    "dump_sha256": "375c5d9daee0ec97b1e124441950850ac8d2c68931cae89eaab57995ff4fcacd",
+    "dump_bytes": 1847231178,
+    "cutoff": "2026-11-10 05:07:56.935706+00"
+  },
+  "baseline_tables": {
+    "artifact_retirement_events": {
+      "rows": 17,
+      "sha256": "c00d7f9ca67889065b4f13515cca5259e23236383a5756dea8128d75838dbba5"
+    },
+    "baseline_forecasts": {
+      "rows": 9985,
+      "sha256": "9b9180fa6f73d568d73bac7fc54a49f336e0d97e4a9e83fa98b8a9710e1809e5"
+    },
+    "competition_observations": {
+      "rows": 52,
+      "sha256": "4b5668f29c614d4f25a259ece30d9e06021ed340e0c2f345fff98494cb574d2f"
+    },
+    "competition_provider_mappings": {
+      "rows": 2039,
+      "sha256": "bc770c6bad301f0c1339e43b6db518c23540161a38b1366bd25378fc28ffa103"
+    },
+    "competitions": {
+      "rows": 1696,
+      "sha256": "25a3d2f1c7f9c28661e8c8e7683d563031adb405dd92db3b33af20f6c762e6d3"
+    },
+    "elo_model_versions": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "event_observations": {
+      "rows": 2609128,
+      "sha256": "296b97f1b31c084b4badd5bd95bc26c2f97bfe5423c5febdaf74a9cdaf6010a9"
+    },
+    "event_provider_mappings": {
+      "rows": 2609129,
+      "sha256": "042ae347cb22ae7ea09fcf5888e6c7840ff2078800fc34018e73b65fdeb9b299"
+    },
+    "forecast_artifacts": {
+      "rows": 9990,
+      "sha256": "d600b661ee1f0f3a9549415bb36766feada29cd6e9925720fa261a270e36702b"
+    },
+    "match_observations": {
+      "rows": 1044,
+      "sha256": "37be5cacd2e864c526b3cd0468afaffd73f66752b010af720bb64e0413772b54"
+    },
+    "match_player_participation_observations": {
+      "rows": 27354,
+      "sha256": "ed4aea21aaa4777dc3360a17328968a428ed1ed0f511d39bbd3ed17789199c57"
+    },
+    "match_provider_mappings": {
+      "rows": 540153,
+      "sha256": "52ec9dca41e1a1ba679076879629ddbddbacef4e34c8a50926abe8595886b0bd"
+    },
+    "match_team_participation_observations": {
+      "rows": 2069,
+      "sha256": "cd78952750c3e0a4894ee63075b92da1f8417ef7cd09e4e209e6c014c5e1e85a"
+    },
+    "matches": {
+      "rows": 795170,
+      "sha256": "b8e27eab7a5e36ce0f78de002b37999888c4abbd8fb92e5b1f7beb7f5dcb22a9"
+    },
+    "model_artifact_files": {
+      "rows": 5230,
+      "sha256": "9ae698095bb17711e39587acd3f9e75452ea2ee4295ddfebe93ecd4ef04e2e4d"
+    },
+    "model_artifact_inputs": {
+      "rows": 5230,
+      "sha256": "59dcabc9dca5f64a74a8f0b5af18c78b98732f5982973db9d0ab0dffae8c45ee"
+    },
+    "model_artifacts": {
+      "rows": 5230,
+      "sha256": "ee411867c3263c52b414280307c4b4588c8aca8ec942263e9b115db843e73b93"
+    },
+    "model_fit_runs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "model_promotion_events": {
+      "rows": 5,
+      "sha256": "1d2dbab760227af2a87736caa5bb527e314dde8439142b82c728096060991e57"
+    },
+    "player_observations": {
+      "rows": 1247,
+      "sha256": "2a4d80df47c05d63b745ce2d5505f1c0d24537ef22813f210fd4183ca0d78f88"
+    },
+    "player_provider_mappings": {
+      "rows": 1240,
+      "sha256": "074829e735fc8fc875c4320795ac411247910545ca686bf7756ee476ec9c4cad"
+    },
+    "players": {
+      "rows": 1243,
+      "sha256": "770581a813acbf5b29253db9adb18ba6d1c56321aac8d1571fc939d4fe248026"
+    },
+    "product_availability_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_coach_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_forecasts": {
+      "rows": 18162,
+      "sha256": "fe7c5b99add4abb1e72f4ee220d6d7d86315de70344b80921d2062ab199ee65b"
+    },
+    "product_identity_admissions": {
+      "rows": 22900,
+      "sha256": "0f27699460f4415d31077fc546b2a378fc737d166d535b1a5421081bd1c33948"
+    },
+    "product_lineup_observations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_match_history_decisions": {
+      "rows": 862214,
+      "sha256": "195aecb033be43e809138ff8c1c69dcbf2f1fd40aa20b8a66ec80fc3f3ac7bca"
+    },
+    "product_model_artifacts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_model_evaluations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_model_forecasts": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "product_provider_fixture_observations": {
+      "rows": 241059,
+      "sha256": "3624f189dd0c35bb386c3401c830bb9a2c985137c33511318f89addc20637363"
+    },
+    "product_provider_resource_observations": {
+      "rows": 318095,
+      "sha256": "30cc58ca8a3efcd91331fd1070611f1567f8569dab5c138583c4c37b0dd9d3a1"
+    },
+    "product_team_match_history": {
+      "rows": 495651,
+      "sha256": "f5ccac51d9fd7c19cbd01245c7c93fa6ad7efdb938e565e499f859ee229a8c1a"
+    },
+    "provider_mapping_history": {
+      "rows": 565380,
+      "sha256": "d418b7e8818f590c916a5960ea01557d70dfe319bddcc74ab397996b5f045283"
+    },
+    "provider_resource_authority": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "provider_resource_capabilities": {
+      "rows": 26,
+      "sha256": "c08dfec3792adf332e6297ce167dc8c42864fb048e73e87a722a631f3b1a0c5b"
+    },
+    "resolution_decisions": {
+      "rows": 30,
+      "sha256": "f4bab3fe696c842ab9c05ad49dd0520258afe26d8abaccd0b56b635c27dd65e0"
+    },
+    "resolution_stage_settings": {
+      "rows": 13,
+      "sha256": "3463338c67318976401d2e167c78ec33a97b57d189325a1c5efb8ac3a739f0f0"
+    },
+    "resource_observation_artifacts": {
+      "rows": 12310,
+      "sha256": "91ccc252aa3a2cc9cf3936b1b9e8c8ea9d132868ee3612bf87adee5dcaacc160"
+    },
+    "runtime_model_registrations": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "season_observations": {
+      "rows": 164,
+      "sha256": "4ac227e9e35aa2f74d723ca4f85cb7074a9bb3109ce53e49338dee584767a42f"
+    },
+    "season_provider_mappings": {
+      "rows": 86,
+      "sha256": "6f606289481096b260f27c102a2283da7d1d668d9623d14421894fb9bdca5186"
+    },
+    "seasons": {
+      "rows": 4068,
+      "sha256": "7874bd92a424c912b711daff75a8a3010eb764c0209cfabc82a7b7fd98847df7"
+    },
+    "source_resources": {
+      "rows": 82502,
+      "sha256": "edc0b88df4098d375dcb025a984d1d73d27375534e8fa50ab17d1416bde8acf0"
+    },
+    "source_snapshots": {
+      "rows": 80694,
+      "sha256": "42226f2d41d0c543b76a7d8758bd944817638de00c2de4110a3d63e078faabaa"
+    },
+    "team_observations": {
+      "rows": 76,
+      "sha256": "1d97813922c409a3f6aefd8415d8e63b11d6f1f1b2bc866c45f5463e6a8fd8e0"
+    },
+    "team_provider_mappings": {
+      "rows": 21671,
+      "sha256": "d14461ad321a410fad5bd34404c882bd7d8ede4419e43e199de6402a5424ec13"
+    },
+    "teams": {
+      "rows": 18297,
+      "sha256": "9752079946e0f944d0b8c400c80af893646b76007180ec1024ea21c4592687b1"
+    }
+  },
+  "eligible_history": {
+    "rows": 314876,
+    "sha256": "59e568404bed90ea749b5085a7397892d87b034b93ad00dbe674b333466e3865"
+  },
+  "operating_preservation": {
+    "status": "PASS",
+    "tables": {
+      "artifact_retirement_events": {
+        "retained": 17,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "baseline_forecasts": {
+        "retained": 9985,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "forecast_artifacts": {
+        "retained": 9990,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "model_artifact_files": {
+        "retained": 5230,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "model_artifact_inputs": {
+        "retained": 5230,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "model_artifacts": {
+        "retained": 5230,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "model_promotion_events": {
+        "retained": 5,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "product_forecasts": {
+        "retained": 18162,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "product_identity_admissions": {
+        "retained": 22900,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "product_model_artifacts": {
+        "retained": 0,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "product_model_forecasts": {
+        "retained": 0,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "resource_observation_artifacts": {
+        "retained": 12310,
+        "added": 0,
+        "changed_or_removed": 0
+      },
+      "source_resources": {
+        "retained": 82502,
+        "added": 8,
+        "changed_or_removed": 0
+      },
+      "source_snapshots": {
+        "retained": 80694,
+        "added": 8,
+        "changed_or_removed": 0
+      },
+      "product_match_history_decisions": {
+        "retained": 862214,
+        "added": 0,
+        "changed_or_removed": 0
+      }
+    },
+    "stage_routes": [
+      [
+        1,
+        "LEGACY"
+      ],
+      [
+        2,
+        "LEGACY"
+      ],
+      [
+        3,
+        "LEGACY"
+      ],
+      [
+        4,
+        "LEGACY"
+      ],
+      [
+        5,
+        "LEGACY"
+      ],
+      [
+        6,
+        "LEGACY"
+      ],
+      [
+        7,
+        "LEGACY"
+      ],
+      [
+        8,
+        "LEGACY"
+      ],
+      [
+        9,
+        "LEGACY"
+      ],
+      [
+        10,
+        "LEGACY"
+      ],
+      [
+        11,
+        "LEGACY"
+      ],
+      [
+        12,
+        "LEGACY"
+      ],
+      [
+        13,
+        "LEGACY"
+      ]
+    ]
+  },
+  "physical_files": {
+    "status": "PASS_WITH_PREEXISTING_RETENTION_GAPS",
+    "groups": {
+      "observations": {
+        "verified": 12310,
+        "sha256": "17877ab888ffae8962fcd998cc3b334073d572e3f3fa62fd35f0bb8275378421"
+      },
+      "capabilities": {
+        "verified": 26,
+        "sha256": "f5656574350426451cdaf1a6b118b976616bc18746de768f6f89cdca1e744a5f"
+      },
+      "model_manifests": {
+        "missing": 26,
+        "verified": 5204,
+        "sha256": "640faa2a0e7c043be98c12be362c222f2915d5ad9b49ede0402bfa9a1f327747"
+      },
+      "model_files": {
+        "missing": 26,
+        "verified": 5204,
+        "sha256": "6ceb609dc283a53b308ad93361e3542af1e8e58f904e7fc34d2b87316daa5459"
+      },
+      "source_manifests": {
+        "missing": 34,
+        "verified": 80612,
+        "mismatch": 48,
+        "sha256": "fc1a4973a306fe39e7526b784ba45a59560c9a39066f66c28f6f5ba10fee0f63"
+      }
+    },
+    "champion_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4"
+  },
+  "operating_migration_history_unchanged": true,
+  "populated_restore": {
+    "status": "PASS",
+    "archive_sha256": "375c5d9daee0ec97b1e124441950850ac8d2c68931cae89eaab57995ff4fcacd",
+    "verified_table_count": 49,
+    "verified_row_count": 9370649,
+    "row_hash_comparison_pass": true,
+    "row_hash_comparison_log_sha256": "630f3e9e9ac3158478bd40e81ac46da4c5875e4485fe01f66982a57a06aedf32",
+    "eligible_history": {
+      "rows": 314876,
+      "sha256": "59e568404bed90ea749b5085a7397892d87b034b93ad00dbe674b333466e3865"
+    },
+    "migrations_added": [
+      202611100200
+    ],
+    "prior_migrations_unchanged": true,
+    "stage_routes": [
+      [
+        1,
+        "LEGACY"
+      ],
+      [
+        2,
+        "LEGACY"
+      ],
+      [
+        3,
+        "LEGACY"
+      ],
+      [
+        4,
+        "LEGACY"
+      ],
+      [
+        5,
+        "LEGACY"
+      ],
+      [
+        6,
+        "LEGACY"
+      ],
+      [
+        7,
+        "LEGACY"
+      ],
+      [
+        8,
+        "LEGACY"
+      ],
+      [
+        9,
+        "LEGACY"
+      ],
+      [
+        10,
+        "LEGACY"
+      ],
+      [
+        11,
+        "LEGACY"
+      ],
+      [
+        12,
+        "LEGACY"
+      ],
+      [
+        13,
+        "LEGACY"
+      ]
+    ],
+    "operating_writes": 0,
+    "harness_correction": "Final routing query used execution_mode; corrected to existing route column. All original per-table hashes had already passed; final eligibility, history and route checks reran."
+  },
+  "latest_main_recheck": "5ab0569b910c12aa45dd49e1917ba8528f8990e1",
+  "remaining_integration_blockers": [],
+  "remaining_operating_actions": "Owner review/merge and separately authorized rollout; existing data-quality and scientific blockers unchanged."
+}

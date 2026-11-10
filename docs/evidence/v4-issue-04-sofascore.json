@@ -1,0 +1,421 @@
+{
+  "phase": "R04-D",
+  "status": "PASS_WITH_WARNINGS",
+  "provider_classification": "PARTIAL_FUNCTIONAL",
+  "recorded_at": "2026-11-02T00:57:17.043631Z",
+  "data_classification": "EXPERIMENTAL_ONLY",
+  "repository": "https://github.com/tunjayoff/sofascore_scraper",
+  "revision": "dd9f061be2c64f01a6d3a50fb34d55a102d7107b",
+  "acquisition_route": "Commit-pinned published original-provider sample envelopes; upstream challenge-solving transport not used",
+  "direct_access": {
+    "key": "sofa-direct-event",
+    "url": "https://www.sofascore.com/api/v1/event/15534094",
+    "acquired_at": "2026-11-02T00:47:14.033548+00:00",
+    "status": 403,
+    "sha256": "6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d",
+    "bytes": 48,
+    "error": "HTTP Error 403: Forbidden"
+  },
+  "code_licence": "PolyForm Noncommercial 1.0.0; implementation independently written from inspected resource formats",
+  "provider_permission": "UNRESOLVED; public sample distribution and code licence are not Sofascore consent or redistribution rights",
+  "acquired_resources": 12,
+  "resources_with_final_observations": 11,
+  "trimmed_resources": 8,
+  "normalized_observations": 115,
+  "contracts": {
+    "TeamObservationV2": 6,
+    "CompetitionObservationV2": 3,
+    "FixtureObservationV2": 3,
+    "ResultObservationV2": 2,
+    "PeriodScoreObservationV3": 4,
+    "PlayerObservationV2": 38,
+    "PlayerStatisticObservationV2": 9,
+    "LineupObservationV2": 6,
+    "PlayerStatisticObservationV3": 7,
+    "TeamStatisticObservationV3": 6,
+    "ExpectedGoalsObservationV2": 4,
+    "TeamStatisticObservationV2": 12,
+    "EventObservationV2": 15
+  },
+  "native_ids": {
+    "competition": 2,
+    "fixture": 5,
+    "home_team": 2,
+    "away_team": 2,
+    "player": 33
+  },
+  "distinct_resource_fixture_ids": 6,
+  "source_lineup_player_occurrences": 16,
+  "reported_minute_exposures": 16,
+  "canonical_qualified_appearances": 0,
+  "canonical_qualified_minutes": 0,
+  "complete_historical_seasons": 0,
+  "live_freshness_validated": false,
+  "native_team_membership_limit": "Player teamId can identify current club rather than this match team; final lineup/player/statistic references stay anonymous on the match-team side. No historical membership interval inferred.",
+  "statistical_limits": "Current scores retain UNKNOWN basis; partial-period xG is not match-total xG; missing fields are not zero. Trimmed samples have explicit omissions and do not prove complete labels.",
+  "findings": {
+    "MF_NORM_SOURCE_SAMPLE_TRIMMED": 8,
+    "MF_NORM_SOURCE_LIST_TRUNCATED": 80,
+    "MF_NORM_PLAYER_TEAM_SCOPE_UNVERIFIED": 6,
+    "MF_NORM_STATISTIC_UNSUPPORTED": 309,
+    "MF_NORM_STATISTIC_REPEATED": 18,
+    "MF_NORM_XG_SCOPE_UNSUPPORTED": 8,
+    "MF_NORM_EVENT_TYPE_UNSUPPORTED": 3
+  },
+  "resources": [
+    {
+      "key": "research/all_sports/samples/football/event-id__1.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id__1.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/15534094",
+      "original_fetched_at_utc": "2026-10-01T12:08:27+00:00",
+      "sample_trimmed": false,
+      "sha256": "6c3116329f86b5a673f59937e34b7709da0de43321981595fd1677631b492e4a",
+      "bytes": 6521,
+      "source_resource_id": "e1a88b07-1a82-55d8-a467-3e45c5df59a7",
+      "source_snapshot_id": "33f60367-8fce-5182-b668-40635abcc56f",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/d45ceb7697d5912cbba53b681e7b5c09545816cd20fdfa0dafc195dfd785ff40.json",
+      "report_sha256": "d45ceb7697d5912cbba53b681e7b5c09545816cd20fdfa0dafc195dfd785ff40",
+      "work_id": "e70bc595-b70a-578c-9c62-4a9e576445d1",
+      "observations": 4,
+      "contracts": {
+        "TeamObservationV2": 2,
+        "CompetitionObservationV2": 1,
+        "FixtureObservationV2": 1
+      },
+      "findings": {},
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 4,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id__2.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id__2.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17256969",
+      "original_fetched_at_utc": "2026-10-08T23:52:55+00:00",
+      "sample_trimmed": false,
+      "sha256": "611af53bc4ddeebde54ce5b1f73e7c5d1acf54b67ac93d5d52ab7b65c7a9ef2c",
+      "bytes": 10994,
+      "source_resource_id": "c0901161-52d9-5041-ae4f-e677604a3c21",
+      "source_snapshot_id": "8ab2fe79-50f4-5f15-934b-93349dd865e1",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/b81f57722eba71e4d09beb1480ecb87082a16818232d5e207eae031d6f194460.json",
+      "report_sha256": "b81f57722eba71e4d09beb1480ecb87082a16818232d5e207eae031d6f194460",
+      "work_id": "14a07f7b-e239-5526-b885-17163a97d2ac",
+      "observations": 7,
+      "contracts": {
+        "TeamObservationV2": 2,
+        "CompetitionObservationV2": 1,
+        "FixtureObservationV2": 1,
+        "ResultObservationV2": 1,
+        "PeriodScoreObservationV3": 2
+      },
+      "findings": {},
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 7,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id__3.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id__3.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17256969",
+      "original_fetched_at_utc": "2026-10-08T23:52:57+00:00",
+      "sample_trimmed": false,
+      "sha256": "7c5b2b6ce9e853a74fd2d7b81ae55fa82b5a292f58c2d533f646a463b040a16b",
+      "bytes": 10994,
+      "source_resource_id": "bd2bb06c-1851-5a95-be60-35083eebb357",
+      "source_snapshot_id": "4f35f857-7a88-54f5-8a2e-5279f14ed8cc",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/b9be4d821ae503652853dd9a3617a0ed2fd2ebfe9d96255e2d2c77f4d182e330.json",
+      "report_sha256": "b9be4d821ae503652853dd9a3617a0ed2fd2ebfe9d96255e2d2c77f4d182e330",
+      "work_id": "a0db1393-37b3-5f12-af82-8f30137a68d7",
+      "observations": 7,
+      "contracts": {
+        "TeamObservationV2": 2,
+        "CompetitionObservationV2": 1,
+        "FixtureObservationV2": 1,
+        "ResultObservationV2": 1,
+        "PeriodScoreObservationV3": 2
+      },
+      "findings": {},
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 7,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-lineups__1.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-lineups__1.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17167343/lineups",
+      "original_fetched_at_utc": "2026-10-01T12:19:39+00:00",
+      "sample_trimmed": true,
+      "sha256": "c33c1498e0ab04534b23142ac8cd0acb05315c4342daa976cd60f147ee8c2793",
+      "bytes": 8002,
+      "source_resource_id": "af933ae5-0589-56ba-928e-7dbc13fa0943",
+      "source_snapshot_id": "ac7ee7af-a352-5768-977f-9a65a66b71fa",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/59d1aea74ae44c0c847c943d22681a37386ae1beeddaa0f900989bde35cd28b3.json",
+      "report_sha256": "59d1aea74ae44c0c847c943d22681a37386ae1beeddaa0f900989bde35cd28b3",
+      "work_id": "3b315c65-ea7c-5a5c-8490-e593cd227f17",
+      "observations": 10,
+      "contracts": {
+        "PlayerObservationV2": 4,
+        "PlayerStatisticObservationV2": 3,
+        "LineupObservationV2": 2,
+        "PlayerStatisticObservationV3": 1
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 2,
+        "MF_NORM_PLAYER_TEAM_SCOPE_UNVERIFIED": 2,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 74
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 10,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-lineups__2.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-lineups__2.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17256969/lineups",
+      "original_fetched_at_utc": "2026-10-08T23:53:01+00:00",
+      "sample_trimmed": true,
+      "sha256": "653210c91b09c57174ce9a0060adb9025f513cdcc97e0d88913434c8d95bf8ce",
+      "bytes": 14886,
+      "source_resource_id": "0ef8e46f-3e22-54b2-a084-19dd6aafe8cc",
+      "source_snapshot_id": "960ca366-2234-5b6a-bf32-a664af902f87",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/71f7234b9e0cf6bad2b3bda1333b185554c082ca256ab4516bc8e7801e2da882.json",
+      "report_sha256": "71f7234b9e0cf6bad2b3bda1333b185554c082ca256ab4516bc8e7801e2da882",
+      "work_id": "b61637b1-53be-5a8b-91bc-39e6c70da8ef",
+      "observations": 14,
+      "contracts": {
+        "PlayerObservationV2": 6,
+        "PlayerStatisticObservationV2": 6,
+        "LineupObservationV2": 2
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 2,
+        "MF_NORM_PLAYER_TEAM_SCOPE_UNVERIFIED": 2,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 6
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 28,
+      "retained_diagnostic_artifacts_outside_final_report": 14
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-lineups__3.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-lineups__3.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/15534082/lineups",
+      "original_fetched_at_utc": "2026-10-08T23:54:01+00:00",
+      "sample_trimmed": true,
+      "sha256": "ee5ca914286221f8f121774922a86a8f5891daf70f357ff5b44b75d4dda0e79c",
+      "bytes": 28431,
+      "source_resource_id": "65a1dfc7-6a33-5948-a256-1ebe955db5c8",
+      "source_snapshot_id": "657c2543-3a33-50a9-93b9-a08c5d7c37b9",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/999ddacf8c6889a090a12bf65e27cf8a2d3fbcf99c91ea42cf9d50d921ba1354.json",
+      "report_sha256": "999ddacf8c6889a090a12bf65e27cf8a2d3fbcf99c91ea42cf9d50d921ba1354",
+      "work_id": "024e30e8-4d8f-5288-bea4-87ff67b8209c",
+      "observations": 14,
+      "contracts": {
+        "PlayerObservationV2": 6,
+        "PlayerStatisticObservationV3": 6,
+        "LineupObservationV2": 2
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 2,
+        "MF_NORM_PLAYER_TEAM_SCOPE_UNVERIFIED": 2,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 175
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 14,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-statistics__1.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-statistics__1.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17167343/statistics",
+      "original_fetched_at_utc": "2026-10-01T12:19:52+00:00",
+      "sample_trimmed": true,
+      "sha256": "0d7e92670773bb718a9a50fc3244f586b499f54b7aaaa475408b69bf6ab72589",
+      "bytes": 5880,
+      "source_resource_id": "ddefef04-ca29-5f8e-b843-899ed99eb527",
+      "source_snapshot_id": "8182e3f9-d7bd-5461-a71c-a2afb7ba0c55",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/2eed53c272ead8d0e7e46dc9af309ec2a1d017fc17da451b289c700e24f364da.json",
+      "report_sha256": "2eed53c272ead8d0e7e46dc9af309ec2a1d017fc17da451b289c700e24f364da",
+      "work_id": "2f9e3caf-4f80-51af-baf8-783b09593d9c",
+      "observations": 6,
+      "contracts": {
+        "TeamStatisticObservationV3": 6
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 24,
+        "MF_NORM_STATISTIC_REPEATED": 6,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 18
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 6,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-statistics__2.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-statistics__2.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/15534082/statistics",
+      "original_fetched_at_utc": "2026-10-08T23:54:13+00:00",
+      "sample_trimmed": true,
+      "sha256": "89b4c16cfd980815421540340e15a10f9bf2f016875ce7062a43c9a58643b163",
+      "bytes": 12918,
+      "source_resource_id": "88c59e8b-1d0b-55a5-950b-52b681d47995",
+      "source_snapshot_id": "73fdccf8-5a99-5fc3-89dc-7f0f2ada8791",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/2f3a26c2fb20e3ce496d5bcd3537654350f4ee62b9622ddacab35c9d2e0e1025.json",
+      "report_sha256": "2f3a26c2fb20e3ce496d5bcd3537654350f4ee62b9622ddacab35c9d2e0e1025",
+      "work_id": "ddeab072-67d3-5054-8515-342cae6c15a2",
+      "observations": 8,
+      "contracts": {
+        "ExpectedGoalsObservationV2": 2,
+        "TeamStatisticObservationV2": 6
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 24,
+        "MF_NORM_STATISTIC_REPEATED": 6,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 18,
+        "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 8,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-statistics__3.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-statistics__3.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/16653102/statistics",
+      "original_fetched_at_utc": "2026-10-09T15:01:51+00:00",
+      "sample_trimmed": true,
+      "sha256": "5335b15e1ab2727492868e9008e73007b245ba0a97d303e4bd16c1537212191e",
+      "bytes": 12931,
+      "source_resource_id": "591af218-1103-562e-9980-2f64beac41a7",
+      "source_snapshot_id": "f762fdb0-78ad-5e08-bbb3-5c0f4d9e2514",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/045a18b9962c1196eebe2520748a0f45ea9c5dc7b652a81e59f3b2d374bf840d.json",
+      "report_sha256": "045a18b9962c1196eebe2520748a0f45ea9c5dc7b652a81e59f3b2d374bf840d",
+      "work_id": "8cb08917-ba53-5370-a927-d29023c70319",
+      "observations": 8,
+      "contracts": {
+        "ExpectedGoalsObservationV2": 2,
+        "TeamStatisticObservationV2": 6
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 24,
+        "MF_NORM_STATISTIC_REPEATED": 6,
+        "MF_NORM_STATISTIC_UNSUPPORTED": 18,
+        "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 8,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-incidents__1.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-incidents__1.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17118211/incidents",
+      "original_fetched_at_utc": "2026-10-01T12:17:36+00:00",
+      "sample_trimmed": true,
+      "sha256": "1b74cb20db602f24cb04adfcb1b997597ebfc8010b1af234f9b4ad3989ab1df6",
+      "bytes": 2632,
+      "source_resource_id": "11df080b-faa5-50a3-a240-3a5833302ddc",
+      "source_snapshot_id": "ce3fa0b6-d829-5c10-9a9c-636052e32064",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/774079246d2a28348b183d35c802b29478acbef54bfc971396a227697df1939b.json",
+      "report_sha256": "774079246d2a28348b183d35c802b29478acbef54bfc971396a227697df1939b",
+      "work_id": "0be0143a-df5b-5961-99af-20bff7bb9442",
+      "observations": 0,
+      "contracts": {},
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_EVENT_TYPE_UNSUPPORTED": 2,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 1
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 0,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-incidents__2.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-incidents__2.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/17256969/incidents",
+      "original_fetched_at_utc": "2026-10-08T23:52:49+00:00",
+      "sample_trimmed": false,
+      "sha256": "f2e8223f5474642b5a12b7c0c6c9daa2f64a4c537d0e0cf0a89f73dbbff29145",
+      "bytes": 24269,
+      "source_resource_id": "df809d73-9339-5bb8-9b8d-d314bf42204a",
+      "source_snapshot_id": "34ee196c-0d67-53f5-b396-29b19c100d48",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/6df6f3050b02407fb043cd1906bc27723f4bbb470bf69328f2934a82ecce37ae.json",
+      "report_sha256": "6df6f3050b02407fb043cd1906bc27723f4bbb470bf69328f2934a82ecce37ae",
+      "work_id": "ce3b6c13-4ea9-5d58-a61e-860f6a3da9be",
+      "observations": 35,
+      "contracts": {
+        "PlayerObservationV2": 21,
+        "EventObservationV2": 14
+      },
+      "findings": {},
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 35,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    },
+    {
+      "key": "research/all_sports/samples/football/event-id-incidents__3.json",
+      "source_url": "https://raw.githubusercontent.com/tunjayoff/sofascore_scraper/dd9f061be2c64f01a6d3a50fb34d55a102d7107b/research/all_sports/samples/football/event-id-incidents__3.json",
+      "original_provider_url": "https://www.sofascore.com/api/v1/event/15534082/incidents",
+      "original_fetched_at_utc": "2026-10-08T23:53:43+00:00",
+      "sample_trimmed": true,
+      "sha256": "f36a39ab2576b7dbf19e2bc71912d252ed4468ff30a1f2c7891326d178bc6733",
+      "bytes": 2701,
+      "source_resource_id": "4b22a25d-357d-52d9-8f73-b27fc8c714d1",
+      "source_snapshot_id": "0f7517fe-fa21-5c43-a119-2fa618efa100",
+      "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/access-r04/reports/normalization/e135e5755a5964cac47b05b6fd57fc5e16a8ee061d41cc2ab0f525ca20c09c6c.json",
+      "report_sha256": "e135e5755a5964cac47b05b6fd57fc5e16a8ee061d41cc2ab0f525ca20c09c6c",
+      "work_id": "b4dff642-54f4-5ba7-860f-0d97e135b51c",
+      "observations": 2,
+      "contracts": {
+        "PlayerObservationV2": 1,
+        "EventObservationV2": 1
+      },
+      "findings": {
+        "MF_NORM_SOURCE_SAMPLE_TRIMMED": 1,
+        "MF_NORM_EVENT_TYPE_UNSUPPORTED": 1,
+        "MF_NORM_SOURCE_LIST_TRUNCATED": 1
+      },
+      "replay_identical": true,
+      "registered_observations_including_diagnostics": 2,
+      "retained_diagnostic_artifacts_outside_final_report": 0
+    }
+  ],
+  "initial_diagnostics": {
+    "receipt": ".local/issue04/sofascore-initial.json",
+    "sha256": "f32ae0de82f5cdfe415a5b0f7673d253d95fc7065bbd29dcca019c19e20d816b",
+    "artifacts_outside_final_reports": 14,
+    "reason": "Real-source verification corrected the actual __trimmed__ marker and stopped treating player teamId as fixture-team evidence. Initial report/artifact bytes are retained; final counts select final reports only.",
+    "initial_quarantine_findings_preserved": true
+  },
+  "verification": {
+    "red": {
+      "exit_code": 1,
+      "failed": 4,
+      "log": ".local/issue04/sofascore-red.log"
+    },
+    "focused": {
+      "command": "uv run --locked --no-sync pytest python/football/tests/test_sofascore_retained.py python/football/tests/test_resource_normalization.py python/football/tests/test_rich_provider_normalization.py",
+      "exit_code": 0,
+      "passed": 57,
+      "log": ".local/issue04/sofascore-green.log"
+    },
+    "strict_mypy": "PASS (3 files)",
+    "ruff_format_lint_complexity": "PASS",
+    "final_isolated_publication": {
+      "exit_code": 0,
+      "log": ".local/issue04/sofascore-final-publication.log"
+    },
+    "idempotent_replay": "All 12 final reports reuse identical work IDs and observation content hashes"
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "model_changes": 0,
+  "resume_point": "Obtain permitted untrimmed historical exports or ordinary accessible resources; retain exact IDs and apply independent Resolution Center, UTC and target qualification. No serving/live fallback enabled."
+}

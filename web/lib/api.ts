@@ -1,4 +1,5 @@
 import {
+  parseMarketCapabilitySummary,
   parseCompetitions,
   parseContext,
   parseFixtureGroups,
@@ -12,7 +13,7 @@ import {
   parseSyncRun,
   parseSyncRuns,
 } from "@/lib/contracts";
-import type { SyncRun } from "@/lib/contracts";
+import type { MarketScope, SyncRun } from "@/lib/contracts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8080";
 
@@ -44,6 +45,11 @@ async function responseError(response: Response): Promise<ApiError> {
 }
 
 export const api = {
+  marketCapabilities: (scope: MarketScope, signal?: AbortSignal) => request(`/v1/admin/market-capabilities?${new URLSearchParams(scope)}`, (value) => {
+    const report = parseMarketCapabilitySummary(value);
+    if (report.competition_id !== scope.competition_id || report.season_id !== scope.season_id || Date.parse(report.knowledge_cutoff) !== Date.parse(scope.knowledge_cutoff)) throw new Error("market report scope mismatch");
+    return report;
+  }, { signal }),
   competitions: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/competitions?${query}`, parseCompetitions, { signal }),
   fixtures: (query: URLSearchParams, signal?: AbortSignal) => request(`/v1/fixtures?${query}`, parseFixtureGroups, { signal }),
   live: (fixtureId: string, signal?: AbortSignal) => request(`/v1/fixtures/${encodeURIComponent(fixtureId)}/live`, (value) => {

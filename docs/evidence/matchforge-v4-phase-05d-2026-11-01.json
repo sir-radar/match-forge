@@ -1,0 +1,61 @@
+{
+  "phase": "05d",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "a6f2c95a212e23df61646fad3041028a3bb27a50",
+  "recorded_at": "2026-11-01T01:22:29.195067+00:00",
+  "scope": "Existing API-Football standings decoder gap",
+  "access": {
+    "recorded_at": "2026-11-01T01:18:24.582581+00:00",
+    "provider": "api_football",
+    "competition": "39",
+    "season": "2024",
+    "fetched_at": "2026-11-01T01:18:24.529632+00:00",
+    "rows": 1,
+    "raw_sha256": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+    "raw_path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-05/api-standings/raw/f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+    "remaining_day": 93,
+    "remaining_minute": 9,
+    "quota_owner": "PostgresApiFootballBudget"
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T01:21:16.262925+00:00",
+    "source_resource_id": "434fdca5-a14d-5220-8028-2002753a6300",
+    "source_sha256": "f0671079c025ae00b6e5897bf4decc595fb504e188a3f14230220d6500a5e44b",
+    "report_sha256": "e9854f6e53009e7a61fb6225ed84086c6f162065a5df35c26626279a7a1708e4",
+    "contracts": {
+      "TeamObservationV2": 20,
+      "StandingObservationV2": 20
+    },
+    "findings": [],
+    "observations_before": 7368,
+    "observations_after": 7408,
+    "after_full_retry": 7408,
+    "all_bytes_and_retries": "VERIFIED",
+    "capability_scope": {
+      "provider": "api_football",
+      "resource_type": "standings",
+      "competition": "39",
+      "season": "2024"
+    },
+    "capability_decision_id": "2844a8f8-3585-5693-bd9b-708c37df012c",
+    "capability_decision_sha256": "4d9a7bcbf279f6c5667d64e998e5887426581460876417222b4145244de3a147",
+    "status": "PARTIAL_SAMPLE_ONLY",
+    "canonical_identity_changes": 0,
+    "forecasts_written": 0,
+    "models_written": 0,
+    "production_routing_changes": 0
+  },
+  "verification": {
+    "red_tests_failed": 4,
+    "focused_tests_passed": 45,
+    "ruff_format_mypy_architecture": "PASS",
+    "full_real_batch_retry": "40 artifacts verified; no duplicate rows"
+  },
+  "limits": [
+    "One current retained single-group snapshot is not historical coverage",
+    "Multiple groups are held rather than converted to global ranks",
+    "Provider update time does not replace MatchForge knowledge time",
+    "Canonical, market and historical eligibility remain unqualified",
+    "Production cutover, retirement and scientific gates remain unchanged"
+  ]
+}

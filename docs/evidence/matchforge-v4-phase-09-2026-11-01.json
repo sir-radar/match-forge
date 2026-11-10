@@ -1,0 +1,193 @@
+{
+  "phase": "09",
+  "provider": "espn",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "1c2e343",
+  "recorded_at": "2026-11-01T02:50:45.991709+00:00",
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T02:29:50.887140+00:00",
+      "provider": "espn",
+      "results": [
+        {
+          "family": "historical_scoreboard",
+          "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816",
+          "requested_at": "2026-11-01T02:29:49.205188+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "application/json",
+          "sha256": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+          "bytes": 13520,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-09/raw/4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968"
+        },
+        {
+          "family": "current_scoreboard",
+          "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20261101",
+          "requested_at": "2026-11-01T02:29:50.259630+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "application/json",
+          "sha256": "d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5",
+          "bytes": 15383,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-09/raw/d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5"
+        }
+      ]
+    },
+    "summary-access-receipt.json": {
+      "recorded_at": "2026-11-01T02:34:22.105801+00:00",
+      "provider": "espn",
+      "results": [
+        {
+          "family": "historical_match_summary",
+          "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=704279",
+          "requested_at": "2026-11-01T02:34:04.457442+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "application/json",
+          "sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+          "bytes": 402643,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-09/raw/c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a"
+        }
+      ]
+    }
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T02:50:02.781328+00:00",
+    "observations_before": 9769,
+    "observations_after": 9889,
+    "results": [
+      {
+        "resource": "scoreboard",
+        "source_resource_id": "a6cec8f3-cec3-5c5d-b8aa-3bcd48b06778",
+        "source_snapshot_id": "e9301084-a31f-52e0-908b-c8ae63df09d8",
+        "source_sha256": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+        "manifest_path": "espn/manifests/cd9d7ca48d50cb0cac50d5d0d4eb0ddfd908b41713a52318e3519d149d645e4c.json",
+        "report_sha256": "1471c1c9914a4f655c1fc989b3a2dbba426483f1ce67207f9469376fabd9c9cd",
+        "known_at": "2026-11-01T02:29:50.887140+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        },
+        "work_id": "ebaf03f5-e3a5-53b9-bd01-97913dd9c139",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "35db51b96a9fb31061e6ebcc389472f31f0d0c9b473da86d11eb650307108d9a",
+        "retry_rows": 7,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "1c8ffaba-7c0d-54e7-9cd3-f3ad72f2e174",
+        "capability_decision_sha256": "f34356c04259a6da3cdabd39ad2f180f725b7b6c55432fdf8eb863267c9e2b75",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      },
+      {
+        "resource": "scoreboard",
+        "source_resource_id": "43c56d0e-66f8-5b5a-ad6f-d2d7c7a333fc",
+        "source_snapshot_id": "ae6da505-c232-57da-9efe-d9f992a0aeb6",
+        "source_sha256": "d994a14ef4af0ab184ee7fba6ee439f4c42de9b16d34de7c772d5d6becea1ed5",
+        "manifest_path": "espn/manifests/009563462de79c818d696401d005dce704fd86f2055d9c2672a27a7f857c1bed.json",
+        "report_sha256": "cb7daabedc6e967d4d7d78a2465834cabc2ce44e0c6278c5ad808e6660938c06",
+        "known_at": "2026-11-01T02:29:50.887140+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1
+        },
+        "findings": {},
+        "work_id": "e1c78ce6-a1d1-5c10-9546-8a4dc4c22f78",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "2f0a738727b91c8bcb90be0c0341e2503f1c812d98245c26fe7b246876f3ae81",
+        "retry_rows": 4,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "1267d568-b202-5250-880b-bd9e90a61486",
+        "capability_decision_sha256": "8a279eebea43fd72439ba90f65860f0fc3850e1174e4ca9d9256b1b507c4b945",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      },
+      {
+        "resource": "summary",
+        "source_resource_id": "76660203-2b92-59b6-be2c-4ce8ddd520c3",
+        "source_snapshot_id": "a7b9917b-4954-5873-b39c-d96a7afd15b0",
+        "source_sha256": "c3811a23ae241471524f432f2f4a13cc8687d461371aa6fd8d2ee4309f97e44a",
+        "manifest_path": "espn/manifests/90661b14b769a6094482d49e50cf808025e0a8d66ba750f74f47585fbb0dfdf5.json",
+        "report_sha256": "78ee36990e02f317ff82a91d1963afb1acf19cfc4f022359bdd466ce26c48af3",
+        "known_at": "2026-11-01T02:34:22.105801+00:00",
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 40,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 300,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 11
+        },
+        "work_id": "73a35469-4127-5c52-9310-45c176e58d81",
+        "work_state": "SUCCEEDED",
+        "work_input_hash": "ebd543f6c9cc28529e270750ab036a7e9ce5a64365d18a978fc5644b78daeea1",
+        "retry_rows": 109,
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "capability_decision_id": "38475f70-d9cd-5ad5-a5ef-dd86a72adfe7",
+        "capability_decision_sha256": "88ee11a0836899ddb2202e07643602388c5ccae9d8c67665ca0a09f510b47bfd",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0,
+    "automatic_provider_enablement": false
+  },
+  "verified_scope": {
+    "league": "eng.1; native league 700",
+    "historical_fixture": "704279; 2024-08-16",
+    "scheduled_fixture_date": "2026-11-01",
+    "acquisition": "public JSON; three successful bounded requests",
+    "source_bundle": "one summary request yields team/player statistics, rosters and key events"
+  },
+  "semantic_safeguards": [
+    "Scheduled score/statistic placeholders do not emit results or match statistics",
+    "Only observed scheduled/full-time status tuples mapped; unknown status quarantined",
+    "Fixture/header/request, competition, season, home/away and team membership checked",
+    "Source kickoff uses explicit valid-time evidence and UTC offset; event wallclock is unqualified",
+    "Unlabelled linescores do not infer half-time scores; final score basis UNKNOWN",
+    "Multiple key-event participants do not invent scorer/assist/substitution roles",
+    "Roster starters retained, confirmation UNKNOWN; absent minutes stay absent",
+    "Unsupported statistics retained as findings; no percentage-derived counts",
+    "No odds, pickcenter, current profile or last-five-game shortcuts enter forecast inputs"
+  ],
+  "remaining_limits": [
+    "In-play status/clock freshness and revision cadence not independently verified",
+    "Only two match dates and one historical summary sampled",
+    "Canonical identity, provider-definition/market semantics and historical PIT qualification remain later gates",
+    "No automatic provider enablement"
+  ],
+  "verification": {
+    "focused_disposable_suite": "168 passed",
+    "ruff_format_lint": "PASS",
+    "mypy": "PASS (7 source files)",
+    "architecture": "PASS",
+    "all_120_artifact_bytes_and_retry": "PASS",
+    "fenced_normalization_work": "3 SUCCEEDED",
+    "source_checksum": "PASS",
+    "project_status_check": "PASS",
+    "diff_check": "PASS"
+  },
+  "failures_corrected": [
+    "Initial red collection proved missing ESPN source",
+    "Real replay found a total-crosses field absent from frozen V3; kept unsupported with finding instead of widening frozen schema",
+    "Header valid-time evidence handled explicitly; no inferred event clocks"
+  ],
+  "scientific_or_cutover_actions": 0
+}
