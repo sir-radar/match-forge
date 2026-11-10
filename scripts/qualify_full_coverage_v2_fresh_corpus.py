@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import psycopg
+from football.contracts.source import canonical_json_bytes
 from football.forecasting.fresh_corpus import (
     ArtifactIdentity,
     FixtureIdentity,
@@ -26,7 +27,6 @@ from football.forecasting.fresh_corpus import (
     SourceFixture,
     TeamIdentityCrosswalk,
     apply_firewall,
-    canonical_json_bytes,
     chronological_split,
     classify_targets,
     crosswalk_manifest_row,

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
+from football.contracts.source import canonical_json_bytes
 from football.forecasting.fresh_corpus import semantic_sha256
 
 PROTOCOL_ID = "MATCHFORGE_FULL_COVERAGE_CHALLENGERS_V2_REEVALUATION_V1_1"
@@ -244,4 +245,4 @@ def _sha256(path: Path) -> str:
 
 
 def _canonical_json(value: object) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return canonical_json_bytes(value, ensure_ascii=True).decode()

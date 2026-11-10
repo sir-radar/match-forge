@@ -14,6 +14,7 @@ from enum import StrEnum
 from pathlib import Path
 from uuid import UUID, uuid5
 
+from football.contracts.source import canonical_json_bytes
 from football.forecasting.pitchapi_v3 import (
     MatchHistoryFeaturesV1,
     TransferableGoalModelV1,
@@ -214,7 +215,7 @@ def forecast_history_window(
 
 
 def canonical_json(value: object) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    return canonical_json_bytes(value, ensure_ascii=True)
 
 
 def forecast_payload(forecast: ProductForecast) -> dict[str, object]:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from bisect import bisect_left
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
@@ -11,6 +10,8 @@ from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
 from uuid import UUID, uuid5
+
+from football.contracts.source import canonical_json_bytes
 
 PITCHAPI_NAMESPACE = UUID("f5f4c644-05a4-4b79-b968-e765ed659da0")
 
@@ -144,15 +145,6 @@ class QualifiedTarget:
     target_category: str
     split: str = "UNASSIGNED"
     identity_crosswalk_refs: tuple[str, ...] = ()
-
-
-def canonical_json_bytes(value: object) -> bytes:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
 
 
 def semantic_sha256(value: object) -> str:

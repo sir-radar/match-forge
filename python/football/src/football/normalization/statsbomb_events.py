@@ -11,6 +11,8 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
 
+from football.contracts.source import canonical_json_bytes
+
 NORMALIZER_VERSION = "statsbomb-normalizer-v2"
 EVENT_SCHEMA_VERSION = "v1"
 EVENT_SCHEMA_SHA256 = "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18"
@@ -369,13 +371,7 @@ def _coordinates(
 
 def _canonical_json_bytes(value: object) -> bytes:
     try:
-        return json.dumps(
-            value,
-            allow_nan=False,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
+        return canonical_json_bytes(value)
     except (TypeError, ValueError) as error:
         raise EventNormalizationError(
             "event payload cannot be encoded as canonical JSON"

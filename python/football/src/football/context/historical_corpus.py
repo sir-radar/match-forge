@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -26,6 +25,7 @@ from football.context.live import (
     calculate_lineup_accuracy,
     predict_lineup,
 )
+from football.contracts.source import canonical_json_bytes
 
 
 class AvailabilityEvidenceTier(StrEnum):
@@ -332,8 +332,8 @@ def score_phase_b_lineup_label(
 
 
 def canonical_sha256(value: object) -> str:
-    payload = json.dumps(_json_value(value), sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(payload.encode()).hexdigest()
+    payload = canonical_json_bytes(_json_value(value), ensure_ascii=True)
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _predict_if_possible(
