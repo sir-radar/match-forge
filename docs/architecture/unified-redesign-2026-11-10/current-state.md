@@ -65,8 +65,8 @@ The final verification memo records further measurements separately.
 Two initial diagnostics used nonexistent `issued_at` and
 `relative_path`/`byte_size`; corrected queries use `created_at` where needed and
 `provider_path`/`size_bytes`. An example season query used nonexistent `s.name`;
-the corrected query retains the actual season record. A whole shadow-serving
-view duplicate census exceeded 20 seconds and was cancelled. Successful queries
+the corrected query retains the actual season record. A whole serving-view
+duplicate census exceeded 20 seconds and was cancelled. Successful queries
 were retained; none of those failures is reported as a passing measurement.
 
 ## Operating snapshot
@@ -113,7 +113,7 @@ implemented. Single requests are measurements, not percentile budgets.
 | --- | --- | --- |
 | Same-key fixture candidates | 281 groups / 567 rows share competition, ordered teams and kickoff; season deliberately not assumed equal | Review native relationships and season scope; not 281 proven duplicates or forecast gains |
 | Exact Premier League example | `5a87caaf-ad90-5c91-bb6e-17fa02f2640b` (FDO `560584`), `5bbb0ec6-60f6-5e35-a025-59378dd54d7e` (CSV `mmz4281/2627/data.zip!E0.csv#45`), `c9eeba85-75b0-5566-aff8-7f0ad50d9253` (OpenFootball `2026-27/en.1.json#43`) | Same 1–0 result and participants/kickoff, three distinct season UUIDs; existing reconciliation requires identical season. Establish exact season equivalence before reuse/relationship correction |
-| Example public output | Shadow `product_serving_fixtures` contains none of the three; one dated API request returned none of their IDs among 249 fixtures | Does not establish duplicate public cards or a canonical merge; runtime/representative selection requires further bounded trace |
+| Example public output | Current `product_serving_fixtures` contains none of the three; one dated API request returned none of their IDs among 249 fixtures | Does not establish duplicate public cards or a canonical merge; runtime/representative selection requires further bounded trace |
 | Unbound latest finished observations | FotMob 10,873; PitchAPI 2,097, with both scores | Potential retained evidence; native identity, season, score basis and chronology still qualify independently |
 | Historical ingestion conflicts | CSV: 1,491 provider-ID-reuse, 282 team/timestamp, 35 unreviewed cross-provider records | Historical retained counts, not proof that merged rolling-ID fixes regressed; review latest affected source revision and current consumer |
 | Missing originals/manifests | FR-011 and integration report retain specific gaps | Search checksum-exact backups; new corroborated facts cannot repair a missing original hash |
@@ -185,3 +185,36 @@ fixture reconciliation and existing settlement. It does not establish that every
 shadow path is a runtime dependency. `scripts/check_architecture_boundaries.py`
 guards direct imports, known fitting dependencies and registered worker paths;
 that static check is narrower than a full transaction/SQL-writer proof.
+
+
+## I1 bounded follow-up: representatives and MC Oran
+
+At 06:25 UTC, `lifecycle-trace.json` (SHA-256
+`6891bffc29d018687dfe640574dce6029e25055bbc256063079030bb989ea9ad`)
+shows all three Premier League example source IDs already have active
+`RealFixtureIdentityV1` decisions: real fixture
+`ada9384c-57c6-565c-9c3b-02d8d8bedb49`, representative
+`4a3ef912-e393-5c67-b44b-3028eb05fe91`. Thus this group is an already resolved
+source cluster, not an open canonical-merge defect. Neither original member IDs
+nor that representative appeared in the sampled API date response. API/filter/
+route association remains unverified for that example; absence is not evidence
+of duplicate public cards. The 281-group census must not be presented as an
+unresolved duplicate count.
+
+For MC Oran, retained FotMob `5989865` still maps to
+`264ccd72-e939-520b-b7b1-0f049ecea19d`. Its latest FINISHED 0–0 observation is
+unbound; older CANCELLED observations use the original 17 October kickoff.
+Retained resource rows remain attached to `dffecb0c-fdff-5811-a276-5ddebc9a71c2`.
+No active/history resolution rows for those two member IDs were returned.
+The current live API correctly returns canonical FINISHED 0–0 but also
+`partial=true`, `resource_identity_conflict=true`, no score source, events or
+statistics. Therefore canonical final-score availability improved, while the
+original native-resource relationship remains unresolved/withheld. This is
+mitigation, not complete source reconciliation. The database's uncontested-view
+query returned 15 rows for that native ID; direct view presence alone does not
+prove the running API selects them. Running build identity and source/route
+association must be verified before changing either guard.
+
+`representative-trace.json`, including separately timed HTTP responses, SHA-256:
+`9674450af77f1699e7ba41972b4faf4d73e0e322f863effd8fac934aa7efa9d3`.
+No mapping, fixture, source, decision or forecast was changed.
