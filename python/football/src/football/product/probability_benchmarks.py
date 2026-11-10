@@ -16,6 +16,7 @@ from psycopg import Connection
 
 from football.product.api_football import ApiResponse
 from football.product.domain import sha256_json, stable_id
+from football.providers.base import ProviderFetchError, open_bounded, read_bounded
 
 SPORTMONKS_BASE_URL = "https://api.sportmonks.com/v3/football"
 Transport = Callable[[str, Mapping[str, str]], bytes]
@@ -220,7 +221,7 @@ class SportmonksPredictionClient:
                 BenchmarkStatus.TIMEOUT,
                 "provider request timed out",
             )
-        except (OSError, urllib.error.URLError):
+        except (OSError, urllib.error.URLError, ProviderFetchError):
             return _failure(
                 "sportmonks",
                 provider_fixture_id,
@@ -314,5 +315,5 @@ def _failure(
 
 def _http_get(url: str, headers: Mapping[str, str]) -> bytes:
     request = urllib.request.Request(url, headers=dict(headers))
-    with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
-        return cast(bytes, response.read())
+    with open_bounded(request, timeout=30) as response:
+        return read_bounded(response, max_bytes=8 * 1024 * 1024, timeout_seconds=30)

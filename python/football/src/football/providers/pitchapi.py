@@ -14,7 +14,13 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request
 
-from football.providers.base import ProviderFetchError, open_bounded, read_bounded
+from football.providers.base import (
+    ProviderFetchError,
+    ProviderIncompleteBodyError,
+    open_bounded,
+    read_bounded,
+    retry_after_seconds,
+)
 from football.providers.native.pitchapi import PitchApiMatch
 from football.providers.native.reader import NativeRecordError, native_record
 
@@ -104,7 +110,7 @@ class UrllibPitchApiTransport:
                     suffix = f"; retry_after={retry}" if error.code == 429 and retry else ""
                     raise ProviderFetchError(f"PitchAPI HTTP {error.code}{suffix}") from error
                 self._sleep(_retry_delay(retry, attempt))
-            except (URLError, OSError) as error:
+            except (URLError, OSError, ProviderIncompleteBodyError) as error:
                 if attempt == self._max_attempts:
                     raise ProviderFetchError("PitchAPI transport failed") from error
                 self._sleep(_retry_delay(None, attempt))
@@ -112,12 +118,8 @@ class UrllibPitchApiTransport:
 
 
 def _retry_delay(retry_after: str | None, attempt: int) -> float:
-    if retry_after is not None:
-        try:
-            return min(max(float(retry_after), 0.0), 30.0)
-        except ValueError:
-            pass
-    return min(2.0 ** (attempt - 1), 8.0)
+    requested = retry_after_seconds(retry_after)
+    return requested if requested is not None else min(2.0 ** (attempt - 1), 8.0)
 
 
 @dataclass(frozen=True, slots=True)
