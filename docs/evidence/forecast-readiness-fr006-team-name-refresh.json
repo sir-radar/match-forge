@@ -4,7 +4,7 @@
   "scope": "TEAM_NAME_CONTEXT_INVALIDATION_ONLY",
   "migration": "202611100100_bounded_team_name_context_refresh.sql",
   "migration_sha256": "d3517feac69c988096e6ddb95225b2d5e39d86c48267b9eaa4ea42872b742d31",
-  "operating_applied": false,
+  "operating_applied": true,
   "operating_migration_before": 202611090200,
   "operating_business_writes": 0,
   "verified_new_forecasts": 0,
@@ -290,7 +290,27 @@
     }
   ],
   "remaining_work": [
-    "Separately authorized operating rollout under remediation-plan acceptance step 7, preceded by fresh health/disk/backup/lock checks.",
-    "The operating database retains the prior function until rollout; this migration does not authorize new fixture identities, scope expansion, cutover or model changes."
-  ]
+    "Owner review of execution, authorization and recovery provenance for the pre-existing operating202611100100 registration; the matching installed function is not a verified rollout receipt.",
+    "Do not reapply or reverse the observed migration as part of this handoff. No operating DDL was executed by this resumed work."
+  ],
+  "operating_rollout_authorization_verified": false,
+  "operating_rollout_execution_verified": false,
+  "operating_ddl_executed_in_this_resume": false,
+  "operating_observation": {
+    "status": "INSTALLED_FUNCTION_MATCHES_VERIFIED_CANDIDATE; ROLLOUT_PROVENANCE_UNVERIFIED",
+    "observed_at": "2026-11-10 04:49:21.180315+00:00",
+    "migration_record": {
+      "id": 116,
+      "tstamp": "2026-11-10T00:50:31.447662",
+      "is_applied": true,
+      "version_id": 202611100100
+    },
+    "function_sha256": "3da6581c8c9b51230303ecd5dbc75635e95c43d66f2af2786bc52a0d4ce2ec87",
+    "public_context_source_sha256": "3114fbaded290ba92bcb8552f55ffd8c0a72aac8f5e2f389eabeb170e803e55f",
+    "matches_both_verified_restores": true,
+    "legacy_routes": 13,
+    "operating_writes_in_this_observation": 0,
+    "prior_operating_schema_claim": "STALE; superseded by this observation",
+    "receipt_sha256": "cacc77dfd128e134e609bca42e5d11afb9d2a5510ff684a19c4ccaee2171a10d"
+  }
 }

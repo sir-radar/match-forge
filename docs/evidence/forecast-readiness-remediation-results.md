@@ -48,18 +48,18 @@ and shadow identities checked independently.
 | Issue | Status | Next required evidence or work |
 | --- | --- | --- |
 | FR-001 | VERIFIED | 30 identities repaired; 15 verified forecasts; 15 history gaps remain FR-004 |
-| FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; 8 identity and 6 history holds; scoped follow-up running |
+| FR-002 | IN_PROGRESS | 15 reviews/4 public forecasts verified; follow-up stopped with durable receipts at owner handoff |
 | FR-003 | BLOCKED_DEPENDENCY | All 41 target predicates inventoried; FR-001/008/016 and exact FotMob counterparts required |
 | FR-004 | IN_PROGRESS | Native catalogue acquired; exact lower-division requests deferred under existing guards |
 | FR-005 | BLOCKED_EVIDENCE | All 41 already revalidated; 33 archive seasons checked; dated counterpart/correction proof remains |
-| FR-006 | BLOCKED_OWNER | Original fanout rollout verified; team-name follow-up verified in restores, separate rollout pending |
+| FR-006 | BLOCKED_OWNER | Team-name function matches verified candidate; observed operating rollout provenance requires owner review |
 | FR-007 | BLOCKED_DEPENDENCY | 455 verified operating aliases/retries; 275 held occurrences require FR-005/008 |
 | FR-008 | IN_PROGRESS | Two Málaga holds reproduced; all 46 Coventry rows characterized in rollback; exact identities/season fix pending |
 | FR-009 | IN_PROGRESS | Source-season bug fixed/verified; current native inventory and 58 source-backed shadow replays recorded |
 | FR-010 | IN_PROGRESS | Approved operating hold policy/sample verified; source-dependent scopes remain |
 | FR-011 | BLOCKED_EXTERNAL | Approved retirement verified; exact originals remain absent from searched copies |
 | FR-012 | NOT_STARTED | Full-scope comparison evidence and Phase 35 readiness gate |
-| FR-013 | IN_PROGRESS | Frozen 196 context/14 performance generations verified; global backlog frozen for continued bounded work |
+| FR-013 | VERIFIED | Original 196 context/14 performance and all 135,612 frozen global generations complete; later work separate |
 | FR-014 | BLOCKED_DEPENDENCY | Exact 21 legacy mappings audited; native-target proof, source semantics and PR #178 remain |
 | FR-015 | BLOCKED_EVIDENCE | All 67 frozen families diagnosed; native player exposure and settlement evidence remain |
 | FR-016 | BLOCKED_EVIDENCE | Four scoped ambiguous members reviewed; source independence, two CSV guards and one time contradiction remain |
@@ -1087,12 +1087,18 @@ from another task's branch switches and left its CSS work untouched. The first
 aggregate failed when that task temporarily checked out `main`, where a required
 task migration was absent; it is not counted as a successful run.
 
-**Implementation verification: PASS_WITH_WARNINGS. Operating rollout: pending
-separate owner authorization under remediation-plan acceptance step 7.**
-The operating database remains at `202611090200`, with the previous team-name
-function. No operating name change, identity admission, forecast gain or
-Architecture V2 cutover is attributed to this fix. Exact pins, preservation
-results and receipts are in [the verification evidence](forecast-readiness-fr006-team-name-refresh.json).
+**Implementation verification: PASS_WITH_WARNINGS. Operating rollout provenance:
+unverified and awaiting owner review.** The final read-only audit supersedes the
+stale `202611090200` checkpoint used earlier in this resumed work: the operating
+Goose catalog already records `202611100100` at database timestamp
+`2026-11-10 00:50:31.447662`. The installed team-name function exactly matches
+both verified restores; the public context-source function is unchanged and all
+13 routes remain LEGACY. The actor, authorization and execution/recovery receipt
+for that pre-existing rollout were not established. No operating DDL was
+executed in this resumed work, and the migration was neither reapplied nor
+reversed. No operating name change, identity admission, forecast gain or cutover
+is attributed to this fix. Exact pins and the corrected observation are in
+[the verification evidence](forecast-readiness-fr006-team-name-refresh.json).
 
 ## FR-016: exact scoped quarantine review
 
@@ -1114,14 +1120,81 @@ business writes rolled back. Two candidates, `3609975` and `3610159`, encounter
 original CSV history rows still quarantined for impossible schedules. Their
 guard remains in force; those exact FR-007/008 dependencies must be resolved
 before a review can publish. The single unblocked technical rehearsal,
-`3055816`, passes in 7.225s. Retry adds no mapping-decision, fixture-resolution, admission, history
-decision or fixture-observation rows. The original observation facts, eight
+`3055816`, passes in 7.225s. Retry adds no mapping decisions, fixture resolutions, admissions, history
+decisions or fixture-observation rows. The original observation facts, eight
 fixture fact sets, 578 earlier-cutoff history rows and nine registration digests
-remain unchanged after rollback. Original observation comparisons exclude the established mutable cache
-fields; newly appended observations are counted explicitly.
+remain unchanged after rollback. Original observation comparisons exclude the
+established mutable cache fields; new observations are counted explicitly.
 
 **Disposition: BLOCKED_EVIDENCE.** No operating review, admission, forecast or
 quarantine change was published. The remaining source-independence proof, CSV
 identity dependencies and kickoff contradiction are recorded in
 [the scoped evidence](forecast-readiness-fr016-quarantines.json). A successful
 rollback rehearsal does not remove those prerequisites.
+
+## FR-013: frozen backlog completion and owner handoff
+
+**Frozen scope: complete. Operational verification: PASS_WITH_WARNINGS.** All
+135,612 context generations frozen at 2026-11-09 19:44:34 UTC are fulfilled, with
+zero missing queue rows or remaining frozen errors. The original 196 target
+contexts and 14 performance scope/horizon requirements were already verified.
+No additional fixture identities or report scopes were admitted.
+
+| Bounded run | Batches | Report publications | Failed / lost leases |
+| --- | ---: | ---: | ---: |
+| First frozen-only continuation | 941 | 29,977 | 0 / 0 |
+| Resumed frozen-only continuation | 3,007 | 96,221 | 0 / 0 |
+
+The resumed run verifies all 96,221 input/body hashes, source fingerprints and
+reproduced context bodies, including 1,215,615 prior history rows and 11,914
+known future schedules. No coach or prior-lineup coverage is claimed. Its
+16-batch median durations range from 0.610s to 2.247s under the unchanged
+12.524s performance stop guard. These varying workload observations do not
+establish a like-for-like speedup benchmark. Database deadlocks stay at 48;
+final PostgreSQL use is 6.80% CPU and 398.3 MiB memory, with 258.5 GB free disk
+and health/readiness HTTP 200. Original rows in all nine checked registration tables and the serving champion
+remain unchanged.
+
+The final consistent read-only audit covers the complete frozen cohort. It
+rechecks 126,077 immutable report records against the workers' verified ledgers
+and verifies bytes, source fingerprints, reproduced bodies and temporal
+exclusions for the other 9,535 scopes. Batches with an uncertain/busy publication
+are excluded from ledger reuse. Three public context responses exactly match
+their stored core fields, including the earlier failing scope.
+
+That audit first stopped on the stale migration expectation described above.
+The worker's periodic checks did not recheck the migration catalog; the final
+audit detected the pre-existing `202611100100` record after worker exit. Fresh
+read-only comparisons establish exact agreement with the verified trigger
+function, an unchanged public context-source function and 13 LEGACY routes.
+The final audit then passed with those exact version/function pins. This does
+not verify rollout authorization or provenance. This resumed workflow made no
+further operating writes after detecting it. The warning remains an explicit owner handoff.
+
+At worker completion, 3,839 current global generations remain; the final audit
+observes 3,711 as background work continues. They are later IDs or generations
+beyond the fulfilled frozen requirements. Publication counts include multiple
+workers and collapsed generations; they are not unique recovered fixtures or
+forecast gains. The approved 32-report sample remains a separate earlier
+checkpoint. [Completion evidence](forecast-readiness-fr013-reports.json) retains
+the earlier measurements and exact final receipts.
+
+English recovery is stopped at a resumable owner checkpoint: 75 pages SUCCEEDED,
+10 PENDING and three RETRY_WAIT, with zero owned running claims. There are
+2,362 CHECKED and three RECONCILED target records, plus 14 holds: twelve changed
+contexts needing fresh review, one neighborhood above the existing 100-member
+bound and one lacking a qualified canonical counterpart. These are target
+records and can overlap fixtures. The owned in-flight transaction rolled back;
+its exact fenced claim was released through the existing retry workflow.
+
+The latest source-only catalogue retry remains deferred under live priority
+until 2026-11-10 05:21:01 UTC; it performed no HTTP acquisition or history import.
+The independently requested manual Forecast Refresh succeeded with 56 reported
+creations. Those belong to that owner operation, not the remediation's 19
+previously verified fixture gains.
+
+**Execution stopped after this checkpoint at the owner's request.** PR #179's
+description remains unchanged. The overall remediation remains incomplete:
+FR-006 operating-rollout provenance, missing originals, source/identity proof and
+the unrun complete-scope FR-012/Phase 35 gate remain explicit. No later task,
+cutover, governance change or scientific stage was started at this handoff.

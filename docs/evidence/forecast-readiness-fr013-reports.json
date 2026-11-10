@@ -1,5 +1,5 @@
 {
-  "status": "IN_PROGRESS",
+  "status": "VERIFIED",
   "target_cohort_status": "PASS",
   "observed_at": "2026-11-09 19:33:01.156662+00:00",
   "producer_code_commit": "82de1cbc28b91454461ef703d323871dfb511b49",
@@ -775,5 +775,253 @@
         }
       ]
     }
+  },
+  "frozen_completion": {
+    "status": "PASS_WITH_WARNINGS",
+    "completed_at": "2026-11-10 04:47:19.625450+00:00",
+    "verified_at": "2026-11-10 04:51:01.446586+00:00",
+    "frozen_at": "2026-11-09 19:44:34.572229+00:00",
+    "scope_sha256": "bae954ab2d680c5b7991a2d1ff7d2e98f5dfb6e36caa603ba0aa5ab9006fd802",
+    "frozen_scopes": 135612,
+    "outstanding_original_frozen_generations": 0,
+    "frozen_errors": 0,
+    "missing_frozen_queue_rows": 0,
+    "batch_limit": 32,
+    "publications_by_run": {
+      "earlier_global_worker": 6243,
+      "approved_index_sample": 32,
+      "first_frozen_only_worker": 29977,
+      "resumed_frozen_only_worker": 96221
+    },
+    "publication_count_units": "Report registrations per run; not unique recovered fixtures or forecast gains. Background completions are not credited to these workers.",
+    "resumed_worker": {
+      "code_commit": "a17bc77b079b9f92ab9cd7fc40f7cd1ccb181647",
+      "dependency_lock_sha256": "c881697f433174ce62daebe1edeb328cbac0f0c287c80baa1ec8d42990719044",
+      "batches": 3007,
+      "selected": 96221,
+      "published": 96221,
+      "busy_or_complete": 0,
+      "failed": 0,
+      "lease_lost": 0,
+      "verified_reports": 96221,
+      "history_rows_verified": 1215615,
+      "known_future_schedules_verified": 11914,
+      "coach_rows_verified": 0,
+      "prior_lineups_verified": 0,
+      "original_rows": {
+        "source_snapshots": 80507,
+        "source_resources": 82315,
+        "product_identity_admissions": 22859,
+        "product_match_history_decisions": 859839,
+        "model_artifacts": 5230,
+        "forecast_artifacts": 9990,
+        "product_forecasts": 18106,
+        "model_promotion_events": 5,
+        "artifact_retirement_events": 17
+      },
+      "changed_original_rows": {
+        "source_snapshots": 0,
+        "source_resources": 0,
+        "product_identity_admissions": 0,
+        "product_match_history_decisions": 0,
+        "model_artifacts": 0,
+        "forecast_artifacts": 0,
+        "product_forecasts": 0,
+        "model_promotion_events": 0,
+        "artifact_retirement_events": 0
+      }
+    },
+    "cohort_verification": {
+      "mode": "READ_ONLY",
+      "scope_sha256": "bae954ab2d680c5b7991a2d1ff7d2e98f5dfb6e36caa603ba0aa5ab9006fd802",
+      "frozen_at": "2026-11-09 19:44:34.572229+00:00",
+      "scopes": 135612,
+      "immutable_previously_verified_scopes": 126077,
+      "additional_byte_verification_scopes": 9535,
+      "known_records_rechecked": 126077,
+      "additional_records_verified": 9535,
+      "history_rows_verified": 5031,
+      "known_future_schedules_verified": 60,
+      "coach_rows_verified": 0,
+      "prior_lineups_verified": 0,
+      "operating_writes": 0,
+      "ledger_receipts": [
+        {
+          "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr013-authorized-verified-inputs.jsonl",
+          "sha256": "d5a0b59aa6fc10930454623f6f4ef9fc503218dcb9be9f2e5c35df65069e5b72"
+        },
+        {
+          "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr013-authorized-verified-inputs-resume2.jsonl",
+          "sha256": "32f90f50856f9fd77dd6f87ecafd33a40575313f69df16c8afcee855cbd0fd44"
+        }
+      ],
+      "snapshot": [
+        "2026-11-10 04:51:01.446586+00:00",
+        "22215509:22215509:"
+      ],
+      "immutability_triggers": [
+        [
+          "read_report_immutable",
+          "O"
+        ],
+        [
+          "read_report_no_truncate",
+          "O"
+        ],
+        [
+          "read_report_worker_publication",
+          "O"
+        ]
+      ],
+      "global_queue": [
+        248679,
+        3711,
+        0
+      ],
+      "migration": 202611100100,
+      "schema_observation": {
+        "status": "EXACT_FUNCTIONS_MATCH_VERIFIED_RESTORES",
+        "migration": 202611100100,
+        "operating_rollout_provenance": "UNVERIFIED; observed read-only, no reapplication or reversal",
+        "comparison_receipt_sha256": "cacc77dfd128e134e609bca42e5d11afb9d2a5510ff684a19c4ccaee2171a10d"
+      },
+      "public_context_sample": [
+        {
+          "fixture_id": "a143fde3-9a4c-5618-b929-3281b81ef221",
+          "http": 200,
+          "input_sha256": "34d0245e8a91b4354b078bff8df314e1ebd21635e580388278e16a80d7bb77a2",
+          "record_sha256": "5e6bb060f4d2c7ff7fde34dc94cd8fafc80b93c627d275fe957b5d4afcd90a59",
+          "stored_core_matches": true
+        },
+        {
+          "fixture_id": "8b60980f-7425-55f5-b632-55acf2a30227",
+          "http": 200,
+          "input_sha256": "8a097a34db04b3e04c95691ed0e1261630f381cac35bfe123c5c8c8884ce00bf",
+          "record_sha256": "0bbdd6c459fb8bf04828afb9d85fa7669121e0089decc8173b6e079303a36d0b",
+          "stored_core_matches": true
+        },
+        {
+          "fixture_id": "68b4f8bb-138b-5dbf-878c-7061bb4747ea",
+          "http": 200,
+          "input_sha256": "44fc79848740b2a99753c28f3aab317f74cabb1d4c24ed4ca26fc2d6b9fa1d02",
+          "record_sha256": "2f443ecb105ffa8f81ba6e43a09d3faf07be7e9f4aa70f71849078167f008ef3",
+          "stored_core_matches": true
+        }
+      ],
+      "health": {
+        "/healthz": 200,
+        "/readyz": 200
+      },
+      "status": "PASS"
+    },
+    "resources_after": {
+      "/healthz": 200,
+      "/readyz": 200,
+      "postgres_free_bytes": 258502414336,
+      "postgres_resource_usage": {
+        "CPUPerc": "6.80%",
+        "MemUsage": "398.3MiB / 7.817GiB",
+        "MemPerc": "4.98%",
+        "PIDs": "19"
+      }
+    },
+    "observed_16_batch_median_seconds_range": [
+      0.610028,
+      2.247007
+    ],
+    "performance_guard": "Existing measured pre-index32-scope median12.523921s; never raised. These varying workload observations are not a like-for-like speedup benchmark.",
+    "deadlocks_before_and_after": [
+      48,
+      48
+    ],
+    "global_pending_at_completion": 3839,
+    "global_pending_at_final_audit": 3711,
+    "remaining_queue_scope": "Later IDs or generations beyond the fulfilled frozen requirements; not processed as an expansion of this authorization.",
+    "schema_observation": {
+      "status": "EXACT_FUNCTIONS_MATCH_VERIFIED_RESTORES",
+      "migration": 202611100100,
+      "operating_rollout_provenance": "UNVERIFIED; observed read-only, no reapplication or reversal",
+      "comparison_receipt_sha256": "cacc77dfd128e134e609bca42e5d11afb9d2a5510ff684a19c4ccaee2171a10d"
+    },
+    "new_forecasts": 0,
+    "worker_exit_code": 0,
+    "private_receipts": [
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-frozen-projection.json",
+        "bytes": 61528,
+        "sha256": "4b56770447b3b40344ba16f5599cd02ec5822e38becaed5f2b88760c849fb711"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-frozen-batches.jsonl",
+        "bytes": 2011654,
+        "sha256": "e311ff3411fc02e6de95246185781c9aa4641a4e26a8bfc9f5664dc8d788725d"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-verified-inputs.jsonl",
+        "bytes": 9967072,
+        "sha256": "d5a0b59aa6fc10930454623f6f4ef9fc503218dcb9be9f2e5c35df65069e5b72"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-frozen-projection-resume2.json",
+        "bytes": 189456,
+        "sha256": "816a1111f955646eb52125f28726d13ad84a99bebbc6b880c478bfa1197f83f8"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-frozen-batches-resume2.jsonl",
+        "bytes": 6431372,
+        "sha256": "b0cb28de37663a8eb64753477b43c4dc4665217050ee5fe608f01501ab034b29"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-authorized-verified-inputs-resume2.jsonl",
+        "bytes": 31850168,
+        "sha256": "32f90f50856f9fd77dd6f87ecafd33a40575313f69df16c8afcee855cbd0fd44"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-completed-cohort-verification.json",
+        "bytes": 2765,
+        "sha256": "c09250eaff02fa506f0803c25ab477b55eb96c061d3e62236b0036c806b24312"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-verify-completed-cohort.py",
+        "bytes": 9328,
+        "sha256": "3cb237ebd58ea0e83a1e6b52cebd7a3f2eede02154e89757503d67f7c9b6dab0"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-completed-cohort-verification.log",
+        "bytes": 667,
+        "sha256": "0dfbed4c217e57dde7e3e70b83015d1d6aa5e0f1f6dd516bf302eb28205c318f"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-completed-cohort-verification-pinned-schema.log",
+        "bytes": 260,
+        "sha256": "c38d74edb40bed409d3d8133bf86c31fca9a9830b4abf5fcf8038e092f78b2db"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr013-final-schema-stop.json",
+        "bytes": 2355,
+        "sha256": "2b431afc13705e8f50688d79e00dfb98ed948c4ccb09195ef92489d0ceaa6da9"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr006-observed-operating-function-comparison.json",
+        "bytes": 1033,
+        "sha256": "cacc77dfd128e134e609bca42e5d11afb9d2a5510ff684a19c4ccaee2171a10d"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr002-owner-handoff-checkpoint-20261110.json",
+        "bytes": 1300,
+        "sha256": "8eff364ec32abf37d5176fe6ae3851c2c862f4d97622c0b1303f67ef000aafd7"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/fr004-native-lower-catalogues-20261110.json",
+        "bytes": 365,
+        "sha256": "caaa65423c77462453515ced0dc187e32ed971b82363b46e61d466670f116bb9"
+      },
+      {
+        "path": ".local/forecast-readiness-execution/resume-20261109/owner-job-state-20261110.json",
+        "bytes": 1618,
+        "sha256": "c27be66426df4d98680c141a10e3ae4504fac0df2d4d3e31e3dced75e686af9e"
+      }
+    ],
+    "operating_schema_monitoring_limit": "Periodic worker checks did not recheck the migration catalog; final audit detected the pre-existing202611100100 record after worker exit. Exact function hashes were then verified read-only. Rollout provenance/authorization remain unverified."
   }
 }
