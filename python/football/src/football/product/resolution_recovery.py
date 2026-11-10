@@ -162,6 +162,7 @@ def enqueue_page(
 ) -> UUID:
     request_id = str(UUID(request_id))
     inputs = page_inputs(request_id, inventory, cursor_kind, cursor_id)
+    # Immediate work uses the same clock as SQL eligibility and lease checks.
     now = connection.execute("SELECT clock_timestamp()").fetchone()
     assert now is not None
     request = WorkRequest(

@@ -1,0 +1,170 @@
+{
+  "phase": "07",
+  "provider": "clubelo",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "88dc6035721074e401334f8c7be8c8742101699f",
+  "recorded_at": "2026-11-01T02:16:06.904946+00:00",
+  "tested_scope": {
+    "rating_date": "2024-08-16",
+    "team_history_route": "Arsenal; source request only, no canonical identity claim"
+  },
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T02:07:14.329786+00:00",
+      "provider": "clubelo",
+      "results": [
+        {
+          "family": "official_api_documentation",
+          "url": "https://clubelo.com/API",
+          "requested_at": "2026-11-01T02:06:05.839034+00:00",
+          "http_failures": [
+            {
+              "http_status": 403,
+              "sha256": "23680098c3066cea1919fe1d005c511041e240198bef7ce4171ef0a614d7543b",
+              "bytes": 5336,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/23680098c3066cea1919fe1d005c511041e240198bef7ce4171ef0a614d7543b"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://clubelo.com/API: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+        },
+        {
+          "family": "dated_ratings_https",
+          "url": "https://api.clubelo.com/2024-08-16",
+          "requested_at": "2026-11-01T02:06:06.704702+00:00",
+          "http_failures": [],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://api.clubelo.com/2024-08-16: attempt 4/4; exception=URLError; http_status=none; <urlopen error timed out>"
+        }
+      ]
+    },
+    "alternative-access-receipt.json": {
+      "recorded_at": "2026-11-01T02:09:34.216069+00:00",
+      "provider": "clubelo",
+      "results": [
+        {
+          "family": "wrapper_source",
+          "url": "https://raw.githubusercontent.com/probberechts/soccerdata/master/soccerdata/clubelo.py",
+          "requested_at": "2026-11-01T02:09:23.074644+00:00",
+          "http_failures": [],
+          "status": "FETCHED",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "sha256": "9cd96368a90af53f31598bd47b74d72e41596472decb6b127f6d9418074c0b0c",
+          "bytes": 6131,
+          "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/9cd96368a90af53f31598bd47b74d72e41596472decb6b127f6d9418074c0b0c"
+        },
+        {
+          "family": "dated_ratings_http",
+          "url": "http://api.clubelo.com/2024-08-16",
+          "requested_at": "2026-11-01T02:09:24.326571+00:00",
+          "http_failures": [
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for http://api.clubelo.com/2024-08-16: attempt 4/4; exception=HTTPError; http_status=502; HTTP Error 502: Bad Gateway"
+        }
+      ]
+    },
+    "history-access-receipt.json": {
+      "recorded_at": "2026-11-01T02:12:31.521929+00:00",
+      "provider": "clubelo",
+      "results": [
+        {
+          "family": "team_history_http",
+          "url": "http://api.clubelo.com/Arsenal",
+          "requested_at": "2026-11-01T02:12:21.980839+00:00",
+          "http_failures": [
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "http_status": 502,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-07/raw/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for http://api.clubelo.com/Arsenal: attempt 4/4; exception=HTTPError; http_status=502; HTTP Error 502: Bad Gateway"
+        }
+      ]
+    }
+  },
+  "diagnostic_blob_sha256_verified": [
+    "23680098c3066cea1919fe1d005c511041e240198bef7ce4171ef0a614d7543b",
+    "9cd96368a90af53f31598bd47b74d72e41596472decb6b127f6d9418074c0b0c",
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "findings": [
+    "Official documentation URL returned HTTP 403",
+    "Dated HTTPS rating endpoint exhausted four bounded attempts with a connection timeout",
+    "Documented HTTP dated and team-history routes each exhausted four attempts with empty HTTP 502 responses",
+    "Current soccerdata primary source uses the same HTTP API; inferred that installing the wrapper would not change this tested transport limitation, and did not claim a wrapper run"
+  ],
+  "football_csv_resources_fetched": 0,
+  "rating_observations_created": 0,
+  "canonical_identity_changes": 0,
+  "operating_mutations": 0,
+  "model_fit_evaluation_or_promotion": 0,
+  "existing_contract": "TeamRatingObservationV3; calendar rating dates remain separate from knowledge/event time",
+  "resume_actions": [
+    "Retest the documented service when reachable from this environment, or use a separately verified retained resource",
+    "Acquire and checksum an actual dated CSV before implementing/claiming a functional parser",
+    "Preserve native/source identity without name-based canonical admission; qualify rating-date/knowledge-time semantics and continuity before model use"
+  ],
+  "not_claimed": [
+    "No source-wide permanent unavailability",
+    "No rejection based on official/unofficial API status",
+    "No fabricated functional adapter or rating history"
+  ],
+  "next_independent_phase": "08 Sofascore",
+  "verification": {
+    "diagnostic_bytes_and_hashes": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests_passed": 21,
+    "diff_check": "PASS"
+  }
+}

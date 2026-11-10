@@ -35,3 +35,7 @@ stay in form memory and never enter URLs, storage, audit details or Python stdin
 Phase 4 shares the approval operation lifecycle between the existing single form and new batch form. Only current cancellation/mount/pending guards are shared; candidate and batch presentation remain local. Browser acceptance tests share one real-backend route helper.
 
 Phase 5 moves mutable operation state behind the existing shared hook methods. Single and batch forms keep their own proposal, credential and result state. No new generic component, token, dependency or disabled lint rule was introduced.
+
+## V4 Phase 22 — market readiness
+
+Create one local readiness component; its canonical scope and qualification semantics do not belong in a shared visual primitive. Reuse resource states, native disclosure/form behavior and TableScroll without adding props. Group diagnostics behind collapsed disclosures. Extend the existing private-local API and Data Sync page; preserve Resolution Center and authentication. No new tokens, shared variants or Figma mapping are needed. The added form/disclosures intentionally extend the Admin keyboard order; existing journeys remain verified.

@@ -1,0 +1,1165 @@
+{
+  "phase": "R03-C",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "18bbc028fa8c36c85fde6251bcf9235d85818574",
+  "recorded_at": "2026-11-01T19:45:55.015218+00:00",
+  "provider": "espn",
+  "before": {
+    "resources": 4,
+    "normalized_observations": 120,
+    "resource_types": [
+      "scoreboard",
+      "summary"
+    ],
+    "source_ref": "docs/evidence/matchforge-v4-phase-09-2026-11-01.json"
+  },
+  "after": {
+    "competitions": [
+      "700/eng.1"
+    ],
+    "verified_native_seasons": [
+      "2015",
+      "2024"
+    ],
+    "distinct_native_fixtures": 37,
+    "source_utc_kickoffs_with_timeValid": 37,
+    "summary_resources": 14,
+    "native_players": 361,
+    "native_roster_groups": 28,
+    "explicit_native_appearance_occurrences": 390,
+    "explicit_native_minutes_fields": 0,
+    "native_two_element_score_arrays": 14,
+    "scope": "Bounded daily historical samples, not complete seasons. Same-source scoreboard and summary IDs counted once.",
+    "blockers": [
+      "All four date-range query variants returned HTTP 400; no range capability implemented",
+      "No exact accepted source/canonical or StatsBomb cross-provider anchors",
+      "Minute fields absent from inspected rosters; appearances do not imply continuous membership",
+      "Two-element score arrays lack explicit per-element period IDs; no HT/FT settlement mapping inferred",
+      "Unmapped source statistics/event types retained as findings; no invented measurements"
+    ]
+  },
+  "acquisition": {
+    "provider": "espn",
+    "results": [
+      {
+        "key": "eng.1/scoreboard?dates=20150808",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20150808",
+        "acquired_at": "2026-11-01T19:39:04.082871+00:00",
+        "sha256": "eb00c32650b205bc7cd7fc2d6255725dd6a804d26ae0fda2bcd8258a1546fa40",
+        "bytes": 68117,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/eb00c32650b205bc7cd7fc2d6255725dd6a804d26ae0fda2bcd8258a1546fa40",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "6dc9799c-e794-5502-b9de-b8123a76ef7d",
+        "source_snapshot_id": "d0e121c4-a0d7-5a5c-811d-c258a0d5e846",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/8da8beba1e7d2c45336a879f58421155fa26fdc8f637dab09fa56f27e90cdb9b.json",
+        "report_sha256": "8da8beba1e7d2c45336a879f58421155fa26fdc8f637dab09fa56f27e90cdb9b",
+        "work_id": "f664cd5e-fc72-5bc0-ac31-edfbb2de50f0",
+        "replay_identical": true,
+        "observations": 37,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 12,
+          "FixtureObservationV2": 6,
+          "ResultObservationV2": 6,
+          "TeamStatisticObservationV2": 12
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 48
+        }
+      },
+      {
+        "key": "summary/422662",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422662",
+        "acquired_at": "2026-11-01T19:39:06.161895+00:00",
+        "sha256": "b29854490f01174b4cf110a07665d0b1a7539398d7e54389e8eb72088657699e",
+        "bytes": 330536,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/b29854490f01174b4cf110a07665d0b1a7539398d7e54389e8eb72088657699e",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422662"
+        },
+        "source_resource_id": "501a78e6-31b3-5f6d-8eda-0692921d6f88",
+        "source_snapshot_id": "13113b43-e1aa-543a-9bb8-753df5fc7c64",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/d929400350d754561511972380155e9c9bdda2b10fa91e791edc7fa66fec5c5b.json",
+        "report_sha256": "d929400350d754561511972380155e9c9bdda2b10fa91e791edc7fa66fec5c5b",
+        "work_id": "508eee5d-0fa4-5756-a60c-8722367beddc",
+        "replay_identical": true,
+        "observations": 97,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 12
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 6,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "summary/422655",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422655",
+        "acquired_at": "2026-11-01T19:39:08.800102+00:00",
+        "sha256": "fd6a0d0913ec50289c4d10d67a90379c0bbdc4cde07cfd6147517a90b86a4ac5",
+        "bytes": 322612,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/fd6a0d0913ec50289c4d10d67a90379c0bbdc4cde07cfd6147517a90b86a4ac5",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422655"
+        },
+        "source_resource_id": "d53fb4eb-6874-57b6-bf94-511139e9eeae",
+        "source_snapshot_id": "39ccb274-3ade-5298-906f-d0ed80f39064",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/8334e3fd3fd158cb0349567ca18d2164613fbc34f3939144a7b643eae7a45e14.json",
+        "report_sha256": "8334e3fd3fd158cb0349567ca18d2164613fbc34f3939144a7b643eae7a45e14",
+        "work_id": "31a886e6-fc22-55da-9c06-00c5cfc59e79",
+        "replay_identical": true,
+        "observations": 99,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 14
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 273,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 7
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150823",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20150823",
+        "acquired_at": "2026-11-01T19:40:04.876078+00:00",
+        "sha256": "93cd4ad7b69e02e42d027693d44c37145e5637e34f689ba9b1512d7648363358",
+        "bytes": 31643,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/93cd4ad7b69e02e42d027693d44c37145e5637e34f689ba9b1512d7648363358",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "9377e543-f235-5b98-9a43-90490da5c3b0",
+        "source_snapshot_id": "51b501bd-50fe-51df-b38b-b67a49f67a82",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/f1f92b9da549aef113a8185553d5169310e5ee4dffacbd9e472f8e07e7b27beb.json",
+        "report_sha256": "f1f92b9da549aef113a8185553d5169310e5ee4dffacbd9e472f8e07e7b27beb",
+        "work_id": "2efaa168-45a3-5724-a9f7-1e77f1a06331",
+        "replay_identical": true,
+        "observations": 19,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 3,
+          "ResultObservationV2": 3,
+          "TeamStatisticObservationV2": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 24
+        }
+      },
+      {
+        "key": "summary/422637",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422637",
+        "acquired_at": "2026-11-01T19:40:06.576394+00:00",
+        "sha256": "a685a6f36c55f84f33aad8ab5924d359affdd4cd5e78559a5a874d36a3883b01",
+        "bytes": 347368,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/a685a6f36c55f84f33aad8ab5924d359affdd4cd5e78559a5a874d36a3883b01",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422637"
+        },
+        "source_resource_id": "a32e71ec-f201-5428-ad5c-b02a73200ac9",
+        "source_snapshot_id": "65052fe1-bd70-5883-a6ab-3d8f3a4fa4d4",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/dfda9d7ecc4947424e56d45dcbf00903df0831fc645176b4d526b19655584452.json",
+        "report_sha256": "dfda9d7ecc4947424e56d45dcbf00903df0831fc645176b4d526b19655584452",
+        "work_id": "8a7296ef-f1e9-5760-aa62-42ee529aaf60",
+        "replay_identical": true,
+        "observations": 100,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 15
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 5,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 11
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150920",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20150920",
+        "acquired_at": "2026-11-01T19:40:08.062330+00:00",
+        "sha256": "7098206e6552b983275973dcb580bbc1a26ac691959adff2a6cd8b5719d29c35",
+        "bytes": 31681,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/7098206e6552b983275973dcb580bbc1a26ac691959adff2a6cd8b5719d29c35",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "c6b25d70-f123-57e4-ade6-b2a5cd376b26",
+        "source_snapshot_id": "f292c587-593a-58de-9400-005d3055bc9d",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/f2c2ccd51ac07f8207da5e41a6ae2eb1d82aeadd25547225f68db4455b4e947a.json",
+        "report_sha256": "f2c2ccd51ac07f8207da5e41a6ae2eb1d82aeadd25547225f68db4455b4e947a",
+        "work_id": "5fd67a71-20ee-589c-a625-ff2f36c8fa12",
+        "replay_identical": true,
+        "observations": 19,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 3,
+          "ResultObservationV2": 3,
+          "TeamStatisticObservationV2": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 24
+        }
+      },
+      {
+        "key": "summary/422606",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422606",
+        "acquired_at": "2026-11-01T19:40:39.383226+00:00",
+        "sha256": "ff67817f7bf408a40f013790b26c6e05f0e3c919fec1c1b8e308402b6604c9bf",
+        "bytes": 341877,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/ff67817f7bf408a40f013790b26c6e05f0e3c919fec1c1b8e308402b6604c9bf",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422606"
+        },
+        "source_resource_id": "f23fd06b-ce2b-524d-b2cf-572d15122612",
+        "source_snapshot_id": "b1cebb70-1004-5889-8fcc-04aaf02845c3",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/dc799de950e395844d3fe848ce0b561a7e307bad4128a66cbb67b35398048774.json",
+        "report_sha256": "dc799de950e395844d3fe848ce0b561a7e307bad4128a66cbb67b35398048774",
+        "work_id": "52473437-f381-57d5-a4fc-59d0844cd64a",
+        "replay_identical": true,
+        "observations": 95,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 10
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 7
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151019",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20151019",
+        "acquired_at": "2026-11-01T19:42:12.231801+00:00",
+        "sha256": "420cf284f6ac605554d47fae7492569f9ed71c690ba9500640a4cce59b3c0808",
+        "bytes": 12442,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/420cf284f6ac605554d47fae7492569f9ed71c690ba9500640a4cce59b3c0808",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "84ce0bfe-1e13-539e-ae89-f9e76c03de5c",
+        "source_snapshot_id": "4a2408c9-b7a3-50f8-b143-cf679cf137f5",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/2e5033233d510bb64b09100963e526d034083a0ce81f9a84548d1f12dcf84f62.json",
+        "report_sha256": "2e5033233d510bb64b09100963e526d034083a0ce81f9a84548d1f12dcf84f62",
+        "work_id": "932363b4-06f7-53b9-ae12-c67814e4cc79",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/422582",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422582",
+        "acquired_at": "2026-11-01T19:42:14.450628+00:00",
+        "sha256": "c0d96a628ff77a47f6e972d6d4fca6ddcdeef4fa6a4fbe9b305823b215f0653a",
+        "bytes": 323022,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/c0d96a628ff77a47f6e972d6d4fca6ddcdeef4fa6a4fbe9b305823b215f0653a",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422582"
+        },
+        "source_resource_id": "eaf26145-6886-5ed6-9ed4-3f0ffeca2205",
+        "source_snapshot_id": "9246588c-5486-515d-9401-848a9a33e60e",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/ad0dd3030766134270b9d6aea2ed7cfaef9fca3f2e857b7ce5292915e723a928.json",
+        "report_sha256": "ad0dd3030766134270b9d6aea2ed7cfaef9fca3f2e857b7ce5292915e723a928",
+        "work_id": "b7082773-20cc-5d91-872a-0f4c036fecbc",
+        "replay_identical": true,
+        "observations": 96,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 11
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 5,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151121",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20151121",
+        "acquired_at": "2026-11-01T19:42:16.047861+00:00",
+        "sha256": "ae3fbd1aa3424041153ebbceb9ce464866fa8572c5041c18b1fdf80db91c6a94",
+        "bytes": 84274,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/ae3fbd1aa3424041153ebbceb9ce464866fa8572c5041c18b1fdf80db91c6a94",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "42613c4a-6c67-5954-8158-33faa69586f3",
+        "source_snapshot_id": "ec82f9db-e673-5c24-988b-30d9e386b98a",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/4efc3b4ea50005a3c2b2ae946a5651c1ca329a9f4273d61002e4798d606e37fe.json",
+        "report_sha256": "4efc3b4ea50005a3c2b2ae946a5651c1ca329a9f4273d61002e4798d606e37fe",
+        "work_id": "effebdda-6fb8-5924-80c0-79eb9b8e43e4",
+        "replay_identical": true,
+        "observations": 49,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 16,
+          "FixtureObservationV2": 8,
+          "ResultObservationV2": 8,
+          "TeamStatisticObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 64
+        }
+      },
+      {
+        "key": "summary/422540",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422540",
+        "acquired_at": "2026-11-01T19:42:17.905693+00:00",
+        "sha256": "8705022d5622446270eadb9e02812d0dfd7cf87dfb531841a72ff117ec544f7d",
+        "bytes": 330026,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/8705022d5622446270eadb9e02812d0dfd7cf87dfb531841a72ff117ec544f7d",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422540"
+        },
+        "source_resource_id": "46276bb1-0afa-5f89-bcf7-ccee8bf30a67",
+        "source_snapshot_id": "35e7998d-f25c-5798-9a91-f5ff64d4d20f",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/2ec8130eaf4d60df9c0d73fbd541ef11436d568c4c5586c4f68e81189e91632d.json",
+        "report_sha256": "2ec8130eaf4d60df9c0d73fbd541ef11436d568c4c5586c4f68e81189e91632d",
+        "work_id": "2486495b-48c3-5885-8d8d-c66dd6742bc9",
+        "replay_identical": true,
+        "observations": 96,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 11
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151212",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20151212",
+        "acquired_at": "2026-11-01T19:42:19.120917+00:00",
+        "sha256": "0e22a98556b9488d5cbc3a0eec34ce3917a2c0d38d2544e90e5acf6d80bba9e3",
+        "bytes": 55052,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/0e22a98556b9488d5cbc3a0eec34ce3917a2c0d38d2544e90e5acf6d80bba9e3",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "8dbbd57d-d694-50a8-9e02-e17db9e6316b",
+        "source_snapshot_id": "11cec33e-fbc3-556a-806c-e5482dbfa9d6",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/90d6e5b79adf2ed84555c8131622c78b6a748954d9849c7b9298c7442e5188cb.json",
+        "report_sha256": "90d6e5b79adf2ed84555c8131622c78b6a748954d9849c7b9298c7442e5188cb",
+        "work_id": "956ddf06-f0b6-5c11-a543-f5f3f1526acd",
+        "replay_identical": true,
+        "observations": 37,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 12,
+          "FixtureObservationV2": 6,
+          "ResultObservationV2": 6,
+          "TeamStatisticObservationV2": 12
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 48
+        }
+      },
+      {
+        "key": "summary/422507",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422507",
+        "acquired_at": "2026-11-01T19:42:20.883027+00:00",
+        "sha256": "4d6c5388f2c8c6083ea31f23f60787acf0eaa8db4573599d9d4a15189995e71d",
+        "bytes": 312488,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/4d6c5388f2c8c6083ea31f23f60787acf0eaa8db4573599d9d4a15189995e71d",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422507"
+        },
+        "source_resource_id": "10392e90-32e0-5617-be74-4e710289b0fc",
+        "source_snapshot_id": "9046a5ec-07eb-5ed9-9b57-320d2de9d270",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/49ee12248bc2cadf057785fc38a2b5ffb2170fe414529071949b52fbd80732ea.json",
+        "report_sha256": "49ee12248bc2cadf057785fc38a2b5ffb2170fe414529071949b52fbd80732ea",
+        "work_id": "82750ba3-1782-559c-82aa-3127c608ff1f",
+        "replay_identical": true,
+        "observations": 92,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 7
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 5
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151229",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20151229",
+        "acquired_at": "2026-11-01T19:42:22.168390+00:00",
+        "sha256": "286ca5ad683f7a2e9717e84b18936415034075ded7368506be449af7ed5809f5",
+        "bytes": 11915,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/286ca5ad683f7a2e9717e84b18936415034075ded7368506be449af7ed5809f5",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "d7c32a94-35e7-5cbe-95d9-17e45406d2c5",
+        "source_snapshot_id": "e9588005-3735-52ea-9186-f582116a1ac0",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/debd81e74e4a40065608d91088da89ba39ca81901417cea50c5883c62a838d06.json",
+        "report_sha256": "debd81e74e4a40065608d91088da89ba39ca81901417cea50c5883c62a838d06",
+        "work_id": "7c501e22-57fa-5dff-8015-5b095cff08df",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/422479",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422479",
+        "acquired_at": "2026-11-01T19:42:24.657171+00:00",
+        "sha256": "332c9e7ab8db39838506a87743a6af8910e021c52084160e038445c80b72726d",
+        "bytes": 336668,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/332c9e7ab8db39838506a87743a6af8910e021c52084160e038445c80b72726d",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422479"
+        },
+        "source_resource_id": "31a16d0e-07c4-5d12-8a70-d825394cd7db",
+        "source_snapshot_id": "aabcbe40-cb19-54e6-bd10-e88da08989f8",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/7c8271bd490b8e447d649eafced0d85d9790ffc7319284097b5d7b05417006e1.json",
+        "report_sha256": "7c8271bd490b8e447d649eafced0d85d9790ffc7319284097b5d7b05417006e1",
+        "work_id": "005cda73-90d8-5f7c-972a-f07c6997b3fa",
+        "replay_identical": true,
+        "observations": 95,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 10
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160118",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20160118",
+        "acquired_at": "2026-11-01T19:42:25.955239+00:00",
+        "sha256": "061c0c7a5ee91f483b8d544f53ade6738be2a87dc0368145444c519e85ba63d1",
+        "bytes": 12318,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/061c0c7a5ee91f483b8d544f53ade6738be2a87dc0368145444c519e85ba63d1",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "24bc85d6-866d-5590-a89b-6cb571371a84",
+        "source_snapshot_id": "4258b9b3-42cd-5cd3-a280-bf4f66e3eafe",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/eca5ae03c4d5b71f302d592b143faebb40589bebc0a70ffa8255bfca15928438.json",
+        "report_sha256": "eca5ae03c4d5b71f302d592b143faebb40589bebc0a70ffa8255bfca15928438",
+        "work_id": "4c9551e8-24f8-5465-8964-203c3355d5a9",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/422452",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422452",
+        "acquired_at": "2026-11-01T19:42:57.171457+00:00",
+        "sha256": "dde34d43f924c61cc50ac64454816553cb32c3335f399a2d144bc7abb0fe37cd",
+        "bytes": 324146,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/dde34d43f924c61cc50ac64454816553cb32c3335f399a2d144bc7abb0fe37cd",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422452"
+        },
+        "source_resource_id": "ee9bc3bc-383c-5f16-b540-ba7f49a9d3db",
+        "source_snapshot_id": "b6806691-bc39-5dbe-870b-a5bc3101ce38",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/08cce7b2e8645808db8ba79d9613839b175c917884cdf43a68adbdd43676d7bb.json",
+        "report_sha256": "08cce7b2e8645808db8ba79d9613839b175c917884cdf43a68adbdd43676d7bb",
+        "work_id": "991c9f8d-9db3-5549-b694-81b67f43b90e",
+        "replay_identical": true,
+        "observations": 95,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 10
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 6,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160214",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20160214",
+        "acquired_at": "2026-11-01T19:42:58.674215+00:00",
+        "sha256": "83c18c850db255c6ab4e80e863f1044c5a26c41487911813595d6cbc77c79ad4",
+        "bytes": 38820,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/83c18c850db255c6ab4e80e863f1044c5a26c41487911813595d6cbc77c79ad4",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "1a685042-7f82-5d36-bad5-b2dc8803780b",
+        "source_snapshot_id": "34c8b86f-3d09-5722-b719-1b9221f48b21",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/14def63f69b768355a12c64b6550b4e57e6121a3413b5d30cbf672e986a8baf5.json",
+        "report_sha256": "14def63f69b768355a12c64b6550b4e57e6121a3413b5d30cbf672e986a8baf5",
+        "work_id": "58056656-6c7c-5530-bb05-1ef1e6439687",
+        "replay_identical": true,
+        "observations": 19,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 3,
+          "ResultObservationV2": 3,
+          "TeamStatisticObservationV2": 6
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 24
+        }
+      },
+      {
+        "key": "summary/422405",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422405",
+        "acquired_at": "2026-11-01T19:42:59.772299+00:00",
+        "sha256": "4d4ab271c0e34cad000b1bd450ae690ac8afbe810655650d574450265bbad62d",
+        "bytes": 349447,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/4d4ab271c0e34cad000b1bd450ae690ac8afbe810655650d574450265bbad62d",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422405"
+        },
+        "source_resource_id": "d116a479-ddb6-552c-9cdd-e17309c88a5b",
+        "source_snapshot_id": "4bf6f11f-5b50-5f96-83e0-b1e47756dda8",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/8498f928e757fb95febc26974afc2631d6d04725b691364de0e6e688a6d0f6cd.json",
+        "report_sha256": "8498f928e757fb95febc26974afc2631d6d04725b691364de0e6e688a6d0f6cd",
+        "work_id": "a3aa8321-ae29-5882-b928-18e274a53137",
+        "replay_identical": true,
+        "observations": 103,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 18
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 5,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 8
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160313",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20160313",
+        "acquired_at": "2026-11-01T19:43:01.076485+00:00",
+        "sha256": "d38b18fbc07f41fa997c7169d481c77d5604465f272c776dc095cabf86247176",
+        "bytes": 10723,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/d38b18fbc07f41fa997c7169d481c77d5604465f272c776dc095cabf86247176",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "fdc036c9-4f45-54eb-88ea-dc7e6def0165",
+        "source_snapshot_id": "71447d04-77da-5122-bb00-d0c2c0ba8a19",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/3a2ffb9bdefe1a6bc3cdcf1ac158e1ee463cf07d06795bde6f57ad9baff4905d.json",
+        "report_sha256": "3a2ffb9bdefe1a6bc3cdcf1ac158e1ee463cf07d06795bde6f57ad9baff4905d",
+        "work_id": "f5ad6658-e095-50f8-bad5-2903d3985f6e",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/422372",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422372",
+        "acquired_at": "2026-11-01T19:43:02.285460+00:00",
+        "sha256": "551f207ec3f80caf2e16b48d3e946253985bf78c43a9c120d725ec62feb7769c",
+        "bytes": 322977,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/551f207ec3f80caf2e16b48d3e946253985bf78c43a9c120d725ec62feb7769c",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422372"
+        },
+        "source_resource_id": "e119fc9d-9c1d-55cc-827b-b361d4fcf122",
+        "source_snapshot_id": "419562ad-0bc4-58de-8b83-5f857372ee98",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/5a52605b142be3731f95d4788f87b4b9cca82900a120e90642c9106a83bbca11.json",
+        "report_sha256": "5a52605b142be3731f95d4788f87b4b9cca82900a120e90642c9106a83bbca11",
+        "work_id": "62c4a0b2-f454-5b13-bfdf-1eda7fdbdb4b",
+        "replay_identical": true,
+        "observations": 92,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 7
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 273,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 7
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160413",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20160413",
+        "acquired_at": "2026-11-01T19:43:03.380517+00:00",
+        "sha256": "13e3ce423e1d21c4db117c2fbeeeb67ec2178aa934fc64753f5aa409482357ba",
+        "bytes": 11226,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/13e3ce423e1d21c4db117c2fbeeeb67ec2178aa934fc64753f5aa409482357ba",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "548f5867-8d09-5bc1-8ad4-5212d3d32e43",
+        "source_snapshot_id": "0387a04b-8434-5748-8153-4c6b95fe8072",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/c3cad37f74a4c0c66d81258e0413456a489b729269eafd8a7556f4c84bbc8323.json",
+        "report_sha256": "c3cad37f74a4c0c66d81258e0413456a489b729269eafd8a7556f4c84bbc8323",
+        "work_id": "eb388b24-39b0-5ead-9706-0eb3dace33d0",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/422317",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422317",
+        "acquired_at": "2026-11-01T19:43:05.708423+00:00",
+        "sha256": "e85a3252bbaee52865b7010768257b2a0a461a753dda9cdef83a268c6ac9ed49",
+        "bytes": 329649,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/e85a3252bbaee52865b7010768257b2a0a461a753dda9cdef83a268c6ac9ed49",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422317"
+        },
+        "source_resource_id": "f478ddbb-3eb7-5e8e-b63b-ad9d7bba5e88",
+        "source_snapshot_id": "d2ba6a5a-2389-5a74-9367-638938f24e89",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/bae060cbb9daa9d27e257799771d380ee6be7a4283f636dbc02a3c5fc8f24f6e.json",
+        "report_sha256": "bae060cbb9daa9d27e257799771d380ee6be7a4283f636dbc02a3c5fc8f24f6e",
+        "work_id": "73dcff6b-bb1f-5098-99b4-82ecae9b9c06",
+        "replay_identical": true,
+        "observations": 94,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 9
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 5,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 6
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160424",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20160424",
+        "acquired_at": "2026-11-01T19:44:09.129314+00:00",
+        "sha256": "037c2eeae412ed72fa512a111ce3019834c5d7ec2963a1bd1095a5af1412495e",
+        "bytes": 23332,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/037c2eeae412ed72fa512a111ce3019834c5d7ec2963a1bd1095a5af1412495e",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "d67c358d-aa31-5876-9e39-a1c277c56731",
+        "source_snapshot_id": "33625fd9-80f5-5046-a004-a2c2670754d7",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/91b18d1a92d853f3a0bc847a5dea692f1831e81d48b3f611269897a1857052af.json",
+        "report_sha256": "91b18d1a92d853f3a0bc847a5dea692f1831e81d48b3f611269897a1857052af",
+        "work_id": "90f13394-7fdb-5641-820f-86c68009f1cb",
+        "replay_identical": true,
+        "observations": 13,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 4,
+          "FixtureObservationV2": 2,
+          "ResultObservationV2": 2,
+          "TeamStatisticObservationV2": 4
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 16
+        }
+      },
+      {
+        "key": "summary/422315",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=422315",
+        "acquired_at": "2026-11-01T19:44:40.209579+00:00",
+        "sha256": "b56a803aac60bc70937ccb77ec730291d015e82d6c8a18570e7f060b2493e338",
+        "bytes": 335371,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/b56a803aac60bc70937ccb77ec730291d015e82d6c8a18570e7f060b2493e338",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "422315"
+        },
+        "source_resource_id": "4c6e89e0-7433-542c-96b8-fb6b588f3765",
+        "source_snapshot_id": "d61c8dff-d940-554f-b772-8da77c21dd88",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/f9aef9fc9b6dad34cc9eac066098a08d99ca55c3f9414e86b5d8c327e2624834.json",
+        "report_sha256": "f9aef9fc9b6dad34cc9eac066098a08d99ca55c3f9414e86b5d8c327e2624834",
+        "work_id": "508d181c-e132-5194-b68c-c3c36b344f60",
+        "replay_identical": true,
+        "observations": 96,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 36,
+          "PlayerStatisticObservationV3": 36,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 11
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 272,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 5
+        }
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20240816",
+        "provider": "espn",
+        "resource_key": "eng.1/scoreboard?dates=20240816",
+        "acquired_at": "2026-11-01T19:44:41.124704+00:00",
+        "sha256": "4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+        "bytes": 13520,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/4f625fbebeb09016cee2d740128433cbdaa417abf44214895c1dcb870de22968",
+        "resource_type": "scoreboard",
+        "scope": {},
+        "source_resource_id": "18f9ae03-67f2-5073-a4a3-1d13beaf29c4",
+        "source_snapshot_id": "97523fd2-f5b0-52eb-931e-1299900c484f",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/ca3e1b586308545eae7baba34c0ea1b04fc052b2bf30d1758294d4b48cb52b47.json",
+        "report_sha256": "ca3e1b586308545eae7baba34c0ea1b04fc052b2bf30d1758294d4b48cb52b47",
+        "work_id": "b6fcbe7e-b2ae-5ce3-9385-6f59a215beee",
+        "replay_identical": true,
+        "observations": 7,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 2,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV2": 2
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 8
+        }
+      },
+      {
+        "key": "summary/704279",
+        "provider": "espn",
+        "resource_key": "eng.1/summary?event=704279",
+        "acquired_at": "2026-11-01T19:45:44.448748+00:00",
+        "sha256": "ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+        "bytes": 404896,
+        "media_type": "application/json",
+        "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/acquired/espn/ffe2859f08621448f7b96bc387dc2b1b31d4a332e529cd555b1eccb850a900cb",
+        "resource_type": "summary",
+        "scope": {
+          "fixture_native_id": "704279"
+        },
+        "source_resource_id": "1c08778b-3924-5780-bdad-55e16b5ff5dc",
+        "source_snapshot_id": "3bc27f69-cc43-5206-9b24-4c0d15b0cf69",
+        "report_path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/expansion-r03/reports/normalization/1133aa506e34ab003868602012908fee9468b5e425ca767a79dfd7ebb0ba68c7.json",
+        "report_sha256": "1133aa506e34ab003868602012908fee9468b5e425ca767a79dfd7ebb0ba68c7",
+        "work_id": "5833942b-e7fc-57a9-95ca-33b9b04c506a",
+        "replay_identical": true,
+        "observations": 109,
+        "contracts": {
+          "CompetitionObservationV2": 1,
+          "TeamObservationV2": 6,
+          "FixtureObservationV2": 1,
+          "ResultObservationV2": 1,
+          "TeamStatisticObservationV3": 2,
+          "PlayerObservationV2": 40,
+          "PlayerStatisticObservationV3": 40,
+          "LineupObservationV2": 2,
+          "EventObservationV2": 16
+        },
+        "findings": {
+          "MF_NORM_STATISTIC_UNSUPPORTED": 300,
+          "MF_NORM_EVENT_TYPE_UNKNOWN": 4,
+          "MF_NORM_PARTICIPANT_ROLE_UNKNOWN": 11
+        }
+      }
+    ],
+    "attempts": [
+      {
+        "key": "eng.1/scoreboard?dates=20150801-20160531&limit=1000",
+        "started_at": "2026-11-01T19:38:27.073271+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20150801-20160531&limit=1000: attempt 1/4; exception=HTTPError; http_status=400; HTTP Error 400: Bad Request"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20240816-20240819&limit=1000",
+        "started_at": "2026-11-01T19:38:28.011992+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816-20240819&limit=1000: attempt 1/4; exception=HTTPError; http_status=400; HTTP Error 400: Bad Request"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150808",
+        "started_at": "2026-11-01T19:39:03.004898+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422662",
+        "started_at": "2026-11-01T19:39:04.531316+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422655",
+        "started_at": "2026-11-01T19:39:07.224602+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20240816-20240819",
+        "started_at": "2026-11-01T19:39:09.376310+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20240816-20240819: attempt 1/4; exception=HTTPError; http_status=400; HTTP Error 400: Bad Request"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150801-20160531",
+        "started_at": "2026-11-01T19:39:10.110659+00:00",
+        "status": "FAILED",
+        "error_type": "ProviderFetchError",
+        "detail": "provider fetch failed for https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20150801-20160531: attempt 1/4; exception=HTTPError; http_status=400; HTTP Error 400: Bad Request"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150823",
+        "started_at": "2026-11-01T19:40:03.736898+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422637",
+        "started_at": "2026-11-01T19:40:05.346805+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20150920",
+        "started_at": "2026-11-01T19:40:07.237595+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422606",
+        "started_at": "2026-11-01T19:40:08.183175+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151019",
+        "started_at": "2026-11-01T19:40:39.812660+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422582",
+        "started_at": "2026-11-01T19:42:12.315386+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151121",
+        "started_at": "2026-11-01T19:42:15.115425+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422540",
+        "started_at": "2026-11-01T19:42:16.301364+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151212",
+        "started_at": "2026-11-01T19:42:18.291336+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422507",
+        "started_at": "2026-11-01T19:42:19.325728+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20151229",
+        "started_at": "2026-11-01T19:42:21.322998+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422479",
+        "started_at": "2026-11-01T19:42:22.226867+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160118",
+        "started_at": "2026-11-01T19:42:25.128469+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422452",
+        "started_at": "2026-11-01T19:42:26.029990+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160214",
+        "started_at": "2026-11-01T19:42:57.769880+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422405",
+        "started_at": "2026-11-01T19:42:58.834101+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160313",
+        "started_at": "2026-11-01T19:43:00.225800+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422372",
+        "started_at": "2026-11-01T19:43:01.168234+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160413",
+        "started_at": "2026-11-01T19:43:02.729870+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422317",
+        "started_at": "2026-11-01T19:43:03.484963+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20160424",
+        "started_at": "2026-11-01T19:43:06.502937+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/422315",
+        "started_at": "2026-11-01T19:44:09.284670+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "eng.1/scoreboard?dates=20240816",
+        "started_at": "2026-11-01T19:44:40.605807+00:00",
+        "status": "FETCHED"
+      },
+      {
+        "key": "summary/704279",
+        "started_at": "2026-11-01T19:44:41.245763+00:00",
+        "status": "FETCHED"
+      }
+    ],
+    "requests": 34
+  },
+  "normalized_contracts": {
+    "CompetitionObservationV2": 27,
+    "TeamObservationV2": 158,
+    "FixtureObservationV2": 51,
+    "ResultObservationV2": 51,
+    "TeamStatisticObservationV2": 74,
+    "TeamStatisticObservationV3": 28,
+    "PlayerObservationV2": 508,
+    "PlayerStatisticObservationV3": 508,
+    "LineupObservationV2": 28,
+    "EventObservationV2": 161
+  },
+  "experimental_isolation": {
+    "database": "football_v4_expansion_r03_20261101",
+    "system_identifier": "7679328148388241450",
+    "oid": 52291857,
+    "operating_reference_read_only": true,
+    "persistent_marker_verified": true,
+    "physical_isolation_verified": true
+  },
+  "acquisition_and_publication_method": [
+    {
+      "path": ".local/reports/v4/expansion-r03/acquire.py",
+      "sha256": "05f484072ba9b4cb455797842b2ec3e474023eef935ee5f58680049be8e7a58d"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/espn_run.py",
+      "sha256": "351c511a92e33107d16b7d482227123e636a2a970a82eac112b060d0fa6004d6"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/espn_probe.py",
+      "sha256": "007d9b0029cc89f05b41c32e9e9fea49d887a81571b6417c9cc42045e5e80a48"
+    },
+    {
+      "path": ".local/reports/v4/expansion-r03/espn_expand.py",
+      "sha256": "16caea99ea687166c6861b2100482ed49c77697093012b159ce67af3336f9671"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/expansion-r03/espn_measure.py",
+      "sha256": "3fbdc4e76d66628cfe160b0aeb6c2da6a17e1f36776946002a8f0fb1144c2581"
+    }
+  ],
+  "verification": {
+    "focused_tests": {
+      "path": ".local/reports/v4/expansion-r03/phase-c-tests.log",
+      "sha256": "83d7a3b31d287a75d580f5f054199a3ef8601c966d5912e58aa1ac05cc9def30"
+    },
+    "architecture_and_status": {
+      "path": ".local/reports/v4/expansion-r03/phase-c-checks.log",
+      "sha256": "94b34c5651ea1da1c3b52ff65f72c91be328c13605baa59f672699cf2c1d2847"
+    }
+  },
+  "operating_writes": 0,
+  "canonical_admissions": 0,
+  "qualified_market_labels_delta": 0,
+  "historical_feature_knowledge_backdated": false,
+  "model_changes": 0,
+  "restrictions": "Bounded development evidence only; no authentication or technical restriction bypass. No distribution permission or sportsbook settlement equivalence inferred."
+}

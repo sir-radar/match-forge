@@ -3,6 +3,15 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("public fixture status contract", () => {
+  it("binds live ordering evidence to OpenAPI and the Go response", () => {
+    const specification = readFileSync(new URL("../../docs/api/openapi.yaml", import.meta.url), "utf8");
+    const response = readFileSync(new URL("../../go/api/internal/app/product.go", import.meta.url), "utf8");
+    expect(specification).toMatch(/ordering_basis:.*enum: \[UNKNOWN, MATCH_CLOCK, PROVIDER_TIMESTAMP\]/);
+    for (const field of ["ordering_basis", "source_updated_at", "score_conflict"]) {
+      expect(specification).toContain(`${field}:`);
+      expect(response).toContain(`json:"${field},omitempty"`);
+    }
+  });
   it("documents both fixture responses using the canonical SQL states", () => {
     const migration = readFileSync(new URL("../../infrastructure/migrations/202610090300_operational_provider_sync.sql", import.meta.url), "utf8");
     const constraint = migration.match(/ADD CONSTRAINT product_fixtures_status_check CHECK \(status IN \(([\s\S]*?)\)\)/)![1];

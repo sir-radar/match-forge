@@ -1,0 +1,130 @@
+{
+  "phase": "12b",
+  "provider": "flashscore",
+  "status": "PARTIAL_FUNCTIONAL",
+  "starting_sha": "27e5dff",
+  "recorded_at": "2026-11-01T03:25:35.739949Z",
+  "adapter_verification": {
+    "recorded_at": "2026-11-01T03:20:56.631619+00:00",
+    "guarded_requests": 2,
+    "results": [
+      {
+        "family": "match_page",
+        "provider": "flashscore",
+        "resource_key": "match/bRXj39aJ",
+        "acquired_at": "2026-11-01T03:20:56.082910+00:00",
+        "sha256": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+        "bytes": 892653,
+        "media_type": "text/html",
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12b/raw/9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f"
+      },
+      {
+        "family": "statistics",
+        "provider": "flashscore",
+        "resource_key": "df_st_1_bRXj39aJ",
+        "acquired_at": "2026-11-01T03:20:56.624615+00:00",
+        "sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "bytes": 6073,
+        "media_type": "text/plain",
+        "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-12b/raw/e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4"
+      }
+    ]
+  },
+  "publication": {
+    "recorded_at": "2026-11-01T03:23:46.356653+00:00",
+    "observations_before": 11056,
+    "observations_after": 11064,
+    "results": [
+      {
+        "family": "match_page",
+        "source_resource_id": "f7367c8a-70a7-5115-b804-4a5b99e5c66a",
+        "source_snapshot_id": "fdab03cc-ddba-53a8-96ac-99622e5d7303",
+        "source_sha256": "9dd5e03fbecdf4deb1355930aa8a7c965c02118ed9c9b021a3f0b0f3e79cae8f",
+        "known_at": "2026-11-01T03:20:56.082910+00:00",
+        "manifest_path": "flashscore/manifests/55cf3b3bd585a7442c7baf6d20220a00d73f3af85975c503af12d937b1a8ee27.json",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION"
+      },
+      {
+        "family": "statistics",
+        "source_resource_id": "86407a09-3936-59d6-8917-874b7d4192b8",
+        "source_snapshot_id": "3ffeec89-9748-5507-82c0-e149b3f00077",
+        "source_sha256": "e85bd7d6f9ab928af8952879f32e82d62174a789d240f402617ad4d7764f14b4",
+        "known_at": "2026-11-01T03:20:56.624615+00:00",
+        "manifest_path": "flashscore/manifests/a1cd6eea804bb37011f463d41ba2895c8fd71a190fc8362d5feeac0b6ebf52fd.json",
+        "canonical_import_status": "PENDING; NO_IDENTITY_ADMISSION",
+        "report_sha256": "21e847e263bb0f89066e989fba75bdeb86af7f179cbb54a460e195220570ad0d",
+        "work_id": "4bbff40e-1412-55c8-82e5-224c9b8e99ba",
+        "work_state": "SUCCEEDED",
+        "contracts": {
+          "ExpectedGoalsObservationV2": 2,
+          "TeamStatisticObservationV3": 6
+        },
+        "findings": {
+          "MF_NORM_TEAM_ID_UNRESOLVED": 1,
+          "MF_NORM_STATISTIC_VALUE_UNQUALIFIED": 36,
+          "MF_NORM_STATISTIC_REPEATED": 30,
+          "MF_NORM_STATISTIC_UNSUPPORTED": 66,
+          "MF_NORM_XG_SCOPE_UNSUPPORTED": 4
+        },
+        "all_artifact_bytes_and_retry": "VERIFIED",
+        "retry_rows": 8,
+        "capability_decision_id": "d28a48e1-2b19-5e79-a0aa-ac344502dd73",
+        "capability_decision_sha256": "5fc890957947112a549c75064d511230592d238aac07b620e135d01825ac01da"
+      }
+    ],
+    "previous_league_reports_unchanged": [
+      {
+        "source_resource_id": "c227f784-bba3-5795-bcfc-801d5a27d197",
+        "report_sha256": "946667f82fc9e723ce1d6f64a8186ac2ea97a837b2355b6997dd9c536fff76ca"
+      },
+      {
+        "source_resource_id": "ebc9f2c7-2d13-5c15-a56f-cb58267825e4",
+        "report_sha256": "c05b5cff2b0abc562e1ad7182bc3c7856855d5f22cc806108c3b27b1958d8ad3"
+      }
+    ],
+    "canonical_identity_changes": 0,
+    "forecast_writes": 0,
+    "model_writes": 0,
+    "production_routing_changes": 0
+  },
+  "verified_capabilities": [
+    "Actual source adapter completed exactly two guarded public match-page/statistics requests",
+    "Public feed header and URL verified from retained primary request-builder code",
+    "Six team statistic observations across Match/1st Half/2nd Half and two match-total xG observations",
+    "Named scalar shots/SOT/corners/cards/fouls/offsides/saves/interceptions/clearances/throw-ins/goal-kicks/woodwork/xGOT retained where reported",
+    "Unknown fields/fractions and unsupported partial-period xG remain findings",
+    "No caller-provided team IDs or implicit name joins; anonymous source sides remain unresolved",
+    "Shared strict JSON parser and named feed reader preserve previous league report hashes",
+    "Known source facts retrievable after acquisition; earlier knowledge and event-time-required history exclude them"
+  ],
+  "primary_key_definition_ref": "docs/evidence/matchforge-v4-phase-12a-2026-11-01.json",
+  "statistic_key_definitions": {
+    "SE": "STATISTICSINDEXES_TAB_LABEL",
+    "SF": "STATISTICSINDEXES_GROUP_LABEL",
+    "SD": "STATISTICSINDEXES_ID",
+    "SG": "STATISTICSINDEXES_NAME",
+    "SH": "STATISTICSINDEXES_HOME_VALUE",
+    "SI": "STATISTICSINDEXES_AWAY_VALUE"
+  },
+  "remaining_limits": [
+    "One completed match statistics sample",
+    "No canonical team/fixture or target semantics qualification",
+    "No provider clock inference, historical backdating or live-freshness claim",
+    "Incident/lineup normalization follows in Phase 12c"
+  ],
+  "verification": {
+    "focused_disposable_suite": "217 passed",
+    "final_unit_files": "89 passed after shared response helper reuse",
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS (8 source files)",
+    "architecture": "PASS",
+    "project_status_check": "PASS",
+    "governance_tests": "21 passed",
+    "all_eight_artifact_bytes_and_retry": "PASS",
+    "fenced_normalization_work": "SUCCEEDED",
+    "previous_current_and_historical_league_report_sha256": "UNCHANGED",
+    "diff_check": "PASS"
+  },
+  "model_fit_evaluation_promotion_or_cutover": 0,
+  "next": "12c captured match incidents/lineups"
+}

@@ -1,0 +1,90 @@
+{
+  "phase": "16",
+  "starting_sha": "a9d19a38d3f2a64e4853a15ffd820695a6923b20",
+  "recorded_at": "2026-11-01T09:44:19.787495Z",
+  "status": "PARTIAL_FUNCTIONAL",
+  "engineering_gate": "PASS_WITH_WARNINGS",
+  "complete": false,
+  "scope": "Extend existing canonical live reconciliation and serving; no parallel live system or provider activation.",
+  "implemented": [
+    "Native FotMob HT clock marker maps to HALF_TIME even without a reason label.",
+    "Live updates require football ordering evidence; later HTTP acquisition alone cannot change a score or lifecycle.",
+    "Same-provider timestamps cannot prove ordering when they claim a time after original acquisition; original observation time remains separate from re-fetch time.",
+    "Global match minute and added time stay separate: 45+8 precedes 46.",
+    "Known same-provider timestamp corrections and prior retained replay boundaries are respected; unordered interruptions remain held.",
+    "Terminal score disagreements remain retained; a later HTTP time cannot create a correction.",
+    "List and detail source projections prefer advanced match clocks and deterministic provider fallback, preserving canonical scores.",
+    "Current-clock or unknown-clock conflicting retained scores mark the detail partial and are explained in the existing Live Match tab.",
+    "Optional source_updated_at and ordering_basis metadata are validated at the web boundary; event/statistic football order remains unknown without evidence."
+  ],
+  "limitations": [
+    "No newly qualified live provider: scoped identity mappings, in-play enum semantics and repeated football freshness evidence are still required.",
+    "ESPN tha.1/20261101 returned an empty scoreboard, not verified live coverage; this does not prove global ESPN unavailability.",
+    "Postponement, suspension and abandonment claims without ordering evidence remain retained; no HTTP-time auto-resolution or invented lifecycle timeline.",
+    "Existing terminal outcome correction and identity review gates remain in place."
+  ],
+  "actual_evidence": {
+    "clock_audit": {
+      "path": ".local/reports/v4/phase-16/baseline-live-clock-audit.json",
+      "sha256": "8225bbed863dd624591f257be93e8df1d0497147403351304620380d85f44341",
+      "bytes": 3828
+    },
+    "espn_probe": {
+      "path": ".local/reports/v4/phase-16/espn-live-probe-receipt.json",
+      "sha256": "23a8a5d4f8801ad68335c844a58076729f9960e8b0b067b830574479e0ccc9e7",
+      "bytes": 4407
+    },
+    "espn_raw_sha256": "2cb05152195e542539165d214cf6c682c2346b72457ff73af42d673a261299ee",
+    "new_provider_requests": 1,
+    "new_provider_fixtures_observed": 0,
+    "last_24h_source_update_timestamps": "All inspected FotMob/PitchAPI source_updated_at values absent; requiring native UTC would break existing feeds."
+  },
+  "verification": {
+    "python_disposable_tests": 70,
+    "go_disposable_suite": "TestLiveMatchClockOrderingAndConflictsDatabase; TestServingDatabaseFixtureRepresentatives; TestLiveScoreSourceFootballEvidence; TestLiveSourceFreshnessRetainsUnknownDeadline",
+    "web_focused_tests": 59,
+    "static": "PASS: Ruff/format, mypy, architecture, go vet, golangci-lint, ESLint, TypeScript",
+    "go_suite": "PASS (authorized local socket access)",
+    "go_disposable_tests": "4 top-level tests PASS, including all representative/provenance subtests",
+    "governance_tests": 21,
+    "status_check": "ProjectStatusV2 valid",
+    "diff_check": "PASS",
+    "logs": {
+      "tests.log": {
+        "sha256": "589f5d52d892be1cfd29005f264866d7774d141989fea1fbfc3b2bbed03c3822",
+        "bytes": 1557
+      },
+      "go-tests.log": {
+        "sha256": "22fe6b96314c196c436fb7c9e13ce04ed8dac57980c807edaf3220a0be954339",
+        "bytes": 110
+      },
+      "web-tests.log": {
+        "sha256": "2f590ab728d1d7c8ebbb93dba7d273ae5e5dcddbe9ed513aebe8fe77ac26ea9e",
+        "bytes": 235
+      },
+      "web-lint.log": {
+        "sha256": "d9af84a88fc1f098804977d02c095f47824afa11e9e82255771b56604723134a",
+        "bytes": 295
+      },
+      "web-types.log": {
+        "sha256": "ddc09829c2ad9e594b3816dbf7c434675b4e953aca53b03dbedc1d6bcaf11064",
+        "bytes": 170
+      },
+      "governance-tests.log": {
+        "sha256": "c27099d2ed49004e44d44a6bbba9ca77ddc8beb0f9c62a2e1fdf79e7724344a4",
+        "bytes": 99
+      }
+    }
+  },
+  "preservation": {
+    "direct_operating_application_writes": 0,
+    "normalization_writes": 0,
+    "new_identity_admissions": 0,
+    "model_fits": 0,
+    "forecast_publications": 0,
+    "promotions": 0,
+    "production_cutover": false,
+    "background_sync": "Existing operational FotMob/PitchAPI jobs remain running; their independent writes are not counted as task writes."
+  },
+  "next": "Commit Phase 16 partial checkpoint, then independent Phase 17 deterministic score products. Do not activate an unqualified source."
+}

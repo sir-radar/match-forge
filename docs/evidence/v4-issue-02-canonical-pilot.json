@@ -1,0 +1,1471 @@
+{
+  "phase": "R02-J",
+  "status": "PASS_WITH_WARNINGS",
+  "starting_sha": "960ce949596519df346a66e7139e0c55bf8c5263",
+  "knowledge_cutoff": "2026-11-02T05:00:10.714222+00:00",
+  "selection": "Track C: five existing accepted API-Football NPFL fixtures, native competition 399, source season label 2027 retained verbatim.",
+  "selection_reason": "Exact native IDs, source record keys, three independently accepted and reverified entity anchors, recorded fixture relationship, original fixture UUID derivation, explicit UTC/epoch agreement, and accepted history decisions. No new identity decision required.",
+  "fixtures": [
+    {
+      "fixture_id": "a4e4644e-b8e5-5505-9f32-a65ab2d2f067",
+      "native_fixture_id": "1628535",
+      "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+      "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+      "source_season_label": "2027",
+      "history": {
+        "away_xg": null,
+        "home_xg": null,
+        "known_at": "2026-10-16T00:46:47.207367+00:00",
+        "away_goals": 1,
+        "fixture_id": "a4e4644e-b8e5-5505-9f32-a65ab2d2f067",
+        "home_goals": 1,
+        "kickoff_at": "2026-10-03T15:00:00+00:00",
+        "away_team_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+        "home_team_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_snapshot_id": "fef1174e-1d17-5339-bf1b-71b26a54465c",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "history_decision": {
+        "reason": "ProductIdentityTrustV1",
+        "away_xg": null,
+        "home_xg": null,
+        "eligible": true,
+        "away_goals": 1,
+        "decided_at": "2026-10-16T00:46:47.207367+00:00",
+        "fixture_id": "a4e4644e-b8e5-5505-9f32-a65ab2d2f067",
+        "home_goals": 1,
+        "kickoff_at": "2026-10-03T15:00:00+00:00",
+        "decision_id": "01a1422c-fda7-7542-aaf8-72914e337940",
+        "away_team_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+        "home_team_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_known_at": "2026-10-04T19:14:57.575907+00:00",
+        "source_snapshot_id": "fef1174e-1d17-5339-bf1b-71b26a54465c",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "match_mapping_id": "01a1422c-fd7c-7126-b2b4-f3a3a1e11b98",
+      "source_resource_id": "8134e1b6-3d30-57ac-ad20-20891ddeedf0",
+      "source_snapshot_id": "fef1174e-1d17-5339-bf1b-71b26a54465c",
+      "source_sha256": "335496a11b971318fc543790d5481f980cbb1d26845731773c1ba9da010638c7",
+      "source_record_key": "json:/response/975",
+      "native_identifiers": {
+        "competition": "399",
+        "home_team": "5183",
+        "away_team": "22585"
+      },
+      "kickoff_utc": "2026-10-03T15:00:00+00:00",
+      "source_observed_at": "2026-10-04T19:14:57.575907+00:00",
+      "acquired_at": "2026-10-04T19:14:57.575907+00:00",
+      "known_at": "2026-10-04T19:14:57.575907+00:00",
+      "anchors": [
+        {
+          "kind": "competition",
+          "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+          "native_id": "399",
+          "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "decided_at": "2026-10-14T04:07:41.974305+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3696-74bf-9365-dcfee23a5a66",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+                "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+                "provider_code": "api_football",
+                "provider_entity_id": "399",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:41.974305+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "399",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ce69613dd6ff94c23b54ced9f4aeaff6bcd9a47470dfebde2842069fa5e9a161",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "399",
+                  "canonical_id": "cb185f33-3900-564d-83e1-578649b04224"
+                }
+              },
+              "source_sha256": "9ce057a3215118e4c2120486f48fa28d275dc8740eb0443a34b4f55441414494"
+            },
+            "evidence_hash": "104772dd458e21be1084f9fb7735d6a6ee6305ad009c9b5a32e3d28ee4cf80cd",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+            "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "entity_type": "competition",
+            "provider": "api_football",
+            "provider_id": "399",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "399",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a0ff25-3d78-7318-9e9d-dd0037f67c90",
+          "native_id": "5183",
+          "canonical_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+            "decided_at": "2026-10-14T03:56:53.908218+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1388e-5314-7339-b8c0-ce0a5aa52b8f",
+                "entity_type": "team",
+                "mapping_id": "01a0ff25-3d78-7318-9e9d-dd0037f67c90",
+                "canonical_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+                "provider_code": "api_football",
+                "provider_entity_id": "5183",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "6689ccac-c18e-559d-be8f-b3926faf03ef",
+                "source_observed_at": "2026-10-03T00:23:40.705128+00:00",
+                "decided_at": "2026-10-14T03:56:53.908218+00:00",
+                "evidence": {
+                  "sha256": "dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-03T00:23:40.705128+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5183",
+                  "source_resource_id": "44290e04-8812-5490-9c61-5d62079ccf20",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "208b9f8c277ecfecab5501ffbb7b00017787940f87bd48c1088e779a247256d0",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5183",
+                  "canonical_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef"
+                }
+              },
+              "source_sha256": "454c49454f1d9901e6c3e2733c7be63d86624484505fa67e9444f783cf7ea40d"
+            },
+            "evidence_hash": "2dc080287703971ec5aaa3c50286843d7f0439fab8bbba8b7db68b06f8073a8c",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0ff25-3d78-7318-9e9d-dd0037f67c90",
+            "canonical_id": "ceb6e0fb-c675-5708-9ce1-8cde414843ef",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5183",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "6689ccac-c18e-559d-be8f-b3926faf03ef",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5183",
+              "source_resource_id": "44290e04-8812-5490-9c61-5d62079ccf20",
+              "sha256": "dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae",
+              "acquired_at": "2026-10-03T00:23:40.705128+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-03T00:23:40.705128+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a1422c-a9c8-7ad8-843c-b6a94a0972cb",
+          "native_id": "22585",
+          "canonical_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+            "decided_at": "2026-10-16T00:46:25.743411+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1422c-a9cf-7611-85e1-130b504e0482",
+                "entity_type": "team",
+                "mapping_id": "01a1422c-a9c8-7ad8-843c-b6a94a0972cb",
+                "canonical_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+                "provider_code": "api_football",
+                "provider_entity_id": "22585",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+                "source_observed_at": "2026-10-12T07:13:19.625069+00:00",
+                "decided_at": "2026-10-16T00:46:25.743411+00:00",
+                "evidence": {
+                  "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "22585",
+                  "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "eadf6e5dd6b6f89e699b3004693890ab29bd94bdf0e4381569e6501db1380a7d",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "22585",
+                  "canonical_id": "40622b22-aa59-590b-b2f7-c2c300c636ea"
+                }
+              },
+              "source_sha256": "73773c7e84d67d4f891522610e05c8f2b8ed0eba1e4d8be9970c42251cf826dd"
+            },
+            "evidence_hash": "9ebb1b1e73d50ad9abd8fa5757d266eb342d8a20c4a316118bba6c6b30c7f991",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a1422c-a9c8-7ad8-843c-b6a94a0972cb",
+            "canonical_id": "40622b22-aa59-590b-b2f7-c2c300c636ea",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "22585",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "22585",
+              "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+              "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+              "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-12T07:13:19.625069+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": "1b6c198b-9e03-55a0-b27a-35d92bbd1853",
+      "native_fixture_id": "1628538",
+      "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+      "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+      "source_season_label": "2027",
+      "history": {
+        "away_xg": null,
+        "home_xg": null,
+        "known_at": "2026-10-16T00:46:47.773699+00:00",
+        "away_goals": 1,
+        "fixture_id": "1b6c198b-9e03-55a0-b27a-35d92bbd1853",
+        "home_goals": 3,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "away_team_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+        "home_team_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "history_decision": {
+        "reason": "ProductIdentityTrustV1",
+        "away_xg": null,
+        "home_xg": null,
+        "eligible": true,
+        "away_goals": 1,
+        "decided_at": "2026-10-16T00:46:47.773699+00:00",
+        "fixture_id": "1b6c198b-9e03-55a0-b27a-35d92bbd1853",
+        "home_goals": 3,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "decision_id": "01a1422c-ffdd-7a9f-960a-8c87b8b7e2f3",
+        "away_team_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+        "home_team_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_known_at": "2026-10-05T13:54:33.776528+00:00",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "match_mapping_id": "01a1422c-ffb2-732c-8861-a1cb56d46f30",
+      "source_resource_id": "3cab6bf1-bcc4-5cb8-bf13-1d4c9719c669",
+      "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+      "source_sha256": "f607cbf66191144094c177fa8bfc68116a81066107bac86b9612ff0cdd5880d6",
+      "source_record_key": "json:/response/599",
+      "native_identifiers": {
+        "competition": "399",
+        "home_team": "5176",
+        "away_team": "5171"
+      },
+      "kickoff_utc": "2026-10-04T15:00:00+00:00",
+      "source_observed_at": "2026-10-05T13:54:33.776528+00:00",
+      "acquired_at": "2026-10-05T13:54:33.776528+00:00",
+      "known_at": "2026-10-05T13:54:33.776528+00:00",
+      "anchors": [
+        {
+          "kind": "competition",
+          "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+          "native_id": "399",
+          "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "decided_at": "2026-10-14T04:07:41.974305+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3696-74bf-9365-dcfee23a5a66",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+                "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+                "provider_code": "api_football",
+                "provider_entity_id": "399",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:41.974305+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "399",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ce69613dd6ff94c23b54ced9f4aeaff6bcd9a47470dfebde2842069fa5e9a161",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "399",
+                  "canonical_id": "cb185f33-3900-564d-83e1-578649b04224"
+                }
+              },
+              "source_sha256": "9ce057a3215118e4c2120486f48fa28d275dc8740eb0443a34b4f55441414494"
+            },
+            "evidence_hash": "104772dd458e21be1084f9fb7735d6a6ee6305ad009c9b5a32e3d28ee4cf80cd",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+            "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "entity_type": "competition",
+            "provider": "api_football",
+            "provider_id": "399",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "399",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a1422c-b442-70b8-bdf2-110904ed6ae5",
+          "native_id": "5176",
+          "canonical_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+            "decided_at": "2026-10-16T00:46:28.424681+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1422c-b448-7aa0-8e21-29e5600a9e69",
+                "entity_type": "team",
+                "mapping_id": "01a1422c-b442-70b8-bdf2-110904ed6ae5",
+                "canonical_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+                "provider_code": "api_football",
+                "provider_entity_id": "5176",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+                "source_observed_at": "2026-10-12T07:13:19.625069+00:00",
+                "decided_at": "2026-10-16T00:46:28.424681+00:00",
+                "evidence": {
+                  "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5176",
+                  "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "a16bf659e389fde9ea7cd7b86522baf6161612b94d1e999893a45be20f65d9f6",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5176",
+                  "canonical_id": "663790fb-b868-5de7-82d0-3ccd0bac3662"
+                }
+              },
+              "source_sha256": "2f50a54a0a21cddff5a286d8e07fdb4f65a37e04f5daf7a75cb7f4c9f1931bd1"
+            },
+            "evidence_hash": "f318fbc007687b6d0a4db32e7045b565af25c6c8b919179a4167c29288d5dcda",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a1422c-b442-70b8-bdf2-110904ed6ae5",
+            "canonical_id": "663790fb-b868-5de7-82d0-3ccd0bac3662",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5176",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5176",
+              "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+              "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+              "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-12T07:13:19.625069+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a10441-97bd-7fce-8d96-ddda2403aafb",
+          "native_id": "5171",
+          "canonical_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+            "decided_at": "2026-10-14T04:00:46.722809+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13891-e082-7cc2-84a9-5b12962b70a0",
+                "entity_type": "team",
+                "mapping_id": "01a10441-97bd-7fce-8d96-ddda2403aafb",
+                "canonical_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+                "provider_code": "api_football",
+                "provider_entity_id": "5171",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+                "source_observed_at": "2026-10-04T00:12:45.703025+00:00",
+                "decided_at": "2026-10-14T04:00:46.722809+00:00",
+                "evidence": {
+                  "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5171",
+                  "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "de5764fe34a0f5a934aa637e5f5caefe95c5df7a17279b9c5060f20dca3643d0",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5171",
+                  "canonical_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096"
+                }
+              },
+              "source_sha256": "402deb57a986dd6ceade39949bbc07e40fcbf4622da92dfd3e79166df7acff7a"
+            },
+            "evidence_hash": "77b06eadabc3bc129e3fff415481810e788158df26800435c278a7418cbf80ce",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a10441-97bd-7fce-8d96-ddda2403aafb",
+            "canonical_id": "8abfdc41-8115-5dc9-8d51-2de2b2624096",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5171",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5171",
+              "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+              "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+              "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-04T00:12:45.703025+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": "226da507-92ca-58d9-930a-4dbdc73318d1",
+      "native_fixture_id": "1628531",
+      "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+      "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+      "source_season_label": "2027",
+      "history": {
+        "away_xg": null,
+        "home_xg": null,
+        "known_at": "2026-10-16T00:46:47.492569+00:00",
+        "away_goals": 0,
+        "fixture_id": "226da507-92ca-58d9-930a-4dbdc73318d1",
+        "home_goals": 1,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "away_team_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+        "home_team_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "history_decision": {
+        "reason": "ProductIdentityTrustV1",
+        "away_xg": null,
+        "home_xg": null,
+        "eligible": true,
+        "away_goals": 0,
+        "decided_at": "2026-10-16T00:46:47.492569+00:00",
+        "fixture_id": "226da507-92ca-58d9-930a-4dbdc73318d1",
+        "home_goals": 1,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "decision_id": "01a1422c-fec4-7814-a329-5ad6fcd0c1fa",
+        "away_team_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+        "home_team_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_known_at": "2026-10-05T13:54:33.776528+00:00",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "match_mapping_id": "01a1422c-fe68-7923-927c-36b34bbea0c5",
+      "source_resource_id": "3cab6bf1-bcc4-5cb8-bf13-1d4c9719c669",
+      "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+      "source_sha256": "f607cbf66191144094c177fa8bfc68116a81066107bac86b9612ff0cdd5880d6",
+      "source_record_key": "json:/response/594",
+      "native_identifiers": {
+        "competition": "399",
+        "home_team": "20809",
+        "away_team": "5508"
+      },
+      "kickoff_utc": "2026-10-04T15:00:00+00:00",
+      "source_observed_at": "2026-10-05T13:54:33.776528+00:00",
+      "acquired_at": "2026-10-05T13:54:33.776528+00:00",
+      "known_at": "2026-10-05T13:54:33.776528+00:00",
+      "anchors": [
+        {
+          "kind": "competition",
+          "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+          "native_id": "399",
+          "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "decided_at": "2026-10-14T04:07:41.974305+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3696-74bf-9365-dcfee23a5a66",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+                "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+                "provider_code": "api_football",
+                "provider_entity_id": "399",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:41.974305+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "399",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ce69613dd6ff94c23b54ced9f4aeaff6bcd9a47470dfebde2842069fa5e9a161",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "399",
+                  "canonical_id": "cb185f33-3900-564d-83e1-578649b04224"
+                }
+              },
+              "source_sha256": "9ce057a3215118e4c2120486f48fa28d275dc8740eb0443a34b4f55441414494"
+            },
+            "evidence_hash": "104772dd458e21be1084f9fb7735d6a6ee6305ad009c9b5a32e3d28ee4cf80cd",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+            "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "entity_type": "competition",
+            "provider": "api_football",
+            "provider_id": "399",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "399",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a0ff25-3d75-71e9-95c0-2ef261d9818d",
+          "native_id": "20809",
+          "canonical_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+            "decided_at": "2026-10-14T03:56:53.902286+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1388e-530e-7449-8f6d-b5951e004a15",
+                "entity_type": "team",
+                "mapping_id": "01a0ff25-3d75-71e9-95c0-2ef261d9818d",
+                "canonical_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+                "provider_code": "api_football",
+                "provider_entity_id": "20809",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "6689ccac-c18e-559d-be8f-b3926faf03ef",
+                "source_observed_at": "2026-10-03T00:23:40.705128+00:00",
+                "decided_at": "2026-10-14T03:56:53.902286+00:00",
+                "evidence": {
+                  "sha256": "dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-03T00:23:40.705128+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "20809",
+                  "source_resource_id": "44290e04-8812-5490-9c61-5d62079ccf20",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ef4d83c4544994ad6b724f1e5d64c26edaffea9c26ab436be71e250008575888",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "20809",
+                  "canonical_id": "1f124cc5-29da-5d74-8254-ab027f28027e"
+                }
+              },
+              "source_sha256": "3df19a461283f2b0fa1ee8e69835a79503fe03df62b508ec6c4c037984d9b25a"
+            },
+            "evidence_hash": "6f89d99f90e80b61974c44d1340e953a21e33dba46e26978a506e140d3c5001f",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0ff25-3d75-71e9-95c0-2ef261d9818d",
+            "canonical_id": "1f124cc5-29da-5d74-8254-ab027f28027e",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "20809",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "6689ccac-c18e-559d-be8f-b3926faf03ef",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "20809",
+              "source_resource_id": "44290e04-8812-5490-9c61-5d62079ccf20",
+              "sha256": "dedd6a3ca99e5470a75d0a0abd67d95a4459f6609d587b5ef9c6704e754b6fae",
+              "acquired_at": "2026-10-03T00:23:40.705128+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-03T00:23:40.705128+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a1422c-b201-7ffe-96ed-3e3aca46134b",
+          "native_id": "5508",
+          "canonical_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+            "decided_at": "2026-10-16T00:46:27.848862+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1422c-b208-7d8b-8d22-9e30214085ee",
+                "entity_type": "team",
+                "mapping_id": "01a1422c-b201-7ffe-96ed-3e3aca46134b",
+                "canonical_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+                "provider_code": "api_football",
+                "provider_entity_id": "5508",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+                "source_observed_at": "2026-10-12T07:13:19.625069+00:00",
+                "decided_at": "2026-10-16T00:46:27.848862+00:00",
+                "evidence": {
+                  "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5508",
+                  "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "13a8b0b5fb53f6d8c297310a5072f7d5acf01e6f15a03fd3d273a232ad1b453c",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5508",
+                  "canonical_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7"
+                }
+              },
+              "source_sha256": "a4bad49788925b66915cdce84abe384e6070e69e01187832bda29eed0d5f087f"
+            },
+            "evidence_hash": "eae6db6aad93918339df161adabc34d6f55e8ad2e2284f64aeccd6ddb6e4dfb4",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a1422c-b201-7ffe-96ed-3e3aca46134b",
+            "canonical_id": "9db29e8b-0993-52bb-af2b-50b0ff08bbb7",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5508",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5508",
+              "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+              "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+              "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-12T07:13:19.625069+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": "27fe6f62-230d-5685-938e-827eba88b4d6",
+      "native_fixture_id": "1628540",
+      "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+      "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+      "source_season_label": "2027",
+      "history": {
+        "away_xg": null,
+        "home_xg": null,
+        "known_at": "2026-10-16T00:46:46.790221+00:00",
+        "away_goals": 0,
+        "fixture_id": "27fe6f62-230d-5685-938e-827eba88b4d6",
+        "home_goals": 0,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "away_team_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+        "home_team_id": "44100120-9188-5db6-8831-6bba5632e397",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "history_decision": {
+        "reason": "ProductIdentityTrustV1",
+        "away_xg": null,
+        "home_xg": null,
+        "eligible": true,
+        "away_goals": 0,
+        "decided_at": "2026-10-16T00:46:46.790221+00:00",
+        "fixture_id": "27fe6f62-230d-5685-938e-827eba88b4d6",
+        "home_goals": 0,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "decision_id": "01a1422c-fc06-72e1-9f7a-4fe96921b5d8",
+        "away_team_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+        "home_team_id": "44100120-9188-5db6-8831-6bba5632e397",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_known_at": "2026-10-05T13:54:33.776528+00:00",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "match_mapping_id": "01a1422c-fbdc-7041-86aa-2cbafde998bb",
+      "source_resource_id": "3cab6bf1-bcc4-5cb8-bf13-1d4c9719c669",
+      "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+      "source_sha256": "f607cbf66191144094c177fa8bfc68116a81066107bac86b9612ff0cdd5880d6",
+      "source_record_key": "json:/response/601",
+      "native_identifiers": {
+        "competition": "399",
+        "home_team": "5504",
+        "away_team": "5188"
+      },
+      "kickoff_utc": "2026-10-04T15:00:00+00:00",
+      "source_observed_at": "2026-10-05T13:54:33.776528+00:00",
+      "acquired_at": "2026-10-05T13:54:33.776528+00:00",
+      "known_at": "2026-10-05T13:54:33.776528+00:00",
+      "anchors": [
+        {
+          "kind": "competition",
+          "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+          "native_id": "399",
+          "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "decided_at": "2026-10-14T04:07:41.974305+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3696-74bf-9365-dcfee23a5a66",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+                "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+                "provider_code": "api_football",
+                "provider_entity_id": "399",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:41.974305+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "399",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ce69613dd6ff94c23b54ced9f4aeaff6bcd9a47470dfebde2842069fa5e9a161",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "399",
+                  "canonical_id": "cb185f33-3900-564d-83e1-578649b04224"
+                }
+              },
+              "source_sha256": "9ce057a3215118e4c2120486f48fa28d275dc8740eb0443a34b4f55441414494"
+            },
+            "evidence_hash": "104772dd458e21be1084f9fb7735d6a6ee6305ad009c9b5a32e3d28ee4cf80cd",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+            "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "entity_type": "competition",
+            "provider": "api_football",
+            "provider_id": "399",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "399",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a1422c-9ff8-710c-866e-8d3fa2fe7b01",
+          "native_id": "5504",
+          "canonical_id": "44100120-9188-5db6-8831-6bba5632e397",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "44100120-9188-5db6-8831-6bba5632e397",
+            "decided_at": "2026-10-16T00:46:23.230292+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1422c-9ffe-73e2-94ce-06e2cba6694e",
+                "entity_type": "team",
+                "mapping_id": "01a1422c-9ff8-710c-866e-8d3fa2fe7b01",
+                "canonical_id": "44100120-9188-5db6-8831-6bba5632e397",
+                "provider_code": "api_football",
+                "provider_entity_id": "5504",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+                "source_observed_at": "2026-10-12T07:13:19.625069+00:00",
+                "decided_at": "2026-10-16T00:46:23.230292+00:00",
+                "evidence": {
+                  "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5504",
+                  "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "b342e7eda346c2d925a8c705c3bfbeeecbff94b9b61d0ee54680a088f2181499",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5504",
+                  "canonical_id": "44100120-9188-5db6-8831-6bba5632e397"
+                }
+              },
+              "source_sha256": "3a9198be2ca33b58b288a0eebdf36846b7f08b34d2417af8aee8a56a0902680f"
+            },
+            "evidence_hash": "afc520dfb1623c82ebfdad9eddfc459ca40d163ed5a54f0479f65db23404d3d4",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a1422c-9ff8-710c-866e-8d3fa2fe7b01",
+            "canonical_id": "44100120-9188-5db6-8831-6bba5632e397",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5504",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5504",
+              "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+              "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+              "acquired_at": "2026-10-12T07:13:19.625069+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-12T07:13:19.625069+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a10441-97c6-7285-be2e-88b264433887",
+          "native_id": "5188",
+          "canonical_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+            "decided_at": "2026-10-14T04:00:46.730381+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13891-e08a-75e9-834e-22231c27c188",
+                "entity_type": "team",
+                "mapping_id": "01a10441-97c6-7285-be2e-88b264433887",
+                "canonical_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+                "provider_code": "api_football",
+                "provider_entity_id": "5188",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+                "source_observed_at": "2026-10-04T00:12:45.703025+00:00",
+                "decided_at": "2026-10-14T04:00:46.730381+00:00",
+                "evidence": {
+                  "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5188",
+                  "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "e8d43ed3f2ac761dce91070679bcb1bfb4213bc1bec78f3fa9e0a09800bcac15",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5188",
+                  "canonical_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d"
+                }
+              },
+              "source_sha256": "f926d7ffa2d4cea9a2ee9e700ff58fbfd00bfa71b4ce9341a2046daf78d2967e"
+            },
+            "evidence_hash": "2a1807ac8543162ca25dbe5fb6a5ca776c79f27a8ecbc7311484952c3425aceb",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a10441-97c6-7285-be2e-88b264433887",
+            "canonical_id": "ad408195-7e4d-57b9-b86b-8be8a176be7d",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5188",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5188",
+              "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+              "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+              "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-04T00:12:45.703025+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": "51a3861f-3f75-57ce-a600-07b74e066166",
+      "native_fixture_id": "1628533",
+      "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+      "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+      "source_season_label": "2027",
+      "history": {
+        "away_xg": null,
+        "home_xg": null,
+        "known_at": "2026-10-16T00:46:46.536431+00:00",
+        "away_goals": 0,
+        "fixture_id": "51a3861f-3f75-57ce-a600-07b74e066166",
+        "home_goals": 2,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "away_team_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+        "home_team_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "history_decision": {
+        "reason": "ProductIdentityTrustV1",
+        "away_xg": null,
+        "home_xg": null,
+        "eligible": true,
+        "away_goals": 0,
+        "decided_at": "2026-10-16T00:46:46.536431+00:00",
+        "fixture_id": "51a3861f-3f75-57ce-a600-07b74e066166",
+        "home_goals": 2,
+        "kickoff_at": "2026-10-04T15:00:00+00:00",
+        "decision_id": "01a1422c-fb08-76a7-a907-3870c6d00eeb",
+        "away_team_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+        "home_team_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+        "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+        "source_known_at": "2026-10-05T13:54:33.776528+00:00",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "source_provider_code": "api_football",
+        "source_kickoff_precision": "EXACT"
+      },
+      "match_mapping_id": "01a1422c-fadf-797a-9ef4-855781824548",
+      "source_resource_id": "3cab6bf1-bcc4-5cb8-bf13-1d4c9719c669",
+      "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+      "source_sha256": "f607cbf66191144094c177fa8bfc68116a81066107bac86b9612ff0cdd5880d6",
+      "source_record_key": "json:/response/596",
+      "native_identifiers": {
+        "competition": "399",
+        "home_team": "5177",
+        "away_team": "5190"
+      },
+      "kickoff_utc": "2026-10-04T15:00:00+00:00",
+      "source_observed_at": "2026-10-05T13:54:33.776528+00:00",
+      "acquired_at": "2026-10-05T13:54:33.776528+00:00",
+      "known_at": "2026-10-05T13:54:33.776528+00:00",
+      "anchors": [
+        {
+          "kind": "competition",
+          "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+          "native_id": "399",
+          "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "competition",
+            "subject_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "decided_at": "2026-10-14T04:07:41.974305+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13898-3696-74bf-9365-dcfee23a5a66",
+                "entity_type": "competition",
+                "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+                "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+                "provider_code": "api_football",
+                "provider_entity_id": "399",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+                "source_observed_at": "2026-09-29T20:56:42.234107+00:00",
+                "decided_at": "2026-10-14T04:07:41.974305+00:00",
+                "evidence": {
+                  "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "399",
+                  "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "ce69613dd6ff94c23b54ced9f4aeaff6bcd9a47470dfebde2842069fa5e9a161",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "399",
+                  "canonical_id": "cb185f33-3900-564d-83e1-578649b04224"
+                }
+              },
+              "source_sha256": "9ce057a3215118e4c2120486f48fa28d275dc8740eb0443a34b4f55441414494"
+            },
+            "evidence_hash": "104772dd458e21be1084f9fb7735d6a6ee6305ad009c9b5a32e3d28ee4cf80cd",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a0eef4-a15a-7923-8640-ef1910718363",
+            "canonical_id": "cb185f33-3900-564d-83e1-578649b04224",
+            "entity_type": "competition",
+            "provider": "api_football",
+            "provider_id": "399",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "90bfdaf6-025a-5276-887f-1e45eaedf99b",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "399",
+              "source_resource_id": "f8fc1ed0-8663-57e0-b9ab-eed243ca16c6",
+              "sha256": "699f69b3f208a0baad4a643d2276027fb304cb3b858ee4fa4f0c09fa96806d0b",
+              "acquired_at": "2026-09-29T20:56:42.234107+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-09-29T20:56:42.234107+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a1422c-9c9f-7109-86e6-cde510c7ca89",
+          "native_id": "5177",
+          "canonical_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+            "decided_at": "2026-10-16T00:46:22.379422+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a1422c-9cab-73a6-8f02-db83e61e7a1b",
+                "entity_type": "team",
+                "mapping_id": "01a1422c-9c9f-7109-86e6-cde510c7ca89",
+                "canonical_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+                "provider_code": "api_football",
+                "provider_entity_id": "5177",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "b60eb6a7-96ab-591c-904b-cbe4ae44c791",
+                "source_observed_at": "2026-10-10T11:11:16.980220+00:00",
+                "decided_at": "2026-10-16T00:46:22.379422+00:00",
+                "evidence": {
+                  "sha256": "2d6ba6546f32b41b4ddab2008367c5130467aebff18b42a62c345494398e1859",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-10T11:11:16.980220+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5177",
+                  "source_resource_id": "d559504b-8e51-5541-9a9c-6a81dd192f0c",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "f29c8d6cad3b3a6a35e8f5b0d3bf17b64214450be334deff70e268407795f9dc",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5177",
+                  "canonical_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367"
+                }
+              },
+              "source_sha256": "277dc27a1c8975bc0af425fda79c7bc82a3ff65ef370a88c8ce53450cdb40134"
+            },
+            "evidence_hash": "e69f34ef28dd5681dbde94aea70ed7920e7e2fe6354f6060e2fec9db2403b2be",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a1422c-9c9f-7109-86e6-cde510c7ca89",
+            "canonical_id": "2e08c4ff-a88e-5595-ba66-dca33dfd7367",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5177",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "b60eb6a7-96ab-591c-904b-cbe4ae44c791",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5177",
+              "source_resource_id": "d559504b-8e51-5541-9a9c-6a81dd192f0c",
+              "sha256": "2d6ba6546f32b41b4ddab2008367c5130467aebff18b42a62c345494398e1859",
+              "acquired_at": "2026-10-10T11:11:16.980220+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-10T11:11:16.980220+00:00"
+          }
+        },
+        {
+          "kind": "team",
+          "mapping_id": "01a10441-97ab-7fac-84f1-415611b777d4",
+          "native_id": "5190",
+          "canonical_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+          "proof": {
+            "contract": "DecisionRecordV1",
+            "contract_version": "1",
+            "decision_type": "identity_admission",
+            "subject_type": "team",
+            "subject_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+            "decided_at": "2026-10-14T04:00:46.682090+00:00",
+            "effective_at": null,
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "evidence": {
+              "source_contract": {
+                "decision_id": "01a13891-e05a-7141-a5a4-20706259b16b",
+                "entity_type": "team",
+                "mapping_id": "01a10441-97ab-7fac-84f1-415611b777d4",
+                "canonical_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+                "provider_code": "api_football",
+                "provider_entity_id": "5190",
+                "disposition": "ORIGIN_ANCHOR",
+                "reason": "VERIFIED_PROVIDER_ORIGIN",
+                "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+                "source_observed_at": "2026-10-04T00:12:45.703025+00:00",
+                "decided_at": "2026-10-14T04:00:46.682090+00:00",
+                "evidence": {
+                  "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+                  "country": "Nigeria",
+                  "provider": "api_football",
+                  "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+                  "policy_version": "ProductIdentityTrustV1",
+                  "provider_entity_id": "5190",
+                  "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+                  "manifest_classification": "BYTE_VERIFIED"
+                },
+                "evidence_sha256": "10f4020aec56b6396ce73f20b134c854a4d381c16065d69b9fdc827137d9158b",
+                "corrects_decision_id": null,
+                "target_mapping_id": null,
+                "contract": "football.product_identity_admissions",
+                "identity_scope": {
+                  "provider": "api_football",
+                  "provider_native_id": "5190",
+                  "canonical_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74"
+                }
+              },
+              "source_sha256": "05104c1fa612932ffc3d4db59f071be05291c16ef12e5b0aeeedaa8654a01e06"
+            },
+            "evidence_hash": "44c7e3ad3074d9b15a8b1c046fcde53c1799115b68f873196b33ba445d7cad0f",
+            "predecessor": null
+          },
+          "reverification": {
+            "mapping_id": "01a10441-97ab-7fac-84f1-415611b777d4",
+            "canonical_id": "1cbb0c80-afda-5e50-9dce-7d1db9fb3b74",
+            "entity_type": "team",
+            "provider": "api_football",
+            "provider_id": "5190",
+            "disposition": "ORIGIN_ANCHOR",
+            "reason": "VERIFIED_PROVIDER_ORIGIN",
+            "source_snapshot_id": "2509e633-a3fa-5a1e-8244-346bb0ee76b1",
+            "evidence": {
+              "provider": "api_football",
+              "provider_entity_id": "5190",
+              "source_resource_id": "0f8d6f6b-d898-56ca-9b4f-f724eaefdc1d",
+              "sha256": "ae962e14ad606c992c03d80fe77713bd322cc284ccba50e69ae3973448735876",
+              "acquired_at": "2026-10-04T00:12:45.703025+00:00",
+              "country": "Nigeria",
+              "manifest_classification": "BYTE_VERIFIED",
+              "policy_version": "ProductIdentityTrustV1"
+            },
+            "source_observed_at": "2026-10-04T00:12:45.703025+00:00"
+          }
+        }
+      ]
+    }
+  ],
+  "tracks": {
+    "A": {
+      "native_fixtures": 380,
+      "source_identity_checks_passed": 21,
+      "accepted_canonical_chains": 0,
+      "utc_qualified": 0,
+      "blockers": [
+        "UUIDv7 origin is not a supported deterministic origin",
+        "Pinned Reep proposals not review-ready",
+        "Naive kickoff fields alone do not establish UTC; existing policy prerequisites still required"
+      ]
+    },
+    "B": {
+      "fixture": "704279",
+      "source_identifiers_verified": 4,
+      "exact_native_utc": true,
+      "accepted_canonical_chains": 0,
+      "blockers": [
+        "Operating competition/team/fixture mappings and admissions absent"
+      ]
+    },
+    "C": {
+      "selected_fixtures": 5,
+      "existing_eligible_exact_csv_rows": 29639,
+      "existing_eligible_date_only_csv_rows": 102053,
+      "legacy_csv_match_resolutions": 10,
+      "csv_disposition": "Ten accepted old CSV match decisions do not admit source-record bindings for all other rows. 2015/16 rows lack original exact time. Prefer this bounded exact native API chain over broad anonymous-record qualification.",
+      "statsbomb_disposition": "Original retained StatsBomb pilot still has zero R2 team/competition admissions.",
+      "fbref_disposition": "Native archived statistics/minutes have no independently accepted exact player/fixture bindings to these five fixtures; no name/date/score join attempted."
+    }
+  },
+  "time_policy": {
+    "selected_pilot": "No local-time conversion: exact retained UTC date and Unix epoch agree.",
+    "statsbomb_existing_policies": [
+      "statsbomb-england-local-kickoff-v1 / Europe/London",
+      "statsbomb-spain-local-kickoff-v1 / Europe/Madrid",
+      "statsbomb-italy-local-kickoff-v1 / Europe/Rome"
+    ],
+    "pinned_tzdata": "2026.3",
+    "policy_existence_is_source_eligibility": false
+  },
+  "operating_writes": 0,
+  "new_identity_admissions": 0,
+  "verification": {
+    "command": "uv run --locked --no-sync python .local/issue02-unblocking/phase_j.py",
+    "exit_code": 0,
+    "canonical_origin_reproduced": 5,
+    "accepted_entity_checks": 15,
+    "source_rows_verified": 5
+  },
+  "identity_time_scope": "Mapping claims and admissions checked at the explicit later retrospective label cutoff. A kickoff-time mapping lookup returned no eligible claim for the selected source chain. No assertion of pre-kickoff identity knowledge or pre-match feature eligibility is made; original decisions and validity intervals are unchanged."
+}

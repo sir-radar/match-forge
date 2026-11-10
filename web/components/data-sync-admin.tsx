@@ -2,6 +2,7 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { api } from "@/lib/api";
+import { MarketReadinessAdmin } from "@/components/market-readiness-admin";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { TableScroll } from "@/components/table-scroll";
 import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
@@ -39,6 +40,7 @@ export function DataSyncAdmin({ initialDate }: { initialDate: string }) {
     <section className="sync-actions" aria-label="Data synchronization actions">
       {ACTIONS.map((action) => <SyncAction key={action.type} action={action} latest={latest.get(action.type)} providerConfiguration={providerConfiguration} disabled={loading || laneBusy(action.type)} busy={submitting[syncLane(action.type)] === action.type} onStart={() => void start(action.type, action.start)} />)}
     </section>
+    <MarketReadinessAdmin />
     <CoveragePanel coverage={coverage} loading={loading} />
     <HistoryAcquisitionPanel coverage={coverage} configuration={providerConfiguration} loading={loading} />
     <RunHistory runs={runs} loading={loading} clock={clock} canRetry={(run) => !loading && !laneBusy(run.sync_type)} onRetry={(run) => void retry(run)} />

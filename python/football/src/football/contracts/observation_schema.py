@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import types
 from dataclasses import MISSING, fields, is_dataclass
-from datetime import datetime
+from datetime import date, datetime
 from functools import lru_cache
 from typing import Annotated, Any, Literal, Union, get_args, get_origin, get_type_hints
 from uuid import UUID
@@ -45,6 +45,7 @@ def _field_schema(annotation: Any, definitions: dict[str, Any]) -> dict[str, Any
         bool: {"type": "boolean"},
         type(None): {"type": "null"},
         datetime: {"type": "string", "format": "date-time"},
+        date: {"type": "string", "format": "date"},
         UUID: {"type": "string", "format": "uuid"},
     }
     return primitives[annotation]
@@ -71,7 +72,7 @@ def _class_schema(model: type[Any], definitions: dict[str, Any]) -> dict[str, An
     }
 
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=3)
 def observation_schema(version: str = "1") -> dict[str, Any]:
     models = observation_types(version)
     definitions: dict[str, Any] = {}
@@ -97,4 +98,8 @@ def observation_types(version: str) -> tuple[type[Observation], ...]:
         from football.contracts.observations_v2 import OBSERVATION_V2_TYPES
 
         return OBSERVATION_V2_TYPES
+    if version == "3":
+        from football.contracts.observations_v3 import OBSERVATION_V3_TYPES
+
+        return OBSERVATION_V3_TYPES
     raise ValueError(f"unsupported resource observation version: {version}")

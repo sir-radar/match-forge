@@ -29,6 +29,10 @@ Never claim work is complete without evidence from the final repository state.
 
 ## 1. Sources of Truth
 
+For any frontend work under `./web`, follow `docs/frontend-engineering.md` before making changes. The matching `./web/ui-designs/**/*.html` files are the authoritative UI design references; images and screenshots are secondary, subject to explicit owner requirements and approved functional contracts.
+
+For backend work (Python data/modelling, Rust simulation, Go serving/operations, SQL migrations, persistence, and background jobs), follow `docs/backend-engineering.md` before making changes. The root guide and approved architecture, contracts, and phase gates remain authoritative.
+
 Resolve implementation conflicts in this order unless the repository owner explicitly changes the priority:
 
 1. Current repository-owner requirements and corrections.
@@ -717,6 +721,8 @@ docs/pr-template.md
 docs/review-checklist.md
 docs/testing.md
 docs/writing-style.md
+docs/frontend-engineering.md
+docs/backend-engineering.md
 ```
 
 ## Token-Efficient Validation Policy

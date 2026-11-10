@@ -1,0 +1,114 @@
+{
+  "phase": "08",
+  "provider": "sofascore",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "bbf9770131bfbe710d37e0f0762a4b626165681d",
+  "recorded_at": "2026-11-01T02:27:01.999318+00:00",
+  "tested_scope": {
+    "sport": "football",
+    "fixture_date": "2026-11-01",
+    "routes": "Main public host API, API host and ordinary public football page"
+  },
+  "access_evidence": {
+    "access-receipt.json": {
+      "recorded_at": "2026-11-01T02:19:17.805556+00:00",
+      "provider": "sofascore",
+      "results": [
+        {
+          "family": "public_fixture_route",
+          "url": "https://www.sofascore.com/api/v1/sport/football/scheduled-events/2026-11-01",
+          "requested_at": "2026-11-01T02:19:01.610617+00:00",
+          "http_failures": [
+            {
+              "http_status": 403,
+              "sha256": "6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d",
+              "bytes": 48,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-08/raw/6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://www.sofascore.com/api/v1/sport/football/scheduled-events/2026-11-01: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+        },
+        {
+          "family": "public_api_host_route",
+          "url": "https://api.sofascore.com/api/v1/sport/football/scheduled-events/2026-11-01",
+          "requested_at": "2026-11-01T02:19:17.281543+00:00",
+          "http_failures": [
+            {
+              "http_status": 403,
+              "sha256": "6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d",
+              "bytes": 48,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-08/raw/6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://api.sofascore.com/api/v1/sport/football/scheduled-events/2026-11-01: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+        }
+      ]
+    },
+    "web-access-receipt.json": {
+      "recorded_at": "2026-11-01T02:22:07.944908+00:00",
+      "provider": "sofascore",
+      "results": [
+        {
+          "family": "public_football_page",
+          "url": "https://www.sofascore.com/football",
+          "requested_at": "2026-11-01T02:21:37.268411+00:00",
+          "http_failures": [
+            {
+              "http_status": 403,
+              "sha256": "6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d",
+              "bytes": 48,
+              "path": "/Users/radar/Desktop/football-simutation/.local/reports/v4/phase-08/raw/6b771bca0fe4271cc0baf29954f10c68be99102048e4df524b6d7d6bf38dad5d"
+            }
+          ],
+          "status": "FAILED",
+          "error_type": "ProviderFetchError",
+          "detail": "provider fetch failed for https://www.sofascore.com/football: attempt 1/4; exception=HTTPError; http_status=403; HTTP Error 403: Forbidden"
+        }
+      ]
+    }
+  },
+  "retained_inventory": {
+    "recorded_at": "2026-11-01T02:25:52.677616+00:00",
+    "access": "READ_ONLY",
+    "registered_resources_by_provider": {
+      "clubelo": 0,
+      "sofascore": 0,
+      "espn": 0,
+      "fbref": 0,
+      "whoscored": 0,
+      "flashscore": 0,
+      "soccerway": 0
+    },
+    "configured_clubelo_sofascore_environment_variable_names": []
+  },
+  "exact_error_body": {
+    "error": {
+      "code": 403,
+      "reason": "Forbidden"
+    }
+  },
+  "football_resources_fetched": 0,
+  "observations_created": 0,
+  "live_capability": "NOT_VERIFIED",
+  "competition_season_feature_support": "UNASSESSED; NOT_CLASSIFIED_UNSUPPORTED",
+  "configured_source_access": "No nonempty ClubElo/Sofascore configuration names found; no secret values printed",
+  "operating_mutations": 0,
+  "model_fit_evaluation_or_promotion": 0,
+  "technical_restrictions": "No proxy, TLS-fingerprint change, CAPTCHA/challenge bypass or false browser identity used",
+  "resume_actions": [
+    "Obtain permitted reachable access to the public routes or separately verified retained resources",
+    "Verify fixture/status clocks, score basis, events, statistics, players and history from actual payloads before adapter/runtime enablement",
+    "Use existing identity, capability, authority, temporal and work owners; no name-only identity admission"
+  ],
+  "next_independent_phase": "09 ESPN",
+  "verification": {
+    "diagnostic_bytes_sha256": "PASS",
+    "retained_inventory_access": "READ_ONLY",
+    "project_status_check": "PASS",
+    "diff_check": "PASS"
+  }
+}

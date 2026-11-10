@@ -65,6 +65,19 @@ def add_multimodel_commands(commands: argparse._SubParsersAction[Any]) -> None:
     forecast.add_argument("--persist", action="store_true")
     products = scopes.add_parser("products", help="inspect score-derived products without fitting")
     products.add_argument("--forecast", required=True, type=Path)
+    products.add_argument("--goal-line", action="append", type=float, default=[])
+    products.add_argument("--asian-handicap", action="append", type=float, default=[])
+    products.add_argument("--european-handicap", action="append", type=int, default=[])
+    products.add_argument("--goal-range", action="append", type=int, nargs=2, default=[])
+
+    capabilities = scopes.add_parser(
+        "market-capabilities", help="read market qualification evidence"
+    )
+    capabilities.add_argument("--competition-id", required=True, type=UUID)
+    capabilities.add_argument("--season-id", required=True, type=UUID)
+    capabilities.add_argument("--knowledge-cutoff", required=True)
+    capabilities.add_argument("--model-registration", type=Path)
+    capabilities.add_argument("--summary", action="store_true")
     evaluate = scopes.add_parser("evaluate")
     evaluate.add_argument("--observations", required=True, type=Path)
 
@@ -104,7 +117,9 @@ def run_multimodel_command(
         elif args.command == "models" and args.scope == "forecast":
             result = _forecast(args, environment)
         elif args.command == "models" and args.scope == "products":
-            result = _products(args.forecast)
+            result = _products(args)
+        elif args.command == "models" and args.scope == "market-capabilities":
+            result = _market_capabilities(args, environment)
         elif args.command == "models" and args.scope == "public-reports":
             from football.product.public_reports_cli import run_public_report_command
 
@@ -126,13 +141,52 @@ def run_multimodel_command(
     return 4 if result.get("status") == "COMPLETED_WITH_ERRORS" else 0
 
 
-def _products(path: Path) -> dict[str, Any]:
+def _products(args: argparse.Namespace) -> dict[str, Any]:
     from football.forecasting.products import score_products
 
     try:
-        return score_products(_forecast_from_dict(json.loads(path.read_bytes())))
+        return score_products(
+            _forecast_from_dict(json.loads(args.forecast.read_bytes())),
+            goal_lines=tuple(args.goal_line),
+            asian_handicaps=tuple(args.asian_handicap),
+            european_handicaps=tuple(args.european_handicap),
+            goal_ranges=tuple(tuple(value) for value in args.goal_range),
+        )
     except (KeyError, TypeError, AttributeError) as error:
         raise ValueError("invalid score forecast") from error
+
+
+def _market_capabilities(
+    args: argparse.Namespace, environment: Mapping[str, str]
+) -> dict[str, Any]:
+    from football.forecasting.runtime_models import ModelRegistration
+    from football.product.market_capability_cli import (
+        market_capability_report,
+        market_capability_summary,
+    )
+
+    database_url = (
+        args.database_url
+        or environment.get("FOOTBALL_DATABASE_URL")
+        or environment.get("DATABASE_URL")
+    )
+    if not database_url:
+        raise ValueError("DATABASE_URL is required for market capabilities")
+    model = (
+        ModelRegistration.from_bytes(args.model_registration.read_bytes())
+        if args.model_registration
+        else None
+    )
+    with psycopg.connect(database_url, autocommit=True) as connection:
+        report = market_capability_report(
+            connection,
+            args.data_root or Path(".local/football-data"),
+            competition_id=args.competition_id,
+            season_id=args.season_id,
+            knowledge_cutoff=datetime.fromisoformat(args.knowledge_cutoff),
+            model=model,
+        )
+        return market_capability_summary(report) if args.summary else report
 
 
 def _runtime_registry(

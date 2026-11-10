@@ -1,0 +1,704 @@
+{
+  "phase": "R02-M",
+  "status": "PASS_WITH_WARNINGS",
+  "recorded_at": "2026-11-02T05:44:10.950963+00:00",
+  "starting_sha": "eb4f8104da3070b3a58a64755fdcc88b5d8419d1",
+  "verified_implementation_sha": "c0184125a9c9d2c579e23e602e16ee438577c8e3",
+  "phase_commits": {
+    "R02-G": "30f24c44a007961771b379f3fee8da15fb7979f5",
+    "R02-H": "37295332a04963a8de310d3d541c3b95dfff7b9a",
+    "R02-I": "960ce949596519df346a66e7139e0c55bf8c5263",
+    "R02-J": "a42825cfdbc8890e1928251294c00cdb9d8c4a2f",
+    "R02-K": "d5c848142ba99f25616a7499d8796ad1ff2e660f",
+    "R02-L": "2d9a8a355d142a33f860ab2d3380e5e61e429118"
+  },
+  "verification_correction_commits": {
+    "R02-M": "c0184125a9c9d2c579e23e602e16ee438577c8e3"
+  },
+  "phase_m_commit_resolution": "git log -1 --format=%H -- docs/evidence/v4-issue-02-unblocking-final.json",
+  "ending_sha_location": "Commit containing this file; exact SHA recorded in ignored CURRENT_TASK_STATUS.md and final handoff.",
+  "technical_work_complete": true,
+  "narrow_historical_milestone_passed": true,
+  "full_issue_2_complete": false,
+  "before_after_scope": "Existing accepted Track C facts are distinguished from new experimental audit/projection artifacts. No newly created canonical fixture or player fact is counted.",
+  "before_after": {
+    "source_identifiers_verified_in_new_extractors": {
+      "before": 0,
+      "after": 669,
+      "scope": "21 StatsBomb team/competition checks, four ESPN summary identifiers, 644 StatsBomb native player IDs; provider/entity-type scoped, not canonical admissions."
+    },
+    "preexisting_reep_candidate_records_in_bounded_review": {
+      "before": 41,
+      "after": 41,
+      "scope": "20 teams, ten matches, ten players, one ESPN fixture; competition checked separately without an exact Reep candidate."
+    },
+    "proof_ready_identity_cases": {
+      "before": 0,
+      "after": 0
+    },
+    "new_canonical_identity_admissions": {
+      "before": 0,
+      "after": 0
+    },
+    "existing_selected_canonical_fixture_bindings": {
+      "before": 5,
+      "after": 5
+    },
+    "new_canonical_fixture_resolutions": {
+      "before": 0,
+      "after": 0
+    },
+    "existing_selected_utc_fixtures": {
+      "before": 5,
+      "after": 5
+    },
+    "existing_selected_historically_eligible_fixtures": {
+      "before": 5,
+      "after": 5
+    },
+    "canonical_fixtures_in_new_experimental_qualified_coverage": {
+      "before": 0,
+      "after": 5
+    },
+    "retained_source_native_ft_and_ht_goal_scalars": {
+      "before": 20,
+      "after": 20,
+      "scope": "Ten FT plus ten HT scalar fields already in retained source; no new football acquisition."
+    },
+    "research_qualified_goal_scalars_in_new_experimental_projection": {
+      "before": 0,
+      "after": 10,
+      "score_pairs_after": 5
+    },
+    "bookmaker_equivalent_labels": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_canonical_player_identities": {
+      "before": 0,
+      "after": 0
+    },
+    "native_started_or_substitute_occurrences": {
+      "before": 10449,
+      "after": 10449,
+      "scope": "Source-native occurrences across the StatsBomb pilot; not unique canonical appearances."
+    },
+    "verified_canonical_player_appearances": {
+      "before": 0,
+      "after": 0
+    },
+    "verified_canonical_minute_exposures": {
+      "before": 0,
+      "after": 0
+    },
+    "qualified_continuous_membership_intervals": {
+      "before": 0,
+      "after": 0
+    },
+    "experimental_bound_market_families_with_research_required_diagnostic": {
+      "before": 0,
+      "after": 1,
+      "scope": "RESULT_1X2 / selection HOME; RESEARCH_COMPATIBLE_ONLY. No frozen scientific sufficiency, sportsbook equivalence or production grant."
+    },
+    "remaining_original_statsbomb_owner_mapping_blockers": {
+      "before": 21,
+      "after": 21,
+      "scope": "Failure reason changes from RETAINED_SOURCE_EVIDENCE_REQUIRED to UNSUPPORTED_ORIGIN_ALGORITHM after authentic source IDs verify."
+    }
+  },
+  "pilot": {
+    "track": "C",
+    "provider": "api_football",
+    "competition": "399",
+    "source_season_label": "2027",
+    "canonical_competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+    "fixtures": 5,
+    "score_pairs": 5,
+    "goal_scalars": 10,
+    "same_fixture_pre_match_feature_eligible": false,
+    "knowledge_cutoff": "2026-11-02T05:00:10.714222+00:00",
+    "audit": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/unblocking-r02/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+      "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+    }
+  },
+  "original_tracks": {
+    "A": "380 native fixtures; 21 source identities verify, zero admitted complete canonical/time chains.",
+    "B": "704279 has four verified source identifiers and exact native UTC; canonical competition/team/fixture chain absent.",
+    "player": "644 native IDs, 13,678 lineup occurrences, 15 individual multi-team cases; canonical admissions, appearances, memberships and minutes remain unqualified."
+  },
+  "reep_review": {
+    "team_candidates": 20,
+    "competition_candidates_checked": 1,
+    "match_candidates": 10,
+    "player_candidates": 10,
+    "espn_fixture_candidates": 1,
+    "source_identity_checks_passed": 21,
+    "existing_target_anchors": 19,
+    "review_ready_proposals": 0,
+    "accepted_decisions": 0,
+    "rejected_or_more_proof_required": 42
+  },
+  "isolated_replay": {
+    "result": {
+      "path": ".local/issue02-unblocking/projection-result.json",
+      "sha256": "f1e4529bb6218ac1c58116763fe612314fb60e58dae8ef7f0269b05b6a6c9ec6"
+    },
+    "database": "football_v4_unblocking_r02_replay_20261102",
+    "isolation": {
+      "database": "football_v4_unblocking_r02_replay_20261102",
+      "system_identifier": "7679328148388241450",
+      "oid": 56476102,
+      "operating_reference_read_only": true,
+      "persistent_marker_verified": true,
+      "physical_isolation_verified": true
+    },
+    "initial_registry_counts": {
+      "source_resources": 0,
+      "source_snapshots": 0,
+      "resource_observation_artifacts": 0,
+      "provider_resource_coverage": 0,
+      "canonical_resource_coverage": 0,
+      "canonical_resource_resolutions": 0,
+      "product_identity_admissions": 0,
+      "resolution_decisions": 0
+    },
+    "first": {
+      "observations": [
+        "8c5f2a37-08c5-53ea-90e3-84539b7fd6e8",
+        "fb1550a2-5940-58d5-9846-7d80f1b5384a",
+        "1f041f1d-2379-5aca-b59e-99740e561bfd",
+        "1788cca9-5458-5f76-87ca-8cfb22a517a8",
+        "8011a8d0-3e1e-5bd0-ad3b-44413cb2b7b3",
+        "30d251fe-f4cb-56ca-bbde-10f406d03463",
+        "06eef808-c911-5f63-9934-750fa7b60e11",
+        "798c4b8b-3c1b-57a6-acc3-701cf3e96568",
+        "05e8d935-c71e-5bd8-bc32-82501e9d9638",
+        "e82af21d-8ada-54b2-ba60-c2ba7dd2c46b"
+      ],
+      "observation_hashes": [
+        "540646250d68bda0af1dc19078f495850284f616c668396cb3c7ff2ab4467b1e",
+        "00a8ef3d3f80dac7381afc61111de3216bc723e95559445889cb25900165d45a",
+        "3fdba3a0de2199e98107c75717fdf0f4b913851b65f20c3be4dfcb9b45c12012",
+        "93ec6f5b8e6f182acd85b521dca00d0f8c9f8d24ae03ddfec664835a38b576bc",
+        "e517fec18cc27e41e93bd262a6bee1407d7f3e97b0a0e655fda3217216174a5d",
+        "4df9c949880911ea3021d9cf0a944d29697869fa12ced2aedf3bdbca490481cc",
+        "1156988917945ddcc095670a6c6d7e32fd34b6d11cddb267b6a65cc2415330bb",
+        "5a2f42f7b627a4dc5a464188474cc43fd7bb38ee177e418e9b9cf627c69c1989",
+        "05cc06421b6ecbb082f4471cd41a5bcdac3503c4f2652a6a7c8dba3ba888be76",
+        "4ff4bcd91b8fb3c788ea68a25787695ecaaf1243b2891e0d38308a2f6c43f769"
+      ],
+      "coverage_ids": [
+        "6419c1b8-0b95-5fa2-ae72-fcfc4555cc73",
+        "398e35f8-f856-5069-8644-994a5bb32bf9"
+      ],
+      "coverage_hashes": [
+        "20e4166a020302057d33952b87770e77ae55d661cff7f97562a5be2e454e6d4c",
+        "c9a5dc9a8b68be23509516fb79775a5d882452f415508ff57d40ba9d8b8ecbf3"
+      ],
+      "registry_counts": {
+        "source_resources": 2,
+        "source_snapshots": 2,
+        "resource_observation_artifacts": 10,
+        "provider_resource_coverage": 1,
+        "canonical_resource_coverage": 1,
+        "canonical_resource_resolutions": 0,
+        "product_identity_admissions": 0,
+        "resolution_decisions": 0
+      }
+    },
+    "second": {
+      "observations": [
+        "8c5f2a37-08c5-53ea-90e3-84539b7fd6e8",
+        "fb1550a2-5940-58d5-9846-7d80f1b5384a",
+        "1f041f1d-2379-5aca-b59e-99740e561bfd",
+        "1788cca9-5458-5f76-87ca-8cfb22a517a8",
+        "8011a8d0-3e1e-5bd0-ad3b-44413cb2b7b3",
+        "30d251fe-f4cb-56ca-bbde-10f406d03463",
+        "06eef808-c911-5f63-9934-750fa7b60e11",
+        "798c4b8b-3c1b-57a6-acc3-701cf3e96568",
+        "05e8d935-c71e-5bd8-bc32-82501e9d9638",
+        "e82af21d-8ada-54b2-ba60-c2ba7dd2c46b"
+      ],
+      "observation_hashes": [
+        "540646250d68bda0af1dc19078f495850284f616c668396cb3c7ff2ab4467b1e",
+        "00a8ef3d3f80dac7381afc61111de3216bc723e95559445889cb25900165d45a",
+        "3fdba3a0de2199e98107c75717fdf0f4b913851b65f20c3be4dfcb9b45c12012",
+        "93ec6f5b8e6f182acd85b521dca00d0f8c9f8d24ae03ddfec664835a38b576bc",
+        "e517fec18cc27e41e93bd262a6bee1407d7f3e97b0a0e655fda3217216174a5d",
+        "4df9c949880911ea3021d9cf0a944d29697869fa12ced2aedf3bdbca490481cc",
+        "1156988917945ddcc095670a6c6d7e32fd34b6d11cddb267b6a65cc2415330bb",
+        "5a2f42f7b627a4dc5a464188474cc43fd7bb38ee177e418e9b9cf627c69c1989",
+        "05cc06421b6ecbb082f4471cd41a5bcdac3503c4f2652a6a7c8dba3ba888be76",
+        "4ff4bcd91b8fb3c788ea68a25787695ecaaf1243b2891e0d38308a2f6c43f769"
+      ],
+      "coverage_ids": [
+        "6419c1b8-0b95-5fa2-ae72-fcfc4555cc73",
+        "398e35f8-f856-5069-8644-994a5bb32bf9"
+      ],
+      "coverage_hashes": [
+        "20e4166a020302057d33952b87770e77ae55d661cff7f97562a5be2e454e6d4c",
+        "c9a5dc9a8b68be23509516fb79775a5d882452f415508ff57d40ba9d8b8ecbf3"
+      ],
+      "registry_counts": {
+        "source_resources": 2,
+        "source_snapshots": 2,
+        "resource_observation_artifacts": 10,
+        "provider_resource_coverage": 1,
+        "canonical_resource_coverage": 1,
+        "canonical_resource_resolutions": 0,
+        "product_identity_admissions": 0,
+        "resolution_decisions": 0
+      }
+    },
+    "identical_ids_hashes_counts": true,
+    "identical_artifact_files": true,
+    "first_input_audit": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/unblocking-r02/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+      "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+    },
+    "second_input_audit": {
+      "path": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/unblocking-r02/accepted-history/8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8.json",
+      "sha256": "8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8"
+    },
+    "initial_measurement_correction": "The first isolated publication converged, but its measurement asserted DATA_COLLECTION_REQUIRED when the existing owner correctly returned RESEARCH_REQUIRED. That assertion was corrected without changing any production gate. Its baseline report had not been retained; final before/after counts were captured on a fresh guarded target. The initial task-created database is retained separately as football_v4_unblocking_r02_20261102.",
+    "coverage_registered_known_at": "2026-11-02T05:14:46.037103+00:00",
+    "diagnostic_knowledge_cutoff": "2026-11-02T05:14:46.145055+00:00",
+    "knowledge_backdated": false
+  },
+  "market_readiness": {
+    "experimental_bound_target": {
+      "before": {
+        "market": {
+          "market_id": "RESULT_1X2",
+          "group": "GOALS",
+          "period": "REGULATION_90",
+          "entity": "MATCH",
+          "quantity": "Compare home and away regulation goals.",
+          "requirements": [
+            "regulation_score"
+          ],
+          "parameters": [
+            "selection"
+          ],
+          "implementation": "football.forecasting.products.score_products",
+          "model_product": "SCORE_DISTRIBUTION",
+          "semantic_contract": {
+            "version": "result_1x2-v1",
+            "canonical_meaning": "Compare home and away regulation goals.",
+            "period": "REGULATION_90",
+            "extra_time": "EXCLUDED",
+            "shootout": "EXCLUDED",
+            "penalties": "Scored in-period penalties count as goals; shootout attempts do not.",
+            "own_goals": "Credit beneficiary team; exclude from named-player scorer targets.",
+            "player_participation": "NOT_APPLICABLE",
+            "card_counting": "NOT_APPLICABLE",
+            "incomplete_or_void": "UNSCORABLE without complete outcomes and an explicit verified target rule; missing is never zero.",
+            "corrections": "Append a revision with its real knowledge time; preserve prior outcomes and forecasts.",
+            "source_compatibility": "UNKNOWN until source/target/period/rule versions are independently qualified.",
+            "sportsbook_equivalence": "UNVERIFIED; no automatic SportyBet or Opta equivalence."
+          },
+          "data_requirements": {
+            "regulation_score": {
+              "resources": [
+                "results",
+                "summary",
+                "scoreboard",
+                "fixtures",
+                "league"
+              ],
+              "fields": [
+                "home_goals",
+                "away_goals",
+                "score_basis"
+              ],
+              "meaning": "Official team goals in regulation including added time; exclude extra time and shootouts.",
+              "coverage_unit": "canonical_fixture_id"
+            }
+          }
+        },
+        "definition_sha256": "0702b1aa4e416974fc3cc0e338f92e8341f3615483a5de05e1216f48caf1f498",
+        "target_sha256": "fe11c52efcb96d89582e0c7301dfde7740392f5f46cacdf70f75b08312b875a1",
+        "target_parameters": {
+          "selection": "HOME"
+        },
+        "scope": {
+          "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be"
+        },
+        "knowledge_cutoff": "2026-11-02T05:14:46.145055+00:00",
+        "diagnostic_status": "DATA_COLLECTION_REQUIRED",
+        "diagnostic_blocker": "TARGET_INPUTS_UNQUALIFIED",
+        "next_action": "Publish exact field/period/target coverage through existing eligibility owners.",
+        "qualified_historical_coverage": {
+          "regulation_score": null
+        },
+        "provider_sources": [],
+        "source_compatibility": "UNKNOWN",
+        "qualified_semantic_version": null,
+        "semantic_evidence_refs": [],
+        "transformation_evidence_ref": null,
+        "history_policy": {
+          "sufficient": null,
+          "existing_evidence_ref": null
+        },
+        "model": null,
+        "implementation": "football.forecasting.products.score_products",
+        "evaluation": {
+          "status": "UNASSESSED",
+          "evidence_ref": null
+        },
+        "publication": {
+          "current_status": "UNKNOWN",
+          "existing_evidence_ref": null,
+          "eligible_under_declared_evidence": false,
+          "grants_new_publication": false
+        },
+        "authoritative": false
+      },
+      "after": {
+        "market": {
+          "market_id": "RESULT_1X2",
+          "group": "GOALS",
+          "period": "REGULATION_90",
+          "entity": "MATCH",
+          "quantity": "Compare home and away regulation goals.",
+          "requirements": [
+            "regulation_score"
+          ],
+          "parameters": [
+            "selection"
+          ],
+          "implementation": "football.forecasting.products.score_products",
+          "model_product": "SCORE_DISTRIBUTION",
+          "semantic_contract": {
+            "version": "result_1x2-v1",
+            "canonical_meaning": "Compare home and away regulation goals.",
+            "period": "REGULATION_90",
+            "extra_time": "EXCLUDED",
+            "shootout": "EXCLUDED",
+            "penalties": "Scored in-period penalties count as goals; shootout attempts do not.",
+            "own_goals": "Credit beneficiary team; exclude from named-player scorer targets.",
+            "player_participation": "NOT_APPLICABLE",
+            "card_counting": "NOT_APPLICABLE",
+            "incomplete_or_void": "UNSCORABLE without complete outcomes and an explicit verified target rule; missing is never zero.",
+            "corrections": "Append a revision with its real knowledge time; preserve prior outcomes and forecasts.",
+            "source_compatibility": "UNKNOWN until source/target/period/rule versions are independently qualified.",
+            "sportsbook_equivalence": "UNVERIFIED; no automatic SportyBet or Opta equivalence."
+          },
+          "data_requirements": {
+            "regulation_score": {
+              "resources": [
+                "results",
+                "summary",
+                "scoreboard",
+                "fixtures",
+                "league"
+              ],
+              "fields": [
+                "home_goals",
+                "away_goals",
+                "score_basis"
+              ],
+              "meaning": "Official team goals in regulation including added time; exclude extra time and shootouts.",
+              "coverage_unit": "canonical_fixture_id"
+            }
+          }
+        },
+        "definition_sha256": "0702b1aa4e416974fc3cc0e338f92e8341f3615483a5de05e1216f48caf1f498",
+        "target_sha256": "fe11c52efcb96d89582e0c7301dfde7740392f5f46cacdf70f75b08312b875a1",
+        "target_parameters": {
+          "selection": "HOME"
+        },
+        "scope": {
+          "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+          "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be"
+        },
+        "knowledge_cutoff": "2026-11-02T05:14:46.145055+00:00",
+        "diagnostic_status": "RESEARCH_REQUIRED",
+        "diagnostic_blocker": "MODEL_OR_EVALUATION_UNQUALIFIED",
+        "next_action": "Use the existing research/evaluation/promotion workflow; do not enable publication.",
+        "qualified_historical_coverage": {
+          "regulation_score": {
+            "contract": "CanonicalCoverage",
+            "contract_version": "1",
+            "scope": {
+              "competition_id": "cb185f33-3900-564d-83e1-578649b04224",
+              "season_id": "19d3ab5e-c4e6-5435-80ad-95a0bb6762be",
+              "resource_type": "market:RESULT_1X2:fe11c52efcb96d89582e0c7301dfde7740392f5f46cacdf70f75b08312b875a1:input:regulation_score"
+            },
+            "knowledge_cutoff": "2026-11-02T05:00:10.714222+00:00",
+            "evidence_refs": [
+              "sha256:8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8",
+              "sha256:2182de5e82554c8ab5b6ac2d18835672dd6ecb3cc4e59d17f9b7cfffbecb1b8d"
+            ],
+            "expected_units": [
+              "1b6c198b-9e03-55a0-b27a-35d92bbd1853",
+              "226da507-92ca-58d9-930a-4dbdc73318d1",
+              "27fe6f62-230d-5685-938e-827eba88b4d6",
+              "51a3861f-3f75-57ce-a600-07b74e066166",
+              "a4e4644e-b8e5-5505-9f32-a65ab2d2f067"
+            ],
+            "qualified_support": [
+              [
+                "1b6c198b-9e03-55a0-b27a-35d92bbd1853",
+                "api_football"
+              ],
+              [
+                "226da507-92ca-58d9-930a-4dbdc73318d1",
+                "api_football"
+              ],
+              [
+                "27fe6f62-230d-5685-938e-827eba88b4d6",
+                "api_football"
+              ],
+              [
+                "51a3861f-3f75-57ce-a600-07b74e066166",
+                "api_football"
+              ],
+              [
+                "a4e4644e-b8e5-5505-9f32-a65ab2d2f067",
+                "api_football"
+              ]
+            ],
+            "metrics": {
+              "expected_canonical_units": 5,
+              "qualified_canonical_units": 5,
+              "coverage_ratio": 1.0,
+              "status": "COMPLETE",
+              "supporting_providers": [
+                "api_football"
+              ]
+            }
+          }
+        },
+        "provider_sources": [],
+        "source_compatibility": "RESEARCH_COMPATIBLE_ONLY",
+        "qualified_semantic_version": "result_1x2-v1",
+        "semantic_evidence_refs": [
+          "sha256:8d1eaa95b4f62738cdeac6ba6fb81f27117a812a592a6b110b8fd859f4b014e8",
+          "sha256:2182de5e82554c8ab5b6ac2d18835672dd6ecb3cc4e59d17f9b7cfffbecb1b8d"
+        ],
+        "transformation_evidence_ref": null,
+        "history_policy": {
+          "sufficient": null,
+          "existing_evidence_ref": null
+        },
+        "model": null,
+        "implementation": "football.forecasting.products.score_products",
+        "evaluation": {
+          "status": "UNASSESSED",
+          "evidence_ref": null
+        },
+        "publication": {
+          "current_status": "UNKNOWN",
+          "existing_evidence_ref": null,
+          "eligible_under_declared_evidence": false,
+          "grants_new_publication": false
+        },
+        "authoritative": false
+      }
+    },
+    "history_sufficiency": "UNASSESSED; no policy or threshold invented",
+    "bookmaker_equivalence": false,
+    "operating_global_status_counts": {
+      "DATA_COLLECTION_REQUIRED": 53,
+      "INSUFFICIENT_PLAYER_DATA": 14
+    },
+    "issue_5_research_authorized": false
+  },
+  "preservation": {
+    "baseline_receipt": {
+      "path": ".local/issue02-unblocking/preservation/baseline-receipt.json",
+      "sha256": "0dbbe1d953aba5dd9b1abe508aa29f0f10788cc46c98021dc2c86fdd25fb1e77"
+    },
+    "final_receipt": {
+      "path": ".local/issue02-unblocking/preservation/final-receipt.json",
+      "sha256": "e30c64695d085e78746899fa6b4989786cfcde59f9ab7050e9cf096f6c411c11"
+    },
+    "baseline_observations_bytes_verified": 12310,
+    "baseline_capability_bytes_verified": 26,
+    "comparisons": {
+      "observations": true,
+      "capabilities": true,
+      "champion": true,
+      "protected_relations": {
+        "artifact_retirement_events": {
+          "retained": true,
+          "baseline_rows": 17,
+          "current_rows": 17
+        },
+        "canonical_resource_coverage": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "canonical_resource_resolutions": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "model_artifacts": {
+          "retained": true,
+          "baseline_rows": 5230,
+          "current_rows": 5230
+        },
+        "model_promotion_events": {
+          "retained": true,
+          "baseline_rows": 4,
+          "current_rows": 4
+        },
+        "post_match_evaluations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "product_forecasts": {
+          "retained": true,
+          "baseline_rows": 14054,
+          "current_rows": 14054
+        },
+        "product_identity_admissions": {
+          "retained": true,
+          "baseline_rows": 22515,
+          "current_rows": 22515
+        },
+        "product_provider_mapping_decisions": {
+          "retained": true,
+          "baseline_rows": 2471229,
+          "current_rows": 2473291
+        },
+        "provider_resource_authority": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "runtime_model_registrations": {
+          "retained": true,
+          "baseline_rows": 0,
+          "current_rows": 0
+        },
+        "source_resources": {
+          "retained": true,
+          "baseline_rows": 66808,
+          "current_rows": 66833
+        },
+        "source_snapshots": {
+          "retained": true,
+          "baseline_rows": 65000,
+          "current_rows": 65025
+        }
+      }
+    },
+    "champion": {
+      "registration_sha256": "4d7f5e58320d009e690e9a34339a417df8c16ae00000cba58b65b673f96f5637",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "file_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "reload_verified": true
+    },
+    "controls": {
+      "fixture_route": "LEGACY",
+      "route_function_installed": false,
+      "route_selection_contract": "go/api/internal/app/migration_fixture_route.go: absent route function means LEGACY",
+      "stage_controls_installed": false,
+      "operating_experimental_marker": false,
+      "read_only": "on",
+      "market_status_counts": {
+        "DATA_COLLECTION_REQUIRED": 53,
+        "INSUFFICIENT_PLAYER_DATA": 14
+      },
+      "market_families": 67,
+      "market_report": {
+        "path": "/Users/radar/Desktop/football-simutation/.local/issue02-unblocking/controls/markets-186dde3106a9857e7f1baaca2cc7e0bc8244f5765d1054b5b2b3830aca7e173e.json",
+        "sha256": "186dde3106a9857e7f1baaca2cc7e0bc8244f5765d1054b5b2b3830aca7e173e"
+      },
+      "operating_writes": 0,
+      "model_promotions": 0,
+      "cutover": false,
+      "legacy_retirement": false
+    },
+    "operating_writes": 0,
+    "operating_migrations": 0,
+    "concurrent_operating_additions": "Additional source registrations and mapping decisions were observed while every baseline row hash remained present; this task used read-only operating connections.",
+    "baseline_recorded_at": "2026-11-02T04:48:05.847529+00:00",
+    "verified_snapshot_recorded_at": "2026-11-02T05:15:12.605169+00:00",
+    "verified_snapshot_completed_at": "2026-11-02T05:16:46.002185+00:00"
+  },
+  "verification": {
+    "aggregate": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "source_git_sha": "c0184125a9c9d2c579e23e602e16ee438577c8e3",
+      "started_at": "2026-11-02T05:29:12.418787+00:00",
+      "exit_code": 0,
+      "completed_at": "2026-11-02T05:43:01.131367+00:00",
+      "elapsed_seconds": 828.7,
+      "log": ".local/issue02-unblocking/make-check-integration-final.log"
+    },
+    "python_unit_tests": 2092,
+    "python_dependency_warnings": 7,
+    "strict_mypy_source_files": 497,
+    "rust_tests": 16,
+    "web_tests": 126,
+    "storage_integration_tests": 865,
+    "storage_collection_receipt": {
+      "path": ".local/issue02-unblocking/storage-collection-receipt.json",
+      "sha256": "7189a3d7e2f584949b5e5ba85a9ddeaaee8830907313db024cae0c5e78d554f6"
+    },
+    "project_status_check": {
+      "command": "make project-status-check",
+      "exit_code": 0,
+      "log": ".local/issue02-unblocking/final-status-check.log",
+      "sha256": "82ef64351fa81ebbf398222166fcc94b43de0fef95059d6dcef36156e293d08a"
+    },
+    "diff_check": {
+      "command": "git diff --check; git diff --cached --check",
+      "exit_code": 0
+    },
+    "focused_h_integration_tests": 51,
+    "native_identity_tests": 23,
+    "accepted_history_boundary_tests": 15,
+    "l_focused_tests": 25,
+    "initial_aggregate_failure": {
+      "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+      "source_git_sha": "2d9a8a355d142a33f860ab2d3380e5e61e429118",
+      "started_at": "2026-11-02T05:11:50.922676+00:00",
+      "exit_code": 2,
+      "completed_at": "2026-11-02T05:26:02.990862+00:00",
+      "elapsed_seconds": 852.07,
+      "log": ".local/issue02-unblocking/make-check-integration-initial-failure.log",
+      "original_log_path": ".local/issue02-unblocking/make-check-integration-final.log",
+      "log_sha256": "1c4224a1619823a30d4c0ad427386189435a2e538aa70665acdb9f8262349e25"
+    },
+    "reader_error_contract_correction": {
+      "commit": "c0184125a9c9d2c579e23e602e16ee438577c8e3",
+      "reason": "Three mixed-source integration diagnostics raised uncaught SourceIntegrityError after the reader moved. Restore the prior retained-reader ValueError contract; preserve fail-closed missing/oversized source behavior.",
+      "new_regression_tests": 4,
+      "focused_integration_command": "sh .local/reports/v4/isolation-r01/test_database.sh 'tests/integration/test_resolution_files.py::test_native_and_dataset_recovery_match_registered_storage_layouts[raw]' tests/integration/test_product_identity_admission.py::test_operator_revocation_survives_automatic_readmission tests/integration/test_product_identity_admission.py::test_legacy_registration_remains_unverified_and_unchanged",
+      "focused_integration_exit_code": 0,
+      "focused_integration_passed": 3
+    },
+    "tzdata_runtime": {
+      "version": "2026.3",
+      "command": "uv run --locked --no-sync python -c (assert installed tzdata version is 2026.3)",
+      "exit_code": 0
+    }
+  },
+  "evidence_refs": [
+    "docs/evidence/v4-issue-02-root-cause-research.json",
+    "docs/evidence/v4-issue-02-source-verification.json",
+    "docs/evidence/v4-issue-02-crosswalk-proposals.json",
+    "docs/evidence/v4-issue-02-canonical-pilot.json",
+    "docs/evidence/v4-issue-02-qualified-targets.json",
+    "docs/evidence/v4-issue-02-player-exposure.json"
+  ],
+  "owner_approvals_requested": 0,
+  "owner_approval_reason": "No rejected identity proposal was submitted for approval. A qualified source-to-target relationship is required before consequential review in Resolution Center.",
+  "remaining_gates": [
+    "21 original StatsBomb mappings need independently verified target relationships and applicable kickoff evidence",
+    "ESPN original pilot lacks admitted canonical competition/team/fixture bindings",
+    "Canonical player identities, fixture participation, exposure and target-specific settlement/void proof remain absent",
+    "Broader target families and first-half normalized target qualification remain incomplete",
+    "History sufficiency, frozen scientific research/evaluation, sportsbook equivalence and publication remain unapproved"
+  ],
+  "next_action": "Owner handoff: retain the five-fixture research-only pilot. Obtain exact independently verified source/canonical relationships before submitting valid Resolution Center proposals; any later Issue 5 scientific study requires separate authorization. No further phase, cutover or retirement starts."
+}

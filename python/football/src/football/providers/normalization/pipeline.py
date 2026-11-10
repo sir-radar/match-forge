@@ -3,20 +3,30 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from collections.abc import Callable
-from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from football.providers.native.reader import _validate_json
+from football.providers.native.reader import native_json
 from football.providers.normalization import (
     api_football,
+    api_football_rich,
+    clubelo,
+    espn,
+    fbref,
     files,
+    flashscore,
+    flashscore_events,
+    flashscore_lineups,
+    flashscore_statistics,
+    flashscore_summary,
     football_data_org,
     fotmob,
     pitchapi,
+    sofascore,
     statsbomb,
+    understat,
+    whoscored,
 )
 from football.providers.normalization.common import (
     NormalizationContext,
@@ -25,6 +35,27 @@ from football.providers.normalization.common import (
 )
 
 NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None]] = {
+    ("clubelo", "ratings_archive"): clubelo.ratings_archive,
+    ("fbref", "archived_match_html"): fbref.archived_match_html,
+    ("sofascore", "retained_event"): sofascore.event,
+    ("sofascore", "retained_statistics"): sofascore.statistics,
+    ("sofascore", "retained_lineups"): sofascore.lineups,
+    ("sofascore", "retained_incidents"): sofascore.incidents,
+    ("soccerway", "league"): flashscore.league,
+    ("soccerway", "statistics"): flashscore_statistics.statistics,
+    ("soccerway", "events"): flashscore_events.events,
+    ("soccerway", "lineups"): flashscore_lineups.lineups,
+    ("soccerway", "summary"): flashscore_summary.summary,
+    ("flashscore", "league"): flashscore.league,
+    ("flashscore", "statistics"): flashscore_statistics.statistics,
+    ("flashscore", "events"): flashscore_events.events,
+    ("flashscore", "lineups"): flashscore_lineups.lineups,
+    ("flashscore", "summary"): flashscore_summary.summary,
+    ("whoscored", "fixtures"): whoscored.fixtures,
+    ("espn", "scoreboard"): espn.scoreboard,
+    ("espn", "summary"): espn.summary,
+    ("understat", "results"): understat.results,
+    ("understat", "shots"): understat.shots,
     ("openfootball", "fixtures"): files.openfootball,
     ("openfootball", "results"): files.openfootball,
     ("football_data_uk", "fixtures"): files.football_data_uk,
@@ -41,6 +72,10 @@ NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None
     ("api_football", "competitions"): api_football.competitions,
     ("api_football", "lineups"): api_football.lineups,
     ("api_football", "availability"): api_football.availability,
+    ("api_football", "statistics"): api_football_rich.statistics,
+    ("api_football", "events"): api_football_rich.events,
+    ("api_football", "player_statistics"): api_football_rich.player_statistics,
+    ("api_football", "standings"): api_football.standings,
     ("football_data_org", "fixtures"): football_data_org.fixtures,
     ("football_data_org", "results"): football_data_org.fixtures,
     ("football_data_org", "standings"): football_data_org.standings,
@@ -61,19 +96,6 @@ NORMALIZERS: dict[tuple[str, str], Callable[[ObservationCollector, object], None
 }
 
 
-def _pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("duplicate source JSON key")
-        result[key] = value
-    return result
-
-
-def _constant(value: str) -> None:
-    raise ValueError(f"nonfinite source JSON number: {value}")
-
-
 def normalize_resource(
     context: NormalizationContext, resource: str, raw: bytes
 ) -> NormalizationResult:
@@ -89,12 +111,25 @@ def normalize_resource(
             evidence={"provider": context.provenance.provider, "resource": resource},
         )
         return output.result()
-    if context.provenance.provider == "football_data_uk":
+    payload: object
+    if context.provenance.provider in {"football_data_uk", "clubelo", "fbref"} or (
+        context.provenance.provider in {"flashscore", "soccerway"}
+        and resource in {"statistics", "events", "lineups", "summary"}
+    ):
         payload = raw
     else:
-        payload = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
-        _validate_json(payload, "source")
+        decoders = {
+            "understat": understat.json_bytes,
+            "whoscored": whoscored.json_bytes,
+            "flashscore": flashscore.json_bytes,
+            "soccerway": flashscore.json_bytes,
+        }
+        decoder = decoders.get(context.provenance.provider)
+        decoded = decoder(raw) if decoder is not None else raw
+        payload = native_json(decoded)
     try:
+        if context.provenance.provider in {"flashscore", "soccerway"}:
+            flashscore.validate_resource_scope(context, resource)
         _validate_scope(context, payload)
         normalizer(output, payload)
     except ValueError as error:
@@ -112,6 +147,14 @@ def _validate_scope(context: NormalizationContext, payload: object) -> None:
     elif context.provenance.provider == "fotmob":
         general = payload.get("general")
         native_id = general.get("matchId") if isinstance(general, dict) else None
+    elif context.provenance.provider == "api_football":
+        parameters = payload.get("parameters")
+        native_id = parameters.get("fixture") if isinstance(parameters, dict) else None
+    elif context.provenance.provider == "sofascore":
+        native_id = sofascore.retained_fixture(payload)
+    elif context.provenance.provider == "espn":
+        header = payload.get("header")
+        native_id = header.get("id") if isinstance(header, dict) else None
     else:
         native_id = None
     if native_id is not None and str(native_id) != context.fixture_native_id:
@@ -129,6 +172,10 @@ def _request_fixture(context: NormalizationContext) -> str | None:
         "statsbomb_open_data": r"^(?:data/)?(?:events|lineups)/(\d+)\.json$",
         "api_football": r"^fixture-(\d+)-(?:lineups|injuries)$",
         "pitchapi": r"^match-(m_[A-Za-z0-9]+)-(?:shots|lineups|stats|players|events)$",
+        "understat": r"^getMatchData/([1-9][0-9]*)$",
+        "fbref": r"^archive/[a-f0-9]{64}/matches/([a-f0-9]{8})\.html$",
+        "flashscore": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
+        "soccerway": r"^df_(?:st|sur|sui|li)_1_([A-Za-z0-9]+)$",
     }
     match = re.fullmatch(patterns.get(context.provenance.provider, r"(?!)"), key)
     if match is not None:
@@ -136,6 +183,9 @@ def _request_fixture(context: NormalizationContext) -> str | None:
     request = urlsplit(key)
     if context.provenance.provider == "api_football":
         values = parse_qs(request.query).get("fixture", [])
+        return values[0] if len(values) == 1 else None
+    if context.provenance.provider == "espn" and request.path.endswith("/summary"):
+        values = parse_qs(request.query).get("event", [])
         return values[0] if len(values) == 1 else None
     if context.provenance.provider == "pitchapi":
         match = re.fullmatch(

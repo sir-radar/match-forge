@@ -297,7 +297,7 @@ def _normalize_match(
         home_team_name=_team_name(home),
         away_team_name=_team_name(away),
         kickoff_at=kickoff.astimezone(UTC),
-        status=_match_status(status),
+        status=_match_status(status, provider_status),
         provider_status=provider_status,
         home_score=home_score,
         away_score=away_score,
@@ -347,12 +347,11 @@ def _result_score_basis(provider_status: str | None, status: Mapping[str, Any]) 
     return "UNKNOWN"
 
 
-def _match_status(status: Mapping[str, Any]) -> str:
+def _match_status(status: Mapping[str, Any], provider_status: str | None) -> str:
     for key in ("started", "finished", "cancelled"):
         if not isinstance(status.get(key), bool):
             raise FotmobPayloadError(f"FotMob match status missing boolean {key}")
-    reason = status.get("reason")
-    label = str(reason.get("short", "")).upper() if isinstance(reason, Mapping) else ""
+    label = (provider_status or "").upper()
     mapped = {
         "HT": "HALF_TIME",
         "HALF TIME": "HALF_TIME",

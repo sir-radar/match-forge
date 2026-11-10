@@ -1,0 +1,113 @@
+{
+  "phase": "22",
+  "starting_sha": "e5ca743ebc636e575ea6d89c7578c3d107e25445",
+  "recorded_at": "2026-11-01T10:37:27.299720Z",
+  "status": "PASS_WITH_WARNINGS",
+  "scope": "Read-only scoped capability API and existing Data Sync Admin integration; preserve published forecast contracts, Resolution Center and authentication.",
+  "implemented": [
+    "GET /v1/admin/market-capabilities reuses the Python capability/coverage reader and current configured model registration.",
+    "Canonical competition/season pair and nonfuture aware cutoff validated; at most microsecond precision matches Python/PostgreSQL.",
+    "Bounded command output, request cancellation and process-group cleanup; no-store responses and strict response scope binding.",
+    "MarketCapabilitySummary is a compact explicit diagnostic contract; no provider-native scope joins, raw database name or probability payload.",
+    "Data Sync Admin uses existing resource states, TableScroll, native forms/disclosures and a local CSS module. Groups stay collapsed until requested.",
+    "Current model metadata, semantic version, data gaps, evaluation/publication, native candidates and settlement limitations stay separate.",
+    "Existing expanded fixture probabilities and unsupported-market panel remain; fetch freshness wording corrected."
+  ],
+  "operating_summary": {
+    "path": ".local/reports/v4/phase-22/operating-summary.json",
+    "sha256": "17ba61b2da1e48749c2c225acc71d102fd44a7ed2d2ff2fc3bbccad154dff56d",
+    "bytes": 45335,
+    "read_only": "on",
+    "knowledge_cutoff": "2026-11-01T10:34:03.404465+00:00",
+    "markets": 67,
+    "statuses": {
+      "DATA_COLLECTION_REQUIRED": 53,
+      "INSUFFICIENT_PLAYER_DATA": 14
+    },
+    "provider_candidates": 20,
+    "new_publication_grants": 0
+  },
+  "verification": {
+    "python_summary_unit": 1,
+    "python_disposable_integration": 2,
+    "go_disposable_top_level_tests": 5,
+    "go_suite": "PASS",
+    "web_final_contract_component_tests": 16,
+    "web_other_focused_tests": 37,
+    "browser_distinct_passes": 7,
+    "browser_existing_conditional_skips": 1,
+    "browser_latest_layout_rerun_passes": 2,
+    "new_browser_journeys": "Four passes: deterministic diagnostic/retry and real Go/Python reader, each desktop and mobile.",
+    "openapi": "Full YAML parsed with system Ruby; jsonschema validated real disposable response and deterministic fixture. Final operating report also validated before commit.",
+    "typescript_ruff_mypy_go_vet_go_lint_architecture": "PASS",
+    "eslint": "PASS with one pre-existing unused _input warning in forecast-history.test.tsx; new files have no warnings.",
+    "governance_status_diff": "PASS: 24 governance tests, ProjectStatusV2 validation and git diff --check",
+    "visual": "Current screenshots inspected; computed 12px spacing and 36px disclosure targets asserted. No approved pixel baseline or exact design comparison.",
+    "accessibility": "Axe zero violations on tested Admin journeys; keyboard disclosure/retry/scroll, 320px reflow, reduced motion and forced colors checked. Physical screen-reader and browser zoom interaction not run; no WCAG conformance claim.",
+    "initial_failures": "Test fixture typing, timestamp precision, duplicate text queries, missing ResourceScope fields and a cached global stylesheet were corrected. The existing dev server was preserved; local component CSS verified in current browser.",
+    "receipts": {
+      "database-tests.log": {
+        "path": ".local/reports/v4/phase-22/database-tests.log",
+        "sha256": "5e7f73eeecfd9dc13beaab810d69408d04e022ce23eb5bb327817358c171ac92",
+        "bytes": 738
+      },
+      "go-tests.log": {
+        "path": ".local/reports/v4/phase-22/go-tests.log",
+        "sha256": "d8a5217d5fcc3da51d041483b9a8ca7d465abbd40daa7d8207ba48c6c98c915e",
+        "bytes": 110
+      },
+      "web-final-tests.log": {
+        "path": ".local/reports/v4/phase-22/web-final-tests.log",
+        "sha256": "e235fcc1c38520947bcb8fad3ec171e4319558a9ab48f66ca32efa7ebdbd9fea",
+        "bytes": 235
+      },
+      "browser-tests.log": {
+        "path": ".local/reports/v4/phase-22/browser-tests.log",
+        "sha256": "04bb7c1d9f3918010c1e00377f23f3a27407142005ea74ab087370b73262bd95",
+        "bytes": 2421
+      },
+      "browser-final-layout.log": {
+        "path": ".local/reports/v4/phase-22/browser-final-layout.log",
+        "sha256": "c883f8686a576129a23160d9e914ab8c48b213ec936005dda2e32e29f3bdd740",
+        "bytes": 996
+      },
+      "browser-environment.json": {
+        "path": ".local/reports/v4/phase-22/browser-environment.json",
+        "sha256": "e26f4f833dfed685ec3eba77f450af6862b3efc65f8a689ec76218fd8e721e00",
+        "bytes": 1788
+      },
+      "operating-summary.json": {
+        "path": ".local/reports/v4/phase-22/operating-summary.json",
+        "sha256": "17ba61b2da1e48749c2c225acc71d102fd44a7ed2d2ff2fc3bbccad154dff56d",
+        "bytes": 45335
+      },
+      "admin-market-readiness--diagnostic--1440x1000--dark--desktop.png": {
+        "path": ".local/reports/v4/phase-22/admin-market-readiness--diagnostic--1440x1000--dark--desktop.png",
+        "sha256": "5321279f6e33e91f146897af37ed52d94007ef2545eed5f50036e9c4a14fd962",
+        "bytes": 147817
+      },
+      "admin-market-readiness--diagnostic--390x664--dark--mobile.png": {
+        "path": ".local/reports/v4/phase-22/admin-market-readiness--diagnostic--390x664--dark--mobile.png",
+        "sha256": "7493c69059279efa6b83b338000084a4e7d83d962c1c312ec517bf1a682a5758",
+        "bytes": 228144
+      }
+    }
+  },
+  "preservation": {
+    "operating_application_writes": 0,
+    "provider_requests": 0,
+    "new_forecasts": 0,
+    "authoritative_fits_or_evaluations": 0,
+    "promotions": 0,
+    "auth_policy_changes": false,
+    "new_environment_variables": 0,
+    "production_cutover": false,
+    "new_admin_applications": 0
+  },
+  "remaining_limitations": [
+    "Unqualified period/count/player/dependence models and new-market settlement remain blocked by preceding phases.",
+    "Current configured model metadata does not establish historical or target qualification, nor activation of the V2 runtime registry.",
+    "The diagnostic does not withdraw existing published forecasts; publication UNKNOWN stays distinct from NOT_PUBLISHED."
+  ],
+  "next_phase": "23"
+}

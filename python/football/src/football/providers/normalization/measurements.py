@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from dataclasses import fields
 from typing import Any
 
+from football.contracts.observations import Observation
 from football.contracts.observations_v2 import (
     EntityReferenceV2,
     ExpectedGoalsObservationV2,
     ShotObservationV2,
     TeamStatisticObservationV2,
 )
+from football.contracts.observations_v3 import ShotObservationV3, TeamStatisticObservationV3
 from football.providers.normalization.common import (
     ObservationCollector,
     array,
@@ -39,6 +42,17 @@ TEAM_METRICS = {
     "keepersaves": "saves",
     "saves": "saves",
     "expectedgoals": "expected_goals",
+    "shotsofftarget": "shots_off_target",
+    "blockedshots": "blocked_shots",
+    "offsides": "offsides",
+    "passes": "passes",
+    "accuratepasses": "accurate_passes",
+    "accuratecrosses": "accurate_crosses",
+    "matchstatsheaderstackles": "tackles",
+    "interceptions": "interceptions",
+    "clearances": "clearances",
+    "shotswoodwork": "woodwork",
+    "expectedgoalsontarget": "expected_goals_on_target",
 }
 PLAYER_METRICS = {
     "minutesplayed": "minutes_played",
@@ -47,6 +61,14 @@ PLAYER_METRICS = {
     "assists": "assists",
     "yellowcards": "yellow_cards",
     "redcards": "red_cards",
+    "shotsontarget": "shots_on_target",
+    "accuratepasses": "accurate_passes",
+    "matchstatsheaderstackles": "tackles",
+    "interceptions": "interceptions",
+    "fouls": "fouls",
+    "saves": "saves",
+    "expectedgoals": "expected_goals",
+    "expectedassists": "expected_assists",
 }
 
 
@@ -73,12 +95,28 @@ def measurement(
             evidence={"source_key": key},
         )
         return None
-    parsed = (
-        number(value, percent=True)
-        if name in ("possession", "expected_goals", "minutes_played")
-        else count(value)
-    )
+    parsed = _measurement_value(name, value)
     return (name, parsed) if parsed is not None else None
+
+
+def _measurement_value(name: str, value: object) -> float | int | None:
+    if name in ("accurate_passes", "accurate_crosses") and isinstance(value, str):
+        match = re.fullmatch(r"([0-9]+) \(([0-9]+(?:\.[0-9]+)?)%\)", value.strip())
+        if match is not None:
+            if float(match[2]) > 100:
+                raise ValueError("source percentage must be between zero and 100")
+            return count(match[1])
+    if name in ("expected_goals_on_target", "expected_assists"):
+        return number(value)
+    if name in ("possession", "expected_goals", "minutes_played"):
+        return number(value, percent=True)
+    return count(value)
+
+
+def statistic_contract(
+    values: Mapping[str, object], base: type[Observation], rich: type[Observation]
+) -> type[Observation]:
+    return base if values.keys() <= {field.name for field in fields(base)} else rich
 
 
 def add_measurement(
@@ -142,7 +180,7 @@ def emit_team_statistics(
             )
     if values:
         output.emit(
-            TeamStatisticObservationV2,
+            statistic_contract(values, TeamStatisticObservationV2, TeamStatisticObservationV3),
             path,
             fixture=output.context.fixture(),
             team=team,
@@ -167,6 +205,9 @@ def emit_shot(
     coordinates: bool = False,
     second: object = None,
     normalized_coordinates: tuple[float | None, float | None] = (None, None),
+    body_part: object = None,
+    situation: object = None,
+    expected_goals_on_target: object = None,
 ) -> None:
     if coordinates:
         output.finding(
@@ -176,8 +217,17 @@ def emit_shot(
             severity="WARNING",
         )
     xg = number(expected_goals)
+    rich_values: dict[str, Any] = {
+        key: value
+        for key, value in {
+            "body_part": text(body_part),
+            "situation": text(situation),
+            "expected_goals_on_target": number(expected_goals_on_target),
+        }.items()
+        if value is not None
+    }
     item = output.emit(
-        ShotObservationV2,
+        ShotObservationV3 if rich_values else ShotObservationV2,
         path,
         native_id,
         fixture=output.context.fixture(),
@@ -192,6 +242,7 @@ def emit_shot(
         outcome=outcome,
         is_penalty=optional_bool(penalty),
         is_own_goal=optional_bool(own_goal),
+        **rich_values,
     )
     if item is not None and xg is not None:
         output.emit(
@@ -255,5 +306,24 @@ def player_measurements(output: ObservationCollector, groups: object, path: str)
                     field,
                     PLAYER_METRICS,
                 )
+                detail = object_value(stat.get("stat"))
+                if parsed is not None and parsed[0] == "accurate_passes":
+                    _reported_pass_total(output, values, blocked, detail, parsed[1], field)
                 add_measurement(output, values, blocked, parsed, field)
     return values
+
+
+def _reported_pass_total(
+    output: ObservationCollector,
+    values: dict[str, Any],
+    blocked: set[str],
+    detail: Mapping[str, Any],
+    accurate: float | int,
+    path: str,
+) -> None:
+    if detail.get("type") != "fractionWithPercentage" or detail.get("total") is None:
+        return
+    total = count(detail["total"])
+    if total is None or accurate > total:
+        raise ValueError("source accurate passes exceed the reported total")
+    add_measurement(output, values, blocked, ("passes", total), path)

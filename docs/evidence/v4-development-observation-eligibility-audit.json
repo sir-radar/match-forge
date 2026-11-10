@@ -1,0 +1,184 @@
+{
+  "phase": "R01-B",
+  "status": "PASS",
+  "recorded_at": "2026-11-01T15:29:56.685921+00:00",
+  "root_cause_commit": "ebdc900",
+  "population_ref": "docs/evidence/v4-operating-isolation-root-cause.json",
+  "owner_disposition": "PRESERVE_AS_DEVELOPMENT_EVIDENCE",
+  "consumers": [
+    {
+      "consumer": "canonical fixture reconciliation",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/product/fixture_reconciliation.py",
+      "source_sha256": "74e055cb986b3e7aa0b7fe8432041f3fd8c38818eaccfedbc50dd8a0f984dcf8",
+      "reason": "reconcile_product_fixtures reads product_fixtures, explicit team crosswalks and admitted mappings. Observation insertion does not create these inputs."
+    },
+    {
+      "consumer": "canonical identity admission",
+      "disposition": "UNQUALIFIED",
+      "source": "python/football/src/football/identity/repository.py",
+      "source_sha256": "a999efa0c30a740a94f4f8e1300806dd63649ae2293549321011ba39800bb2a0",
+      "reason": "admitted_identity_at reads R2 admissions/corrections. Native references, resolution_version null and capability identity descriptions are not admission proofs."
+    },
+    {
+      "consumer": "new raw resource identity verification",
+      "disposition": "VISIBLE_BUT_UNQUALIFIED",
+      "source": "python/football/src/football/product/identity_admission.py",
+      "source_sha256": "d91969aa288a599126059d4698585a7cee2ecfff4151353b0fdc21e4b275df3d",
+      "reason": "verify_source_identifier requires existing mappings plus checksum-verified provider-specific retained identity proof and append-only admission. It does not automatically map observations; the new provider namespaces are not accepted by the legacy verifier."
+    },
+    {
+      "consumer": "eligible historical data",
+      "disposition": "IGNORED",
+      "source": "infrastructure/migrations/202610121100_product_identity_admission.sql",
+      "source_sha256": "53f81265137ed4a10911cb8d732de82a6d540d0aa8284c2729ee4f5a187feca6",
+      "reason": "product_eligible_history_at uses eligible product_match_history_decisions with both decision and source knowledge cutoffs. It does not read V2 artifacts."
+    },
+    {
+      "consumer": "feature inputs and forecast refresh",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/product/sync.py",
+      "source_sha256": "526a95cb77e7333acf34a9ae838890d1f36f89fb634e7c249dd64120541a38a6",
+      "reason": "_batch_history reads product_eligible_history_at, excludes target identities, enforces prior kickoff/known_at. _prepare_forecasts reads verified product fixtures. Before/after nonempty history and published forecast values are equal."
+    },
+    {
+      "consumer": "feature snapshot construction",
+      "disposition": "UNQUALIFIED",
+      "source": "python/football/src/football/forecasting/features.py",
+      "source_sha256": "d74ba8c7670aa912d974ddf091097d9ec45905972526463e45bf45e31d83a426",
+      "reason": "FixtureFeatureSnapshotV1 validates a sealed ForecastInputSnapshot of qualified HistoricalMatch inputs; there is no artifact registry query or native observation coercion."
+    },
+    {
+      "consumer": "training and authoritative dataset construction",
+      "disposition": "UNQUALIFIED",
+      "source": "python/football/src/football/forecasting/dataset.py",
+      "source_sha256": "a1c9689ca4c817c0e2dfc31f4762d3a71321072520283c7cd80dff1750f5bdbe",
+      "reason": "PointInTimeMatchDatasetProvider verifies exact published dataset/source identity before reading dataset_match_facts and kickoff claims. New raw source registration cannot substitute for that pair."
+    },
+    {
+      "consumer": "protected scientific evaluation",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/forecasting/multimodel_authorized_evaluation.py",
+      "source_sha256": "2e7ade562add2fd3e5eb2ef2ec407eb2ba7fd82ec7c4db3a0c39ea7607987a9f",
+      "reason": "load_season and _read_corpus_match consume exact hashed frozen corpus/target manifests and normalized files. They have no observation/capability database reader. No protected evaluation was executed; dataset admission and existing protocol boundary tests were run."
+    },
+    {
+      "consumer": "runtime model selection and promotion",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/forecasting/runtime_models.py",
+      "source_sha256": "54489460fcdda19ca73d49af2f4aee99cd520ac8d5395158eb8111238086052d",
+      "reason": "Registry reads exact registration hash and cutoff; load_registered_champion validates the pinned champion. Observation/capability writes neither register nor activate/promote a model."
+    },
+    {
+      "consumer": "post-match monitoring",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/forecasting/postmatch_storage.py",
+      "source_sha256": "24d5f8f73a4a66b01c42acbeeb87eba054c656f2afd44cb25d62b1d817f53ec3",
+      "reason": "_SOURCE reads product_performance_forecasts and exact product_forecasts, not native observation artifacts."
+    },
+    {
+      "consumer": "public read reports",
+      "disposition": "IGNORED",
+      "source": "python/football/src/football/product/public_reports.py",
+      "source_sha256": "59e5b08efe97011a81ed603d806677497effe81e847f7f48de0c4b8623823680",
+      "reason": "_snapshot uses public_performance_source and fixed public source functions; those consume qualified product state. No native artifact promotion exists."
+    },
+    {
+      "consumer": "API fixture and forecast serving",
+      "disposition": "IGNORED",
+      "source": "go/api/internal/app/postgres_store.go",
+      "source_sha256": "f705268f68e605c23158de85cc9286fb0cfebdef7b1eb3bc1c6fcafe6d8b8e8e",
+      "reason": "Existing queries read product_serving_fixtures and product_forecasts; migration route remains gated. No observation table joins."
+    },
+    {
+      "consumer": "Admin counts and provider depth audit",
+      "disposition": "DIAGNOSTIC_ONLY",
+      "source": "python/football/src/football/providers/data_audit.py",
+      "source_sha256": "24847b3ad115599cfe7bb20d22aa65ba6870a5174768b443ef0fb676d2ff7be3",
+      "reason": "Read-only inventory/field audit explicitly exposes registered native facts and capability counts; it does not qualify them. Go admin_operation_queries and market readiness diagnostics also expose counts/scopes."
+    },
+    {
+      "consumer": "point-in-time native registry inspection",
+      "disposition": "VISIBLE_BUT_UNQUALIFIED",
+      "source": "python/football/src/football/temporal/repository.py",
+      "source_sha256": "efb6f59059c8bc27aa6a7148058e3663f10347c997aa6fda0884324bebe188b4",
+      "reason": "resource_observation_ids_at returns all facts known by cutoff, not a canonical winner. Earlier cutoffs exclude later facts; an explicit football_cutoff excludes null/simultaneous/future event_time. All affected operating artifacts have event_time null."
+    },
+    {
+      "consumer": "provider capability planning",
+      "disposition": "ELIGIBLE_EXACT_ACQUISITION_SCOPE_ONLY",
+      "source": "python/football/src/football/providers/capability_registry.py",
+      "source_sha256": "a78a1cbc769b109d7b6be0774fc2ca765163418873afb9238039f2df08cb3ebe",
+      "reason": "Partial/SUPPORTED decisions can permit exact-version exact-native-scope acquisition. That is intentional access planning, not canonical/model eligibility. No wildcard/fallback to other scopes."
+    },
+    {
+      "consumer": "resource authority",
+      "disposition": "UNQUALIFIED",
+      "source": "python/football/src/football/providers/resource_authority.py",
+      "source_sha256": "5855d3ba5fd8c13e0a0b3ac6ba8fe3767e5193a85d6087952cac33e21bf1a616",
+      "reason": "AuthorityRegistry uses separate explicit effective/knowledge-scoped decisions. Operating authority registry is empty; capability presence cannot supply authority."
+    },
+    {
+      "consumer": "market readiness diagnostics",
+      "disposition": "VISIBLE_BUT_UNQUALIFIED",
+      "source": "python/football/src/football/product/market_capability_cli.py",
+      "source_sha256": "a6ac1b6f1aa528f7c7316e917d951c92d157efd893ee7ebe8b1912d6a26bddcd",
+      "reason": "Native source availability is visible, but canonical coverage, semantics, frozen evaluation and model publication remain independent. Tests assert all sample markets cannot grant publication."
+    },
+    {
+      "consumer": "Architecture V2 parity",
+      "disposition": "DIAGNOSTIC_ONLY",
+      "source": "python/football/src/football/product/resolution_parity.py",
+      "source_sha256": "ca44e0d15888b32acd5c808a034191f1160bd3093eb93b23107934c61e3d476e",
+      "reason": "verify_parity rechecks retained hashed comparison evidence and current diagnostics; overall_status requires every required runtime scope complete with all other checks. Counts alone cannot replace a comparison universe."
+    },
+    {
+      "consumer": "Phase 35 cutover readiness",
+      "disposition": "BLOCKED",
+      "source": "python/football/src/football/product/resolution_stages.py",
+      "source_sha256": "b1e2f07f33f9ef9e3e77453f87b72c8c7490b087158e6f98b38baffe1e802014",
+      "reason": "qualify_stage refuses SWITCH_STAGE pending complete production parity, upstream cutover, qualified runtime binding and separate owner acceptance. No route was changed."
+    }
+  ],
+  "exposure_found": false,
+  "eligibility_fix_required": false,
+  "schema_change_required": false,
+  "visibility_limit": "Admin/native diagnostics and exact scoped acquisition planning can observe or act on access metadata. Visibility does not grant canonical, feature, evaluation, model or cutover eligibility. development_only text was not used as an enforcement premise.",
+  "regressions": {
+    "file": "tests/integration/test_v4_development_isolation.py",
+    "representative_providers": [
+      "understat",
+      "espn",
+      "whoscored",
+      "flashscore",
+      "soccerway"
+    ],
+    "control": "Fresh migrated disposable DB; existing admitted CSV history, existing canonical fixtures, nonempty published forecast, refreshed materialized fixture read model. Native source sample retained through current manifest/backfill/normalization/work owners.",
+    "assertions": [
+      "No canonical identity/mapping/resolution admission",
+      "Nonempty eligible history identical before and after at original and later cutoffs",
+      "Earlier native knowledge empty; later diagnostic visibility allowed; unknown event_time excluded from football history",
+      "Existing complete forecast rows and prepared inputs unchanged",
+      "Exact published dataset/source pair still required for training/evaluation data",
+      "No runtime registration/model promotion caused",
+      "Actual read-only parity remains non-PASS and SWITCH_STAGE rejects",
+      "Exact processing version/scope required for acquisition; authority empty and publication not granted",
+      "Serving projections, datasets, read reports and post-match registry unchanged"
+    ]
+  },
+  "verification": {
+    "command": "sh .local/reports/v4/isolation-r01/test_database.sh tests/integration/test_v4_development_isolation.py tests/integration/test_resource_observation_artifacts.py tests/integration/test_canonical_resource_resolutions.py tests/integration/test_provider_resource_capabilities.py tests/integration/test_provider_resource_authority.py tests/integration/test_fixture_features.py tests/integration/test_runtime_model_registry.py python/football/tests/test_evaluation_protocol.py",
+    "exit_code": 0,
+    "passed": 115,
+    "receipt": ".local/reports/v4/isolation-r01/eligibility-focused.log",
+    "receipt_sha256": "c7fcb3248dd14a5485752ded3d7a8c52e779c88e7cf2ee3b5cb246a4497aedfe",
+    "ruff": "PASS",
+    "shell_syntax": "PASS",
+    "initial_test_setup_failures": "Corrected test import, transaction boundaries, materialized view initialization and mixed history seed order; no production behavior was changed to pass tests."
+  },
+  "operating_database_writes": 0,
+  "provider_requests": 0,
+  "protected_evaluation_executions": 0,
+  "new_production_eligibility_mechanisms": 0,
+  "disposition": "Existing qualification owners provide separation. Preserve registrations without rewriting or adding a duplicate admission/status schema."
+}

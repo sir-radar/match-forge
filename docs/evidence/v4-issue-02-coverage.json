@@ -1,0 +1,115 @@
+{
+  "phase": "R02-E",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "0c3917ccc57f8688669bb1c8c42de117d5440675",
+  "first_successful_projection": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/qualification-r02/qualification/c54c433b8802d75c1f478f32e9f0ecd169b08a9c3931bad866d3c27e50a1cdc7.json",
+    "sha256": "c54c433b8802d75c1f478f32e9f0ecd169b08a9c3931bad866d3c27e50a1cdc7"
+  },
+  "identical_input_repeat": {
+    "report": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/qualification-r02/qualification/9a40e31d1d2bca2cef7b63bf5b5cd4b5dbb4a494129adfac4c87ee6474a09aac.json",
+    "sha256": "9a40e31d1d2bca2cef7b63bf5b5cd4b5dbb4a494129adfac4c87ee6474a09aac"
+  },
+  "experimental_database": {
+    "name": "football_v4_qualification_r02_20261101",
+    "oid": 50918750,
+    "postgres_system_identifier": "7679328148388241450",
+    "persistent_marker": "matchforge.database_role=experimental",
+    "physical_isolation_verified": true,
+    "artifact_root": "/Users/radar/Desktop/football-simutation/.local/shadow-v4/qualification-r02",
+    "provisioning": "New database created/marked through maintenance postgres; migrations launched only after the existing physical-isolation guard. Operating reference connections were read-only.",
+    "migrations_through": "202610310800"
+  },
+  "pilot_coverage": {
+    "provider": "statsbomb_open_data",
+    "native_competition": "2",
+    "native_season": "27",
+    "source_resources": 761,
+    "raw_units": {
+      "match_rows": 380,
+      "event_occurrences": 1313773,
+      "lineup_player_occurrences": 13678
+    },
+    "normalized_observations": 41729,
+    "identity_qualified_records": 0,
+    "time_and_identity_qualified_records": 0,
+    "semantic_and_identity_qualified_market_labels": 0,
+    "historical_eligible_records": 0,
+    "distinct_native_fixtures": 380,
+    "distinct_native_players": 644,
+    "distinct_qualified_canonical_fixtures": 0,
+    "distinct_qualified_canonical_players": 0,
+    "complete_canonical_market_labels": 0,
+    "own_target_feature_eligible_records": 0,
+    "earlier_feature_cutoff_eligibility": null
+  },
+  "provider_coverage": {
+    "reports": 4,
+    "resource_types": [
+      "results",
+      "events",
+      "lineups",
+      "shots"
+    ],
+    "observed_unit_kind": "native fixture in frozen pilot",
+    "expected_each": 380,
+    "observed_each": 380,
+    "qualified_each": 0,
+    "ids": [
+      "ad33d8ee-ad45-51e4-8e86-62ae36a1ad97",
+      "18bb833e-d9e3-5ed3-ae86-adc092ad4353",
+      "83a53626-2103-53fe-af1b-7852e721a9e6",
+      "ea2c7ad3-f591-5db0-8f0f-d3feb3622b24"
+    ],
+    "hashes": [
+      "fb6e644b73b10fac650ba4efa8e5a7895e8a7202acb1bfa897872103992070dd",
+      "123b1e41f3570a5d251ee7f211b43a5f963a3cd0fd76f782cbb989b17dcefbe8",
+      "dd3d087986ce4fad7ba67abd1211305335b490e7681cc16f02cd87ab6f28017c",
+      "1883d18d91b16e0b2ba25d8564aee4784f7c5b3b4a31c958e007efe40033c56a"
+    ]
+  },
+  "registry_counts": {
+    "canonical_resource_coverage": 0,
+    "canonical_resource_resolutions": 0,
+    "provider_resource_coverage": 4,
+    "resource_observation_artifacts": 0
+  },
+  "unqualified_observations_copied": 0,
+  "repeatability": {
+    "stable_report_ids": true,
+    "stable_coverage_hashes": true,
+    "stable_counts": true,
+    "stable_blocker_classification": true,
+    "duplicates_created": 0,
+    "successful_projection_exit_codes": [
+      0,
+      0
+    ]
+  },
+  "market_families": 67,
+  "market_status_counts_before": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "market_status_counts_after": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "new_supported_markets": 0,
+  "interpretation": "Four native coverage reports measure 380 observed and zero qualified units each. No unqualified observation proceeds to canonical history. Existing market diagnostics remain data-blocked; no support or history sufficiency is invented.",
+  "scope_identity_status": "RECORDED_MAPPING_CLAIM_ONLY; no canonical use granted",
+  "verification": {
+    "focused_audit_and_market_tests": {
+      "passed": 36,
+      "exit_code": 0
+    },
+    "ruff_format_lint_complexity": "PASS",
+    "mypy": "PASS",
+    "initial_projection_exit_code": 1,
+    "initial_failure": "Summary used status instead of existing diagnostic_status. Four valid native coverage rows were already registered. Corrected field name; two successful retries preserved their IDs/hashes/counts.",
+    "diff_check": "PASS"
+  },
+  "operating_writes": 0,
+  "provider_requests": 0,
+  "model_publications": 0
+}

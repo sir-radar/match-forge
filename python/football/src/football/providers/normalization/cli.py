@@ -8,6 +8,7 @@ import json
 import os
 from collections.abc import Sequence
 from dataclasses import asdict
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -16,15 +17,22 @@ import psycopg
 from psycopg import Connection
 
 from football.contracts.observations import ObservationProvenance, ObservationTime
-from football.contracts.source import SourceManifest, SourceResource, canonical_json_bytes
-from football.ingestion.registration import MAX_SOURCE_MANIFEST_BYTES, MAX_SOURCE_RESOURCE_BYTES
+from football.contracts.source import canonical_json_bytes
+from football.ingestion.registration import (
+    MAX_SOURCE_MANIFEST_BYTES,
+    MAX_SOURCE_RESOURCE_BYTES,
+    read_registered_statsbomb_resource,
+)
 from football.observations.storage import ObservationArtifactStore
 from football.product.identity_admission import _retained_payload
 from football.providers.football_data_uk_evidence import FootballDataUkAcquisitionEvidenceV1
 from football.providers.football_data_uk_storage import FootballDataUkRawStoreV1
 from football.providers.normalization.common import NormalizationContext, NormalizationResult
 from football.providers.normalization.pipeline import normalize_resource
-from football.storage.raw import ImmutableFileStore, ImmutableRawStore
+from football.storage.experimental import experimental_connection
+from football.storage.raw import ImmutableFileStore
+from football.work.contracts import RetryPolicy, WorkRequest, WorkState, WorkType
+from football.work.storage import WorkRegistry
 
 
 def registered_resource(
@@ -45,7 +53,7 @@ def registered_resource(
     legacy_row = (*row[:4], row[12], *row[5:9])
     raw: bytes | None
     if row[9] == "statsbomb_open_data":
-        raw = _statsbomb_payload(root, row[:9])
+        raw = read_registered_statsbomb_resource(root, row[:9])
     elif (row[9], row[2]) == (
         "football_data_uk",
         "football_data_uk/phase1b/frozen-resource-bundle",
@@ -94,33 +102,6 @@ def _frozen_csv_payload(root: Path, row: tuple[Any, ...]) -> bytes:
     return raw
 
 
-def _statsbomb_payload(root: Path, row: tuple[Any, ...]) -> bytes:
-    files = ImmutableFileStore(root)
-    path = files.path_for(row[0])
-    manifest_raw = _read_source(path, MAX_SOURCE_MANIFEST_BYTES)
-    if hashlib.sha256(manifest_raw).hexdigest() != row[1]:
-        raise ValueError("registered source manifest checksum mismatch")
-    manifest = SourceManifest.from_bytes(manifest_raw)
-    if (manifest.snapshot.provider, manifest.snapshot.source_git_sha) != (
-        "statsbomb_open_data",
-        row[3],
-    ):
-        raise ValueError("source manifest differs from the registered snapshot")
-    matches = [resource for resource in manifest.resources if resource.path == row[6]]
-    if len(matches) != 1 or (matches[0].sha256, matches[0].size_bytes) != (row[7], row[8]):
-        raise ValueError("source manifest resource differs from its registration")
-    resource = matches[0]
-    expected_path = ImmutableRawStore(root).relative_path(
-        manifest.snapshot, SourceResource(resource.path, resource.media_type)
-    )
-    if resource.raw_path != expected_path:
-        raise ValueError("source manifest raw path differs from the pinned storage layout")
-    raw = _read_source(files.path_for(resource.raw_path), MAX_SOURCE_RESOURCE_BYTES)
-    if hashlib.sha256(raw).hexdigest() != resource.sha256 or len(raw) != resource.size_bytes:
-        raise ValueError("registered source resource checksum mismatch")
-    return raw
-
-
 def _read_source(path: Path, limit: int) -> bytes:
     if path.is_symlink() or not path.is_file():
         raise ValueError("registered source is missing or is not a regular file")
@@ -163,6 +144,50 @@ def report_bytes(
     return canonical_json_bytes(report) + b"\n"
 
 
+def persist_normalization(
+    connection: Connection[Any],
+    artifact_root: Path,
+    context: NormalizationContext,
+    resource: str,
+    result: NormalizationResult,
+    *,
+    worker: str,
+    lease: timedelta,
+    retry_policy: RetryPolicy,
+    max_attempts: int,
+) -> UUID:
+    """Publish one retained feature scope through the existing fenced work owner.
+
+    The report binds exact source, native fixture/competition/season scope,
+    processing versions, observations and findings. Changed results create new
+    work; identical retries reuse succeeded work without changing source clocks.
+    """
+    digest = hashlib.sha256(report_bytes(context, resource, result)).hexdigest()
+    store = ObservationArtifactStore(connection, artifact_root)
+    prepared = tuple(store.prepare(observation) for observation in result.observations)
+    registry = WorkRegistry(connection)
+    work_id = registry.enqueue(
+        WorkRequest(
+            work_type=WorkType.NORMALIZATION,
+            semantic_key=f"normalization:{digest}",
+            input_hash=digest,
+            priority=0,
+            available_at=context.time.known_at,
+            max_attempts=max_attempts,
+            retry_policy=retry_policy,
+        )
+    )
+    if registry.state(work_id) == WorkState.SUCCEEDED:
+        return work_id
+    claim = registry.claim(worker, lease, (WorkType.NORMALIZATION,), work_ids=(work_id,))
+    if claim is None:
+        raise ValueError(f"normalization work is not claimable: {work_id}")
+    with registry.publication(claim, result_hash=digest):
+        for item in prepared:
+            store.register_prepared(item)
+    return work_id
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-resource-id", type=UUID, required=True)
@@ -173,8 +198,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--competition-native-id")
     parser.add_argument("--season-label")
     parser.add_argument("--persist", action="store_true")
+    parser.add_argument("--database-url")
+    parser.add_argument("--operating-database-url")
     args = parser.parse_args(argv)
-    with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as connection:
+    if args.persist and (not args.database_url or not args.operating_database_url):
+        parser.error("--persist requires explicit --database-url and --operating-database-url")
+    selected = (
+        experimental_connection(args.database_url, args.operating_database_url)
+        if args.persist
+        else psycopg.connect(
+            args.database_url or os.environ["DATABASE_URL"],
+            autocommit=True,
+            options="-c default_transaction_read_only=on",
+        )
+    )
+    with selected as connection:
         context, raw = registered_resource(
             connection,
             args.data_root,
@@ -190,10 +228,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"reports/normalization/{digest}.json", report
         )
         if args.persist:
-            with connection.transaction():
-                store = ObservationArtifactStore(connection, args.artifact_root)
-                for observation in result.observations:
-                    store.publish(observation)
+            persist_normalization(
+                connection,
+                args.artifact_root,
+                context,
+                args.resource,
+                result,
+                worker="retained-resource-normalization",
+                lease=timedelta(minutes=5),
+                retry_policy=RetryPolicy(timedelta(seconds=60), timedelta(hours=1), 2),
+                max_attempts=3,
+            )
     print(
         json.dumps(
             {

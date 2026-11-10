@@ -1,0 +1,2856 @@
+{
+  "phase": "IDR-B",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "starting_sha": "ff592523f163b6deeb7996976690808d3e83d2a8",
+  "recorded_at": "2026-11-02T07:36:43.601889+00:00",
+  "release": "2026-10-31.1",
+  "release_sha256": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+  "release_quality_gate": false,
+  "candidate_artifact": {
+    "path": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+    "sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+    "matched_native_ids": 16669,
+    "candidate_identities": 11771,
+    "conflicts": 343,
+    "identities_admitted": 0
+  },
+  "retained_release_files_reverified": [
+    {
+      "path": ".local/issue04/research/bridges.csv.gz",
+      "sha256": "0c9912fb18f9e78b118c9b2d15054138a5d2967cf6117b5e6824ade7bbcf894d",
+      "bytes": 276303973
+    },
+    {
+      "path": ".local/issue04/research/redirects.csv.gz",
+      "sha256": "e54d6cad14108fe0ef91fa3fc932c10abd527f7bfd1216c949006bb940966c01",
+      "bytes": 354652
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "team:01a051db-5a79-7834-a02d-a92525d1515d",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "1",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a79-70bd-82d2-b457afa0ae99",
+      "accepted_target_candidates": [
+        "a230dc08-aa98-5d93-a0fd-d5b072629d4a"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "1",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt13f99514be4cfd",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "heal.wit_3597.statsbomb_team_gender_reattach"
+        }
+      ],
+      "redirect_chain": [
+        "rt13f99514be4cfd"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "1",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "42",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt13f99514be4cfd",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5abd-7fd1-98dc-eccd0c921ed0",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "22",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5abd-7993-b014-222dcda3ef5b",
+      "accepted_target_candidates": [
+        "e9bb5d23-691a-5216-9cbb-c09db6615d77"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "22",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtdd8b468937ef95",
+          "route_scope": "structural",
+          "rule_id": "c2.team.intraday_clean_attach"
+        }
+      ],
+      "redirect_chain": [
+        "rtdd8b468937ef95"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "22",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "46",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtdd8b468937ef95",
+            "rule_id": "c2.team.intraday_clean_attach",
+            "route_scope": "structural",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a85-7b6d-bd58-5aac5d43815e",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "23",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a85-745b-b656-00578f24f7a5",
+      "accepted_target_candidates": [
+        "440b0339-8804-52e0-800e-c4c3f8591e72"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "team",
+          "external_id": "23",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtfc419c6db9e06f",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.season_token_cluster"
+        }
+      ],
+      "redirect_chain": [
+        "rtfc419c6db9e06f"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "23",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "38",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtfc419c6db9e06f",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical_bulk",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5acd-7dba-a362-f32450b941ec",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "24",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5acd-78c4-9b3f-25ab572d67ad",
+      "accepted_target_candidates": [
+        "a1885e25-3c5b-53da-885f-09ef2e2d01cb"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "24",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt0fcab1a2109ab8",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt0fcab1a2109ab8"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "24",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "40",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt0fcab1a2109ab8",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a95-7513-a32e-c7af8bc47909",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "25",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a94-7cf6-9ddb-3e687d0e74d6",
+      "accepted_target_candidates": [
+        "7c52f01f-04d0-571a-a6f9-3afb575f83e6"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "25",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt4ba241d195a7ef",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt4ba241d195a7ef"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "25",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "41",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt4ba241d195a7ef",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical_bulk",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a1f-7a47-82c4-908f7d33d776",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "26",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a1d-7d5a-aafc-99446175859c",
+      "accepted_target_candidates": [
+        "f016c84c-53c0-56d0-b9fa-df13f648a4b7"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "team",
+          "external_id": "26",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtb3e9f092ec5270",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.season_token_cluster"
+        }
+      ],
+      "redirect_chain": [
+        "rtb3e9f092ec5270"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "26",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "76",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtb3e9f092ec5270",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical_bulk",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5b41-71c7-ac36-f912fc78fcc1",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "27",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5b40-7ea5-8fde-ba3b39b734bf",
+      "accepted_target_candidates": [
+        "adf9d9e9-7e9f-5eab-9697-ec75b9c6c1c8"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "27",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt411d7e1fcb4344",
+          "route_scope": "structural",
+          "rule_id": "c2.team.intraday_clean_attach"
+        }
+      ],
+      "redirect_chain": [
+        "rt411d7e1fcb4344"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "27",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "60",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt411d7e1fcb4344",
+            "rule_id": "c2.team.intraday_clean_attach",
+            "route_scope": "structural",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a28-76a5-9b4a-15c6f15c24e9",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "28",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a27-7bd7-a036-0a0c1ecdbaf3",
+      "accepted_target_candidates": [
+        "e28e7533-6931-5361-9129-7c2a5bae2aaa"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "team",
+          "external_id": "28",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt3bdff329d36885",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.season_token_cluster"
+        }
+      ],
+      "redirect_chain": [
+        "rt3bdff329d36885"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "28",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "35",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt3bdff329d36885",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a5e-74b0-8275-03e4f4ed2df4",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "29",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a5d-7942-b41b-2c56349f52a2",
+      "accepted_target_candidates": [],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "29",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt9a79cf4e54e278",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt9a79cf4e54e278"
+      ],
+      "candidate_edges": [],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a88-7987-95c9-eca6eab916a9",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "30",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a88-71cb-80e5-35fbb11bee33",
+      "accepted_target_candidates": [
+        "b6d1a4d8-0310-5b30-8e56-5e5912238358"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "30",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtebfbadc8ea5e46",
+          "route_scope": "structural",
+          "rule_id": "c2.team.intraday_clean_attach"
+        }
+      ],
+      "redirect_chain": [
+        "rtebfbadc8ea5e46"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "30",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "75",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtebfbadc8ea5e46",
+            "rule_id": "c2.team.intraday_clean_attach",
+            "route_scope": "structural",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5aa0-72d1-9f52-828e3f5aee7b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "31",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a9f-7b3a-9cf1-20ef467acc55",
+      "accepted_target_candidates": [
+        "edd9a29a-13b2-5a98-835c-ae7510fdd86d"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "team",
+          "external_id": "31",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtbaccc9912a7639",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.season_token_cluster"
+        }
+      ],
+      "redirect_chain": [
+        "rtbaccc9912a7639"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "31",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "52",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtbaccc9912a7639",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a49-71a6-81a2-2f68fbfd71bf",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "33",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a48-78d5-b313-eb17f70a03bf",
+      "accepted_target_candidates": [
+        "5ca3d524-59e8-5122-bfe8-b1cafdbf224e"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "33",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt3763d29e7947d8",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "heal.wit_3597.statsbomb_team_gender_reattach"
+        }
+      ],
+      "redirect_chain": [
+        "rt3763d29e7947d8"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "33",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "49",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt3763d29e7947d8",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5af6-7b1d-824c-34502a2e2831",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "36",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5af6-77fc-a4ac-30cc00a11d7f",
+      "accepted_target_candidates": [
+        "36b78199-4873-5fd7-b9a9-2eb0a9bd265a"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "36",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt37c836a696a159",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt37c836a696a159"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "36",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "50",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt37c836a696a159",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a59-7c13-acac-85b521f5208e",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "37",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a59-72f8-bfea-74440545bdf6",
+      "accepted_target_candidates": [
+        "da1aa24f-48be-549b-ac95-b06fbd369503"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "37",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt9216c37cb92105",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt9216c37cb92105"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "37",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "34",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt9216c37cb92105",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5ae1-75fc-8928-a2be57126f37",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "38",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5ae1-7156-9569-5522f1cac756",
+      "accepted_target_candidates": [
+        "99bdab6f-afd6-5beb-bae4-b20dbaf611df"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "38",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtcffb6a6bdb89fe",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rtcffb6a6bdb89fe"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "38",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "47",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtcffb6a6bdb89fe",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5b30-7e46-baa2-e7357c3af53b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "39",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5b30-7b57-965b-3129c84cf8ba",
+      "accepted_target_candidates": [
+        "fcefd735-1779-555e-800f-e700d5b89abd"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "39",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt85aa78bccbd812",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt85aa78bccbd812"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "39",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "33",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt85aa78bccbd812",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a4c-79ed-a00c-cef1f2c25966",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "40",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a4c-7222-8cca-178f69c8a8d5",
+      "accepted_target_candidates": [
+        "a9bed76e-0f11-5fc2-a316-82c6aecef5d8"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.98",
+          "entity_type": "team",
+          "external_id": "40",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt63d613341bc69c",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.intraday_clean_attach"
+        }
+      ],
+      "redirect_chain": [
+        "rt63d613341bc69c"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "40",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "48",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt63d613341bc69c",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5a6c-7b32-b41a-5f8544e650f0",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "41",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5a6c-72c5-9778-9c25c78b75ea",
+      "accepted_target_candidates": [
+        "fd513e15-8e14-5643-9689-a3eb609661b2"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "team",
+          "external_id": "41",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rtb471f322d5ad96",
+          "route_scope": "closed-small",
+          "rule_id": "c2.team.season_token_cluster"
+        }
+      ],
+      "redirect_chain": [
+        "rtb471f322d5ad96"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "41",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "746",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rtb471f322d5ad96",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical_bulk",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5b00-7052-b946-5468c594ba27",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "56",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5aff-7d08-990c-af541f9f60ad",
+      "accepted_target_candidates": [
+        "7d25a5b5-05f7-5c1e-bc1a-004aa28401a1"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "56",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt9587b13df1ee36",
+          "route_scope": "structural",
+          "rule_id": "c2.team.intraday_clean_attach"
+        }
+      ],
+      "redirect_chain": [
+        "rt9587b13df1ee36"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "56",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "18210",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt9587b13df1ee36",
+            "rule_id": "c2.team.intraday_clean_attach",
+            "route_scope": "structural",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "team:01a051db-5ab4-74d7-b528-592695b1795b",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_team",
+        "external_id": "59",
+        "entity_type": "team"
+      },
+      "source_resource_id": "01a051db-5a13-7417-b9b5-247d08f3b82f",
+      "source_sha256": "e07d6d360b30e0cd17f9aeea0db1502d2a5666d298f1b44b83a2d2f21ba3d21b",
+      "original_canonical_uuid": "01a051db-5ab3-7ba9-9e67-a99f2b99b6e1",
+      "accepted_target_candidates": [
+        "9648865b-e6be-56cf-9c84-fefa3cb3f978"
+      ],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "team",
+          "external_id": "59",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_team",
+          "provider": "statsbomb",
+          "reep_id": "rt5ab67076de8cc1",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rt5ab67076de8cc1"
+      ],
+      "candidate_edges": [
+        {
+          "source_provider": "statsbomb",
+          "source_namespace": "offline_team",
+          "source_native_id": "59",
+          "target_provider": "api_football",
+          "target_namespace": "team",
+          "target_native_id": "66",
+          "entity_type": "team",
+          "source_resource": "/Users/radar/Desktop/football-simutation/.local/issue04/identity-evidence/reep/aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d.json",
+          "source_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d",
+          "evidence_version": "1c381cc73e35be1230e695fd403d3b9a8fd14b43829f821f0ce0866a49c11333",
+          "independence_group": "NONE",
+          "observed_context": {
+            "reep_id": "rt5ab67076de8cc1",
+            "rule_id": "v4.reverified.canonical_bridge",
+            "route_scope": "seeded_canonical",
+            "attached_at": ""
+          },
+          "conflict_status": "UNVERIFIED_RELATIONSHIP; RELEASE_QUALITY_GATE_FALSE",
+          "proof": false
+        }
+      ],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "All selected Reep bridge rows have team type",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 38,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    },
+    {
+      "case_id": "competition:01a051db-5565-73ca-b461-3de984216d04",
+      "source_identity": {
+        "provider": "statsbomb_open_data",
+        "namespace": "offline_competition",
+        "external_id": "2",
+        "entity_type": "competition"
+      },
+      "source_resource_id": "01a051db-545a-7337-9aaa-d9ad55f52184",
+      "source_sha256": "e6cd42f5d8956d6aa30fb917ce8d4c3b3df1879a93f02f8feba820930a6971fa",
+      "original_canonical_uuid": "01a051db-5565-70d1-85d4-ab6342d86baf",
+      "accepted_target_candidates": [],
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "reep_source_rows": [],
+      "redirect_chain": [],
+      "candidate_edges": [],
+      "independent_relationships_proven": 0,
+      "review_ready": false,
+      "negative_checks": {
+        "entity_type": "No pinned exact competition bridge",
+        "namespace_collision": "Provider, namespace, native ID and entity type checked; no bare-number join",
+        "duplicate_canonical_targets": "No competing accepted target in bounded candidate set",
+        "same_name_gender_youth_reserves": "Names/scores cannot exclude these; full independent category proof is missing",
+        "renaming_succession": "No retained direct relationship proof; no merger or succession inference",
+        "competition_season": "Competition case remains separate; native season 27 is not competition 2",
+        "repeated_aliases": "Aliases do not add corroboration",
+        "shared_upstream": "Opta, WhoScored, FotMob, ESPN, FIFA, Kicker, FBref and Second Spectrum count as one upstream group where applicable; NONE is not corroboration"
+      },
+      "missing_proof": [
+        "An independently verifiable exact relationship to a retained accepted canonical target",
+        "Approved review semantics for the exact evidence; no name/score-only or failed-release automatic policy"
+      ],
+      "dependent_fixtures": 380,
+      "recommended_action": "REQUEST_MORE_EVIDENCE"
+    }
+  ],
+  "bounded_other_candidates": [
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753972",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmc9279fed04aeb8",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753972",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmc9279fed04aeb8",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rmc9279fed04aeb8"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "understat": 1,
+          "transfermarkt": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753974",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm8ab74847b339b2",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753974",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm8ab74847b339b2",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "redirect_chain": [
+        "rm8ab74847b339b2"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "understat": 1,
+          "statsbomb": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "WYSCOUT": 1,
+          "NONE": 3,
+          "OPTA": 4,
+          "TM": 1,
+          "STATSBOMB": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753975",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmb41b20e0b42435",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753975",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmb41b20e0b42435",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rmb41b20e0b42435"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "understat": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753977",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm7a20049c91abcd",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753977",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm7a20049c91abcd",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rm7a20049c91abcd"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "understat": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753978",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm0a2b3e0f51a7e2",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753978",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm0a2b3e0f51a7e2",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rm0a2b3e0f51a7e2"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "understat": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753979",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm17f55c21dad9d0",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753979",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm17f55c21dad9d0",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rm17f55c21dad9d0"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "understat": 1,
+          "transfermarkt": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753980",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm46bf98bdbf0a77",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753980",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm46bf98bdbf0a77",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "redirect_chain": [
+        "rm46bf98bdbf0a77"
+      ],
+      "candidate_target_bridges": {
+        "count": 11,
+        "providers": {
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "fbref": 1,
+          "understat": 1,
+          "statsbomb": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "WYSCOUT": 1,
+          "NONE": 3,
+          "OPTA": 5,
+          "TM": 1,
+          "STATSBOMB": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753981",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rme514532d4c2524",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753981",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rme514532d4c2524",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rme514532d4c2524"
+      ],
+      "candidate_target_bridges": {
+        "count": 11,
+        "providers": {
+          "statsbomb": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "understat": 1,
+          "espn": 1,
+          "fbref": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 5,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753982",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rm9e2db0b6bb5b51",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "3753982",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rm9e2db0b6bb5b51",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "redirect_chain": [
+        "rm9e2db0b6bb5b51"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "understat": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "statsbomb": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 3,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1,
+          "STATSBOMB": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "3753984",
+        "namespace": "offline_match",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rmc93b824b77a131",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "0.99",
+          "entity_type": "match",
+          "external_id": "3753984",
+          "independence_bucket": "NONE",
+          "namespace": "offline_match",
+          "provider": "statsbomb",
+          "reep_id": "rmc93b824b77a131",
+          "route_scope": "structural",
+          "rule_id": "heal.wit_3535.resolved_match_gap"
+        }
+      ],
+      "redirect_chain": [
+        "rmc93b824b77a131"
+      ],
+      "candidate_target_bridges": {
+        "count": 10,
+        "providers": {
+          "statsbomb": 1,
+          "understat": 1,
+          "wyscout": 1,
+          "api_football": 1,
+          "fotmob": 1,
+          "transfermarkt": 1,
+          "espn": 1,
+          "sofascore": 1,
+          "whoscored": 1,
+          "opta": 1
+        },
+        "independence_groups": {
+          "NONE": 4,
+          "WYSCOUT": 1,
+          "OPTA": 4,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10007",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp792209baf08071",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10007",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp792209baf08071",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp792209baf08071"
+      ],
+      "candidate_target_bridges": {
+        "count": 13,
+        "providers": {
+          "statsbomb": 1,
+          "transfermarkt": 1,
+          "api_football": 1,
+          "eafc": 1,
+          "espn": 1,
+          "fotmob": 1,
+          "skillcorner": 1,
+          "impect": 1,
+          "wyscout": 1,
+          "opta": 1,
+          "sportmonks": 1,
+          "fbref": 1,
+          "capology": 1
+        },
+        "independence_groups": {
+          "STATSBOMB": 1,
+          "TM": 1,
+          "NONE": 5,
+          "OPTA": 4,
+          "WYSCOUT": 1,
+          "SPORTMONKS": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10024",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp6dc1b9ae82640e",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10024",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp6dc1b9ae82640e",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp6dc1b9ae82640e"
+      ],
+      "candidate_target_bridges": {
+        "count": 12,
+        "providers": {
+          "statsbomb": 1,
+          "opta": 1,
+          "fbref": 1,
+          "worldfootball": 1,
+          "fotmob": 1,
+          "besoccer": 1,
+          "whoscored": 1,
+          "api_football": 1,
+          "sportmonks": 1,
+          "wyscout": 1,
+          "transfermarkt": 1,
+          "capology": 1
+        },
+        "independence_groups": {
+          "STATSBOMB": 1,
+          "OPTA": 4,
+          "WORLDFOOTBALL": 1,
+          "NONE": 3,
+          "SPORTMONKS": 1,
+          "WYSCOUT": 1,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10326",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp2af8064e47b97c",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10326",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp2af8064e47b97c",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp2af8064e47b97c"
+      ],
+      "candidate_target_bridges": {
+        "count": 20,
+        "providers": {
+          "kicker": 1,
+          "statsbomb": 1,
+          "opta": 1,
+          "transfermarkt": 1,
+          "whoscored": 1,
+          "espn": 1,
+          "besoccer": 1,
+          "eafc": 1,
+          "worldfootball": 1,
+          "fotmob": 1,
+          "api_football": 1,
+          "sportmonks": 1,
+          "driblab": 1,
+          "skillcorner": 1,
+          "impect": 1,
+          "fbref": 1,
+          "wyscout": 1,
+          "sofascore": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "OPTA": 6,
+          "STATSBOMB": 1,
+          "TM": 1,
+          "NONE": 9,
+          "WORLDFOOTBALL": 1,
+          "SPORTMONKS": 1,
+          "WYSCOUT": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10457",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpbd9009eef6eeeb",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10457",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpbd9009eef6eeeb",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rpbd9009eef6eeeb"
+      ],
+      "candidate_target_bridges": {
+        "count": 22,
+        "providers": {
+          "api_football": 1,
+          "besoccer": 1,
+          "statsbomb": 1,
+          "opta": 1,
+          "whoscored": 1,
+          "sportmonks": 1,
+          "espn": 1,
+          "transfermarkt": 1,
+          "sofascore": 1,
+          "eafc": 1,
+          "wyscout": 1,
+          "worldfootball": 1,
+          "fotmob": 1,
+          "driblab": 1,
+          "impect": 1,
+          "understat": 1,
+          "national_football_teams": 1,
+          "skillcorner": 1,
+          "second_spectrum": 1,
+          "fbref": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "NONE": 11,
+          "STATSBOMB": 1,
+          "OPTA": 6,
+          "SPORTMONKS": 1,
+          "TM": 1,
+          "WYSCOUT": 1,
+          "WORLDFOOTBALL": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10458",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp8680cae0e593b8",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10458",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp8680cae0e593b8",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp8680cae0e593b8"
+      ],
+      "candidate_target_bridges": {
+        "count": 23,
+        "providers": {
+          "statsbomb": 1,
+          "skillcorner": 1,
+          "api_football": 1,
+          "opta": 1,
+          "eafc": 1,
+          "espn": 1,
+          "uefa": 1,
+          "driblab": 1,
+          "besoccer": 1,
+          "wyscout": 1,
+          "transfermarkt": 1,
+          "whoscored": 1,
+          "worldfootball": 1,
+          "second_spectrum": 1,
+          "impect": 1,
+          "sportmonks": 1,
+          "understat": 1,
+          "fotmob": 1,
+          "national_football_teams": 1,
+          "sofascore": 1,
+          "fbref": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "STATSBOMB": 1,
+          "NONE": 12,
+          "OPTA": 6,
+          "WYSCOUT": 1,
+          "TM": 1,
+          "WORLDFOOTBALL": 1,
+          "SPORTMONKS": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10484",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpf1db807d993069",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10484",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpf1db807d993069",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rpf1db807d993069"
+      ],
+      "candidate_target_bridges": {
+        "count": 20,
+        "providers": {
+          "understat": 1,
+          "statsbomb": 1,
+          "impect": 1,
+          "opta": 1,
+          "skillcorner": 1,
+          "api_football": 1,
+          "second_spectrum": 1,
+          "eafc": 1,
+          "espn": 1,
+          "driblab": 1,
+          "besoccer": 1,
+          "wyscout": 1,
+          "transfermarkt": 1,
+          "whoscored": 1,
+          "worldfootball": 1,
+          "fbref": 1,
+          "sportmonks": 1,
+          "fotmob": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "NONE": 9,
+          "STATSBOMB": 1,
+          "OPTA": 6,
+          "WYSCOUT": 1,
+          "TM": 1,
+          "WORLDFOOTBALL": 1,
+          "SPORTMONKS": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10496",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp93bd860d90b737",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10496",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp93bd860d90b737",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp93bd860d90b737"
+      ],
+      "candidate_target_bridges": {
+        "count": 17,
+        "providers": {
+          "statsbomb": 1,
+          "opta": 1,
+          "espn": 1,
+          "skillcorner": 1,
+          "api_football": 1,
+          "transfermarkt": 1,
+          "eafc": 1,
+          "besoccer": 1,
+          "wyscout": 1,
+          "whoscored": 1,
+          "fbref": 1,
+          "worldfootball": 1,
+          "sportmonks": 1,
+          "impect": 1,
+          "fotmob": 1,
+          "fifa": 1,
+          "capology": 1
+        },
+        "independence_groups": {
+          "STATSBOMB": 1,
+          "OPTA": 6,
+          "NONE": 6,
+          "TM": 1,
+          "WYSCOUT": 1,
+          "WORLDFOOTBALL": 1,
+          "SPORTMONKS": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10499",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rpea62f8d46d507a",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10499",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rpea62f8d46d507a",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rpea62f8d46d507a"
+      ],
+      "candidate_target_bridges": {
+        "count": 21,
+        "providers": {
+          "kicker": 1,
+          "statsbomb": 1,
+          "espn": 1,
+          "fotmob": 1,
+          "worldfootball": 1,
+          "api_football": 1,
+          "eafc": 1,
+          "impect": 1,
+          "driblab": 1,
+          "sportmonks": 1,
+          "skillcorner": 1,
+          "opta": 1,
+          "besoccer": 1,
+          "wyscout": 1,
+          "whoscored": 1,
+          "understat": 1,
+          "transfermarkt": 1,
+          "fbref": 1,
+          "fifa": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "OPTA": 7,
+          "STATSBOMB": 1,
+          "WORLDFOOTBALL": 1,
+          "NONE": 9,
+          "SPORTMONKS": 1,
+          "WYSCOUT": 1,
+          "TM": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10546",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp29f36f837a7831",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10546",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp29f36f837a7831",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp29f36f837a7831"
+      ],
+      "candidate_target_bridges": {
+        "count": 18,
+        "providers": {
+          "statsbomb": 1,
+          "opta": 1,
+          "eafc": 1,
+          "espn": 1,
+          "skillcorner": 1,
+          "impect": 1,
+          "whoscored": 1,
+          "besoccer": 1,
+          "driblab": 1,
+          "wyscout": 1,
+          "transfermarkt": 1,
+          "worldfootball": 1,
+          "sportmonks": 1,
+          "fotmob": 1,
+          "fbref": 1,
+          "fifa": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "STATSBOMB": 1,
+          "OPTA": 6,
+          "NONE": 7,
+          "WYSCOUT": 1,
+          "TM": 1,
+          "WORLDFOOTBALL": 1,
+          "SPORTMONKS": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "player",
+        "external_id": "10769",
+        "namespace": "offline_player",
+        "provider": "statsbomb",
+        "track": "A"
+      },
+      "reep_id": "rp7cc6bce7173b35",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "player",
+          "external_id": "10769",
+          "independence_bucket": "STATSBOMB",
+          "namespace": "offline_player",
+          "provider": "statsbomb",
+          "reep_id": "rp7cc6bce7173b35",
+          "route_scope": "seeded_canonical_bulk",
+          "rule_id": "v4.reverified.canonical_bridge"
+        }
+      ],
+      "redirect_chain": [
+        "rp7cc6bce7173b35"
+      ],
+      "candidate_target_bridges": {
+        "count": 20,
+        "providers": {
+          "understat": 1,
+          "statsbomb": 1,
+          "opta": 1,
+          "sportmonks": 1,
+          "api_football": 1,
+          "fbref": 1,
+          "espn": 1,
+          "eafc": 1,
+          "besoccer": 1,
+          "whoscored": 1,
+          "transfermarkt": 1,
+          "wyscout": 1,
+          "driblab": 1,
+          "worldfootball": 1,
+          "skillcorner": 1,
+          "fotmob": 1,
+          "impect": 1,
+          "second_spectrum": 1,
+          "capology": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "NONE": 9,
+          "STATSBOMB": 1,
+          "OPTA": 6,
+          "SPORTMONKS": 1,
+          "TM": 1,
+          "WYSCOUT": 1,
+          "WORLDFOOTBALL": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    },
+    {
+      "source_identity": {
+        "entity_type": "match",
+        "external_id": "704279",
+        "matchforge_provider": "espn",
+        "namespace": "match",
+        "provider": "espn"
+      },
+      "reep_id": "rmc4c63fe1e9d5a2",
+      "source_rows": [
+        {
+          "attached_at": "",
+          "confidence": "1.0",
+          "entity_type": "match",
+          "external_id": "704279",
+          "independence_bucket": "OPTA",
+          "namespace": "match",
+          "provider": "espn",
+          "reep_id": "rmc4c63fe1e9d5a2",
+          "route_scope": "structural",
+          "rule_id": "c3.match.resolved_season_home_away_date"
+        }
+      ],
+      "redirect_chain": [
+        "rmc4c63fe1e9d5a2"
+      ],
+      "candidate_target_bridges": {
+        "count": 19,
+        "providers": {
+          "opta": 2,
+          "worldfootball": 1,
+          "api_football": 1,
+          "sofascore": 1,
+          "impect": 1,
+          "skillcorner": 1,
+          "whoscored": 1,
+          "understat": 1,
+          "transfermarkt": 1,
+          "fotmob": 1,
+          "wyscout": 1,
+          "driblab": 1,
+          "uefa": 1,
+          "espn": 1,
+          "fifa": 1,
+          "second_spectrum": 1,
+          "fbref": 1,
+          "sportradar": 1
+        },
+        "independence_groups": {
+          "OPTA": 8,
+          "WORLDFOOTBALL": 1,
+          "NONE": 8,
+          "TM": 1,
+          "WYSCOUT": 1
+        },
+        "exact_rows_artifact_sha256": "aa62b0a47c7d55b2efc69b285e36c6c587d15a730bdc1767a045a080ae9bb92d"
+      },
+      "classification": "SOURCE_VERIFIED_TARGET_UNPROVEN",
+      "review_ready": false,
+      "missing_proof": "Exact admitted canonical participants/competition/fixture chain; players additionally require canonical membership and exposure. Reep structural/bridge rows do not supply independent canonical relationship proof."
+    }
+  ],
+  "counts": {
+    "source_verified_legacy_mappings": 21,
+    "accepted_target_anchors": 19,
+    "team_cases": 20,
+    "competition_cases": 1,
+    "statsbomb_fixture_candidates_retained": 344,
+    "statsbomb_player_candidates_retained": 601,
+    "bounded_fixture_cases": 10,
+    "bounded_player_cases": 10,
+    "espn_fixture_cases": 1,
+    "independent_relationships_proven": 0,
+    "review_ready_cases": 0,
+    "actual_admissions": 0
+  },
+  "research": [
+    {
+      "question": "Can independent bridge logos corroborate identity?",
+      "source_url": "https://reep.football/coverage/",
+      "version": "Live documentation; page reports API 2026-10-25.1",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Official roles group Opta-derived providers together and classify StatsBomb/API-Football as bridge-only. This corroborates the pinned row buckets without upgrading the release.",
+      "alternatives_considered": [
+        "Count all provider bridges independently"
+      ],
+      "selected_approach": "Reject; preserve per-row pinned buckets and count upstream groups once",
+      "uncertainty_remaining": "Public policy is not the private per-case source packet",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Does public Reep engine code prove v1 matching rules?",
+      "source_url": "https://github.com/withqwerty/reep/blob/main/README.md",
+      "version": "main retrieved 2026-11-02; frozen v0 reference",
+      "publication_or_commit_date": "2026-06-21",
+      "retrieval_date": "2026-11-02",
+      "evidence": "README states the v1 engine is not public and v0 output is frozen; v0 IDs cannot be used as v1 proof.",
+      "alternatives_considered": [
+        "Inspect frozen v0 code or aliases as v1 adjudication evidence"
+      ],
+      "selected_approach": "Reject; exact pinned bridge/rule identifiers retained as candidates only",
+      "uncertainty_remaining": "Per-case v1 rule rationale and source packets unavailable",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "How should cross-provider namespaces be joined?",
+      "source_url": "https://reep.football/get-started/",
+      "version": "Live documentation retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Provider namespaces distinguish StatsBomb offline_team from API-Football team. Stable release and redirect chain remain required.",
+      "alternatives_considered": [
+        "Join bare numbers or latest hosted API"
+      ],
+      "selected_approach": "Use pinned release and exact scoped keys",
+      "uncertainty_remaining": "No independent relationship follows merely from the join",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Can a matching framework replace existing approval?",
+      "source_url": "https://recordlinkage.readthedocs.io/en/stable/",
+      "version": "Python Record Linkage Toolkit 0.15",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Indexing, comparison and classification are distinct steps. Existing MatchForge candidate/review code already covers this need.",
+      "alternatives_considered": [
+        "Add another matching framework"
+      ],
+      "selected_approach": "Do not add dependency or scoring-based admission",
+      "uncertainty_remaining": "No new historical proof supplied by a toolkit",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Should reconciliation auto-approve similar names?",
+      "source_url": "https://openrefine.org/docs/manual/reconciling",
+      "version": "Live user manual retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Reconciliation suggestions require reviewed judgment; existing Resolution Center already owns this workflow.",
+      "alternatives_considered": [
+        "Build a parallel reviewer or bulk-admit names"
+      ],
+      "selected_approach": "Reuse existing review and require recognized evidence",
+      "uncertainty_remaining": "Multi-field reviewed policy would require explicit approval before use",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    },
+    {
+      "question": "Is another documented ID mapping endpoint a StatsBomb bridge?",
+      "source_url": "https://docs.fansunitedmedia.com/reference/getfootballidmappings",
+      "version": "Live API reference retrieved 2026-11-02",
+      "publication_or_commit_date": null,
+      "retrieval_date": "2026-11-02",
+      "evidence": "Published input providers include API-Football, Sportradar, Enetpulse, Sportal365 and Statscore; the reference does not document a StatsBomb offline namespace. A client/key is required.",
+      "alternatives_considered": [
+        "Acquire unrelated provider populations"
+      ],
+      "selected_approach": "No calls or spend; does not answer the specific missing StatsBomb relationship proof",
+      "uncertainty_remaining": "No claim that no external proof exists globally",
+      "verification": "Pinned artifact checksum/namespace/row checks and live read-only 21-mapping/19-anchor audit"
+    }
+  ],
+  "conclusion": "Bounded independent research found no retained independently verifiable StatsBomb-to-accepted-target relationship recognized by the current review contract. This is not proof that no such evidence exists elsewhere. Preserve all candidates; do not ask the owner to approve invalid proposals.",
+  "next_action": "Obtain a retained exact source-to-target crosswalk with independently verifiable provenance for one team first, or an explicitly approved reviewed multi-field evidence policy. Then design only the missing prospective correction compatibility.",
+  "operating_writes": 0,
+  "new_canonical_admissions": 0,
+  "verification": {
+    "command": "uv run --locked --no-sync python .local/identity-recovery/phase_b.py",
+    "exit_code": 0,
+    "bounded_existing_artifact_reused": true,
+    "release_upgrade": false,
+    "new_provider_acquisition": false
+  }
+}

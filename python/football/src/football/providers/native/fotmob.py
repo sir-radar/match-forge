@@ -92,6 +92,9 @@ class FotmobShot(TypedDict):
     playerId: NotRequired[int | str | None]
     expectedGoals: NotRequired[float | None]
     isOnTarget: NotRequired[bool | None]
+    shotType: NotRequired[str | None]
+    situation: NotRequired[str | None]
+    expectedGoalsOnTarget: NotRequired[float | None]
 
 
 class FotmobStatistic(TypedDict):

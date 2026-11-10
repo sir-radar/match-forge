@@ -1,0 +1,278 @@
+from __future__ import annotations
+
+import gzip
+import hashlib
+import json
+import os
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+
+import psycopg
+import pytest
+from football.observations.storage import ObservationArtifactStore
+from football.product.historical_backfill import HistoricalBackfillStore
+from football.product.historical_manifest import publish_manifest
+from football.providers.normalization.cli import persist_normalization, registered_resource
+from football.providers.normalization.pipeline import normalize_resource
+from football.temporal.repository import PointInTimeRepository
+from football.work.contracts import RetryPolicy, WorkState
+from football.work.storage import WorkRegistry
+
+
+def _sample(provider: str, kind: str) -> tuple[str, str, bytes]:
+    if provider in ("flashscore", "soccerway") and kind in (
+        "statistics",
+        "events",
+        "lineups",
+        "summary",
+    ):
+        suffix, feed = {
+            "statistics": ("st", "SE÷Match¬~SD÷34¬SG÷Total shots¬SH÷10¬SI÷0¬~"),
+            "events": ("sui", "AC÷1st Half¬~III÷event001¬IA÷1¬IB÷30'¬IE÷3¬IM÷player01¬~"),
+            "lineups": ("li", "LB÷Starting Lineups¬LGT÷1¬LGK÷1¬LC÷1¬~LP÷player01¬LI÷Player¬LG÷1¬~"),
+            "summary": ("sur", "AC÷3¬BA÷1¬BB÷0¬~BC÷0¬BD÷1¬~MIT÷REF¬MIV÷Referee¬~"),
+        }[kind]
+        return f"df_{suffix}_1_match001", kind, feed.encode()
+    raw = gzip.compress(
+        json.dumps(
+            {
+                "dates": [
+                    {
+                        "id": "26602",
+                        "isResult": True,
+                        "h": {"id": "89", "title": "Home"},
+                        "a": {"id": "228", "title": "Away"},
+                        "goals": {"h": "1", "a": "0"},
+                        "xG": {"h": "0.5", "a": "0.25"},
+                        "datetime": "2024-08-16 19:00:00",
+                    }
+                ]
+            }
+        ).encode(),
+        mtime=0,
+    )
+    path = "getLeagueData/EPL/2024"
+    resource_type = "results"
+    if provider == "espn":
+        path = "eng.1/scoreboard?dates=20240816"
+        resource_type = "scoreboard"
+        raw = json.dumps(
+            {
+                "leagues": [{"id": "700", "slug": "eng.1", "name": "League"}],
+                "events": [
+                    {
+                        "id": "42",
+                        "season": {"year": 2024},
+                        "competitions": [
+                            {
+                                "id": "42",
+                                "date": "2024-08-16T19:00Z",
+                                "timeValid": True,
+                                "status": {
+                                    "type": {
+                                        "name": "STATUS_FULL_TIME",
+                                        "state": "post",
+                                        "completed": True,
+                                    }
+                                },
+                                "competitors": [
+                                    {
+                                        "id": "1",
+                                        "homeAway": "home",
+                                        "team": {"id": "1", "displayName": "Home"},
+                                        "score": "1",
+                                    },
+                                    {
+                                        "id": "2",
+                                        "homeAway": "away",
+                                        "team": {"id": "2", "displayName": "Away"},
+                                        "score": "0",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ).encode()
+    if provider == "whoscored":
+        path = "Regions/252/Tournaments/2"
+        resource_type = "fixtures"
+        block = {
+            "tournaments": [
+                {
+                    "tournamentId": 2,
+                    "stageId": 3,
+                    "seasonId": 4,
+                    "tournamentName": "League",
+                    "seasonName": "2024/2025",
+                    "matches": [
+                        {
+                            "id": 42,
+                            "stageId": 3,
+                            "status": 6,
+                            "elapsed": "FT",
+                            "period": 7,
+                            "startTimeUtc": "2024-08-16T19:00:00Z",
+                            "homeTeamId": 1,
+                            "homeTeamName": "Home",
+                            "awayTeamId": 2,
+                            "awayTeamName": "Away",
+                            "homeScore": 1,
+                            "awayScore": 0,
+                        }
+                    ],
+                }
+            ]
+        }
+        raw = (
+            '<script type="application/json" data-hypernova-key="tournamentfixtures"><!--'
+            + json.dumps(block)
+            + "--></script>"
+        ).encode()
+    if provider in ("flashscore", "soccerway"):
+        path = "football/england/league/results"
+        resource_type = "league"
+        environment = {
+            "sport_id": 1,
+            "selected_season_id": 0,
+            "season_list": [
+                {"id": 0, "name": "2024/2025", "pathname": "/standings/seasonid/stageid/"}
+            ],
+        }
+        header = (
+            "SA÷1¬~ZA÷League¬ZEE÷leagueid¬ZC÷stageid¬ZE÷seasonid¬ZL÷/football/england/league/¬~"
+        )
+        match = (
+            "AA÷match001¬AD÷1723834800¬AB÷3¬AC÷3¬AE÷Home¬AF÷Away¬"
+            "PX÷home0001¬PY÷away0001¬AT÷1¬AU÷0¬~"
+        )
+        raw = (
+            "<script>window.environment = " + json.dumps(environment) + ";"
+            "cjs.initialFeeds['results'] = {data: `" + header + match + "`};"
+            "cjs.initialFeeds['fixtures'] = {data: `" + header + "`};</script>"
+        ).encode()
+    if provider == "soccerway":
+        path = path.removeprefix("football/")
+        raw = raw.replace(b"/football/england/league/", b"/england/league/")
+        raw = raw.replace(b"['results']", b'["results"]').replace(b"['fixtures']", b'["fixtures"]')
+    return path, resource_type, raw
+
+
+@pytest.mark.parametrize(
+    "provider,sample_kind",
+    [
+        ("understat", "results"),
+        ("espn", "scoreboard"),
+        ("whoscored", "fixtures"),
+        ("flashscore", "league"),
+        ("flashscore", "statistics"),
+        ("flashscore", "events"),
+        ("flashscore", "lineups"),
+        ("flashscore", "summary"),
+        ("soccerway", "league"),
+        ("soccerway", "statistics"),
+        ("soccerway", "events"),
+        ("soccerway", "lineups"),
+        ("soccerway", "summary"),
+    ],
+)
+def test_public_source_manifest_normalization_fenced_publication_and_retry(
+    tmp_path: Path, provider: str, sample_kind: str
+) -> None:
+    path, resource_type, raw = _sample(provider, sample_kind)
+    assert sample_kind == resource_type
+    scoped = provider in ("flashscore", "soccerway") and sample_kind != "league"
+    digest = hashlib.sha256(raw).hexdigest()
+    now = datetime(2026, 11, 1, tzinfo=UTC)
+    identity = "https://example.test/" + provider + "/" + path
+    manifest = publish_manifest(
+        tmp_path,
+        provider=provider,
+        source_identity=identity,
+        source_revision=digest,
+        acquired_at=now,
+        resources=[(path, f"{provider}/raw/{digest}", raw)],
+    )
+    # The storage harness owns this disposable DB; control calls require idle connections.
+    with psycopg.connect(os.environ["TEST_DATABASE_URL"], autocommit=True) as c:
+        owner = HistoricalBackfillStore(
+            c,
+            provider,
+            provider.title(),
+            provider + "-" + resource_type + "-v1",
+            data_root=tmp_path,
+        )
+        snapshot = owner.ensure_snapshot(
+            source_identity=identity,
+            source_revision=digest,
+            acquired_at=now,
+            manifest_path=manifest,
+        )
+        resource = owner.record_resource(
+            snapshot_id=snapshot,
+            provider_path=path,
+            payload=raw,
+            media_type="text/javascript",
+            acquired_at=now,
+            import_pending=True,
+        )
+        context, retained = registered_resource(
+            c, tmp_path, resource, fixture_native_id="match001" if scoped else None
+        )
+        assert retained == raw and context.time.known_at == now
+        result = normalize_resource(context, resource_type, retained)
+        if sample_kind in ("statistics", "lineups", "events"):
+            assert [f.rule_code for f in result.findings] == ["MF_NORM_TEAM_ID_UNRESOLVED"]
+        else:
+            assert not result.findings
+        store = ObservationArtifactStore(c, tmp_path)
+        work = WorkRegistry(c)
+        policy = dict(
+            worker=provider + "-test",
+            lease=timedelta(minutes=1),
+            retry_policy=RetryPolicy(timedelta(), timedelta(), 1),
+            max_attempts=1,
+        )
+        identifier = persist_normalization(c, tmp_path, context, resource_type, result, **policy)
+        assert work.state(identifier) == WorkState.SUCCEEDED
+        assert (
+            persist_normalization(c, tmp_path, context, resource_type, result, **policy)
+            == identifier
+        )
+        for observation in result.observations:
+            assert store.load(observation.observation_id) == observation
+            assert store.publish(observation) == observation.observation_id
+        count = c.execute(
+            "SELECT count(*) FROM football.resource_observation_artifacts "
+            "WHERE source_resource_id=%s",
+            (resource,),
+        ).fetchone()
+        assert count == (len(result.observations),)
+        provider_row = c.execute(
+            "SELECT id FROM football.providers WHERE code=%s", (provider,)
+        ).fetchone()
+        assert provider_row is not None
+        contract = {
+            "statistics": "TeamStatisticObservationV2",
+            "events": "EventObservationV2",
+            "lineups": "PlayerObservationV2",
+            "summary": "PeriodScoreObservationV3",
+        }.get(sample_kind, "ResultObservationV2")
+        expected = {o.observation_id for o in result.observations if contract == o.CONTRACT}
+        assert expected
+        temporal = PointInTimeRepository(c)
+        assert expected <= set(
+            temporal.resource_observation_ids_at(
+                contract, provider_row[0], now + timedelta(seconds=1)
+            )
+        )
+        assert not temporal.resource_observation_ids_at(
+            contract, provider_row[0], now - timedelta(seconds=1)
+        )
+        assert not temporal.resource_observation_ids_at(
+            contract,
+            provider_row[0],
+            now + timedelta(seconds=1),
+            football_cutoff=datetime(2025, 1, 1, tzinfo=UTC),
+        )
