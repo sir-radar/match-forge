@@ -1438,10 +1438,10 @@
         "public_forecast_history_and_detail_verified": true,
         "remaining_identity_blocked_targets": 8,
         "remaining_history_blocked_targets": 6,
-        "scoped_followup": "FRESH_CLAIM_PENDING_AFTER_INTERRUPTION",
+        "scoped_followup": "STOPPED_AT_OWNER_HANDOFF_RESUMABLE",
         "parity": "DEFERRED_TO_PHASE_D",
-        "persisted_target_results": 879,
-        "changed_context_targets": 4,
+        "persisted_target_results": 2379,
+        "changed_context_targets": 12,
         "followup_handoff": {
           "status": "STOPPED_RESUMABLE_CHECKPOINT",
           "stopped_at": "2026-11-10 04:38:35.804021+00:00",
