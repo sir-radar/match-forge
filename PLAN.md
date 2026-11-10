@@ -7,9 +7,9 @@
 > decisions below remain evidence; their evaluation and model-research gates
 > have not been reopened.
 
-> Revision: 22 September 2026 — added proposed prediction-improvement research candidates to the 21 September repository reconciliation.
+> Revision: 10 November 2026 — status refreshed against `docs/project-status.json`. Sequencing, invariants and gates are unchanged from the 22 September revision of the 21 September reconciliation. The unabridged original is archived in [supplied-plan-2026-09-21.md](docs/references/supplied-plan-2026-09-21.md) (also kept locally as the git-ignored `PLAN.OLD.md`).
 > Status: **TRACKED PROPOSED ROADMAP**. This plan records sequencing and constraints. It does not authorize application code, change a frozen result, or create an owner decision.
-> Authority order: checked-in repository evidence and immutable evaluation records → approved owner decision events → versioned approved contracts → this proposed plan → research proposals. Where they conflict, stop and reconcile rather than overwriting evidence.
+> Authority order: current repository-owner requirements and `AGENTS.md` → resolved owner decision events, `docs/project-status.json` and immutable evaluation evidence → versioned approved contracts, ADRs and migrations → this proposed plan → research proposals. This matches `AGENTS.md` section 1. Where sources conflict, stop and reconcile rather than overwriting evidence. A stale checkpoint in this plan never overrides a newer owner decision.
 
 ## 1. Mission and scope
 
@@ -18,6 +18,21 @@ MatchForge is a provider-neutral football forecasting and simulation platform th
 The product aims to model changing attack/defence strength, qualified xG/xGA and other point-in-time context, uncertainty, coherent match/score/goal/BTTS/clean-sheet distributions and separately approved corner products. Residualized H2H is a challenger, not a shortcut. Derby and unpredictability remain **display-only**. All published forecast revisions preserve their predecessors.
 
 ## 2. Preserved evidence and permissions
+
+### Where things stand (10 November 2026)
+
+`docs/project-status.json` is the authority; [current state](docs/status/current-state.md) summarizes it. This section replaces the present-tense wording in the dated decision log below wherever the two differ.
+
+- **Product.** The MVP is implemented (`MVP_PRODUCT_IMPLEMENTATION_COMPLETE`). Owner decision `MVP_PRODUCT_DELIVERY_ACTIVE` (29 September) paused model research. `MVP_FORECAST` is the retained rolling-goals Poisson reference, the champion has not changed, H2H has zero model weight, and V6 is not authorized. Live settlement evidence is pending.
+- **PitchAPI route.** V1 `TERMINAL_FAIL_NO_EXECUTION`. V2 `BLOCKED_PRE_EXECUTION_MODEL_NON_TRANSFERABILITY`. V3 `TERMINAL_FAIL_RUST_PARITY` and V4 calibration-boundary failure are permanently closed. V5 is `COMPLETE` with `REFERENCE_RETAINED`: the transferable npxG challenger scored better but failed 14 frozen calibration gates, and its 712 targets are `SPENT_FOR_MODEL_SELECTION`.
+- **Later research.** H2H incremental signal and context features were `COMPLETE_DEVELOPMENT_REJECTED`. The multimodel challenger evaluation ended `COMPLETE_RETAIN_CHAMPION`. Full-coverage V2 re-evaluation `V1_1` and `V1_2` failed closed on protocol violations, and `V1_3` stopped on a pre-execution data-integrity block with no logical executions. The next step there is an owner decision. StatsBomb Evaluation V2 is still `AWAITING_PROVIDER_RESPONSE` and independent.
+- **Engineering programmes.** These run beside the research gates and change neither them nor the champion: Architecture V2 (`IN_PROGRESS`), identity resolution, the V4 programme (`BLOCKED_WITH_EVIDENCE`), codebase remediation and the unified architecture investigation (planning only, implementation not authorized by the investigation).
+- **Follow-on product roadmap.** The [post-redesign roadmap (F0–F11)](MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md) covers team/player pages, lineups, availability and readiness UX. It sits under this plan's invariants and gates, each phase needs its own task authorization, and it excludes the standalone percentage-based Probability Filter.
+- **Source acquisition.** The standing provider-wide decision in [source acquisition](docs/source-acquisition.md#project-use-policy) applies, as in the banner above.
+
+### Decision history through 24 September 2026
+
+The entries below are dated records and describe the situation on those dates. Phrases such as "awaiting", "now awaits" and "remains unauthorized" are as of that date.
 
 Repository status and retained evidence record: Phase 1B `PASS`; Phase 2B `PASS`; Sprint 2 baseline immutable `FAIL` / `RETAIN_FAIL_AND_STOP`; `DCV3_SHARED_MATCH_PACE_MIXTURE_V1` `TERMINAL_ROUTE_FAIL` at the `60/10` fold (`kappa = 0` boundary); the frozen **280 Sprint 2 targets remain inaccessible** to new routes; no promotion occurred. Do not rewrite or rerun that evidence. See [current status](docs/status/current-state.md).
 
@@ -252,6 +267,8 @@ Suggested dependency order: independent qualified corpus and Evaluation V2 freez
 
 The minimum Rust implementation samples an **already approved coherent distribution** with independent recorded seeds and produces reproducible evidence for analytic parity, event-specific confidence intervals, convergence across batches, tails, normalization, precision and resource/cost budgets. Initial reference counts of 1,000/10,000/100,000 are engineering starting points, **not pass thresholds**. Record `PASS`, `FAIL` or `INCONCLUSIVE`; a timeout or unresolved tail must never be called `PASS`. For simulation-capable promotion candidates, require representative simulation evidence **plus separate real-outcome evaluation and owner approval**. Advanced timing, cards, lineups, corners and H2H scenarios are separately scoped.
 
+**Recorded status.** `rust_simulation_authorized` is `false` in `docs/project-status.json`. The separate owner decision for the minimal simulator is still only a [proposal](docs/governance/simulation-authorization-proposal.md), and no capability registry or production publication path requires simulation `PASS` today. Separately, the PitchAPI V3, V4 and V5 execution decisions authorized frozen, protocol-scoped Rust builds (112,460 simulations per forecast) as evaluation evidence. V3 failed on Rust parity, V5 recorded parity `PASS`. That evidence supports the design but is not production authorization and does not count as predictive calibration.
+
 See [mandatory validation](docs/simulation/mandatory-validation.md), [authorization proposal](docs/governance/simulation-authorization-proposal.md) and [simulation failure runbook](docs/operations/runbooks/simulation-failure.md). No section here authorizes implementation or activation.
 
 ## 8. Gated execution sequence
@@ -265,6 +282,8 @@ See [mandatory validation](docs/simulation/mandatory-validation.md), [authorizat
 | G4 — optional families       | Sequential, individually gated portfolio: H2H, tags, dynamic/context, lineup/squad, keeper/threat, revisions and ensembles.                                                                                                                                              | Data qualification, pre-registration, no regression and owner decisions. |
 | G5 — minimal Rust validation | Once separately authorized, reconcile scaffold and implement accepted score sampler, parity suite, immutable sidecar, explicit failure states and publish linkage. Can run alongside foundational probability work; **not prerequisite for Phase 3A analytic research**. | Engine acceptance and **separate** production activation decision.       |
 | G6 — release                 | Approved model/calibrator, coherent forecast, Rust `PASS` per newly published production fixture (or approved labelled fallback), API projection, observability, shadow, cost and rollback.                                                                              | Promotion and enablement recorded as separate events.                    |
+
+The gates group the phases of the original plan (`docs/references/supplied-plan-2026-09-21.md`, section 14): G0 is Phase 0, G1 is Phase 1 plus the cross-phase engineering foundation, G2 is Phase 2, G3 is Phase 3, G4 covers Phases 4–7, G5 is Phase 8 and G6 is Phase 9. Current gate state is in [current state](docs/status/current-state.md), not in this table.
 
 This is a **dependency graph, not a claim that phases are already completed**. Detailed source deliverables remain in [implementation phases](docs/roadmap/implementation-phases.md) and [immediate backlog](docs/roadmap/immediate-backlog.md).
 
@@ -285,3 +304,10 @@ Apply this roadmap through scoped repository changes. Do not overwrite `docs/pro
 ## 11. Document map
 
 Use [documentation index](docs/README.md) as the canonical map. Archived [supplied original plan](docs/references/supplied-plan-2026-09-21.md) remains available for line-by-line comparison; it is not a second authority. This compact plan deliberately does not repeat detailed schema fields or experiment recipes.
+
+Related documents and how they rank against this plan:
+
+- [`docs/project-status.json`](docs/project-status.json) and [current state](docs/status/current-state.md): current facts. They outrank this plan.
+- [`AGENTS.md`](AGENTS.md) and [`CLAUDE.md`](CLAUDE.md): engineering rules and authority order.
+- [Post-redesign roadmap](MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md) and the [unified architecture investigation](docs/architecture/unified-redesign-2026-11-10/README.md) with [ADR 0005](docs/adr/0005-unified-architecture-evolution.md): follow-on planning under this plan, not approvals.
+- The original plan's recommended document split (section 25) is a target layout. The repository maps it as: ADRs in `docs/adr/`, engineering controls in `docs/engineering/`, runbooks in `docs/operations/runbooks/`, infrastructure in `infrastructure/`. Planned files that do not exist yet, such as `docs/operations/slos-and-alerts.md` or `docs/contracts/fixture-display-tags-v1.md`, are not written until the work that needs them is authorized.

@@ -4,8 +4,11 @@
 status. Run `make project-status-check` to verify it.
 
 Immutable evidence records gate and evaluation facts. `project-status.json`
-references that evidence and records the current execution state. Local
-`PLAN.md` remains an ignored roadmap mirror and is not repository evidence.
+references that evidence and records the current execution state. Root
+[`PLAN.md`](../PLAN.md) is the tracked proposed roadmap; it sequences work and
+is not repository evidence. A local `PLAN.OLD.md` (git-ignored) keeps the
+original 21 September plan for comparison only. The readable summary is
+[`status/current-state.md`](status/current-state.md).
 
 ## ProjectStatusV2 additions
 

@@ -37,9 +37,9 @@ Resolve implementation conflicts in this order unless the repository owner expli
 
 1. Current repository-owner requirements and corrections.
 2. Applicable `AGENTS.md` files.
-3. Resolved owner / Wayfinder decisions and append-only decision events.
+3. Resolved owner / Wayfinder decisions, append-only decision events, the tracked status in `docs/project-status.json`, and the immutable evidence records it references.
 4. Approved ADRs, policies, schemas, migrations, and other versioned contracts.
-5. `PLAN.md`.
+5. `PLAN.md` and the follow-on roadmaps it links (the post-redesign F0–F11 plan and the unified architecture investigation). A roadmap sequences work; it does not authorize it.
 6. Existing intentional tests and implementation evidence.
 7. Existing architecture and source behavior.
 8. Repository documentation.
@@ -712,7 +712,14 @@ Evidence is required for completion.
 Load these only when relevant to the current task:
 
 ```text
+PLAN.md
+docs/README.md
+docs/project-status.json
+docs/status/current-state.md
 docs/architecture.md
+docs/data-model.md
+docs/temporal-model.md
+docs/source-acquisition.md
 docs/backtesting.md
 docs/model-governance.md
 docs/git-delivery.md
@@ -723,7 +730,10 @@ docs/testing.md
 docs/writing-style.md
 docs/frontend-engineering.md
 docs/backend-engineering.md
+docs/engineering/code-intelligence.md
 ```
+
+`docs/README.md` is the index of every supporting document. `PLAN.OLD.md` is a git-ignored local copy of the original 21 September plan; the tracked archive is `docs/references/supplied-plan-2026-09-21.md`.
 
 ## Token-Efficient Validation Policy
 
@@ -737,7 +747,7 @@ docs/backend-engineering.md
 - Avoid unnecessary polling of long-running tests.
 - Never skip required validation or release gates just to save tokens.
 
-Implement the current task in CURRENT_TASK.md from start to finish, use CURRENT_TASK_STATUS.md to track the status.
+When a local `CURRENT_TASK.md` exists, implement that task from start to finish and track its status in `CURRENT_TASK_STATUS.md`. Both files are git-ignored task trackers and are never committed.
 
 ### Independent Research & Decision-Making
 

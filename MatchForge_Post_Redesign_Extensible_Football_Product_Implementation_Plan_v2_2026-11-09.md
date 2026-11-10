@@ -1,6 +1,8 @@
 # MatchForge — Post-Redesign Football Information, Product Intelligence & Operational Refinement Plan
 
-**Revision 2 — extensible implementation roadmap | 9 November 2026 (Africa/Lagos) | Begin after verified relevant foundations of** `MatchForge_Unified_Architecture_Redesign_v3_Extensible_Foundation_and_Continuous_Learning_2026-11-09.md`.
+**Revision 2 — extensible implementation roadmap | 9 November 2026 (Africa/Lagos) | Begin after verified relevant foundations of the unified redesign.** The unified redesign is tracked as [docs/architecture/unified-redesign-2026-11-10/](docs/architecture/unified-redesign-2026-11-10/README.md) with [ADR 0005](docs/adr/0005-unified-architecture-evolution.md). The v3 draft this plan was written against (`MatchForge_Unified_Architecture_Redesign_v3_Extensible_Foundation_and_Continuous_Learning_2026-11-09.md`) is not tracked in the repository; use the tracked docs.
+
+> **Authority.** This is a follow-on roadmap under root [PLAN.md](PLAN.md) and [AGENTS.md](AGENTS.md). It sequences product work and authorizes nothing. `docs/project-status.json` and resolved owner decisions outrank it, and PLAN.md's invariants hold for every phase: point-in-time integrity, immutable forecasts, display-only context with no forecast effect, research acceptance separate from promotion and production enablement, and no model change without its own owner decision. Each F-ticket needs its own task authorization.
 
 **Scope:** The 25 non-P0 items from the 40-item architecture gap audit, **except A01 (Probability Filter, excluded by owner)**, plus the actual delivery of future team/player, squad, lineup, formation and injury capabilities whose **contracts**, but not full features, are reserved in the unified plan. This is a follow-on **implementation plan**, not a new architectural investigation and not automatic approval to mutate operating data, acquire new provider data or start scientific research.
 
@@ -24,7 +26,7 @@ Do **not** delay an independent verified team information page until every optio
 | `docs/roadmap/implementation-phases.md` | Historical proposal already discusses dynamic team context, lineups, predicted XI, player effects and training-serving parity; **proposal ≠ approval or deployed capability**. |
 | `docs/frontend/api-requirements.md` and `docs/api/openapi.yaml` | Reconcile Go API → frontend parse contracts, missing/null semantics, market capability, authenticated endpoints and version compatibility before adding new screens. |
 | `docs/CODEBASE_REMEDIATION_REPORT.md` | Multiple prior code defects are marked fixed in isolated tests but operating adoption was separate. Verify before declaring a new defect or rebuilding work. |
-| Current `ft/data-status-remediation` / PR #179 and proposed Architecture V2/PR #178 | Respect ongoing merges/migration ownership and existing scientific/identity gates. This plan does not merge, rewrite or supersede those PRs. |
+| PR #178 (Architecture V2 / remediation), PR #179 (data status remediation) and PR #182 (post-remediation integration) | Merged to `main` on 10 November. Respect their migration ownership and the existing scientific/identity gates; this plan does not rewrite or supersede them. Architecture V2 is still `IN_PROGRESS` with no cutover in `docs/project-status.json`. |
 
 **Caveat:** Source files and reports establish implementation and *dated* evidence; they do not certify today's local service is synchronized, entitlement-approved or running the current branch.
 
