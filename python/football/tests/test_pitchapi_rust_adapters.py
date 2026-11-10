@@ -143,7 +143,7 @@ def test_v3_adapter_writes_the_contract_and_returns_a_receipt(
 
     raw, document = captured_input(tmp_path)
     assert_input_contract(raw, document, "v3")
-    assert document["protocol_id"] == runtime.PROTOCOL_ID
+    assert document["protocol_id"] == golden()["runs"]["v3"]["protocol_id"]
     assert document["forecast_id"] == f"{MATCH_ID}:champion"
     assert receipt.input_sha256 == hashlib.sha256(raw).hexdigest()
     assert (
