@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-10T09:39:14.007606Z",
+  "updated_at": "2026-11-10T10:33:54Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -3953,5 +3953,20 @@
       "source_acquisition": false,
       "programme_acceptance_changed": false
     }
+  },
+  "unified_architecture_foundation": {
+    "status": "IN_PROGRESS",
+    "authorized_tickets": [
+      "P00-01",
+      "P00-02",
+      "P01-01",
+      "P01-02"
+    ],
+    "branch": "ft/manual-backup-foundation",
+    "planning_pr": "https://github.com/sir-radar/match-forge/pull/183",
+    "report_ref": "docs/evidence/manual-backup-foundation.md",
+    "operating_activation": false,
+    "automatic_backups": false,
+    "destructive_cleanup": false
   }
 }
