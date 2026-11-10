@@ -188,7 +188,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	status, message := syncCompletion(map[string]interface{}{
 		"status":          "COMPLETED_WITH_ERRORS",
 		"failure_reasons": map[string]interface{}{"mvp": "API-Football request limit reached"},
-	})
+	}, SyncMVP)
 	if status != "FAILED" {
 		t.Fatalf("status = %q", status)
 	}
@@ -196,7 +196,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 		t.Fatalf("message = %v", message)
 	}
 
-	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"})
+	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"}, SyncMVP)
 	if status != "SUCCEEDED" || message != nil {
 		t.Fatalf("completion = %q %v", status, message)
 	}

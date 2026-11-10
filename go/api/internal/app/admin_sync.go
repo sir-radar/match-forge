@@ -248,7 +248,7 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	runner.mu.Lock()
 	runner.active[runID] = control
 	runner.mu.Unlock()
-	go runner.execute(runContext, runID, logPath, args, control)
+	go runner.execute(runContext, runID, logPath, args, control, request.Type)
 	// Activate committed work before reading the HTTP response: a disconnect
 	// after enqueue must not leave a successfully submitted job unstarted.
 	return runner.Get(ctx, runID)
@@ -427,7 +427,7 @@ func (runner *CommandSyncRunner) activeRunConflict(ctx context.Context) error {
 }
 
 func (runner *CommandSyncRunner) execute(
-	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl,
+	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl, syncType SyncType,
 ) {
 	defer func() {
 		control.cancel()
@@ -469,7 +469,7 @@ func (runner *CommandSyncRunner) execute(
 		runner.fail(runID, err)
 		return
 	}
-	status, errorMessage := syncCompletion(summary)
+	status, errorMessage := syncCompletion(summary, syncType)
 	if runner.cancelIfRequested(ctx, runID) {
 		return
 	}
@@ -541,7 +541,14 @@ func (runner *CommandSyncRunner) cancelIfRequested(ctx context.Context, runID st
 	return true
 }
 
-func syncCompletion(summary map[string]interface{}) (string, *string) {
+func syncCompletion(summary map[string]interface{}, syncType SyncType) (string, *string) {
+	if syncType == SyncManualBackup {
+		payload, err := json.Marshal(summary)
+		if err != nil || !validBackupSummary(payload) {
+			message := "backup verification evidence is incomplete; check the repository and retry manually"
+			return "FAILED", &message
+		}
+	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" && summary["status"] != "FAILED" {
 		return "SUCCEEDED", nil
 	}

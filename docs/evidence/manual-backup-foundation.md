@@ -141,10 +141,12 @@ the actual external volume UUID and authenticated repository ID, checks writable
 filesystem/capacity, and uses an open directory descriptor for every repository
 operation. A child changes to that pinned directory before executing Restic;
 replacing the mount display path cannot redirect writes to internal storage.
-Actual USB disconnection/eject behavior remains hardware-pending. Physical device
-capacity, encryption, key custody and independent password retention are unverified.
-All seven new example settings were added to the existing ignored `.env` without
-replacing local values; activation remains false and `.env` is never staged.
+Actual USB disconnection/eject behavior remains hardware-pending. A later read-only
+drive observation is recorded below. Key custody and independent password retention
+are unverified. All seven example settings are present in the existing ignored
+`.env`, preserving local values. Final inspection found its enable flag set, with
+empty destination/credential settings and recovery-key attestation false. Enrollment
+and the pending migration still block activation. `.env` is never staged.
 
 ### Executed disposable evidence
 
@@ -167,6 +169,10 @@ replacing local values; activation remains false and `.env` is never staged.
 - Shared-work integration proves bulk duplicate exclusion, live-lane independence,
   cancellation, same-request joining, failed-history preservation, old sync-list
   compatibility and pre-migration blocking. Generic retry cannot bypass preflight.
+  Completion also validates verification fields against the submitted manual-backup
+  work type, even if a child omits its backup marker. Valid generic sync behavior
+  is preserved. Migration-200 regression tests stop at their exact target; their
+  history/constraint/rollback assertions remain unchanged when migration 300 exists.
 - Final focused recovery suite: four cases passed in 51.17 seconds. Two additional
   isolated reader cases passed in 4.22 seconds, proving valid dataset/model reads
   and rejection of corrupted restored artifacts. Unit tests reject operating-root
@@ -176,7 +182,7 @@ replacing local values; activation remains false and `.env` is never staged.
 - Desktop Chromium and mobile WebKit journeys passed keyboard confirmation,
   cancellation, axe, 320-pixel reflow, text spacing, forced colors and reduced
   motion. Native button tab stops fixed the initially observed WebKit traversal
-  problem. Screen-reader interaction and physical-drive testing remain unrun;
+  problem. Screen-reader interaction and physical-drive write/disconnect tests remain unrun;
   no whole-site WCAG conformance claim is made.
 
 ### API/UI state coverage
@@ -193,10 +199,10 @@ replacing local values; activation remains false and `.env` is never staged.
 
 ### Final operating limits and cleanup handoff
 
-The final read-only release observation at 11:48:30 UTC still reports unknown
+Read-only release observations at 11:48:30 and 14:55:35 UTC still report unknown
 running commit/lock/worktree identity, latest migration `202611100100`, and pending
 `202611100200` plus new `202611100300`. All routes remain LEGACY; no migration,
-deployment, model promotion or cutover was performed. Operating DB measured
+deployment, model promotion or cutover was performed. At 11:48, operating DB measured
 14,036,047,551 bytes; source registry 82,650 rows / 7,566,375,177 registered bytes.
 That source-byte sum overlaps other storage and is not a complete recovery size.
 
@@ -212,7 +218,17 @@ source, historical identity or retired artifact was changed. Private receipts:
 `reference-conflict-detail.json`; these are protected local diagnostics, not Git
 deliverables. Exact full operating dataset size, complete original-file recovery,
 external initial/incremental sizes, retention capacity and operating RTO remain
-unverified. A connected 1 TB drive is not assumed from the owner's hardware choice.
+unverified.
+
+At 14:53:17 UTC the newly connected `NTC` volume was inspected read-only:
+external and writable, exFAT, 1,000,185,528,320 bytes capacity and
+678,952,960,000 bytes free. Free space changed between observations; it is a point
+sample, not reserved capacity. Stable volume UUID and mount metadata are retained
+privately in `.local/foundation/external-drive.json`. Filesystem encryption is
+unverified; mandatory Restic encryption is still required. No `MatchForgeBackup`
+repository exists and no drive write was performed. Enrollment awaits an owner-supplied
+protected credential location and separate-key attestation; the request is pending.
+No reformat is required or authorized.
 
 The [separate cleanup proposal](../recovery-cleanup-proposal.md) identifies exact
 duplicate reports, experimental DBs, old backups and caches with dependency,
@@ -221,7 +237,7 @@ recovery, risk and approval requirements. Both named report files still measure
 verified point when capacity permits; sustainable additional retention awaits real
 growth measurements. Automatic pruning remains disabled.
 
-Next owner action: connect/enroll the actual drive, retain its independent key,
+Next owner action: provide the protected key location/attestation, enroll the drive,
 resolve the legacy locator/original-file blockers, approve the scoped operating
 migration/activation and measure a full real backup/isolated restore. Only then
 select a later roadmap cohort; P02 source-proven identity/score work is a candidate,

@@ -101,6 +101,23 @@ func TestBackupSharedFixtureMatchesGoTransport(t *testing.T) {
 	}
 }
 
+func TestManualBackupCompletionRequiresEvidenceWithoutChildMarker(t *testing.T) {
+	for _, summary := range []map[string]interface{}{
+		{"status": "COMPLETED"},
+		{"backup": false, "status": "VERIFIED"},
+		{"status": "VERIFIED", "verified": true},
+	} {
+		status, message := syncCompletion(summary, SyncManualBackup)
+		if status != "FAILED" || message == nil {
+			t.Fatal("manual backup completed without verified recovery evidence")
+		}
+	}
+	verified := map[string]interface{}{"status": "VERIFIED", "verified": true, "snapshot_id": strings.Repeat("a", 64), "verified_at": "2026-11-10T11:00:00Z", "captured_at": "2026-11-10T10:55:00Z"}
+	if status, message := syncCompletion(verified, SyncManualBackup); status != "SUCCEEDED" || message != nil {
+		t.Fatal("valid manual backup evidence rejected")
+	}
+}
+
 func TestBackupReminderUsesVerifiedTimeAndThirtyDays(t *testing.T) {
 	verified := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
 	run := SyncRun{Status: "SUCCEEDED", Summary: map[string]interface{}{"verified": true, "verified_at": verified.Format(time.RFC3339), "captured_at": verified.Add(-time.Minute).Format(time.RFC3339)}}
