@@ -134,6 +134,7 @@ mkdir -p "$FOOTBALL_TOOLS_BIN" "$FOOTBALL_PROJECT_ROOT/.local"
 make_temp_dir
 install_uv
 install_python
+uv run --locked python scripts/install_restic.py
 install_rust
 install_go
 install_go_tool goose "$GOOSE_VERSION" github.com/pressly/goose/v3/cmd/goose

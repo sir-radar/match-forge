@@ -8,6 +8,7 @@ export MATCHFORGE_PYTHON_COMMAND MATCHFORGE_RUST_COMMAND
 PROTOTYPE_DIR := experiments/sprint1_roundtrip
 PROTOTYPE_COMPOSE := $(PROTOTYPE_DIR)/compose.yaml
 MIGRATIONS_DIR := infrastructure/migrations
+RECOVERY_SCRIPTS := scripts/foundation_release.py scripts/capture_architecture_v2_baseline.py scripts/backup_recovery.py scripts/recovery_files.py scripts/recovery_scope.py scripts/backup_destination.py scripts/manual_backup.py scripts/install_restic.py
 SPRINT2_REPORT_ROOT ?= $(CURDIR)/.local/reports/sprint2
 CODE_COMMIT_SHA ?= $(shell git rev-parse HEAD)
 DEPENDENCY_LOCK_SHA256 ?= $(shell shasum -a 256 uv.lock | cut -d ' ' -f 1)
@@ -40,20 +41,21 @@ migration-status: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
 format:
-	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts/verify_code_intelligence.py
-	@$(TOOL_ENV); uv run ruff format python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
+	@$(TOOL_ENV); uv run ruff format python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
 	@$(TOOL_ENV); cargo fmt --all
 	@$(TOOL_ENV); find go -type f -name '*.go' -exec gofmt -w {} +
 
 format-check:
-	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
 	@$(TOOL_ENV); cargo fmt --all --check
 	@$(TOOL_ENV); test -z "$$(find go -type f -name '*.go' -exec gofmt -l {} +)"
 
 lint:
-	@$(TOOL_ENV); uv run ruff check python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff check python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
 	@$(TOOL_ENV); uv run mypy
 	@$(TOOL_ENV); uv run mypy --strict scripts/verify_code_intelligence.py tests/test_code_intelligence.py
+	@$(TOOL_ENV); uv run mypy --strict $(RECOVERY_SCRIPTS)
 	@$(TOOL_ENV); cargo clippy --workspace --all-targets --all-features -- -D warnings
 	@$(TOOL_ENV); cd go/api && go vet ./...
 	@$(TOOL_ENV); cd go/api && golangci-lint run ./...
