@@ -6,6 +6,8 @@ import argparse
 import json
 import os
 import plistlib
+import pwd
+import shlex
 import shutil
 import stat
 import subprocess
@@ -14,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from scripts.backup_recovery import recovery_estimate
 from scripts.capture_architecture_v2_baseline import ROOT
 
 
@@ -122,29 +125,29 @@ def credential_environment(config: BackupConfig) -> dict[str, str]:
             ) from error
         environment["RESTIC_PASSWORD_FILE"] = str(path.resolve())
     elif config.keychain_service and not config.password_file:
+        command = [
+            "/usr/bin/security",
+            "find-generic-password",
+            "-a",
+            pwd.getpwuid(os.getuid()).pw_name,
+            "-s",
+            config.keychain_service,
+            "-w",
+        ]
         try:
             result = subprocess.run(
-                [
-                    "security",
-                    "find-generic-password",
-                    "-s",
-                    config.keychain_service,
-                    "-a",
-                    "matchforge",
-                    "-w",
-                ],
+                command,
                 capture_output=True,
                 check=True,
                 timeout=15,
             )
-            password = result.stdout.decode().rstrip("\r\n")
-            if not password:
+            if not result.stdout.strip():
                 raise ValueError("empty Keychain password")
         except (OSError, ValueError, subprocess.SubprocessError) as error:
             raise BackupError(
                 "CREDENTIALS", "Unlock the enrolled backup password in macOS Keychain."
             ) from error
-        environment["RESTIC_PASSWORD"] = password
+        environment["RESTIC_PASSWORD_COMMAND"] = shlex.join(command)
     else:
         raise BackupError(
             "CREDENTIALS", "Configure exactly one password source: Keychain or an owner-only file."
@@ -277,6 +280,12 @@ def main() -> None:
         )
     restic = Restic(repository, credential_environment(config), volume["device_id"])
     restic.require_version()
+    estimate = recovery_estimate(
+        Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
+    )
+    headroom_warning = require_capacity(
+        volume["free_bytes"], estimate["estimated_staging_bytes"], volume["capacity_bytes"]
+    )
     descriptor = os.open(config.mount, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:
         if os.fstat(descriptor).st_dev != volume["device_id"]:
@@ -286,7 +295,16 @@ def main() -> None:
         os.close(descriptor)
     inspect_volume(config)
     restic.run("init", "--repository-version", "2")
-    print(json.dumps({"repository_id": restic.identity(), "operating_activation": False}))
+    print(
+        json.dumps(
+            {
+                "repository_id": restic.identity(),
+                "operating_activation": False,
+                "estimated_staging_bytes": estimate["estimated_staging_bytes"],
+                "headroom_warning": headroom_warning,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

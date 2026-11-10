@@ -71,8 +71,14 @@ def unique_references(references: Iterable[FileReference]) -> list[FileReference
             and previous.size != ref.size
         ):
             raise RecoveryReferenceError("conflicting recovery sizes")
-        if previous is None or ref.sha256 is not None:
-            result[key] = ref
+        if previous:
+            ref = FileReference(
+                ref.root,
+                ref.path,
+                ref.sha256 or previous.sha256,
+                previous.size if ref.size is None else ref.size,
+            )
+        result[key] = ref
     return sorted(result.values(), key=lambda ref: (ref.root, ref.path))
 
 

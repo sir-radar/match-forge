@@ -120,6 +120,9 @@ integration test separately replays globals and ownership into a new networkless
 PostgreSQL container. Interrupted drills may leave a disposable database/root;
 inspect their exact ownership before removing them. A failed/incomplete capture
 or corrupt bytes cannot be used as passing recovery evidence.
+When multiple registrations name one file, every known checksum and byte-size
+requirement is retained regardless of registration order; deduplication cannot
+discard a stricter requirement.
 
 Thirty-day manual backups are the owner-selected policy. They may leave roughly
 a month of changes without an external recovery point; they do not guarantee the
@@ -159,23 +162,28 @@ and [restoration](https://restic.readthedocs.io/en/stable/050_restore.html).
    state. A display name is insufficient. APFS Encrypted is recommended when
    suitable; do not reformat an existing drive to use this workflow. Restic
    encryption is mandatory even when filesystem encryption is unavailable.
-2. Retain a strong recovery password independently of the Mac and drive. Put the
-   local copy in an owner-only regular file (`chmod 600`), or create a generic
-   password in Keychain Access with account `matchforge` and the chosen service
-   name. Never put the password in a command argument, Git or `.env`.
+2. Retain a strong recovery password independently of the Mac and drive. For NTC,
+   create a generic password in Keychain Access with the current macOS account
+   (`$USER`) and service `matchforge-restic-ntc`. The entry is checked without
+   displaying its password. Restic retrieves it through `RESTIC_PASSWORD_COMMAND`,
+   using `/usr/bin/security find-generic-password -a <current-user> -s
+   matchforge-restic-ntc -w`. The command contains no password; the password is not
+   placed in arguments, environment values, configuration, Git or logs.
 3. Explicitly initialize a new dedicated repository:
 
    ```sh
    uv run --locked python -m scripts.backup_destination \
      --mount <external-volume-mount> --volume-uuid <verified-volume-uuid> \
-     --password-file <owner-only-password-file> --recovery-key-retained
+     --keychain-service matchforge-restic-ntc --recovery-key-retained
    ```
 
-   Use `--keychain-service <service-name>` instead of `--password-file` for
-   Keychain. Existing `MatchForgeBackup` directories are never reinitialized.
+   Enrollment checks the exact registered-file estimate and available capacity
+   before creating the directory. Unresolved originals block enrollment as well
+   as backup. Existing `MatchForgeBackup` directories are never reinitialized.
    Record the returned repository ID separately; it is checked after authentication.
 4. Set the seven `MATCHFORGE_BACKUP_*` settings in local `.env` from the example,
-   preserving all existing values. Select exactly one credential source. Set
+   preserving all existing values. Use the NTC Keychain service, leaving the
+   password-file setting empty. Set
    `RECOVERY_KEY_RETAINED=true` only after retaining the independent password.
    `ENABLED=true` remains a separate operating activation, not an enrollment side
    effect. The password itself is never a configuration value.

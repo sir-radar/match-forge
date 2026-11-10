@@ -142,11 +142,14 @@ filesystem/capacity, and uses an open directory descriptor for every repository
 operation. A child changes to that pinned directory before executing Restic;
 replacing the mount display path cannot redirect writes to internal storage.
 Actual USB disconnection/eject behavior remains hardware-pending. A later read-only
-drive observation is recorded below. Key custody and independent password retention
-are unverified. All seven example settings are present in the existing ignored
-`.env`, preserving local values. Final inspection found its enable flag set, with
-empty destination/credential settings and recovery-key attestation false. Enrollment
-and the pending migration still block activation. `.env` is never staged.
+drive observation is recorded below. The current-user Keychain entry is verified
+nonempty without displaying or logging it. Restic uses `RESTIC_PASSWORD_COMMAND`;
+the password is not copied into its environment. Independent key retention is
+owner-promised, not yet attested. All seven example settings are present in the
+ignored `.env`, preserving unrelated local values. NTC identity and the selected
+Keychain service are configured; its existing enable flag is preserved. The
+repository ID remains empty and recovery-key attestation false. Missing scope
+dependencies and the pending migration still block activation. `.env` is never staged.
 
 ### Executed disposable evidence
 
@@ -226,9 +229,14 @@ external and writable, exFAT, 1,000,185,528,320 bytes capacity and
 sample, not reserved capacity. Stable volume UUID and mount metadata are retained
 privately in `.local/foundation/external-drive.json`. Filesystem encryption is
 unverified; mandatory Restic encryption is still required. No `MatchForgeBackup`
-repository exists and no drive write was performed. Enrollment awaits an owner-supplied
-protected credential location and separate-key attestation; the request is pending.
-No reformat is required or authorized.
+repository exists and no drive write was performed. The owner selected current-user
+Keychain service `matchforge-restic-ntc`. Its nonempty entry passed a protected
+read-only check. The complete essential scope still cannot be enumerated because
+original-file dependencies are unresolved, so fit within available space with
+reasonable headroom is **UNPROVEN**. Enrollment now uses the same scope estimator
+as backup preflight and stays blocked. Independent key retention awaits attestation.
+Private receipt: `.local/foundation/enrollment-preflight.json`. No reformat is
+required or authorized.
 
 The [separate cleanup proposal](../recovery-cleanup-proposal.md) identifies exact
 duplicate reports, experimental DBs, old backups and caches with dependency,
@@ -237,7 +245,7 @@ recovery, risk and approval requirements. Both named report files still measure
 verified point when capacity permits; sustainable additional retention awaits real
 growth measurements. Automatic pruning remains disabled.
 
-Next owner action: provide the protected key location/attestation, enroll the drive,
+Next owner action: attest separate key retention, resolve capacity and enroll the drive,
 resolve the legacy locator/original-file blockers, approve the scoped operating
 migration/activation and measure a full real backup/isolated restore. Only then
 select a later roadmap cohort; P02 source-proven identity/score work is a candidate,

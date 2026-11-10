@@ -67,6 +67,27 @@ def require_compose_database(connection: psycopg.Connection[Any], database: str)
         raise ValueError("dump transport differs from selected database identity")
 
 
+def recovery_estimate(data_root: Path) -> dict[str, int]:
+    with psycopg.connect(
+        os.environ["DATABASE_URL"],
+        options="-c default_transaction_read_only=on -c statement_timeout=30000",
+    ) as connection:
+        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        row = connection.execute("SELECT pg_database_size(current_database())").fetchone()
+        assert row is not None
+        refs = registered_files(connection, data_root)
+        referenced_bytes = sum(
+            regular_file(data_root if ref.root == "data" else ROOT, ref.path).stat().st_size
+            for ref in refs
+        )
+        connection.rollback()
+    return {
+        "referenced_files": len(refs),
+        "referenced_bytes": referenced_bytes,
+        "estimated_staging_bytes": int(row[0]) + referenced_bytes,
+    }
+
+
 def capture_recovery(output: Path, data_root: Path) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=False, mode=0o700)
     report: dict[str, Any] = {

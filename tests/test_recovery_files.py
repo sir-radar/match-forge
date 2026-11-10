@@ -83,3 +83,18 @@ def test_legacy_resource_locator_requires_proven_bytes_or_existing_provider_layo
     )
     with pytest.raises(RecoveryReferenceError, match="verified physical file locator"):
         legacy_source_path("unknown", None, "native.json", "manifest.json", "a" * 64, "b" * 64)
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_duplicate_references_preserve_every_registered_size_requirement(
+    tmp_path: Path, reverse: bool
+) -> None:
+    payload = b"original"
+    (tmp_path / "file").write_bytes(payload)
+    digest = hashlib.sha256(payload).hexdigest()
+    refs = [FileReference("data", "file", digest, 999), FileReference("data", "file", digest)]
+    if reverse:
+        refs.reverse()
+    report = capture_files(refs, {"data": tmp_path}, tmp_path / "capture")
+    assert report["status"] == "INCOMPLETE"
+    assert len(report["failures"]) == 1

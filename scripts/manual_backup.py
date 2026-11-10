@@ -23,28 +23,16 @@ from scripts.backup_destination import (
     inspect_volume,
     require_capacity,
 )
-from scripts.backup_recovery import capture_recovery, verify_capture
+from scripts.backup_recovery import capture_recovery, recovery_estimate, verify_capture
 from scripts.capture_architecture_v2_baseline import ROOT, write_json
-from scripts.recovery_files import RecoveryReferenceError, registered_files, regular_file
+from scripts.recovery_files import RecoveryReferenceError
 
 
 def preview(config: BackupConfig) -> dict[str, Any]:
     _, volume = destination(config)
     data_root = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
-    with psycopg.connect(
-        os.environ["DATABASE_URL"],
-        options="-c default_transaction_read_only=on -c statement_timeout=30000",
-    ) as connection:
-        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
-        row = connection.execute("SELECT pg_database_size(current_database())").fetchone()
-        assert row is not None
-        refs = registered_files(connection, data_root)
-        sizes = [
-            regular_file(data_root if ref.root == "data" else ROOT, ref.path).stat().st_size
-            for ref in refs
-        ]
-        connection.rollback()
-    estimated = row[0] + sum(sizes)
+    estimate = recovery_estimate(data_root)
+    estimated = estimate["estimated_staging_bytes"]
     low_external = require_capacity(volume["free_bytes"], estimated, volume["capacity_bytes"])
     internal = shutil.disk_usage(ROOT)
     low_internal = require_capacity(internal.free, 2 * estimated, internal.total)
@@ -57,9 +45,7 @@ def preview(config: BackupConfig) -> dict[str, Any]:
             else "Preflight passed. Snapshot checksums will be verified during capture."
         ),
         "drive": volume,
-        "referenced_files": len(refs),
-        "referenced_bytes": sum(sizes),
-        "estimated_staging_bytes": estimated,
+        **estimate,
         "impact": "One dump worker and two Restic CPUs/readers. Capture plus read-back "
         "verification needs temporary disk space. Full database restore drills are separate "
         "manual actions. Duration is unmeasured for this operating scope.",
