@@ -8,7 +8,7 @@ The workflow installs the versions owned by the repository toolchain contract:
 ```text
 uv 0.12.1
 Python 3.13.14
-Go 1.27.0
+Go 1.27.3
 Rust 1.97.1
 goose 3.27.1
 golangci-lint 2.11.4
