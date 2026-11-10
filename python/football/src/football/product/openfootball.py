@@ -30,6 +30,8 @@ PROVIDER_CODE = "openfootball"
 REPOSITORY_URL = "https://github.com/openfootball/football.json.git"
 PARSER_VERSION = "openfootball-product-v2"
 LOGGER = logging.getLogger(__name__)
+_GIT_NETWORK_TIMEOUT_SECONDS = 300.0
+_GIT_LOCAL_TIMEOUT_SECONDS = 30.0
 _SEASON = re.compile(r"^(?:19|20)\d{2}(?:[-_]\d{2,4})?$")
 _COUNTRIES = {
     "at": "Austria",
@@ -106,8 +108,9 @@ def update_mirror(mirror: Path, repository: str = REPOSITORY_URL) -> str:
                 ["git", "-C", str(mirror), "fetch", "--depth=1", "origin", "master"],
                 check=True,
                 capture_output=True,
+                timeout=_GIT_NETWORK_TIMEOUT_SECONDS,
             )
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             revision = _local_revision(mirror)
             LOGGER.warning("OpenFootball refresh failed; using cached revision %s", revision)
             return revision
@@ -115,12 +118,14 @@ def update_mirror(mirror: Path, repository: str = REPOSITORY_URL) -> str:
             ["git", "-C", str(mirror), "checkout", "--detach", "FETCH_HEAD"],
             check=True,
             capture_output=True,
+            timeout=_GIT_LOCAL_TIMEOUT_SECONDS,
         )
     else:
         subprocess.run(
             ["git", "clone", "--depth=1", repository, str(mirror)],
             check=True,
             capture_output=True,
+            timeout=_GIT_NETWORK_TIMEOUT_SECONDS,
         )
     return _local_revision(mirror)
 
@@ -344,6 +349,7 @@ def _local_revision(mirror: Path) -> str:
         check=True,
         capture_output=True,
         text=True,
+        timeout=_GIT_LOCAL_TIMEOUT_SECONDS,
     )
     revision = result.stdout.strip()
     if not re.fullmatch(r"[0-9a-f]{40}", revision):

@@ -29,6 +29,26 @@ def test_update_mirror_uses_valid_local_revision_when_fetch_fails(
     assert not any("checkout" in command for command in commands)
 
 
+def test_update_mirror_bounds_git_and_uses_the_cache_when_fetch_hangs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mirror = tmp_path / "openfootball"
+    (mirror / ".git").mkdir(parents=True)
+    revision = "b" * 40
+    timeouts: dict[str, object] = {}
+
+    def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        timeouts[command[3]] = kwargs.get("timeout")
+        if "fetch" in command:
+            raise subprocess.TimeoutExpired(command, 300.0)
+        return subprocess.CompletedProcess(command, 0, stdout=f"{revision}\n")
+
+    monkeypatch.setattr(subprocess, "run", run)
+
+    assert update_mirror(mirror) == revision
+    assert timeouts == {"fetch": 300.0, "rev-parse": 30.0}
+
+
 def test_update_mirror_does_not_hide_first_acquisition_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

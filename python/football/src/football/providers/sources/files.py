@@ -48,8 +48,9 @@ class OpenFootballSource:
                     f"{entry.source_revision}:{resource_key}",
                 ],
                 stderr=subprocess.PIPE,
+                timeout=30,
             )
-        except subprocess.CalledProcessError as error:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
             raise ProviderConfigurationError(
                 "OpenFootball pinned resource is unavailable"
             ) from error

@@ -262,8 +262,9 @@ def report_provenance(environment: Mapping[str, str]) -> tuple[str, str]:
                 capture_output=True,
                 check=True,
                 text=True,
+                timeout=15,
             ).stdout.strip()
-        except (OSError, subprocess.CalledProcessError) as error:
+        except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
             raise ValueError("code Git SHA is required; set FOOTBALL_CODE_COMMIT_SHA") from error
     dependency_lock_sha256 = environment.get("FOOTBALL_DEPENDENCY_LOCK_SHA256", "")
     if not dependency_lock_sha256:

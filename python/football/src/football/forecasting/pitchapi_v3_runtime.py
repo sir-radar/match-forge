@@ -45,6 +45,8 @@ V4_PROTOCOL_ID = "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
 V4_ALGORITHM_VERSION = "pitchapi-score-categorical-v2"
 V4_SEED_SCHEDULE_ID = "pitchapi-v4-splitmix64-sha256-v1"
 V3_CANONICALIZER_SHA256 = "4f4709b38c8d6c72e93c433074fed3d7788eb4018cfddfe67f73ae5f438e209c"
+# One validation takes well under a second; this only bounds a hung process.
+_RUST_TIMEOUT_SECONDS = 120.0
 _DOMAINS = {
     "bundesliga_2022_23": (
         "893b888a36474c7cf55a207cb266d32a60351c0c87e9659a38a2cdc962784f74",
@@ -366,35 +368,20 @@ class RustSimulationV3:
         )
 
     def _run(self, path: str, digest: str, workers: int) -> bytes:
-        result = subprocess.run(
-            [str(self._binary), path, digest, str(workers)],
-            capture_output=True,
-            check=False,
-        )
-        if result.returncode != 0:
-            raise PitchApiV3RuntimeError(
-                f"Rust simulation failed: {result.stderr.decode(errors='replace')}"
-            )
-        return result.stdout
+        return _run_rust([str(self._binary), path, digest, str(workers)], "Rust simulation failed")
 
     def _canonicalize(self, payload: bytes, *, atoms: bool = False) -> bytes:
         with tempfile.NamedTemporaryFile() as handle:
             handle.write(payload)
             handle.flush()
-            result = subprocess.run(
+            return _run_rust(
                 [
                     str(self._binary),
                     "--canonicalize-atoms" if atoms else "--canonicalize",
                     handle.name,
                 ],
-                capture_output=True,
-                check=False,
+                "Rust canonicalization failed",
             )
-        if result.returncode != 0:
-            raise PitchApiV3RuntimeError(
-                f"Rust canonicalization failed: {result.stderr.decode(errors='replace')}"
-            )
-        return result.stdout
 
 
 class PitchApiSnapshotCorpusV4(PitchApiSnapshotCorpusV3):
@@ -500,31 +487,33 @@ class RustSimulationV4:
         )
 
     def _run(self, path: str, digest: str, workers: int) -> bytes:
-        result = subprocess.run(
-            [str(self._binary), path, digest, str(workers)],
-            capture_output=True,
-            check=False,
+        return _run_rust(
+            [str(self._binary), path, digest, str(workers)], "V4 Rust simulation failed"
         )
-        if result.returncode != 0:
-            raise PitchApiV3RuntimeError(
-                f"V4 Rust simulation failed: {result.stderr.decode(errors='replace')}"
-            )
-        return result.stdout
 
     def _canonicalize_atoms(self, atoms: list[dict[str, object]]) -> bytes:
         with tempfile.NamedTemporaryFile() as handle:
             handle.write(canonical_json_bytes(atoms))
             handle.flush()
-            result = subprocess.run(
+            return _run_rust(
                 [str(self._canonicalizer_binary), "--canonicalize-atoms", handle.name],
-                capture_output=True,
-                check=False,
+                "V3 atom canonicalization failed",
             )
-        if result.returncode != 0:
-            raise PitchApiV3RuntimeError(
-                f"V3 atom canonicalization failed: {result.stderr.decode(errors='replace')}"
-            )
-        return result.stdout
+
+
+def _run_rust(command: list[str], failure: str) -> bytes:
+    """Run one simulation-core command; a hung or failing process stops the evaluation."""
+    try:
+        result = subprocess.run(
+            command, capture_output=True, check=False, timeout=_RUST_TIMEOUT_SECONDS
+        )
+    except subprocess.TimeoutExpired as error:
+        raise PitchApiV3RuntimeError(
+            f"{failure}: no result within {_RUST_TIMEOUT_SECONDS:g} seconds"
+        ) from error
+    if result.returncode != 0:
+        raise PitchApiV3RuntimeError(f"{failure}: {result.stderr.decode(errors='replace')}")
+    return result.stdout
 
 
 def load_model_parameters(payload: Mapping[str, object]) -> dict[str, float]:

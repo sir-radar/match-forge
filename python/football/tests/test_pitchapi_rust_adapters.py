@@ -44,6 +44,10 @@ else:
     if hashlib.sha256(payload).hexdigest() != arguments[1]:
         sys.exit("INPUT_HASH_MISMATCH: input bytes do not match expected SHA-256")
     mode = os.environ.get("STAND_IN_MODE", "")
+    if mode == "hang":
+        import time
+
+        time.sleep(30)
     if mode == "fail":
         sys.exit("PARITY_FAILURE: stand-in refusal")
     with open(os.environ["STAND_IN_CAPTURE"], "wb") as handle:
@@ -269,6 +273,26 @@ def test_v4_adapter_fails_closed(
         adapter.validate(
             target=target(),
             model_role="CHALLENGER",
+            model_artifact_sha256=MODEL_SHA256,
+            distribution=distribution(),
+        )
+
+
+def test_adapter_stops_waiting_for_a_hung_executable(
+    stand_in: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runtime, "_RUST_TIMEOUT_SECONDS", 0.5)
+    monkeypatch.setenv("STAND_IN_MODE", "hang")
+    write_output(tmp_path, "v3")
+    adapter = runtime.RustSimulationV3(
+        binary=stand_in, policy_sha256=POLICY_SHA256, build_sha256=build_sha256(stand_in)
+    )
+    with pytest.raises(
+        runtime.PitchApiV3RuntimeError, match="Rust simulation failed: no result within 0.5 seconds"
+    ):
+        adapter.validate(
+            target=target(),
+            model_role="CHAMPION",
             model_artifact_sha256=MODEL_SHA256,
             distribution=distribution(),
         )

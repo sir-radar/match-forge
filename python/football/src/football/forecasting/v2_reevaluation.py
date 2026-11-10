@@ -71,6 +71,7 @@ def repository_execution_state(root: Path) -> GitExecutionState:
             check=True,
             capture_output=True,
             text=True,
+            timeout=30,
         ).stdout.strip()
 
     head = git("rev-parse", "HEAD")
