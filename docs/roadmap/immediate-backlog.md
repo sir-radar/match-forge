@@ -8,9 +8,9 @@ Order this backlog through the verified decision/capability state; do not run bl
 
 ## Current PitchAPI research boundary
 
-Post-hoc diagnosis found six intercept and eight slope failures across home, draw, and away probabilities. A development-only shrinkage-calibration comparison is proposed in [the successor decision package](../governance/pitchapi-v5-calibration-successor-decision-package.md), but no successor model is admitted.
+Post-hoc diagnosis found six intercept and eight slope failures across home, draw, and away probabilities. The development-only shrinkage-calibration comparison in the [successor decision package](../governance/pitchapi-v5-calibration-successor-decision-package.md) was authorized, run and `DEVELOPMENT_REJECTED`; no successor model is admitted and the V5 targets stay spent. Later routes (multi-domain development, Dixon–Coles V2, H2H, context features, multimodel challengers and the full-coverage V2 re-evaluation) are recorded in [current state](../status/current-state.md). Research is paused for the MVP, so there is no pending authorize-or-reject decision in this list.
 
-Next decision: authorize or reject that bounded development-only comparison. Any later authoritative confirmation requires untouched competition-seasons, a frozen protocol, and separate acquisition and execution decisions.
+Any later authoritative confirmation requires untouched competition-seasons, a frozen protocol, and separate acquisition and execution decisions.
 
 ---
 
@@ -48,7 +48,7 @@ Phase 1C coverage work, Evaluation V2 design, and registration of the already au
 
 ### Frontend API integration
 
-Status: PROPOSED
+Status: PARTLY IMPLEMENTED. The MVP Go API and Next.js app exist and `docs/api/openapi.yaml` (v0.9.1, "MatchForge MVP API") matches the Go routes except the sync-run retry and stop endpoints, which the spec does not list. The remaining items below are still proposals until each is verified against the repository.
 
 1. Audit existing fixture, forecast, simulation and capability APIs.
 2. Reconcile implementation against the proposed public OpenAPI.

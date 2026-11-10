@@ -1,6 +1,6 @@
 # PitchAPI domain-stratified V3 Rust validation policy
 
-Status: `FROZEN FOR OFFLINE IMPLEMENTATION — EVALUATION NOT AUTHORIZED`
+Status: `HISTORICAL — EXECUTED AND FAILED`. The one authorized V3 execution stopped fail-closed on Rust parity (`PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3` is `TERMINAL_FAIL_RUST_PARITY`, permanently closed; see the [terminal failure record](../evidence/pitchapi-domain-stratified-v3-terminal-failure-2026-09-26.md)). The policy text below is unchanged. Its original status was `FROZEN FOR OFFLINE IMPLEMENTATION — EVALUATION NOT AUTHORIZED`.
 
 Protocol: `PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3`
 
