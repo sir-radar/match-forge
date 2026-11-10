@@ -2,6 +2,11 @@
 
 FotMob and PitchAPI operational ingestion is separate from protected research snapshots and frozen evaluations.
 
+The [provider-wide acquisition policy](source-acquisition.md#project-use-policy)
+governs all sources, including these two operational adapters. It records the
+standing owner authorization separately from provider terms and entitlements.
+Use its access register for other providers and supported acquisition paths.
+
 Enable providers only in local development:
 
 ```text
@@ -82,7 +87,7 @@ New OpenFootball and Football-Data.co.uk imports write immutable `HistoricalSour
 
 Raw `product_team_match_history` evidence is retained. Identity admissions and history eligibility/fact changes are append-only decisions with separate source and decision timestamps. Forecast reconstruction calls `product_eligible_history_at(knowledge_cutoff)`; the current `product_eligible_match_history` view serves prospective context. Later promotion, revocation, quarantine or correction cannot change earlier cutoffs. Migration `202610121100` withholds history lacking verified admission evidence. After migration, seed only verified retained mappings prospectively with `python -m football.product.identity_audit --database-url "$DATABASE_URL" --data-root "$FOOTBALL_DATA_ROOT" --admit-verified`. Without `--admit-verified`, the command is read-only. It reports verified origin/crosswalk, unresolved and contradictory classifications; unresolved cases require review. No admission time is inferred or backdated. Import counts differ from eligible counts; the ten-match requirement is unchanged. `history-coverage` reports each upcoming fixture's reason and every unmatched PitchAPI observation with its snapshot and latest review reason.
 
-Historical acquisition uses persistent provider/competition/season checkpoints, cached checksum-verified snapshots, stale-claim recovery, failure cooldowns, and fair attempt ordering. PitchAPI discovers the supported league catalogue; FotMob discovers seasons for configured competition mappings. Per-run budgets bound acquisition without limiting eventual scope coverage:
+Historical acquisition uses persistent provider/competition/season checkpoints, cached checksum-verified snapshots, stale-claim recovery, failure cooldowns, and fair attempt ordering. PitchAPI discovers the supported league catalogue; FotMob discovers seasons for configured competition mappings. Discovery summaries are retained in command results, including errors and deferrals. One provider's failure does not stop independent selected backfills. Per-run budgets bound acquisition without limiting eventual scope coverage:
 
 Automatic acquisition is disabled by default. Set `MATCHFORGE_HISTORY_SYNC_ENABLED=true` only after enabling the intended provider. The separate history schedule runs once per hour by default (`MATCHFORGE_HISTORY_SYNC_INTERVAL`, minimum `1h`), with at most two season scopes per enabled provider (`MATCHFORGE_FOTMOB_HISTORY_SCOPE_LIMIT` and `MATCHFORGE_PITCHAPI_HISTORY_SCOPE_LIMIT`) and one due catalogue discovery per provider (`MATCHFORGE_HISTORY_DISCOVERY_LIMIT`). Changing seasons and catalogues revalidate after 24 hours by default (`MATCHFORGE_HISTORY_FRESHNESS_SECONDS`); closed seasons replay verified retained bytes unless an operator uses `--refresh`. Historical requests defer while live synchronization is active or recorded provider quota must be reserved. `/admin/data-sync` shows queue counts, requests, deferrals, measured throughput and an estimate only when enough observations exist. The first-observed time for scopes migrated without an admission timestamp is the migration time, never a fabricated discovery time.
 
@@ -93,6 +98,15 @@ uv run python -m football.product.cli history-coverage
 ```
 
 Use `--season YYYY/YYYY` to select a season and `--refresh` to reacquire selected scopes. After reconciliation, run the canonical-history audit and the existing forecast refresh. Failed scopes preserve raw evidence and explicit reasons; they are not reported as successful imports.
+
+`history-coverage` now includes `provider_unmatched` observations for every
+provider and `provider_unmatched_matches` counts by provider. Counts deduplicate
+native match IDs within each provider; observation rows retain source-snapshot
+IDs and reasons. Existing `pitchapi_unmatched`, `pitchapi_unmatched_matches` and
+`pitchapi_unmatched_reasons` remain the PitchAPI-only compatibility view. These
+unmatched diagnostics describe current recovery work; the supplied historical
+cutoff still governs qualified forecast history, not a reconstruction of the
+entire mutable operational queue.
 
 Detailed match resources are stored with `development_only=true`. Their conservative `known_at` is the actual acquisition time, so they are eligible only for later prospective development cutoffs. Production forecasts and protected evaluation datasets never read them. A non-persisting preview is available with `development-provider-preview --provider fotmob --fixture-id UUID --knowledge-cutoff ISO_TIMESTAMP` (also supports PitchAPI); it rejects cutoffs at or after kickoff and structurally excludes the target fixture. It uses verified history and mappings known by the cutoff, keeps each provider's shot/xG definitions separate, and feeds qualified xG through the existing model interface without blending other providers' xG. Lineup, rating, and H2H resources are diagnostic context, not new model weights. The frozen champion has `beta_xg_for=0`; `model.uses_provider_xg` makes that limitation explicit. Published forecasts and champion parameters remain unchanged.
 

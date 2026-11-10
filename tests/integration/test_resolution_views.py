@@ -70,6 +70,63 @@ def test_provisional_fixture_and_native_case_details_are_visible(tmp_path: Path)
         )
 
 
+@pytest.mark.parametrize(
+    ("resolution_status", "active", "blocked"),
+    [
+        ("AMBIGUOUS_QUARANTINED", True, True),
+        ("IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED", True, True),
+        ("AMBIGUOUS_QUARANTINED", False, False),
+        ("IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED", False, False),
+        ("UNIQUE", True, False),
+        ("UNIQUE", False, False),
+        ("DUPLICATE_RESOLVED", True, False),
+        ("DUPLICATE_RESOLVED", False, False),
+    ],
+)
+def test_fixture_review_keeps_active_quarantine_visible(
+    tmp_path: Path, resolution_status: str, active: bool, blocked: bool
+) -> None:
+    with isolated_database("202610310300") as url, psycopg.connect(url) as connection:
+        seed(connection, tmp_path)
+        fixture, competition = connection.execute(
+            "SELECT fixture_id,competition_id FROM football.product_fixtures"
+        ).fetchone()
+        connection.execute("UPDATE football.product_fixtures SET identity_status='VERIFIED'")
+        connection.execute(
+            """INSERT INTO football.fixture_identity_resolutions
+               (canonical_real_fixture_id,member_fixture_id,representative_fixture_id,
+                resolution_status,selected_competition_id,resolution_reason,evidence_json,
+                evidence_sha256,resolution_version,active,created_at)
+               VALUES (%s,%s,%s,%s,%s,'retained fixture review','{}',%s,'review-test',%s,
+                       clock_timestamp())""",
+            (fixture, fixture, fixture, resolution_status, competition, "b" * 64, active),
+        )
+        connection.commit()
+        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        before = retained(connection)
+        resolution = connection.execute(
+            "SELECT to_jsonb(r) FROM football.fixture_identity_resolutions r"
+        ).fetchall()
+        key = f"fixture_record:{fixture}"
+        page = case_page(connection, "fixtures", {})
+        items = [item for item in page["items"] if item["case_key"] == key]
+        assert len(items) == int(blocked)
+        if blocked:
+            assert items[0]["status"] == "BLOCKED"
+            assert items[0]["reason"] == "retained fixture review"
+            assert case_page(connection, "fixtures", {"status": "BLOCKED"})["total"] == 1
+        detail = case_detail(connection, tmp_path, key)
+        assert detail["status"] == ("BLOCKED" if blocked else "VERIFIED")
+        assert detail["fixture"]["identity_status"] == "VERIFIED"
+        assert retained(connection) == before
+        assert (
+            connection.execute(
+                "SELECT to_jsonb(r) FROM football.fixture_identity_resolutions r"
+            ).fetchall()
+            == resolution
+        )
+
+
 def test_missing_source_case_is_actual_and_does_not_recover_or_exclude(tmp_path: Path) -> None:
     with isolated_database("202610310300") as url, psycopg.connect(url) as connection:
         seed(connection, tmp_path)

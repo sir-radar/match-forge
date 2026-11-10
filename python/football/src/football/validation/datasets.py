@@ -274,10 +274,13 @@ def _resolve_dataset(cursor: Cursor[Any], dataset_version_id: UUID) -> _Dataset:
         "normalized",
         EVENT_SCHEMA_VERSION,
         EVENT_SCHEMA_SHA256,
-        NORMALIZER_VERSION,
         "published",
     )
-    if row is None or row[4:] != expected_contract:
+    if (
+        row is None
+        or row[4:9] + row[10:] != expected_contract
+        or row[9] not in {"statsbomb-normalizer-v1", NORMALIZER_VERSION}
+    ):
         raise DatasetValidationError(
             "validation requires a published StatsBomb normalized event dataset"
         )

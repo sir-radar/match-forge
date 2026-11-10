@@ -1,0 +1,132 @@
+{
+  "status": "BLOCKED_EVIDENCE",
+  "scope": {
+    "database": "football",
+    "recorded_at": "2026-11-09T23:29:11.126714+00:00",
+    "read_only": "on",
+    "competition_id": "01a051db-5565-70d1-85d4-ab6342d86baf",
+    "season_id": "01a051db-5566-7286-8ad7-40d945ab8253",
+    "knowledge_cutoff": "2026-11-09T23:29:11.125399+00:00"
+  },
+  "scope_limit": "Original EPL2/27 canonical competition/season;67 unbound market families only. These counts are not a global census or 67 missing baseline forecasts.",
+  "diagnostic_source_revision": "463ec15a8a0720fb48e842af5a009cf140545f90",
+  "runtime_dependency_lock_sha256": "c881697f433174ce62daebe1edeb328cbac0f0c287c80baa1ec8d42990719044",
+  "original_report_sha256": "2c824e73c1a9f01c5d6be9635881dde9f7213354a72c62dee7961414d42ad2af",
+  "current_report_sha256": "2516d43e5d41084963e4f007c1c027752730d20b7ec65e1534a43668c9b958bb",
+  "families": 67,
+  "market_definitions_unchanged": 67,
+  "before_status_counts": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "after_status_counts": {
+    "DATA_COLLECTION_REQUIRED": 53,
+    "INSUFFICIENT_PLAYER_DATA": 14
+  },
+  "changed_diagnostic_statuses": [],
+  "source_compatibility": {
+    "UNKNOWN": 67
+  },
+  "missing_qualified_inputs_by_family_count": {
+    "assists": 1,
+    "cards": 13,
+    "corner_events": 1,
+    "corners": 8,
+    "fouls": 2,
+    "goal_events": 5,
+    "goal_kicks": 1,
+    "membership": 14,
+    "offsides": 1,
+    "participation": 14,
+    "period_score": 8,
+    "player_identity": 14,
+    "player_statistics": 8,
+    "regulation_score": 17,
+    "saves": 1,
+    "shots": 2,
+    "shots_on_target": 2,
+    "tackles": 1,
+    "throw_ins": 1,
+    "woodwork": 1
+  },
+  "input_count_units": "One family may require several inputs; these counts overlap and are not fixture or forecast losses.",
+  "native_player_scope": {
+    "source_git_sha": "b0bc9f22dd77c206ddedc1d742893b3bbe64baec",
+    "observed_at": "2026-11-09 23:31:14.844971+00:00",
+    "unique_native_players": 644,
+    "lineup_occurrences": 13678,
+    "role_evidence_counts": {
+      "STARTING_XI_EVIDENCE": 8350,
+      "TACTICAL_OR_INJURY_SUBSTITUTION_EVIDENCE": 2099,
+      "OTHER_OR_MISSING_START_REASON": 3229
+    },
+    "raw_no_positions_occurrences": 3209,
+    "raw_minutes_fields": 0,
+    "position_stints": 12717,
+    "position_stints_missing_end": 8364,
+    "derived_or_imputed_minutes": 0
+  },
+  "lineup_resources_byte_verified": 380,
+  "native_role_interpretation": "Starting XI and explicit tactical/injury substitution labels are reported separately. Other/missing reasons remain separate; no empty positions, missing endpoints or jersey number establishes a minute/exposure value. Native IDs do not establish canonical player identity or an eligible historical match.",
+  "publication_authorizations_granted": 0,
+  "semantic_compatibility_authorizations_granted": 0,
+  "data_qualification_complete": false,
+  "scientific_stage_started": false,
+  "operating_writes": 0,
+  "models_fitted_or_promoted": 0,
+  "new_forecasts": 0,
+  "remaining_requirements": [
+    "FR-014: independently qualified legacy relationships and exact source-time/result semantics.",
+    "Exact player identity, membership, participation and qualified exposure/statistics at declared football/knowledge cutoffs.",
+    "Field/period/target canonical coverage through existing eligibility owners; source access and raw resource counts do not establish this.",
+    "Verified source/target settlement semantics; only then seek separately authorized scientific evaluation."
+  ],
+  "private_operator_corrections": "Initial read-only comparison used nested market metadata as a key; corrected to existing market_id. Initial native audit searched a generic substitution label; final audit uses the exact native tactical/injury labels and retains other reasons separately. Original attempts are preserved; no data or production code was changed.",
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-frozen-market-diagnostic.json",
+      "bytes": 991620,
+      "sha256": "25ac612a1544624e504542f287e27946cd1ff56dddba853565b1cc25ac8d92b2"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-frozen-current-market-report.json",
+      "bytes": 661770,
+      "sha256": "2516d43e5d41084963e4f007c1c027752730d20b7ec65e1534a43668c9b958bb"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-frozen-market-diagnostic.py",
+      "bytes": 2645,
+      "sha256": "5479059de3f9dce37a7882583920ff9b9c3395ba7b8bdf79345bed9cb78f4792"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-native-player-input-audit-verified.json",
+      "bytes": 80352,
+      "sha256": "a5bdfcc371529229fe27f9f544af2702f4dff588bc1fdb0d4b8c1d81510d8df2"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-native-player-input-audit.py",
+      "bytes": 3615,
+      "sha256": "8aba9b020228a21702b776a2d2393644b8c0df406d44595ce1aed0b9862e99b3"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-frozen-market-diagnostic.log",
+      "bytes": 479,
+      "sha256": "a7ff142a127a5a7f2a6c984c7bb08eeca3d70cbfee6fd9bd878a29b1ae56c507"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-frozen-market-diagnostic-verified.log",
+      "bytes": 81,
+      "sha256": "69d8505598f9c23bec3490f9833a0ad4f7106b576cb95824ac163128bc3cf0d5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-native-player-input-audit.json",
+      "bytes": 80273,
+      "sha256": "5095b92dad25d181763bf8ac7433b3b1fdd09f05f1fede1d727085663d46db64"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr015-native-player-input-audit-verified.log",
+      "bytes": 193,
+      "sha256": "9fbd651e1b56fa9a2b4cbce47babe50ad5a8223313e00bf5aa17b1eca63d5be0"
+    }
+  ]
+}

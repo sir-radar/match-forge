@@ -97,6 +97,27 @@ TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
 }
 
 OPERATIONAL_TEAM_CROSSWALKS: dict[tuple[str, str], tuple[str, str]] = {
+    # Exact native 2024 fixture/season bridges and accepted archive origins:
+    # forecast-readiness-remediation-results.md, FR-002. Existing UUIDs stay intact.
+    ("api_football", "37"): ("football_data_uk", "Huddersfield"),
+    ("api_football", "61"): ("football_data_uk", "Wigan"),
+    ("api_football", "73"): ("football_data_uk", "Rotherham"),
+    ("api_football", "1337"): ("football_data_uk", "Northampton"),
+    ("api_football", "1339"): ("openfootball", "Rochdale AFC"),
+    ("api_football", "1349"): ("football_data_uk", "Oldham"),
+    ("api_football", "1354"): ("football_data_uk", "Doncaster"),
+    ("api_football", "1359"): ("football_data_uk", "Luton"),
+    ("api_football", "1366"): ("football_data_uk", "Hartlepool"),
+    ("api_football", "1374"): ("openfootball", "Mansfield Town"),
+    ("api_football", "1823"): ("football_data_uk", "Gateshead"),
+    ("api_football", "1836"): ("football_data_uk", "Woking"),
+    ("api_football", "8146"): ("football_data_uk", "Boston Utd"),
+    ("api_football", "8663"): ("football_data_uk", "Wealdstone"),
+    # The accepted Rochdale origin also matches the exact 2015 archive fixtures.
+    ("football_data_uk", "Rochdale"): ("openfootball", "Rochdale AFC"),
+    # Exact 2026 Brazilian senior fixtures and official records: remediation report N3.
+    ("football_data_org", "4286"): ("api_football", "794"),  # RB Bragantino
+    ("football_data_org", "6685"): ("api_football", "128"),  # Santos
     ("fotmob", "9825"): ("api_football", "42"),  # Arsenal
     ("fotmob", "10252"): ("api_football", "66"),  # Aston Villa
     ("fotmob", "8678"): ("api_football", "35"),  # Bournemouth

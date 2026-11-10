@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -14,10 +15,126 @@ from football.history.fixture_identity import (
     persist_resolutions,
 )
 from football.product.api_football import ApiFootballClient, ApiResponse
+from football.product.domain import fixture_identity, stable_id
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.football_data_org import FootballDataResponse
 from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import ProductSync
+
+
+@pytest.mark.parametrize(
+    ("source_season", "expected_year"),
+    [
+        ({"startDate": "2025-08-08", "endDate": "2026-05-12"}, 2025),
+        ({"startDate": "2026-08-08", "endDate": "2027-05-12"}, 2026),
+        (None, None),
+        ({}, None),
+        ({"startDate": "unknown"}, None),
+        ({"startDate": "2025-02-30"}, None),
+        ({"startDate": "20250808"}, None),
+        ({"startDate": "2025-W32-5"}, None),
+        ({"startDate": 2025}, None),
+    ],
+)
+def test_fallback_fixtures_require_exact_source_season(
+    tmp_path: Path, source_season: dict[str, Any] | None, expected_year: int | None
+) -> None:
+    with (
+        psycopg.connect(os.environ["TEST_DATABASE_URL"]) as connection,
+        connection.transaction(force_rollback=True),
+    ):
+        now = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        sync = ProductSync(connection, ApiFootballClient("test"), tmp_path, tmp_path / "model")
+        snapshot = sync._record_response(
+            "fallback-source-season-competition",
+            ApiResponse("/leagues", now, b"{}", (), None),
+        )
+        sync._store_competitions(
+            [
+                {
+                    "league": {"id": 40, "name": "Championship", "type": "League"},
+                    "country": {"name": "England"},
+                    "seasons": [{"year": 2026, "current": True}],
+                }
+            ],
+            snapshot,
+            now,
+        )
+        row: dict[str, Any] = {
+            "id": 1880090001,
+            "competition": {"code": "ELC"},
+            "utcDate": f"{expected_year or 2025}-08-09T11:30:00Z",
+            "status": "FINISHED",
+            "homeTeam": {"id": 1880090002, "name": "Source season home"},
+            "awayTeam": {"id": 1880090003, "name": "Source season away"},
+            "score": {"duration": "REGULAR", "fullTime": {"home": 2, "away": 1}},
+        }
+        if source_season is not None:
+            row["season"] = source_season
+        fallback_snapshot = sync._record_fallback_response(
+            "fallback-source-season-fixture",
+            FootballDataResponse("/matches", now, json.dumps({"matches": [row]}).encode(), (row,)),
+        )
+        if expected_year is None:
+            with pytest.raises(ValueError, match="season"):
+                sync._store_fallback_fixtures([row], fallback_snapshot, now)
+            assert sync._mapped_match_id("football_data_org", str(row["id"])) is None
+            return
+
+        competition = stable_id("competition", "api_football", "40")
+        expected_season = stable_id("season", competition, expected_year)
+        expected_fixture = fixture_identity(
+            competition,
+            str(expected_year),
+            datetime.fromisoformat(row["utcDate"]),
+            stable_id("team", "football_data_org", str(row["homeTeam"]["id"])),
+            stable_id("team", "football_data_org", str(row["awayTeam"]["id"])),
+        )
+        assert sync._store_fallback_fixtures([row], fallback_snapshot, now) == (
+            1,
+            [(40, expected_year)],
+        )
+        assert connection.execute(
+            "SELECT season_id FROM football.matches WHERE id=%s", (expected_fixture,)
+        ).fetchone() == (expected_season,)
+        assert sync._mapped_match_id("football_data_org", str(row["id"])) == expected_fixture
+        assert (
+            sync._store_fallback_history([row], competition, expected_year, fallback_snapshot, now)
+            == 1
+        )
+        assert connection.execute(
+            "SELECT fixture_id FROM football.product_team_match_history WHERE fixture_id=%s",
+            (expected_fixture,),
+        ).fetchone() == (expected_fixture,)
+        assert (
+            sync._store_fallback_history([row], competition, expected_year, fallback_snapshot, now)
+            == 0
+        )
+        connection.execute(
+            "UPDATE football.product_competitions SET season_label='2027' WHERE competition_id=%s",
+            (competition,),
+        )
+        assert sync._store_fallback_fixtures([row], fallback_snapshot, now) == (
+            1,
+            [(40, expected_year)],
+        )
+        original = connection.execute(
+            "SELECT to_jsonb(m),to_jsonb(f) FROM football.matches m "
+            "JOIN football.product_fixtures f ON f.fixture_id=m.id WHERE m.id=%s",
+            (expected_fixture,),
+        ).fetchone()
+        changed = deepcopy(row)
+        changed["season"]["startDate"] = f"{expected_year - 1}-08-08"
+        with pytest.raises(ValueError, match="season.*registered"):
+            sync._store_fallback_fixtures([changed], fallback_snapshot, now)
+        assert (
+            connection.execute(
+                "SELECT to_jsonb(m),to_jsonb(f) FROM football.matches m "
+                "JOIN football.product_fixtures f ON f.fixture_id=m.id WHERE m.id=%s",
+                (expected_fixture,),
+            ).fetchone()
+            == original
+        )
 
 
 @pytest.mark.parametrize("scoped", [False, True])
@@ -100,6 +217,7 @@ def test_explicit_crosswalk_resolves_only_verified_fixture_pairs(
                 {
                     "id": 560598,
                     "competition": {"code": "PL"},
+                    "season": {"startDate": "2026-08-01", "endDate": "2027-05-31"},
                     "utcDate": fixture["fixture"]["date"],
                     "status": "SCHEDULED",
                     "homeTeam": {"id": 64, "name": "Liverpool FC"},

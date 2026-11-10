@@ -73,6 +73,25 @@ class PostgresProviderObservabilityStoreV1:
             cursor_lag_seconds=None,
             circuit_state="CLOSED",
             processing_failure_count=row[11],
+            current_state_fields=("discovered_count", "retry_count", "processing_failure_count"),
+            unmeasured_fields=(
+                "unchanged_count",
+                "resolution_attempt_count",
+                "resolution_success_count",
+                "unresolved_conflict_count",
+                "rate_limit_response_count",
+                "processing_latency_ms",
+                "publication_failure_count",
+                "reconciliation_failure_count",
+                "cursor_lag_seconds",
+                "circuit_state",
+                "schema_compatibility_failure_count",
+                "quota_exhaustion_count",
+                "resolution_review_backlog_count",
+                "dataset_rebuild_queue_count",
+                "stale_dependency_count",
+                "last_cursor_advanced_at",
+            ),
         )
 
 

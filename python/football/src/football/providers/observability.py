@@ -53,6 +53,8 @@ class ProviderObservabilitySnapshotV1:
     last_cursor_advanced_at: datetime | None = None
     processing_failure_count: int = 0
     last_successful_validation_at: datetime | None = None
+    unmeasured_fields: tuple[str, ...] = ()
+    current_state_fields: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _validate_identity(self)
@@ -113,6 +115,16 @@ class ProviderObservabilitySnapshotV1:
             "last_cursor_advanced_at": _iso(self.last_cursor_advanced_at),
             "processing_failure_count": self.processing_failure_count,
             "alert_conditions": list(self.alert_conditions),
+            **(
+                {"unmeasured_fields": list(self.unmeasured_fields)}
+                if self.unmeasured_fields
+                else {}
+            ),
+            **(
+                {"current_state_fields": list(self.current_state_fields)}
+                if self.current_state_fields
+                else {}
+            ),
         }
 
 
@@ -132,6 +144,20 @@ def _validate_identity(snapshot: ProviderObservabilitySnapshotV1) -> None:
         raise ProviderObservabilityError("freshness target must be positive")
     if snapshot.circuit_state not in _CIRCUIT_STATES:
         raise ProviderObservabilityError("circuit state is unsupported")
+    if any(
+        name not in snapshot.__dataclass_fields__
+        or name
+        in {
+            "unmeasured_fields",
+            "current_state_fields",
+            "provider_id",
+            "resource_id",
+            "contract",
+            "observed_at",
+        }
+        for name in (*snapshot.unmeasured_fields, *snapshot.current_state_fields)
+    ):
+        raise ProviderObservabilityError("measurement fields must name snapshot measurements")
 
 
 def _validate_timestamps(snapshot: ProviderObservabilitySnapshotV1) -> None:
@@ -187,8 +213,10 @@ def _freshness_alerts(snapshot: ProviderObservabilitySnapshotV1) -> list[str]:
         alerts.append("PROVIDER_NEVER_SUCCEEDED")
     elif snapshot.freshness_status == "STALE":
         alerts.append("PROVIDER_OR_RESOURCE_STALE")
-    if snapshot.circuit_state == "OPEN":
+    if snapshot.circuit_state == "OPEN" and "circuit_state" not in snapshot.unmeasured_fields:
         alerts.append("PROVIDER_CIRCUIT_OPEN")
+    if snapshot.unmeasured_fields:
+        alerts.append("PROVIDER_MEASUREMENTS_UNAVAILABLE")
     return alerts
 
 

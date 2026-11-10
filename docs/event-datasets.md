@@ -8,7 +8,12 @@ Publication requires the exact acquisition-manifest scope and each event resourc
 
 ## Normalized contract
 
-Each StatsBomb event resource produces one Parquet file using `schemas/arrow/normalized-events-v1.json`, schema version `v1`, and normalizer `statsbomb-normalizer-v1`. Rows are ordered by `event_index`, which remains authoritative when football timestamps repeat.
+Each StatsBomb event resource produces one Parquet file using `schemas/arrow/normalized-events-v1.json`, schema version `v1`, and normalizer `statsbomb-normalizer-v2`. Rows are ordered by `event_index`, which remains authoritative when football timestamps repeat.
+
+Normalizer v2 adds the documented Own Goal Against (20), Own Goal For (25),
+Error (37), and Referee Ball-Drop (41) canonical type mappings. New builds use
+the new normalizer version and dataset identity. Validation still accepts
+published v1 datasets; their bytes, findings and identities remain unchanged.
 
 Cross-provider streams remain separate `ProviderEventStreamV1` values with
 their own source order and lineage. `EventStreamReconciliationV1` permits an

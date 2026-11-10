@@ -1,0 +1,316 @@
+{
+  "status": "PASS_WITH_WARNINGS",
+  "issue": "FR-006",
+  "scope": "TEAM_NAME_CONTEXT_INVALIDATION_ONLY",
+  "migration": "202611100100_bounded_team_name_context_refresh.sql",
+  "migration_sha256": "d3517feac69c988096e6ddb95225b2d5e39d86c48267b9eaa4ea42872b742d31",
+  "operating_applied": true,
+  "operating_migration_before": 202611090200,
+  "operating_business_writes": 0,
+  "verified_new_forecasts": 0,
+  "root_cause": "The existing team-name trigger repeatedly resolves historical participants and eligible history over every fixture while holding the identity transaction. Its old query times out both with and without the context indexes.",
+  "implementation": "Materialize deduplicated historical candidates and possible target participants once; retain the existing dated eligible-history function as the final authority. One refresh generation per distinct target; unchanged names enqueue none.",
+  "existing_statement_deadline_seconds": 20,
+  "old_rename_trials": [
+    {
+      "label": "with_context_indexes",
+      "status": "DEADLINE_REPRODUCED",
+      "error": "canceling statement due to statement timeout\nCONTEXT:  SQL function \"product_team_identity_at\" statement 1\nSQL function \"product_fixture_team_at\" statement 1\nPL/pgSQL function enqueue_product_context_for_team_name() line 8 at FOR over SELECT rows",
+      "seconds": 20.006558
+    },
+    {
+      "label": "without_context_indexes",
+      "status": "DEADLINE_REPRODUCED",
+      "error": "canceling statement due to statement timeout\nCONTEXT:  SQL function \"product_fixture_team_at\" statement 1\nPL/pgSQL function enqueue_product_context_for_team_name() line 8 at FOR over SELECT rows",
+      "seconds": 20.004816
+    }
+  ],
+  "populated_reference": {
+    "database": "football_fr_context_restore_20261109",
+    "status": "PASS",
+    "literal_prior_query_targets": 22348,
+    "targets_before_any_possible_history_knowledge": 253944,
+    "earliest_possible_history_knowledge": "2026-10-13 23:43:20.945118+00:00",
+    "reference_started_at": "2026-11-10 00:04:09.133192+00:00",
+    "method": "The literal previous query is partitioned into 128-target statements under the unchanged 20-second limit. Eligible history and identity knowledge predates the reference window. Target sets, generation increments, completed generations and same-name no-ops are compared exactly; every name/queue write rolls back. Literal-reference elapsed times are not comparable throughput benchmarks.",
+    "cases": [
+      {
+        "team_id": "f89ad343-fd17-59b7-b4fe-4536e58e7f8f",
+        "name": "Malaga",
+        "literal_reference_seconds": 506.477349,
+        "new_rename_seconds": 2.401459,
+        "actual_target_count": 252,
+        "unchanged_name_does_not_requeue": true,
+        "queue_and_name_rollback": "PASS",
+        "target_ids_sha256": "21bcf2d38bcbc69b77334c7379d51951d1851739eb2f788a89a60d52e0d8ac08"
+      },
+      {
+        "team_id": "2066f0f6-0549-5c1a-a7c1-d67134543beb",
+        "name": "Doncaster",
+        "literal_reference_seconds": 623.171725,
+        "new_rename_seconds": 10.964095,
+        "actual_target_count": 104,
+        "unchanged_name_does_not_requeue": true,
+        "queue_and_name_rollback": "PASS",
+        "target_ids_sha256": "983c546ae762e4c9132e79afccd999d8280f05db97f012e2ab64afa7901bf72d"
+      },
+      {
+        "team_id": "5d90e0cf-65cf-5e37-91d1-bdea187ebb1e",
+        "name": "Rochdale",
+        "literal_reference_seconds": 487.120576,
+        "new_rename_seconds": 14.17044,
+        "actual_target_count": 118,
+        "unchanged_name_does_not_requeue": true,
+        "queue_and_name_rollback": "PASS",
+        "target_ids_sha256": "9730d22a5835e5e41569421bfe41dea7c707dd22111b306d626186bb03459982"
+      }
+    ],
+    "nine_registration_digests_preserved": {
+      "source_snapshots": {
+        "rows": 80202,
+        "digest": "36d9edc68d37b7d0f5e0ac571beacbec"
+      },
+      "source_resources": {
+        "rows": 82010,
+        "digest": "ba31a72b7fd0b4135bcdfcf7c9bc77fe"
+      },
+      "product_identity_admissions": {
+        "rows": 22859,
+        "digest": "94966e862356299012627a000bf7f429"
+      },
+      "product_match_history_decisions": {
+        "rows": 857749,
+        "digest": "34b5c4440f546b641568861f16222eb7"
+      },
+      "model_artifacts": {
+        "rows": 5230,
+        "digest": "a9a0928e21f5c6a1c6d178ba9ffdd823"
+      },
+      "forecast_artifacts": {
+        "rows": 9990,
+        "digest": "c4a639a27a4f24a0f959d628f8d9b8e3"
+      },
+      "product_forecasts": {
+        "rows": 18075,
+        "digest": "24a5264ff0e44e8dd6895c7395c87829"
+      },
+      "model_promotion_events": {
+        "rows": 5,
+        "digest": "d0b14ff26958b209a5856af364f38e0f"
+      },
+      "artifact_retirement_events": {
+        "rows": 17,
+        "digest": "76b57dd746072bab0389654ad96c904d"
+      }
+    }
+  },
+  "fresh_backup": {
+    "cutoff": "2026-11-10 00:03:51.382509+00:00",
+    "bytes": 1693142515,
+    "sha256": "832f9fb06d35dd4fb2358670024c0f7d4d14de4840cb3ac72c9c6c30bc581950",
+    "restore_status": "PASS",
+    "upgrade_status": "PASS",
+    "rename_sample": {
+      "team_id": "f89ad343-fd17-59b7-b4fe-4536e58e7f8f",
+      "seconds": 5.072794,
+      "queue_before": [
+        246414,
+        "314543",
+        "191817"
+      ],
+      "queue_before_rollback": [
+        246414,
+        "314795",
+        "191817"
+      ],
+      "rolled_back": true
+    },
+    "nine_registration_digests_preserved": {
+      "source_snapshots": {
+        "rows": 80490,
+        "digest": "5da8c0a4e69f6758d52ec656539b2fa5"
+      },
+      "source_resources": {
+        "rows": 82298,
+        "digest": "6851564e971f7a311f17a1e27562e9e4"
+      },
+      "product_identity_admissions": {
+        "rows": 22859,
+        "digest": "94966e862356299012627a000bf7f429"
+      },
+      "product_match_history_decisions": {
+        "rows": 859387,
+        "digest": "638af41970826f7ac39313c2b7571dfb"
+      },
+      "model_artifacts": {
+        "rows": 5230,
+        "digest": "a9a0928e21f5c6a1c6d178ba9ffdd823"
+      },
+      "forecast_artifacts": {
+        "rows": 9990,
+        "digest": "c4a639a27a4f24a0f959d628f8d9b8e3"
+      },
+      "product_forecasts": {
+        "rows": 18106,
+        "digest": "5ccb1d1928455fb1fbbb6b62c28b8ff8"
+      },
+      "model_promotion_events": {
+        "rows": 5,
+        "digest": "d0b14ff26958b209a5856af364f38e0f"
+      },
+      "artifact_retirement_events": {
+        "rows": 17,
+        "digest": "76b57dd746072bab0389654ad96c904d"
+      }
+    }
+  },
+  "migration_rehearsals": {
+    "normal_up_retry_down_reup_retry": [
+      {
+        "label": "down",
+        "exit": 0
+      },
+      {
+        "label": "final-up",
+        "exit": 0
+      },
+      {
+        "label": "final-up-retry",
+        "exit": 0
+      },
+      {
+        "label": "backout",
+        "exit": 0
+      },
+      {
+        "label": "re-up",
+        "exit": 0
+      },
+      {
+        "label": "re-up-retry",
+        "exit": 0
+      }
+    ],
+    "fresh_normal_upgrade_retry": [
+      {
+        "label": "up",
+        "exit": 0
+      },
+      {
+        "label": "retry",
+        "exit": 0
+      }
+    ],
+    "prior_function_backout": "BYTE_IDENTICAL",
+    "public_context_source": "UNCHANGED",
+    "legacy_routes": 13,
+    "pending_pr178_blob": "266bea6efefb4770f5b5bc83046cbb36cb9e85ab",
+    "pending_pr178_sha256": "bb4c438501730148563d2ec93305faf49da1062eef0c65fef3a62540a171af70",
+    "combined_normal_ordered_upgrade_retry": [
+      {
+        "label": "validate",
+        "exit": 0
+      },
+      {
+        "label": "ordered-upgrade",
+        "exit": 0
+      },
+      {
+        "label": "retry",
+        "exit": 0
+      }
+    ]
+  },
+  "verification": {
+    "candidate_head": "deb3bad4b55f73ed7dcbc63a093f1a689d043a9c",
+    "candidate_patches": {
+      "tests/integration/test_public_reports.py": "0d18d23bf3cfa9d210581e090b20e67c91f7a2dc1afbf1b2462af6faa8c86abd",
+      "infrastructure/migrations/202611100100_bounded_team_name_context_refresh.sql": "d3517feac69c988096e6ddb95225b2d5e39d86c48267b9eaa4ea42872b742d31"
+    },
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT COMPOSE_FILE=<original compose.yaml> COMPOSE_PROJECT_NAME=football-forecasting make check integration",
+    "exit_code": 0,
+    "isolation": "Detached validation checkout because another concurrent task switched the shared checkout during the first aggregate. Original Compose configuration; separate locked offline dependencies and disposable test databases.",
+    "new_regression_cases": 8,
+    "focused_cases_passed": 9,
+    "covered_boundaries": [
+      "exact same kickoff excluded",
+      "earlier exact kickoff included",
+      "date-only same day excluded",
+      "prior date included",
+      "future knowledge excluded",
+      "ineligible history excluded",
+      "duplicate historical decisions enqueue once",
+      "unchanged name does not enqueue",
+      "later withdrawal does not erase earlier dated eligibility",
+      "historical opponent absent from target participants still refreshes"
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://www.postgresql.org/docs/18/queries-with.html",
+      "decision": "MATERIALIZED prevents folding and repeated computation; actual performance and target preservation are established by the populated comparisons."
+    }
+  ],
+  "private_receipts": [
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-team-name-rename-profile.json",
+      "sha256": "645d3764e3db20853045d069efea3bc141faaee9272efe032127ad5a938a14cd"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-team-name-populated-reference.json",
+      "sha256": "fdf9e769f1fec31db3e56f741764d3c8cd8d902d25d5c73f96a48845c45ce4c3"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-team-name-fresh-upgrade.json",
+      "sha256": "748403712a9e88d9323792131fb3c94b840b9dec7dfcadabe7902bacf44d5129"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-team-name-migration-compatibility/result.json",
+      "sha256": "91e56281594f7d262b2f8a63717fd1b2fc1a21fea655612d8557c72af557f47d"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/operating-backup-before-team-name-refresh/restore-verification.json",
+      "sha256": "54b862320c02b9bc0d147f1eb923924d2dde215652b36696b465fc52d823034a"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-validation-candidate.json",
+      "sha256": "c0e1d01f4956a8adb0d2a0edf754da9b458843b5987dba3925a333d70c609332"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-validation-check-integration.log",
+      "sha256": "697b6036a7a123d6ef36c65023949cfe0dccc6b2c7f46b32d75a3887438f6912"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-team-name-focused-verified.log",
+      "sha256": "16fcb60c59ca62d89978f859175b4b9491079d89bc5f1e0def2452928551964a"
+    },
+    {
+      "path": "/Users/radar/Desktop/football-simutation/.local/forecast-readiness-execution/resume-20261109/fr006-historical-opponent-focused.log",
+      "sha256": "423b1d0e014eb1eab96f4420f7b344c2615be505dd574b756ac884826ca74f2d"
+    }
+  ],
+  "remaining_work": [
+    "Owner review of execution, authorization and recovery provenance for the pre-existing operating202611100100 registration; the matching installed function is not a verified rollout receipt.",
+    "Do not reapply or reverse the observed migration as part of this handoff. No operating DDL was executed by this resumed work."
+  ],
+  "operating_rollout_authorization_verified": false,
+  "operating_rollout_execution_verified": false,
+  "operating_ddl_executed_in_this_resume": false,
+  "operating_observation": {
+    "status": "INSTALLED_FUNCTION_MATCHES_VERIFIED_CANDIDATE; ROLLOUT_PROVENANCE_UNVERIFIED",
+    "observed_at": "2026-11-10 04:49:21.180315+00:00",
+    "migration_record": {
+      "id": 116,
+      "tstamp": "2026-11-10T00:50:31.447662",
+      "is_applied": true,
+      "version_id": 202611100100
+    },
+    "function_sha256": "3da6581c8c9b51230303ecd5dbc75635e95c43d66f2af2786bc52a0d4ce2ec87",
+    "public_context_source_sha256": "3114fbaded290ba92bcb8552f55ffd8c0a72aac8f5e2f389eabeb170e803e55f",
+    "matches_both_verified_restores": true,
+    "legacy_routes": 13,
+    "operating_writes_in_this_observation": 0,
+    "prior_operating_schema_claim": "STALE; superseded by this observation",
+    "receipt_sha256": "cacc77dfd128e134e609bca42e5d11afb9d2a5510ff684a19c4ccaee2171a10d"
+  }
+}

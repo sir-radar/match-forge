@@ -7,6 +7,7 @@ from email.message import Message
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -26,8 +27,190 @@ from football.product.provider_history_scopes import (
 )
 from football.providers.fotmob import FotmobClient, FotmobResponse
 from football.providers.pitchapi import PitchApiClient, PitchApiHttpResponse, PitchApiResponse
+from football.work.contracts import WorkClaim
+from football.work.storage import WorkLeaseLost, WorkRegistry, claim_from_record
+from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+
+
+def _scope_work(
+    connection: psycopg.Connection[Any], league: str, season: str = "2024"
+) -> dict[str, Any]:
+    with connection.transaction(), connection.cursor(row_factory=dict_row) as cursor:
+        row = cursor.execute(
+            "SELECT w.* FROM football.product_provider_scope_work b "
+            "JOIN football.work_items w USING(work_id) "
+            "WHERE b.provider_code='pitchapi' AND b.provider_competition_id=%s "
+            "AND b.season_label=%s",
+            (league, season),
+        ).fetchone()
+        assert row is not None
+        return row
+
+
+def _failed_policy_scope(
+    connection: psycopg.Connection[Any],
+    root: Path,
+    league: str,
+    *,
+    status: str = "FAILED",
+    error: str = "BLOCKED_IDENTITY",
+    result_status: str = "BLOCKED_IDENTITY",
+) -> tuple[OperationalProviderSync, WorkClaim]:
+    sync = OperationalProviderSync(connection, root, provider_code="pitchapi")
+    enqueue_seasons(sync, league, ["2024"])
+    connection.commit()
+    assert claim_scope(sync, league, "2024") == (league, "2024")
+    previous = claim_from_record(_scope_work(connection, league))
+    connection.execute(
+        """UPDATE football.product_provider_history_scopes SET status=%s,
+        last_error=%s,summary=%s,next_attempt_at=clock_timestamp()+interval '1 hour'
+        WHERE provider_code='pitchapi' AND provider_competition_id=%s
+          AND claim_token=current_setting('matchforge.history_claim_token')::uuid""",
+        (status, error, Jsonb({"status": result_status}), league),
+    )
+    connection.execute("SELECT set_config('matchforge.history_claim_token','',false)")
+    connection.commit()
+    return sync, previous
+
+
+def _remove_policy_scopes(connection: psycopg.Connection[Any], leagues: list[str]) -> None:
+    connection.rollback()
+    connection.execute("SELECT set_config('matchforge.history_claim_token','',false)")
+    work_ids = connection.execute(
+        "SELECT work_id FROM football.product_provider_scope_work "
+        "WHERE provider_code='pitchapi' AND provider_competition_id=ANY(%s)",
+        (leagues,),
+    ).fetchall()
+    connection.commit()
+    for (work_id,) in work_ids:
+        WorkRegistry(connection).cancel(work_id)
+    connection.execute(
+        "DELETE FROM football.product_provider_history_scopes "
+        "WHERE provider_code='pitchapi' AND provider_competition_id=ANY(%s)",
+        (leagues,),
+    )
+    connection.commit()
+
+
+@pytest.mark.parametrize(
+    ("status", "error", "result_status", "expected"),
+    [
+        ("FAILED", "BLOCKED_IDENTITY", "BLOCKED_IDENTITY", "BLOCKED"),
+        ("FAILED", "BLOCKED_SCORE_BASIS", "BLOCKED_SCORE_BASIS", "BLOCKED"),
+        ("FAILED", "BLOCKED_HISTORY_ADMISSION", "BLOCKED_HISTORY_ADMISSION", "BLOCKED"),
+        ("FAILED", "BLOCKED_RESULT_CONFLICT", "BLOCKED_RESULT_CONFLICT", "BLOCKED"),
+        ("FAILED", "ADVERTISED_BUT_UNUSABLE", "ADVERTISED_BUT_UNUSABLE", "RETRY_WAIT"),
+        ("FAILED", "COMPLETED_WITH_ERRORS", "COMPLETED_WITH_ERRORS", "RETRY_WAIT"),
+        ("FAILED", "HTTP 503", "FAILED", "RETRY_WAIT"),
+        ("DEFERRED", "LIVE_SYNC_HAS_PRIORITY", "DEFERRED", "RETRY_WAIT"),
+        ("FAILED", "BLOCKED_IDENTITY", "COMPLETED_WITH_ERRORS", "RETRY_WAIT"),
+    ],
+)
+def test_provider_scope_failure_policy_preserves_qualification_holds_and_deadlines(
+    tmp_path: Path, status: str, error: str, result_status: str, expected: str
+) -> None:
+    league = "l_Policy" + uuid4().hex
+    with psycopg.connect(DATABASE_URL) as connection:
+        try:
+            sync, _ = _failed_policy_scope(
+                connection,
+                tmp_path,
+                league,
+                status=status,
+                error=error,
+                result_status=result_status,
+            )
+            work = _scope_work(connection, league)
+            assert work["state"] == expected
+            assert connection.execute(
+                "SELECT next_attempt_at>clock_timestamp(),attempts,last_error,summary "
+                "FROM football.product_provider_history_scopes "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (league,),
+            ).fetchone() == (True, 1, error, {"status": result_status})
+            connection.commit()
+            assert claim_scope(sync, league, "2024") is None
+        finally:
+            _remove_policy_scopes(connection, [league])
+
+
+def test_provider_scope_failure_policy_skips_held_scope_without_starving_siblings(
+    tmp_path: Path,
+) -> None:
+    league = "l_Policy" + uuid4().hex
+    with psycopg.connect(DATABASE_URL) as connection:
+        try:
+            sync, _ = _failed_policy_scope(connection, tmp_path, league)
+            assert _scope_work(connection, league)["state"] == "BLOCKED"
+            enqueue_seasons(sync, league, ["2023"])
+            connection.execute(
+                "UPDATE football.product_provider_history_scopes SET "
+                "next_attempt_at=clock_timestamp(),attempts=CASE "
+                "WHEN season_label='2024' THEN attempts ELSE 9 END "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (league,),
+            )
+            connection.commit()
+            assert claim_scope(sync, league, None) == (league, "2023")
+            assert _scope_work(connection, league)["state"] == "BLOCKED"
+        finally:
+            _remove_policy_scopes(connection, [league])
+
+
+def test_provider_scope_failure_policy_refresh_releases_only_due_selected_work(
+    tmp_path: Path,
+) -> None:
+    held, sibling = "l_PolicyA" + uuid4().hex, "l_PolicyB" + uuid4().hex
+    with psycopg.connect(DATABASE_URL) as connection:
+        try:
+            sync, previous = _failed_policy_scope(connection, tmp_path, held)
+            _failed_policy_scope(connection, tmp_path, sibling)
+            held_work = _scope_work(connection, held)
+            assert held_work["state"] == "BLOCKED"
+            assert held_work["generation"] == previous.generation + 1
+            assert (
+                run_scopes(
+                    sync, PitchApiClient("no-network"), budget=0, competition=held, refresh=True
+                )
+                == []
+            )
+            assert _scope_work(connection, held) == held_work
+            connection.execute(
+                "UPDATE football.product_provider_history_scopes "
+                "SET next_attempt_at=clock_timestamp() "
+                "WHERE provider_code='pitchapi' AND provider_competition_id=%s",
+                (held,),
+            )
+            connection.commit()
+            assert (
+                run_scopes(
+                    sync, PitchApiClient("no-network"), budget=0, competition=held, refresh=True
+                )
+                == []
+            )
+            released = _scope_work(connection, held)
+            assert (released["state"], released["attempt_count"], released["generation"]) == (
+                "PENDING",
+                1,
+                held_work["generation"] + 1,
+            )
+            assert _scope_work(connection, sibling)["state"] == "BLOCKED"
+            assert (
+                run_scopes(
+                    sync, PitchApiClient("no-network"), budget=0, competition=held, refresh=True
+                )
+                == []
+            )
+            assert _scope_work(connection, held) == released
+            assert claim_scope(sync, held, "2024") == (held, "2024")
+            assert _scope_work(connection, held)["attempt_count"] == 2
+            with pytest.raises(WorkLeaseLost):
+                WorkRegistry(connection).heartbeat(previous, timedelta(minutes=30))
+        finally:
+            _remove_policy_scopes(connection, [held, sibling])
 
 
 def _advance_shared_scope_retry(

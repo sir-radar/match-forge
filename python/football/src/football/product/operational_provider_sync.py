@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
@@ -1956,6 +1957,16 @@ class OperationalProviderSync:
                 (row.provider_away_team_id, row.away_team_name, away_team_id),
             )
             for provider_team_id, team_name, team_id in () if competition_only else team_aliases:
+                normalized_name = normalize_team_name(team_name)
+                if not normalized_name:
+                    logging.getLogger(__name__).warning(
+                        "search alias unavailable for provider=%s team=%s snapshot=%s; "
+                        "original name retained",
+                        self.provider_code,
+                        provider_team_id,
+                        snapshot_id,
+                    )
+                    continue
                 cursor.execute(
                     """INSERT INTO football.product_team_aliases (
                            provider_code, provider_team_id, normalized_name, team_id
@@ -1968,7 +1979,7 @@ class OperationalProviderSync:
                     (
                         self.provider_code,
                         provider_team_id,
-                        normalize_team_name(team_name),
+                        normalized_name,
                         team_id,
                         mapping_method,
                     ),

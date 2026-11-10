@@ -8,7 +8,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import psycopg
 import pytest
@@ -20,8 +20,10 @@ from football.product.domain import (
     sha256_json,
     stable_id,
 )
-from football.product.football_data_org import FootballDataResponse
+from football.product.football_data_org import FootballDataOrgClient, FootballDataResponse
+from football.product.football_data_uk import parse_csv_resource
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
+from football.product.historical_manifest import publish_manifest
 from football.product.identity_admission import admit_provider_mappings
 from football.product.sync import PRODUCT_FORECAST_ALGORITHM_VERSION, ProductSync
 from psycopg import Connection
@@ -35,6 +37,71 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 def _first(row: Any | None) -> Any:
     assert row is not None
     return row[0]
+
+
+def test_fallback_history_registers_native_competition_and_retries_without_duplicates(
+    tmp_path: Path,
+) -> None:
+    catalogue = {
+        "league": {"id": 40, "name": "Championship", "type": "League"},
+        "country": {"name": "England"},
+        "seasons": [{"year": 2024, "current": True}],
+    }
+    raw = json.dumps(
+        {"competition": {"id": 2016, "code": "ELC", "name": "Championship"}, "matches": []}
+    ).encode()
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        now = _first(c.execute("SELECT clock_timestamp()").fetchone())
+        product = ProductSync(
+            c,
+            ApiFootballClient("retained-only"),
+            tmp_path,
+            MODEL_ARTIFACT_PATH,
+            FootballDataOrgClient("test-token", transport=lambda *_args: raw),
+        )
+        api_raw = json.dumps({"response": [catalogue]}).encode()
+        source = product._record_response(
+            "test-fallback-catalogue", ApiResponse("/leagues", now, api_raw, (catalogue,), None)
+        )
+        product._store_competitions([catalogue], source, now)
+        admit_provider_mappings(c, tmp_path, "api_football", source)
+
+        first = product._football_data_org_history(40, 2024)
+        assert first is not None and first[2] == 0
+        decisions = admit_provider_mappings(c, tmp_path, "football_data_org", first[0])
+        mapping = c.execute(
+            """SELECT m.id,m.competition_id,m.provider_competition_id,m.source_snapshot_id,
+                      football.product_mapping_trusted('competition',m.id,m.competition_id)
+               FROM football.competition_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE p.code='football_data_org' AND m.provider_competition_id='ELC'
+                 AND m.valid_to IS NULL"""
+        ).fetchall()
+        assert len(mapping) == 1
+        assert mapping[0][1:] == (
+            stable_id("competition", "api_football", "40"),
+            "ELC",
+            first[0],
+            True,
+        )
+        assert [decision["disposition"] for decision in decisions] == ["CROSSWALK"]
+        assert (
+            tmp_path
+            / _first(
+                c.execute(
+                    "SELECT manifest_path FROM football.source_snapshots WHERE id=%s", (first[0],)
+                ).fetchone()
+            )
+        ).read_bytes() == raw
+
+        second = product._football_data_org_history(40, 2024)
+        assert second is not None and second[0] == first[0] and second[2] == 0
+        assert c.execute(
+            """SELECT count(*) FROM football.competition_provider_mappings m
+               JOIN football.providers p ON p.id=m.provider_id
+               WHERE p.code='football_data_org' AND m.provider_competition_id='ELC'
+                 AND m.valid_to IS NULL"""
+        ).fetchone() == (1,)
 
 
 @pytest.fixture
@@ -98,6 +165,145 @@ def test_fallback_history_requires_regulation_score(
         )
     ).read_bytes() == raw
     assert sync._store_fallback_history([row], competition, 2024, snapshot, acquired) == 0
+
+
+def _rolling_csv_source(connection, store, root, payload):
+    path = "mmz4281/2627/Latest_Results.csv"
+    digest = hashlib.sha256(payload).hexdigest()
+    observed_at = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+    manifest = publish_manifest(
+        root,
+        provider="football_data_uk",
+        source_identity=path,
+        source_revision=digest,
+        acquired_at=observed_at,
+        resources=[(path, f"rolling/{digest}.csv", payload)],
+    )
+    snapshot = store.ensure_snapshot(
+        source_identity=path,
+        source_revision=digest,
+        acquired_at=observed_at,
+        manifest_path=manifest,
+    )
+    store.record_resource(
+        snapshot_id=snapshot,
+        provider_path=path,
+        payload=payload,
+        media_type="text/csv",
+        acquired_at=observed_at,
+    )
+    rows = parse_csv_resource(payload, source_path=path, season="2026-2027")
+    return snapshot, observed_at, rows
+
+
+def test_rolling_versions_reuse_exact_fixtures_and_preserve_legacy_rows(connection, tmp_path):
+    from football.history.fixture_identity import load_canonical_history
+
+    header = "Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n"
+    first = "E0,01/10/2026,Rolling Home,Rolling Away,2,1\n"
+    second = "E0,02/10/2026,Other Home,Other Away,0,0\n"
+    store = HistoricalBackfillStore(
+        connection, "football_data_uk", "Football-Data.co.uk", "test-rolling", data_root=tmp_path
+    )
+    original, known, rows = _rolling_csv_source(
+        connection, store, tmp_path, (header + first).encode()
+    )
+    legacy_id = "mmz4281/2627/Latest_Results.csv#2"
+    assert (
+        store.import_match(replace(rows[0], provider_match_id=legacy_id), original, known)
+        == "inserted"
+    )
+    assert store.import_match(rows[0], original, known) == "existing"
+    admit_provider_mappings(connection, tmp_path, "football_data_uk", original)
+    cutoff = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+    prior_history = connection.execute(
+        "SELECT to_jsonb(h) FROM football.product_eligible_history_at(%s) h", (cutoff,)
+    ).fetchall()
+    assert len(prior_history) == 1
+    prior_mapping = connection.execute(
+        "SELECT to_jsonb(m) FROM football.match_provider_mappings m WHERE provider_match_id=%s",
+        (legacy_id,),
+    ).fetchone()
+    prior_decisions = connection.execute(
+        "SELECT to_jsonb(d) FROM football.product_match_history_decisions d ORDER BY decision_id"
+    ).fetchall()
+    changed, later, reordered = _rolling_csv_source(
+        connection, store, tmp_path, (header + second + first).encode()
+    )
+    assert [store.import_match(row, changed, later) for row in reordered] == [
+        "inserted",
+        "existing",
+    ]
+    assert [store.import_match(row, changed, later) for row in reordered] == [
+        "existing",
+        "existing",
+    ]
+    assert connection.execute(
+        "SELECT count(*) FROM football.product_team_match_history"
+    ).fetchone() == (2,)
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(m) FROM football.match_provider_mappings m WHERE provider_match_id=%s",
+            (legacy_id,),
+        ).fetchone()
+        == prior_mapping
+    )
+    assert connection.execute(
+        "SELECT match_id FROM football.match_provider_mappings WHERE provider_match_id=%s",
+        (reordered[1].provider_match_id,),
+    ).fetchone() == (UUID(prior_mapping[0]["match_id"]),)
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(h) FROM football.product_eligible_history_at(%s) h", (cutoff,)
+        ).fetchall()
+        == prior_history
+    )
+    decisions = connection.execute(
+        "SELECT to_jsonb(d) FROM football.product_match_history_decisions d"
+    ).fetchall()
+    assert all(row in decisions for row in prior_decisions)
+    history = load_canonical_history(connection)
+    assert len(history) == 2
+    for row in history:
+        assert all(item.provider_path == reordered[0].source_path for item in row.provider_evidence)
+        assert all(item.resource_sha256 for item in row.provider_evidence)
+
+
+@pytest.mark.parametrize(
+    ("replacement", "expected"),
+    [
+        ("E0,01/10/2026,Rolling Home,Rolling Away,3,1\n", "conflict"),
+        ("E0,01/10/2026,Rolling Away,Rolling Home,1,2\n", "identity_conflict"),
+        ("E0,01/10/2026,Rolling Home,Third Away,2,1\n", "identity_conflict"),
+    ],
+)
+def test_rolling_versions_hold_score_orientation_and_schedule_conflicts(
+    connection, tmp_path, replacement, expected
+):
+    header = "Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n"
+    store = HistoricalBackfillStore(
+        connection, "football_data_uk", "Football-Data.co.uk", "test-rolling", data_root=tmp_path
+    )
+    snapshot, known, rows = _rolling_csv_source(
+        connection,
+        store,
+        tmp_path,
+        (header + "E0,01/10/2026,Rolling Home,Rolling Away,2,1\n").encode(),
+    )
+    assert store.import_match(rows[0], snapshot, known) == "inserted"
+    previous = connection.execute(
+        "SELECT to_jsonb(h) FROM football.product_team_match_history h"
+    ).fetchall()
+    corrected, later, corrections = _rolling_csv_source(
+        connection, store, tmp_path, (header + replacement).encode()
+    )
+    assert store.import_match(corrections[0], corrected, later) == expected
+    assert (
+        connection.execute(
+            "SELECT to_jsonb(h) FROM football.product_team_match_history h"
+        ).fetchall()
+        == previous
+    )
 
 
 def test_bulk_sources_do_not_merge_matching_names_without_crosswalk(

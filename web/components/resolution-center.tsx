@@ -81,17 +81,18 @@ function CaseFilters({ view, filters, update, loading, reload }: { view: Resolut
 
 function CaseResults({ data, view, page, loading, inspect, changePage, selected, toggle }: { selected: string[]; toggle: (key: string) => void; data: ResolutionPage; view: ResolutionView; page: number; loading: boolean; inspect: (key: string, button: HTMLButtonElement) => void; changePage: (page: number) => void }) {
   return <>
-    <p role="status">{data.total.toLocaleString()} cases in this scope. {Object.entries(data.counts).map(([status, count]) => `${status}: ${count.toLocaleString()}`).join(" · ")}</p>
+    <p role="status">{data.total.toLocaleString()} {view === "history" ? "history entries" : "cases"} in this scope. {Object.entries(data.counts).map(([status, count]) => `${status}: ${count.toLocaleString()}`).join(" · ")}</p>
+    {view === "history" && <p>History preserves repeated decisions and fixture resolution records. Use Identity Review and Fixture Review to inspect current cases.</p>}
     {data.scope && <p className="resolution-scope">{data.scope.replaceAll("_", " ")}</p>}
     {!!data.blockers?.length && <details><summary>Required migration blockers ({data.blockers.length})</summary><ul>{data.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></details>}
-    {!!data.groups.length && <CaseGroups groups={data.groups} />}
+    {!!data.groups.length && <CaseGroups groups={data.groups} history={view === "history"} />}
     {!data.items.length ? <EmptyState title="No cases in this scope" detail="Change the filters or recheck after new evidence arrives." /> : <CaseTable selected={selected} toggle={toggle} selectable={["identity", "fixtures"].includes(view)} items={data.items} inspectable={["identity", "fixtures", "missing", "parity", "cutover"].includes(view)} inspect={inspect} />}
     <div className="resolution-pagination"><button disabled={page <= 1 || loading} onClick={() => changePage(page - 1)}>Previous page</button><span>Page {page}</span><button disabled={page * data.page_size >= data.total || loading} onClick={() => changePage(page + 1)}>Next page</button></div>
   </>;
 }
 
-function CaseGroups({ groups }: { groups: RecordValue[] }) {
-  return <details><summary>Grouped backlog (up to 100 groups; cases can span seasons)</summary><TableScroll label="Case groups"><table><thead><tr><th>Provider</th><th>Entity</th><th>Country</th><th>Competition / season</th><th>Status</th><th>Reason</th><th>Count</th></tr></thead><tbody>{groups.map((group, index) => <tr key={index}><td>{text(group.provider)}</td><td>{text(group.kind)}</td><td>{text(group.country)}</td><td>{text(group.competition_id)} / {text(group.season_id)}</td><td>{text(group.status)}</td><td>{text(group.reason)}</td><td>{String(group.count)}</td></tr>)}</tbody></table></TableScroll></details>;
+function CaseGroups({ groups, history }: { groups: RecordValue[]; history: boolean }) {
+  return <details><summary>{history ? "Grouped history entries" : "Grouped backlog"} (up to 100 groups; cases can span seasons)</summary><TableScroll label="Case groups"><table><thead><tr><th>Provider</th><th>Entity</th><th>Country</th><th>Competition / season</th><th>Status</th><th>Reason</th><th>Count</th></tr></thead><tbody>{groups.map((group, index) => <tr key={index}><td>{text(group.provider)}</td><td>{text(group.kind)}</td><td>{text(group.country)}</td><td>{text(group.competition_id)} / {text(group.season_id)}</td><td>{text(group.status)}</td><td>{text(group.reason)}</td><td>{String(group.count)}</td></tr>)}</tbody></table></TableScroll></details>;
 }
 
 function CaseTable({ items, inspectable, inspect, selected, toggle, selectable }: { selected: string[]; toggle: (key: string) => void; selectable: boolean; items: RecordValue[]; inspectable: boolean; inspect: (key: string, button: HTMLButtonElement) => void }) {

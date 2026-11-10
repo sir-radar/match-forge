@@ -51,6 +51,11 @@ If a matched source score disagrees with the stored canonical result, MatchForge
 
 ## Commands
 
+All providers follow the standing private-research acquisition decision in
+[Source acquisition](source-acquisition.md#project-use-policy). The provider
+register there identifies actual adapters, capabilities and access constraints;
+this page documents the existing product-history paths.
+
 ```bash
 uv run python -m football.product.cli backfill-openfootball
 uv run python -m football.product.cli backfill-football-data-uk
@@ -60,6 +65,19 @@ uv run python -m football.product.cli sync-all
 ```
 
 Backfill commands accept optional `--season`, `--competition`, and `--country` selectors. With no selector, all discovered usable data is processed. `--refresh` runs missing-forecast generation after a provider backfill.
+
+`backfill-history --provider-only` selects `fotmob`, `pitchapi`, `openfootball`
+or `football_data_uk` without executing unselected providers. API-Football and
+football-data.org continue through the existing shared history queue described
+below; StatsBomb uses its separate pinned acquisition/canonical-ingestion path.
+These are different representations, not interchangeable importers. Scheduled
+history still accepts only the two operational season providers and retains its
+existing enablement and request limits.
+
+Each selected backfill reports its own failure and allows the other providers
+to continue. Operational summaries retain `stored`, `discovery` and `acquired`
+results; an unavailable provider returns `null` with its error recorded. A
+successful command status does not mean every advertised season is qualified.
 
 Equivalent Make targets are:
 
@@ -102,6 +120,18 @@ series; no alternate MVP provider currently supplies qualified compatible xG.
 If real history remains below the ten-match requirement, MatchForge leaves the
 fixture unavailable instead of manufacturing history or relabelling a season.
 
+football-data.org historical fallback also registers the existing approved native
+competition-code crosswalk against its exact response snapshot. Registration
+does not establish trust: the ordinary retained-source admission checks still
+qualify it. Shared history workers publish this mapping inside their existing
+fenced database step, with provider I/O outside that transaction.
+
+football-data.org fixture materialization uses the returned `season.startDate`
+(`YYYY-MM-DD`) to select the season year. Missing or malformed source season
+metadata is rejected; the current competition label is not a historical fallback.
+A source season that contradicts an existing native match registration is also
+rejected, preserving the registered identity until separately qualified recovery.
+
 Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
 
 ## Independent team identity corrections
@@ -112,6 +142,24 @@ FotMob fixture evidence. It accepts a Football-Data.org match-provider
 registration and verified raw bytes; no operational observation is fabricated.
 API-Football team/league/season evidence is required, but an exact shared future
 fixture is not invented. Names alone never establish equivalence.
+
+Migration `202611030200` also permits a qualified reconstruction of a replaced
+FotMob mapping. The closed source and current target must have the same native
+team ID, different stored projections and adjacent validity intervals. The
+source must retain its original mapping-change revocation. Replay the actual
+retained observation through the existing resolver to record its contradiction;
+never invent that decision. An exact shared native fixture must bind the old
+source bytes to the registered fixture/season bytes, with both participants,
+kickoff, country and competition agreeing. The target must independently pass
+current admission and retained-byte checks. Labels can expose a contradiction;
+they do not establish the identity relationship.
+
+The existing Resolution Center can read the exact closed mapping case and offer
+its same-native current version as a candidate. `CORRECT` still requires the full
+qualified preview; ordinary `APPROVE` remains blocked. The correction appends a
+dated linked admission without reopening or editing the source mapping. Closed
+history participates only while that reconstruction is active, and existing
+fixture quarantine, duplicate, source and forecast-time checks remain in force.
 
 Each request contains `source_mapping_id`, `target_mapping_id`,
 `original_decision_id`, `fixture_registration_id` and `orientation` (`HOME` or
@@ -223,6 +271,14 @@ Empty advertised seasons report `ADVERTISED_BUT_UNUSABLE`. Stored results withou
 qualified identities or regulation-score evidence remain blocked; they cannot
 mark a history scope complete. Closed retained responses preserve their original
 acquisition times. New observations and admissions use actual execution times.
+
+Native scope work holds typed `BLOCKED_IDENTITY`, `BLOCKED_SCORE_BASIS`,
+`BLOCKED_HISTORY_ADMISSION` and `BLOCKED_RESULT_CONFLICT` results in the shared
+`BLOCKED` state. Background claims skip these scopes. An explicit `--refresh`
+releases only selected scopes whose retry deadline has passed, retaining attempt
+history and advancing the generation to fence old workers. Transient failures,
+empty advertised seasons and live-priority deferrals retain ordinary retries.
+
 Football-Data.co.uk discovery fails explicitly when its page budget leaves
 unvisited catalogue pages. Fixture reconciliation first selects nearby history
 IDs, then reads their latest dated eligibility decisions; historical registration

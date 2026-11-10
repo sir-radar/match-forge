@@ -153,3 +153,24 @@ def test_utc_rollover_isolated_from_old_responses_and_exhaustion(
                WHERE provider_code='api_football' ORDER BY window_date"""
         ).fetchall()
     assert rows == [(old.window_date, 0, True), (current.window_date, None, False)]
+
+
+def test_suppressed_quota_failure_exposes_the_proven_next_window(
+    budget: PostgresApiFootballBudget,
+) -> None:
+    with psycopg.connect(budget.database_url, autocommit=True) as connection:
+        expected = connection.execute(
+            "INSERT INTO football.provider_request_budgets"
+            "(provider_code,window_date,remaining_requests,exhausted) "
+            "VALUES('api_football',(clock_timestamp() AT TIME ZONE 'UTC')::date,0,true) "
+            "RETURNING (window_date+1)::timestamp AT TIME ZONE 'UTC'"
+        ).fetchone()[0]
+    for _ in range(2):
+        with pytest.raises(ApiFootballError) as failure:
+            budget.before_request()
+        assert failure.value.retry_after == expected
+    with psycopg.connect(budget.database_url) as connection:
+        assert connection.execute(
+            "SELECT requests_used FROM football.provider_request_budgets "
+            "WHERE provider_code='api_football'"
+        ).fetchone() == (0,)

@@ -36,7 +36,7 @@ from football.storage.transactions import require_idle_connection
 
 PROVIDER_CODE = "football_data_uk"
 INDEX_URL = "https://www.football-data.co.uk/downloadm.php"
-PARSER_VERSION = "football-data-uk-product-v1"
+PARSER_VERSION = "football-data-uk-product-v2"
 
 # Stable provider codes are mapping metadata, not the discovery catalog.
 _DIVISIONS: dict[str, tuple[str, str, int | None]] = {
@@ -46,6 +46,9 @@ _DIVISIONS: dict[str, tuple[str, str, int | None]] = {
     "E3": ("League Two", "England", 4),
     "EC": ("National League", "England", 5),
     "SC0": ("Premiership", "Scotland", 1),
+    "SC1": ("Championship", "Scotland", 2),
+    "SC2": ("League One", "Scotland", 3),
+    "SC3": ("League Two", "Scotland", 4),
     "D1": ("Bundesliga", "Germany", 1),
     "D2": ("2. Bundesliga", "Germany", 2),
     "SP1": ("LaLiga", "Spain", 1),
@@ -173,6 +176,13 @@ def discover_catalog(
     return sorted(resources.values(), key=lambda item: item.url)
 
 
+def _rolling_row_suffix(payload: bytes, source_path: str) -> str:
+    """Bind rolling row occurrences to bytes; the store resolves exact fixtures."""
+    if PurePosixPath(source_path).name.casefold() != "latest_results.csv":
+        return ""
+    return f"@sha256:{hashlib.sha256(payload).hexdigest()}"
+
+
 def parse_csv_resource(
     payload: bytes,
     *,
@@ -186,6 +196,7 @@ def parse_csv_resource(
     except UnicodeDecodeError:
         text = payload.decode("cp1252", errors="strict")
     reader = csv.DictReader(io.StringIO(text))
+    row_suffix = _rolling_row_suffix(payload, source_path)
     parsed: list[HistoricalMatch] = []
     for index, row in enumerate(reader, start=2):
         division = (row.get("Div") or division_hint or "").strip().upper()
@@ -218,7 +229,7 @@ def parse_csv_resource(
         inferred_season = season or _season_from_date(day)
         parsed.append(
             HistoricalMatch(
-                provider_match_id=f"{source_path}#{index}",
+                provider_match_id=f"{source_path}#{index}{row_suffix}",
                 provider_competition_id=division,
                 competition_name=competition_name,
                 country=country,

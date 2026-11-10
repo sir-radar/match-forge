@@ -80,6 +80,35 @@ def test_exact_original_recovery_is_approved_durable_and_idempotent(tmp_path):
         )
 
 
+def test_recovery_preview_blocks_before_missing_migration_can_queue_work(tmp_path):
+    from datetime import UTC, datetime
+
+    from football.product.history_worker import HistorySyncWorker
+    from football.work.contracts import WorkContractError
+
+    from tests.integration.test_product_identity_upgrade import _migrate
+
+    with isolated_database("202610310500") as url, psycopg.connect(url) as c:
+        key, path, _ = missing_resource(c, tmp_path)
+        request = proposal(key, "RECOVER", target_path=path, recovery_path="recovery/original.json")
+        result = preview(c, tmp_path, request)
+        assert result["allowed"] is False
+        assert "football.resolution_file_recovery_work" in result["qualification"]["reason"]
+        assert "migration" in result["qualification"]["reason"]
+        assert c.execute("SELECT count(*) FROM football.work_items").fetchone() == (0,)
+        assert not (tmp_path / path).exists()
+        c.commit()
+        worker = HistorySyncWorker(c, None, tmp_path, tmp_path / "unused")
+        with pytest.raises(WorkContractError, match="202611020200"):
+            worker._claim_history_job(datetime.now(UTC))
+        _migrate(url, "up")
+        _migrate(url, "up")
+        assert preview(c, tmp_path, request)["allowed"] is True
+        assert c.execute(
+            "SELECT route,count(*) FROM football.resolution_stage_settings GROUP BY route"
+        ).fetchall() == [("LEGACY", 13)]
+
+
 @pytest.mark.parametrize("action", ["EXCLUDE", "DEFER", "BLOCK", "REQUEST_EVIDENCE", "VERIFY"])
 def test_dispositions_preserve_missing_counts_and_history(tmp_path, action):
     with isolated_database() as url, psycopg.connect(url) as c:

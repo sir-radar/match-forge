@@ -1,0 +1,1169 @@
+{
+  "status": "IN_PROGRESS",
+  "implementation": "SOURCE_SEASON_FIX_VERIFIED",
+  "operating_imported": 0,
+  "new_forecasts": 0,
+  "source_season_fix": {
+    "module": "python/football/src/football/product/sync.py",
+    "source_field": "season.startDate",
+    "accepted_format": "YYYY-MM-DD",
+    "current_competition_label_used_as_fallback": false,
+    "contradictory_registered_season_rejected": true,
+    "registered_match_identity_rewritten": false,
+    "new_regression_cases": 9,
+    "focused_integration_cases_passed": 29,
+    "red_cases_failed_before_fix": 7,
+    "populated_source_rows_verified": 46,
+    "source_season_year": 2025,
+    "populated_history_ids_agree": 42,
+    "populated_retry_history_rows": 0,
+    "populated_earlier_cutoff_preserved": true
+  },
+  "current_native_inventory": {
+    "cutoff": "2026-11-09 14:11:41.543423+00:00",
+    "native_keys_examined": 95402,
+    "historical_unmatched": [
+      [
+        "fotmob",
+        71660,
+        13986
+      ],
+      [
+        "pitchapi",
+        4340,
+        2345
+      ]
+    ],
+    "latest_null_observations": 13292,
+    "accepted_current_bindings_separated": 57,
+    "remaining_latest_null_observations": 13235,
+    "remaining_by_provider": {
+      "fotmob": 10975,
+      "pitchapi": 2260
+    },
+    "remaining_finished_by_provider": {
+      "fotmob": 10779,
+      "pitchapi": 2083
+    },
+    "reason_groups": [
+      {
+        "provider": "fotmob",
+        "reason": "admitted native IDs identify retained fixture members",
+        "reason_code": null,
+        "error": null,
+        "count": 1
+      },
+      {
+        "provider": "fotmob",
+        "reason": "ambiguous exact candidates",
+        "reason_code": null,
+        "error": null,
+        "count": 129
+      },
+      {
+        "provider": "fotmob",
+        "reason": "existing match mapping conflicts with exact fixture candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 11
+      },
+      {
+        "provider": "fotmob",
+        "reason": "explicit cross-provider evidence required",
+        "reason_code": null,
+        "error": null,
+        "count": 557
+      },
+      {
+        "provider": "fotmob",
+        "reason": "finished score contradicts canonical result",
+        "reason_code": null,
+        "error": null,
+        "count": 1
+      },
+      {
+        "provider": "fotmob",
+        "reason": "historical admission failed",
+        "reason_code": null,
+        "error": "contradictory existing match_provider_mappings mapping",
+        "count": 3
+      },
+      {
+        "provider": "fotmob",
+        "reason": "historical admission failed",
+        "reason_code": null,
+        "error": "function football.product_mapping_trusted(unknown, uuid, uuid) does not exist",
+        "count": 25
+      },
+      {
+        "provider": "fotmob",
+        "reason": "historical admission failed",
+        "reason_code": null,
+        "error": "unresolved canonical fixture identity conflict at team/timestamp",
+        "count": 79
+      },
+      {
+        "provider": "fotmob",
+        "reason": "no exact canonical candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 3300
+      },
+      {
+        "provider": "fotmob",
+        "reason": "provider season label unavailable",
+        "reason_code": "PROVIDER_SEASON_UNAVAILABLE",
+        "error": null,
+        "count": 6435
+      },
+      {
+        "provider": "fotmob",
+        "reason": "retained fixture member contradicts reviewed context",
+        "reason_code": null,
+        "error": null,
+        "count": 1
+      },
+      {
+        "provider": "fotmob",
+        "reason": "verified team_provider_mappings contradicts exact-name candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 433
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "ambiguous exact candidates",
+        "reason_code": null,
+        "error": null,
+        "count": 33
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "explicit cross-provider evidence required",
+        "reason_code": null,
+        "error": null,
+        "count": 429
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "historical admission failed",
+        "reason_code": null,
+        "error": "function football.product_mapping_trusted(unknown, uuid, uuid) does not exist",
+        "count": 33
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "historical admission failed",
+        "reason_code": null,
+        "error": "unresolved canonical fixture identity conflict at team/timestamp",
+        "count": 21
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "no exact canonical candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 853
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "provider season label unavailable",
+        "reason_code": "PROVIDER_SEASON_UNAVAILABLE",
+        "error": null,
+        "count": 793
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "verified competition_provider_mappings contradicts exact-name candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 25
+      },
+      {
+        "provider": "pitchapi",
+        "reason": "verified team_provider_mappings contradicts exact-name candidate",
+        "reason_code": null,
+        "error": null,
+        "count": 73
+      }
+    ],
+    "accepted_binding_native_ids": [
+      {
+        "provider": "fotmob",
+        "native_id": "3802599",
+        "fixture_id": "d10a25d3-61ce-59d4-b30b-6716b1ce179d"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3802613",
+        "fixture_id": "1663aed0-0d9c-54b7-9b68-37cc698f4038"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3802646",
+        "fixture_id": "6cf2bae9-2083-5e0f-9b3a-94db6994b56b"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3805418",
+        "fixture_id": "9d1cae89-93ad-50de-8f64-e7e07b775ca8"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3913240",
+        "fixture_id": "7229bfe7-7bb5-535e-8765-495379379dfc"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3913248",
+        "fixture_id": "2ad9d163-f0c4-554e-a163-c3d02ef7c4a7"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3913253",
+        "fixture_id": "8b9d850e-cb8a-5466-81ab-ac489d4242a0"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "3984061",
+        "fixture_id": "42e1226f-9587-585a-9b72-7a0b27aee6db"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "4014116",
+        "fixture_id": "c4181a37-00bb-5519-be54-3a1646f22e20"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "4075140",
+        "fixture_id": "8e8265e3-b8da-527d-a45a-4c845688a33a"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "4272383",
+        "fixture_id": "0db8ebd9-8ec3-587b-b672-75cf78ffffd2"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "4305980",
+        "fixture_id": "40e6cd91-1552-56c9-9635-0d7706fd07c0"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "4554819",
+        "fixture_id": "97db7940-183e-5731-a7ac-722b09ae8a14"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5109993",
+        "fixture_id": "2708eb3f-2baf-53f6-b76c-a143887821ec"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5109996",
+        "fixture_id": "060567ea-584b-52e7-a394-0d9d62944408"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5109998",
+        "fixture_id": "6bb81d2f-09b7-5cad-81eb-f7ea40669662"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5125645",
+        "fixture_id": "8556f9b4-4966-505c-8fe9-bcbeed84f55f"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5125652",
+        "fixture_id": "41f3a4a3-f800-550e-8393-c584bec2e524"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5165377",
+        "fixture_id": "f14e63b0-b82e-5d05-a263-7abdd6bc08f0"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5749691",
+        "fixture_id": "b66240dd-ca70-5370-a71c-9157ba8f8a88"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5749695",
+        "fixture_id": "50718494-d98b-5d7a-8cf3-a0dbd6c2bb4a"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5749696",
+        "fixture_id": "95e6241c-09b7-5626-86f9-f693edf5089f"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5795469",
+        "fixture_id": "8d90ace1-2581-54b3-b0eb-d9478f922306"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5795470",
+        "fixture_id": "3d4b33c6-bb1f-5c9e-b97e-de828a135fa4"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5795472",
+        "fixture_id": "6d8929fe-5ffa-5ad5-9628-5003ded8848f"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5802951",
+        "fixture_id": "0f02c760-db8f-56b2-94d0-ba1668a35116"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5802953",
+        "fixture_id": "8ca304d7-a129-5cfb-b68d-2bd8e365cfe0"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5861942",
+        "fixture_id": "02f88b98-d4d9-579c-b35e-c6e05408a484"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5861943",
+        "fixture_id": "16314723-d19c-5669-8b4d-463c266e954e"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5861945",
+        "fixture_id": "1506b0ff-d476-5ba1-8742-fe396b8f4dcc"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5861948",
+        "fixture_id": "0b65a8e1-a361-5a02-bbfe-ce269950093a"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5865475",
+        "fixture_id": "7d46cade-3d27-5c07-a455-d2bbb3970e1b"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5868082",
+        "fixture_id": "db13f1a3-84ce-59f5-92d1-2032f3d5743b"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5868083",
+        "fixture_id": "43fce3d8-c25d-5ad1-af47-57ca3e2722fd"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5868087",
+        "fixture_id": "b5e39325-343d-59e3-8450-ceb122c1466b"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5881181",
+        "fixture_id": "9c8a6c82-d2f2-5994-8164-6410effa8203"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5881182",
+        "fixture_id": "c1e974bf-2c3e-5782-9f7b-b2cd7de9d780"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5881688",
+        "fixture_id": "c63a1342-97eb-523f-86a7-75fad97ff446"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5904758",
+        "fixture_id": "f94b4a72-63d6-509b-870e-80b624b0b2aa"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5904763",
+        "fixture_id": "f2edc484-9da6-5326-b377-7278d1e18304"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5904765",
+        "fixture_id": "cb9e2be2-1ea4-53f0-90a2-647490e4eef2"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5905920",
+        "fixture_id": "c25040a4-c824-5e77-88e9-f7a2877ac5ba"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5908659",
+        "fixture_id": "364c86b9-8af2-5017-a119-47c3777fca9d"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5972977",
+        "fixture_id": "db4d255f-33ec-574c-a975-7501069c1e6e"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5972979",
+        "fixture_id": "28300a16-0406-5b78-9430-4fef55d544bf"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974718",
+        "fixture_id": "538146b7-ed3a-52f3-9e0a-2fbc3401a10a"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974719",
+        "fixture_id": "54cffcf9-f0d3-570b-b5cd-534baace7a12"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974720",
+        "fixture_id": "015633c1-b7aa-5627-b0ba-1d65caf41bd1"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974721",
+        "fixture_id": "c412ab88-68fa-5155-9aaf-83923cb40f40"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974722",
+        "fixture_id": "2c5347aa-4515-5933-a175-912881dcb088"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974723",
+        "fixture_id": "cdb64abe-6afe-5539-a325-2633b393446c"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5974724",
+        "fixture_id": "1e5e6bc4-333b-5e2e-a938-9b5ef1a65f65"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5975049",
+        "fixture_id": "72bf095f-be8c-5b9f-82c3-e9ec215d44ea"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5975050",
+        "fixture_id": "7740edd0-635c-547a-a87b-acd0ed45d85f"
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5975057",
+        "fixture_id": "6fa4e547-9e41-596d-a2de-8dea8801b686"
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0Aknsd",
+        "fixture_id": "cb34f483-3df0-50bc-abc6-3f729fb09e28"
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0c0woG",
+        "fixture_id": "95e6241c-09b7-5626-86f9-f693edf5089f"
+      }
+    ],
+    "historical_diagnostics_api_changed": false,
+    "timeouts_raised": false,
+    "successful_query_batch_size": 256
+  },
+  "old_missing_function_replay": {
+    "source_resources": [
+      {
+        "provider": "fotmob",
+        "source_identity": "fixtures-2026-10-11",
+        "source_snapshot_id": "0b255e42-20f8-5924-9573-b9bdeda3844a",
+        "resource_id": "33385469-cd11-5eaf-9ec5-5d4d5ee43e74",
+        "sha256": "b5934de5cfe7b4981f5ef1f3af0f979d6081af32ac26d5153f05087e9799a5c4",
+        "path": "fixtures-2026-10-11",
+        "check": {
+          "status": "PASS",
+          "path": "operational/fotmob/2026/10/12/b5934de5cfe7b4981f5ef1f3af0f979d6081af32ac26d5153f05087e9799a5c4.json",
+          "reason": "EXACT_REGISTERED_BYTES"
+        }
+      },
+      {
+        "provider": "pitchapi",
+        "source_identity": "fixtures-2026-10-12",
+        "source_snapshot_id": "9604c7a6-9f76-57c2-a95f-af9e77646a56",
+        "resource_id": "fcfed398-db7d-5219-adac-4f839b35c661",
+        "sha256": "38c2aeac580a14781d459f58b6f934ac1a693cdecea84479c67930ae8ede363e",
+        "path": "fixtures-2026-10-12",
+        "check": {
+          "status": "PASS",
+          "path": "operational/pitchapi/2026/10/12/38c2aeac580a14781d459f58b6f934ac1a693cdecea84479c67930ae8ede363e.json",
+          "reason": "EXACT_REGISTERED_BYTES"
+        }
+      },
+      {
+        "provider": "pitchapi",
+        "source_identity": "fixtures-2026-10-11",
+        "source_snapshot_id": "f0d5b1fc-2ff0-589c-b6e9-9a2902405745",
+        "resource_id": "5fdcf622-9832-5361-bb49-3669ac8590cf",
+        "sha256": "1f6378150c793692d3d85943f065ecd78121b3de6bf8cea7a56b3edad27607aa",
+        "path": "fixtures-2026-10-11",
+        "check": {
+          "status": "PASS",
+          "path": "operational/pitchapi/2026/10/12/1f6378150c793692d3d85943f065ecd78121b3de6bf8cea7a56b3edad27607aa.json",
+          "reason": "EXACT_REGISTERED_BYTES"
+        }
+      }
+    ],
+    "current_function_exists": true,
+    "shadow_status": "PASS_ALL58_REPLAYS_RETRY_NO_TRUST_OR_ELIGIBLE_GAIN",
+    "native_rows": 58,
+    "new_identity_admissions": 0,
+    "new_eligible_history": 0,
+    "provisional_rows": 58,
+    "retained_unqualified_history_rows": 25,
+    "unknown_basis_history_withheld": 33,
+    "global_eligible_history_preserved": true,
+    "rows": [
+      {
+        "provider": "fotmob",
+        "native_id": "1000008714",
+        "fixture_id": "cc28262c-d07e-53e2-a4de-e65d01543a9e",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000013243",
+        "fixture_id": "7ee6b492-373a-537b-9bb8-6580dfed7e6a",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000013684",
+        "fixture_id": "0319a3a6-b347-58e2-b2b9-ba44285b2b8b",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000013689",
+        "fixture_id": "3033027f-1498-5551-bb63-f6de2c125d51",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000014596",
+        "fixture_id": "1f42d523-49f0-5356-b466-9b77c9484cf2",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000017247",
+        "fixture_id": "fa2fd8c0-fa2a-5892-b5f0-f41a81dd587b",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000017249",
+        "fixture_id": "a0df4100-35b6-50d4-8978-d9ffd549a7f3",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000017431",
+        "fixture_id": "19f88950-0a5a-577b-87d1-8d48a35d4466",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000017433",
+        "fixture_id": "757fb4c9-456c-5228-ad94-cc4d92d283ca",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000018935",
+        "fixture_id": "99149488-fd71-5595-962c-c1609160df7b",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000018936",
+        "fixture_id": "fc92aa25-4b83-561f-a6a9-566017e03371",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000019559",
+        "fixture_id": "1d5872c1-10da-5008-a36f-589c787e99b9",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000019568",
+        "fixture_id": "6608cd9a-1d64-5fd9-b01f-c750abe0e5a8",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "1000019573",
+        "fixture_id": "95a997b2-3887-57f7-a89e-967a29d28344",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5071410",
+        "fixture_id": "5363f531-ec3d-5665-97f3-2ec6872f4069",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5113105",
+        "fixture_id": "0dbcbd7c-e6ef-5761-a4b9-de58628680d3",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5190766",
+        "fixture_id": "4e98f463-9bf3-5f24-8888-2827830802f0",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5207250",
+        "fixture_id": "3dcc6997-15e6-584a-b8e5-c69f137a25b5",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5207252",
+        "fixture_id": "be8ce9e5-1cab-580d-98cf-81a98a5156dc",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5861284",
+        "fixture_id": "3f57647c-270f-51fc-93d8-7c8ab4846f48",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5961124",
+        "fixture_id": "5b659e30-8782-5fa2-b16f-b42402db32c6",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5962451",
+        "fixture_id": "a5842438-749f-5a3b-b5e5-1aa670ab813a",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "5976905",
+        "fixture_id": "0614aebc-26b2-53b9-bc2f-237523c42c7a",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "6327370",
+        "fixture_id": "76a8d53c-e62c-545a-b41e-d99f5a3ad18e",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "fotmob",
+        "native_id": "6370376",
+        "fixture_id": "74ab3646-11ef-5831-807b-7a52e1f4b657",
+        "identity_status": "PROVISIONAL",
+        "history_present": true,
+        "source_score_basis": "REGULATION_90",
+        "eligible": false,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0Bmvmu",
+        "fixture_id": "38f8428a-9bcc-5b2a-b65d-2e28f90a6ce6",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0JCgvQ",
+        "fixture_id": "1ee37aa4-eb93-5a20-b82b-9e3be93d7430",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0aJg0b",
+        "fixture_id": "b2080e36-bb79-5f6b-989e-e6f7d8c162ab",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0p5OMv",
+        "fixture_id": "7bf3c5a1-0847-509e-9601-8175b3415d8b",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_0pUsYG",
+        "fixture_id": "498e48df-8eba-5c2d-abc2-80811d47004a",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_17fsSN",
+        "fixture_id": "581389fb-28c3-50ed-b1fc-98a48497fedd",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_18v7CT",
+        "fixture_id": "d6e123cf-0ec4-5425-b690-5c51f1671c80",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_1EsR7P",
+        "fixture_id": "d4809bd2-6bdf-5d6c-94bf-836eb451acfe",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_1LTGYL",
+        "fixture_id": "e0e5466d-ba45-5059-aba5-77d0f0521c43",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_1Lra8B",
+        "fixture_id": "32063bd3-f7e5-5d1a-8b0d-b6172e675754",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_1MikY8",
+        "fixture_id": "e32fe21e-a0dc-5433-b6a0-5367aee0257a",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_1evFXq",
+        "fixture_id": "0a124bf5-d13b-59c0-b886-9999ae0ed338",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_21ZHHt",
+        "fixture_id": "5b3e820f-9f11-5228-8c5c-fd17d53ff258",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_26GHc4",
+        "fixture_id": "59505104-1ff3-5f51-a777-2875d15529f6",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_2mqycN",
+        "fixture_id": "cc723471-422c-507f-b878-b3dd3e14756f",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_2oAwyn",
+        "fixture_id": "180e1d3c-511b-58a8-985e-ebdde61a146f",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_32VZlG",
+        "fixture_id": "a2fd7541-bdbc-562b-8e43-ed12419cc209",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_38ayO4",
+        "fixture_id": "d02ab3ed-543b-5a04-a56e-e5538022c38d",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3L6XvV",
+        "fixture_id": "d1ad4245-692a-5d17-9d39-144c79ab2343",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3MWmVu",
+        "fixture_id": "53ccbda9-e7c5-5c05-981e-7fa19ca63c7c",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3RCuN4",
+        "fixture_id": "46afbf25-0c29-586f-a6ee-095e891f87a1",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3SpNPB",
+        "fixture_id": "500ad044-08f0-5989-b1af-9b9c6e1785f4",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3YZ5sk",
+        "fixture_id": "e5bc8222-d232-5b41-a311-e78c8e560a73",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3eVCR2",
+        "fixture_id": "82f01b98-a832-5834-853c-5bf0eacd7173",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_3hXpy9",
+        "fixture_id": "38f9cc3f-4014-5739-84ef-2704cf71af32",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_42GuLP",
+        "fixture_id": "d7b79d17-cfff-5f2b-9699-f30072f67d24",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_43umEQ",
+        "fixture_id": "2c03cdfd-3576-555e-8ae6-ec6ae67f2f2f",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_44vSEv",
+        "fixture_id": "f7f32788-9cdd-5855-82d2-3d6faa89b899",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_4ITK33",
+        "fixture_id": "2d1dd80a-c359-56e8-bbf2-cc3b59c4d334",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_4Npomn",
+        "fixture_id": "ecdf5343-0513-5869-bce1-7642ac1266a3",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_4WCy0N",
+        "fixture_id": "4a0510cb-5427-521c-b807-0879fdf20424",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_4agK3t",
+        "fixture_id": "61f98ebb-3730-5ae5-b061-3a4f8f37e9d8",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      },
+      {
+        "provider": "pitchapi",
+        "native_id": "m_4eHMHq",
+        "fixture_id": "52d99656-4bce-5098-9af4-f4574d73becc",
+        "identity_status": "PROVISIONAL",
+        "history_present": false,
+        "source_score_basis": "UNKNOWN",
+        "eligible": null,
+        "retry_same_fixture": true
+      }
+    ],
+    "operating_replay": "NOT_EXECUTED"
+  },
+  "verification": {
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+    "exit_code": 0,
+    "python_unit_tests": 1819,
+    "rust_tests": 16,
+    "web_tests": 107,
+    "storage_migration_and_api_integration": "PASS",
+    "production_file_sha256": "e6c52bab2c227cc353defd44fae36ceb7324d6c0b70ed1b756cc0283c7b54e5e",
+    "test_file_sha256": "9b18921c62a373e050751d77ff0bc1e2889b6c1a657c17592f171c7680097c90"
+  },
+  "remaining_work": [
+    "Fresh scoped operating recovery for the proven subset, with source/cutoff checks and no forecast or trust gain inferred from provisional associations",
+    "Exact retained season metadata and independent identity/canonical proof for the remaining native observations",
+    "FR008 unique fixture/identity qualification before any Coventry operating import"
+  ],
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-red.log",
+      "sha256": "5f06ae3d4168c00e8f24b94eba38d73345fc9212cd3ecb461789a03a1a62de33"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-focused.log",
+      "sha256": "7f3da426d3cae7aa8490301d44ffdf8fe888b7a6f3ccf34a1cc3eee9e92b5be2"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-current-unmatched.json",
+      "sha256": "fd2ca333c5dfb44d6eefcbbaede9ebc18c8e6fe6b7a71f21cc2af9e1d41023f6"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-source-season-populated.json",
+      "sha256": "23c8a38912487680a9c784d5e77d40ed9415d8247e507e65aa8f765163fd7acc"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-old-function-source-checks.json",
+      "sha256": "a41a7a206e34ef39478515b0411c412daffc56b715bbadbdf96e78a3cf528a0d"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-shadow-old-errors.json",
+      "sha256": "95f8ccd51227856309c04a093ff0b4b7c924f3c87df67a442607c557ce061608"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-shadow-combined-replay.json",
+      "sha256": "7d8913d8471dfd0f0e6f859de1ffca308fa729b4157f54650eb654fe6b029f22"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-check-integration.log",
+      "sha256": "7bb98d3b2eaba06edbf7a1440dd13121dbf60c32bb48bf315ad05c4088c3c8ae"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr009-check-integration.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    }
+  ]
+}

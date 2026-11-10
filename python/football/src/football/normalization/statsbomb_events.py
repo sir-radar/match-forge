@@ -11,7 +11,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
 
-NORMALIZER_VERSION = "statsbomb-normalizer-v1"
+NORMALIZER_VERSION = "statsbomb-normalizer-v2"
 EVENT_SCHEMA_VERSION = "v1"
 EVENT_SCHEMA_SHA256 = "25869371ba35ed08bafc15c566533153661afacaf9727cc4055cc768482f2f18"
 
@@ -29,10 +29,12 @@ _KNOWN_EVENT_TYPES = {
     17: "pressure",
     18: "half-start",
     19: "substitution",
+    20: "own-goal-against",
     21: "foul-won",
     22: "foul-committed",
     23: "goalkeeper",
     24: "bad-behaviour",
+    25: "own-goal-for",
     26: "player-on",
     27: "player-off",
     28: "shield",
@@ -41,9 +43,11 @@ _KNOWN_EVENT_TYPES = {
     34: "half-end",
     35: "starting-xi",
     36: "tactical-shift",
+    37: "error",
     38: "miscontrol",
     39: "dribbled-past",
     40: "injury-stoppage",
+    41: "referee-ball-drop",
     42: "ball-receipt",
     43: "carry",
 }

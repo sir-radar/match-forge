@@ -1,0 +1,1938 @@
+{
+  "status": "VERIFIED_OPERATING; 15 legitimate history dependencies remain in FR-004",
+  "scope": "FR-001 exact native reconstruction; all original facts stay intact",
+  "knowledge_cutoff": "2026-11-03 21:25:24.059770+00:00",
+  "frozen_target_ids": [
+    "a49bcd54-0272-53e6-86e7-287dc385c65c",
+    "1e25a517-7f96-5690-85dc-94e0244172b2",
+    "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+    "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+    "3821252c-f534-5799-a761-ab18516f6490",
+    "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+    "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+    "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+    "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+    "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+    "cb09fc37-a457-5101-97c4-c7f63e380cae",
+    "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+    "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+    "0cb391b0-90fd-540f-ab63-b58e41693136",
+    "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+    "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+    "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+    "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+    "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+    "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+    "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+    "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+    "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+    "b23c0761-115a-5b4f-bf01-93b552777de7",
+    "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+    "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+    "a847dbdb-484d-547b-856b-5ac38c522127",
+    "c6391ca0-df34-5033-bf98-5f807641ffd5",
+    "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+    "74fe2710-563e-5fa4-b4da-38053eb6f76b"
+  ],
+  "target_count": 30,
+  "original_mapping_versions": 8,
+  "original_admissions": 12,
+  "relationships": [
+    {
+      "provider": "fotmob",
+      "native_team_id": "106975",
+      "source_mapping_id": "01a12ac1-490f-7548-8e0f-4c3df7a839a5",
+      "target_mapping_id": "01a14230-cade-7a4a-b79e-6d53984decf4",
+      "stored_source_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "target_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "source_closed_at": "2026-10-16 00:50:56.222825+00:00",
+      "target_valid_from": "2026-10-16 00:50:56.222825+00:00",
+      "original_revocation_id": "01a14230-ca79-7310-968a-173c55e38775",
+      "independent_target_admission_id": "01a14230-cb49-733a-b203-496e96426613",
+      "target_primary_snapshot_id": "db675310-3cdd-5faf-b2c4-e1d11131f935",
+      "common_native_fixtures": [
+        {
+          "fixture_id": "5975055",
+          "home": "106975",
+          "away": "102019",
+          "kickoff": "2026-10-11T15:00:00.000Z",
+          "league": "522",
+          "country": "Ghana",
+          "target_season": "2026/2027",
+          "old_source": {
+            "source_resource_id": "c94e4bf9-b5de-57eb-bbe0-3ddc68ee2444",
+            "sha256": "b544e2fa9fcf6464bb8d81dc33f7cfea4a01655976d76b8b7ef762d0274f02a9",
+            "source_snapshot_id": "fb2653f9-74ca-523c-ad09-b73873d1add6",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-11T11:37:51.649346+00:00"
+          },
+          "new_source": {
+            "source_resource_id": "86ecfe35-4565-5bfe-8da3-9dd6af484bcf",
+            "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+            "source_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-14T05:15:27.619014+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "provider": "fotmob",
+      "native_team_id": "2103806",
+      "source_mapping_id": "01a12ac1-4903-79bc-a5a7-8353dc4edd48",
+      "target_mapping_id": "01a14230-cd0a-76d8-bfe0-0c088e6cbdf7",
+      "stored_source_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "target_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "source_closed_at": "2026-10-16 00:50:56.875162+00:00",
+      "target_valid_from": "2026-10-16 00:50:56.875162+00:00",
+      "original_revocation_id": "01a14230-ccf1-7b7f-a2de-5b5c0af51abf",
+      "independent_target_admission_id": "01a14230-cd25-7889-83df-2aae899a1a1d",
+      "target_primary_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+      "common_native_fixtures": [
+        {
+          "fixture_id": "5975053",
+          "home": "102016",
+          "away": "2103806",
+          "kickoff": "2026-10-11T15:00:00.000Z",
+          "league": "522",
+          "country": "Ghana",
+          "target_season": "2026/2027",
+          "old_source": {
+            "source_resource_id": "c94e4bf9-b5de-57eb-bbe0-3ddc68ee2444",
+            "sha256": "b544e2fa9fcf6464bb8d81dc33f7cfea4a01655976d76b8b7ef762d0274f02a9",
+            "source_snapshot_id": "fb2653f9-74ca-523c-ad09-b73873d1add6",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-11T11:37:51.649346+00:00"
+          },
+          "new_source": {
+            "source_resource_id": "86ecfe35-4565-5bfe-8da3-9dd6af484bcf",
+            "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+            "source_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+            "provider": "fotmob",
+            "acquired_at": "2026-10-14T05:15:27.619014+00:00"
+          }
+        }
+      ]
+    }
+  ],
+  "private_receipts_sha256": {
+    "fr001-original-state.json": "08655f827bf5d94374c712f58c65452b6049252d2c14188d1843e977e0a3d20e",
+    "fr001-native-proof.json": "050cd9824edab02f2774189be1eb422163c58fbaaa344830e20fa1acdbf665d2",
+    "fr001-replacement-reproduction.json": "5baeb0f57c1d2edc3af954cb615178afcd9db6f81f3055a855b1b795ee83f443",
+    "fr001-populated-rehearsal.json": "d8b8d057ea3c528ce450d9abe412fdc0e3c122e7915815310d2c669df2b4553c",
+    "fr001-consumer-rehearsal.json": "a9fab5e7312734469a54b44b0ff020a2b9eefc0a527ef69fdc03eb6cfd95af88",
+    "fr001-forward-repair.json": "17e149e852fecbd93df074d46ce944cee28482928e75390364025afdf6304ccd",
+    "fr001-migration-compatibility/result.json": "dd824b54b3778086ff77947db251b44e95b4a058ceea1cb79b82c5eb304e83b2",
+    "operating-backup-before-native-correction/restore-verification.json": "503f40501d36e5bd77795c6d855bf9015d3582397feccdc0eaa4f951fd07f3b8",
+    "fr001-admission-deadlines.json": "bed9cc17642ca0a0327a8d22eac87a90b00ca5e69c654dd1dbe3ba7793ae4276",
+    "fr001-final-check-integration.log": "7d6b88d44228dc5dc5bfbe8c60f618234c03cc6be9ba07f1c4a3340d5b03bb26",
+    "resume-20261109/fr001-operating-rollout.json": "0f101c2c755341009c18025ad1561589394101d2a4e480a71e9d4034a7aa0291",
+    "resume-20261109/fr001-preservation-after-stop.json": "607fdbecb120d0042477a4a646ac825fa8c9ac1057db78a9e7d58f7463b9ddac",
+    "resume-20261109/fr001-preservation-after-continuation.json": "85ef2ca58f914271df71ff204e9a01c9ec1ddaacb796a8d8cb82f23b8ba92fd1",
+    "resume-20261109/fr001-observation-backup-comparison.json": "ac63a5e1767c33d76c2e20a1b5f5f29dd7120a1480f6dac059acfcb7446e19b9",
+    "resume-20261109/fr001-shadow-history-sources.json": "86b4cdabd19615b989671abe95d389265906ae29d8bbc26f00436fd474c99f69",
+    "resume-20261109/fr001-populated-rehearsal.json": "507380d8c0e7b0446462fe60baf104559a4dffbd898101b5e06f0b1392248281",
+    "resume-20261109/fr001-consumer-rehearsal.json": "2654d9e0cb1e994876f56b685e6b6c3759062279d0a8d19d459f9e00ad3e5942",
+    "resume-20261109/fr001-forward-repair.json": "762dfd96d58f08e251fd3e0491064fa945c999ca7d7d2e9263cd11dc97ae76e3",
+    "resume-20261109/fr001-migration-compatibility/result.json": "a37636a584c5e69255c9f869de44e0f1dec8bf3dd8c2a16af403870589206982",
+    "resume-20261109/observation-comparison-verification.json": "01a45e95798c1a3baaa368588d366fc31fd103482349a7e5ab856856358b43e7",
+    "resume-20261109/preservation-checker-verification.json": "81594d094d2c3ac4a176f2a1ffb632f306d386fee64b64a40d1115efed19e609"
+  },
+  "operating_corrections": 2,
+  "operating_migration_applied": true,
+  "verified_new_forecasts": 15,
+  "backup": {
+    "captured_at": "2026-11-03 22:20:40.531141+00:00",
+    "bytes": 1529811963,
+    "sha256": "62898d0989e23fc196ca82e993534acbe422f6cca1f71e5d84259a1baa0bf40a",
+    "exact_restore": "PASS",
+    "prospective_withdrawal_and_forward_repair": "PASS"
+  },
+  "shadow": {
+    "migration_upgrade_and_retry": "PASS",
+    "unchanged_registration_digests": 9,
+    "changed_original_rows": {
+      "source_snapshots": 0,
+      "source_resources": 0,
+      "product_identity_admissions": 0,
+      "product_match_history_decisions": 0,
+      "product_team_match_history": 0,
+      "model_artifacts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0,
+      "model_promotion_events": 0,
+      "artifact_retirement_events": 0,
+      "team_provider_mappings": 0,
+      "competition_provider_mappings": 0,
+      "match_provider_mappings": 0
+    },
+    "earlier_cutoff_preserved": true,
+    "all_30_physical_fixture_rows_preserved_before_publication": true,
+    "new_eligible_history": 0,
+    "fresh_qualified_targets": 30,
+    "forecasts_published": 15,
+    "original_cutoff_forecasts_reproduced": 15,
+    "repeat_new_forecasts": 0,
+    "context_errors": 0,
+    "routes_legacy": 13,
+    "review_seconds": [
+      4.172,
+      1.883
+    ],
+    "before_knowledge_cutoff": "2026-11-03 22:40:24.326049+00:00",
+    "after_knowledge_cutoff": "2026-11-03 22:46:12.616846+00:00"
+  },
+  "pending_pr178": {
+    "head_sha": "463ec15a8a0720fb48e842af5a009cf140545f90",
+    "draft": true,
+    "merged": false,
+    "pending_migration_git_blob": "266bea6efefb4770f5b5bc83046cbb36cb9e85ab",
+    "ordered_combined_upgrade_and_retry": "PASS",
+    "preexisting_operating_ordering_gap_remains": true
+  },
+  "shadow_target_results": [
+    {
+      "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 58,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 58,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "home_eligible": 0,
+        "away_eligible": 46,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "home_eligible": 159,
+        "away_eligible": 46,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "home_eligible": 0,
+        "away_eligible": 86,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "home_eligible": 6,
+        "away_eligible": 86,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+        "home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 108,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+        "home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 108,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "home_eligible": 6,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 0,
+        "away_eligible": 133,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 159,
+        "away_eligible": 133,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 149,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 159,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 58,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+        "home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 58,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "home_eligible": 0,
+        "away_eligible": 149,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "home_eligible": 159,
+        "away_eligible": 149,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 46,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 46,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 0,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 6,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 0,
+        "away_eligible": 57,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 159,
+        "away_eligible": 57,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 0,
+        "away_eligible": 133,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "home_eligible": 6,
+        "away_eligible": 133,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+        "home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 149,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 86,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 86,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 18,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 0,
+        "away_eligible": 147,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "home_eligible": 6,
+        "away_eligible": 147,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 0,
+        "away_eligible": 108,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 159,
+        "away_eligible": 108,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+        "home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 149,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+        "home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 149,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 147,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 0,
+        "away_eligible": 57,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+        "home_eligible": 6,
+        "away_eligible": 57,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 0,
+        "away_eligible": 58,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 159,
+        "away_eligible": 58,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 86,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+        "home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 86,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 46,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+        "home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 46,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 0,
+        "away_eligible": 108,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+        "home_eligible": 6,
+        "away_eligible": 108,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+        "home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+        "away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "home_eligible": 147,
+        "away_eligible": 6,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    },
+    {
+      "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+        "home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 133,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+        "home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 133,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+        "home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "home_eligible": 0,
+        "away_eligible": 149,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+        "home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+        "home_eligible": 159,
+        "away_eligible": 149,
+        "blocked_identity": false,
+        "history_window": 20,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+        "home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+        "home_eligible": 147,
+        "away_eligible": 0,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+        "home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+        "away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+        "home_eligible": 147,
+        "away_eligible": 159,
+        "blocked_identity": false,
+        "history_window": 19,
+        "forecast_available": true
+      },
+      "remaining_blocker": null
+    },
+    {
+      "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "before": {
+        "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+        "home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 0,
+        "away_eligible": 58,
+        "blocked_identity": true,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "after": {
+        "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+        "home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+        "away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+        "home_eligible": 6,
+        "away_eligible": 58,
+        "blocked_identity": false,
+        "history_window": 0,
+        "forecast_available": false
+      },
+      "remaining_blocker": "INSUFFICIENT_ELIGIBLE_HISTORY_FR004"
+    }
+  ],
+  "verification": {
+    "focused_consumer_red_cases": 3,
+    "focused_consumer_green_cases": 3,
+    "final_aggregate": "PASS",
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+    "exit_code": 0,
+    "python_unit_tests": 1819,
+    "rust_tests": 16,
+    "web_tests": 107,
+    "full_storage_and_api_integration": true,
+    "code_commit": "5cb3a1a5b8c2ca9c4fbf925fa8561a55add605d9",
+    "full_aggregate_date": "2026-11-03",
+    "code_unchanged_for_operating_execution": true
+  },
+  "shared_history_deadline_regression": {
+    "status": "PASS",
+    "admission_seconds": {
+      "DED": 7.265,
+      "PD": 6.047,
+      "BSA": 3.746
+    },
+    "reference_decision_facts_match": true,
+    "refresh_key_parity": true,
+    "earlier_cutoffs_preserved": true
+  },
+  "operating": {
+    "policy_commit": "5cb3a1a5b8c2ca9c4fbf925fa8561a55add605d9",
+    "before_knowledge_cutoff": "2026-11-09 12:11:25.539217+00:00",
+    "after_knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+    "completed_at": "2026-11-09 12:58:27.948198+00:00",
+    "backup": {
+      "captured_at": "2026-11-09 11:31:13.794193+00:00",
+      "bytes": 1632319418,
+      "sha256": "14e1c00d674f4bbe408166c79119ecfd8860ec698ba6ba080a20019295cc88d7",
+      "exact_restore": "PASS",
+      "prospective_withdrawal_and_forward_repair": "PASS"
+    },
+    "migration": 202611030200,
+    "migration_applied_once": true,
+    "review_decision_ids": [
+      "01a1c038-97cd-7162-b696-92db43015f70",
+      "01a1c061-74c5-7bcd-bcf4-3245c517b507"
+    ],
+    "first_small_batch_forecast": {
+      "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+      "forecast_id": "d1bb06bb-8cd0-5d00-a8c7-5283ae71a43b",
+      "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+      "predictive_input_snapshot_sha256": "c8adadb30d085b112915b6670944b7f2f8422b6d2a8c79ca034d61959135b5ba",
+      "payload_sha256": "ab9ecf9e2d1b8a21245f34f6834ab803ddbefdf05dffcc9b2603d440ac6edbef",
+      "knowledge_cutoff": "2026-11-09 12:11:39.689444+00:00",
+      "created_at": "2026-11-09 12:11:39.689444+00:00",
+      "history_rows": 20,
+      "original_cutoff_reproduced": true,
+      "public_history_http": 200,
+      "public_detail_http": 200
+    },
+    "continuation_created_forecasts": 14,
+    "new_forecasts_in_frozen_cohort": 15,
+    "repeat_new_forecasts": 0,
+    "availability_only_new_forecasts": 0,
+    "newly_eligible_history": 0,
+    "lost_eligible_history": 0,
+    "original_global_populations_checked": 13,
+    "affected_observation_decision_populations_checked": 3,
+    "original_fact_changes": 0,
+    "valid_background_cache_advances": 1,
+    "invalid_freshness_changes": 0,
+    "prior_available_controls": 2250,
+    "prior_available_regressions": 0,
+    "context_errors": 0,
+    "legacy_routes": 13,
+    "remaining_history_short_targets": 15,
+    "port_city_eligible_history": 6,
+    "history_minimum_unchanged": 10,
+    "source_resources": [
+      {
+        "source_resource_id": "112f0790-bca5-5896-ba10-deef1f92b29d",
+        "source_snapshot_id": "7c09a2b5-0ad4-5f27-b7d6-dcf2f0dc430f",
+        "sha256": "aa1d13be8b0c9ace45b0a47034369ba1db8a7a4d26c81119c1ab49d9ce4e2f02",
+        "bytes": 1121410
+      },
+      {
+        "source_resource_id": "15745e19-b175-5cce-a964-7b7d0093b72e",
+        "source_snapshot_id": "bfaf872c-5618-542f-8429-8aa01db490e8",
+        "sha256": "4fb2e191e3ae49bf7716720afca98204c55c2846fc14b2a502c2b03c8051f5bc",
+        "bytes": 323412
+      },
+      {
+        "source_resource_id": "26e62024-7d58-5b38-a2e8-faa59144e55c",
+        "source_snapshot_id": "70f57433-b47b-5219-9e55-72078bbed6cc",
+        "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+        "bytes": 549319
+      },
+      {
+        "source_resource_id": "33385469-cd11-5eaf-9ec5-5d4d5ee43e74",
+        "source_snapshot_id": "0b255e42-20f8-5924-9573-b9bdeda3844a",
+        "sha256": "b5934de5cfe7b4981f5ef1f3af0f979d6081af32ac26d5153f05087e9799a5c4",
+        "bytes": 323412
+      },
+      {
+        "source_resource_id": "3cab6bf1-bcc4-5cb8-bf13-1d4c9719c669",
+        "source_snapshot_id": "1e6f626c-df85-56ba-a82e-84298230ee53",
+        "sha256": "f607cbf66191144094c177fa8bfc68116a81066107bac86b9612ff0cdd5880d6",
+        "bytes": 772408
+      },
+      {
+        "source_resource_id": "6257a55a-e877-5cc5-832a-e762f398b8b6",
+        "source_snapshot_id": "63de002a-d4a9-5797-814f-0442fa4e5625",
+        "sha256": "4b3023e729b03f58d4fc309b5fdc92971163c71d7e2a20c0a0b9fc0d0f234b1b",
+        "bytes": 320794
+      },
+      {
+        "source_resource_id": "66ae936d-4dc0-5a2b-8324-b9f28b70a137",
+        "source_snapshot_id": "860fe8a0-334e-5b9b-9613-52f2b0b33311",
+        "sha256": "5889e28cfebf8145d21078a5bb04c09af1c8e4b3978910649ace61ece5bac582",
+        "bytes": 637968
+      },
+      {
+        "source_resource_id": "86ecfe35-4565-5bfe-8da3-9dd6af484bcf",
+        "source_snapshot_id": "eb5ddd51-6554-52c3-a716-b9002db77653",
+        "sha256": "a479d081381ace833469d95b7449ad4abd27d5913a00912448a6aad29fd064df",
+        "bytes": 549319
+      },
+      {
+        "source_resource_id": "a755afb8-6e2e-5a5e-8eb3-cbacc945e32b",
+        "source_snapshot_id": "2b5535a2-e8e5-562e-8e58-32236ca1cc1b",
+        "sha256": "a8f96409ccf51e3c16bc592d3493a642319a2c5fb4a5d46e54bca8d5b261dbb8",
+        "bytes": 639234
+      },
+      {
+        "source_resource_id": "c0f5cbc1-2594-501a-b744-c79d9d82a4a9",
+        "source_snapshot_id": "84214ec2-b056-5660-a7fe-488eb680bfc4",
+        "sha256": "b339fd14b50967be4593498078f9b455e171dfb5d7ea05fa996d7f03dd8c26ec",
+        "bytes": 379763
+      },
+      {
+        "source_resource_id": "e21f3014-9bb7-590c-bd50-d94fec1c58e0",
+        "source_snapshot_id": "11c9421a-be01-581e-9d14-080093910edd",
+        "sha256": "98c38712e689b58525d858d079727eb68ea5af1f313ce23298684669772bf82b",
+        "bytes": 316041
+      },
+      {
+        "source_resource_id": "e33a9d92-8871-5c07-b76f-3a4a7a4accd0",
+        "source_snapshot_id": "9f642009-90e5-5490-83ae-3c3e8bc174bb",
+        "sha256": "cb43126e4ece51d134d8c882504cf8bb018a09584d8d32d578d9c2f3726f3dc3",
+        "bytes": 337406
+      }
+    ],
+    "forecasts": [
+      {
+        "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+        "forecast_id": "8da3f1be-f1d9-5918-bbeb-11001eadd8cf",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "0690481c7cf4429e4307ba1628b0b9703903be58cf90e818a4b119196fd65243",
+        "payload_sha256": "3ca2332da5afb6968163773d4de7a8e466ccd606b6f8a57fadf9afef39632d7c",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2026-12-13T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+        "forecast_id": "c9c713df-a71e-5ee7-80df-1f432722d4a4",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "8831a2fb1ba869dba4d40b7a2232823584b5b0fa0ad877796be482c49063dcb0",
+        "payload_sha256": "b2c9470f719e3c39f15e957a237226c374defce8a5aa3bfcac91d934601b037a",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 19,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-01-17T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+        "forecast_id": "56c5da80-1374-579c-8419-973d32cb22e0",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "3be9caaf1a2ba5bdfeb4bd951297642924e046c15b4e2e3d9659bc1c27f0ac40",
+        "payload_sha256": "83496fcb3d518b23ee9d36e8882c05e7f00e833d863fd02989a64cb6a5406296",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-03-14T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+        "forecast_id": "dc003bef-4f24-53df-abc4-39d83ad940e8",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "80c0dc9eff74616790c7de4ceb971959c0b9461dea2afbe1fb7950d2deebeb1b",
+        "payload_sha256": "7eae85714795da3d0924607684f54b95b555455d89beb36bf3ddfaac6679e43b",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-02-21T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+        "forecast_id": "1494d3fe-7f86-5187-ab03-6dc7310bafad",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "dc11cedbe28aa6be49677d5594d39ee35b25f7a1582dae0e423d8fd1ad6c8f1f",
+        "payload_sha256": "cd50b0ce4fa8f98f7ca2df4bb53ba1708471c775586b1c6e290bd3479c9cb18b",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2026-11-22T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+        "forecast_id": "94f09041-77ba-52f4-a7c8-74fe41135242",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "fa493e5f3c66b08e355d26933e58331380c41f3924e12ebc5a851eb41e7991a2",
+        "payload_sha256": "6c60cd37b9ebfe5700f04b9a47faf78299f4c4d8af8fb48ff7cb4a6085d3e613",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 19,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-01-03T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+        "forecast_id": "cdbef6f6-d368-54ad-8128-0a196a42a3d7",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "6debd23c5e3629b7fa541d10c4f073a2d7c439b98d362c306ec1205feb41b4b0",
+        "payload_sha256": "3a0587de340e96b3b8bc4f4ec4b18cbbc497d3161bc7ecc4593e1c20d8d8a86d",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 19,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-04-25T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+        "forecast_id": "1460b1ae-d96f-5dbe-b95a-48e497c0ef8e",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "39e3cf295102bad6ad8f801e512129852de28990ca30c47c2ff481db5fb57d5c",
+        "payload_sha256": "c0f1dc43602e6ad105a1bdf4198854928ffa85819d26681175cade844035344e",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-02-14T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+        "forecast_id": "9ccc7c13-45d0-5b70-a461-bb3b688b577c",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "38bf1d118729e10759d6b39250a5efa5e0126fec0603af8e0315d357bcc94efb",
+        "payload_sha256": "b348ad11178df5e88551ef11ddf860b984cbfe4c38dc4e4ba314ffb5d1713bb6",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 19,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2026-12-27T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+        "forecast_id": "9639bcfa-7f91-515b-8939-2f3fce772122",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "ccfbf62cb9e9cdc592f93925ccae93b603f411b0f810d9f5a1ed26de94182fe8",
+        "payload_sha256": "4be297925efd1b9d60de6a8a72af9f9aafd6d0cec97171b622f025b17ab03286",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 18,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-02-07T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+        "forecast_id": "d1bb06bb-8cd0-5d00-a8c7-5283ae71a43b",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "c8adadb30d085b112915b6670944b7f2f8422b6d2a8c79ca034d61959135b5ba",
+        "payload_sha256": "ab9ecf9e2d1b8a21245f34f6834ab803ddbefdf05dffcc9b2603d440ac6edbef",
+        "knowledge_cutoff": "2026-11-09 12:11:39.689444+00:00",
+        "created_at": "2026-11-09 12:11:39.689444+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2026-11-15T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+        "forecast_id": "2a0971df-ddcd-54b4-b863-b330423c934e",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "5b174e16fbb9a82819b49ea43839b9cba0a8fc2c92705a2ad472c1bbbd38b418",
+        "payload_sha256": "40f79be57e38fa4647052b55444319600de2b6a032021ad611804cc576545aa2",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-04-11T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+        "forecast_id": "7d5c92f2-5a73-5bde-a482-12c397f0e90b",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "b66a48679dec243396c9d98c705817827b37b0b4b9f4bb7981a2aed914426975",
+        "payload_sha256": "2d62446d7045cf02101d24839e3afd1b23e534b3a2c160e56f18deb7db8f9e29",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-03-21T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+        "forecast_id": "b4483504-f397-556e-995a-148ea2a086a6",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "998087da65495accd09fab82d0d4d9c65a33e683a6a060e1285fc60784a15b1e",
+        "payload_sha256": "877621710f3abd0d3c77e2f94ae7a9530bde1abd3ccd95df8ffc289a443250d3",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2027-04-18T15:30:00+00:00"
+      },
+      {
+        "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+        "forecast_id": "fb4565f1-6068-5838-84d6-078164d25f07",
+        "artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+        "predictive_input_snapshot_sha256": "bfb5ce1d45532f42d1d7cc56363465e9f7c5f1dc25b7200808d41006945c2fba",
+        "payload_sha256": "d175deb4de8c23397948565ed6da263f7f68e24c2cd6ca572beca4628572623c",
+        "knowledge_cutoff": "2026-11-09 12:56:16.259450+00:00",
+        "created_at": "2026-11-09 12:56:16.259450+00:00",
+        "history_rows": 20,
+        "original_cutoff_reproduced": true,
+        "public_history_http": 200,
+        "public_detail_http": 200,
+        "target_kickoff_at": "2026-12-20T15:30:00+00:00"
+      }
+    ]
+  },
+  "operating_target_results": [
+    {
+      "fixture_id": "a49bcd54-0272-53e6-86e7-287dc385c65c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        59,
+        0
+      ],
+      "effective_home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        59,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "d1bb06bb-8cd0-5d00-a8c7-5283ae71a43b",
+      "remaining_blocker": null,
+      "kickoff_at": "2026-11-15T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "1e25a517-7f96-5690-85dc-94e0244172b2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "before_eligible_history": [
+        0,
+        47
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "after_eligible_history": [
+        159,
+        47
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "1494d3fe-7f86-5187-ab03-6dc7310bafad",
+      "remaining_blocker": null,
+      "kickoff_at": "2026-11-22T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "520d4181-d6ba-56d6-9e90-cd63ace2e21c",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "before_eligible_history": [
+        0,
+        87
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "after_eligible_history": [
+        6,
+        87
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2026-11-22T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "b02e7183-e8cb-5bd9-8342-4ab68e1d3915",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        109,
+        0
+      ],
+      "effective_home_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        109,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2026-11-29T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "3821252c-f534-5799-a761-ab18516f6490",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "before_eligible_history": [
+        0,
+        148
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "after_eligible_history": [
+        6,
+        148
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2026-12-06T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "0c102cf7-dbff-5b9a-9c94-ee2d85ac9985",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "before_eligible_history": [
+        0,
+        134
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "after_eligible_history": [
+        159,
+        134
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "8da3f1be-f1d9-5918-bbeb-11001eadd8cf",
+      "remaining_blocker": null,
+      "kickoff_at": "2026-12-13T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "c979ccf6-b620-5c2a-befe-8e5b93deae05",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        150,
+        0
+      ],
+      "effective_home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        150,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "fb4565f1-6068-5838-84d6-078164d25f07",
+      "remaining_blocker": null,
+      "kickoff_at": "2026-12-20T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "5de9dd76-2d3a-529f-b49d-06800dd0bde9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "before_eligible_history": [
+        0,
+        148
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "after_eligible_history": [
+        159,
+        148
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "9ccc7c13-45d0-5b70-a461-bb3b688b577c",
+      "remaining_blocker": null,
+      "kickoff_at": "2026-12-27T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "7a21fc8e-4e01-5936-bf85-88b316b850e0",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        59,
+        0
+      ],
+      "effective_home_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        59,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2026-12-27T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "3a866e2f-1c41-5ac3-a5ce-8be68da6c667",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+      "before_eligible_history": [
+        0,
+        149
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+      "after_eligible_history": [
+        159,
+        149
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "94f09041-77ba-52f4-a7c8-74fe41135242",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-01-03T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "cb09fc37-a457-5101-97c4-c7f63e380cae",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        47,
+        0
+      ],
+      "effective_home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        47,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-01-03T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "b0cbb1f0-0425-5bff-ac61-b4fcfce8ae8a",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        0,
+        0
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        6,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-01-10T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "10c0fd06-ef0b-5447-ae38-1d6e03a706a6",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+      "before_eligible_history": [
+        0,
+        57
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+      "after_eligible_history": [
+        159,
+        57
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "c9c713df-a71e-5ee7-80df-1f432722d4a4",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-01-17T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "0cb391b0-90fd-540f-ab63-b58e41693136",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "before_eligible_history": [
+        0,
+        134
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "after_eligible_history": [
+        6,
+        134
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-01-24T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "77825ca8-faef-5e3f-bdbc-1450b1efb852",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        150,
+        0
+      ],
+      "effective_home_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        150,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-01-31T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "9382a85c-a634-53ff-a87c-22b87ac67e9d",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        87,
+        0
+      ],
+      "effective_home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        87,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "9639bcfa-7f91-515b-8939-2f3fce772122",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-02-07T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "d6cddf67-15ca-52ab-b989-2d9e5311b1d9",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "before_eligible_history": [
+        0,
+        148
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "after_eligible_history": [
+        6,
+        148
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-02-07T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "5c26d7b2-7980-56e4-971c-f146ad06ed34",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "before_eligible_history": [
+        0,
+        109
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "after_eligible_history": [
+        159,
+        109
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "1460b1ae-d96f-5dbe-b95a-48e497c0ef8e",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-02-14T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "92f2b2db-7184-5e5a-a96e-9e4cfe3c436f",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        149,
+        0
+      ],
+      "effective_home_team_id": "9d1e589e-0a30-5cb6-a392-d8e8bd34155f",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        149,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-02-14T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "18fbb65a-1f9f-58d6-b746-9a99f65f13d2",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        148,
+        0
+      ],
+      "effective_home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        148,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "dc003bef-4f24-53df-abc4-39d83ad940e8",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-02-21T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "700166bb-e7ec-5226-b592-e5d3fc1d2dce",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+      "before_eligible_history": [
+        0,
+        57
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "1b287e66-be79-5daa-8dc9-131a1c5ec223",
+      "after_eligible_history": [
+        6,
+        57
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-02-28T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "163e63bf-8f8b-5fc0-8f4d-dd1527a8de0b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "before_eligible_history": [
+        0,
+        59
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "after_eligible_history": [
+        159,
+        59
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "56c5da80-1374-579c-8419-973d32cb22e0",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-03-14T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "63bcfa26-66d6-5d06-8ff5-2f90e7343b81",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        87,
+        0
+      ],
+      "effective_home_team_id": "0cefceda-3545-5128-942b-95cc50b54d9d",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        87,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-03-21T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "b23c0761-115a-5b4f-bf01-93b552777de7",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        47,
+        0
+      ],
+      "effective_home_team_id": "6731d927-6bd0-5ca3-8ca1-f5eb53227b35",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        47,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "7d5c92f2-5a73-5bde-a482-12c397f0e90b",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-03-21T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "b5210fad-6987-58dc-8b32-ba9cf0c118ef",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "before_eligible_history": [
+        0,
+        109
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "6a1d3c79-8845-5076-aff7-2e7d6731b892",
+      "after_eligible_history": [
+        6,
+        109
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-03-28T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "97838bfd-38e5-5cec-9bc5-55762cb77a19",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "original_away_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "before_eligible_history": [
+        148,
+        0
+      ],
+      "effective_home_team_id": "83967452-69c8-5883-9fec-e5959e5d5901",
+      "effective_away_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "after_eligible_history": [
+        148,
+        6
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-04-04T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "a847dbdb-484d-547b-856b-5ac38c522127",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        134,
+        0
+      ],
+      "effective_home_team_id": "f2451bfd-22b2-531a-8eed-d87272b8cfc1",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        134,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "2a0971df-ddcd-54b4-b863-b330423c934e",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-04-11T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "c6391ca0-df34-5033-bf98-5f807641ffd5",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "original_away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "before_eligible_history": [
+        0,
+        150
+      ],
+      "effective_home_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "effective_away_team_id": "6caa924c-7272-5c7b-a1c4-49b7b7e4a288",
+      "after_eligible_history": [
+        159,
+        150
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "b4483504-f397-556e-995a-148ea2a086a6",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-04-18T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "55180f12-e3a9-5f0e-aad7-a5655f79aca1",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "original_away_team_id": "a2c3853c-e62b-5e64-8260-1ddf9a3899d2",
+      "before_eligible_history": [
+        148,
+        0
+      ],
+      "effective_home_team_id": "69b1eff6-4bc6-5da8-9340-fb99e652e82d",
+      "effective_away_team_id": "95464491-fd01-54e3-b2bf-4994571d86d2",
+      "after_eligible_history": [
+        148,
+        159
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "FORECAST_AVAILABLE",
+      "forecast_id": "cdbef6f6-d368-54ad-8128-0a196a42a3d7",
+      "remaining_blocker": null,
+      "kickoff_at": "2027-04-25T15:30:00+00:00"
+    },
+    {
+      "fixture_id": "74fe2710-563e-5fa4-b4da-38053eb6f76b",
+      "original_availability": "SOURCE_DATA_INCOMPLETE",
+      "original_home_team_id": "eace79b0-415c-5d1e-92e1-f75568c227b0",
+      "original_away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "before_eligible_history": [
+        0,
+        59
+      ],
+      "effective_home_team_id": "6bcd1a34-f170-56a4-8901-32bb82e88847",
+      "effective_away_team_id": "54b9ed3b-35e5-53c0-99a6-0f20c5fbfe8d",
+      "after_eligible_history": [
+        6,
+        59
+      ],
+      "identity_blocked_after": false,
+      "final_availability": "NOT_ENOUGH_HISTORY",
+      "forecast_id": null,
+      "remaining_blocker": "FR-004: Port City has six eligible results; ten required",
+      "kickoff_at": "2027-04-25T15:30:00+00:00"
+    }
+  ]
+}

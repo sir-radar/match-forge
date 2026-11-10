@@ -122,9 +122,9 @@ def history_coverage(
                      AND decision.provider_match_id = observation.provider_match_id
                    ORDER BY decision.created_at DESC, decision.decision_id DESC LIMIT 1
                ) decision ON true
-               WHERE observation.provider_code = 'pitchapi'
-                 AND observation.canonical_fixture_id IS NULL
-               ORDER BY observation.provider_match_id, observation.observed_at DESC"""
+               WHERE observation.canonical_fixture_id IS NULL
+               ORDER BY observation.provider_code, observation.provider_match_id,
+                        observation.observed_at DESC"""
         ).fetchall()
         totals = cursor.execute(
             """SELECT
@@ -154,15 +154,19 @@ def history_coverage(
             fixture["reason"] = "AWAY_HISTORY_BELOW_CHAMPION_MINIMUM"
         else:
             fixture["reason"] = "HISTORY_PREREQUISITE_MET"
+    pitchapi_unmatched = [row for row in unmatched if row["provider_code"] == "pitchapi"]
+    unmatched_matches = {(row["provider_code"], row["provider_match_id"]) for row in unmatched}
     return {
         "knowledge_cutoff": cutoff.isoformat(),
         "minimum_history_matches": MINIMUM_HISTORY_MATCHES,
         "totals": totals,
         "upcoming_fixtures": fixtures,
         "fixture_reasons": dict(Counter(fixture["reason"] for fixture in fixtures)),
-        "pitchapi_unmatched": unmatched,
-        "pitchapi_unmatched_matches": len({row["provider_match_id"] for row in unmatched}),
-        "pitchapi_unmatched_reasons": dict(Counter(row["reason"] for row in unmatched)),
+        "provider_unmatched": unmatched,
+        "provider_unmatched_matches": dict(Counter(provider for provider, _ in unmatched_matches)),
+        "pitchapi_unmatched": pitchapi_unmatched,
+        "pitchapi_unmatched_matches": len({row["provider_match_id"] for row in pitchapi_unmatched}),
+        "pitchapi_unmatched_reasons": dict(Counter(row["reason"] for row in pitchapi_unmatched)),
         "provider_history_depth": provider_history_depth(connection, cutoff),
     }
 

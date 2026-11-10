@@ -1,0 +1,328 @@
+{
+  "status": "IN_PROGRESS",
+  "implementation": "QUALIFICATION_HOLD_POLICY_VERIFIED_OPERATING",
+  "migration": "202611090100",
+  "operating_migration_applied": true,
+  "operating_scope_replays": 1,
+  "new_eligible_history": 0,
+  "new_forecasts": 0,
+  "queue_inventory": {
+    "cutoff": "2026-11-09 17:57:18.935176+00:00",
+    "native_scopes": 1224,
+    "native_groups": [
+      {
+        "provider": "fotmob",
+        "status": "DEFERRED",
+        "error": "LIVE_SYNC_HAS_PRIORITY",
+        "count": 6
+      },
+      {
+        "provider": "fotmob",
+        "status": "FAILED",
+        "error": "BLOCKED_IDENTITY",
+        "count": 238
+      },
+      {
+        "provider": "fotmob",
+        "status": "FAILED",
+        "error": "COMPLETED_WITH_ERRORS",
+        "count": 95
+      },
+      {
+        "provider": "fotmob",
+        "status": "FAILED",
+        "error": "FotMob league fixture list missing",
+        "count": 2
+      },
+      {
+        "provider": "fotmob",
+        "status": "PENDING",
+        "error": null,
+        "count": 578
+      },
+      {
+        "provider": "fotmob",
+        "status": "SUCCEEDED",
+        "error": null,
+        "count": 2
+      },
+      {
+        "provider": "pitchapi",
+        "status": "DEFERRED",
+        "error": "LIVE_SYNC_HAS_PRIORITY",
+        "count": 11
+      },
+      {
+        "provider": "pitchapi",
+        "status": "FAILED",
+        "error": "COMPLETED_WITH_ERRORS",
+        "count": 1
+      },
+      {
+        "provider": "pitchapi",
+        "status": "FAILED",
+        "error": "one or more fixture rows failed; replay stored snapshot",
+        "count": 2
+      },
+      {
+        "provider": "pitchapi",
+        "status": "PENDING",
+        "error": null,
+        "count": 288
+      },
+      {
+        "provider": "pitchapi",
+        "status": "RUNNING",
+        "error": null,
+        "count": 1
+      }
+    ],
+    "legacy_rows": 656,
+    "legacy_states": {
+      "PENDING": 580,
+      "SUCCEEDED": 73,
+      "RUNNING": 3
+    },
+    "live_sync_heartbeat_ages_seconds": [
+      8.046411,
+      3.804727
+    ],
+    "stale_native_scope": {
+      "provider": "pitchapi",
+      "competition": "l_3FJFUl",
+      "season": "2025/2026",
+      "work_id": "d0e7bb69-fa21-414f-9e7c-76c26442cb1b",
+      "lease_expired_at": "2026-11-06T20:37:28.229434+00:00",
+      "current_qualification": "BLOCKED_IDENTITY"
+    },
+    "first_observed_age_is_not_continuous_deferral_age": true
+  },
+  "source_coverage": [
+    {
+      "provider": "fotmob",
+      "competition": "228",
+      "season": "2024",
+      "stored_status": "SUCCEEDED",
+      "source_snapshot_id": "c5dbc5a8-f87b-5aaf-8b9d-bf52b8147d5d",
+      "sha256": "d1f7c03472929e5c9f4c303d932cd3f31fd0e79eaf5f86d040fc4738cca82796",
+      "rows": 180,
+      "current_qualification": {
+        "status": "COMPLETED",
+        "qualified_results": 179,
+        "provider_results": 179
+      }
+    },
+    {
+      "provider": "fotmob",
+      "competition": "9676",
+      "season": "2024/2025",
+      "stored_status": "SUCCEEDED",
+      "source_snapshot_id": "20997a78-be73-5173-a461-8b3a2f0949fc",
+      "sha256": "ace2dfbf6e4848c51ded564a4b1f39447b17718150e8c44bea4c73a3725bdb31",
+      "rows": 132,
+      "current_qualification": {
+        "status": "COMPLETED",
+        "qualified_results": 132,
+        "provider_results": 132
+      }
+    },
+    {
+      "provider": "pitchapi",
+      "competition": "l_3FJFUl",
+      "season": "2025/2026",
+      "stored_status": "RUNNING",
+      "source_snapshot_id": "4db6f297-1a8d-5b39-89a9-37cbb30d14a9",
+      "sha256": "9c8f9ee0ad1a798d6b1bd2910b9ae03b9961c021a1a9ffb01fcc62f1af58e9b1",
+      "rows": 306,
+      "current_qualification": {
+        "status": "BLOCKED_IDENTITY",
+        "qualified_results": 0,
+        "provider_results": 306
+      }
+    }
+  ],
+  "policy": {
+    "held_results": [
+      "BLOCKED_IDENTITY",
+      "BLOCKED_SCORE_BASIS",
+      "BLOCKED_HISTORY_ADMISSION",
+      "BLOCKED_RESULT_CONFLICT"
+    ],
+    "requires_matching_typed_summary": true,
+    "shared_hold_state": "BLOCKED",
+    "transient_empty_partial_and_live_deferral": "RETRY_WAIT",
+    "automatic_claim_skips_holds": true,
+    "explicit_refresh_only_due_selected_scopes": true,
+    "attempt_history_preserved": true,
+    "prior_worker_fenced": true,
+    "live_priority_and_quotas_unchanged": true,
+    "existing_failed_scopes_retroactively_reclassified": false
+  },
+  "verification": {
+    "red_cases": 6,
+    "new_policy_cases_passed": 11,
+    "focused_history_cases_passed": 41,
+    "populated_policy_cases_passed": 11,
+    "command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+    "exit_code": 0,
+    "python_unit_tests_passed": 1819,
+    "rust_tests_passed": 16,
+    "web_tests_passed": 107,
+    "fresh_backup_cutoff": "2026-11-09 18:20:39.115099+00:00",
+    "backup_bytes": 1655858955,
+    "backup_sha256": "8b3467c627554feda99e5c01e38c6460403e8bfe2903d0c9198f13a82d12159d",
+    "fresh_restore_verified": true,
+    "normal_upgrade_and_retry": true,
+    "forward_repair_and_retry": true,
+    "protected_registration_digests_preserved": 9,
+    "routes_remain_legacy": 13,
+    "pending_pr178_ordered_compatibility": "PASS",
+    "missing_migration_override_used": false
+  },
+  "remaining_work": [
+    "Retained-source replay of exact expired/partial scopes through existing owners; never mark completion without qualified expected-ID coverage.",
+    "Identity/source-dependent history and live-priority catalogue acquisition remain held."
+  ],
+  "research": [
+    {
+      "url": "https://www.postgresql.org/docs/18/sql-select.html",
+      "finding": "SKIP LOCKED supports multiple queue consumers; the existing row-locking claim is retained. Documentation is not evidence of scope qualification or scheduler starvation."
+    }
+  ],
+  "file_sha256": {
+    "infrastructure/migrations/202611090100_provider_scope_qualification_holds.sql": "d5b4772cf2bf19ecebbd2996793440c57c18be9c5c1a2bc33e56d43c24d7248c",
+    "python/football/src/football/product/provider_history_scopes.py": "d777ead2921b6c187a00a2455f06ebf43f590911d15a876067e9767196b12d6e",
+    "tests/integration/test_history_acquisition.py": "c6ae44e9d9493625944e5a7c74566666643d2ea86673ce4dcb129ed3a1b7accc"
+  },
+  "private_receipts": [
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-queue-inventory.json",
+      "sha256": "232cf8ea3369a06f4f9a82b14e555cf8ab1e83934487632ef3ccb73c39518d3c"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-source-checks.json",
+      "sha256": "518929680aec3f39514005c48177bf46b33a51b56d7d271e969249620b30c45f"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-red.log",
+      "sha256": "a5ab40e8af554b65d1b8fd88dd1e857fa1d637cf0a47f2d26d2acfe3563f27f6"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-green-verified.log",
+      "sha256": "0c7a2d7e99484358d69f69eeaab29072482d048db612843d9fd25a9fcf9d53dd"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-focused.log",
+      "sha256": "b672797ceb60564777d1ef8b0be73ebb2cf5998353b116bc72d388ede1016fe3"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-check-integration.log",
+      "sha256": "587acbb1edecfa56fce4889dd034f9b060fc4dbcc7eaa97d9517c8b1a35c9292"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-check-integration.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-migration-compatibility/result.json",
+      "sha256": "06e8ad5fc3ddf79917e61872655860809873f0482a246058c6c57db9676d43e5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/operating-backup-before-scope-holds/manifest.json",
+      "sha256": "10bde3c0a6116ee9fd5ec283e6ce5e8f388dc675e3cfa777d60104f9ba8ebf48"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-populated-recovery.json",
+      "sha256": "807e185b817220bec1d1d89c5e7c39ea8981722655f99a1b6e4e284ccc33143f"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-populated-recovery-verified.log",
+      "sha256": "c07df5b5e5347eec5a0006f55a96b398a7900548ac59d39f9565257784dc7d7c"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-shadow.json",
+      "sha256": "4b992ac4bbc861782375cbf283be00b79ea8092c250dcfaa15afb8d09a2e1239"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating.json",
+      "sha256": "34582832eaf2fe567b7bb6ceaef29b1c0a87e0c4748cf7033f71777e361e6702"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating-migration-apply.log",
+      "sha256": "bc526c80b4a9a3362e5f08990fc58105254fa5381f8703bdcbccd1e9defabbe5"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-scope-operating-migration-retry.log",
+      "sha256": "ef84bd578eb55c219c12585300272dcc054ad1031bb4ecc3ef484761e005f307"
+    },
+    {
+      "path": ".local/forecast-readiness-execution/resume-20261109/fr010-operating-postcheck.json",
+      "sha256": "fc7dd609b5e4d2b03565071709672467f78c7eeddb664c7f7f1fa2a9c7252d1c"
+    }
+  ],
+  "operating_rollout": {
+    "status": "PASS_WITH_WARNINGS",
+    "owner_authorization": "Explicit bounded rollout approval on 2026-11-09",
+    "code_commit": "a0af2da",
+    "started_at": "2026-11-09 18:43:12.056589+00:00",
+    "finished_at": "2026-11-09 18:44:57.868857+00:00",
+    "scope": {
+      "provider": "fotmob",
+      "competition": "10186",
+      "season": "2021"
+    },
+    "expected_native_ids": [
+      "3747099",
+      "3747100"
+    ],
+    "source_sha256": "43ebbacaef78e3f6024adf3fe6ad562d4199475717de00778f051bc7956296ad",
+    "source_acquired_at": "2026-10-14 13:26:44.132421+00:00",
+    "attempted_network_requests": 0,
+    "fetched": 2,
+    "skipped": 2,
+    "new_history_rows": 0,
+    "qualified_results": 0,
+    "sample_new_forecasts": 0,
+    "shared_state": "BLOCKED",
+    "retry_claim": "NONE_HELD_NO_NEW_ATTEMPT",
+    "original_rows_checked": {
+      "source_snapshots": 79879,
+      "source_resources": 81688,
+      "product_identity_admissions": 22859,
+      "product_match_history_decisions": 857748,
+      "model_artifacts": 5230,
+      "forecast_artifacts": 9990,
+      "product_forecasts": 18066,
+      "model_promotion_events": 4,
+      "artifact_retirement_events": 17
+    },
+    "changed_original_rows": {
+      "source_snapshots": 0,
+      "source_resources": 0,
+      "product_identity_admissions": 0,
+      "product_match_history_decisions": 0,
+      "model_artifacts": 0,
+      "forecast_artifacts": 0,
+      "product_forecasts": 0,
+      "model_promotion_events": 0,
+      "artifact_retirement_events": 0
+    },
+    "original_fixture_and_observation_facts_preserved": true,
+    "earlier_cutoff": "2026-11-09 18:43:34.740431+00:00",
+    "earlier_history_before": [
+      311061,
+      "d257f8ebbbe47da12d7d75cd7ae76e19"
+    ],
+    "earlier_history_after": [
+      311061,
+      "d257f8ebbbe47da12d7d75cd7ae76e19"
+    ],
+    "context_errors": 0,
+    "routes_remain_legacy": 13,
+    "migration_applied_records": 1,
+    "health_http": 200,
+    "readiness_http": 200,
+    "function_sha256": "de55c925932b5c49fa51ad23c822f433aee85ee98a81543c181cee2f2b6c65b8",
+    "runtime_restart": false
+  }
+}

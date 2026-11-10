@@ -26,5 +26,8 @@ CURRENT_TASK.md
 TASKS_TO_CONTINUE.md
 CURRENT_TASK_STATUS.md
 
+CURRENT_TASK_PENDING.md
+CURRENT_TASK_STATUS_PENDING.md
+
 # Local code-intelligence snapshots; persistent caches live under .local/.
 .codebase-memory/

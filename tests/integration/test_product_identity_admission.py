@@ -1,5 +1,7 @@
 import hashlib
+import io
 import json
+import zipfile
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -14,8 +16,9 @@ from football.product.football_data_uk import parse_csv_resource
 from football.product.historical_backfill import HistoricalBackfillStore
 from football.product.historical_manifest import publish_manifest
 from football.product.history_coverage import history_coverage
-from football.product.identity_admission import admit_provider_mappings
+from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
 from football.product.identity_audit import audit_report
+from football.product.identity_trust import origin_id
 from football.product.operational_provider_sync import (
     OperationalProviderSync,
     SyncCounts,
@@ -31,6 +34,160 @@ from football.providers.pitchapi import (
 from psycopg import Connection
 
 from tests.integration.test_product_historical_backfill import DATABASE_URL
+
+
+@pytest.mark.parametrize(
+    "provider",
+    [
+        "api_football",
+        "football_data_org",
+        "football_data_uk",
+        "fotmob",
+        "openfootball",
+        "pitchapi",
+        "statsbomb_open_data",
+        "future_provider",
+    ],
+)
+def test_unmatched_history_reports_every_provider_and_counts_native_matches(
+    tmp_path: Path, provider: str
+) -> None:
+    from tests.integration.historical_source_fixture import test_snapshot
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        now = _cutoff(c)
+        store = HistoricalBackfillStore(c, provider, provider, "test-v1", data_root=tmp_path)
+        snapshot = test_snapshot(
+            store,
+            tmp_path,
+            source_identity="unmatched-history-test",
+            source_revision="test",
+            acquired_at=now,
+            manifest_path="raw/unmatched.json",
+        )
+        observation = PitchApiFixture(
+            provider_match_id="unmatched-report-test",
+            provider_competition_id="native-league",
+            provider_home_team_id="native-home",
+            provider_away_team_id="native-away",
+            home_team_name="Unmatched home",
+            away_team_name="Unmatched away",
+            kickoff_at=now - timedelta(days=1),
+            status="FINISHED",
+            provider_status="FT",
+            home_score=2,
+            away_score=1,
+            minute=90,
+            added_time=None,
+            period=None,
+            source_updated_at=None,
+            observed_at=now,
+            provider_competition_name="Unmatched league",
+            result_score_basis="REGULATION_90",
+        )
+        sync = OperationalProviderSync(c, tmp_path, provider_code=provider)
+        sync._store_observation(observation, snapshot, None)
+        sync._store_observation(replace(observation, minute=91), snapshot, None)
+
+        report = history_coverage(c, _cutoff(c))
+
+        rows = [
+            row
+            for row in report["provider_unmatched"]
+            if row["provider_code"] == provider
+            and row["provider_match_id"] == observation.provider_match_id
+        ]
+        assert len(rows) == 2
+        assert {row["source_snapshot_id"] for row in rows} == {str(snapshot)}
+        assert report["provider_unmatched_matches"][provider] >= 1
+        distinct_matches = {
+            row["provider_match_id"]
+            for row in report["provider_unmatched"]
+            if row["provider_code"] == provider
+        }
+        assert report["provider_unmatched_matches"][provider] == len(distinct_matches)
+        assert report["pitchapi_unmatched"] == [
+            row for row in report["provider_unmatched"] if row["provider_code"] == "pitchapi"
+        ]
+        assert c.execute(
+            "SELECT canonical_fixture_id FROM football.product_provider_fixture_observations "
+            "WHERE source_snapshot_id=%s",
+            (snapshot,),
+        ).fetchall() == [(None,), (None,)]
+
+
+def test_scottish_archive_proves_country_scoped_ids_without_changing_source(tmp_path: Path) -> None:
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as bundle:
+        for code in ("SC1", "SC2", "SC3"):
+            bundle.writestr(
+                f"{code}.csv",
+                f"Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n{code},05/08/2000,Home,Away,1,0\n",
+            )
+    raw = archive.getvalue()
+    acquired = datetime(2026, 9, 1, tzinfo=UTC)
+    with psycopg.connect(DATABASE_URL) as connection, connection.transaction(force_rollback=True):
+        manifest = publish_manifest(
+            tmp_path,
+            provider="football_data_uk",
+            source_identity="test/scotland.zip",
+            source_revision="test",
+            acquired_at=acquired,
+            resources=[("test/scotland.zip", "raw/scotland.zip", raw)],
+        )
+        store = HistoricalBackfillStore(
+            connection, "football_data_uk", "Football Data", "test-v1", data_root=tmp_path
+        )
+        snapshot = store.ensure_snapshot(
+            source_identity="test/scotland.zip",
+            source_revision="test",
+            acquired_at=acquired,
+            manifest_path=manifest,
+        )
+        store.record_resource(
+            snapshot_id=snapshot,
+            provider_path="test/scotland.zip",
+            payload=raw,
+            media_type="application/zip",
+            acquired_at=acquired,
+        )
+        before = connection.execute(
+            "SELECT to_jsonb(r) FROM football.source_resources r WHERE source_snapshot_id=%s",
+            (snapshot,),
+        ).fetchall()
+        for code in ("SC1", "SC2", "SC3"):
+            proof = verify_source_identifier(
+                connection, tmp_path, snapshot, "football_data_uk", "competition", code, "Scotland"
+            )
+            assert proof is not None
+            assert proof["sha256"] == hashlib.sha256(raw).hexdigest()
+            assert proof["acquired_at"] == acquired.isoformat()
+            assert (
+                verify_source_identifier(
+                    connection,
+                    tmp_path,
+                    snapshot,
+                    "football_data_uk",
+                    "competition",
+                    code,
+                    "England",
+                )
+                is None
+            )
+        assert (
+            connection.execute(
+                "SELECT to_jsonb(r) FROM football.source_resources r WHERE source_snapshot_id=%s",
+                (snapshot,),
+            ).fetchall()
+            == before
+        )
+        (tmp_path / "raw/scotland.zip").write_bytes(raw + b"tampered")
+        assert (
+            verify_source_identifier(
+                connection, tmp_path, snapshot, "football_data_uk", "competition", "SC1", "Scotland"
+            )
+            is None
+        )
 
 
 @pytest.mark.parametrize(
@@ -162,6 +319,119 @@ def test_manual_openfootball_review_verifies_source_country_namespace(
         (tmp_path / "raw/namespace.json").write_bytes(source_raw + b" ")
         rejected = admit_provider_mappings(c, tmp_path, "openfootball", snapshot)
         assert rejected and all(d["disposition"] == "UNRESOLVED" for d in rejected)
+
+
+@pytest.mark.parametrize(
+    ("native_id", "target_provider", "target_identifier", "country", "allowed"),
+    [
+        ("37", "football_data_uk", "Huddersfield", "England", True),
+        ("1374", "openfootball", "Mansfield Town", "England", True),
+        ("37", "football_data_uk", "Huddersfield", "Scotland", False),
+        ("1880030888", "football_data_uk", "Huddersfield", "England", False),
+    ],
+)
+def test_native_archive_crosswalk_preview_requires_origin_country_and_original_bytes(
+    tmp_path, native_id, target_provider, target_identifier, country, allowed
+):
+    from football.product.resolution_actions import preview
+
+    from tests.integration.historical_source_fixture import test_snapshot
+
+    with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
+        acquired = _cutoff(c)
+        target = origin_id("team", target_provider, target_identifier, "England")
+        target_store = HistoricalBackfillStore(
+            c, target_provider, "Synthetic archive", "test-crosswalk", data_root=tmp_path
+        )
+        if target_provider == "football_data_uk":
+            raw = (
+                "Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n"
+                f"E2,01/09/2026,{target_identifier},Synthetic Opponent,2,1\n"
+            ).encode()
+            path = "crosswalk/E2.csv"
+        else:
+            raw = json.dumps(
+                {"matches": [{"team1": target_identifier, "team2": "Synthetic Opponent"}]}
+            ).encode()
+            path = "crosswalk/en.3.json"
+        target_snapshot = test_snapshot(
+            target_store,
+            tmp_path,
+            source_identity="synthetic-archive",
+            source_revision="test",
+            acquired_at=acquired,
+            manifest_path=path,
+            payload=raw,
+        )
+        c.execute("INSERT INTO football.teams(id) VALUES(%s)", (target,))
+        c.execute(
+            "INSERT INTO football.product_teams(team_id,name,country,updated_at) "
+            "VALUES(%s,%s,'England',%s)",
+            (target, target_identifier, acquired),
+        )
+        c.execute(
+            """INSERT INTO football.team_provider_mappings
+            (team_id,provider_id,provider_team_id,first_seen_at,last_seen_at,
+             mapping_method,mapping_confidence,source_snapshot_id)
+            VALUES(%s,%s,%s,%s,%s,'deterministic',1,%s)""",
+            (
+                target,
+                target_store._provider_id(),
+                target_identifier,
+                acquired,
+                acquired,
+                target_snapshot,
+            ),
+        )
+        assert (
+            admit_provider_mappings(c, tmp_path, target_provider)[0]["disposition"]
+            == "ORIGIN_ANCHOR"
+        )
+        native_store = HistoricalBackfillStore(
+            c, "api_football", "Synthetic native", "test-crosswalk", data_root=tmp_path
+        )
+        native_raw = json.dumps(
+            {
+                "response": [
+                    {
+                        "fixture": {"id": 1880030001, "date": "2026-09-01T18:00:00+00:00"},
+                        "league": {"id": 41, "country": "England", "season": 2026},
+                        "teams": {
+                            "home": {"id": int(native_id), "name": target_identifier},
+                            "away": {"id": 1880030999, "name": "Synthetic Opponent"},
+                        },
+                    }
+                ]
+            }
+        ).encode()
+        source = test_snapshot(
+            native_store,
+            tmp_path,
+            source_identity="synthetic-native",
+            source_revision="test",
+            acquired_at=acquired,
+            manifest_path="crosswalk/native.json",
+            payload=native_raw,
+        )
+        key = c.execute(
+            """INSERT INTO football.team_provider_mappings
+            (team_id,provider_id,provider_team_id,first_seen_at,last_seen_at,
+             mapping_method,mapping_confidence,source_snapshot_id)
+            VALUES(%s,%s,%s,%s,%s,'explicit_crosswalk',1,%s) RETURNING id""",
+            (target, native_store._provider_id(), native_id, acquired, acquired, source),
+        ).fetchone()[0]
+        c.execute(
+            "UPDATE football.product_teams SET country=%s WHERE team_id=%s", (country, target)
+        )
+        request = {
+            "case_key": f"team:{key}",
+            "action": "APPROVE",
+            "reason": "Synthetic native/archive qualification",
+            "candidate": {},
+        }
+        assert preview(c, tmp_path, request)["allowed"] is allowed
+        (tmp_path / "crosswalk/native.json").write_bytes(native_raw + b"tampered")
+        assert preview(c, tmp_path, request)["allowed"] is False
 
 
 def _history(connection: Connection[Any], root: Path, *, exact: bool = False) -> None:

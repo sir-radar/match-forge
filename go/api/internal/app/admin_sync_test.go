@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
@@ -220,6 +221,71 @@ func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" {
 		t.Fatalf("summary = %+v", summary)
+	}
+}
+
+func TestRunCommandPreservesOriginalCauseBeforeGenericSummary(t *testing.T) {
+	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
+	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
+		`echo 'NameError: retained fixture_id is missing' >&2; echo '{"status":"FAILED","errors":{}}'; exit 1`}, logFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	errors := summary["errors"].(map[string]interface{})
+	if !strings.Contains(errors["process"].(string), "NameError: retained fixture_id is missing") {
+		t.Fatalf("original cause lost: %+v", summary)
+	}
+}
+
+func TestRunCommandRedactsBothStreamsAcrossWrites(t *testing.T) {
+	logFile, err := os.CreateTemp(t.TempDir(), "sync-run-*.log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer logFile.Close()
+	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
+	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
+		`printf 'API_'; printf 'KEY=stdout-private\n'; printf 'password="two words"\nAuthorization: Bearer stderr-private\n' >&2; echo '{"status":"FAILED","errors":{"source":"token=summary-private"}}'; exit 1`}, logFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = logFile.Seek(0, io.SeekStart); err != nil {
+		t.Fatal(err)
+	}
+	logBytes, err := io.ReadAll(logFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := json.Marshal(summary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, secret := range []string{"stdout-private", "two words", "stderr-private", "summary-private"} {
+		if strings.Contains(string(logBytes), secret) || strings.Contains(string(encoded), secret) {
+			t.Fatalf("credential retained in log or summary: %q", secret)
+		}
+	}
+}
+
+func TestSyncErrorsRedactNestedCredentials(t *testing.T) {
+	t.Setenv("PITCHAPI_API_KEY", "exact-private-value")
+	summary := map[string]interface{}{"errors": map[string]interface{}{
+		"source": "HTTP failure https://user:password@example.invalid?token=urlsecret API_KEY=secret exact-private-value",
+	}, "failures": []interface{}{map[string]interface{}{"error": "token=othersecret"}}}
+	sanitizeSyncSummary(summary)
+	encoded, err := json.Marshal(summary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, secret := range []string{"password", "urlsecret", "=secret", "exact-private-value", "othersecret"} {
+		if strings.Contains(string(encoded), secret) {
+			t.Fatalf("secret %q exposed in %s", secret, encoded)
+		}
 	}
 }
 

@@ -8,15 +8,19 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.error import HTTPError
 from uuid import UUID
 
-from psycopg import Connection, Error, sql
+from psycopg import Connection, Error, OperationalError, sql
 from psycopg.errors import InvalidParameterValue, ObjectNotInPrerequisiteState, UniqueViolation
 from psycopg.pq import TransactionStatus
 from psycopg.rows import dict_row, tuple_row
 
 from football.contracts.source import SHA256_PATTERN
+from football.product.api_football import ApiFootballError, CapabilityStatus
 from football.product.domain import sha256_json
+from football.product.football_data_org import FootballDataOrgError
+from football.providers.base import ProviderFetchError
 from football.storage.locks import LOCK_ORDER_SQLSTATE, LockClass, LockOrderError
 from football.work.contracts import (
     RetryClassification,
@@ -32,6 +36,61 @@ from football.work.storage import WorkConflict, WorkLeaseLost, WorkRegistry, cla
 
 class _HistoryRequestChanged(Exception):
     """The request changed or became busy before registration could lock it."""
+
+
+def classify_history_failure(error: Exception) -> RetryClassification:
+    """Retry transient failures; require changed evidence for identity conflicts."""
+    if isinstance(error, Error):
+        return _database_failure(error)
+    if isinstance(error, (ApiFootballError, FootballDataOrgError)):
+        return _provider_failure(error)
+    if isinstance(error, (FileNotFoundError, PermissionError)):
+        return RetryClassification.NON_RETRYABLE
+    if isinstance(error, OSError):
+        return RetryClassification.RETRYABLE
+    return RetryClassification.NON_RETRYABLE
+
+
+def _database_failure(error: Error) -> RetryClassification:
+    state = error.sqlstate or ""
+    if state == "P0001" and str(error).partition("\n")[0] == (
+        "unresolved canonical fixture identity conflict at team/timestamp"
+    ):
+        return RetryClassification.BLOCKED_EXTERNAL
+    if state in {"40001", "40P01", "55P03", "57P01", "57P02", "57P03"}:
+        return RetryClassification.RETRYABLE
+    if state in {"08000", "08001", "08003", "08006", "08007"} or (
+        not state and isinstance(error, OperationalError)
+    ):
+        return RetryClassification.RETRYABLE
+    return RetryClassification.NON_RETRYABLE
+
+
+def _provider_failure(error: ApiFootballError | FootballDataOrgError) -> RetryClassification:
+    if str(error) in {
+        "API_FOOTBALL_API_KEY is required",
+        "FOOTBALL_DATA_DOT_ORG_API_TOKEN is required",
+    } or (
+        isinstance(error, ApiFootballError)
+        and error.capability_status == CapabilityStatus.PLAN_RESTRICTION
+    ):
+        return RetryClassification.BLOCKED_EXTERNAL
+    if isinstance(error, ApiFootballError) and error.retry_after is not None:
+        return RetryClassification.RETRYABLE
+    cause = error.__cause__
+    if isinstance(cause, HTTPError):
+        if cause.code in {401, 403}:
+            return RetryClassification.BLOCKED_EXTERNAL
+        return (
+            RetryClassification.RETRYABLE
+            if cause.code in {408, 429} or 500 <= cause.code < 600
+            else RetryClassification.NON_RETRYABLE
+        )
+    if isinstance(cause, (OSError, ProviderFetchError)) or str(error) == (
+        "API-Football quota or cooldown active; request suppressed"
+    ):
+        return RetryClassification.RETRYABLE
+    return RetryClassification.NON_RETRYABLE
 
 
 def register_history_request(connection: Connection[Any], job_id: UUID) -> UUID | None:
@@ -222,10 +281,13 @@ def fail_history_request(
     *,
     error_code: str,
     error_message: str,
+    provider_cooldown: datetime | None = None,
 ) -> WorkState:
     """Apply shared retry classification and atomically project the domain state."""
     if not isinstance(classification, RetryClassification):
         raise WorkContractError("history failure requires shared retry classification")
+    if provider_cooldown is not None and provider_cooldown.utcoffset() is None:
+        raise WorkContractError("provider cooldown requires a timezone")
     row = _history_operation(
         connection,
         "fail_history_work",
@@ -236,6 +298,8 @@ def fail_history_request(
         classification.value,
         error_code,
         error_message,
+        None,
+        provider_cooldown,
     )
     assert row is not None
     return WorkState(row["state"])

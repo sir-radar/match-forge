@@ -78,7 +78,9 @@ WITH latest AS (
         ON away.team_id=f.away_team_id
     LEFT JOIN football.fixture_identity_resolutions r
         ON r.member_fixture_id=f.fixture_id AND r.active
-    WHERE f.identity_status<>'VERIFIED' AND f.updated_at<=transaction_timestamp()
+    WHERE (f.identity_status<>'VERIFIED' OR r.resolution_status IN (
+               'AMBIGUOUS_QUARANTINED','IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED'))
+      AND f.updated_at<=transaction_timestamp()
       AND (r.resolution_status IS NULL OR r.resolution_status<>'DUPLICATE_RESOLVED')
 ), filtered AS (
     SELECT * FROM cases WHERE (%(provider)s='' OR provider=%(provider)s)
@@ -212,7 +214,11 @@ def fixture_detail(connection: Connection[Any], key: str) -> dict[str, Any]:
 def fixture_record_detail(connection: Connection[Any], key: str) -> dict[str, Any]:
     identifier = UUID(key.split(":", 1)[1])
     fixture = connection.execute(
-        "SELECT to_jsonb(f) FROM football.product_fixtures f WHERE fixture_id=%s", (identifier,)
+        """SELECT to_jsonb(f),r.resolution_status FROM football.product_fixtures f
+           LEFT JOIN football.fixture_identity_resolutions r
+               ON r.member_fixture_id=f.fixture_id AND r.active
+           WHERE f.fixture_id=%s""",
+        (identifier,),
     ).fetchone()
     if fixture is None:
         raise ValueError("fixture record not found")
@@ -232,7 +238,9 @@ def fixture_record_detail(connection: Connection[Any], key: str) -> dict[str, An
     ).fetchone()
     return {
         "case_key": key,
-        "status": fixture[0]["identity_status"],
+        "status": "BLOCKED"
+        if fixture[1] in {"AMBIGUOUS_QUARANTINED", "IMPOSSIBLE_TEAM_SCHEDULE_QUARANTINED"}
+        else fixture[0]["identity_status"],
         "fixture": fixture[0],
         "source_mappings": [row[0] for row in sources],
         "resolutions": [row[0] for row in resolutions],

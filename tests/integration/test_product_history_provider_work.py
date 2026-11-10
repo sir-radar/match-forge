@@ -451,7 +451,9 @@ def test_parent_history_queue_projects_provider_failure_through_shared_work(
 
         def finished_fixtures(self, *_args: Any) -> ApiResponse:
             if retryable:
-                raise ApiFootballError("provider temporarily unavailable")
+                raise ApiFootballError("provider temporarily unavailable") from TimeoutError(
+                    "provider connection timed out"
+                )
             raise ValueError("invalid provider result")
 
     monkeypatch.setattr(cli, "ApiFootballClient", Client)
@@ -545,3 +547,68 @@ def test_parent_history_queue_does_not_fail_a_cancelled_claim(
                 ("CANCELLED",)
             ]
         assert not list(tmp_path.rglob("*.json"))
+
+
+def test_identity_guard_blocks_history_without_repeating_provider_attempts(
+    tmp_path: Path, history_database: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from football.product import cli
+    from football.product.history_work import claim_history_request
+    from football.product.sync import HISTORY_JOB_LEASE, ProductSync
+
+    calls = []
+
+    class Client:
+        def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+            pass
+
+        def finished_fixtures(self, *_args: Any) -> ApiResponse:
+            calls.append(1)
+            raise psycopg.errors.RaiseException(
+                "unresolved canonical fixture identity conflict at team/timestamp"
+            )
+
+    monkeypatch.setattr(cli, "ApiFootballClient", Client)
+    monkeypatch.delenv("API_FOOTBALL_MAX_HISTORY_SEASON", raising=False)
+    with psycopg.connect(history_database) as connection:
+        with connection.transaction():
+            job = connection.execute(
+                "INSERT INTO football.product_history_sync_queue(provider_competition_id,season) "
+                "VALUES ('1234567',2026) RETURNING job_id"
+            ).fetchone()[0]
+        parent = ProductSync(
+            connection,
+            cast(Any, object()),
+            tmp_path,
+            tmp_path / "unused",
+            history_worker_factory=cli._history_worker_factory(
+                history_database, "test", "", tmp_path, None
+            ),
+        )
+        first = parent._process_history_queue(1)
+        assert first["failed"] == 1 and first["pending_retry"] == 0
+        second = parent._process_history_queue(1)
+        assert second["processed"] == 0 and len(calls) == 1
+        with connection.transaction():
+            row = connection.execute(
+                "SELECT w.work_id,w.state,w.attempt_count,q.job_status,q.last_error "
+                "FROM football.work_items w JOIN football.product_history_work b USING(work_id) "
+                "JOIN football.product_history_sync_queue q USING(job_id,queued_at)"
+            ).fetchone()
+            assert row[1:4] == ("BLOCKED", 1, "PENDING")
+            assert row[4].startswith("unresolved canonical fixture identity conflict")
+        # An explicit owner release through the existing registry permits a new claim.
+        with connection.transaction():
+            connection.execute(
+                "SELECT football.release_blocked_work(%s,clock_timestamp())", (row[0],)
+            )
+            connection.execute("SELECT football.project_history_work(%s)", (row[0],))
+            claim_cutoff = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        claim = claim_history_request(
+            connection,
+            job,
+            "reviewed-recovery",
+            claim_cutoff,
+            lease_duration=HISTORY_JOB_LEASE,
+        )
+        assert claim is not None and claim.attempt_count == 2

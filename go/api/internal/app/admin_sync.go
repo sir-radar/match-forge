@@ -523,31 +523,51 @@ func (runner *CommandSyncRunner) runCommand(
 		}
 		return syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
 	}
-	pipe, err := command.StdoutPipe()
-	if err != nil {
-		return nil, err
+	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
+	if readErr != nil {
+		return nil, readErr
 	}
-	command.Stderr = logFile
-	if err = command.Start(); err != nil {
-		return nil, err
-	}
-	lastLine, scanErr := lastOutputLine(io.TeeReader(pipe, logFile))
-	waitErr := command.Wait()
-	if scanErr != nil {
-		return nil, scanErr
-	}
+	return syncCommandSummary(lastLine, waitErr, logFile)
+}
+
+func syncCommandSummary(lastLine string, waitErr error, logFile *os.File) (map[string]interface{}, error) {
 	summary := map[string]interface{}{}
 	if waitErr != nil {
 		if json.Unmarshal([]byte(lastLine), &summary) == nil &&
 			(summary["status"] == "COMPLETED_WITH_ERRORS" || summary["status"] == "FAILED") {
+			if !syncSummaryHasCause(summary) {
+				summary["errors"] = map[string]interface{}{"process": commandFailure(waitErr, logFile).Error()}
+			}
+			sanitizeSyncSummary(summary)
 			return summary, nil
 		}
 		return nil, commandFailure(waitErr, logFile)
 	}
-	if err = json.Unmarshal([]byte(lastLine), &summary); err != nil {
+	if err := json.Unmarshal([]byte(lastLine), &summary); err != nil {
 		return nil, fmt.Errorf("sync command did not return structured JSON: %w", err)
 	}
+	sanitizeSyncSummary(summary)
 	return summary, nil
+}
+
+func syncSummaryHasCause(summary map[string]interface{}) bool {
+	for _, key := range []string{"errors", "failure_reasons"} {
+		switch value := summary[key].(type) {
+		case map[string]interface{}:
+			if len(value) > 0 {
+				return true
+			}
+		case []interface{}:
+			if len(value) > 0 {
+				return true
+			}
+		case string:
+			if strings.TrimSpace(value) != "" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (runner *CommandSyncRunner) cancelled(runID string) {
@@ -637,11 +657,43 @@ func stringParameter(parameters map[string]interface{}, key string) string {
 	return value
 }
 
-func lastOutputLine(reader io.Reader) (string, error) {
+func captureSyncOutput(command *exec.Cmd, logFile *os.File) (string, error, error) {
+	stdout, err := command.StdoutPipe()
+	if err != nil {
+		return "", nil, err
+	}
+	stderr, err := command.StderrPipe()
+	if err != nil {
+		return "", nil, err
+	}
+	if err = command.Start(); err != nil {
+		return "", nil, err
+	}
+	stderrDone := make(chan error, 1)
+	go func() {
+		_, readErr := lastOutputLine(stderr, logFile)
+		if readErr != nil {
+			_ = command.Cancel()
+		}
+		stderrDone <- readErr
+	}()
+	lastLine, readErr := lastOutputLine(stdout, logFile)
+	if readErr != nil {
+		_ = command.Cancel()
+	}
+	stderrErr := <-stderrDone
+	waitErr := command.Wait()
+	return lastLine, waitErr, errors.Join(readErr, stderrErr)
+}
+
+func lastOutputLine(reader io.Reader, log io.Writer) (string, error) {
 	var lastLine string
 	scanner := bufio.NewScanner(reader)
 	scanner.Buffer(make([]byte, 64*1024), 4*1024*1024)
 	for scanner.Scan() {
+		if _, err := fmt.Fprintln(log, sanitizeSyncError(scanner.Text())); err != nil {
+			return "", err
+		}
 		if strings.TrimSpace(scanner.Text()) != "" {
 			lastLine = scanner.Text()
 		}
@@ -653,15 +705,63 @@ func commandFailure(cause error, logFile *os.File) error {
 	if _, err := logFile.Seek(0, io.SeekStart); err != nil {
 		return cause
 	}
-	lastLine, err := lastOutputLine(logFile)
-	if err != nil || strings.TrimSpace(lastLine) == "" {
+	var lastLine string
+	scanner := bufio.NewScanner(logFile)
+	scanner.Buffer(make([]byte, 64*1024), 4*1024*1024)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		var summary map[string]interface{}
+		if line != "" && !(json.Unmarshal([]byte(line), &summary) == nil && summary["status"] != nil) {
+			lastLine = line
+		}
+	}
+	if scanner.Err() != nil || lastLine == "" {
 		return cause
 	}
-	return fmt.Errorf("%w: %s", cause, lastLine)
+	return fmt.Errorf("%w: %s", cause, sanitizeSyncError(lastLine))
+}
+
+var syncErrorURL = regexp.MustCompile(`(?i)(?:https?|postgres(?:ql)?)://[^\s"'<>]+`)
+var syncErrorCredential = regexp.MustCompile(`(?i)([a-z_]*(?:password|secret|token|api[_-]?key|authorization)["']?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|(?:Bearer|Basic)\s+[^\s,;]+|[^\s,;}]+)`)
+
+func sanitizeSyncError(message string) string {
+	message = syncErrorURL.ReplaceAllString(message, "[redacted URL]")
+	message = syncErrorCredential.ReplaceAllString(message, "${1}[redacted]")
+	for _, entry := range os.Environ() {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok && value != "" && syncErrorCredential.MatchString(key+"=value") {
+			message = strings.ReplaceAll(message, value, "[redacted]")
+		}
+	}
+	return message
+}
+
+func sanitizeSyncSummary(summary map[string]interface{}) {
+	for key, value := range summary {
+		if syncErrorCredential.MatchString(key + "=value") {
+			summary[key] = "[redacted]"
+		} else {
+			summary[key] = sanitizeSyncValue(value)
+		}
+	}
+}
+
+func sanitizeSyncValue(value interface{}) interface{} {
+	switch item := value.(type) {
+	case string:
+		return sanitizeSyncError(item)
+	case map[string]interface{}:
+		sanitizeSyncSummary(item)
+	case []interface{}:
+		for index, entry := range item {
+			item[index] = sanitizeSyncValue(entry)
+		}
+	}
+	return value
 }
 
 func (runner *CommandSyncRunner) fail(runID string, cause error) {
-	message := cause.Error()
+	message := sanitizeSyncError(cause.Error())
 	if len(message) > 4000 {
 		message = message[:4000]
 	}

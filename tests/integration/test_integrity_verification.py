@@ -251,13 +251,14 @@ def _registered_artifacts(
                  schema_version, schema_sha256, normalizer_version, manifest_path,
                  manifest_sha256, status, published_at)
             VALUES (%s, %s, 'events', 'normalized', %s, 'v1', %s,
-                    'statsbomb-normalizer-v1', %s, %s, 'published', %s)
+                    %s, %s, %s, 'published', %s)
             """,
             (
                 dataset_id,
                 snapshot_id,
                 uuid4().hex * 2,
                 EVENT_SCHEMA_SHA256,
+                NORMALIZER_VERSION,
                 manifest_path,
                 manifest_write.sha256,
                 now,
