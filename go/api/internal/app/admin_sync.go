@@ -52,6 +52,7 @@ const (
 	SyncFotMob              SyncType = "FOTMOB_SYNC"
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
 	SyncAllData             SyncType = "ALL_DATA"
+	SyncManualBackup        SyncType = "MANUAL_BACKUP"
 )
 
 type SyncRequest struct {
@@ -64,6 +65,7 @@ type SyncRequest struct {
 	RetryOf          string   `json:"-"`
 	ScheduledHistory bool     `json:"-"`
 	PendingOnly      bool     `json:"-"`
+	ManualRequestID  string   `json:"-"`
 }
 
 type SyncRun struct {
@@ -229,17 +231,17 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
-	runID, err := newUUID()
+	runID, err := syncRequestID(request)
 	if err != nil {
 		return SyncRun{}, err
 	}
 	logPath := filepath.Join(".local", "sync-runs", runID+".log")
-	if err = runner.enqueue(ctx, request, runID, logPath, requestedDate, encodedParameters); err != nil {
-		var postgresError *pgconn.PgError
-		if errors.As(err, &postgresError) && postgresError.Code == "23505" {
-			return SyncRun{}, runner.activeRunConflict(ctx)
-		}
+	previous, err := runner.enqueueOrJoin(ctx, request, runID, logPath, requestedDate, encodedParameters)
+	if err != nil {
 		return SyncRun{}, err
+	}
+	if previous != nil {
+		return *previous, nil
 	}
 	runContext, cancel := context.WithCancel(runner.ctx)
 	control := &syncRunControl{cancel: cancel, done: make(chan struct{})}
@@ -250,6 +252,45 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	// Activate committed work before reading the HTTP response: a disconnect
 	// after enqueue must not leave a successfully submitted job unstarted.
 	return runner.Get(ctx, runID)
+}
+
+func syncRequestID(request SyncRequest) (string, error) {
+	if request.Type != SyncManualBackup {
+		return newUUID()
+	}
+	if !backupRequestID.MatchString(request.ManualRequestID) {
+		return "", errWorkControlConflict
+	}
+	return request.ManualRequestID, nil
+}
+
+func (runner *CommandSyncRunner) existingBackup(ctx context.Context, request SyncRequest, runID string) *SyncRun {
+	if request.Type != SyncManualBackup {
+		return nil
+	}
+	previous, err := runner.Get(ctx, runID)
+	if err == nil && previous.Type == SyncManualBackup {
+		return &previous
+	}
+	return nil
+}
+
+func (runner *CommandSyncRunner) enqueueOrJoin(ctx context.Context, request SyncRequest, runID, logPath string, requestedDate *time.Time, parameters []byte) (*SyncRun, error) {
+	if previous := runner.existingBackup(ctx, request, runID); previous != nil {
+		return previous, nil
+	}
+	err := runner.enqueue(ctx, request, runID, logPath, requestedDate, parameters)
+	if err == nil {
+		return nil, nil
+	}
+	var postgresError *pgconn.PgError
+	if !errors.As(err, &postgresError) || postgresError.Code != "23505" {
+		return nil, err
+	}
+	if previous := runner.existingBackup(ctx, request, runID); previous != nil {
+		return previous, nil
+	}
+	return nil, runner.activeRunConflict(ctx)
 }
 
 func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bool, error) {
@@ -516,6 +557,15 @@ func (runner *CommandSyncRunner) runCommand(
 	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
 	command.Env = append(command.Env, "PGOPTIONS="+os.Getenv("PGOPTIONS")+
 		" -c matchforge.sync_run_id="+runID+" -c matchforge.sync_worker_id="+runID)
+	isolateCommand(command)
+	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
+	if readErr != nil {
+		return nil, readErr
+	}
+	return syncCommandSummary(lastLine, waitErr, logFile)
+}
+
+func isolateCommand(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	command.Cancel = func() error {
 		if command.Process == nil {
@@ -523,11 +573,6 @@ func (runner *CommandSyncRunner) runCommand(
 		}
 		return syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
 	}
-	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
-	if readErr != nil {
-		return nil, readErr
-	}
-	return syncCommandSummary(lastLine, waitErr, logFile)
 }
 
 func syncCommandSummary(lastLine string, waitErr error, logFile *os.File) (map[string]interface{}, error) {
@@ -545,6 +590,9 @@ func syncCommandSummary(lastLine string, waitErr error, logFile *os.File) (map[s
 	}
 	if err := json.Unmarshal([]byte(lastLine), &summary); err != nil {
 		return nil, fmt.Errorf("sync command did not return structured JSON: %w", err)
+	}
+	if summary["backup"] == true && !validBackupSummary([]byte(lastLine)) {
+		return nil, errors.New("backup did not produce verified recovery evidence")
 	}
 	sanitizeSyncSummary(summary)
 	return summary, nil
@@ -633,6 +681,9 @@ func (runner *CommandSyncRunner) Retry(ctx context.Context, id string) (SyncRun,
 		return SyncRun{}, err
 	}
 	if run.Status != "FAILED" && run.Status != "CANCELLED" {
+		return SyncRun{}, errSyncRunNotRetryable
+	}
+	if run.Type == SyncManualBackup {
 		return SyncRun{}, errSyncRunNotRetryable
 	}
 	return runner.Start(ctx, syncRequestFromRun(run))
@@ -778,7 +829,7 @@ func (runner *CommandSyncRunner) fail(runID string, cause error) {
 }
 
 func (runner *CommandSyncRunner) List(ctx context.Context) ([]SyncRun, error) {
-	rows, err := runner.pool.Query(ctx, syncRunSelect+" ORDER BY requested_at DESC LIMIT 50")
+	rows, err := runner.pool.Query(ctx, syncRunSelect+" WHERE sync_type<>'MANUAL_BACKUP' ORDER BY requested_at DESC LIMIT 50")
 	if err != nil {
 		return nil, err
 	}
@@ -801,6 +852,9 @@ func (runner *CommandSyncRunner) Get(ctx context.Context, id string) (SyncRun, e
 	run, err := scanSyncRun(runner.pool.QueryRow(ctx, syncRunSelect+" WHERE run_id = $1", id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return SyncRun{}, errSyncRunNotFound
+	}
+	if run.Type == SyncManualBackup {
+		run.LogPath = nil
 	}
 	return run, err
 }
@@ -1035,6 +1089,9 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 }
 
 func syncCommandArgs(request SyncRequest) ([]string, error) {
+	if request.Type == SyncManualBackup {
+		return []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run"}, nil
+	}
 	command := map[SyncType]string{
 		SyncMVP:                 "sync",
 		SyncOpenFootball:        "backfill-openfootball",

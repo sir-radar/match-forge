@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
+import sys
+import tarfile
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -11,6 +14,8 @@ import psycopg
 import pytest
 from psycopg.conninfo import make_conninfo
 
+from scripts import backup_destination, manual_backup
+from scripts.backup_destination import BackupConfig, Restic, credential_environment
 from scripts.backup_recovery import capture_recovery, verify_capture, verify_restore
 from scripts.capture_architecture_v2_baseline import ROOT, compose_command
 
@@ -60,7 +65,76 @@ def test_complete_snapshot_file_restore_isolated_from_original(
         assert result["status"] == "PASS"
         assert result["database_isolated"] is True
         assert (restored / "data/source.json").read_bytes() == payload
+        independent = tmp_path / "independent-application"
+        independent.mkdir()
+        verify_capture(archive)
+        with tarfile.open(archive / "application.tar") as application:
+            application.extractall(independent, filter="data")
+        replay = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "import sys; from pathlib import Path; "
+                "import football; import scripts.backup_recovery as recovery; "
+                "assert Path(recovery.__file__).is_relative_to(Path.cwd()); "
+                "assert Path(football.__file__).is_relative_to(Path.cwd()); "
+                "recovery.verify_restore(Path(sys.argv[1]),Path(sys.argv[2]))",
+                str(archive),
+                str(tmp_path / "independent-restored"),
+            ],
+            cwd=independent,
+            env={**os.environ, "PYTHONPATH": str(independent / "python/football/src")},
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        assert replay.returncode == 0, replay.stdout + replay.stderr
         restore_fresh_cluster(archive, database, digest)
+        password = tmp_path / "recovery-password"
+        password.write_text("disposable-fixture-password-only")
+        password.chmod(0o600)
+        enrollment = BackupConfig(tmp_path, "fixture-volume", "", str(password), "")
+        (tmp_path / "MatchForgeBackup").mkdir()
+        restic = Restic(tmp_path / "MatchForgeBackup", credential_environment(enrollment))
+        restic.run("init", "--repository-version", "2")
+        enrolled = BackupConfig(tmp_path, "fixture-volume", restic.identity(), str(password), "")
+        monkeypatch.setattr(
+            backup_destination,
+            "inspect_volume",
+            lambda _: {
+                "volume_uuid": "fixture-volume",
+                "filesystem": "test-fixture",
+                "filesystem_encrypted": False,
+                "free_bytes": 800_000_000_000,
+                "capacity_bytes": 1_000_000_000_000,
+                "device_id": tmp_path.stat().st_dev,
+            },
+        )
+        monkeypatch.setattr(manual_backup, "inspect_volume", backup_destination.inspect_volume)
+        monkeypatch.setenv("FOOTBALL_DATA_ROOT", str(restored / "data"))
+        monkeypatch.delenv("MATCHFORGE_SYNC_RUN_ID", raising=False)
+        backup = manual_backup.backup(enrolled)
+        assert backup["status"] == "VERIFIED"
+        assert backup["verified"] is True
+        assert backup["repository_file_bytes"] > 0
+        (tmp_path / "manual-backup-result.json").write_text(
+            json.dumps(
+                {
+                    **backup,
+                    "isolated_restore_seconds": result["duration_seconds"],
+                    "database_dump_bytes": (archive / "database.dump").stat().st_size,
+                    "referenced_file_bytes": len(payload),
+                    "global_roles_and_ownership_restored": True,
+                    "independent_application_restore": replay.returncode == 0,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        verified_points = json.loads(
+            restic.run("snapshots", "--json", "--tag", "matchforge-verified")
+        )
+        assert verified_points[0]["id"] == backup["snapshot_id"]
         with psycopg.connect(url) as connection:
             assert (
                 connection.execute("SELECT count(*) FROM football.source_resources").fetchone()[0]

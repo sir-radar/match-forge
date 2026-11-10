@@ -116,3 +116,117 @@ The ordinary `verify-restore` drill deliberately does not apply global roles to
 the existing cluster; fresh-cluster global restoration is a separate procedure.
 No full operating backup or operating restore has run. Missing original sources,
 unregistered custom roots and hardware verification remain fail-closed blockers.
+
+## P01-02 — encrypted drive and manual Admin workflow
+
+Implemented existing-work submission (`BACKUP` / `MANUAL_BACKUP`), explicit drive
+enrollment, protected password-file/Keychain access, pinned Restic 0.19.1,
+encrypted incremental snapshots, full read-back/checksum verification and verified
+snapshot tags. UUID idempotency, existing bulk exclusion, lease checks, cancellation,
+Origin/JSON/local Admin controls and process-group cleanup remain enforced. No
+backup registry or scheduler was added. Migration `202611100300` is tested on
+disposable databases only; normal operation does not require that migration or drive.
+
+Admin `/admin/backup` provides server-rendered status, drive identity/capacity,
+preflight and resource-impact confirmation, Back Up Now, progress/cancellation,
+verification/error history, actual recovery-point age, 30-day due reminders,
+new packed bytes/repository-file bytes and timed eject status. The reminder due
+date uses successful verification; data-loss age uses the earlier database
+snapshot time. Failure does not replace the previous good point or reset reminders.
+Restore drills are explicit isolated operator commands; read-back restore errors
+are displayed in backup history. No background macOS notification agent is enabled.
+
+The documented enrollment never reformats, renames or erases a drive. It requires
+the actual external volume UUID and authenticated repository ID, checks writable
+filesystem/capacity, and uses an open directory descriptor for every repository
+operation. A child changes to that pinned directory before executing Restic;
+replacing the mount display path cannot redirect writes to internal storage.
+Actual USB disconnection/eject behavior remains hardware-pending. Physical device
+capacity, encryption, key custody and independent password retention are unverified.
+All seven new example settings were added to the existing ignored `.env` without
+replacing local values; activation remains false and `.env` is never staged.
+
+### Executed disposable evidence
+
+- Restic 0.19.1 Homebrew Apple Silicon bottle checksum:
+  `46e8a729f34715368444f8b7d4b6e99dca7ec575f7c677bba40bec71764c1dea`.
+  GitHub downloads timed out; the checksum-verified Homebrew bottle succeeded.
+- Initial technology pilot: 2,648,576 input bytes; 1,049,779 packed data bytes
+  (about 60.4% reduction); unchanged second snapshot added zero data bytes in that
+  relative-path pilot. Backup 0.767/0.692 seconds, full data check 0.722 seconds,
+  restore 0.717 seconds. Exact bytes, wrong-key and corrupt-pack rejection passed.
+  These are small fixture measurements, not operating capacity/savings promises.
+- Actual wrapper tests use absolute payload paths and pinned directories. Parent
+  directory metadata can add tree blobs; unchanged source files add zero data
+  blobs. Snapshot metadata still consumes storage. No zero-growth claim is made.
+- Full disposable capture/read-back/global-role/independent-application recovery
+  test passed, including recovery from a different extracted application directory
+  after the source data root moved. Later final aggregate measurements are recorded
+  below; earlier focused whole-test durations included 42.65 and 49.06 seconds and
+  must not be reported as operating RTOs.
+- Shared-work integration proves bulk duplicate exclusion, live-lane independence,
+  cancellation, same-request joining, failed-history preservation, old sync-list
+  compatibility and pre-migration blocking. Generic retry cannot bypass preflight.
+- Final focused recovery suite: four cases passed in 51.17 seconds. Two additional
+  isolated reader cases passed in 4.22 seconds, proving valid dataset/model reads
+  and rejection of corrupted restored artifacts. Unit tests reject operating-root
+  restore destinations and insufficient space before creating destination files.
+- Go/Python configured complexity and explicit new TypeScript complexity checks
+  are at most 10. UI sections and boundary parsing have separate current consumers.
+- Desktop Chromium and mobile WebKit journeys passed keyboard confirmation,
+  cancellation, axe, 320-pixel reflow, text spacing, forced colors and reduced
+  motion. Native button tab stops fixed the initially observed WebKit traversal
+  problem. Screen-reader interaction and physical-drive testing remain unrun;
+  no whole-site WCAG conformance claim is made.
+
+### API/UI state coverage
+
+| Resource/state | Intentional behavior and evidence |
+| --- | --- |
+| Empty / no recovery point | No invented date or size; due banner and empty history; component/shared fixture tests |
+| Disabled / pending migration / disconnected / wrong drive / credentials | Explicit reason, disabled action and status retry; destination, Go HTTP and pre-migration DB tests |
+| Slow / refresh / malformed / network failure | Keep previous valid status, show local error/retry; boundary/component tests; aborted navigation cannot publish a late response |
+| Manual preflight / confirmation / duplicate / conflict | No automatic POST; explicit focus/confirmation, UUID replay and bulk exclusion; Go, component and real DB tests |
+| Active / cancellation / verification failure | Existing phase/status polling and process-group cancellation; previous recovery point retained; Restic corruption/key tests and browser workflow |
+| Verified / overdue / failed later attempt | Exact captured/verified clocks, 30-day boundary and retained good history; Go timing/database tests |
+| Contract drift | Shared JSON fixture checked against JSON Schema, Go round-trip DTO and TypeScript parser in repository checks |
+
+### Final operating limits and cleanup handoff
+
+The final read-only release observation at 11:48:30 UTC still reports unknown
+running commit/lock/worktree identity, latest migration `202611100100`, and pending
+`202611100200` plus new `202611100300`. All routes remain LEGACY; no migration,
+deployment, model promotion or cutover was performed. Operating DB measured
+14,036,047,551 bytes; source registry 82,650 rows / 7,566,375,177 registered bytes.
+That source-byte sum overlaps other storage and is not a complete recovery size.
+
+The operating recovery reference inspection is **BLOCKED**: at least one legacy
+source resource lacks an unambiguous physical locator for its original hash.
+Direct registered file-path columns showed zero checksum conflicts. Treating that
+legacy manifest path as its different resource payload would invent a locator;
+the implementation now rejects it explicitly. Its apparent repeated `a`/`c`
+checksums are not authority to exclude it as a test. Resolve exact original-byte
+locations or obtain an explicit evidence-backed scope decision. No registration,
+source, historical identity or retired artifact was changed. Private receipts:
+`.local/foundation/operating-recovery-scope.json`, `reference-conflicts.json` and
+`reference-conflict-detail.json`; these are protected local diagnostics, not Git
+deliverables. Exact full operating dataset size, complete original-file recovery,
+external initial/incremental sizes, retention capacity and operating RTO remain
+unverified. A connected 1 TB drive is not assumed from the owner's hardware choice.
+
+The [separate cleanup proposal](../recovery-cleanup-proposal.md) identifies exact
+duplicate reports, experimental DBs, old backups and caches with dependency,
+recovery, risk and approval requirements. Both named report files still measure
+1,913,464,815 bytes; none was deleted. Keep latest plus an earlier independently
+verified point when capacity permits; sustainable additional retention awaits real
+growth measurements. Automatic pruning remains disabled.
+
+Next owner action: connect/enroll the actual drive, retain its independent key,
+resolve the legacy locator/original-file blockers, approve the scoped operating
+migration/activation and measure a full real backup/isolated restore. Only then
+select a later roadmap cohort; P02 source-proven identity/score work is a candidate,
+not authorization to begin it. The F0–F11 plan, Probability Filter, Rust engine and
+current champion are unchanged.
+
+Final aggregate and Git delivery: pending at this checkpoint; see subsequent
+verification entry. Implementation readiness is distinct from operating activation.

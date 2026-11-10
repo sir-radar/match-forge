@@ -71,6 +71,8 @@ uv run pytest -q tests/integration/test_canonical_storage.py \
 	tests/integration/test_cli.py \
 	tests/integration/test_postgres_recovery.py \
 	tests/integration/test_complete_recovery.py \
+	tests/integration/test_restic_backup.py \
+	tests/integration/test_manual_backup_work.py \
 	tests/integration/test_team_elo.py \
 	tests/integration/test_product_historical_backfill.py \
 	tests/integration/test_product_history_queue.py \

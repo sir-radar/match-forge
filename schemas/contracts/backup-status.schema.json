@@ -1,0 +1,139 @@
+{
+  "$id": "https://matchforge.local/contracts/backup-status.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "availability": {
+      "additionalProperties": false,
+      "properties": {
+        "drive": {
+          "additionalProperties": false,
+          "properties": {
+            "capacity_bytes": {
+              "type": "integer"
+            },
+            "filesystem": {
+              "type": "string"
+            },
+            "filesystem_encrypted": {
+              "type": "boolean"
+            },
+            "free_bytes": {
+              "type": "integer"
+            },
+            "volume_uuid": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "volume_uuid",
+            "filesystem",
+            "filesystem_encrypted",
+            "free_bytes",
+            "capacity_bytes"
+          ],
+          "type": "object"
+        },
+        "estimated_staging_bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "impact": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "referenced_bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "referenced_files": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "repository_unlocked": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "READY",
+            "DISABLED",
+            "UNCONFIGURED",
+            "DISCONNECTED",
+            "WRONG_DRIVE",
+            "READ_ONLY",
+            "FILESYSTEM_UNKNOWN",
+            "CREDENTIALS",
+            "REPOSITORY_MISSING",
+            "WRONG_REPOSITORY",
+            "REPOSITORY_VERSION",
+            "TOOL_VERSION",
+            "INTERRUPTED",
+            "VERIFICATION_FAILED",
+            "LOW_SPACE",
+            "MISSING_FILES",
+            "SNAPSHOT_FAILED",
+            "INCOMPLETE",
+            "MIGRATION_PENDING"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "message",
+        "impact",
+        "repository_unlocked",
+        "referenced_files",
+        "referenced_bytes",
+        "estimated_staging_bytes",
+        "state"
+      ],
+      "type": "object"
+    },
+    "backup_age_seconds": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "last_verified": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "next_due_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_due": {
+      "type": "boolean"
+    },
+    "runs": {
+      "items": {
+        "type": "object"
+      },
+      "maxItems": 20,
+      "type": "array"
+    },
+    "safe_to_eject": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "availability",
+    "runs",
+    "last_verified",
+    "next_due_at",
+    "backup_age_seconds",
+    "reminder_due",
+    "safe_to_eject"
+  ],
+  "title": "Backup status",
+  "type": "object"
+}

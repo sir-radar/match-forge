@@ -18,6 +18,9 @@ from football.storage.parquet import ImmutableEventParquetStore
 from football.storage.raw import ImmutableFileStore
 from psycopg import Connection
 
+from scripts.backup_recovery import verify_artifact_readers
+from tests.integration.test_team_identity_correction import isolated_database
+
 DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
@@ -139,6 +142,16 @@ def test_integrity_report_fails_closed_when_a_selected_artifact_fails(
 
     assert report.dataset_manifest_integrity == "FAIL"
     assert report.status == "FAIL"
+
+
+@pytest.mark.parametrize("kind", ("dataset", "model"))
+def test_restored_reader_rejects_invalid_artifacts(tmp_path: Path, kind: str) -> None:
+    with isolated_database() as url, psycopg.connect(url) as connection:
+        _, _, _, paths = _registered_artifacts(connection, tmp_path)
+        assert verify_artifact_readers(connection, tmp_path) == {"datasets": 1, "models": 1}
+        (tmp_path / paths[kind]).write_bytes(b"corrupted restored bytes")
+        with pytest.raises(ValueError, match="incompatible with its registered reader"):
+            verify_artifact_readers(connection, tmp_path)
 
 
 @pytest.mark.parametrize(

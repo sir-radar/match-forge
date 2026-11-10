@@ -3,7 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from scripts.recovery_files import FileReference, capture_files, restore_files, verify_files
+from scripts.recovery_files import (
+    FileReference,
+    RecoveryReferenceError,
+    capture_files,
+    legacy_source_path,
+    restore_files,
+    verify_files,
+)
 
 
 def reference(payload: bytes, path: str = "raw/original.json") -> FileReference:
@@ -61,3 +68,18 @@ def test_conflicting_registrations_and_nonempty_restore_are_rejected(tmp_path: P
     capture_files([reference(b"one", "file")], {"data": tmp_path}, tmp_path / "b")
     with pytest.raises(ValueError, match="empty"):
         restore_files(tmp_path / "b", {"data": tmp_path})
+
+
+def test_legacy_resource_locator_requires_proven_bytes_or_existing_provider_layout() -> None:
+    assert (
+        legacy_source_path("legacy", None, "native.json", "source.json", "a" * 64, "a" * 64)
+        == "source.json"
+    )
+    assert (
+        legacy_source_path(
+            "openfootball", "commit", "native.json", "manifest.json", "a" * 64, "b" * 64
+        )
+        == "openfootball/commit/native.json"
+    )
+    with pytest.raises(RecoveryReferenceError, match="verified physical file locator"):
+        legacy_source_path("unknown", None, "native.json", "manifest.json", "a" * 64, "b" * 64)

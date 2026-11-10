@@ -13,10 +13,15 @@ from pathlib import Path
 from typing import Any
 
 from football.contracts.source import SHA256_PATTERN, validate_relative_posix_path
+from football.integrity import _raw_relative_path
 from psycopg import Connection, sql
 
 from scripts.capture_architecture_v2_baseline import ROOT
 from scripts.capture_architecture_v2_baseline import file_sha256 as digest_file
+
+
+class RecoveryReferenceError(ValueError):
+    """The snapshot's registered dependencies cannot describe one complete file set."""
 
 
 @dataclass(frozen=True)
@@ -55,14 +60,17 @@ def unique_references(references: Iterable[FileReference]) -> list[FileReference
         key = ref.root, ref.path
         previous = result.get(key)
         if previous and previous.sha256 and ref.sha256 and previous.sha256 != ref.sha256:
-            raise ValueError("conflicting recovery registrations")
+            raise RecoveryReferenceError(
+                f"conflicting recovery registrations: {ref.root}/{ref.path}; "
+                f"{previous.sha256} != {ref.sha256}"
+            )
         if (
             previous
             and previous.size is not None
             and ref.size is not None
             and previous.size != ref.size
         ):
-            raise ValueError("conflicting recovery sizes")
+            raise RecoveryReferenceError("conflicting recovery sizes")
         if previous is None or ref.sha256 is not None:
             result[key] = ref
     return sorted(result.values(), key=lambda ref: (ref.root, ref.path))
@@ -191,7 +199,9 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
         ).fetchall()
     )
     if actual - known:
-        raise ValueError(f"unclassified database file references: {sorted(actual - known)}")
+        raise RecoveryReferenceError(
+            f"unclassified database file references: {sorted(actual - known)}"
+        )
     references: list[FileReference] = []
     for table, (path, checksum, size) in FILE_COLUMNS.items():
         query = sql.SQL("SELECT {},{},{} FROM football.{}").format(
@@ -247,29 +257,65 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
 def source_files(connection: Connection[Any], root: Path) -> list[FileReference]:
     rows = connection.execute(
         """SELECT p.code,s.manifest_path,s.manifest_sha256,s.source_revision,s.git_sha,
-                  r.provider_path,r.sha256,r.size_bytes
+                  r.provider_path,r.sha256,r.size_bytes,a.raw_path
            FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id
-           JOIN football.source_resources r ON r.source_snapshot_id=s.id ORDER BY s.id,r.id"""
+           JOIN football.source_resources r ON r.source_snapshot_id=s.id
+           LEFT JOIN football.acquired_resources a ON a.source_resource_id=r.id
+           ORDER BY s.id,r.id"""
     )
     manifests: dict[str, Any] = {}
     refs = []
-    for provider, manifest_path, manifest_hash, revision, git_sha, path, digest, size in rows:
-        if revision.startswith("manifest-v1:") or provider == "statsbomb_open_data":
+    for (
+        provider,
+        manifest_path,
+        manifest_hash,
+        revision,
+        git_sha,
+        path,
+        digest,
+        size,
+        acquired,
+    ) in rows:
+        if acquired:
+            relative = acquired
+        elif revision.startswith("manifest-v1:") or provider == "statsbomb_open_data":
             if manifest_path not in manifests:
                 raw = regular_file(root, manifest_path).read_bytes()
                 if hashlib.sha256(raw).hexdigest() != manifest_hash:
-                    raise ValueError("source manifest checksum mismatch")
+                    raise RecoveryReferenceError("source manifest checksum mismatch")
                 manifest = json.loads(raw)
                 manifests[manifest_path] = {
                     r.get("provider_path", r.get("path")): r for r in manifest["resources"]
                 }
-            entry = manifests[manifest_path][path]
+            try:
+                entry = manifests[manifest_path][path]
+            except KeyError as error:
+                raise RecoveryReferenceError(
+                    "source manifest lacks a registered resource"
+                ) from error
             if entry["sha256"] != digest or entry["size_bytes"] != size:
-                raise ValueError("source manifest registration mismatch")
+                raise RecoveryReferenceError("source manifest registration mismatch")
             relative = entry["raw_path"]
         else:
-            relative = (
-                f"openfootball/{git_sha}/{path}" if provider == "openfootball" else manifest_path
-            )
+            relative = _raw_relative_path(provider, revision, path, digest)
+            if relative is None:
+                relative = legacy_source_path(
+                    provider, git_sha, path, manifest_path, manifest_hash, digest
+                )
         refs.append(FileReference("data", relative, digest, size))
     return refs
+
+
+def legacy_source_path(
+    provider: str,
+    git_sha: str | None,
+    path: str,
+    manifest_path: str,
+    manifest_hash: str,
+    resource_hash: str,
+) -> str:
+    if provider == "openfootball" and git_sha:
+        return f"openfootball/{git_sha}/{path}"
+    if manifest_hash == resource_hash:
+        return manifest_path  # Legacy single-payload registration proves identical original bytes.
+    raise RecoveryReferenceError("legacy source resource lacks a verified physical file locator")

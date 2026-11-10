@@ -14,10 +14,11 @@ import {
   parseSyncRuns,
 } from "@/lib/contracts";
 import type { MarketScope, SyncRun } from "@/lib/contracts";
+import { parseBackupView } from "@/lib/backup";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8080";
 
-type RequestOptions = { method?: "GET" | "POST"; body?: Record<string, string>; signal?: AbortSignal };
+type RequestOptions = { method?: "GET" | "POST"; body?: Record<string, string | boolean>; signal?: AbortSignal };
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
@@ -26,7 +27,8 @@ export class ApiError extends Error {
 async function request<T>(path: string, parse: (value: unknown) => T, options: RequestOptions = {}): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? "GET", signal: options.signal,
-    headers: { Accept: "application/json", ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
+    headers: { Accept: "application/json", ...(typeof window === "undefined" && path.startsWith("/v1/admin/backup") ? { Origin: process.env.WEB_ORIGIN ?? "http://127.0.0.1:3000" } : {}), ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
+    cache: path.startsWith("/v1/admin/backup") ? "no-store" : undefined,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   if (!response.ok) throw await responseError(response);
@@ -45,6 +47,13 @@ async function responseError(response: Response): Promise<ApiError> {
 }
 
 export const api = {
+  backup: (signal?: AbortSignal) => request("/v1/admin/backup", parseBackupView, { signal }),
+  previewBackup: (signal?: AbortSignal) => request("/v1/admin/backup/preview", parseBackupView, { method: "POST", body: {}, signal }),
+  startBackup: (requestId: string, signal?: AbortSignal) => request("/v1/admin/backup", (value) => {
+    const run = parseSyncRun(value);
+    if (run.sync_type !== "MANUAL_BACKUP" || run.run_id !== requestId) throw new Error("Backup request identity mismatch");
+    return run;
+  }, { method: "POST", body: { request_id: requestId, confirmed: true }, signal }),
   marketCapabilities: (scope: MarketScope, signal?: AbortSignal) => request(`/v1/admin/market-capabilities?${new URLSearchParams(scope)}`, (value) => {
     const report = parseMarketCapabilitySummary(value);
     if (report.competition_id !== scope.competition_id || report.season_id !== scope.season_id || Date.parse(report.knowledge_cutoff) !== Date.parse(scope.knowledge_cutoff)) throw new Error("market report scope mismatch");
@@ -87,7 +96,7 @@ export const api = {
   startAllDataSync: (body: Record<string, string>) => startSync("all", body),
   syncRuns: (signal?: AbortSignal) => request("/v1/admin/sync-runs", parseSyncRuns, { signal }),
   syncRun: (id: string, signal?: AbortSignal) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}`, parseSyncRun, { signal }),
-  stopSyncRun: (id: string) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/stop`, parseSyncRun, { method: "POST" }),
+  stopSyncRun: (id: string, signal?: AbortSignal) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/stop`, parseSyncRun, { method: "POST", signal }),
   retrySyncRun: (id: string) => request(`/v1/admin/sync-runs/${encodeURIComponent(id)}/retry`, parseSyncRun, { method: "POST" }),
 };
 
