@@ -20,15 +20,17 @@ for (const scenario of [
     await page.goto("/");
     await page.getByLabel("Selected date").fill(scenario.date);
     const league = scenario.id;
-    await expect(page.getByRole("combobox", { name: "League", exact: true }).locator(`option[value="${league}"]`)).toHaveText(scenario.competition);
-    await page.getByRole("combobox", { name: "League", exact: true }).selectOption(league);
+    await expect(page.getByRole("combobox", { name: "Competition", exact: true }).locator(`option[value="${league}"]`)).toHaveText(scenario.competition);
+    const requestsBeforeSelection = responses.length;
+    await page.getByRole("combobox", { name: "Competition", exact: true }).selectOption(league);
     await expect(page.locator(".fixture-group")).toHaveCount(1);
     await expect(page.locator("article.fixture")).toHaveCount(scenario.count);
-    await expect.poll(() => responses.some((item) => item.url.includes(`competition=${league}`))).toBe(true);
-    const selected = responses.filter((item) => item.url.includes(`competition=${league}`)).at(-1)!;
-    expect(selected.payload.groups).toHaveLength(1);
-    expect(selected.payload.groups[0].fixtures).toHaveLength(scenario.count);
-    const ids = selected.payload.groups[0].fixtures.map((fixture) => fixture.id);
+    expect(responses.length).toBe(requestsBeforeSelection);
+    const selected = responses.filter((item) => new URL(item.url).searchParams.get("date") === scenario.date).at(-1)!;
+    const selectedGroups = selected.payload.groups.filter((group) => group.competition.id === league);
+    expect(selectedGroups).toHaveLength(1);
+    expect(selectedGroups[0].fixtures).toHaveLength(scenario.count);
+    const ids = selectedGroups[0].fixtures.map((fixture) => fixture.id);
     expect(new Set(ids).size).toBe(scenario.count);
     const controls = await page.locator(".fixture-summary").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-controls")));
     expect(controls.sort()).toEqual(ids.map((id) => `fixture-panel-${id}`).sort());
@@ -42,7 +44,7 @@ for (const scenario of [
     await writeFile(testInfo.outputPath("api-responses.json"), JSON.stringify(responses, null, 2));
     await page.reload();
     await page.getByLabel("Selected date").fill(scenario.date);
-    await page.getByRole("combobox", { name: "League", exact: true }).selectOption(league);
+    await page.getByRole("combobox", { name: "Competition", exact: true }).selectOption(league);
     await expect(page.locator("article.fixture")).toHaveCount(scenario.count);
   });
 }

@@ -9,32 +9,23 @@ import { ProbabilityBar } from "@/components/probability-bar";
 import { ExpandedFixture } from "@/components/expanded-fixture";
 import { DISPLAY_TIME_ZONE, dayLabel, validDay } from "@/lib/display-date";
 import { Icon } from "@/components/icon";
-
-type Filters = { continent: string; country: string; competition: string; forecast: string };
-type CoverageOptions = ReturnType<typeof coverageOptions>;
+import { DEFAULT_FIXTURE_FILTERS, filterFixtureGroups } from "@/lib/fixture-filters";
+import { FixtureFilters } from "@/components/fixture-filters";
 
 export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   const [date, setDate] = useState(initialDate);
   const [dateError, setDateError] = useState<string | null>(null);
   const selectDate = (value: string) => { if (!validDay(value)) { setDateError("Choose a valid fixture date."); return; } setDateError(null); setDate(value); setExpanded(null); };
-  const [filters, setFilters] = useState<Filters>({ continent: "", country: "", competition: "", forecast: "" });
-  const [teamQuery, setTeamQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [filters, setFilters] = useState(DEFAULT_FIXTURE_FILTERS);
   const [expanded, setExpanded] = useState<string | null>(null);
   const competitionLoad = useCallback((signal: AbortSignal) => api.competitions(new URLSearchParams(), signal), []);
   const competitions = useResource("competitions", competitionLoad);
-  const fixtureKey = `${date}|${Object.values(filters).join("|")}`;
-  const fixtureLoad = useCallback((signal: AbortSignal) => {
-    const query = new URLSearchParams({ date, timezone: DISPLAY_TIME_ZONE });
-    if (filters.continent) query.set("continent", filters.continent);
-    if (filters.country) query.set("country", filters.country);
-    if (filters.competition) query.set("competition", filters.competition);
-    if (filters.forecast) query.set("forecast_availability", filters.forecast);
-    return api.fixtures(query, signal);
-  }, [date, filters]);
-  const fixtures = useResource(fixtureKey, fixtureLoad);
+  const fixtureLoad = useCallback((signal: AbortSignal) => api.fixtures(new URLSearchParams({ date, timezone: DISPLAY_TIME_ZONE }), signal), [date]);
+  const fixtures = useResource(date, fixtureLoad);
   useLiveRefresh(fixtures.data, fixtures.retry);
-  const options = useMemo(() => coverageOptions(competitions.data ?? []), [competitions.data]);
+  const groups = useMemo(() => filterFixtureGroups(fixtures.data ?? [], filters), [fixtures.data, filters]);
+  const statusGroups = useMemo(() => filterFixtureGroups(fixtures.data ?? [], { ...filters, status: "ALL" }), [fixtures.data, filters]);
+  const reset = () => { setFilters(DEFAULT_FIXTURE_FILTERS); selectDate(initialDate); };
 
   const moveDate = (days: number) => {
     const next = new Date(`${date}T12:00:00Z`);
@@ -45,37 +36,30 @@ export function FixtureExplorer({ initialDate }: { initialDate: string }) {
   return (
     <div className="workspace">
       <h1 className="sr-only">MatchForge fixtures</h1>
-      <CompetitionRail state={competitions} filters={filters} setFilters={setFilters} />
       <section className="fixture-workbench" aria-label="Football fixtures">
         <div className="environment-strip"><span>Environment: <b>Production pre-match</b></span><i /> <span>Forecasts: immutable published records</span></div>
-        <FixtureToolbar date={date} count={fixtureCount(fixtures.data)} moveDate={moveDate} setDate={selectDate} />
+        <FixtureToolbar date={date} count={fixtures.data === null ? "—" : fixtureCount(groups)} moveDate={moveDate} setDate={selectDate} />
         {dateError && <p role="alert">{dateError}</p>}
-        <StatusFilters groups={fixtures.data ?? []} value={statusFilter} onChange={setStatusFilter} />
-        <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} options={options} refreshing={fixtures.refreshing} teamQuery={teamQuery} setTeamQuery={setTeamQuery} />
+        <StatusFilters groups={statusGroups} value={filters.status} onChange={(status) => setFilters({ ...filters, status })} />
+        <FixtureFilters filters={filters} setFilters={setFilters} competitions={competitions.data ?? []} reset={reset} />
+        {competitions.error && <ResourceError message={`Competition filters unavailable: ${competitions.error}`} retry={competitions.retry} />}
+        <FixtureCount groups={groups} state={fixtures} />
         <div className="engine-strip"><Icon name="monitoring" /><b>Probability engine</b><i>Real published MatchForge forecast data · no bookmaker odds</i></div>
-        <FixtureResults state={fixtures} expanded={expanded} setExpanded={setExpanded} teamQuery={teamQuery} statusFilter={statusFilter} />
+        <FixtureResults state={fixtures} expanded={expanded} setExpanded={setExpanded} groups={groups} />
       </section>
     </div>
   );
 }
 
-function CompetitionRail({ state, filters, setFilters }: { state: ReturnType<typeof useResource<Competition[]>>; filters: Filters; setFilters: (update: (old: Filters) => Filters) => void }) {
-  return <aside className="competition-rail" aria-label="Competition coverage">
-    <div className="rail-heading"><span>Competitions</span><b>{state.data?.[0]?.season ?? "—"}</b></div>
-    {state.error && <ResourceError message={state.error} retry={state.retry} />}
-    <small className="rail-section">Available leagues</small>
-    {(state.data ?? []).slice(0, 18).map((item) => (
-      <button key={item.id} className={filters.competition === item.id ? "active" : ""} onClick={() => setFilters((old) => ({ ...old, continent: "", country: "", competition: old.competition === item.id ? "" : item.id }))}>
-        <span>{metadataLabel(item.country, "Country")} – {item.name}</span><small>{item.division ? `D${item.division}` : metadataLabel(item.type, "Type")}</small>
-      </button>
-    ))}
-    <div className="rail-engine"><span aria-hidden="true" />MatchForge Forecast</div>
-  </aside>;
+function FixtureCount({ groups, state }: { groups: FixtureGroup[]; state: ReturnType<typeof useResource<FixtureGroup[]>> }) {
+  const count = fixtureCount(groups);
+  const label = state.data === null ? "Loading fixture count…" : `${count} matching ${count === 1 ? "fixture" : "fixtures"} of ${fixtureCount(state.data)}`;
+  return <p className="fixture-count" role="status">{label}{state.refreshing && " · Refreshing…"}</p>;
 }
 
 function FixtureToolbar({ date, count, moveDate, setDate }: { date: string; count: number | string; moveDate: (days: number) => void; setDate: (value: string) => void }) {
   return <div className="fixture-toolbar">
-    <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{count} matches scoped · {dayLabel(date)}</small></div></div>
+    <div className="fixture-title"><Icon name="calendar" /><div><h2>Football Fixtures</h2><small>{count} matching fixtures · {dayLabel(date)}</small></div></div>
     <div className="date-bar">
       <button aria-label="Previous day" onClick={() => moveDate(-1)}><Icon name="chevron-left" /><span>Prev Day</span></button>
       <label><span>Selected date</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
@@ -91,31 +75,11 @@ function StatusFilters({ groups, value, onChange }: { groups: FixtureGroup[]; va
   return <div className="status-filters" aria-label="Fixture status">{items.map(([key, label, count]) => <button key={key} aria-pressed={value === key} onClick={() => onChange(key)}>{label} <b>{count}</b></button>)}</div>;
 }
 
-function FixtureFilters({ filters, setFilters, competitions, options, refreshing, teamQuery, setTeamQuery }: { filters: Filters; setFilters: (value: Filters) => void; competitions: Competition[]; options: CoverageOptions; refreshing: boolean; teamQuery: string; setTeamQuery: (value: string) => void }) {
-  const countries = options.countries.filter((item) => !filters.continent || item.continent === filters.continent);
-  const leagues = competitions.filter((item) => (!filters.country || item.country === filters.country) && (!filters.continent || item.continent === filters.continent));
-  return <div className="filters" aria-label="Fixture filters">
-    <label>Continent<select value={filters.continent} onChange={(event) => setFilters({ ...filters, continent: event.target.value, country: "", competition: "" })}><option value="">All</option>{options.continents.map((value) => <option key={value} value={value}>{metadataLabel(value, "Continent")}</option>)}</select></label>
-    <label>Country<select value={filters.country} onChange={(event) => setFilters({ ...filters, country: event.target.value, competition: "" })}><option value="">All</option>{countries.map((item) => <option key={item.country} value={item.country}>{metadataLabel(item.country, "Country")}</option>)}</select></label>
-    <label>League<select value={filters.competition} onChange={(event) => setFilters({ ...filters, competition: event.target.value })}><option value="">All</option>{leagues.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-    <label>Forecast<select value={filters.forecast} onChange={(event) => setFilters({ ...filters, forecast: event.target.value })}><option value="">All fixtures</option><option value="FORECAST_AVAILABLE">Available</option><option value="NOT_ENOUGH_HISTORY">Not enough history</option><option value="SOURCE_DATA_INCOMPLETE">Source incomplete</option></select></label>
-    <label>Team<input type="search" value={teamQuery} onChange={(event) => setTeamQuery(event.target.value)} placeholder="Filter clubs…" /></label>
-    {refreshing && <span className="refreshing" role="status">Refreshing…</span>}
-  </div>;
-}
-
-function FixtureResults({ state, expanded, setExpanded, teamQuery, statusFilter }: { state: ReturnType<typeof useResource<FixtureGroup[]>>; expanded: string | null; setExpanded: (id: string | null) => void; teamQuery: string; statusFilter: string }) {
+function FixtureResults({ state, expanded, setExpanded, groups }: { state: ReturnType<typeof useResource<FixtureGroup[]>>; expanded: string | null; setExpanded: (id: string | null) => void; groups: FixtureGroup[] }) {
   if (state.loading) return <ResourceLoading label="Loading fixtures" />;
   if (state.error && state.data === null) return <ResourceError message={state.error} retry={state.retry} />;
   const refreshError = state.error && <ResourceError message={`Showing previously loaded fixtures. Refresh failed: ${state.error}`} retry={state.retry} />;
-  if (state.data?.length === 0) return <>{refreshError}<EmptyState title="No fixtures found" detail="The fixture can still be absent when a provider has no match for this date or the active filters exclude it." /></>;
-  const query = teamQuery.trim().toLocaleLowerCase();
-  const groups = (state.data ?? []).map((group) => ({ ...group, fixtures: group.fixtures.filter((fixture) => {
-    const matchesTeam = !query || fixture.home.name.toLocaleLowerCase().includes(query) || fixture.away.name.toLocaleLowerCase().includes(query);
-    const matchesStatus = statusFilter === "ALL" || (statusFilter === "UPCOMING" ? ["SCHEDULED", "TIMED", "UPCOMING"].includes(fixture.status) : statusFilter === "LIVE" ? ["LIVE", "HALF_TIME"].includes(fixture.status) : fixture.status === statusFilter);
-    return matchesTeam && matchesStatus;
-  }) })).filter((group) => group.fixtures.length);
-  if (!groups.length) return <>{refreshError}<EmptyState title="No fixtures found" detail="No team in the selected fixture set matches this filter." /></>;
+  if (!groups.length) return <>{refreshError}<EmptyState title="No fixtures found" detail="No fixtures match the selected date and filters. Lower the minimum probability, change the result or use Reset Filters." /></>;
   return <>
     {refreshError}
     {groups.map((group) => <FixtureGroupView key={group.competition.id} group={group} expanded={expanded} setExpanded={setExpanded} />)}
@@ -193,13 +157,6 @@ function Scorers({ fixture, side }: { fixture: Fixture; side: "HOME" | "AWAY" })
   }
   if (!grouped.size) return null;
   return <small className="goal-scorers">{[...grouped].map(([name, minutes]) => `${name} ${minutes.join(", ")}`).join(" · ")}</small>;
-}
-
-function coverageOptions(competitions: Competition[]) {
-  return {
-    continents: [...new Set(competitions.map((item) => item.continent))].sort(),
-    countries: [...new Map(competitions.map((item) => [item.country, { country: item.country, continent: item.continent }])).values()].sort((a, b) => a.country.localeCompare(b.country)),
-  };
 }
 
 function metadataLabel(value: string, kind: string) { return value.trim().toUpperCase() === "UNKNOWN" ? `${kind} unavailable` : value; }
