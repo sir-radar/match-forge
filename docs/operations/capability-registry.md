@@ -16,7 +16,7 @@ Required record: `capability_id`, name, owner, state, state-event ID/timestamp, 
 | Single minimal Phase 3A xG hypothesis | Narrow **research-only** authorization recorded | No production inference |
 | Wider xG/xGA, H2H, lineup, goalkeeper, threat, ensemble | Proposed research families | No production inference; verify |
 | Derby/unpredictability display tags | Display-only proposal | No production inference; verify |
-| Minimal Rust engine | Scaffold mentioned, separate authorization pending | **Not authorized for new implementation/activation by prior event** |
+| Minimal Rust engine | `rust/simulation-core` exists; PitchAPI V3-V5 used frozen protocol-scoped builds as evaluation evidence; separate authorization for the minimal simulator is still pending | **Not authorized for new implementation/activation by prior event** |
 | New simulation-validated product | Mandatory *future* product policy | **Not activated by any tracked decision** |
 | Automatic post-upset recalibration, derby probability coefficient, tag-induced probability adjustment | Explicitly excluded by the roadmap | Must not be enabled under this plan |
 

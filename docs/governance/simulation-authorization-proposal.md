@@ -2,6 +2,8 @@
 
 **Status: PROPOSED / NOT APPROVED.** The 20 September Phase 3A decision does not authorize this. This file is an input for the owner, not permission to code, run protected evaluation, enable production or change earlier artifacts.
 
+**Reconciled 10 November 2026.** `docs/project-status.json` still records `rust_simulation_authorized: false`. The PitchAPI V3, V4 and V5 execution decisions authorized frozen, protocol-scoped Rust builds (112,460 simulations per forecast) as evaluation evidence only: V3 failed on Rust parity and V5 recorded parity `PASS`. They do not approve this proposal, create a production gate or enable a capability. See [current state](../status/current-state.md#rust-simulation).
+
 ## Requested scope (stage A only)
 
 Reconcile existing `rust/simulation-core` and Python/Go interfaces. Define a versioned, coherent calibrated forecast/parameter input, minimal deterministic seeded score sampler (no independent team-strength fitting), reference fixtures, analytic parity/convergence/tail tests, reproducible input and output hashes, bounded workers/cancellation, validation sidecar and state-machine integration **in non-production/test environments**. Select numerical tolerances, event support and compute/latency limits in an independently frozen policy *before* tests.
