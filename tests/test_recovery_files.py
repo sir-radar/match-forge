@@ -129,3 +129,28 @@ def test_acquisition_evidence_preserves_logical_identity_and_physical_bytes(tmp_
         source_manifest_reference(
             tmp_path, "football_data_uk", evidence.sha256, relative, evidence.sha256
         )
+
+
+def test_relocated_original_is_copied_by_checksum_with_registration_trace(tmp_path: Path) -> None:
+    retained = tmp_path / "repository"
+    retained.mkdir()
+    payload = b"retained exact original"
+    (retained / "retained.json").write_bytes(payload)
+    ref = FileReference(
+        "data",
+        "missing/report.json",
+        hashlib.sha256(payload).hexdigest(),
+        len(payload),
+        registrations=({"table": "sprint2_evaluation_runs", "keys": {"id": "stable-id"}},),
+        source_path="retained.json",
+    )
+    archive = tmp_path / "capture"
+    result = capture_files([ref], {"data": tmp_path / "data", "repository": retained}, archive)
+    assert result["status"] == "COMPLETE"
+    assert result["files"][0]["registrations"][0]["keys"]["id"] == "stable-id"
+    target = tmp_path / "restored"
+    restore_files(archive, {"data": target})
+    assert (target / "missing/report.json").read_bytes() == payload
+    assert (retained / "retained.json").read_bytes() == payload
+    with pytest.raises(ValueError):
+        FileReference("data", "file", None, source_path="../escape")

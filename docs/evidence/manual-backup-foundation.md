@@ -346,3 +346,61 @@ verification: 13 tests and strict typing passed for the resolver correction.
 NTC directory enumeration currently times out despite readable mount metadata.
 No repository is created until actual drive access, credentials and capacity pass.
 The owner has been asked to check Finder/reconnect while independent work continues.
+
+### Resolved inventory and recoverable-only preparation
+
+The NTC directory-access issue cleared after macOS removable-volume authorization;
+a bounded root read and the project-file search completed. No repair or reformat was
+performed. The NTC search examined 7,503 files with no project-original matches.
+A retained-archive search examined 100 project archives, 71,623 member entries and
+79 candidate payloads, with no additional matches. Read-only tracing across 41
+databases found no additional physical locations. Desktop, Documents, Downloads
+and temporary-storage metadata searches examined another 137,563 files; one
+permission-limited directory remains outside verified search coverage.
+
+The corrected snapshot inventory at 20:39:56 UTC verified 115,083 unique files
+(8,432,702,695 bytes) and recorded 159 unavailable dependencies. Nineteen moved
+evaluation reports have exact retained checksum matches. Forty-five legacy raw
+resources and the logical acquisition receipt now resolve using their established
+contracts. Exact unavailable identifiers, hashes and registered paths are retained
+in `operating-recovery-scope.json`; the count is dependencies, not necessarily
+159 distinct original byte streams. Thirty-one dependencies have declared one- or
+two-byte size/hash combinations that exhaustive enumeration proves impossible.
+No registration is discarded because it resembles a fixture.
+
+At 20:45:25 UTC, a fresh estimate included 115,116 available files because operating
+acquisition continued. The unavailable-registration digest remained unchanged.
+Database allocation plus referenced bytes and the application archive totalled
+22,591,728,986 bytes. NTC had 679,785,529,344 free bytes; the estimate leaves about
+657 GB free, above the existing 20% external reserve. Local staging/read-back/restore
+allowance was conservatively four copies (90.4 GB) against 259.3 GB free. This fits
+but is below the recommended 20% local-disk reserve after that allowance. Missing
+originals prevent a complete-scope capacity or recovery guarantee.
+
+The owner has now attested a separate secure password copy. Keychain remains the
+password source; neither the password nor credential-bearing configuration is in
+tracked evidence. No automatic backups are enabled. The expanded fixture passed
+capture, encrypted Restic backup, read-back, isolated restore and exact gap matching;
+strict full-scope verification and full-scope tags reject this partial result.
+Operating execution still awaits final code verification and interface authorization.
+
+Implementation research: [Restic 0.19.1 data verification](https://restic.readthedocs.io/en/stable/045_working_with_repos.html)
+and [Python tar extraction rules](https://docs.python.org/3.13/library/tarfile.html).
+Application replay accepts only validated relative regular files/directories and
+rejects links; it does not rely solely on tar extraction filters.
+
+The final binary-payload search checked 110 bytea columns across all 41 databases,
+with no missing-hash matches and no query errors (44.7 seconds). macOS denied
+Documents-directory access even for an escalated retry; no registered or historical
+physical reference points there. This remains a stated search limitation. The owner
+approved the one-time command-line backup and isolated restore, preserving the
+Admin-only requirement for future backups. Operating migrations/deployment remain
+unauthorized.
+
+Final expanded aggregate: `env -u DATABASE_URL -u TEST_DATABASE_URL -u
+FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT VITEST_MAX_WORKERS=2 make check integration`
+passed (exit 0). All configured formatting, lint, strict typing, complexity,
+architecture, unit, build, project-status, web and storage/API integration checks
+passed. Log raw-byte SHA-256: `fa180adf267512c677d387c5c2acff43bd9f5db6b793d9845c0a333b0d977c98`. Existing dependency deprecations and the
+unchanged frontend test-file lint warning remain. Source changes were frozen
+throughout the run.

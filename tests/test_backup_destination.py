@@ -145,7 +145,8 @@ def test_enrollment_checks_complete_scope_and_capacity_before_creating_directory
     monkeypatch.setattr(backup_destination, "credential_environment", lambda _: {})
     monkeypatch.setattr(Restic, "require_version", lambda _: None)
 
-    def estimate(_: Path) -> dict[str, int]:
+    def estimate(_: Path, recovery_plan: dict[str, object] | None = None) -> dict[str, int]:
+        assert recovery_plan is None
         if incomplete:
             raise RecoveryReferenceError("unresolved original dependency")
         return {"estimated_staging_bytes": 20}

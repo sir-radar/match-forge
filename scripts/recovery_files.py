@@ -8,7 +8,7 @@ import os
 import shutil
 import stat
 from collections.abc import Iterable, Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -31,11 +31,15 @@ class FileReference:
     path: str
     sha256: str | None
     size: int | None = None
+    registrations: tuple[dict[str, Any], ...] = field(default=(), compare=False, hash=False)
+    source_path: str | None = field(default=None, compare=False, hash=False)
 
     def __post_init__(self) -> None:
         if self.root not in ("data", "repository"):
             raise ValueError("unknown recovery root")
         validate_relative_posix_path(self.path)
+        if self.source_path is not None:
+            validate_relative_posix_path(self.source_path)
         if self.sha256 is not None and not SHA256_PATTERN.fullmatch(self.sha256):
             raise ValueError("invalid registered checksum")
 
@@ -78,9 +82,19 @@ def unique_references(references: Iterable[FileReference]) -> list[FileReference
                 ref.path,
                 ref.sha256 or previous.sha256,
                 previous.size if ref.size is None else ref.size,
+                (*previous.registrations, *ref.registrations),
+                ref.source_path or previous.source_path,
             )
         result[key] = ref
-    return sorted(result.values(), key=lambda ref: (ref.root, ref.path))
+    return [
+        replace(
+            ref,
+            registrations=tuple(
+                sorted(ref.registrations, key=lambda r: json.dumps(r, sort_keys=True))
+            ),
+        )
+        for ref in sorted(result.values(), key=lambda ref: (ref.root, ref.path))
+    ]
 
 
 def capture_files(
@@ -91,7 +105,10 @@ def capture_files(
     report: dict[str, Any] = {"status": "INCOMPLETE", "files": [], "failures": []}
     for ref in refs:
         try:
-            source = regular_file(roots[ref.root], ref.path)
+            source = regular_file(
+                roots["repository"] if ref.source_path is not None else roots[ref.root],
+                ref.source_path if ref.source_path is not None else ref.path,
+            )
             target = archive / "files" / ref.root / ref.path
             target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             before = source.stat()
@@ -118,7 +135,7 @@ def capture_files(
                     "sha256": actual,
                     "size": target.stat().st_size,
                     "mtime_ns": before.st_mtime_ns,
-                    "registered_checksum": ref.sha256 is not None,
+                    "registered_checksum": _physical_checksum_registered(ref),
                 }
             )
         except (OSError, ValueError) as error:
@@ -129,6 +146,15 @@ def capture_files(
         json.dump(report, handle, indent=2, sort_keys=True)
         handle.write("\n")
     return report
+
+
+def _physical_checksum_registered(ref: FileReference) -> bool:
+    if not ref.registrations:
+        return ref.sha256 is not None
+    return any(
+        entry.get("checksum_kind") == "PHYSICAL" and entry.get("registered_sha256") == ref.sha256
+        for entry in ref.registrations
+    )
 
 
 def verify_files(archive: Path) -> list[str]:
@@ -187,7 +213,7 @@ FILE_COLUMNS = {
 }
 
 
-def registered_files(connection: Connection[Any], data_root: Path) -> list[FileReference]:
+def _require_classified_columns(connection: Connection[Any]) -> None:
     known = {(table, columns[0]) for table, columns in FILE_COLUMNS.items()} | {
         ("source_snapshots", "manifest_path"),  # Provider contracts distinguish logical identities.
         ("source_resources", "provider_path"),  # Provider key, resolved from its source manifest.
@@ -209,21 +235,89 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
         raise RecoveryReferenceError(
             f"unclassified database file references: {sorted(actual - known)}"
         )
+
+
+def _unresolved_reference(
+    unresolved: list[dict[str, Any]] | None, registration: dict[str, Any], error: Exception
+) -> None:
+    if unresolved is None:
+        raise error
+    unresolved.append({**registration, "error": type(error).__name__, "reason": str(error)})
+
+
+def _column_files(connection: Connection[Any]) -> list[FileReference]:
     references: list[FileReference] = []
-    for provider, revision, path, digest in connection.execute(
-        "SELECT p.code,s.source_revision,s.manifest_path,s.manifest_sha256 "
-        "FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id"
-    ):
-        references.append(source_manifest_reference(data_root, provider, revision, path, digest))
     for table, (path, checksum, size) in FILE_COLUMNS.items():
-        query = sql.SQL("SELECT {},{},{} FROM football.{}").format(
+        keys = connection.execute(
+            "SELECT a.attname FROM pg_index i JOIN pg_attribute a "
+            "ON a.attrelid=i.indrelid AND a.attnum=ANY(i.indkey) "
+            "WHERE i.indrelid=%s::regclass AND i.indisprimary ORDER BY a.attnum",
+            ("football." + table,),
+        ).fetchall()
+        key_fields = sql.SQL(",").join(
+            part for (name,) in keys for part in (sql.Literal(name), sql.Identifier(name))
+        )
+        query = sql.SQL("SELECT jsonb_build_object({}),{},{},{} FROM football.{}").format(
+            key_fields,
             sql.Identifier(path),
             sql.Identifier(checksum),
             sql.Identifier(size) if size else sql.SQL("NULL"),
             sql.Identifier(table),
         )
-        references.extend(FileReference("data", *row) for row in connection.execute(query))
-    references.extend(source_files(connection, data_root))
+        for identity, relative, digest, length in connection.execute(query):
+            owner = {
+                "table": table,
+                "keys": identity,
+                "column": path,
+                "registered_sha256": digest,
+                "checksum_kind": "PHYSICAL",
+            }
+            references.append(FileReference("data", relative, digest, length, (owner,)))
+    return references
+
+
+def _snapshot_files(
+    connection: Connection[Any], data_root: Path, unresolved: list[dict[str, Any]] | None
+) -> list[FileReference]:
+    references = []
+    for identity, provider, revision, path, digest in connection.execute(
+        "SELECT s.id,p.code,s.source_revision,s.manifest_path,s.manifest_sha256 "
+        "FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id"
+    ):
+        owner = {
+            "table": "source_snapshots",
+            "keys": {"id": str(identity)},
+            "column": "manifest_path",
+            "registered_sha256": digest,
+        }
+        try:
+            ref = source_manifest_reference(data_root, provider, revision, path, digest)
+            owner["checksum_kind"] = (
+                "PATH_IDENTITY"
+                if ref.sha256 is None
+                else ("PHYSICAL" if ref.sha256 == digest else "LOGICAL_IDENTITY")
+            )
+            references.append(replace(ref, registrations=(owner,)))
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            _unresolved_reference(
+                unresolved,
+                {"registration": owner, "path": path, "sha256": digest, "size": None},
+                error,
+            )
+    return references
+
+
+def registered_files(
+    connection: Connection[Any],
+    data_root: Path,
+    *,
+    unresolved: list[dict[str, Any]] | None = None,
+    repository_root: Path = ROOT,
+) -> list[FileReference]:
+    _require_classified_columns(connection)
+    references = _column_files(connection)
+    references.extend(_snapshot_files(connection, data_root, unresolved))
+    references.extend(source_files(connection, data_root, unresolved=unresolved))
     for (payload,) in connection.execute(
         "SELECT record_bytes FROM football.runtime_model_registrations"
     ):
@@ -252,8 +346,8 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
         from football.product.resolution_migration import migration_report
         from football.product.resolution_parity import retained_comparisons
 
-        report = migration_report(ROOT)
-        retained = retained_comparisons(ROOT, report)
+        report = migration_report(repository_root)
+        retained = retained_comparisons(repository_root, report)
         references.extend(
             FileReference(
                 "repository",
@@ -266,10 +360,15 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
     return unique_references(references)
 
 
-def source_files(connection: Connection[Any], root: Path) -> list[FileReference]:
+def source_files(
+    connection: Connection[Any],
+    root: Path,
+    *,
+    unresolved: list[dict[str, Any]] | None = None,
+) -> list[FileReference]:
     rows = connection.execute(
         """SELECT p.code,s.manifest_path,s.manifest_sha256,s.source_revision,s.git_sha,
-                  r.provider_path,r.sha256,r.size_bytes,a.raw_path
+                  r.provider_path,r.sha256,r.size_bytes,a.raw_path,r.id,s.id
            FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id
            JOIN football.source_resources r ON r.source_snapshot_id=s.id
            LEFT JOIN football.acquired_resources a ON a.source_resource_id=r.id
@@ -277,48 +376,61 @@ def source_files(connection: Connection[Any], root: Path) -> list[FileReference]
     )
     manifests: dict[str, Any] = {}
     refs = []
-    for (
-        provider,
-        manifest_path,
-        manifest_hash,
-        revision,
-        git_sha,
-        path,
-        digest,
-        size,
-        acquired,
-    ) in rows:
-        if acquired:
-            relative = acquired
-        elif revision.startswith("manifest-v1:") or provider == "statsbomb_open_data":
-            if manifest_path not in manifests:
-                raw = regular_file(root, manifest_path).read_bytes()
-                if hashlib.sha256(raw).hexdigest() != manifest_hash:
-                    raise RecoveryReferenceError("source manifest checksum mismatch")
-                manifest = json.loads(raw)
-                manifests[manifest_path] = {
-                    r.get("provider_path", r.get("path")): r for r in manifest["resources"]
-                }
-            try:
-                entry = manifests[manifest_path][path]
-            except KeyError as error:
-                raise RecoveryReferenceError(
-                    "source manifest lacks a registered resource"
-                ) from error
-            if entry["sha256"] != digest or entry["size_bytes"] != size:
-                raise RecoveryReferenceError("source manifest registration mismatch")
-            relative = entry["raw_path"]
-        else:
-            try:
-                relative = legacy_source_path(
-                    provider, git_sha, path, manifest_path, manifest_hash, digest
-                )
-            except RecoveryReferenceError:
-                relative = _raw_relative_path(provider, revision, path, digest)
-                if relative is None:
-                    raise
-        refs.append(FileReference("data", relative, digest, size))
+    for row in rows:
+        owner = {
+            "table": "source_resources",
+            "keys": {"id": str(row[9])},
+            "source_snapshot_id": str(row[10]),
+            "provider": row[0],
+            "provider_path": row[5],
+            "registered_sha256": row[6],
+            "checksum_kind": "PHYSICAL",
+        }
+        try:
+            ref = _source_reference(root, row[:9], manifests)
+            refs.append(replace(ref, registrations=(owner,)))
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            _unresolved_reference(
+                unresolved, {"registration": owner, "sha256": row[6], "size": row[7]}, error
+            )
     return refs
+
+
+def _source_reference(root: Path, row: tuple[Any, ...], manifests: dict[str, Any]) -> FileReference:
+    provider, manifest_path, manifest_hash, revision, git_sha, path, digest, size, acquired = row
+    if acquired:
+        return FileReference("data", acquired, digest, size)
+    if revision.startswith("manifest-v1:") or provider == "statsbomb_open_data":
+        return _manifest_resource(root, row, manifests)
+    try:
+        relative = legacy_source_path(provider, git_sha, path, manifest_path, manifest_hash, digest)
+    except RecoveryReferenceError:
+        relative = _raw_relative_path(provider, revision, path, digest)
+        if relative is None:
+            raise
+    return FileReference("data", relative, digest, size)
+
+
+def _manifest_resource(
+    root: Path, row: tuple[Any, ...], manifests: dict[str, Any]
+) -> FileReference:
+    _, manifest_path, manifest_hash, _, _, path, digest, size, _ = row
+    if manifest_path not in manifests:
+        raw = regular_file(root, manifest_path).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != manifest_hash:
+            raise RecoveryReferenceError("source manifest checksum mismatch")
+        manifest = json.loads(raw)
+        entries = {r.get("provider_path", r.get("path")): r for r in manifest["resources"]}
+        if len(entries) != len(manifest["resources"]):
+            raise RecoveryReferenceError("source manifest resource paths are not unique")
+        manifests[manifest_path] = entries
+    try:
+        entry = manifests[manifest_path][path]
+    except KeyError as error:
+        raise RecoveryReferenceError("source manifest lacks a registered resource") from error
+    if entry["sha256"] != digest or entry["size_bytes"] != size:
+        raise RecoveryReferenceError("source manifest registration mismatch")
+    return FileReference("data", entry["raw_path"], digest, size)
 
 
 def legacy_source_path(

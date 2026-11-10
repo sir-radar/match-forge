@@ -37,3 +37,32 @@ def test_restore_requires_capacity_before_creating_destination(
         "scripts.backup_recovery.shutil.disk_usage", lambda _: SimpleNamespace(free=120)
     )
     require_restore_storage(report, tmp_path, destination)
+
+
+def test_application_restore_keeps_retained_evidence_and_rejects_links(tmp_path: Path) -> None:
+    import io
+    import tarfile
+
+    from scripts.backup_recovery import restore_application
+
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / "existing").write_bytes(b"original")
+    with tarfile.open(tmp_path / "application.tar", "w") as archive:
+        for name, payload in (("existing", b"original"), ("scripts/tool", b"code")):
+            member = tarfile.TarInfo(name)
+            member.size = len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+    restore_application(tmp_path, repository)
+    assert (repository / "scripts/tool").read_bytes() == b"code"
+    (repository / "existing").write_bytes(b"retained different evidence")
+    with pytest.raises(ValueError, match="conflicts"):
+        restore_application(tmp_path, repository)
+    with tarfile.open(tmp_path / "application.tar", "w") as archive:
+        link = tarfile.TarInfo("escape")
+        link.type = tarfile.SYMTYPE
+        link.linkname = str(tmp_path.parent)
+        archive.addfile(link)
+    with pytest.raises(ValueError, match="link"):
+        restore_application(tmp_path, repository)
+    assert not (repository / "escape").exists()

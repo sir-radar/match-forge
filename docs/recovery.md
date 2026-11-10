@@ -278,3 +278,38 @@ The frozen Football-Data acquisition receipt bundle uses its existing canonical
 reader and logical digest; its trailing-newline representation has a distinct
 physical checksum. Recovery preserves both identities and never rewrites a legacy
 registration or source to make a checksum appear valid.
+
+## Recovery when original dependencies are unavailable
+
+The default capture and Admin job still require the complete registered scope.
+`python -m scripts.recovery_scope` can instead inspect every registration in one
+read-only snapshot and retain all missing identifiers. Its private inventory binds
+the database name/OID and exact unavailable registrations. Explicit retained-file
+locations are accepted only when the original registered checksum and size match;
+original files and database registrations are never repaired in place.
+
+The owner-authorized recoverable scope uses `--recoverable-inventory` on enrollment,
+capture or the manual command. A fresh snapshot must have exactly the declared gaps;
+new available registrations are included, while changed gaps require a new inventory.
+Unexpected copy or checksum failures still fail the capture. The capture contains all
+database rows and recoverable file dependencies, exact missing registrations, observed
+artifact-reader results, application code, globals and checksum manifests.
+
+A recoverable capture is `CAPTURED_RECOVERABLE`, never `CAPTURED`. The default verifier
+rejects it; an isolated drill requires `--allow-recoverable`. Restoration extracts
+regular application files into the new repository, checks all database rows/cutoffs,
+re-enumerates files using only restored roots, and compares missing registrations and
+artifact-reader results with capture. Application links, path escapes and conflicting
+retained bytes are rejected. No unavailable source is fabricated.
+
+The manual recoverable command requires `--restore-destination` and refuses an Admin
+worker run ID. It records `VERIFIED_RECOVERABLE` only after encrypted read-back and the
+isolated database/file drill pass. Its `matchforge-recoverable-verified` tag does not
+count as `matchforge-verified`, update full-scope backup age, or satisfy full recovery.
+It is an explicit operator recovery action; using it instead of the owner's Admin
+interface requires an owner-approved exception. It does not authorize migrations,
+release activation, automatic execution, retention pruning or source replacement.
+
+Current operating gaps, exact identifiers, search limits and capacity evidence are in
+`docs/evidence/operating-recovery-scope.json`. Recovery of those missing originals
+requires an external copy or evidence resolving the original registration.

@@ -18,6 +18,7 @@ from typing import Any
 
 from scripts.backup_recovery import recovery_estimate
 from scripts.capture_architecture_v2_baseline import ROOT
+from scripts.recovery_scope import load_plan
 
 
 class BackupError(ValueError):
@@ -267,6 +268,7 @@ def main() -> None:
     secrets.add_argument("--password-file", default="")
     secrets.add_argument("--keychain-service", default="")
     parser.add_argument("--recovery-key-retained", action="store_true", required=True)
+    parser.add_argument("--recoverable-inventory", type=Path)
     args = parser.parse_args()
     config = BackupConfig(
         args.mount, args.volume_uuid, "", args.password_file, args.keychain_service
@@ -281,7 +283,8 @@ def main() -> None:
     restic = Restic(repository, credential_environment(config), volume["device_id"])
     restic.require_version()
     estimate = recovery_estimate(
-        Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
+        Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data"))),
+        load_plan(args.recoverable_inventory) if args.recoverable_inventory else None,
     )
     headroom_warning = require_capacity(
         volume["free_bytes"], estimate["estimated_staging_bytes"], volume["capacity_bytes"]

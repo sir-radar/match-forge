@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -36,6 +37,7 @@ from scripts.recovery_files import (
     restore_files,
     verify_files,
 )
+from scripts.recovery_scope import inventory, load_plan, selected_inventory, validate_gaps
 
 
 def global_fingerprint() -> str:
@@ -67,7 +69,9 @@ def require_compose_database(connection: psycopg.Connection[Any], database: str)
         raise ValueError("dump transport differs from selected database identity")
 
 
-def recovery_estimate(data_root: Path) -> dict[str, int]:
+def recovery_estimate(
+    data_root: Path, recovery_plan: dict[str, Any] | None = None
+) -> dict[str, int]:
     with psycopg.connect(
         os.environ["DATABASE_URL"],
         options="-c default_transaction_read_only=on -c statement_timeout=30000",
@@ -75,11 +79,15 @@ def recovery_estimate(data_root: Path) -> dict[str, int]:
         connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         row = connection.execute("SELECT pg_database_size(current_database())").fetchone()
         assert row is not None
-        refs = registered_files(connection, data_root)
-        referenced_bytes = sum(
-            regular_file(data_root if ref.root == "data" else ROOT, ref.path).stat().st_size
-            for ref in refs
-        )
+        if recovery_plan is None:
+            refs = registered_files(connection, data_root)
+            referenced_bytes = sum(
+                regular_file(data_root if ref.root == "data" else ROOT, ref.path).stat().st_size
+                for ref in refs
+            )
+        else:
+            selected = selected_inventory(connection, data_root, recovery_plan)
+            refs, referenced_bytes = selected["references"], selected["logical_bytes"]
         connection.rollback()
     return {
         "referenced_files": len(refs),
@@ -88,7 +96,9 @@ def recovery_estimate(data_root: Path) -> dict[str, int]:
     }
 
 
-def capture_recovery(output: Path, data_root: Path) -> dict[str, Any]:
+def capture_recovery(
+    output: Path, data_root: Path, recovery_plan: dict[str, Any] | None = None
+) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=False, mode=0o700)
     report: dict[str, Any] = {
         "version": 1,
@@ -178,10 +188,24 @@ def capture_recovery(output: Path, data_root: Path) -> dict[str, Any]:
                     cutoff.isoformat(): cutoff_hash(connection, cutoff)
                     for cutoff in sorted(cutoffs)
                 }
-                refs = registered_files(connection, data_root)
+                if recovery_plan is None:
+                    refs = registered_files(connection, data_root)
+                else:
+                    selected = selected_inventory(connection, data_root, recovery_plan)
+                    refs = selected["references"]
+                    report["recovery_scope"] = {
+                        "scope": "RECOVERABLE_ONLY",
+                        "full_recovery": False,
+                        "unavailable": selected["unavailable"],
+                        "unavailable_sha256": selected["unavailable_sha256"],
+                    }
                 report["files"] = capture_files(
                     refs, {"data": data_root, "repository": ROOT}, output
                 )
+                if recovery_plan is not None:
+                    report["artifact_reader_results"] = artifact_reader_results(
+                        connection, output / "files/data"
+                    )
                 report["extensions"] = connection.execute(
                     "SELECT extname,extversion FROM pg_extension ORDER BY extname"
                 ).fetchall()
@@ -204,16 +228,25 @@ def capture_recovery(output: Path, data_root: Path) -> dict[str, Any]:
         for name in ("database.dump", "globals.sql", "application.tar", "recovery-files.json")
     }
     report["duration_seconds"] = time.monotonic() - started
-    report["status"] = "CAPTURED" if report["files"]["status"] == "COMPLETE" else "INCOMPLETE"
+    if report["files"]["status"] == "COMPLETE":
+        report["status"] = "CAPTURED_RECOVERABLE" if recovery_plan is not None else "CAPTURED"
     report["restore_verified"] = False
     write_json(output / "recovery.json", report)
     return report
 
 
-def verify_capture(root: Path) -> dict[str, Any]:
+def verify_capture(root: Path, *, allow_recoverable: bool = False) -> dict[str, Any]:
     report: dict[str, Any] = json.loads(regular_file(root, "recovery.json").read_text())
-    if report["version"] != 1 or report["status"] != "CAPTURED":
+    accepted = {"CAPTURED", "CAPTURED_RECOVERABLE"} if allow_recoverable else {"CAPTURED"}
+    if report["version"] != 1 or report["status"] not in accepted:
         raise ValueError("incomplete or unsupported recovery capture")
+    scope = report.get("recovery_scope")
+    if (report["status"] == "CAPTURED_RECOVERABLE") != (scope is not None):
+        raise ValueError("recovery scope does not match capture status")
+    if scope is not None:
+        validate_gaps(scope)
+        if scope["full_recovery"] is not False:
+            raise ValueError("recoverable capture cannot claim full recovery")
     if verify_files(root):
         raise ValueError("recovery file verification failed")
     required = {"database.dump", "globals.sql", "application.tar", "recovery-files.json"}
@@ -223,6 +256,50 @@ def verify_capture(root: Path) -> dict[str, Any]:
         if digest_file(regular_file(root, name)) != digest:
             raise ValueError("recovery checksum verification failed")
     return report
+
+
+def artifact_reader_results(
+    connection: psycopg.Connection[Any], data_root: Path
+) -> list[dict[str, object]]:
+    verifier = PostgresIntegrityVerifier(connection, data_root)
+    results = []
+    for (identity,) in connection.execute("SELECT id FROM football.dataset_versions ORDER BY id"):
+        results.append(verifier.verify_dataset(identity).to_dict())
+    for (identity,) in connection.execute("SELECT id FROM football.model_artifacts ORDER BY id"):
+        results.append(verifier.verify_model_artifact(identity).to_dict())
+    return results
+
+
+def restore_application(archive: Path, repository: Path) -> None:
+    """Restore regular tracked files only; never follow archive links or replace evidence."""
+    from football.contracts.source import validate_relative_posix_path
+
+    with tarfile.open(archive / "application.tar") as application:
+        for member in application.getmembers():
+            name = member.name.rstrip("/")
+            validate_relative_posix_path(name)
+            if not (member.isfile() or member.isdir()):
+                raise ValueError("application archive contains a link or special file")
+        for member in application.getmembers():
+            target = repository / member.name
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True, mode=0o700)
+                continue
+            source = application.extractfile(member)
+            assert source is not None
+            with source:
+                if target.exists():
+                    existing = regular_file(repository, member.name)
+                    digest = hashlib.sha256()
+                    while chunk := source.read(1024 * 1024):
+                        digest.update(chunk)
+                    if digest.hexdigest() != digest_file(existing):
+                        raise ValueError("application archive conflicts with retained evidence")
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                    with target.open("xb") as output:
+                        shutil.copyfileobj(source, output, 1024 * 1024)
+                    target.chmod(member.mode & 0o777)
 
 
 def verify_artifact_readers(connection: psycopg.Connection[Any], data_root: Path) -> dict[str, int]:
@@ -239,11 +316,14 @@ def verify_artifact_readers(connection: psycopg.Connection[Any], data_root: Path
     return counts
 
 
-def verify_restore(root: Path, destination: Path) -> dict[str, Any]:
-    report = verify_capture(root)
+def verify_restore(
+    root: Path, destination: Path, *, allow_recoverable: bool = False
+) -> dict[str, Any]:
+    report = verify_capture(root, allow_recoverable=allow_recoverable)
     require_restore_storage(report, root, destination)
     destination.mkdir(parents=True, exist_ok=False, mode=0o700)
     restore_files(root, {"data": destination / "data", "repository": destination / "repository"})
+    restore_application(root, destination / "repository")
     database = "football_restore_test_" + uuid4().hex
     started = time.monotonic()
     with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as control:
@@ -289,16 +369,7 @@ def verify_restore(root: Path, destination: Path) -> dict[str, Any]:
                     or [list(row) for row in extensions] != report["extensions"]
                 ):
                     raise ValueError("restored database verification failed")
-                refs = registered_files(restored, destination / "data")
-                verify_dir = destination / "reference-check"
-                verified = capture_files(
-                    refs,
-                    {"data": destination / "data", "repository": destination / "repository"},
-                    verify_dir,
-                )
-                if verified["status"] != "COMPLETE":
-                    raise ValueError("restored snapshot-to-file verification failed")
-                artifact_readers = verify_artifact_readers(restored, destination / "data")
+                artifact_readers = verify_restored_dependencies(restored, destination, report)
         finally:
             if not re.fullmatch(r"football_restore_test_[0-9a-f]{32}", database):
                 raise ValueError("unsafe restore database")
@@ -306,7 +377,9 @@ def verify_restore(root: Path, destination: Path) -> dict[str, Any]:
                 sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(database))
             )
     result = {
-        "status": "PASS",
+        "status": "PASS_RECOVERABLE" if report.get("recovery_scope") else "PASS",
+        "full_recovery": not bool(report.get("recovery_scope")),
+        "unavailable_dependencies": len(report.get("recovery_scope", {}).get("unavailable", [])),
         "database_isolated": True,
         "duration_seconds": time.monotonic() - started,
         "verified_at": datetime.now(UTC).isoformat(),
@@ -315,6 +388,31 @@ def verify_restore(root: Path, destination: Path) -> dict[str, Any]:
     }
     write_json(destination / "verification.json", result)
     return result
+
+
+def verify_restored_dependencies(
+    connection: psycopg.Connection[Any], destination: Path, report: dict[str, Any]
+) -> dict[str, Any]:
+    scope = report.get("recovery_scope")
+    if scope is not None:
+        selected = inventory(connection, destination / "data", destination / "repository", {})
+        if selected["unavailable_sha256"] != scope["unavailable_sha256"]:
+            raise ValueError("restored unavailable dependencies differ from the captured inventory")
+        readers = artifact_reader_results(connection, destination / "data")
+        if readers != report["artifact_reader_results"]:
+            raise ValueError("restored artifact reader results differ from the captured results")
+        return {"results": readers, "full_recovery": False}
+    refs = registered_files(
+        connection, destination / "data", repository_root=destination / "repository"
+    )
+    verified = capture_files(
+        refs,
+        {"data": destination / "data", "repository": destination / "repository"},
+        destination / "reference-check",
+    )
+    if verified["status"] != "COMPLETE":
+        raise ValueError("restored snapshot-to-file verification failed")
+    return verify_artifact_readers(connection, destination / "data")
 
 
 def require_restore_storage(report: dict[str, Any], root: Path, destination: Path) -> None:
@@ -340,14 +438,22 @@ def main() -> None:
     capture = sub.add_parser("capture")
     capture.add_argument("--output", type=Path, required=True)
     capture.add_argument("--data-root", type=Path, required=True)
+    capture.add_argument("--recoverable-inventory", type=Path)
     restore = sub.add_parser("verify-restore")
     restore.add_argument("--capture", type=Path, required=True)
     restore.add_argument("--destination", type=Path, required=True)
+    restore.add_argument("--allow-recoverable", action="store_true")
     args = parser.parse_args()
     result = (
-        capture_recovery(args.output, args.data_root)
+        capture_recovery(
+            args.output,
+            args.data_root,
+            load_plan(args.recoverable_inventory) if args.recoverable_inventory else None,
+        )
         if args.action == "capture"
-        else verify_restore(args.capture, args.destination)
+        else verify_restore(
+            args.capture, args.destination, allow_recoverable=args.allow_recoverable
+        )
     )
     print(json.dumps({"status": result["status"]}))
     if result["status"] == "INCOMPLETE":

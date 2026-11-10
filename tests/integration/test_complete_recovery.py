@@ -279,3 +279,106 @@ def restore_fresh_cluster(archive: Path, database: str, digest: str) -> None:
             stdout=subprocess.DEVNULL,
             check=True,
         )
+
+
+def test_declared_missing_sources_restore_without_claiming_full_recovery(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.recovery_scope import inventory
+
+    database = "football_storage_test_" + uuid4().hex[:16]
+    subprocess.run(compose_command("createdb", database), cwd=ROOT, check=True)
+    try:
+        url = make_conninfo(os.environ["TEST_DATABASE_URL"], dbname=database)
+        subprocess.run(
+            ["goose", "-dir", "infrastructure/migrations", "postgres", url, "up"],
+            cwd=ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        monkeypatch.setenv("DATABASE_URL", url)
+        source = tmp_path / "source"
+        source.mkdir()
+        payload = b"retained original"
+        digest = hashlib.sha256(payload).hexdigest()
+        (source / "original.json").write_bytes(payload)
+        with psycopg.connect(url) as connection:
+            provider = connection.execute(
+                "INSERT INTO football.providers(code,name,source_type) "
+                "VALUES ('recovery_test','Recovery test','file_download') RETURNING id"
+            ).fetchone()[0]
+            for path in ("original.json", "unavailable.json"):
+                connection.execute(
+                    "INSERT INTO football.source_snapshots(provider_id,source_identity,"
+                    "source_revision,acquired_at,manifest_path,manifest_sha256,status) "
+                    "VALUES (%s,%s,'v1',now(),%s,%s,'validated')",
+                    (provider, path, path, digest),
+                )
+        with psycopg.connect(url) as connection:
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            selected = inventory(connection, source, ROOT, {})
+            oid = connection.execute(
+                "SELECT oid::text FROM pg_database WHERE datname=current_database()"
+            ).fetchone()[0]
+        plan = {
+            "scope": "RECOVERABLE_ONLY",
+            "locations": {},
+            "database": database,
+            "database_oid": oid,
+            "unavailable_sha256": selected["unavailable_sha256"],
+            "unavailable": selected["unavailable"],
+        }
+        assert len(plan["unavailable"]) == 1
+        archive = tmp_path / "capture"
+        report = capture_recovery(archive, source, plan)
+        assert report["status"] == "CAPTURED_RECOVERABLE"
+        assert report["recovery_scope"]["full_recovery"] is False
+        with pytest.raises(ValueError, match="incomplete"):
+            verify_capture(archive)
+        source.rename(tmp_path / "unavailable-originals")
+        restored = tmp_path / "restored"
+        result = verify_restore(archive, restored, allow_recoverable=True)
+        assert result["status"] == "PASS_RECOVERABLE"
+        assert result["full_recovery"] is False
+        assert result["unavailable_dependencies"] == 1
+        assert (restored / "data/original.json").read_bytes() == payload
+        assert not (restored / "data/unavailable.json").exists()
+        assert (restored / "repository/uv.lock").is_file()
+        monkeypatch.setenv("FOOTBALL_DATA_ROOT", str(restored / "data"))
+        password = tmp_path / "password"
+        password.write_text("disposable-fixture-password")
+        password.chmod(0o600)
+        (tmp_path / "MatchForgeBackup").mkdir()
+        config = BackupConfig(tmp_path, "fixture", "", str(password), "")
+        restic = Restic(tmp_path / "MatchForgeBackup", credential_environment(config))
+        restic.run("init", "--repository-version", "2")
+        config = BackupConfig(tmp_path, "fixture", restic.identity(), str(password), "")
+
+        def volume(_: BackupConfig) -> dict[str, int]:
+            return {
+                "free_bytes": 800_000_000_000,
+                "capacity_bytes": 1_000_000_000_000,
+                "device_id": tmp_path.stat().st_dev,
+            }
+
+        monkeypatch.setattr(backup_destination, "inspect_volume", volume)
+        monkeypatch.setattr(manual_backup, "inspect_volume", volume)
+        monkeypatch.delenv("MATCHFORGE_SYNC_RUN_ID", raising=False)
+        backed_up = manual_backup.backup(config, plan, tmp_path / "restic-restored")
+        assert backed_up["status"] == "VERIFIED_RECOVERABLE"
+        assert backed_up["full_recovery"] is False
+        assert backed_up["full_operating_restore_drill"]["status"] == "PASS_RECOVERABLE"
+        assert json.loads(restic.run("snapshots", "--json", "--tag", "matchforge-verified")) == []
+        points = json.loads(
+            restic.run("snapshots", "--json", "--tag", "matchforge-recoverable-verified")
+        )
+        assert points[0]["id"] == backed_up["snapshot_id"]
+        monkeypatch.setenv("MATCHFORGE_SYNC_RUN_ID", str(uuid4()))
+        with pytest.raises(backup_destination.BackupError, match="full-scope Admin"):
+            manual_backup.backup(config, plan, tmp_path / "rejected-admin")
+        changed = {**plan, "unavailable_sha256": "0" * 64}
+        with pytest.raises(ValueError, match="changed"):
+            capture_recovery(tmp_path / "changed-capture", restored / "data", changed)
+    finally:
+        subprocess.run(compose_command("dropdb", "--force", database), cwd=ROOT, check=True)

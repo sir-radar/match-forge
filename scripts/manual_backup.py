@@ -23,19 +23,26 @@ from scripts.backup_destination import (
     inspect_volume,
     require_capacity,
 )
-from scripts.backup_recovery import capture_recovery, recovery_estimate, verify_capture
+from scripts.backup_recovery import (
+    capture_recovery,
+    recovery_estimate,
+    verify_capture,
+    verify_restore,
+)
 from scripts.capture_architecture_v2_baseline import ROOT, write_json
 from scripts.recovery_files import RecoveryReferenceError
+from scripts.recovery_scope import load_plan
 
 
-def preview(config: BackupConfig) -> dict[str, Any]:
+def preview(config: BackupConfig, recovery_plan: dict[str, Any] | None = None) -> dict[str, Any]:
     _, volume = destination(config)
     data_root = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
-    estimate = recovery_estimate(data_root)
+    estimate = recovery_estimate(data_root, recovery_plan)
     estimated = estimate["estimated_staging_bytes"]
     low_external = require_capacity(volume["free_bytes"], estimated, volume["capacity_bytes"])
     internal = shutil.disk_usage(ROOT)
-    low_internal = require_capacity(internal.free, 2 * estimated, internal.total)
+    copies = 4 if recovery_plan is not None else 2
+    low_internal = require_capacity(internal.free, copies * estimated, internal.total)
     return {
         "state": "READY",
         "message": (
@@ -70,8 +77,20 @@ def progress(phase: str) -> None:
                 )
 
 
-def backup(config: BackupConfig) -> dict[str, Any]:
-    plan = preview(config)
+def backup(
+    config: BackupConfig,
+    recovery_plan: dict[str, Any] | None = None,
+    restore_destination: Path | None = None,
+) -> dict[str, Any]:
+    if recovery_plan is not None and (
+        restore_destination is None or os.environ.get("MATCHFORGE_SYNC_RUN_ID")
+    ):
+        raise BackupError(
+            "RECOVERABLE_SCOPE",
+            "Recoverable-only execution requires an explicit isolated restore destination "
+            "and cannot complete a full-scope Admin job.",
+        )
+    plan = preview(config, recovery_plan)
     progress("Capturing consistent database snapshot and original files")
     staging = ROOT / ".local/backup-staging"
     staging.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -79,8 +98,8 @@ def backup(config: BackupConfig) -> dict[str, Any]:
         root = Path(temporary)
         payload = root / "payload"
         data_root = Path(os.environ.get("FOOTBALL_DATA_ROOT", str(ROOT / ".local/football-data")))
-        captured = capture_recovery(payload, data_root)
-        if captured["status"] != "CAPTURED":
+        captured = capture_recovery(payload, data_root, recovery_plan)
+        if captured["status"] not in ("CAPTURED", "CAPTURED_RECOVERABLE"):
             print(
                 json.dumps(
                     {
@@ -139,18 +158,30 @@ def backup(config: BackupConfig) -> dict[str, Any]:
             "--verify",
         )
         try:
-            verify_capture(root / "read-back")
+            verify_capture(root / "read-back", allow_recoverable=recovery_plan is not None)
         except (OSError, ValueError) as error:
             raise BackupError(
                 "VERIFICATION_FAILED",
                 "Restored backup bytes or manifest failed verification. "
                 "The previous recovery point is retained.",
             ) from error
+        restoration = None
+        if restore_destination is not None:
+            restoration = verify_restore(
+                root / "read-back",
+                restore_destination,
+                allow_recoverable=recovery_plan is not None,
+            )
         progress("Verification complete; recording recovery point")
         inspect_volume(config)
-        restic.run("tag", "--add", "matchforge-verified", summary["snapshot_id"])
+        verified_tag = (
+            "matchforge-recoverable-verified"
+            if recovery_plan is not None
+            else "matchforge-verified"
+        )
+        restic.run("tag", "--add", verified_tag, summary["snapshot_id"])
         snapshots = json.loads(restic.run("snapshots", "--json", "--tag", marker))
-        if len(snapshots) != 1 or "matchforge-verified" not in snapshots[0].get("tags", []):
+        if len(snapshots) != 1 or verified_tag not in snapshots[0].get("tags", []):
             raise BackupError(
                 "VERIFICATION_FAILED", "Verified recovery point metadata could not be confirmed."
             )
@@ -161,8 +192,10 @@ def backup(config: BackupConfig) -> dict[str, Any]:
         )
         return {
             "backup": True,
-            "status": "VERIFIED",
+            "status": "VERIFIED_RECOVERABLE" if recovery_plan is not None else "VERIFIED",
             "verified": True,
+            "full_recovery": recovery_plan is None,
+            "unavailable_dependencies": len(recovery_plan["unavailable"]) if recovery_plan else 0,
             "verified_at": datetime.now(UTC).isoformat(),
             "captured_at": captured["captured_at"],
             "snapshot_id": snapshots[0]["id"],
@@ -172,15 +205,20 @@ def backup(config: BackupConfig) -> dict[str, Any]:
             "data_added_packed_bytes": summary["data_added_packed"],
             "capture_seconds": captured["duration_seconds"],
             "referenced_bytes": plan["referenced_bytes"],
-            "full_operating_restore_drill": "NOT_RUN",
+            "full_operating_restore_drill": restoration or "NOT_RUN",
         }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("status", "preview", "run"))
+    parser.add_argument("--recoverable-inventory", type=Path)
+    parser.add_argument("--restore-destination", type=Path)
     args = parser.parse_args()
     try:
+        recovery_plan = (
+            load_plan(args.recoverable_inventory) if args.recoverable_inventory else None
+        )
         config = BackupConfig.load()
         if args.action == "status":
             restic, volume = destination(config)
@@ -191,10 +229,10 @@ def main() -> None:
                 "repository_unlocked": not restic.run("list", "locks").strip(),
             }
         elif args.action == "preview":
-            result = preview(config)
+            result = preview(config, recovery_plan)
         else:
             os.nice(10)
-            result = backup(config)
+            result = backup(config, recovery_plan, args.restore_destination)
     except BackupError as error:
         result = {"backup": True, "status": "FAILED", "state": error.code, "message": str(error)}
     except RecoveryReferenceError as error:
