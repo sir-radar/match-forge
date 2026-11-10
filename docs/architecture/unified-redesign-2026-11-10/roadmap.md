@@ -3,12 +3,17 @@
 Checkpoint I2. Status: **PROPOSED — NO IMPLEMENTATION PHASE AUTHORIZED BY THIS
 INVESTIGATION**. IDs P00–P18 preserve the task's established phases 0–18; they
 are not the earlier Architecture V2 phases 35/36. Investigation checkpoints
-I0–I3 are separate documentation commits tracked in `CURRENT_TASK_STATUS.md`.
+I0–I3 are separate documentation commits tracked in `CURRENT_TASK_STATUS.md`
+(a local, git-ignored tracker).
 
-This is the primary roadmap for the unified redesign. `PLAN.md`, earlier FR
-reports and the companion F0–F11 plan remain scoped/historical inputs, not
-competing instructions to implement the same work twice. Existing resolved owner
-and scientific decisions outrank this proposal. Commit/verify each authorized
+This is the primary roadmap for the unified redesign (architecture, recovery
+and platform work). Root `PLAN.md` stays the control-plane roadmap: its
+invariants, gates and research sequence apply to every ticket here, and it is
+not rewritten by this proposal. Earlier FR reports are historical inputs, and
+the companion [F0–F11 product plan](../../../MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md)
+follows this roadmap's foundations. None is a competing instruction to
+implement the same work twice. Existing resolved owner and scientific decisions
+outrank this proposal. Commit/verify each authorized
 implementation ticket before starting its dependent ticket. Stop at each required
 phase/Wayfinder owner handoff. Do not start these tickets merely because this
 investigation is complete.
