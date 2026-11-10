@@ -41,8 +41,21 @@
         "impact": {
           "type": "string"
         },
+        "known_unavailable_dependencies": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "message": {
           "type": "string"
+        },
+        "prior_verified": {
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "referenced_bytes": {
           "minimum": 0,
@@ -54,6 +67,12 @@
         },
         "repository_unlocked": {
           "type": "boolean"
+        },
+        "scope": {
+          "enum": [
+            "FULL_RECOVERY",
+            "RECOVERABLE_ONLY"
+          ]
         },
         "state": {
           "enum": [
@@ -75,9 +94,17 @@
             "MISSING_FILES",
             "SNAPSHOT_FAILED",
             "INCOMPLETE",
-            "MIGRATION_PENDING"
+            "MIGRATION_PENDING",
+            "IN_PROGRESS"
           ],
           "type": "string"
+        },
+        "unavailable_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -87,7 +114,10 @@
         "referenced_files",
         "referenced_bytes",
         "estimated_staging_bytes",
-        "state"
+        "state",
+        "known_unavailable_dependencies",
+        "unavailable_sha256",
+        "prior_verified"
       ],
       "type": "object"
     },
@@ -95,6 +125,12 @@
       "minimum": 0,
       "type": [
         "integer",
+        "null"
+      ]
+    },
+    "last_full_recovery": {
+      "type": [
+        "object",
         "null"
       ]
     },
@@ -132,7 +168,8 @@
     "next_due_at",
     "backup_age_seconds",
     "reminder_due",
-    "safe_to_eject"
+    "safe_to_eject",
+    "last_full_recovery"
   ],
   "title": "Backup status",
   "type": "object"

@@ -22,7 +22,7 @@ func (runner *backupRunnerStub) BackupView(context.Context, bool) (BackupView, e
 	return BackupView{Availability: runner.availability, Runs: []SyncRun{}, ReminderDue: true}, nil
 }
 func TestBackupRequiresConfirmationOriginAndSuccessfulPreflight(t *testing.T) {
-	const body = `{"request_id":"10000000-0000-4000-8000-000000000001","confirmed":true}`
+	const body = `{"request_id":"10000000-0000-4000-8000-000000000001","confirmed":true,"scope":"FULL_RECOVERY"}`
 	for _, item := range []struct {
 		origin, body, state string
 		status              int
@@ -32,7 +32,7 @@ func TestBackupRequiresConfirmationOriginAndSuccessfulPreflight(t *testing.T) {
 		{"http://127.0.0.1:3000", body, "DISCONNECTED", 409},
 		{"http://127.0.0.1:3000", body, "READY", 202},
 	} {
-		runner := &backupRunnerStub{availability: BackupAvailability{State: item.state, Message: "Connect enrolled drive"}}
+		runner := &backupRunnerStub{availability: BackupAvailability{Scope: backupFullRecovery, State: item.state, Message: "Connect enrolled drive"}}
 		runner.getErr = errSyncRunNotFound
 		application := newAdminTestApp(runner)
 		request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080/v1/admin/backup", strings.NewReader(item.body))
@@ -53,26 +53,95 @@ func TestBackupRequiresConfirmationOriginAndSuccessfulPreflight(t *testing.T) {
 	}
 }
 
+func verifiedBackupSummary(scope string, verifiedAt time.Time) map[string]any {
+	full := scope == backupFullRecovery
+	status, restoreStatus, unavailable := "VERIFIED", "PASS", 0
+	var digest any
+	var globals any = map[string]any{
+		"status": "PASS", "network": "none", "globals_applied": true, "original_ownership_restored": true,
+	}
+	if !full {
+		status, restoreStatus, unavailable = "VERIFIED_RECOVERABLE", "PASS_RECOVERABLE", 159
+		digest, globals = strings.Repeat("b", 64), "NOT_RUN"
+	}
+	return map[string]any{
+		"scope": scope, "status": status, "verified": true, "full_recovery": full,
+		"snapshot_id": strings.Repeat("a", 64), "verified_at": verifiedAt.Format(time.RFC3339Nano),
+		"captured_at":        verifiedAt.Add(-time.Minute).Format(time.RFC3339Nano),
+		"unavailable_sha256": digest, "unavailable_dependencies": unavailable,
+		"full_operating_restore_drill": map[string]any{
+			"status": restoreStatus, "database_isolated": true, "full_recovery": full,
+			"unavailable_dependencies": unavailable, "global_role_restore": globals,
+		},
+	}
+}
+
+func TestRecoverableBackupConfirmationBindsReviewedInventory(t *testing.T) {
+	digest := strings.Repeat("b", 64)
+	runner := &backupRunnerStub{availability: BackupAvailability{
+		State: "READY", Scope: backupRecoverableOnly, UnavailableSHA256: &digest,
+	}}
+	runner.getErr = errSyncRunNotFound
+	application := newAdminTestApp(runner)
+	for _, item := range []struct {
+		digest string
+		status int
+	}{{"", 400}, {strings.Repeat("a", 64), 409}, {digest, 202}} {
+		body, _ := json.Marshal(backupRequest{
+			RequestID: "10000000-0000-4000-8000-000000000001", Confirmed: true,
+			Scope: backupRecoverableOnly, UnavailableSHA256: item.digest,
+		})
+		request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080/v1/admin/backup", strings.NewReader(string(body)))
+		request.RemoteAddr = "127.0.0.1:12345"
+		request.Header.Set("Origin", "http://127.0.0.1:3000")
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		application.Handler().ServeHTTP(response, request)
+		if response.Code != item.status {
+			t.Fatalf("got %d want %d: %s", response.Code, item.status, response.Body)
+		}
+	}
+	if len(runner.started) != 1 || runner.started[0].BackupUnavailableSHA256 != digest {
+		t.Fatal("submission was not bound to the confirmed manifest")
+	}
+}
+
 func TestBackupSummaryRequiresIndependentVerificationFields(t *testing.T) {
-	good := map[string]any{"status": "VERIFIED", "verified": true, "snapshot_id": strings.Repeat("a", 64), "verified_at": "2026-11-10T11:00:00Z", "captured_at": "2026-11-10T10:55:00Z"}
-	payload, _ := json.Marshal(good)
-	if !validBackupSummary(payload) {
-		t.Fatal("valid verified summary rejected")
-	}
-	for _, field := range []string{"verified", "snapshot_id", "verified_at", "captured_at"} {
-		changed := map[string]any{}
-		for key, value := range good {
-			if key != field {
-				changed[key] = value
+	for _, scope := range []string{backupFullRecovery, backupRecoverableOnly} {
+		t.Run(scope, func(t *testing.T) {
+			good := verifiedBackupSummary(scope, time.Now())
+			digest := stringParameter(good, "unavailable_sha256")
+			payload, _ := json.Marshal(good)
+			if !validBackupSummary(payload, scope, digest) {
+				t.Fatal("valid verified summary rejected")
 			}
-		}
-		payload, _ = json.Marshal(changed)
-		if validBackupSummary(payload) {
-			t.Fatalf("missing %s accepted", field)
-		}
+			for _, field := range []string{"verified", "snapshot_id", "verified_at", "captured_at", "full_operating_restore_drill", "full_recovery", "unavailable_dependencies", "scope"} {
+				changed := map[string]any{}
+				for key, value := range good {
+					if key != field {
+						changed[key] = value
+					}
+				}
+				payload, _ = json.Marshal(changed)
+				if validBackupSummary(payload, scope, digest) {
+					t.Fatalf("missing %s accepted", field)
+				}
+			}
+		})
 	}
-	if validBackupSummary([]byte(`{"status":"CAPTURED","verified":false}`)) {
-		t.Fatal("copied bytes were labeled verified")
+}
+
+func TestBackupReceiptCannotCrossScopesOrOmitGlobals(t *testing.T) {
+	good := verifiedBackupSummary(backupRecoverableOnly, time.Now())
+	payload, _ := json.Marshal(good)
+	if validBackupSummary(payload, backupFullRecovery, "") || validBackupSummary(payload, backupRecoverableOnly, strings.Repeat("c", 64)) {
+		t.Fatal("receipt accepted for another policy or inventory")
+	}
+	good = verifiedBackupSummary(backupFullRecovery, time.Now())
+	good["full_operating_restore_drill"].(map[string]any)["global_role_restore"] = "NOT_RUN"
+	payload, _ = json.Marshal(good)
+	if validBackupSummary(payload, backupFullRecovery, "") {
+		t.Fatal("full recovery accepted without globals and ownership verification")
 	}
 }
 
@@ -107,13 +176,13 @@ func TestManualBackupCompletionRequiresEvidenceWithoutChildMarker(t *testing.T) 
 		{"backup": false, "status": "VERIFIED"},
 		{"status": "VERIFIED", "verified": true},
 	} {
-		status, message := syncCompletion(summary, SyncManualBackup)
+		status, message := syncCompletion(summary, SyncRequest{Type: SyncManualBackup, BackupScope: backupFullRecovery})
 		if status != "FAILED" || message == nil {
 			t.Fatal("manual backup completed without verified recovery evidence")
 		}
 	}
-	verified := map[string]interface{}{"status": "VERIFIED", "verified": true, "snapshot_id": strings.Repeat("a", 64), "verified_at": "2026-11-10T11:00:00Z", "captured_at": "2026-11-10T10:55:00Z"}
-	if status, message := syncCompletion(verified, SyncManualBackup); status != "SUCCEEDED" || message != nil {
+	verified := verifiedBackupSummary(backupFullRecovery, time.Now())
+	if status, message := syncCompletion(verified, SyncRequest{Type: SyncManualBackup, BackupScope: backupFullRecovery}); status != "SUCCEEDED" || message != nil {
 		t.Fatal("valid manual backup evidence rejected")
 	}
 }

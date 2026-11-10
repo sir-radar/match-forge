@@ -6,7 +6,7 @@ import fixture from "@/test-fixtures/backup-status.json";
 
 const initial = () => parseBackupView(structuredClone(fixture));
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { "Content-Type": "application/json" } });
-const run = { run_id: "10000000-0000-4000-8000-000000000001", sync_type: "MANUAL_BACKUP", status: "QUEUED", requested_at: "2026-11-10T11:00:00Z", started_at: null, finished_at: null, requested_date: null, parameters: {}, summary: {}, error_message: null, log_path: null };
+const run = { run_id: "10000000-0000-4000-8000-000000000001", sync_type: "MANUAL_BACKUP", status: "QUEUED", requested_at: "2026-11-10T11:00:00Z", started_at: null, finished_at: null, requested_date: null, parameters: { scope: fixture.availability.scope, unavailable_sha256: fixture.availability.unavailable_sha256 }, summary: {}, error_message: null, log_path: null };
 
 describe("manual backup Admin", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -15,6 +15,7 @@ describe("manual backup Admin", () => {
     render(<BackupAdmin initial={initial()} />);
     expect(screen.getByText("Monthly backup due")).toBeVisible();
     expect(screen.getByText("No backup attempts recorded.")).toBeVisible();
+    expect(screen.getByText(/159 unavailable dependencies in the reviewed inventory/)).toBeVisible();
     expect(screen.getByText(/24-hour protection target is not guaranteed/)).toBeVisible();
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -31,12 +32,28 @@ describe("manual backup Admin", () => {
     vi.stubGlobal("fetch", fetch);
     render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Back Up Now" }));
-    const confirm = await screen.findByRole("button", { name: "Confirm backup" });
+    const confirm = await screen.findByRole("button", { name: "Confirm recoverable-only backup" });
     expect(screen.getByRole("heading", { name: "Confirm manual backup" })).toHaveFocus();
     fireEvent.click(confirm); fireEvent.click(confirm);
     expect(await screen.findByRole("heading", { name: "Backup in progress" })).toBeVisible();
     expect(fetch.mock.calls.filter(([url]) => !url.endsWith("/preview"))).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Back Up Now" })).toBeDisabled();
+  });
+  it("shows the prior operator receipt and preserves the full recovery limitation", () => {
+    const status = initial();
+    status.availability.prior_verified = {
+      scope: "RECOVERABLE_ONLY", snapshot_id: "a".repeat(64),
+      captured_at: "2026-11-10T10:00:00Z", verified_at: "2026-11-10T11:00:00Z",
+      full_recovery: false, unavailable_dependencies: 159, logical_bytes: 1000,
+      data_added_packed_bytes: 100, repository_file_bytes: 150,
+    };
+    status.backup_age_seconds = 3600;
+    status.next_due_at = "2026-12-10T11:00:00Z";
+    status.reminder_due = false;
+    render(<BackupAdmin initial={status} />);
+    expect(screen.getByText("Recovery point from operator receipt")).toBeVisible();
+    expect(screen.getByText("Full recovery has yet to pass isolated verification.")).toBeVisible();
+    expect(screen.queryByText("Monthly backup due")).not.toBeInTheDocument();
   });
   it("retains status during refresh failure and recovers from malformed data", async () => {
     const fetch = vi.fn().mockResolvedValueOnce(json({})).mockResolvedValueOnce(json(fixture));
@@ -62,7 +79,7 @@ describe("manual backup Admin", () => {
     render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Back Up Now" }));
     expect(await screen.findByText("Original source files are missing.")).toBeVisible();
-    expect(screen.queryByRole("button", { name: "Confirm backup" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm recoverable-only backup" })).not.toBeInTheDocument();
   });
   it("preserves the manual request identity across a failed submission retry", async () => {
     const ids: string[] = [];
@@ -73,9 +90,9 @@ describe("manual backup Admin", () => {
     }));
     render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Back Up Now" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm backup" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm recoverable-only backup" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Drive disconnected");
-    fireEvent.click(screen.getByRole("button", { name: "Confirm backup" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm recoverable-only backup" }));
     expect(await screen.findByRole("heading", { name: "Backup in progress" })).toBeVisible();
     expect(ids).toHaveLength(2); expect(ids[0]).toBe(ids[1]);
   });

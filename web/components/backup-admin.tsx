@@ -6,21 +6,31 @@ import { TableScroll } from "@/components/table-scroll";
 import type { SyncRun } from "@/lib/contracts";
 import { DISPLAY_TIME_ZONE } from "@/lib/display-date";
 import { api } from "@/lib/api";
-import type { BackupAvailability, BackupView } from "@/lib/backup";
+import { backupScopeLabel, type BackupAvailability, type BackupScope, type BackupView } from "@/lib/backup";
 
 const button = "rounded-sm border border-[var(--outline)] px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--secondary)] disabled:cursor-not-allowed disabled:opacity-50";
 const panel = "rounded-sm border border-[var(--highest)] bg-[var(--lowest)] p-5";
 const bytes = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? `${(value / 1_000_000_000).toLocaleString("en-GB", { maximumFractionDigits: 2 })} GB` : "Not measured";
 const date = (value: unknown) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: DISPLAY_TIME_ZONE }).format(new Date(value)) : "Not recorded";
 
+type ConfirmedBackup = { id: string; scope: BackupScope; digest: string | null };
+
+function confirmationRequest(availability: BackupAvailability, prior: ConfirmedBackup | null): ConfirmedBackup | null {
+  const { scope } = availability;
+  if (!scope) return null;
+  const digest = scope === "RECOVERABLE_ONLY" ? availability.unavailable_sha256 : null;
+  if (prior?.scope === scope && prior.digest === digest) return prior;
+  return { id: crypto.randomUUID(), scope, digest };
+}
+
 function useBackupState(initial: BackupView | null, initialError: string | null) {
   const [view, setView] = useState(initial), [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false), [confirm, setConfirm] = useState(false), [notice, setNotice] = useState("");
-  const generation = useRef(0), controller = useRef<AbortController | null>(null), requestId = useRef<string | null>(null);
+  const generation = useRef(0), controller = useRef<AbortController | null>(null), request = useRef<ConfirmedBackup | null>(null);
   const lastVerified = useRef(initial?.last_verified?.run_id);
   const primary = useRef<HTMLButtonElement>(null), confirmation = useRef<HTMLHeadingElement>(null);
   const progressHeading = useRef<HTMLHeadingElement>(null), notification = useRef<HTMLParagraphElement>(null);
-  const focusResult = useRef(false);
+  const focusResult = useRef(false), focusBack = useRef(false);
   const active = view?.runs.find((run) => run.status === "QUEUED" || run.status === "RUNNING");
   const isCurrent = useCallback((token: number, signal: AbortSignal) => token === generation.current && !signal.aborted, []);
   const publish = useCallback((next: BackupView, preview: boolean) => {
@@ -41,7 +51,10 @@ function useBackupState(initial: BackupView | null, initialError: string | null)
     } finally { if (isCurrent(current, signal.signal)) setBusy(false); }
   }, [isCurrent, publish]);
   useEffect(() => () => { ++generation.current; controller.current?.abort(); }, []);
-  useEffect(() => { if (confirm) confirmation.current?.focus(); }, [confirm]);
+  useEffect(() => {
+    if (confirm) confirmation.current?.focus();
+    if (!confirm && focusBack.current) { primary.current?.focus(); focusBack.current = false; }
+  }, [confirm]);
   useEffect(() => {
     if (focusResult.current) { (active ? progressHeading.current : notification.current)?.focus(); focusResult.current = false; }
   }, [active]);
@@ -54,14 +67,16 @@ function useBackupState(initial: BackupView | null, initialError: string | null)
   }, [active, busy, confirm, load]);
 
   const submit = async () => {
-    if (busy) return;
+    if (busy || !confirm || !view) return;
+    const confirmed = confirmationRequest(view.availability, request.current);
+    if (!confirmed) return;
+    request.current = confirmed;
     setBusy(true); setError(null); controller.current?.abort(); ++generation.current;
     const signal = new AbortController(); controller.current = signal;
-    requestId.current ??= crypto.randomUUID();
     try {
-      const run = await api.startBackup(requestId.current, signal.signal);
+      const run = await api.startBackup(confirmed.id, confirmed.scope, confirmed.digest, signal.signal);
       if (signal.signal.aborted) return;
-      requestId.current = null; setConfirm(false);
+      request.current = null; setConfirm(false);
       focusResult.current = true;
       setView((previous) => previous ? { ...previous, runs: [run, ...previous.runs.filter((item) => item.run_id !== run.run_id)], safe_to_eject: false } : previous);
       setNotice("Backup submitted. Keep the drive connected until verification finishes.");
@@ -79,7 +94,8 @@ function useBackupState(initial: BackupView | null, initialError: string | null)
     finally { if (!signal.signal.aborted) { setBusy(false); void load(); } }
   };
 
-  return { view, error, busy, confirm, notice, primary, confirmation, progressHeading, notification, active, load, submit, cancel, setConfirm };
+  const dismissConfirmation = () => { focusBack.current = true; setConfirm(false); };
+  return { view, error, busy, confirm, notice, primary, confirmation, progressHeading, notification, active, load, submit, cancel, setConfirm, dismissConfirmation };
 }
 
 type BackupState = ReturnType<typeof useBackupState>;
@@ -93,6 +109,7 @@ export function BackupAdmin({ initial, initialError = null }: { initial: BackupV
     {error && <p role="alert" className={panel}>{error} <button tabIndex={0} className={button} onClick={() => void load()} disabled={busy}>Retry status</button></p>}
     <p role="status" aria-live="polite" tabIndex={-1} ref={notification}>{notice || (busy ? "Checking backup status…" : "")}</p>
     <BackupReminder view={view} />
+    <BackupCoverage view={view} />
     <p>Monthly manual backups may leave about a month of changes without an external recovery point. The previously desired 24-hour protection target is not guaranteed. Make an extra manual backup before significant migrations or maintenance.</p>
     <div className="grid gap-5 md:grid-cols-2">
       <BackupDrivePanel availability={view?.availability} />
@@ -103,14 +120,25 @@ export function BackupAdmin({ initial, initialError = null }: { initial: BackupV
     <BackupProgress state={state} />
     <p>{view?.safe_to_eject ? "At the last status check, no backup or repository locks were active. Use macOS Eject before disconnecting." : "Keep the drive connected during backup or verification. Safe-to-eject status is not confirmed."}</p>
     <BackupHistory view={view} />
-    <details className={panel}><summary>Recovering on another Mac</summary><p>Retain the recovery password separately from this Mac. Install the pinned tools, authenticate the enrolled repository, restore a selected recovery point into new storage, and run the isolated database restore procedure in the operator recovery guide. Keep the operating database untouched until a separately approved recovery.</p><p>Normal MatchForge use does not require the external drive. Connecting it never starts a backup. Reminders appear here after 30 days and reset only after a verified backup.</p></details>
+    <details className={panel}><summary>Recovering on another Mac</summary><p>Retain the recovery password separately from this Mac. Install the pinned tools, authenticate the enrolled repository, restore a selected recovery point into new storage, and run the isolated database restore procedure in the operator recovery guide. Keep the operating database untouched until a separately approved recovery.</p><p>Normal MatchForge use does not require the external drive. Connecting it never starts a backup. Reminders follow the configured recovery policy and reset after a verified backup of that scope.</p></details>
   </div>;
 }
 
 function BackupReminder({ view }: { view: BackupView | null }) {
   if (!view?.reminder_due) return null;
-  const last = view.last_verified;
-  return <aside aria-label="Monthly backup reminder" className={panel}><strong>Monthly backup due</strong><p>{last ? "Your verified recovery point is at least 30 days old." : "No verified external recovery point is recorded yet."} Connect your enrolled drive and choose Back Up Now.</p></aside>;
+  const last = view.backup_age_seconds !== null;
+  return <aside aria-label="Monthly backup reminder" className={panel}><strong>Monthly backup due</strong><p>{last ? "Your recovery point was verified at least 30 days ago." : "No verified recovery point is recorded for this policy."} Connect your enrolled drive and choose Back Up Now.</p></aside>;
+}
+function BackupCoverage({ view }: { view: BackupView | null }) {
+  if (!view) return null;
+  const { scope, known_unavailable_dependencies: unavailable, prior_verified: prior } = view.availability;
+  const fullVerified = view.last_full_recovery?.summary?.verified_at ?? (prior?.full_recovery ? prior.verified_at : null);
+  return <section className={panel} aria-labelledby="backup-coverage">
+    <h2 id="backup-coverage">Recovery policy</h2>
+    <p>{scope ? backupScopeLabel(scope) : "Policy unavailable"}</p>
+    <p>{unavailable === null ? "No reviewed inventory is configured." : `${unavailable.toLocaleString("en-GB")} unavailable dependencies in the reviewed inventory.`}</p>
+    <p>{fullVerified ? `Last full recovery verified ${date(fullVerified)}.` : "Full recovery has yet to pass isolated verification."}</p>
+  </section>;
 }
 function BackupDrivePanel({ availability }: { availability: BackupAvailability | undefined }) {
   if (!availability) return <section className={panel} aria-labelledby="backup-drive"><h2 id="backup-drive">External drive &amp; repository</h2><p>Status unavailable</p><p>Repository: Unavailable or awaiting setup</p></section>;
@@ -120,20 +148,58 @@ function BackupDrivePanel({ availability }: { availability: BackupAvailability |
         <p>Repository: {availability.state === "READY" ? "Authenticated encrypted repository" : "Unavailable or awaiting setup"}</p>
       </section>;
 }
+function selectedBackupSummary(view: BackupView | null) {
+  const prior = view?.availability.prior_verified;
+  if (view?.last_verified) return { summary: view.last_verified.summary, prior: null };
+  if (prior && prior.scope === view?.availability.scope) return { summary: prior, prior };
+  return { summary: null, prior: null };
+}
+
 function BackupLatestPanel({ view }: { view: BackupView | null }) {
-  const last = view?.last_verified, summary = last?.summary ?? {}, age = view?.backup_age_seconds;
-  return <section className={panel} aria-labelledby="backup-latest"><h2 id="backup-latest">Last verified backup</h2><dl className="space-y-2"><dt>Verified</dt><dd>{date(summary.verified_at)}</dd><dt>Recovery point captured</dt><dd>{date(summary.captured_at)}</dd><dt>Current backup age</dt><dd>{age == null ? "No verified recovery point" : `${Math.floor(age / 86400)} days`}</dd><dt>Recommended next backup</dt><dd>{date(view?.next_due_at)}</dd><dt>Last backup / newly stored data</dt><dd>{bytes(summary.logical_bytes)} / {bytes(summary.data_added_packed_bytes)}</dd><dt>Repository files at last verification</dt><dd>{bytes(summary.repository_file_bytes)}</dd><dt>Full operating restore drill</dt><dd>{last ? "Separate manual drill required; byte verification passed" : "Not recorded"}</dd></dl></section>;
+  const { summary, prior } = selectedBackupSummary(view);
+  const age = view?.backup_age_seconds;
+  const {
+    verified_at, captured_at, logical_bytes, data_added_packed_bytes, repository_file_bytes,
+    volume_free_space_change_bytes, full_recovery,
+  } = summary ?? {};
+  const restore = full_recovery ? "Full recovery verified" : "Recoverable data verified";
+  return <section className={panel} aria-labelledby="backup-latest">
+    <h2 id="backup-latest">Last verified backup for this policy</h2>
+    <dl className="space-y-2">
+      <dt>Verified</dt><dd>{date(verified_at)}</dd>
+      <dt>Recovery point captured</dt><dd>{date(captured_at)}</dd>
+      <dt>Current backup age</dt><dd>{age == null ? "No verified recovery point" : `${Math.floor(age / 86400)} days`}</dd>
+      <dt>Recommended next backup</dt><dd>{date(view?.next_due_at)}</dd>
+      <dt>Last backup / newly stored data</dt><dd>{bytes(logical_bytes)} / {bytes(data_added_packed_bytes)}</dd>
+      <dt>Repository files at last verification</dt><dd>{bytes(repository_file_bytes)}</dd>
+      <dt>Volume space used during last backup</dt><dd>{bytes(volume_free_space_change_bytes)}</dd>
+      <dt>Isolated restore</dt><dd>{summary ? restore : "Not recorded"}</dd>
+      {prior && <><dt>Recovery point from operator receipt</dt><dd className="break-all">{prior.snapshot_id}</dd></>}
+    </dl>
+  </section>;
 }
 function BackupControls({ state }: { state: BackupState }) {
   const { busy, active, confirm, primary, load, setConfirm } = state;
   const availability = state.view?.availability;
-  return <div className="flex flex-wrap gap-3"><button tabIndex={0} ref={primary} className={`${button} bg-[var(--secondary)] text-[var(--lowest)]`} disabled={busy || !!active || confirm || availability?.state !== "READY"} onClick={() => void load(true)}>Back Up Now</button><button tabIndex={0} className={button} disabled={busy} onClick={() => { setConfirm(false); void load(); }}>Refresh drive status</button></div>;
+  return <div className="flex flex-wrap gap-3"><button tabIndex={0} ref={primary} className={`${button} bg-[var(--secondary)] text-[var(--lowest)]`} disabled={busy || !!active || confirm || availability?.state !== "READY" || !availability.scope} onClick={() => void load(true)}>Back Up Now</button><button tabIndex={0} className={button} disabled={busy} onClick={() => { setConfirm(false); void load(); }}>Refresh drive status</button></div>;
 }
 function BackupConfirmation({ state }: { state: BackupState }) {
-  const { confirm, confirmation, busy, primary, submit, setConfirm } = state;
+  const { confirm, confirmation, busy, submit, dismissConfirmation } = state;
   const availability = state.view?.availability;
-  if (!confirm || !availability) return null;
-  return <section className={panel} aria-labelledby="backup-confirm"><h2 id="backup-confirm" tabIndex={-1} ref={confirmation}>Confirm manual backup</h2><p>{availability.impact}</p><p>Referenced files: {availability.referenced_files.toLocaleString("en-GB")} · {bytes(availability.referenced_bytes)}. Estimated staging: {bytes(availability.estimated_staging_bytes)}; database size is an estimate and may grow during export.</p><p>Verification reads repository data and restores backup bytes into temporary storage. Earlier verified recovery points are retained. No retention pruning runs.</p><div className="flex flex-wrap gap-3"><button tabIndex={0} className={button} onClick={() => void submit()} disabled={busy}>Confirm backup</button><button tabIndex={0} className={button} disabled={busy} onClick={() => { setConfirm(false); primary.current?.focus(); }}>Go back</button></div></section>;
+  if (!confirm || !availability?.scope) return null;
+  const recoverable = availability.scope === "RECOVERABLE_ONLY";
+  return <section className={panel} aria-labelledby="backup-confirm">
+    <h2 id="backup-confirm" tabIndex={-1} ref={confirmation}>Confirm manual backup</h2>
+    <p><strong>{backupScopeLabel(availability.scope)}</strong></p>
+    {recoverable && <p>Confirm that this recovery point excludes the {availability.known_unavailable_dependencies?.toLocaleString("en-GB")} declared unavailable dependencies. Complete historical and model artifact recovery remains unverified.</p>}
+    <p>{availability.impact}</p>
+    <p>Estimated files {availability.referenced_files.toLocaleString("en-GB")} · {bytes(availability.referenced_bytes)}. Estimated staging {bytes(availability.estimated_staging_bytes)}. Actual size can grow during export.</p>
+    <p>Earlier verified recovery points are retained.</p>
+    <div className="flex flex-wrap gap-3">
+      <button tabIndex={0} className={button} onClick={() => void submit()} disabled={busy}>{recoverable ? "Confirm recoverable-only backup" : "Confirm full recovery backup"}</button>
+      <button tabIndex={0} className={button} disabled={busy} onClick={dismissConfirmation}>Go back</button>
+    </div>
+  </section>;
 }
 function BackupProgress({ state }: { state: BackupState }) {
   const { active, busy, progressHeading, cancel } = state;
@@ -141,9 +207,11 @@ function BackupProgress({ state }: { state: BackupState }) {
   return <section className={panel} aria-labelledby="backup-progress"><h2 id="backup-progress" tabIndex={-1} ref={progressHeading}>Backup in progress</h2><p role="status">{active.status} · {typeof active.summary.current_phase === "string" ? active.summary.current_phase : "Preparing recovery point"}</p><progress aria-label="Backup in progress" className="w-full" /><button tabIndex={0} className={button} disabled={busy} onClick={() => void cancel()}>Cancel backup</button></section>;
 }
 function BackupHistory({ view }: { view: BackupView | null }) {
-  return <section aria-labelledby="backup-history"><h2 id="backup-history">Recent recovery points &amp; attempts</h2>{!view ? <p>Status unavailable. Retry to load history.</p> : view.runs.length === 0 ? <p>No backup attempts recorded.</p> : <TableScroll label="Backup history"><table><caption className="sr-only">Latest 20 manual backup attempts; failed attempts do not replace verified recovery points</caption><thead><tr><th scope="col">Requested</th><th scope="col">Verification</th><th scope="col">Recovery point</th><th scope="col">New stored data</th><th scope="col">Details</th></tr></thead><tbody>{view.runs.map((run) => <BackupHistoryRow key={run.run_id} run={run} />)}</tbody></table></TableScroll>}</section>;
+  return <section aria-labelledby="backup-history"><h2 id="backup-history">Recent recovery points &amp; attempts</h2>{!view ? <p>Status unavailable. Retry to load history.</p> : view.runs.length === 0 ? <p>No backup attempts recorded.</p> : <TableScroll label="Backup history"><table><caption className="sr-only">Latest 20 manual backup attempts; failed attempts do not replace verified recovery points</caption><thead><tr><th scope="col">Requested</th><th scope="col">Scope</th><th scope="col">Verification</th><th scope="col">Recovery point</th><th scope="col">New stored data</th><th scope="col">Details</th></tr></thead><tbody>{view.runs.map((run) => <BackupHistoryRow key={run.run_id} run={run} />)}</tbody></table></TableScroll>}</section>;
 }
 
 function BackupHistoryRow({ run }: { run: SyncRun }) {
-  return <tr><th scope="row">{date(run.requested_at)}</th><td>{run.status === "SUCCEEDED" && run.summary.verified === true ? "Verified" : run.status}</td><td className="max-w-56 break-all">{typeof run.summary.snapshot_id === "string" ? run.summary.snapshot_id : "Not available"}</td><td>{bytes(run.summary.data_added_packed_bytes)}</td><td>{typeof run.summary.message === "string" ? run.summary.message : run.error_message ?? ""}</td></tr>;
+  const verified = run.status === "SUCCEEDED" && run.summary.verified === true;
+  const unavailable = run.summary.unavailable_dependencies;
+  return <tr><th scope="row">{date(run.requested_at)}</th><td>{backupScopeLabel(run.parameters.scope)}</td><td>{verified ? (run.parameters.scope ? "Isolated restore verified" : "Legacy byte verification") : run.status}{typeof unavailable === "number" && unavailable > 0 && <p>{unavailable.toLocaleString("en-GB")} unavailable</p>}</td><td className="max-w-56 break-all">{typeof run.summary.snapshot_id === "string" ? run.summary.snapshot_id : "Not available"}</td><td>{bytes(run.summary?.data_added_packed_bytes)}</td><td>{typeof run.summary.message === "string" ? run.summary.message : run.error_message ?? ""}</td></tr>;
 }

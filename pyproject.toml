@@ -31,6 +31,19 @@ dev = [
   "ruff>=0.12,<1",
 ]
 
+[tool.hatch.build.targets.sdist]
+# Hatch can ignore VCS exclusions when a worktree lives beneath an ignored directory.
+exclude = [
+    "/.env",
+    "/.local/",
+    "/.tools/",
+    "/.venv/",
+    "/target/",
+    "/web/.next/",
+    "/web/node_modules/",
+    "/web/test-results/",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["python/football/src/football"]
 

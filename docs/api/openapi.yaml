@@ -131,8 +131,8 @@ paths:
   /v1/admin/backup:
     get:
       operationId: backupStatus
-      summary: Enrolled external repository, last verified recovery point and 30-day reminder
-      description: Local Admin authorization applies. Returns latest 20 manual attempts. No backup starts from this read. No filesystem paths or credentials are returned.
+      summary: Enrolled repository, configured recovery policy, and policy-specific 30-day reminder
+      description: Local Admin authorization applies. Returns the latest 20 manual attempts, any matching prior operator receipt, and the last verified full recovery separately. The configured policy controls the reminder. No backup starts from this read. No filesystem paths or credentials are returned.
       responses:
         '200': { description: Backup status, content: { application/json: { schema: { $ref: '../../schemas/contracts/backup-status.schema.json' } } } }
         '403': { description: Administrative access denied }
@@ -140,7 +140,7 @@ paths:
     post:
       operationId: startManualBackup
       summary: Confirm and submit one manual encrypted backup through shared work
-      description: Requires trusted local Origin or CLI credential and JSON. Rechecks preflight. Reusing the same request_id returns the existing run. No automatic schedule, pruning or operating restore.
+      description: Requires trusted local Origin or CLI credential and JSON. Rechecks preflight. Reusing the same request_id with the original policy and inventory digest returns the existing run. RECOVERABLE_ONLY confirms the exact reviewed gap manifest digest and remains distinct from FULL_RECOVERY. No automatic schedule, pruning or operating restore.
       requestBody:
         required: true
         content:
@@ -148,10 +148,20 @@ paths:
             schema:
               type: object
               additionalProperties: false
-              required: [request_id, confirmed]
+              required: [request_id, confirmed, scope]
               properties:
                 request_id: { type: string, format: uuid, description: Lowercase UUID v4 idempotency key }
                 confirmed: { type: boolean, const: true }
+                scope: { type: string, enum: [FULL_RECOVERY, RECOVERABLE_ONLY] }
+                unavailable_sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: Required for RECOVERABLE_ONLY. Omit for FULL_RECOVERY. }
+              if:
+                properties:
+                  scope: { const: RECOVERABLE_ONLY }
+              then:
+                required: [unavailable_sha256]
+              else:
+                not:
+                  required: [unavailable_sha256]
       responses:
         '202': { description: Persisted manual run, content: { application/json: { schema: { $ref: '#/components/schemas/SyncRun' } } } }
         '400': { $ref: '#/components/responses/BadRequest' }

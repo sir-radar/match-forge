@@ -56,16 +56,18 @@ const (
 )
 
 type SyncRequest struct {
-	Type             SyncType `json:"sync_type"`
-	Date             string   `json:"date,omitempty"`
-	FromDate         string   `json:"from_date,omitempty"`
-	Season           string   `json:"season,omitempty"`
-	Competition      string   `json:"competition,omitempty"`
-	Country          string   `json:"country,omitempty"`
-	RetryOf          string   `json:"-"`
-	ScheduledHistory bool     `json:"-"`
-	PendingOnly      bool     `json:"-"`
-	ManualRequestID  string   `json:"-"`
+	Type                    SyncType `json:"sync_type"`
+	Date                    string   `json:"date,omitempty"`
+	FromDate                string   `json:"from_date,omitempty"`
+	Season                  string   `json:"season,omitempty"`
+	Competition             string   `json:"competition,omitempty"`
+	Country                 string   `json:"country,omitempty"`
+	RetryOf                 string   `json:"-"`
+	ScheduledHistory        bool     `json:"-"`
+	PendingOnly             bool     `json:"-"`
+	ManualRequestID         string   `json:"-"`
+	BackupScope             string   `json:"-"`
+	BackupUnavailableSHA256 string   `json:"-"`
 }
 
 type SyncRun struct {
@@ -248,7 +250,7 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	runner.mu.Lock()
 	runner.active[runID] = control
 	runner.mu.Unlock()
-	go runner.execute(runContext, runID, logPath, args, control, request.Type)
+	go runner.execute(runContext, runID, logPath, args, control, request)
 	// Activate committed work before reading the HTTP response: a disconnect
 	// after enqueue must not leave a successfully submitted job unstarted.
 	return runner.Get(ctx, runID)
@@ -264,20 +266,27 @@ func syncRequestID(request SyncRequest) (string, error) {
 	return request.ManualRequestID, nil
 }
 
-func (runner *CommandSyncRunner) existingBackup(ctx context.Context, request SyncRequest, runID string) *SyncRun {
+func (runner *CommandSyncRunner) existingBackup(ctx context.Context, request SyncRequest, runID string) (*SyncRun, error) {
 	if request.Type != SyncManualBackup {
-		return nil
+		return nil, nil
 	}
 	previous, err := runner.Get(ctx, runID)
-	if err == nil && previous.Type == SyncManualBackup {
-		return &previous
+	if errors.Is(err, errSyncRunNotFound) {
+		return nil, nil
 	}
-	return nil
+	if err != nil {
+		return nil, err
+	}
+	input := backupRequest{Scope: request.BackupScope, UnavailableSHA256: request.BackupUnavailableSHA256}
+	if previous.Type != SyncManualBackup || !input.matches(previous) {
+		return nil, errWorkControlConflict
+	}
+	return &previous, nil
 }
 
 func (runner *CommandSyncRunner) enqueueOrJoin(ctx context.Context, request SyncRequest, runID, logPath string, requestedDate *time.Time, parameters []byte) (*SyncRun, error) {
-	if previous := runner.existingBackup(ctx, request, runID); previous != nil {
-		return previous, nil
+	if previous, err := runner.existingBackup(ctx, request, runID); err != nil || previous != nil {
+		return previous, err
 	}
 	err := runner.enqueue(ctx, request, runID, logPath, requestedDate, parameters)
 	if err == nil {
@@ -287,8 +296,8 @@ func (runner *CommandSyncRunner) enqueueOrJoin(ctx context.Context, request Sync
 	if !errors.As(err, &postgresError) || postgresError.Code != "23505" {
 		return nil, err
 	}
-	if previous := runner.existingBackup(ctx, request, runID); previous != nil {
-		return previous, nil
+	if previous, err := runner.existingBackup(ctx, request, runID); err != nil || previous != nil {
+		return previous, err
 	}
 	return nil, runner.activeRunConflict(ctx)
 }
@@ -381,6 +390,7 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
 		"retry_of_run_id": request.RetryOf,
+		"scope":           request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -423,11 +433,12 @@ func (runner *CommandSyncRunner) activeRunConflict(ctx context.Context) error {
 	if err != nil {
 		return errSyncAlreadyRunning
 	}
+	hideBackupDiagnostics(&activeRun)
 	return syncConflictError{ActiveRun: activeRun}
 }
 
 func (runner *CommandSyncRunner) execute(
-	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl, syncType SyncType,
+	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl, request SyncRequest,
 ) {
 	defer func() {
 		control.cancel()
@@ -453,7 +464,7 @@ func (runner *CommandSyncRunner) execute(
 		return
 	}
 	defer logFile.Close()
-	summary, err := runner.runCommand(ctx, runID, args, logFile)
+	summary, err := runner.runCommand(ctx, runID, args, logFile, request.Type == SyncManualBackup)
 	if err != nil {
 		if runner.cancelIfRequested(ctx, runID) {
 			return
@@ -469,7 +480,7 @@ func (runner *CommandSyncRunner) execute(
 		runner.fail(runID, err)
 		return
 	}
-	status, errorMessage := syncCompletion(summary, syncType)
+	status, errorMessage := syncCompletion(summary, request)
 	if runner.cancelIfRequested(ctx, runID) {
 		return
 	}
@@ -541,10 +552,14 @@ func (runner *CommandSyncRunner) cancelIfRequested(ctx context.Context, runID st
 	return true
 }
 
-func syncCompletion(summary map[string]interface{}, syncType SyncType) (string, *string) {
-	if syncType == SyncManualBackup {
+func syncCompletion(summary map[string]interface{}, request SyncRequest) (string, *string) {
+	if summary["status"] == "FAILED" && request.Type == SyncManualBackup {
+		message := "Backup did not finish. Review preflight and retry manually."
+		return "FAILED", &message
+	}
+	if request.Type == SyncManualBackup {
 		payload, err := json.Marshal(summary)
-		if err != nil || !validBackupSummary(payload) {
+		if err != nil || !validBackupSummary(payload, request.BackupScope, request.BackupUnavailableSHA256) {
 			message := "backup verification evidence is incomplete; check the repository and retry manually"
 			return "FAILED", &message
 		}
@@ -557,7 +572,7 @@ func syncCompletion(summary map[string]interface{}, syncType SyncType) (string, 
 }
 
 func (runner *CommandSyncRunner) runCommand(
-	ctx context.Context, runID string, args []string, logFile *os.File,
+	ctx context.Context, runID string, args []string, logFile *os.File, gracefulCancel bool,
 ) (map[string]interface{}, error) {
 	command := exec.CommandContext(ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
@@ -565,6 +580,10 @@ func (runner *CommandSyncRunner) runCommand(
 	command.Env = append(command.Env, "PGOPTIONS="+os.Getenv("PGOPTIONS")+
 		" -c matchforge.sync_run_id="+runID+" -c matchforge.sync_worker_id="+runID)
 	isolateCommand(command)
+	if gracefulCancel {
+		command.Cancel = func() error { return syscall.Kill(-command.Process.Pid, syscall.SIGTERM) }
+		command.WaitDelay = 2 * time.Minute
+	}
 	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
 	if readErr != nil {
 		return nil, readErr
@@ -597,9 +616,6 @@ func syncCommandSummary(lastLine string, waitErr error, logFile *os.File) (map[s
 	}
 	if err := json.Unmarshal([]byte(lastLine), &summary); err != nil {
 		return nil, fmt.Errorf("sync command did not return structured JSON: %w", err)
-	}
-	if summary["backup"] == true && !validBackupSummary([]byte(lastLine)) {
-		return nil, errors.New("backup did not produce verified recovery evidence")
 	}
 	sanitizeSyncSummary(summary)
 	return summary, nil
@@ -860,9 +876,7 @@ func (runner *CommandSyncRunner) Get(ctx context.Context, id string) (SyncRun, e
 	if errors.Is(err, pgx.ErrNoRows) {
 		return SyncRun{}, errSyncRunNotFound
 	}
-	if run.Type == SyncManualBackup {
-		run.LogPath = nil
-	}
+	hideBackupDiagnostics(&run)
 	return run, err
 }
 
@@ -1097,7 +1111,14 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 
 func syncCommandArgs(request SyncRequest) ([]string, error) {
 	if request.Type == SyncManualBackup {
-		return []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run"}, nil
+		if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256) {
+			return nil, errWorkControlConflict
+		}
+		args := []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run", "--admin", "--scope", request.BackupScope}
+		if request.BackupUnavailableSHA256 != "" {
+			args = append(args, "--unavailable-sha256", request.BackupUnavailableSHA256)
+		}
+		return args, nil
 	}
 	command := map[SyncType]string{
 		SyncMVP:                 "sync",

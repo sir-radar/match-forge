@@ -3997,6 +3997,12 @@
     "operating_backup_captured_at": "2026-11-10T21:12:12.634285+00:00",
     "operating_backup_verified_at": "2026-11-10T22:05:13.307172+00:00",
     "operating_latest_applied_migration": 202611100200,
-    "backup_captured_latest_applied_migration": 202611100100
+    "backup_captured_latest_applied_migration": 202611100100,
+    "admin_recovery_scopes": [
+      "FULL_RECOVERY",
+      "RECOVERABLE_ONLY"
+    ],
+    "admin_backup_rollout_ref": "docs/recovery.md#activating-the-ntc-admin-workflow",
+    "operating_backup_incremental_growth": "NOT_MEASURED_ADMIN_ACTIVATION_PENDING"
   }
 }

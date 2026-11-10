@@ -105,14 +105,18 @@ def unavailable_hash(issues: list[dict[str, Any]]) -> str:
     return hashlib.sha256(json.dumps(encoded, separators=(",", ":")).encode()).hexdigest()
 
 
-def selected_inventory(
-    connection: Connection[Any], data_root: Path, plan: dict[str, Any]
-) -> dict[str, Any]:
+def require_inventory_database(connection: Connection[Any], plan: dict[str, Any]) -> None:
     state = connection.execute(
         "SELECT current_database(),oid::text FROM pg_database WHERE datname=current_database()"
     ).fetchone()
     if state is None or tuple(state) != (plan["database"], plan["database_oid"]):
         raise ValueError("recovery inventory belongs to a different database")
+
+
+def selected_inventory(
+    connection: Connection[Any], data_root: Path, plan: dict[str, Any]
+) -> dict[str, Any]:
+    require_inventory_database(connection, plan)
     result = inventory(connection, data_root, ROOT, plan["locations"])
     if result["unavailable_sha256"] != plan["unavailable_sha256"]:
         raise ValueError("unavailable dependencies changed; inspect a fresh recovery inventory")

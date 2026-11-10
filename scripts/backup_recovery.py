@@ -37,7 +37,13 @@ from scripts.recovery_files import (
     restore_files,
     verify_files,
 )
-from scripts.recovery_scope import inventory, load_plan, selected_inventory, validate_gaps
+from scripts.recovery_scope import (
+    inventory,
+    load_plan,
+    require_inventory_database,
+    selected_inventory,
+    validate_gaps,
+)
 
 
 def global_fingerprint() -> str:
@@ -70,7 +76,10 @@ def require_compose_database(connection: psycopg.Connection[Any], database: str)
 
 
 def recovery_estimate(
-    data_root: Path, recovery_plan: dict[str, Any] | None = None
+    data_root: Path,
+    recovery_plan: dict[str, Any] | None = None,
+    *,
+    use_reviewed_estimate: bool = False,
 ) -> dict[str, int]:
     with psycopg.connect(
         os.environ["DATABASE_URL"],
@@ -79,18 +88,24 @@ def recovery_estimate(
         connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         row = connection.execute("SELECT pg_database_size(current_database())").fetchone()
         assert row is not None
-        if recovery_plan is None:
+        if recovery_plan is not None and use_reviewed_estimate:
+            require_inventory_database(connection, recovery_plan)
+            referenced_files = recovery_plan["available_files"]
+            referenced_bytes = recovery_plan["logical_bytes"]
+        elif recovery_plan is None:
             refs = registered_files(connection, data_root)
             referenced_bytes = sum(
                 regular_file(data_root if ref.root == "data" else ROOT, ref.path).stat().st_size
                 for ref in refs
             )
+            referenced_files = len(refs)
         else:
             selected = selected_inventory(connection, data_root, recovery_plan)
-            refs, referenced_bytes = selected["references"], selected["logical_bytes"]
+            referenced_files = len(selected["references"])
+            referenced_bytes = selected["logical_bytes"]
         connection.rollback()
     return {
-        "referenced_files": len(refs),
+        "referenced_files": referenced_files,
         "referenced_bytes": referenced_bytes,
         "estimated_staging_bytes": int(row[0]) + referenced_bytes,
     }
@@ -144,11 +159,16 @@ def capture_recovery(
         database_size = connection.execute("SELECT pg_database_size(current_database())").fetchone()
         assert database_size is not None
         report["database_size_bytes"] = database_size[0]
+        database_owner = connection.execute(
+            "SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname=current_database()"
+        ).fetchone()
+        assert database_owner is not None
         report.update(
             captured_at=captured_at.isoformat(),
             snapshot=snapshot,
             database=database,
             postgres_version=version,
+            database_owner=database_owner[0],
         )
         with (output / "globals.sql").open("xb") as globals_file:
             subprocess.run(
@@ -378,7 +398,7 @@ def verify_restore(
             )
     result = {
         "status": "PASS_RECOVERABLE" if report.get("recovery_scope") else "PASS",
-        "full_recovery": not bool(report.get("recovery_scope")),
+        "full_recovery": False,
         "unavailable_dependencies": len(report.get("recovery_scope", {}).get("unavailable", [])),
         "database_isolated": True,
         "duration_seconds": time.monotonic() - started,
@@ -388,6 +408,165 @@ def verify_restore(
     }
     write_json(destination / "verification.json", result)
     return result
+
+
+def verify_cluster_restore(root: Path, report: dict[str, Any]) -> dict[str, Any]:
+    """Replay global roles and original ownership outside the source cluster."""
+    source = subprocess.check_output(
+        ["docker", "compose", "ps", "-q", "postgres"], cwd=ROOT, text=True, timeout=15
+    ).strip()
+    image = subprocess.check_output(
+        ["docker", "inspect", "--format", "{{.Image}}", source], text=True, timeout=15
+    ).strip()
+    container = "matchforge-backup-restore-" + uuid4().hex
+    admin = "recovery_drill_" + uuid4().hex
+    command = ["docker", "exec", container]
+    started = time.monotonic()
+    try:
+        subprocess.run(
+            [
+                "docker",
+                "run",
+                "--detach",
+                "--pull=never",
+                "--name",
+                container,
+                "--network",
+                "none",
+                "--env",
+                "POSTGRES_HOST_AUTH_METHOD=trust",
+                "--env",
+                f"POSTGRES_USER={admin}",
+                "--env",
+                "POSTGRES_DB=postgres",
+                image,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=30,
+        )
+        wait_for_restore_cluster(command, admin)
+        with (root / "globals.sql").open("rb") as globals_file:
+            subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "-i",
+                    container,
+                    "psql",
+                    "-U",
+                    admin,
+                    "-d",
+                    "postgres",
+                    "-v",
+                    "ON_ERROR_STOP=1",
+                ],
+                stdin=globals_file,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                check=True,
+                timeout=120,
+            )
+        with (root / "database.dump").open("rb") as dump:
+            subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "-i",
+                    container,
+                    "pg_restore",
+                    "-U",
+                    admin,
+                    "-d",
+                    "template1",
+                    "--create",
+                    "--exit-on-error",
+                ],
+                stdin=dump,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                check=True,
+                timeout=3600,
+            )
+        verify_cluster_catalog(command, admin, report)
+    finally:
+        cleanup = subprocess.run(
+            ["docker", "rm", "--force", "--volumes", container],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        if cleanup.returncode and "No such container" not in cleanup.stderr:
+            cleanup.check_returncode()
+    return {
+        "status": "PASS",
+        "network": "none",
+        "globals_applied": True,
+        "original_ownership_restored": True,
+        "duration_seconds": time.monotonic() - started,
+    }
+
+
+def wait_for_restore_cluster(command: list[str], admin: str) -> None:
+    deadline = time.monotonic() + 60
+    while time.monotonic() < deadline:
+        ready = subprocess.run(
+            [*command, "pg_isready", "-h", "127.0.0.1", "-U", admin, "-d", "postgres"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+        )
+        if ready.returncode == 0:
+            return
+        time.sleep(0.2)
+    raise ValueError("isolated PostgreSQL did not become ready")
+
+
+def verify_cluster_catalog(command: list[str], admin: str, report: dict[str, Any]) -> None:
+    expected = {name: item["rows"] for name, item in report["relations"].items()}
+    counts = (
+        sql.SQL(" UNION ALL ")
+        .join(
+            sql.SQL("SELECT {}::text AS name,count(*) AS rows FROM {}").format(
+                sql.Literal(name), sql.Identifier(*name.split(".", 1))
+            )
+            for name in sorted(expected)
+        )
+        .as_string(None)
+    )
+    query = (
+        "SELECT json_build_object('owner',pg_get_userbyid(datdba),"
+        "'extensions',(SELECT json_agg(json_build_array(extname,extversion) ORDER BY extname)"
+        " FROM pg_extension),'counts',(SELECT json_object_agg(name,rows) FROM ("
+        + counts
+        + ") restored)) FROM pg_database WHERE datname=current_database()"
+    )
+    metadata = json.loads(
+        subprocess.check_output(
+            [
+                *command,
+                "psql",
+                "-U",
+                admin,
+                "-d",
+                report["database"],
+                "-At",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-c",
+                query,
+            ],
+            text=True,
+            timeout=600,
+        )
+    )
+    if (
+        metadata["owner"] != report["database_owner"]
+        or metadata["extensions"] != [list(row) for row in report["extensions"]]
+        or metadata["counts"] != expected
+    ):
+        raise ValueError("isolated cluster ownership, extensions or relation counts differ")
 
 
 def verify_restored_dependencies(

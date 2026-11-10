@@ -31,6 +31,10 @@ def test_manual_backup_upgrade_lets_sync_run_reader_finish() -> None:
         psycopg.connect(url, autocommit=True) as observer,
         ThreadPoolExecutor(max_workers=1) as executor,
     ):
+        # Rehearse the historical applied version whose SQL is absent on main.
+        observer.execute(
+            "INSERT INTO public.goose_db_version(version_id,is_applied) VALUES (202610220100,true)"
+        )
         run_id = uuid4()
         observer.execute(
             "INSERT INTO football.product_sync_runs(run_id,sync_type,status) "
@@ -61,6 +65,9 @@ def test_manual_backup_upgrade_lets_sync_run_reader_finish() -> None:
             reader.rollback()
         result = upgrade.result(timeout=30)
         assert result.returncode == 0, result.stderr
+        assert observer.execute(
+            "SELECT is_applied FROM public.goose_db_version WHERE version_id=202610220100"
+        ).fetchone() == (True,)
         assert observer.execute(
             "SELECT status FROM football.product_sync_runs WHERE run_id=%s", (run_id,)
         ).fetchone() == ("QUEUED",)

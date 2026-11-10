@@ -64,6 +64,7 @@ def test_complete_snapshot_file_restore_isolated_from_original(
         result = verify_restore(archive, restored)
         assert result["status"] == "PASS"
         assert result["database_isolated"] is True
+        assert result["full_recovery"] is False
         assert (restored / "data/source.json").read_bytes() == payload
         independent = tmp_path / "independent-application"
         independent.mkdir()
@@ -113,7 +114,10 @@ def test_complete_snapshot_file_restore_isolated_from_original(
         monkeypatch.setattr(manual_backup, "inspect_volume", backup_destination.inspect_volume)
         monkeypatch.setenv("FOOTBALL_DATA_ROOT", str(restored / "data"))
         monkeypatch.delenv("MATCHFORGE_SYNC_RUN_ID", raising=False)
-        backup = manual_backup.backup(enrolled)
+        backup = manual_backup.backup(enrolled, admin=True)
+        assert backup["scope"] == "FULL_RECOVERY"
+        assert backup["full_operating_restore_drill"]["global_role_restore"]["status"] == "PASS"
+        assert backup["full_operating_restore_drill"]["full_recovery"] is True
         assert backup["status"] == "VERIFIED"
         assert backup["verified"] is True
         assert backup["repository_file_bytes"] > 0
@@ -365,7 +369,9 @@ def test_declared_missing_sources_restore_without_claiming_full_recovery(
         monkeypatch.setattr(backup_destination, "inspect_volume", volume)
         monkeypatch.setattr(manual_backup, "inspect_volume", volume)
         monkeypatch.delenv("MATCHFORGE_SYNC_RUN_ID", raising=False)
-        backed_up = manual_backup.backup(config, plan, tmp_path / "restic-restored")
+        backed_up = manual_backup.backup(config, plan, admin=True)
+        assert backed_up["scope"] == "RECOVERABLE_ONLY"
+        assert backed_up["unavailable_sha256"] == plan["unavailable_sha256"]
         assert backed_up["status"] == "VERIFIED_RECOVERABLE"
         assert backed_up["full_recovery"] is False
         assert backed_up["full_operating_restore_drill"]["status"] == "PASS_RECOVERABLE"
@@ -375,7 +381,7 @@ def test_declared_missing_sources_restore_without_claiming_full_recovery(
         )
         assert points[0]["id"] == backed_up["snapshot_id"]
         monkeypatch.setenv("MATCHFORGE_SYNC_RUN_ID", str(uuid4()))
-        with pytest.raises(backup_destination.BackupError, match="full-scope Admin"):
+        with pytest.raises(backup_destination.BackupError, match="confirmed policy"):
             manual_backup.backup(config, plan, tmp_path / "rejected-admin")
         changed = {**plan, "unavailable_sha256": "0" * 64}
         with pytest.raises(ValueError, match="changed"):

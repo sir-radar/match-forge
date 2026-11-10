@@ -188,7 +188,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	status, message := syncCompletion(map[string]interface{}{
 		"status":          "COMPLETED_WITH_ERRORS",
 		"failure_reasons": map[string]interface{}{"mvp": "API-Football request limit reached"},
-	}, SyncMVP)
+	}, SyncRequest{Type: SyncMVP})
 	if status != "FAILED" {
 		t.Fatalf("status = %q", status)
 	}
@@ -196,7 +196,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 		t.Fatalf("message = %v", message)
 	}
 
-	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"}, SyncMVP)
+	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"}, SyncRequest{Type: SyncMVP})
 	if status != "SUCCEEDED" || message != nil {
 		t.Fatalf("completion = %q %v", status, message)
 	}
@@ -214,7 +214,7 @@ func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 		context.Background(),
 		"run-id",
 		[]string{"/bin/sh", "-c", `echo '{"status":"COMPLETED_WITH_ERRORS","errors":{"mvp":"quota"}}'; exit 1`},
-		logFile,
+		logFile, false,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +232,7 @@ func TestRunCommandPreservesOriginalCauseBeforeGenericSummary(t *testing.T) {
 	defer logFile.Close()
 	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
 	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
-		`echo 'NameError: retained fixture_id is missing' >&2; echo '{"status":"FAILED","errors":{}}'; exit 1`}, logFile)
+		`echo 'NameError: retained fixture_id is missing' >&2; echo '{"status":"FAILED","errors":{}}'; exit 1`}, logFile, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +250,7 @@ func TestRunCommandRedactsBothStreamsAcrossWrites(t *testing.T) {
 	defer logFile.Close()
 	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
 	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
-		`printf 'API_'; printf 'KEY=stdout-private\n'; printf 'password="two words"\nAuthorization: Bearer stderr-private\n' >&2; echo '{"status":"FAILED","errors":{"source":"token=summary-private"}}'; exit 1`}, logFile)
+		`printf 'API_'; printf 'KEY=stdout-private\n'; printf 'password="two words"\nAuthorization: Bearer stderr-private\n' >&2; echo '{"status":"FAILED","errors":{"source":"token=summary-private"}}'; exit 1`}, logFile, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +300,7 @@ func TestRunCommandCancellationStopsProcessGroup(t *testing.T) {
 	done := make(chan error, 1)
 	go func() {
 		_, runErr := runner.runCommand(
-			ctx, "run-id", []string{"/bin/sh", "-c", "sleep 30"}, logFile,
+			ctx, "run-id", []string{"/bin/sh", "-c", "sleep 30"}, logFile, false,
 		)
 		done <- runErr
 	}()

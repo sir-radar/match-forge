@@ -134,9 +134,10 @@ verified before claiming complete operating recovery.
 
 Admin → **Backup & Recovery** is server-rendered through the existing private
 local Admin boundary. **Back Up Now** performs read-only preflight, then presents
-resource estimates and an explicit confirmation. The confirmed request uses a
-UUID idempotency key and existing sync-run/shared-work leases, cancellation and
-publication checks. Backup work shares the existing bulk exclusion lane; provider
+resource estimates, the configured recovery policy, and an explicit confirmation.
+The confirmed request binds a UUID idempotency key to the policy and, for
+recoverable-only, the reviewed gap manifest digest. It uses existing sync-run and
+shared-work leases, cancellation, and publication checks. Backup work shares the existing bulk exclusion lane; provider
 live lanes remain independent. Older sync-list clients do not receive the new
 backup enum; backup history has its own read endpoint over the same records.
 No second work queue, backup registry or domain scheduler is introduced.
@@ -184,15 +185,16 @@ and [restoration](https://restic.readthedocs.io/en/stable/050_restore.html).
    before creating the directory. Unresolved originals block enrollment as well
    as backup. Existing `MatchForgeBackup` directories are never reinitialized.
    Record the returned repository ID separately; it is checked after authentication.
-4. Set the seven `MATCHFORGE_BACKUP_*` settings in local `.env` from the example,
+4. Set the `MATCHFORGE_BACKUP_*` settings in local `.env` from the example,
    preserving all existing values. Use the NTC Keychain service, leaving the
    password-file setting empty. Set
    `RECOVERY_KEY_RETAINED=true` only after retaining the independent password.
    `ENABLED=true` remains a separate operating activation, not an enrollment side
    effect. The password itself is never a configuration value.
 5. After activation approval, open Admin, refresh status, run preflight and confirm.
-   Missing originals, wrong drive/repository/key, read-only storage, insufficient
-   space or unknown dependencies block the backup. Less than the recommended 20%
+   Wrong drive, repository or key, read-only storage, and insufficient space
+   block either scope. Full recovery also requires every original. Recoverable-only
+   requires exact agreement with the reviewed gap manifest. Less than the recommended 20%
    free headroom is disclosed as a planning warning, not a passing guarantee.
 
 Repository writes use open directory descriptors and `fchdir` in an exec child,
@@ -206,17 +208,21 @@ support this; substitution tests exercise the actual Restic executable.
 One dump worker and two Restic CPUs/readers run at reduced process priority.
 Preflight estimates local staging/read-back and external capacity; dump expansion
 and growth can exceed estimates, so a write/verification failure remains explicit.
-Original Parquet/gzip/source bytes are preserved; no application-level
-recompression is performed. Successful completion requires full repository data
-checking, a restored byte-for-byte capture and manifest validation. Only then is
-the new recovery point tagged `matchforge-verified` and its work result published.
-Restic tagging replaces metadata for this new snapshot; previous verified points
-remain untouched. A snapshot command's exit status alone is insufficient.
+Original Parquet, gzip and source bytes are preserved. Successful completion
+requires full repository data checks, restored byte and manifest verification, and
+an isolated database and file restore. The worker checks relation hashes, historical
+cutoffs, extensions and registered artifact readers. Full recovery additionally
+replays globals and ownership in a network-isolated PostgreSQL cluster. Only the
+newly verified point receives the scope-specific Restic tag. Restic tagging replaces
+metadata for that snapshot. Prior verified snapshots stay in the repository.
 
-Status includes measured repository-file bytes at verification, newly stored
-packed bytes, history, progress, errors and repository-lock/eject state. Backup
-age measures time since the database snapshot; the 30-day due date starts at
-successful verification. Failed/cancelled jobs never reset it. Reminders and
+Status shows repository file bytes, new packed bytes, observed volume free-space
+change, history, progress and eject state. Unrelated drive use can affect the
+free-space measurement. Backup age starts at capture. The 30-day reminder starts
+at verification of the latest successful point for the configured policy, including
+a matching independently verified operator receipt when configured. Failed or
+cancelled attempts do not reset it. Full verification and declared unavailable
+dependencies remain visible when the selected policy is recoverable-only. Reminders and
 completion announcements appear in the application; no macOS background
 notification agent or automatic backup is enabled. Connecting the drive only
 makes the manual action available. Safe-to-eject status is a timed observation;
@@ -262,8 +268,8 @@ Retain the latest verified point and at least one earlier independently verified
 point when capacity permits. Measure actual initial and incremental repository
 growth before choosing additional monthly retention. Automatic pruning stays
 disabled; capacity pressure never permits dropping required files or deleting the
-only complete point. Full database restore drills are explicit operator commands,
-not silently launched by reminders or normal backup status requests.
+only complete point. The confirmed manual backup includes its restore drill. Reminder and status
+requests are read-only.
 
 ## Provider fixture recovery
 
@@ -290,16 +296,24 @@ registration or source to make a checksum appear valid.
 
 ## Recovery when original dependencies are unavailable
 
-The default capture and Admin job still require the complete registered scope.
-`python -m scripts.recovery_scope` can instead inspect every registration in one
-read-only snapshot and retain all missing identifiers. Its private inventory binds
+`MATCHFORGE_BACKUP_SCOPE=FULL_RECOVERY` is the default. It fails closed if
+required originals are unavailable and only records `VERIFIED` after both isolated
+restore checks pass. Choose `RECOVERABLE_ONLY` in the local service configuration
+only after the owner reviews and accepts the missing dependencies. Admin shows
+the configured policy and requires confirmation for each backup.
+
+`python -m scripts.recovery_scope` can inspect every registration in one
+read-only snapshot and retain all unavailable identifiers. Its private inventory binds
 the database name/OID and exact unavailable registrations. Explicit retained-file
 locations are accepted only when the original registered checksum and size match;
 original files and database registrations are never repaired in place.
 
-The owner-authorized recoverable scope uses `--recoverable-inventory` on enrollment,
-capture or the manual command. A fresh snapshot must have exactly the declared gaps;
-new available registrations are included, while changed gaps require a new inventory.
+Set `MATCHFORGE_BACKUP_RECOVERABLE_INVENTORY` to the protected inventory path
+inside the service checkout. Use `--recoverable-inventory` for an explicitly
+authorized CLI operation. Admin preview uses the reviewed inventory size and
+current database size for its estimate. The worker rechecks the exact bindings and
+hashes during capture. Newly available registrations are included. If an approved
+gap is resolved or a new gap appears, review a new inventory and confirm again.
 Unexpected copy or checksum failures still fail the capture. The capture contains all
 database rows and recoverable file dependencies, exact missing registrations, observed
 artifact-reader results, application code, globals and checksum manifests.
@@ -311,14 +325,87 @@ re-enumerates files using only restored roots, and compares missing registration
 artifact-reader results with capture. Application links, path escapes and conflicting
 retained bytes are rejected. No unavailable source is fabricated.
 
-The manual recoverable command requires `--restore-destination` and refuses an Admin
-worker run ID. It records `VERIFIED_RECOVERABLE` only after encrypted read-back and the
-isolated database/file drill pass. Its `matchforge-recoverable-verified` tag does not
-count as `matchforge-verified`, update full-scope backup age, or satisfy full recovery.
-It is an explicit operator recovery action; using it instead of the owner's Admin
-interface requires an owner-approved exception. It does not authorize migrations,
-release activation, automatic execution, retention pruning or source replacement.
+The standalone manual command requires `--restore-destination`. Admin uses
+disposable restore storage automatically during the confirmed run. Recoverable-only
+records `VERIFIED_RECOVERABLE` and tags the snapshot
+`matchforge-recoverable-verified` only after encrypted read-back and the isolated
+database and file drill pass. Its manifest contains the exact unavailable entries
+and the receipt records their count and digest. Complete historical and model
+artifact recovery remains unavailable while required originals are missing.
+
+The optional `MATCHFORGE_BACKUP_PRIOR_RECEIPT` points to a protected JSON file
+inside the checkout for an independently verified point taken before Admin
+activation. The file contains `repository_id`, `volume_uuid`, and a
+`verification` object with the verified backup receipt. The receipt must bind
+the exact snapshot ID, policy, gap digest and isolated restore evidence to the
+enrolled repository. Use the archived verification evidence. A tag alone is
+insufficient. Admin can use this receipt when the drive is disconnected. It appears
+as an operator receipt and creates no synthetic work history.
 
 Current operating gaps, exact identifiers, search limits and capacity evidence are in
 `docs/evidence/operating-recovery-scope.json`. Recovery of those missing originals
 requires an external copy or evidence resolving the original registration.
+
+## Activating the NTC Admin workflow
+
+The operating API currently returns `unknown` for Git SHA, lock hash and worktree
+state. The executable is a Go development build whose embedded metadata identifies
+the module and toolchain but has no VCS revision. The operating database is at
+`202611100200`, with all 13 routes on `LEGACY`. Existing migration history also
+contains `202610220100`, whose source SQL is absent from this checkout. Preserve
+that history and compare it with the recorded backup before proceeding.
+
+1. Obtain owner approval for the operating migration, replacement build, enabling
+   Admin, and the first manual Admin run. Confirm CI is green for the exact release
+   revision. Record the prior service command and configuration for rollback.
+2. In the clean release checkout, install the locked dependencies and source the
+   local configuration with `MATCHFORGE_BACKUP_ENABLED=false`. Run
+   `make build web-build` from the root. Record `git rev-parse HEAD`,
+   `shasum -a 256 uv.lock` and `shasum -a 256 .local/bin/football-api`.
+   Start this binary for deployment. The development watcher produces no release
+   provenance. Keep the Go API, Python worker checkout and Next build at the same
+   revision.
+3. Record the current operating schema and active work with the read-only release
+   diagnostic. Quiesce sync-run and work transactions in the approved maintenance
+   window. Check that migration 300 is the only pending forward migration and that
+   the previously verified NTC recovery point is available. Source the approved
+   operating configuration before the targeted migration:
+
+   ```sh
+   set -a
+   . ./.env
+   set +a
+   . ./scripts/toolchain.sh
+   PGOPTIONS="${PGOPTIONS:-} -c lock_timeout=5000" \
+     goose -dir infrastructure/migrations postgres "$DATABASE_URL" up-to 202611100300
+   ```
+
+   On a lock failure, confirm migration 300 rolled back and let existing work finish
+   before retrying. Recheck the applied version, stage routes and service readiness.
+   Use a forward fix if required. The down migration deliberately preserves history
+   by refusing to run.
+4. Start `.local/bin/football-api` with the sourced release environment from the
+   release root and run `pnpm --dir web start --hostname 127.0.0.1 --port 3000`
+   for the local web build. Confirm `/version` matches the recorded Git SHA and lock
+   hash and reports a clean worktree. Check `/readyz`, forecasting reads and the
+   authenticated Admin page with backup disabled.
+5. Keep the enrolled NTC UUID, repository ID and Keychain service. Point the
+   recoverable inventory at
+   `.local/foundation/scope-investigation/operating-inventory.json` and, if prepared,
+   the prior receipt at `.local/foundation/ntc-admin-prior-receipt.json`. These
+   ignored files must be available beneath the release root. Set the approved
+   `RECOVERABLE_ONLY` policy and `MATCHFORGE_BACKUP_ENABLED=true` and restart the
+   API with the same verified binary. Confirm the displayed 159 gaps, repository
+   identity, separate full-recovery status and reminder before submitting.
+6. Confirm **Back Up Now** in Admin. Record the new exact snapshot ID, encrypted
+   read-back, isolated database and file restore, gap digest, and actual storage
+   measurements. Verify the receipt independently, check that the due date is 30
+   days from its verification time, and confirm `42ada89cd1bc` still exists.
+   Compare the new packed bytes, repository file bytes and volume allocation with
+   the initial 4,215,537,664 allocated bytes. Check idle work and Restic locks
+   before using macOS Eject.
+7. To suspend the workflow, set `MATCHFORGE_BACKUP_ENABLED=false` and restart the
+   compatible API. Keep migration 300 and its backup history. Keep both verified
+   recovery points and the independently retained password. If a hard interruption
+   leaves a disposable restore database, container or staging directory, inspect
+   the exact failed run and verify its identity before any separately approved cleanup.

@@ -26,23 +26,57 @@ func TestBackupDatabaseContracts(t *testing.T) {
 		return
 	}
 	verifiedAt := time.Now().UTC().Add(-31 * 24 * time.Hour)
-	first := backupDatabaseRun(t, runner, "SUCCEEDED", map[string]any{"verified": true, "verified_at": verifiedAt.Format(time.RFC3339Nano), "captured_at": verifiedAt.Add(-time.Minute).Format(time.RFC3339Nano)})
+	first := backupDatabaseRun(t, runner, "SUCCEEDED", verifiedBackupSummary(backupFullRecovery, verifiedAt))
+	recoverable := backupDatabaseRun(t, runner, "SUCCEEDED", verifiedBackupSummary(backupRecoverableOnly, time.Now().Add(-time.Minute)))
 	failed := backupDatabaseRun(t, runner, "FAILED", map[string]any{"verified": false})
-	backupReminderAssertions(t, runner, first)
+	backupReminderAssertions(t, runner, first, recoverable)
+	backupPriorReceiptAssertions(t, runner, first)
 	backupHistoryAssertions(t, runner)
 	backupLegacyAssertions(t, runner)
 	backupIdentityAssertions(t, runner, first, failed)
 }
 
-func backupReminderAssertions(t *testing.T, runner *CommandSyncRunner, first string) {
+func backupReminderAssertions(t *testing.T, runner *CommandSyncRunner, first, recoverable string) {
 	t.Helper()
 	ctx := context.Background()
-	view := BackupView{ReminderDue: true}
-	if err := runner.backupReminder(ctx, &view, time.Now()); err != nil {
+	for _, check := range []struct {
+		scope string
+		runID string
+		due   bool
+	}{{backupFullRecovery, first, true}, {backupRecoverableOnly, recoverable, false}} {
+		view := BackupView{Availability: BackupAvailability{Scope: check.scope}, ReminderDue: true}
+		if err := runner.backupReminder(ctx, &view, time.Now()); err != nil {
+			t.Fatal(err)
+		}
+		if view.LastVerified == nil || view.LastVerified.ID != check.runID || view.ReminderDue != check.due {
+			t.Fatalf("wrong reminder for %s", check.scope)
+		}
+		if view.LastFullRecovery == nil || view.LastFullRecovery.ID != first {
+			t.Fatal("recoverable success changed the full recovery record")
+		}
+	}
+}
+
+func backupPriorReceiptAssertions(t *testing.T, runner *CommandSyncRunner, first string) {
+	t.Helper()
+	ctx := context.Background()
+	now := time.Now()
+	payload, err := json.Marshal(verifiedBackupSummary(backupRecoverableOnly, now))
+	if err != nil {
 		t.Fatal(err)
 	}
-	if view.LastVerified == nil || view.LastVerified.ID != first || !view.ReminderDue {
-		t.Fatal("failed attempt replaced verified recovery point")
+	var prior backupPoint
+	if err = json.Unmarshal(payload, &prior); err != nil || !prior.valid() {
+		t.Fatalf("invalid prior receipt: %v", err)
+	}
+	priorView := BackupView{Availability: BackupAvailability{Scope: backupRecoverableOnly, PriorVerified: &prior}}
+	if err = runner.backupReminder(ctx, &priorView, now); err != nil {
+		t.Fatal(err)
+	}
+	if priorView.LastVerified != nil || priorView.NextDueAt == nil ||
+		!priorView.NextDueAt.Equal(now.Add(30*24*time.Hour)) ||
+		priorView.LastFullRecovery == nil || priorView.LastFullRecovery.ID != first {
+		t.Fatal("newer verified operator receipt did not update only the matching policy reminder")
 	}
 }
 
@@ -77,7 +111,7 @@ func backupLegacyAssertions(t *testing.T, runner *CommandSyncRunner) {
 func backupIdentityAssertions(t *testing.T, runner *CommandSyncRunner, first, failed string) {
 	t.Helper()
 	ctx := context.Background()
-	prior, err := runner.enqueueOrJoin(ctx, SyncRequest{Type: SyncManualBackup}, first, "unused", nil, []byte(`{}`))
+	prior, err := runner.enqueueOrJoin(ctx, SyncRequest{Type: SyncManualBackup, BackupScope: backupFullRecovery}, first, "unused", nil, []byte(`{}`))
 	if err != nil || prior == nil || prior.ID != first {
 		t.Fatal("same request did not join persisted backup")
 	}
@@ -93,8 +127,8 @@ func backupDatabaseRun(t *testing.T, runner *CommandSyncRunner, status string, s
 		t.Fatal(err)
 	}
 	ctx := context.Background()
-	_, err = runner.pool.Exec(ctx, `INSERT INTO football.product_sync_runs(run_id,sync_type,status,worker_id,heartbeat_at,log_path)
-        VALUES ($1::uuid,'MANUAL_BACKUP','QUEUED',$1::text,clock_timestamp(),'/private/example.log')`, id)
+	_, err = runner.pool.Exec(ctx, `INSERT INTO football.product_sync_runs(run_id,sync_type,status,worker_id,heartbeat_at,log_path,parameters)
+        VALUES ($1::uuid,'MANUAL_BACKUP','QUEUED',$1::text,clock_timestamp(),'/private/example.log',jsonb_build_object('scope',$2::text))`, id, stringParameter(summary, "scope"))
 	if err != nil {
 		t.Fatal(err)
 	}
