@@ -1,0 +1,1661 @@
+{
+  "purpose": "Architecture investigation and planning evidence; not a production runtime contract or implementation authorization.",
+  "updated_at": "2026-11-10T09:39:14.007606Z",
+  "baseline_git_sha": "0b83991856e9f7d6528beb2477d83a0ac27ea4fb",
+  "implementation_source_unchanged": true,
+  "classification": "L3 architecture/historical correctness/governance/security",
+  "task_inputs": [
+    {
+      "path": "CURRENT_TASK.md",
+      "sha256": "5f5300fef9d2873fdc55944c37fef3a5cc8411a29745aee3f908270dbd774f5e"
+    },
+    {
+      "path": "MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md",
+      "sha256": "1af14d28180d97b8ab60f228c5dae539f841c3a4b98d5f1a175b35c79fb8c95a"
+    }
+  ],
+  "scope": {
+    "operating_database_writes_by_this_task": 0,
+    "operating_migrations_by_this_task": 0,
+    "provider_data_acquisition_requests_by_this_task": 0,
+    "protected_source_rewrites": 0,
+    "non_test_model_fits": 0,
+    "authoritative_evaluations": 0,
+    "model_promotions": 0,
+    "deployments_or_cutovers": 0,
+    "existing_background_workers_continued_independently": true
+  },
+  "operating_observations": {
+    "baseline_cutoff_utc": "2026-11-10T06:09:24.281256Z",
+    "database": "football",
+    "postgresql": "18.6",
+    "running_build_commit": "unknown",
+    "latest_applied_migration": 202611100100,
+    "missing_forward_migration": 202611100200,
+    "legacy_stage_routes": 13,
+    "active_provider_acquisition_leases": 2,
+    "stored_running_history_work": 4,
+    "valid_history_leases_for_those_rows": 0,
+    "postmatch_evaluation_rows": 0,
+    "runtime_model_registration_rows": 0,
+    "same_key_candidate_groups": 281,
+    "candidate_group_rows": 567,
+    "latest_unbound_finished_observations": {
+      "fotmob": 10873,
+      "pitchapi": 2097
+    },
+    "finished_fixture_rows": 269132,
+    "finished_rows_missing_score": 0,
+    "stored_live_rows": 79,
+    "live_rows_missing_score": 45,
+    "active_champion_artifact_sha256": "e856dedf1879135eea547ac00d7e6243621dd6ff5c59164c6697131e22e46eb4",
+    "limitations": "Separate snapshots and HTTP times; candidate counts are not proven duplicates, recovery gains or release acceptance."
+  },
+  "storage_observations": {
+    "local_file_count": 4036851,
+    "local_logical_bytes": 123786349952,
+    "local_allocated_file_bytes": 135745224704,
+    "inventory_seconds": 544.3044000410009,
+    "inventory_errors": 0,
+    "operating_database_bytes": 13996840639,
+    "all_non_template_databases_bytes": 143619336807,
+    "wal_bytes": 83886080,
+    "registered_source_duplicate_bytes_upper_bound": 24391731,
+    "selected_identical_report_bytes": 1913464815,
+    "limitations": "No sum across overlapping DB/Docker/APFS layers; file allocation is not unique physical extents; growth rate unverified."
+  },
+  "technical_experiments": {
+    "compression": "Three-repeat capped source-byte samples; every decompression matches exact bytes/hash; no original rewritten.",
+    "rng": "48 synthetic Rust/Go output lines identical; three 10-million-step checksums match; not full simulation/numeric/artifact parity.",
+    "full_system_restore": "Not newly executed; prior isolated DB/selected hash proof remains separately scoped.",
+    "seven_future_feature_releases": "UNVERIFIED; source-grounded owner paths and deterministic fixture/test/rollback designs only."
+  },
+  "foundation_requirements": [
+    {
+      "id": "A02",
+      "current_owner_contract_maturity": "`forecasting/market_catalogue.py::MarketDefinition`, `products.py`, `model_runner.py`; target catalogue and score projections implemented; publication/settlement compatibility partial",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "1X2 partitions, draw/double-chance unions, strict/quarter lines, censored tails, period/basis and unsupported model preserved across Go→TS; extend market/product tests and `web/lib/contracts.test.ts`; incompatible ET never settles regulation",
+      "ticket_and_handoff": "P06-02, P05-01; BASE-RULES → F7; A01 excluded"
+    },
+    {
+      "id": "B01",
+      "current_owner_contract_maturity": "`identity/repository.py`, `player_source_facts`, match participation, `context/live.py`; source/team associations exist, full temporal registration query not established",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "2024 query excludes 2026 transfer/loan/call-up; opposite-team ambiguity rejected; extend identity-history/participation integration tests",
+      "ticket_and_handoff": "P08-02; BASE-IDENTITY → POST-F2-01"
+    },
+    {
+      "id": "B02",
+      "current_owner_contract_maturity": "`LineupObservationV1`, `player_position_stints`, V3 resource observations; shape/grid fields implemented, tactical segment meaning partial",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Starting formation remains unchanged after source-proven substitution/shape revision; unknown coordinates are not zero; extend live-context and rich-observation fixtures",
+      "ticket_and_handoff": "P08-02; BASE-SOURCE/API → F3"
+    },
+    {
+      "id": "B03",
+      "current_owner_contract_maturity": "`context/live.py::LineupObservation`, `PredictedLineupV1`, current lineup-mode enum; PARTIAL not a distinct current mode",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Partial/predicted never labelled confirmed; late confirmation excluded at old cutoff; duplicate starter/opposite-side invalid; new version does not alter old bytes",
+      "ticket_and_handoff": "P08-02; BASE-IDENTITY/SOURCE → POST-F3-01/03"
+    },
+    {
+      "id": "B04",
+      "current_owner_contract_maturity": "`AvailabilityObservation`, `context_sync.py` default-disabled gates; qualified operating rows 0, effective activation unverified",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Empty/unsupported/restricted/stale/unknown/no-reported-issue remain distinct; injury/suspension/doubt/rest/tactical cause preserved; extend `test_context_sync.py`, `test_live_context.py`",
+      "ticket_and_handoff": "P08-02 policy only; actual intake/UI → F4"
+    },
+    {
+      "id": "B05",
+      "current_owner_contract_maturity": "`docs/source-acquisition.md`, raw/context/export owners; general access policy exists, specific new health/minor policy not established",
+      "disposition": "BLOCKED_EVIDENCE",
+      "acceptance_and_harness": "No new availability source before source-rights/minimization/correction/expiry/minors policy; restricted export and diagnostic log tests; no clinical inference",
+      "ticket_and_handoff": "P01-02, P08-02, P12-01; BASE-PRIVACY → POST-F4-01"
+    },
+    {
+      "id": "C01",
+      "current_owner_contract_maturity": "`forecasting/features.py`, `dataset.py`, feature snapshot contract, current model runner; centralized history implemented; future-feature parity unverified",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Same source/cutoff/null/category vectors produce identical fit/shadow/serve features; post-kickoff correction and same-batch targets excluded; extend feature/backtesting and model-runner tests",
+      "ticket_and_handoff": "P16-02; BASE-SCIENCE → F5/F6"
+    },
+    {
+      "id": "C02",
+      "current_owner_contract_maturity": "`forecasting/evaluation.py`, `uncertainty.py`, post-match monitoring; paired scoring implemented, monitoring denominator counts issued forecasts",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Easier subset cannot win on raw accuracy; paired eligible IDs/horizons and full eligible-denominator/abstention/segment shift report required",
+      "ticket_and_handoff": "P16-01/03; BASE-SCIENCE → F6"
+    },
+    {
+      "id": "C03",
+      "current_owner_contract_maturity": "`runtime_models.py`, `model_runner.py::ModelRegistry`, artifact loader and `model-registration.schema.json`; exact artifact/retired checks implemented; operating registry empty",
+      "disposition": "ALREADY_SATISFIED",
+      "acceptance_and_harness": "Extend `tests/integration/test_runtime_model_registry.py` and runner/API tests for missing/corrupt/incompatible/RETIRED approved role: unavailable, no implicit fallback; retain history",
+      "ticket_and_handoff": "P06-02, P16-01 verification; BASE-SCIENCE/API → F7",
+      "disposition_scope": "ALREADY_SATISFIED at loader/registry code scope only"
+    },
+    {
+      "id": "C04",
+      "current_owner_contract_maturity": "`evaluation_protocol.py`, `experiments.py`, `replacement_holdout.py`, artifact/governance contracts; frozen protection implemented; automated lifecycle not operating",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Inspected/spent/protected targets cannot become unspent; identical run retry converges, immutable fit/artifact/policy hashes; missing policy stops before outcome load",
+      "ticket_and_handoff": "P16-02/03; BASE-SCIENCE → F5/F6"
+    },
+    {
+      "id": "D01",
+      "current_owner_contract_maturity": "`product_standings`, standing observations and Go standings API; source tables implemented, competition-rule completeness unverified",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Deduction, ordered tie break, split/playoff, award/abandonment and aggregate golden cases; unknown rule yields partial source table; extend serving/context tests",
+      "ticket_and_handoff": "P06-02, P08-02; BASE-RULES → POST-F1-02"
+    },
+    {
+      "id": "D02",
+      "current_owner_contract_maturity": "`providers/capability_registry.py`, `resource_authority.py`, scoped capability schema; SHADOW_ONLY, 26 retained rows",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Entitlement/methodology/season change blocks only affected scope; UNKNOWN/UNSUPPORTED/RESTRICTED/PARTIAL not empty confirmed; preserve original source values and version history",
+      "ticket_and_handoff": "P08-01; BASE-SOURCE → F0/F2/F3/F4/F10"
+    },
+    {
+      "id": "E01",
+      "current_owner_contract_maturity": "`work/contracts.py`, `work/storage.py`, Go operations and sync APIs; operating work and expired RUNNING rows observed",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Task IN_PROGRESS with zero valid leases does not imply running workers; SUCCEEDED+BLOCKED report stays blocked acceptance; DB/API/SSR/event views agree on lease/generation",
+      "ticket_and_handoff": "P03-01, P05-02, P06-01; BASE-OPS → F8"
+    },
+    {
+      "id": "E02",
+      "current_owner_contract_maturity": "`app.go::version`, build ldflags in Makefile, Goose and registry/stage settings; code provenance supported, operating values unknown and migration absent",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Running commit/lock/schema hashes/model/route mismatch prevents adoption claim; `/readyz` 200 alone insufficient; extend version/readiness/serving tests",
+      "ticket_and_handoff": "P00-01, P14-01, P18-01; BASE-OPS → F0/F8"
+    },
+    {
+      "id": "E03",
+      "current_owner_contract_maturity": "`admin_access.go`, source-path/immutable stores, experimental DB guard; current local controls implemented, future streams/backups need integration",
+      "disposition": "EXTEND",
+      "acceptance_and_harness": "Host/Origin/peer/token/JSON, SSE scope/resume, SSR secret/cache, SSRF/traversal/bomb, wrong-key/operating-restore target and stale fence failures; use existing Go, raw, restore and Playwright harnesses",
+      "ticket_and_handoff": "P01-02, P04-02, P06-01, P12-01/P17-01; BASE-PRIVACY/OPS"
+    }
+  ],
+  "extensibility_requirements": [
+    {
+      "id": "EXT-01",
+      "verified_owner_version_maturity": "Actual dependency map in current-state; `scripts/check_architecture_boundaries.py`; IMPLEMENTED direct-boundary guard, SHADOW canonical path",
+      "target_and_gap": "Keep one writer per domain; extend checks only for demonstrated new SQL/worker/UI bypasses; no generic platform",
+      "ticket_and_acceptance": "P00-01/P14-01; unauthorized import/writer and duplicate scheduler fixture fails"
+    },
+    {
+      "id": "EXT-02",
+      "verified_owner_version_maturity": "`ProviderPayload`, native models, resource-observations V1–V3, capability registry; IMPLEMENTED/SHADOW by path",
+      "target_and_gap": "Typed resource/field semantics, independent identity/known time/capability; fill only approved gaps",
+      "ticket_and_acceptance": "P08-01/02; new field/resource/null tests, cases X1–X3"
+    },
+    {
+      "id": "EXT-03",
+      "verified_owner_version_maturity": "`WorkType`, `WorkRequest`, leases/fences, dependency state events; OPERATING for observed work",
+      "target_and_gap": "Reuse work registration and versioned committed event publication; event seam DOCUMENTED_ONLY",
+      "ticket_and_acceptance": "P03-01/P04-01; crash/retry/correction/no-starvation and X1/X6"
+    },
+    {
+      "id": "EXT-04",
+      "verified_owner_version_maturity": "SQL migrations, OpenAPI, TS parser, model schemas; existing versions IMPLEMENTED, mixed future releases UNVERIFIED",
+      "target_and_gap": "Explicit N/N−1 contract window, scoped event versions and reversible expand/migrate/contract",
+      "ticket_and_acceptance": "P06-01/P14-01/P17-01; old/new producer-consumer rehearsal"
+    },
+    {
+      "id": "EXT-05",
+      "verified_owner_version_maturity": "Next SSR shells, expanded fixture, HTML designs, shared components; IMPLEMENTED partial composition",
+      "target_and_gap": "Typed server-query-owned optional sections, request-rendered Admin data and shared event cache; no runtime plugins",
+      "ticket_and_acceptance": "P06-01/P07-01; X4/X7, keyboard/mobile/SSR/capability-off parity"
+    },
+    {
+      "id": "EXT-06",
+      "verified_owner_version_maturity": "`MarketDefinition`, model/feature/experiment/artifact contracts; IMPLEMENTED scientific owners, future models blocked separately",
+      "target_and_gap": "New market/model must declare supported distribution/period/inputs/evaluation and authority",
+      "ticket_and_acceptance": "P06-02/P16-02/03; X5/X6, C01–C04"
+    },
+    {
+      "id": "EXT-07",
+      "verified_owner_version_maturity": "Immutable raw/artifact stores, SQL lock/fence and experimental guards; IMPLEMENTED; new archive/release path UNVERIFIED",
+      "target_and_gap": "Per-slice resource/rights/backup/migration and serving rollback record",
+      "ticket_and_acceptance": "P01/P10/P11/P12/P18; interruption/disk/corrupt source/rollback"
+    },
+    {
+      "id": "EXT-08",
+      "verified_owner_version_maturity": "Architecture, schema, feature, Go/TS contract and migration test harnesses exist",
+      "target_and_gap": "Extend current `make check`/integration/CI; no new framework; release fitness tests remain unimplemented",
+      "ticket_and_acceptance": "P14-01/P17-01; run deterministic positive/negative X1–X7"
+    },
+    {
+      "id": "EXT-09",
+      "verified_owner_version_maturity": "Path-level owner inspection and tests below; compression/RNG experiments are separate technical proofs",
+      "target_and_gap": "Seven future release demonstrations all UNVERIFIED until authorized scoped fixtures/rehearsals run",
+      "ticket_and_acceptance": "P17-02; measured actual diff radius/resources, no speculative pluggability PASS"
+    }
+  ],
+  "extension_scenarios": [
+    {
+      "id": "X1",
+      "localized_changes": "X1 another provider: `providers/sources/<new>.py`, `providers/native/<new>.py`, `providers/normalization/<new>.py`, current capability/adapter registration and provider fixture tests (about 5–7 files)",
+      "source_authority_and_fixtures": "Exact native resource sample, source terms/entitlement/quota, schema and processing version; old native fields + additive unknown enum, new native ID reuse and unsupported resource",
+      "tests_resources_switch_rollback": "Extend `test_provider_resource_capabilities.py`, normalizer/native tests, work/fence integration; zero calls until approved capability; source-scoped disabled rollout, stop adapter and retain raw observations. No new identity/queue",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X2",
+      "localized_changes": "X2 player metric: existing typed observation/measurement declaration, versioned resource schema only if needed, coverage/consumer parser and tests (about 4–6 files)",
+      "source_authority_and_fixtures": "Unit/population/period/method version and real known-at; absent historical value=null, observed zero=0; preserve original player ID and snapshot",
+      "tests_resources_switch_rollback": "Rich-observation/identity/feature differential fixtures; display-only field adds payload/storage, not champion inputs. Capability-gated display, revert reader while retaining new source bytes; old snapshot/hash unchanged",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X3",
+      "localized_changes": "X3 injury source: provider-owned adapter, capability/authority, `context_sync.py`, `context/live.py` only if a new sourced meaning, tests (about 4–7 files)",
+      "source_authority_and_fixtures": "BASE-PRIVACY and exact provider/league entitlement first; missing/stale/revoked/empty versus no reported issue; minor and correction expiry fixtures",
+      "tests_resources_switch_rollback": "Context sync/live and security/export tests; bounded context calls below live reserve, canonical player verification. Existing context flags stay disabled until approved; stop that scope, retain policy-compliant lineage, no probability effect",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X4",
+      "localized_changes": "X4 formation section: `web/components/expanded-fixture.tsx`, one `<new>` section, `web/lib/contracts.ts`, existing Go context DTO/query if missing, component/E2E tests (about 4–6 files)",
+      "source_authority_and_fixtures": "Qualified `LineupObservation`/grid/shape/confirmation version; list alternative, partial formation and unknown coordinates; no inferred XI",
+      "tests_resources_switch_rollback": "HTML comparison, SSR/hydration, keyboard/mobile/axe, no duplicate requests/new timer/connection. Section switch is proposed, not existing; disable presentation without model/fixture edits or deleting observations",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X5",
+      "localized_changes": "X5 market: `forecasting/market_catalogue.py`, `products.py` or approved product owner, Go/OpenAPI/TS consumers and tests (about 5–8 files)",
+      "source_authority_and_fixtures": "Exact event/line/period/basis/distribution and model support; old 1X2 fixture, incompatible ET fixture, unresolved-tail fixture; separate scientific authority where model changes",
+      "tests_resources_switch_rollback": "Product coherence/complement and settlement tests; no renamed unrelated probability. Market capability disabled until accepted; revert selection/publication route, preserve old probability and settlement revisions. No A01 filter",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X6",
+      "localized_changes": "X6 challenger: approved Python adapter, immutable registration/config, existing fit/feature/evaluation owners and tests (about 4–7 files plus authorized numerical implementation)",
+      "source_authority_and_fixtures": "One hypothesis, exact artifact/feature versions, qualified snapshot, unspent holdout and resource/scientific decisions; retired/missing/corrupt variant fixtures",
+      "tests_resources_switch_rollback": "Runtime registry, firewall, fit/reload/reproduce, paired denominator and no-fallback tests. Candidate disabled/shadow by default; zero fit calls until authorized; cancel candidate work and retain exact approved champion",
+      "future_release_acceptance": "UNVERIFIED"
+    },
+    {
+      "id": "X7",
+      "localized_changes": "X7 match-detail section: one `<new>` React section, `expanded-fixture.tsx`, shared API/parser only for genuinely new data, tests (about 3–5 files)",
+      "source_authority_and_fixtures": "Existing qualified source/identity/section contract; initial/partial/unavailable/additive-field fixtures; resource query and invalidation owner",
+      "tests_resources_switch_rollback": "Shared snapshot/subscription, no duplicate fetches, a11y/mobile/reflow/SSR and disabled-section probability parity. Proposed presentation switch; revert section only, retain data and subscriptions for existing consumers",
+      "future_release_acceptance": "UNVERIFIED"
+    }
+  ],
+  "fr_compatibility": [
+    {
+      "id": "FR-001",
+      "title": "FR-001 Ghana stranded identities",
+      "classification": "PARTIAL; independent defect/source relationship",
+      "disposition_and_acceptance": "Reuse merged replaced-native correction work; reverify selected old/new mapping and old-cutoff hashes before any new case. No recovery count promised",
+      "phases": "P02/P08/P09"
+    },
+    {
+      "id": "FR-002",
+      "title": "FR-002 missing native relationships",
+      "classification": "PARTIAL; AUTHENTIC EVIDENCE",
+      "disposition_and_acceptance": "Exact independent source/canonical relationship still required; no fuzzy matching or new identity database substitutes",
+      "phases": "P08/P09"
+    },
+    {
+      "id": "FR-003",
+      "title": "FR-003 retained ineligible results",
+      "classification": "DIRECT mechanism, PARTIAL data",
+      "disposition_and_acceptance": "Failed eligibility predicate and source/identity/known-time proof per cohort; bounded replay and future-history recomputation; old snapshot unchanged",
+      "phases": "P02/P09"
+    },
+    {
+      "id": "FR-004",
+      "title": "FR-004 genuine missing history",
+      "classification": "PARTIAL; EXTERNAL/SOURCE",
+      "disposition_and_acceptance": "New architecture cannot manufacture history; later separately scoped source work under standing access policy, exact retained bytes/qualification and current team coverage",
+      "phases": "P09"
+    },
+    {
+      "id": "FR-005",
+      "title": "FR-005 Scottish namespaces",
+      "classification": "PARTIAL; independent/source fix",
+      "disposition_and_acceptance": "Preserve merged parser/alias work; dated competition/season/identity census, no historical namespace rewrite or blanket admission",
+      "phases": "P02/P08/P09"
+    },
+    {
+      "id": "FR-006",
+      "title": "FR-006 admission refresh fanout",
+      "classification": "DIRECT scoped work/invalidations; independent optimization only after profiling",
+      "disposition_and_acceptance": "Merged bounded work reused; reproduce current populated deadline failure before another optimization; exact descendant/generation parity",
+      "phases": "P03/P14"
+    },
+    {
+      "id": "FR-007",
+      "title": "FR-007 rolling CSV identity",
+      "classification": "Independent defect fix already merged; preservation required",
+      "disposition_and_acceptance": "New-code hash/row semantics and old identity compatibility are regression cases; retained 1,491 conflicts are not proof of current recurrence",
+      "phases": "P02/P14"
+    },
+    {
+      "id": "FR-008",
+      "title": "FR-008 canonical fixture collision",
+      "classification": "PARTIAL; AUTHENTIC FIXTURE EVIDENCE",
+      "disposition_and_acceptance": "Explicit source/season/orientation/reschedule/ID-reuse proof; one accepted representative without false merge; distinguish already resolved cluster",
+      "phases": "P02/P08"
+    },
+    {
+      "id": "FR-009",
+      "title": "FR-009 unmatched observations",
+      "classification": "DIRECT bounded reprocessing, PARTIAL source proof",
+      "disposition_and_acceptance": "10,873 FotMob + 2,097 PitchAPI latest finished unbound candidates; exact mapping/season/basis qualification, no fabricated success from execution",
+      "phases": "P03/P09"
+    },
+    {
+      "id": "FR-010",
+      "title": "FR-010 quota/retry/history scopes",
+      "classification": "DIRECT technical scheduling; PARTIAL access",
+      "disposition_and_acceptance": "Separate deterministic block, quota cooldown, live deferral and retry; expired worker fence cannot publish; actual source permission retained",
+      "phases": "P03"
+    },
+    {
+      "id": "FR-011",
+      "title": "FR-011 missing registered originals/manifests",
+      "classification": "PARTIAL prevention; AUTHENTIC EVIDENCE/EXTERNAL/OWNER",
+      "disposition_and_acceptance": "Complete checksum-exact restoration or retain explicit unresolved lifecycle; new websites cannot replace missing original hash; no last-copy deletion",
+      "phases": "P01/P11/P12"
+    },
+    {
+      "id": "FR-012",
+      "title": "FR-012 full V2 parity",
+      "classification": "PARTIAL; independent existing PHASE GATE/OWNER",
+      "disposition_and_acceptance": "Five execution-success/BLOCKED reports do not pass full canonical/serving/report comparisons; original Phase 35 then 36 gates remain",
+      "phases": "P17/P18"
+    },
+    {
+      "id": "FR-013",
+      "title": "FR-013 report backlog",
+      "classification": "DIRECT scoped work; independent throughput evidence",
+      "disposition_and_acceptance": "Reuse bounded workers and generation fencing; old 148,095 count is not current; measure pending/oldest current generation and completeness",
+      "phases": "P03/P14"
+    },
+    {
+      "id": "FR-014",
+      "title": "FR-014 StatsBomb legacy origins",
+      "classification": "PARTIAL; AUTHENTIC RELATIONSHIP/OWNER",
+      "disposition_and_acceptance": "Forward native-method compatibility is merged but not applied at B0; old independent proof blocks remain; no legacy rewrite/admission from method name",
+      "phases": "P08/P09"
+    },
+    {
+      "id": "FR-015",
+      "title": "FR-015 broader markets/player data",
+      "classification": "PARTIAL contracts; EXTERNAL/SOURCE/SCIENTIFIC AUTHORITY",
+      "disposition_and_acceptance": "Source/player/exposure/settlement proof plus independent model/evaluation/promotion; 53/14 prior diagnostic families not new markets enabled",
+      "phases": "P06/P08/P16"
+    },
+    {
+      "id": "FR-016",
+      "title": "FR-016 quarantines/conflicting results",
+      "classification": "PARTIAL; AUTHENTIC EVIDENCE",
+      "disposition_and_acceptance": "Source-specific correction/identity/basis proof; retain exclusions and immutable disputed claims until qualified",
+      "phases": "P02/P08/P09"
+    }
+  ],
+  "discrepancies": [
+    {
+      "id": "UD-001",
+      "subsystem": "Authority and Git",
+      "classification": "HISTORICAL_DIFFERENCE",
+      "severity": "low",
+      "scope_note": "HISTORICAL_DIFFERENCE / low",
+      "conflicting_claims_or_records": "Companion/older task references pending PRs; GitHub confirms #178/#179/#182 merged. Preserve dated source; use combined baseline",
+      "sources": [
+        "MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md",
+        "https://github.com/sir-radar/match-forge/pull/178",
+        "https://github.com/sir-radar/match-forge/pull/179",
+        "https://github.com/sir-radar/match-forge/pull/182"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Historical PR snapshot precedes integration merge.",
+      "operational_impact": "Companion/older task references pending PRs; GitHub confirms #178/#179/#182 merged. Preserve dated source; use combined baseline",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Record merged baseline; do not redo merge or rewrite original plan.",
+      "dependencies": [
+        "P00-01"
+      ],
+      "required_authorization": "Read-only Git/GitHub verification; any new implementation is separate.",
+      "acceptance_test": "Git ancestor/merged-state and source-plan hash checks.",
+      "status": "HISTORICAL_EXPLAINED"
+    },
+    {
+      "id": "UD-002",
+      "subsystem": "Release provenance",
+      "classification": "MISSING_EVIDENCE",
+      "severity": "high",
+      "scope_note": "MISSING_EVIDENCE / high",
+      "conflicting_claims_or_records": "Running `/version` unknown while tested Git SHA is known. Existing ldflags path exists; separately deploy/verify exact build before adoption",
+      "sources": [
+        "go/api/internal/app/app.go",
+        "Makefile",
+        ".local/unified-architecture-investigation/baseline.json#http/version"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Running service does not expose a verifiable build identity; code supports build metadata.",
+      "operational_impact": "Running `/version` unknown while tested Git SHA is known. Existing ldflags path exists; separately deploy/verify exact build before adoption",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Use existing build flags in separately authorized release, verify actual HTTP identity.",
+      "dependencies": [
+        "P00-01",
+        "P14-01",
+        "P18-01"
+      ],
+      "required_authorization": "Operating deployment requires separate authorization.",
+      "acceptance_test": "Version/readiness test: unknown/mismatched running SHA cannot prove adoption.",
+      "status": "BLOCKED_EVIDENCE"
+    },
+    {
+      "id": "UD-003",
+      "subsystem": "Schema/writer release",
+      "classification": "IMPLEMENTATION_MISMATCH",
+      "severity": "high",
+      "scope_note": "IMPLEMENTATION_MISMATCH / high, release-specific",
+      "conflicting_claims_or_records": "Merged `202611100200` absent in operating DB. No rollout claim; require approved pre-writer migration/restore plan",
+      "sources": [
+        "infrastructure/migrations/202611100200_provider_native_mapping_method.sql",
+        ".local/unified-architecture-investigation/baseline.json#queries/migrations"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Operating migration list predates merged forward native-method migration.",
+      "operational_impact": "Merged `202611100200` absent in operating DB. No rollout claim; require approved pre-writer migration/restore plan",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Apply only under approved backup/restore and pre-writer rollout; preserve old migration bytes.",
+      "dependencies": [
+        "P01-01",
+        "P18-01"
+      ],
+      "required_authorization": "Separate operating migration/rollout authorization.",
+      "acceptance_test": "Disposable populated upgrade/retry; compare complete applied versions/checksums and old rows.",
+      "status": "PROPOSED_CHANGE"
+    },
+    {
+      "id": "UD-004",
+      "subsystem": "Work status",
+      "classification": "MISSING_EVIDENCE",
+      "severity": "high",
+      "scope_note": "MISSING_EVIDENCE / high",
+      "conflicting_claims_or_records": "Four stored historical RUNNING rows have no valid lease. Effective worker status differs from a durable state label; show expiry/recovery instead of active execution claim",
+      "sources": [
+        "python/football/src/football/work/contracts.py",
+        ".local/unified-architecture-investigation/baseline.json#queries/work"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Durable RUNNING state can remain after lease expiry; no valid actor demonstrated for those four rows.",
+      "operational_impact": "Four stored historical RUNNING rows have no valid lease. Effective worker status differs from a durable state label; show expiry/recovery instead of active execution claim",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Derive effective active-worker status from lease/heartbeat/fence; bounded recovery.",
+      "dependencies": [
+        "P03-01",
+        "P05-02"
+      ],
+      "required_authorization": "New operating recovery execution or policy change requires its own task.",
+      "acceptance_test": "Expired old lease cannot publish; implementation ticket progress does not imply running worker.",
+      "status": "BLOCKED_EVIDENCE"
+    },
+    {
+      "id": "UD-005",
+      "subsystem": "Model monitoring",
+      "classification": "IMPLEMENTATION_MISMATCH",
+      "severity": "medium",
+      "scope_note": "IMPLEMENTATION_MISMATCH / medium, target-only",
+      "conflicting_claims_or_records": "Post-match CLI/work exists but operating rows/schedule absent. Plan monitored scheduler; no current continuous-learning claim",
+      "sources": [
+        "python/football/src/football/forecasting/postmatch_storage.py",
+        "go/api/internal/app/app.go",
+        ".local/unified-architecture-investigation/baseline.json#queries/postmatch"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Callable scoring/work contract is not automatically scheduled continuous evaluation.",
+      "operational_impact": "Post-match CLI/work exists but operating rows/schedule absent. Plan monitored scheduler; no current continuous-learning claim",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Add separately authorized bounded monitor schedule using existing work/evaluation owner.",
+      "dependencies": [
+        "P16-01"
+      ],
+      "required_authorization": "Separate scheduling rollout; fitting/evaluation/promotion remain distinct authorities.",
+      "acceptance_test": "Empty evaluation table yields NOT_CONFIGURED; scheduled source-qualified scoring yields MONITORING_ONLY.",
+      "status": "PROPOSED_CHANGE"
+    },
+    {
+      "id": "UD-006",
+      "subsystem": "Context qualification",
+      "classification": "FALSE_POSITIVE",
+      "severity": "low",
+      "scope_note": "FALSE_POSITIVE / low",
+      "conflicting_claims_or_records": "Retained provider LINEUPS resources versus zero qualified context rows are different populations; no fabricated source contradiction",
+      "sources": [
+        ".local/unified-architecture-investigation/followup.json#queries/resource_states",
+        ".local/unified-architecture-investigation/followup.json#queries/lineup_counts",
+        "docs/contracts/live-match-context-v1.md"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Native retained resource and qualified display/model context tables have different admission criteria.",
+      "operational_impact": "Retained provider LINEUPS resources versus zero qualified context rows are different populations; no fabricated source contradiction",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Preserve both counts/scopes; qualify before display/features.",
+      "dependencies": [
+        "P08-02"
+      ],
+      "required_authorization": "No new sensitive acquisition or scientific use inferred.",
+      "acceptance_test": "Native LINEUPS presence cannot set confirmed qualified XI or model feature availability.",
+      "status": "FALSE_POSITIVE"
+    },
+    {
+      "id": "UD-007",
+      "subsystem": "Database statistics",
+      "classification": "FALSE_POSITIVE",
+      "severity": "medium",
+      "scope_note": "FALSE_POSITIVE / medium",
+      "conflicting_claims_or_records": "`event_observations.n_live_tup=0` versus 2,609,128 exact rows is stale estimation; never delete based on estimates",
+      "sources": [
+        ".local/unified-architecture-investigation/baseline.json#queries/relations",
+        ".local/unified-architecture-investigation/corrections.json#queries/event_rows"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Estimated live tuple counter is stale; exact count is nonzero.",
+      "operational_impact": "`event_observations.n_live_tup=0` versus 2,609,128 exact rows is stale estimation; never delete based on estimates",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Do not infer emptiness or authorize deletion; measure actual eligible state.",
+      "dependencies": [
+        "P10-01"
+      ],
+      "required_authorization": "Read-only diagnostics; maintenance/deletion separate.",
+      "acceptance_test": "Inventory distinguishes estimated from exact counts and blocks estimate-only deletion.",
+      "status": "FALSE_POSITIVE"
+    },
+    {
+      "id": "UD-008",
+      "subsystem": "Source/artifact recovery",
+      "classification": "MISSING_EVIDENCE",
+      "severity": "critical",
+      "scope_note": "MISSING_EVIDENCE / critical",
+      "conflicting_claims_or_records": "Prior exact source/model/manifest gaps still constrain full recovery; search authentic backup, preserve blocker/disposition",
+      "sources": [
+        "docs/evidence/forecast-readiness-remediation-plan.md",
+        "docs/evidence/v4-post-remediation-integration.md",
+        "docs/recovery.md"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Historical exact registrations have missing/unverifiable original bytes and manifests.",
+      "operational_impact": "Prior exact source/model/manifest gaps still constrain full recovery; search authentic backup, preserve blocker/disposition",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Locate checksum-exact authentic backup or retain explicit lifecycle blocker; no substitute original.",
+      "dependencies": [
+        "P01-01",
+        "P12-01"
+      ],
+      "required_authorization": "Source restoration/disposition requires existing reviewed recovery authority.",
+      "acceptance_test": "Missing source/model/manifest blocks complete recovery; new corroboration cannot satisfy old hash.",
+      "status": "BLOCKED_EVIDENCE"
+    },
+    {
+      "id": "UD-009",
+      "subsystem": "Fixture deduplication",
+      "classification": "FALSE_POSITIVE",
+      "severity": "medium",
+      "scope_note": "FALSE_POSITIVE / medium",
+      "conflicting_claims_or_records": "281 same-key groups are candidates; example has accepted common representative. Do not submit another merge or claim 281 duplicate public fixtures",
+      "sources": [
+        ".local/unified-architecture-investigation/final-reads.json#queries/duplicate_population",
+        ".local/unified-architecture-investigation/lifecycle-trace.json#queries/duplicate_resolutions"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Same-key source cluster is not necessarily an unresolved real fixture; inspected cluster already has resolutions.",
+      "operational_impact": "281 same-key groups are candidates; example has accepted common representative. Do not submit another merge or claim 281 duplicate public fixtures",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Keep existing accepted representatives; investigate only current unresolved predicate.",
+      "dependencies": [
+        "P02-01",
+        "P08-01"
+      ],
+      "required_authorization": "No new merge/admission from candidate census.",
+      "acceptance_test": "Already resolved source members retain decisions; no second merge; unique correct public representation verified independently.",
+      "status": "FALSE_POSITIVE"
+    },
+    {
+      "id": "UD-010",
+      "subsystem": "MC Oran canonical lifecycle",
+      "classification": "HISTORICAL_DIFFERENCE",
+      "severity": "low",
+      "scope_note": "HISTORICAL_DIFFERENCE / low",
+      "conflicting_claims_or_records": "MC Oran old SCHEDULED claim versus fresh verified canonical FINISHED 0–0. Preserve dated report and add current observation",
+      "sources": [
+        "docs/CODEBASE_REMEDIATION_REPORT.md",
+        ".local/unified-architecture-investigation/followup.json#queries/exact_fixture"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Canonical row changed after historical report; snapshots differ in time.",
+      "operational_impact": "MC Oran old SCHEDULED claim versus fresh verified canonical FINISHED 0–0. Preserve dated report and add current observation",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Keep dated report, add fresh verified canonical state with limits.",
+      "dependencies": [
+        "P02-01"
+      ],
+      "required_authorization": "Read-only status supplement only.",
+      "acceptance_test": "0–0 remains actual score; historical report not retroactively rewritten.",
+      "status": "HISTORICAL_EXPLAINED"
+    },
+    {
+      "id": "UD-011",
+      "subsystem": "MC Oran source binding",
+      "classification": "UNRESOLVED_SOURCE_CONFLICT",
+      "severity": "high",
+      "scope_note": "UNRESOLVED_SOURCE_CONFLICT / high",
+      "conflicting_claims_or_records": "MC Oran FotMob mapping/native kickoff/resource binding remains inconsistent and API marks conflict/partial; exact new proof required, no guard removal",
+      "sources": [
+        "docs/CODEBASE_REMEDIATION_REPORT.md",
+        ".local/unified-architecture-investigation/lifecycle-trace.json",
+        ".local/unified-architecture-investigation/representative-trace.json"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "FotMob native mapping/old kickoff and later unbound observation/resource association remain unresolved.",
+      "operational_impact": "MC Oran FotMob mapping/native kickoff/resource binding remains inconsistent and API marks conflict/partial; exact new proof required, no guard removal",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Preserve withheld resource/partial conflict response; obtain exact fixture/season relationship before prospective correction.",
+      "dependencies": [
+        "P02-01",
+        "P08-01",
+        "P09-01"
+      ],
+      "required_authorization": "Independent source proof and existing reviewed correction authority; no guard bypass.",
+      "acceptance_test": "Conflicting native resource cannot choose canonical status/score or leak incidents; original forecast/hash/cutoff preserved.",
+      "status": "BLOCKED_EVIDENCE"
+    },
+    {
+      "id": "UD-012",
+      "subsystem": "Verification history",
+      "classification": "HISTORICAL_DIFFERENCE",
+      "severity": "low",
+      "scope_note": "HISTORICAL_DIFFERENCE / low",
+      "conflicting_claims_or_records": "Integration aggregate exit 2 and later passing corrected focused tests are both true; never relabel earlier aggregate PASS",
+      "sources": [
+        "docs/evidence/v4-post-remediation-integration.md",
+        "https://github.com/sir-radar/match-forge/pull/182"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Original aggregate failed; corrected focused cases and remaining integration later passed.",
+      "operational_impact": "Integration aggregate exit 2 and later passing corrected focused tests are both true; never relabel earlier aggregate PASS",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Report exact command exits and separate later evidence; do not alter old result.",
+      "dependencies": [
+        "P14-01"
+      ],
+      "required_authorization": "No additional authorization for accurate dated documentation.",
+      "acceptance_test": "Evidence distinguishes aggregate exit 2 from focused/remaining exit 0.",
+      "status": "HISTORICAL_EXPLAINED"
+    },
+    {
+      "id": "UD-013",
+      "subsystem": "External Predictions UX",
+      "classification": "IMPLEMENTATION_MISMATCH",
+      "severity": "medium",
+      "scope_note": "IMPLEMENTATION_MISMATCH / medium, target-only",
+      "conflicting_claims_or_records": "Current External Predictions API/UI paginated; proposed requirement is unpaginated selected scope. P06 delivers compatibility, not a data repair",
+      "sources": [
+        "go/api/internal/app/external_prediction_store.go",
+        "web/components/predictions-page.tsx",
+        ".local/unified-architecture-investigation/followup.json#http"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Existing pagination is implemented; new scoped unpaginated requirement is a proposed target.",
+      "operational_impact": "Current External Predictions API/UI paginated; proposed requirement is unpaginated selected scope. P06 delivers compatibility, not a data repair",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Implement complete filtered traversal/internal chunks and bounded accessible rendering without page controls.",
+      "dependencies": [
+        "P06-01"
+      ],
+      "required_authorization": "New implementation task; no backend source/model mutation implied.",
+      "acceptance_test": "All selected records/counts/consensus available, no silent cap, stable concurrent snapshot and bounded browser memory.",
+      "status": "PROPOSED_CHANGE"
+    },
+    {
+      "id": "UD-014",
+      "subsystem": "Architecture V2 gates",
+      "classification": "MISSING_EVIDENCE",
+      "severity": "high",
+      "scope_note": "MISSING_EVIDENCE / high",
+      "conflicting_claims_or_records": "Full required V2 parity not accepted; SUCCEEDED/BLOCKED and absent operating cutover are distinct truth",
+      "sources": [
+        ".local/unified-architecture-investigation/final-reads.json#queries/parity",
+        "docs/evidence/matchforge-architecture-v2-phase-35-preflight-2026-10-31.json",
+        "docs/evidence/matchforge-architecture-v2-phase-36-preflight-2026-10-31.json"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "Work execution success contains blocked acceptance reports; required full parity not accepted.",
+      "operational_impact": "Full required V2 parity not accepted; SUCCEEDED/BLOCKED and absent operating cutover are distinct truth",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Complete exact missing parity scope before independently authorized Phase 35, then Phase 36.",
+      "dependencies": [
+        "P17-01",
+        "P18-01",
+        "P18-02"
+      ],
+      "required_authorization": "Original cutover/retirement owner gates remain binding.",
+      "acceptance_test": "SUCCEEDED+BLOCKED cannot pass readiness or retire scheduler; all required comparison scopes/rollback verified.",
+      "status": "BLOCKED_EVIDENCE"
+    },
+    {
+      "id": "UD-015",
+      "subsystem": "Acquisition authority",
+      "classification": "SUPERSEDED_INFORMATION",
+      "severity": "low",
+      "scope_note": "SUPERSEDED_INFORMATION / low",
+      "conflicting_claims_or_records": "Older ordinary acquisition approval restrictions superseded by standing source policy, while this task's explicit no-acquisition limit applies",
+      "sources": [
+        "PLAN.md",
+        "docs/source-acquisition.md",
+        "CURRENT_TASK.md"
+      ],
+      "observed_date": "2026-11-10",
+      "relevant_times": "See exact dated snapshot and historical source references; observations are not one shared transaction.",
+      "source_authority": "Current owner task and approved contracts; operating snapshots/HTTP establish actual state, historical reports retain their original scope.",
+      "root_cause": "New standing owner decision supersedes older ordinary-acquisition restrictions; task-specific scope still narrower.",
+      "operational_impact": "Older ordinary acquisition approval restrictions superseded by standing source policy, while this task's explicit no-acquisition limit applies",
+      "confidence": "HIGH for the stated observation/classification; unproved source identity, deployed implementation and future acceptance remain UNVERIFIED.",
+      "recommended_resolution": "Record source terms/permissions separately and follow current task no-acquisition limit.",
+      "dependencies": [
+        "P00-01",
+        "P09-02"
+      ],
+      "required_authorization": "Existing standing research authority retained; no new spend/health/scientific authority.",
+      "acceptance_test": "Authority-order fixtures distinguish owner permission, provider consent, entitlement and task scope.",
+      "status": "DISPOSITION_RECORDED"
+    }
+  ],
+  "phases": [
+    {
+      "phase": 0,
+      "title": "Current-state evidence and release criteria",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P00-01",
+          "scope": "P00-01",
+          "objective_owners_contracts": "Refresh selected source/API/work/model/route cohort and release truth. Owners: `go/api/internal/app/app.go` version/readiness, Makefile build metadata, `docs/project-status.json`, Goose checksums, runtime registry and stage settings. Current examples: unknown service commit, missing `202611100200`, expired historical leases",
+          "validation_done_rollback": "Read-only snapshot/HTTP receipts and exact commit/lock/schema/model/flag comparison; extend existing Go version/readiness/serving tests only if needed. DoD: implemented/shadow/running/blocked truth by component, no invented deployed status. No rollback for reads; any diagnostic code is additive read-only",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P00-02",
+          "scope": "P00-02",
+          "objective_owners_contracts": "Freeze provider/lifecycle, query/UI, event, backup/restore and optional learning workloads/budgets in existing operational policy. Use current 30s schedule, 45s browser timer, measured payloads/bytes and 16 GiB host as inputs, not SLOs",
+          "validation_done_rollback": "Repeatable controlled workload with p50/p95/p99, CPU/RAM/disk/WAL/query/request counts and source delay separated from propagation. Scientific margins/sample floors remain independently preregistered. DoD: numeric release budgets fixed before results; unresolved terms explicitly block the affected rollout",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 0 — Current-state evidence and release criteria",
+      "entry_dependencies_and_scope": "Prerequisite: a new owner-selected implementation scope. Reuse this investigation\nrather than start another architecture-wide audit. Pure inspection has no\noperating mutation. Dependencies below use P00 as the scoped refreshed baseline."
+    },
+    {
+      "phase": 1,
+      "title": "Backup/restore foundation",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P01-01",
+          "scope": "P01-01",
+          "objective_owners_contracts": "Extend `scripts/capture_architecture_v2_baseline.py`, existing integrity/recovery owners and `docs/recovery.md` to cover the DB snapshot's full referenced raw/observation/Parquet/model/forecast/evaluation/learning file closure. Reuse source/artifact registries and immutable publication; add only required backup metadata",
+          "validation_done_rollback": "Extend `tests/test_architecture_v2_baseline.py`, `tests/integration/test_postgres_recovery.py`, raw/dataset/model integrity tests. Exact snapshot/table/cutoff/file hashes, missing/corrupt/interrupted/mixed-version failures; no DB-only complete claim. DoD: independently verified full isolated restore for selected operating scope. Rollback: old capture/read path stays; no source rewrite",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P01-02",
+          "scope": "P01-02",
+          "objective_owners_contracts": "Add restricted encrypted destination/key handling, complete/incomplete manifests, schedule submission and dry-run status through existing work/Admin owners; evaluate restic in disposable storage before dependency adoption. Source-policy/privacy and path/restore threat review included",
+          "validation_done_rollback": "Wrong key, unavailable disk, source rights, symlink/traversal/bomb, interrupted write, operating-target rejection and measured peak workspace/RPO/RTO. No paid storage or health intake inferred. DoD: latest/previous good chain retained, actual backup age/failure visible; disable new backup job/route without deleting good bytes",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 1 — Backup/restore foundation",
+      "entry_dependencies_and_scope": "Dependencies: P00; external destination/key/retention choice where needed. Source,\nmodel and protected evidence gaps remain explicit. Operating backup capture is\nseparately scoped, read-only; restore always uses a guarded new DB/root."
+    },
+    {
+      "phase": 2,
+      "title": "Critical identity, fixture and score defects",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P02-01",
+          "scope": "P02-01",
+          "objective_owners_contracts": "Reproduce current defect cohorts in `product/live_resources.py`, `operational_provider_sync.py`, `fixture_reconciliation.py`, `history/fixture_identity.py`, effective/serving SQL views and Go `postgres_store.go`. Cases: 45 old LIVE/missing-resource rows; MC Oran withheld native relationship; already resolved three-source cluster as preservation case",
+          "validation_done_rollback": "Extend live-order, operational-provider, history-identity tests and Go `live_ordering_database_test.go`/`fixture_serving_database_test.go`. 0–0→1–0, FT/HT/ET/penalty, delayed/corrected/unknown scores, no elapsed-time fabrication; league/cup/replay/reschedule/provider reuse and concurrent first-seen. DoD: exact first failed predicate and source-to-API trace; source deficiency is not a code regression",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P02-02",
+          "scope": "P02-02",
+          "objective_owners_contracts": "Implement only missing proven defect fix in those owners; additive SQL constraints only for valid stable keys; reuse reviewed crosswalk/correction/representative rules. FR-001/005/007/008/016 current proof subset, not blanket reconciliation",
+          "validation_done_rollback": "Populated migration/retry/concurrency and historical-cutoff/forecast-hash parity; one listing per proven fixture, distinct cup/youth/season fixtures separate. DoD: qualified canonical/API result and bounded descendants, unresolved evidence retained. Rollback serving route/correction prospectively under actual contract; never rewrite old IDs/bytes",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 2 — Critical identity, fixture and score defects",
+      "entry_dependencies_and_scope": "Dependencies: P00; exact source qualification before an actual correction; P01\nbefore risky operating mutations. Do not recreate fixes already merged in #179."
+    },
+    {
+      "phase": 3,
+      "title": "Backend live synchronization and fairness",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P03-01",
+          "scope": "P03-01",
+          "objective_owners_contracts": "Extend `app.go` schedule submission, `admin_sync.go`, `providers/worker.py`, `work/storage.py` and existing SQL work adapters for scoped due-resource policy/fairness/recovery. Reuse LIVE_FOTMOB/LIVE_PITCHAPI lanes and real quota; no second scheduler",
+          "validation_done_rollback": "Extend work orchestration/publication-fencing and Go schedule tests: browser closed, manual/live same and distinct scopes, quota exhaustion, provider outage, lease loss, cancellation, midnight, sleep/wake/reboot/network/clock jumps. DoD: current lease-based status, bounded catch-up, measured no starvation and no unrelated cancellation. Disable new scheduling policy while retaining durable completed work",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P03-02",
+          "scope": "P03-02",
+          "objective_owners_contracts": "Bound dependency-specific reconciliation, forecast/context/report and post-match enqueue in `product/history_work.py`, `forecast_work.py`, existing report workers and dependency owners. Diagnose FR-006/010/013 current generations before optimization",
+          "validation_done_rollback": "Populated fanout/lock/query profile and exact descendant/input-generation parity; old worker cannot complete newer input, current pending/oldest counts audited. DoD: affected-only refresh meets frozen workload budget; no full-history storm. Rollback enqueue policy, preserve immutable outputs and unfinished durable jobs",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 3 — Backend live synchronization and fairness",
+      "entry_dependencies_and_scope": "Dependencies: P00/P02 for affected correctness; existing live schedules remain\nrunning under their prior authority. P01 before operating schedule changes."
+    },
+    {
+      "phase": 4,
+      "title": "Event delivery and freshness",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P04-01",
+          "scope": "P04-01",
+          "objective_owners_contracts": "Add transaction-bound scoped event records/counters around existing canonical/product/work publication, versioned schema and Go stream reader in `go/api/internal/app/`. Amend SQL migrations/OpenAPI and reuse work fences/locks. NOTIFY is a hint only",
+          "validation_done_rollback": "DB rollback/crash/multiple writers/offset allocation commit-order/slow-client/disconnect/replay/retention tests; real snapshot+offset handshake, no duplicate/lost event, unknown schema and cross-scope moves. Measure publication lock contention, replay disk and connection/RAM/query budgets. DoD: durable committed authorized events, no source/conflict leak. Revert stream routing; keep log/evidence",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P04-02",
+          "scope": "P04-02",
+          "objective_owners_contracts": "Implement one Next client snapshot/cache/subscription owner and same-origin authorized stream proxy; integrate fixture/expanded/context, Sync Admin, performance and notifications where real-time. Update `web/lib/api.ts`, contracts and relevant hooks; per-resource backend freshness metadata",
+          "validation_done_rollback": "Existing use-resource race tests plus new event fixtures and Playwright: initial snapshot race, old response, duplicate/out-of-order/gap, two tabs, offline/tab resume, reconnect storms, auth/Origin/resume scope and hydration. DoD: remove corresponding HTTP polling only after replacement passes; bounded exceptional snapshot, no permanent polling fallback. Disable new consumer for a controlled rollback; do not claim no-polling acceptance while old timer path is active",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 4 — Event delivery and freshness",
+      "entry_dependencies_and_scope": "Dependencies: P03, affected P02 contracts; P01 and local security review before\noperating event publication. Design details are in `design.md`."
+    },
+    {
+      "phase": 5,
+      "title": "Settlement and live Admin controls",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P05-01",
+          "scope": "P05-01",
+          "objective_owners_contracts": "Reuse `product/external_prediction_recovery.py`, `external_predictions.py`, Go `external_prediction_store.go`/Admin sync adapters for automatic verified-result settlement and distinct manual Settle External Predictions action; source-accuracy invalidation and event summary",
+          "validation_done_rollback": "Extend external recovery/source-accuracy integration and Go/Admin/browser tests: wrong binding/basis, ET vs regulation, WON→LOST→PENDING/VOID correction, retries/concurrent actions/fence loss, unsupported market and hostile Origin. DoD: one append-only effective decision per exact input/policy, scoped readable counts; disable new action/job without undoing old revisions",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P05-02",
+          "scope": "P05-02",
+          "objective_owners_contracts": "Add proposed `/admin/live-sync` SSR view using sync/work/attempt metrics; existing Go list/work APIs gain backend filtering/paging/next-attempt and effective lease fields only as needed. Existing Resolution/Data Sync stay owners",
+          "validation_done_rollback": "Source failures, missing metrics, old RUNNING/expired lease, code VERIFIED/operating unknown, work SUCCEEDED/report BLOCKED and accessible keyboard/filter tests. DoD: requested provider/time/competition/error/fixture drilldown and separate run histories, no UUID-led rows or new scheduler; revert view/consumer only",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 5 — Settlement and live Admin controls",
+      "entry_dependencies_and_scope": "Dependencies: qualified P02 results, P03 work and P04 events; P06 SSR/table contract\nfor rollout. Keep collection, official post-match scoring and settlement separate."
+    },
+    {
+      "phase": 6,
+      "title": "Admin SSR and table/market contracts",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P06-01",
+          "scope": "P06-01",
+          "objective_owners_contracts": "Extend `web/app/admin/data-sync/page.tsx`, `/resolution/page.tsx`, existing client components/hooks and Go read APIs/OpenAPI/TS parsers for server-authorized initial datasets and genuine backend filtering/sort/paging. Inventory every Admin/research/history/statistics table. External Predictions alone loses page controls; internal snapshot-bound chunks/virtualization remain complete",
+          "validation_done_rollback": "Go pagination/contract, SSR HTML, request-count, hydration, cache/auth/secret and Playwright a11y/mobile/large-data tests. Concurrent insert/update, filter cancel, empty/end/retry, all-row count/consensus and no hidden truncation. DoD: all applicable tables backend-managed, selected external scope scrollable completely with bounded browser memory; revert route/DTO consumer compatibly",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P06-02",
+          "scope": "P06-02",
+          "objective_owners_contracts": "Extend existing `MarketDefinition`, score-product, horizon/performance selector, runtime role safety and standings rule policy contracts across Python/Go/OpenAPI/TS; A02/C03/D01. No percentage Probability Filter code",
+          "validation_done_rollback": "Market partition/complement/line/basis/tail tests, retired/missing/corrupt model unavailable, old immutable forecast selector/horizon, deduction/tie/split/aggregate unknown-rule fixtures. DoD: one meaning per market and compatible settlement, qualified partial table if rules absent; preserve old schemas/forecasts and revert new capability/publication selection",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 6 — Admin SSR and table/market contracts",
+      "entry_dependencies_and_scope": "Dependencies: P00, E03 security, qualified existing contracts; P04 only for live\nreplacement. Builds can proceed independently of optional data/science."
+    },
+    {
+      "phase": 7,
+      "title": "Core match research and operator language",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P07-01",
+          "scope": "P07-01",
+          "objective_owners_contracts": "Compose existing qualified overview/timeline/form/home-away/H2H/standings/statistics/forecast/history/availability sections in `expanded-fixture.tsx` and shared typed API/query owners. Use desktop/mobile HTML under `web/ui-designs/` and ordinary React composition",
+          "validation_done_rollback": "Supported-cohort workflow: find match→state→form→H2H→standings→statistics→forecast→next match without external lookup; correct loading/empty/partial/stale/unsupported cases, no domain math/provider fetch in browser. Measure task completion/clicks, query duplication and payload/bundle budgets before accepting benefit. Revert section/route, keep data",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P07-02",
+          "scope": "P07-02",
+          "objective_owners_contracts": "Apply targeted wording/diagnostic hierarchy in existing AppShell, predictions/performance/fixture/Admin components: names/dates first, copyable advanced IDs, no permanent sidebar, inline collapsible details; preserve important warnings/attribution and correct statistical meanings",
+          "validation_done_rollback": "Deterministic HTML comparison, keyboard/screen-reader roles, 200%/400% zoom/reflow, reduced-motion/forced-colors, mobile and failure-state tests in existing Playwright/axe harness. DoD: required research tasks usable and exact uncertainty intact, no fake “live” design labels. Revert view only",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 7 — Core match research and operator language",
+      "entry_dependencies_and_scope": "Dependencies: P06 and P04 for live portions; qualified P02/P08 data only. Source\nabsence degrades that section. Deferred full team/player/formation/injury pages\nremain companion F1–F4, not this phase's hidden completion requirement."
+    },
+    {
+      "phase": 8,
+      "title": "Canonical identity and evidence unification",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P08-01",
+          "scope": "P08-01",
+          "objective_owners_contracts": "Extend `providers/capability_registry.py`, `resource_authority.py`, native/source/normalization pipeline, `observations/storage.py` and `canonical_resources/resolution.py` only for proven scope/field gaps. Retain source acceptance separate from eight qualification dimensions",
+          "validation_done_rollback": "Existing capability/resource/artifact/resolution tests plus unknown schema/enum, denied entitlement, version correction, unbound identity, alias/provider ID reuse, contradictory fields and zero/null fixtures. DoD: one scope/version/consumer policy owner, bounded reprocess on dependency changes; rollback selected reader/routing, retain observed bytes",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P08-02",
+          "scope": "P08-02",
+          "objective_owners_contracts": "Define/implement only authorized missing typed membership/formation/partial-lineup/availability/league-rule contracts in existing identity/source/context/participation/standing owners. Actual acquisition/pages remain companion work; versioned contract reason is explicit",
+          "validation_done_rollback": "B01–B05/D01–D02 negative fixtures from acceptance.md, N/N−1 and historical query parity, privacy/minors/entitlement denied path. DoD: usable extension contract with real source examples and consumers/explicit interface reason; no all-future-fields schema. If source/policy absent, record BLOCKED scope and leave it disabled; do not invent synthetic provider meaning",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 8 — Canonical identity and evidence unification",
+      "entry_dependencies_and_scope": "Dependencies: P02 scoped proof and P00; additive schema before consumer activation.\nReuse shadow contracts where independently accepted; global V2 cutover still gated."
+    },
+    {
+      "phase": 9,
+      "title": "Missing authentic data recovery",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P09-01",
+          "scope": "P09-01",
+          "objective_owners_contracts": "Cohort existing retained source/native observations via `product/history_worker.py`, identity/admission/correction and reconciliation owners. Prioritize exact recoverable score/season/binding predicate over broad refetch; preserve FR reports and current affected IDs",
+          "validation_done_rollback": "Byte/manifest/known-time verification, same-kickoff/date-only/order exclusion, identity/source/basis negative and idempotent bounded replay tests; before/after qualified result/API/history hash and coverage by exact target union. DoD: proven newly eligible facts only; source-only rows not counted as forecasts gained. Revoke prospectively through approved owner if correction fails",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P09-02",
+          "scope": "P09-02",
+          "objective_owners_contracts": "Research then acquire only separately tasked missing provider/resource/team/season scopes through existing adapters/access register. Maintain primary/independent-source analysis and denied/unsupported/partial scopes; no access-control bypass or unapproved spend",
+          "validation_done_rollback": "Request budget/quota/cooldown, immutable capture, native IDs/time/semantics and independent relationship proof. New evidence has real new known time and cannot replace a missing registered hash. DoD: exact recoverable subset or explicit external blocker; disable source scope, preserve rights-compliant evidence",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 9 — Missing authentic data recovery",
+      "entry_dependencies_and_scope": "Dependencies: P08/P03 and applicable P02, P01 for risky operating correction.\nTask-specific new authority required; standing provider research permission is\nnot repeatedly re-requested, and does not bypass scientific/health/paid gates."
+    },
+    {
+      "phase": 10,
+      "title": "Storage observability and pressure controls",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P10-01",
+          "scope": "P10-01",
+          "objective_owners_contracts": "Incremental root-owned byte/allocation/category/DB-WAL-temp/shadow/log/cache inventory using existing registration/manifests; extend work/metrics, not a new always-on storage service. Record APFS/Docker accounting separately",
+          "validation_done_rollback": "Metadata/file/symlink/sparse/shared-layer fixtures, changed-file reconciliation, errors retained and no arbitrary parent traversal. DoD: low-cost fresh totals/growth series and confidence; routine Admin read does not walk four million files. Disable collection, preserve previous dated samples",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P10-02",
+          "scope": "P10-02",
+          "objective_owners_contracts": "Enforce measured headroom admission/backpressure for optional acquisition/compression/shadow/fit work; add SSR Storage page/API with paginated candidates/history and dry-run consequences",
+          "validation_done_rollback": "Disk-full, large temp/WAL burst, active input/job pin, missing external disk and optional-work fairness injection. DoD: live/approved artifact/recovery protected, unsafe new optional growth blocked explicitly; no arbitrary percentage-trigger deletion. Revert optional admission policy safely while preserving hard integrity gates",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 10 — Storage observability and pressure controls",
+      "entry_dependencies_and_scope": "Dependencies: P00 measurements; no deletion is part of this phase. Actual baseline\nand category limitations are in storage-recovery.md."
+    },
+    {
+      "phase": 11,
+      "title": "Compression and exact-content deduplication",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P11-01",
+          "scope": "P11-01",
+          "objective_owners_contracts": "Extend `storage/raw.py`, immutable artifact/observation readers and metadata only for new physical representations; preserve original byte hash/size plus physical hash/size/codec/version. Existing Parquet/gzip remain unchanged",
+          "validation_done_rollback": "Full representative JSON/CSV/log/archive benchmark, streaming roundtrip, checksum corruption, interrupted/atomic/concurrent publication, old reader and bounded decompress tests. DoD: exact original bytes readable at old identities and verified restore, measured positive savings/cost for selected class; disable new encoder/reader route, retain original",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P11-02",
+          "scope": "P11-02",
+          "objective_owners_contracts": "Reuse current immutable stores with exact-content object/reference metadata only where proven duplicate savings justify it. Preserve every source/acquisition/history record and backup/read/job pins",
+          "validation_done_rollback": "Same-byte/different-provenance, hash/size conflict, racing writers/readers, shared-reference GC and missing object tests. DoD: measured unique content versus physical extent savings distinguished; no “similar file” merging. Revert new representation locator; never unlink original on speculative references",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 11 — Compression and exact-content deduplication",
+      "entry_dependencies_and_scope": "Dependencies: P01 full referenced backup, P10 headroom, source-reader compatibility.\nUse sample findings as evidence, not a population savings promise."
+    },
+    {
+      "phase": 12,
+      "title": "Archival, safe cleanup and recovery controls",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P12-01",
+          "scope": "P12-01",
+          "objective_owners_contracts": "Add reference-aware hot/cold policy, verified retrieval, retention/dry-run and bounded maintenance through existing storage/work owners. No new archive service; external/offsite optional",
+          "validation_done_rollback": "Active lease/input/backup/holdout/source/model pin, stale planner, race/crash/disk-full, missing archive, disconnect/path relocation and last-copy refusal; exact retrieved bytes and actual independent good backup before local eviction. DoD: audited eligibility/disposition and retry-safe operation; stop maintenance, restore verified representation without changing original IDs",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P12-02",
+          "scope": "P12-02",
+          "objective_owners_contracts": "Extend Admin Storage/Backup & Recovery and existing API for schedule/history/health, manual backup, rights-filtered portable export, restore preview and separately confirmed isolated restore",
+          "validation_done_rollback": "SSR/auth/paging/progress/events, restricted data/minors/export, wrong key, corrupt/missing dependencies, no default operating overwrite and actual full restore smoke/reproducibility. DoD: readable RPO/last-drill/RTO evidence, incomplete backup cannot rotate good chain; disable route/action, retain backups and audit",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 12 — Archival, safe cleanup and recovery controls",
+      "entry_dependencies_and_scope": "Dependencies: P01/P11 and current dependency/rights contracts; explicit authority\nfor any destructive operation. Serving can remain fully local/offline."
+    },
+    {
+      "phase": 13,
+      "title": "Developer and coding-agent efficiency",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P13-01",
+          "scope": "P13-01",
+          "objective_owners_contracts": "Improve `scripts/doctor.sh`, `scripts/dev.sh`, `scripts/dev_watch.py` and toolchain diagnostics only for reproduced setup/provenance/log/isolation problems; retain one child-process/scheduler owner",
+          "validation_done_rollback": "Fixed clean/dirty/missing-env/tool/network/restart fixtures, no secret output, no operating DB migration by tests, deterministic cleanup of own children. Record setup success and timed same-workload checks before/after; no promised percentage speedup. Revert diagnostic/watch change only",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P13-02",
+          "scope": "P13-02",
+          "objective_owners_contracts": "Add concise task→owner→contract→test navigation links in existing guides; preserve `AGENTS.md` authority, targeted rg default and optional CBM policy",
+          "validation_done_rollback": "Verify paths/commands, same bounded navigation task/action count/input bytes, no removed safety rule or new duplicated source of project status. DoD: measured discoverability improvement, durable docs only where needed; revert targeted prose if misleading",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 13 — Developer and coding-agent efficiency",
+      "entry_dependencies_and_scope": "Dependencies: P00; preserve safety instructions and established pins. No new code\nintelligence system or broad documentation rewrite."
+    },
+    {
+      "phase": 14,
+      "title": "Documentation and record consistency enforcement",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P14-01",
+          "scope": "P14-01",
+          "objective_owners_contracts": "Extend `scripts/check_architecture_boundaries.py`, `football.project_status`, existing Go/OpenAPI/TS drift fixtures, migration/artifact/worker checks and current CI with demonstrated missing invariants; reuse this discrepancy register",
+          "validation_done_rollback": "Inject unauthorized imports/writer/scheduler, stale contract/enum/null fixture, absent migration/checksum, bad referenced path and false code/deployed status. DoD: deterministic applicable fitness failures in existing `make check`/integration, no external network dependency or threshold weakening. Revert only new diagnostic rule if incorrect, retain true integrity controls",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P14-02",
+          "scope": "P14-02",
+          "objective_owners_contracts": "Bounded changed-source/decision/artifact/work audits and dated correction workflow via existing Resolution Center and dependency owners. No auto-edit of owner decisions or historical reports",
+          "validation_done_rollback": "True source conflict vs stale doc vs historical difference vs false-positive fixtures; stale estimate and expired lease examples; affected-only work and audit event. DoD: every detected issue has exact source/time/authority/owner/test/disposition; no fabricated agreement. Disable optional audit schedule, preserve history",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 14 — Documentation and record consistency enforcement",
+      "entry_dependencies_and_scope": "Dependencies: P00 and applicable contract changes; preserve immutable evidence."
+    },
+    {
+      "phase": 15,
+      "title": "Optional Rust/Go consolidation decision",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P15-01",
+          "scope": "P15-01",
+          "objective_owners_contracts": "Confirm the scoped retain decision against `rust/simulation-core`, research binary callers and frozen protocol/artifact owners. Reuse research.md; no repeated port experiment without a changed operational need",
+          "validation_done_rollback": "Inventory consumer/runtime boundary, maintenance/build cost and preserved existing regression evidence. DoD: accepted retain/no-port disposition satisfies this optional branch; no code or old artifact change",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P15-02",
+          "scope": "P15-02, conditional only",
+          "objective_owners_contracts": "If independently justified/authorized, compare full or partial Go replacement in a disposable branch/target; existing Rust remains authoritative until new gates",
+          "validation_done_rollback": "Same synthetic inputs/seeds/worker counts, integer/float/JSON/hash/tail/beta-CDF/stability interval parity, CPU/RAM/throughput and full approved artifact compatibility. Scientific target access requires separate authority. DoD: measured net benefit and exact parity or explicitly new approved version; otherwise reject. Rollback routes to original Rust and preserves every old byte",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 15 — Optional Rust/Go consolidation decision",
+      "entry_dependencies_and_scope": "Dependencies: P00; research only unless a new numerical implementation task is\nexplicitly approved. This investigation recommends **retain Rust**."
+    },
+    {
+      "phase": 16,
+      "title": "Governed continuous evaluation and challenger automation",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P16-01",
+          "scope": "P16-01",
+          "objective_owners_contracts": "Schedule existing `postmatch_cli.py`/`postmatch_storage.py` shared work; extend immutable result revision/basis and eligible-denominator reporting where required. Model Health SSR/API projection uses current performance/operations, not a second evaluation store",
+          "validation_done_rollback": "Post-match unit/integration tests, issue/cutoff/result-basis, correction/retry/fence, forecastless denominator, quality UNKNOWN and honest empty maturity. Measure scoring lag/backlog/coverage/query/compute. DoD: source-backed MONITORING_ONLY operating evidence after separate rollout; stop schedule, preserve scores/champion",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P16-02",
+          "scope": "P16-02",
+          "objective_owners_contracts": "Under a **new** approved hypothesis/policy, extend existing fit/feature/artifact/experiment/work owners for coalesced triggers, frozen eligible snapshot and resource-bounded shadow candidate/calibration. No general online weight or source-code changes",
+          "validation_done_rollback": "Learning cases 2/5–11/14/16/17; train-shadow-serve differential vectors, unspent/protected firewall before outcomes, same-kickoff freeze, immutable retry/reload checks and resource cancellation. DoD: reproducible candidate-only artifact/evidence, zero champion change; disable trigger/fit, keep rejected records",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P16-03",
+          "scope": "P16-03",
+          "objective_owners_contracts": "Existing evaluation/uncertainty/protocol/governance owners perform separately authorized matched-population chronological and untouched final comparison; produce promotion-ready or FAIL/INCONCLUSIVE/BLOCKED evidence",
+          "validation_done_rollback": "Frozen primary/secondary margins/sample/coverage/segments/multiple-testing/stop policy before target access; all learning cases including development win/final fail and subgroup regression. DoD: immutable result with eligible denominator and exact artifacts; no automatic promotion. Failing/inconclusive route stops; previous champion unchanged",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 16 — Governed continuous evaluation and challenger automation",
+      "entry_dependencies_and_scope": "Dependencies: compatible qualified outcomes/forecasts P02/P08, work P03,\nbackup/resource P01/P10 and independently approved scientific policy for fitting.\nMonitoring may progress before optional training; learning.md owns all 20 cases."
+    },
+    {
+      "phase": 17,
+      "title": "Independent integrated verification",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P17-01",
+          "scope": "P17-01",
+          "objective_owners_contracts": "Existing `tests/integration`, Go database/HTTP tests, Next Vitest/Playwright/axe, migration/restore and scientific harnesses verify complete selected provider→source→identity→projection→API→SSR/event→settlement/scoring→recovery path",
+          "validation_done_rollback": "All 22 live cases in task section 3, duplicate/league/cup/replay/concurrent cases, 18 foundation negative cases, all 20 learning cases (synthetic where no scientific authority), source/artifact/corrupt/disk/offline/wake/auth/rollback and full required V2 comparison scopes. Final `make check integration` plus authorized e2e/recovery/phase gates; record actual exits. DoD: no leaked/false positive acceptance and scope coverage matrix; rollback remains proved",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P17-02",
+          "scope": "P17-02",
+          "objective_owners_contracts": "Execute X1–X7 compatibility/change-impact fixtures and staged N/N−1 expand/migrate/contract rehearsals using existing owner tests; no production future-feature implementation just to fill a demonstration",
+          "validation_done_rollback": "Record actual touched files/query/payload/bundle/CPU/RAM/disk/calls, optional-off/on and failure/rollback, old snapshots/model/backup readability. Unsupported source feature proves fail-closed and remains UNVERIFIED, with a targeted seam ticket rather than a false pluggability PASS. DoD: scope-specific BASE-EXTENSION evidence and independently satisfied F prerequisites, no duplicated owner",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 17 — Independent integrated verification",
+      "entry_dependencies_and_scope": "Dependencies: all selected required ticket evidence, declared optional/deferred\nscope, original Architecture V2 parity prerequisites and independent scientific\napproval where a real candidate run is included."
+    },
+    {
+      "phase": 18,
+      "title": "Controlled adoption and retirement",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "tickets": [
+        {
+          "id": "P18-01",
+          "scope": "P18-01",
+          "objective_owners_contracts": "Staged selected schema/reader/worker/Go/Next route adoption using existing resolution stage controls and release owners; migrate `202611100200` before new native-method writer only under approved rollout",
+          "validation_done_rollback": "Verify binary SHA/lock/API, every migration/checksum, model/artifact/flags, actual worker leases, old/new scope parity, source/forecast hashes, source-to-browser freshness and live/manual fairness. Original independent Phase 35 readiness/cutover gates precede V2 routing. DoD: dated operating evidence and reversible prior route, not code PASS",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P18-02",
+          "scope": "P18-02",
+          "objective_owners_contracts": "Retire only superseded scheduler/consumer paths after separately accepted original Phase 36 and measured zero required usage; contract old interfaces only after compatibility/replay/rollback window",
+          "validation_done_rollback": "Old/in-flight job continuity, lease fencing, backup/restore, historical/API/model compatibility and rollback drills. DoD: no competing scheduler remains in accepted scope, required old evidence/readers retained. No blanket legacy/source/model deletion",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        },
+        {
+          "id": "P18-03",
+          "scope": "P18-03, separately optional",
+          "objective_owners_contracts": "Explicitly approved versioned model promotion/canary through existing governance/registry/serving owners, only for independently eligible P16 candidate",
+          "validation_done_rollback": "Learning promotion/rollback and unavailable/retired checks, matched monitored coverage/quality/harm limits from frozen policy, previous champion kept readable. DoD: approved event and exact new future route; issued old forecasts unchanged. Rollback to explicitly approved prior champion, never an implicit latest candidate",
+          "authorization": "PROPOSED_NOT_EXECUTED"
+        }
+      ],
+      "source": "roadmap.md",
+      "heading": "Phase 18 — Controlled adoption and retirement",
+      "entry_dependencies_and_scope": "Dependencies: accepted P17 evidence, verified complete recovery, exact running\nrelease/migration/model state and new explicit owner adoption decision. No action\nin this phase is authorized by this document or investigation completion."
+    }
+  ],
+  "private_receipts": [
+    {
+      "path": ".local/unified-architecture-investigation/baseline.json",
+      "sha256": "f930814c1a4bd9abcde178fc999a7654d66825101cd4837660943f103b50cafe",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/compression.json",
+      "sha256": "be7913d906a30981bb850dea8ad23dc0b82913b81f792a66bb093b1397c112a4",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/corrections.json",
+      "sha256": "42ae18383b95ef6970700a2a75e7ca4f6cb9e79567dea5b8114e67da8c55cd6f",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/duplicate-api.json",
+      "sha256": "a6f6254196780a677025c72ba26cea8fdccd0fe75a49c8474332e1a2a4df4b90",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/final-reads.json",
+      "sha256": "6ec88a068c65db97140a002b67b65e0975d75fdff214b38d8a3b6f9c448d29b7",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/followup.json",
+      "sha256": "539ff39490a3ab09feec0e7589aac3d62574cecd9cc8c7c7938b4cc3dded5378",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/inventory.json",
+      "sha256": "2497ab2521c81252ceef8276c32207a0b132699922f46850d7d3505887563a39",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/lifecycle-trace.json",
+      "sha256": "6891bffc29d018687dfe640574dce6029e25055bbc256063079030bb989ea9ad",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/report-dedup.json",
+      "sha256": "6720f7e07d3c7d76b80cb13fafe429a76eefaa873fa89c44802728fa66cd2730",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/representative-trace.json",
+      "sha256": "9674450af77f1699e7ba41972b4faf4d73e0e322f863effd8fac934aa7efa9d3",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/rng-go-timing.out",
+      "sha256": "8c1253da0f323cb7219288c33ccb69e4ce46560a67b1db8a30bbec9618c41e28",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/rng-go.out",
+      "sha256": "4cb35135652e6a768469addba05f2c8a189c61c0af90972ab8ffbe33383a7835",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/rng-rust-timing.out",
+      "sha256": "85d4b93459fdf33e45e3df6b3bf3e9f7d062c3beedfc92833ffcb3e83d49bca4",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/rng-rust.out",
+      "sha256": "4cb35135652e6a768469addba05f2c8a189c61c0af90972ab8ffbe33383a7835",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    },
+    {
+      "path": ".local/unified-architecture-investigation/handoff-snapshot.json",
+      "sha256": "cf15c4bcd9f4c212d2f693da6651d3faccf0ac890932d4566cd266302178868d",
+      "classification": "PRIVATE_LOCAL_RECEIPT_NOT_DISTRIBUTED"
+    }
+  ],
+  "verification": {
+    "status": "PASS",
+    "aggregate_command": "env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL -u FOOTBALL_DATA_ROOT make check integration",
+    "aggregate_exit_code": 0,
+    "tested_head": "f2540089d2167379c2ffe1ede7f919b58bb5c396",
+    "tested_worktree": "I3 documentation/status evidence uncommitted; production source and locks match baseline exactly.",
+    "python_unit_tests_passed": 2157,
+    "python_dependency_warnings": 7,
+    "rust_tests_passed": 16,
+    "web_tests_passed": 181,
+    "storage_integration_cases_passed": 975,
+    "storage_count_method": "Count of successful pytest progress outcomes in the bounded storage-script log section; double-quiet pytest omitted its normal total summary.",
+    "go_lint_tests_build": "PASS",
+    "static_typing_architecture_schema_build": "PASS",
+    "postgres_redis_go_api_integration": "PASS",
+    "existing_eslint_warnings": 1,
+    "aggregate_log": ".local/unified-architecture-investigation/final-check.log",
+    "aggregate_log_sha256": "1ed5a43d6ee2d7deeb3e10f9bf380d6a2fff05af07009216228ad9ff984b1a7a",
+    "final_metadata_validation_receipt": ".local/unified-architecture-investigation/final-metadata.json",
+    "quality_checks_are_not_deployment_or_scientific_acceptance": true
+  },
+  "warnings": [
+    "Original separate 40-item audit wording was not supplied; named mandatory requirements and companion references are mapped.",
+    "Unknown running commit, missing forward migration, incomplete original-file recovery and required V2 parity remain future adoption gates.",
+    "New availability/privacy/source permissions, scientific protocol/budgets and promotion/cutover authority require their own accepted scope.",
+    "Numeric operating SLOs, full restore RTO and seven future-release proofs are not accepted from this investigation."
+  ],
+  "deferred_gap_handoff": {
+    "source": "MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md",
+    "original_separate_audit_wording": "UNVERIFIED_NOT_SUPPLIED",
+    "excluded": {
+      "A01": "Independent percentage Probability Filter; excluded from unified follow-on implementation."
+    },
+    "references": [
+      {
+        "id": "A03",
+        "companion_phases": [
+          "F0",
+          "F7"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "A04",
+        "companion_phases": [
+          "F0",
+          "F7"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "A05",
+        "companion_phases": [
+          "F1"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "A06",
+        "companion_phases": [
+          "F2"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "A07",
+        "companion_phases": [
+          "F1",
+          "F9",
+          "F11"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "A08",
+        "companion_phases": [
+          "F1",
+          "F9"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "B06",
+        "companion_phases": [
+          "F0",
+          "F4"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "B07",
+        "companion_phases": [
+          "F3"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "B08",
+        "companion_phases": [
+          "F5",
+          "F6"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "B09",
+        "companion_phases": [
+          "F2",
+          "F5",
+          "F10"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "B10",
+        "companion_phases": [
+          "F2"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "C05",
+        "companion_phases": [
+          "F6"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "C06",
+        "companion_phases": [
+          "F5",
+          "F6",
+          "F7"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "C07",
+        "companion_phases": [
+          "F0",
+          "F8"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "D03",
+        "companion_phases": [
+          "F0",
+          "F3",
+          "F4",
+          "F10"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "D04",
+        "companion_phases": [
+          "F3",
+          "F4",
+          "F7"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "D05",
+        "companion_phases": [
+          "F3",
+          "F7",
+          "F10"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E04",
+        "companion_phases": [
+          "F8"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E05",
+        "companion_phases": [
+          "F8"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E06",
+        "companion_phases": [
+          "F0",
+          "F8",
+          "F9"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E07",
+        "companion_phases": [
+          "F6",
+          "F10"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E08",
+        "companion_phases": [
+          "F6"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E09",
+        "companion_phases": [
+          "F9"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      },
+      {
+        "id": "E10",
+        "companion_phases": [
+          "F11"
+        ],
+        "status": "DEFER_IMPLEMENTATION",
+        "definition": "Use exact companion ticket scope; original audit wording not inferred."
+      }
+    ]
+  },
+  "handoff_observations": {
+    "cutoff": "2026-11-10 09:25:27.601996+00:00",
+    "database": "football",
+    "read_only": "on",
+    "latest_applied_migration": 202611100100,
+    "routes": [
+      {
+        "route": "LEGACY",
+        "stages": 13
+      }
+    ],
+    "model_monitor_counts": [
+      {
+        "runtime_registrations": 0,
+        "postmatch_evaluations": 0
+      }
+    ],
+    "running_work": [
+      {
+        "work_type": "HISTORICAL_ACQUISITION",
+        "stored_running": 4,
+        "valid_leases": 0
+      },
+      {
+        "work_type": "PROVIDER_ACQUISITION",
+        "stored_running": 2,
+        "valid_leases": 2
+      }
+    ],
+    "http": {
+      "version": {
+        "status": 200,
+        "body": {
+          "code_commit_sha": "unknown",
+          "dependency_lock_sha256": "unknown",
+          "version": "dev",
+          "worktree_state": "unknown"
+        }
+      },
+      "healthz": {
+        "status": 200,
+        "body": {
+          "status": "ok"
+        }
+      },
+      "readyz": {
+        "status": 200,
+        "body": {
+          "status": "ready"
+        }
+      }
+    },
+    "scope": "Small release/work freshness check after pause; original football/storage cohorts retain their dated snapshot scope."
+  },
+  "investigation_status": "PASS_WITH_WARNINGS",
+  "investigation_complete": true,
+  "coordination": {
+    "open_pr_query": "repo:sir-radar/match-forge is:pr is:open",
+    "open_pr_results": 0,
+    "observed_date": "2026-11-10",
+    "scope": "No open PRs returned at handoff; merged #178/#179/#182 and frozen source baseline were independently inspected. This is not a claim to have audited every remote branch."
+  }
+}

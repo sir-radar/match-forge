@@ -14,6 +14,12 @@ Current implementation, gate, and authorization state must be read from the repo
 
 Where these sources disagree, the newer explicit owner/Wayfinder decision takes precedence over a stale architectural or planning checkpoint.
 
+The [10 November unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md)
+records current operating evidence and a proposed dependency-aware redesign. Its
+ADR, contracts and future tickets are planning recommendations, not implementation,
+scientific, promotion or cutover authorization. Existing approved owners and gates
+remain unchanged.
+
 ### Automated dependency boundaries
 
 `make architecture-check` runs as part of `make check`, which is the check command used by CI. It checks that identity, canonical-resource and observation modules do not import provider adapters; features do not import raw stores or provider normalizers; forecasting does not import provider adapters or access raw provider payload fields; and provider adapters do not import forecasting. The general experiment runner cannot directly import protected evaluation readers or database clients. Frontend source cannot import provider-native parser schemas. Go and Rust source cannot add named model-fitting functions or known model-fitting library dependencies. Python worker classes and Go ticker schedules must have registered shared-work contracts; registered production worker paths must retain their Work Orchestrator calls and SQL adapters.
