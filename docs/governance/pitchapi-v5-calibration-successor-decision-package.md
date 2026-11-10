@@ -2,7 +2,9 @@
 
 ## Status
 
-`PROPOSED — OWNER AUTHORIZATION REQUIRED`
+`SUPERSEDED — AUTHORIZED, RUN AND REJECTED`
+
+This package was the 27 September proposal. Owner decision `PITCHAPI_V5_CALIBRATION_SUCCESSOR_RESEARCH_V1` authorized the development-only comparison. It ended `DEVELOPMENT_REJECTED` (four preregistered admission checks failed; see the [result](../evidence/pitchapi-v5-calibration-successor-research-v1-2026-09-27.md)). Owner decision `ACCEPT_PITCHAPI_CALIBRATION_SUCCESSOR_REJECTION_AND_DESIGN_MULTI_DOMAIN_DEVELOPMENT_V1` accepted the rejection and kept the V5 targets `SPENT_FOR_MODEL_SELECTION`. The text below is the original proposal, kept as history. No successor candidate is admitted.
 
 V5 remains `REFERENCE_RETAINED`. The current challenger is `EVALUATED_REJECTED_CALIBRATION`. Its predictive scores were better than the reference, but 14 frozen calibration gates failed.
 

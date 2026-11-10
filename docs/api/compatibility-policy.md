@@ -1,6 +1,6 @@
 # Public API vs private contracts
 
-**Status:** design proposal; current endpoints have not been inspected. The proposed [OpenAPI spec](openapi.yaml) must be compared with the existing API before implementation. Breaking changes require an explicitly versioned route/migration.
+**Status:** design policy. [openapi.yaml](openapi.yaml) (v0.9.1, "MatchForge MVP API") describes the implemented Go API. On 10 November 2026 its paths matched the Go routes except `POST /v1/admin/sync-runs/{run_id}/retry` and `/stop`, which the spec does not yet list. Compare any new endpoint with the existing API before implementation. Breaking changes require an explicitly versioned route/migration.
 
 ## Classification
 

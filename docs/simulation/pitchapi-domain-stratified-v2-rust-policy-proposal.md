@@ -1,6 +1,6 @@
 # PitchAPI domain-stratified V2 Rust validation policy proposal
 
-Status: `OWNER APPROVAL REQUIRED — DO NOT RUN`
+Status: `HISTORICAL PROPOSAL — SUPERSEDED`. The owner approved this policy with owner decision `COMPLETE_PITCHAPI_V2_EXECUTION_READINESS_V1`, but protocol V2 ended `BLOCKED_PRE_EXECUTION_MODEL_NON_TRANSFERABILITY` and was never executed. See [current state](../status/current-state.md). The original status line was `OWNER APPROVAL REQUIRED — DO NOT RUN`.
 
 Protocol: `PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2`
 

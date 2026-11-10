@@ -1,6 +1,6 @@
 # PitchAPI domain-stratified V4 Rust validation policy
 
-Status: `PROPOSED FROZEN FOR OWNER REVIEW — EXECUTION NOT AUTHORIZED`
+Status: `HISTORICAL — EXECUTED`. Owner decision `FREEZE_AND_EXECUTE_PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4_V1` authorized the single V4 execution, which ended in a calibration-boundary protocol failure (`TERMINAL_PROTOCOL_EVALUATION_FAILURE`; see the [terminal failure record](../evidence/pitchapi-domain-stratified-v4-terminal-failure-2026-09-27.md)). V5 reused this Rust policy (same policy hash) and recorded Rust parity `PASS`. The policy text below is unchanged. Its original status was `PROPOSED FROZEN FOR OWNER REVIEW — EXECUTION NOT AUTHORIZED`.
 
 Protocol: `PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4`
 
