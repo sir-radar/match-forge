@@ -46,3 +46,49 @@ uv run --locked python -m scripts.foundation_release --output .local/foundation/
 Focused verification: two release/migration tests, Ruff and strict mypy passed.
 The initial diagnostic was denied localhost access by the sandbox; the authorized
 read-only retry passed. Full aggregate is deferred until final code changes.
+
+## P00-02 — resource baseline and proposed budgets
+
+Read-only sample started at 10:35:23 UTC. Private receipt:
+`.local/foundation/resources.json`. It records `sysctl`, `vm_stat`, `ps`,
+`docker stats --no-stream`, `shutil.disk_usage`, four bounded PostgreSQL queries
+and five consecutive GETs for each path below. No load generator or provider
+request ran. The final console summary failed to encode a PostgreSQL Decimal;
+the JSON receipt had already been written successfully and was inspected directly.
+
+| Measurement | Actual observation |
+| --- | --- |
+| Host | 17,179,869,184 bytes RAM; eight logical CPUs |
+| Internal filesystem | 994,662,584,320 total; 263,648,190,464 free bytes |
+| Operating DB | 14,027,781,823 bytes, including indexes/TOAST |
+| WAL | 117,440,512 bytes; point sample, not a growth rate |
+| PostgreSQL container | 2.71% sampled CPU; 287.3 MiB RAM |
+| Redis container | 3.09% sampled CPU; 6.922 MiB RAM |
+| DB activity | Two active, seven idle connections at observation |
+| Temp counters | 52,225 files / 944,104,966,563 cumulative bytes; not simultaneous workspace |
+| `/version` | 108 bytes; p50 0.694 ms, p95/p99 25.47 ms |
+| Today's fixtures | 109,453 bytes; p50 16.83 ms, p95/p99 172.35 ms |
+| Sync Admin | 63,599 bytes; p50 2,567.84 ms, p95/p99 4,134.36 ms |
+
+Percentiles use nearest rank over only five samples; p95/p99 are the sample
+maximum, not a production SLO. Concurrent existing workers affect these readings.
+Database-wide block/transaction counters cannot attribute queries to a request;
+per-request query counts and provider fairness latency remain UNVERIFIED. Current
+workers and queue ages are retained in the release/resource receipts, without
+claiming fairness from a point sample. Current Admin polling is 2.5 seconds while
+active, 60 seconds idle and 120 seconds hidden; polling does not authorize backups.
+
+Reuse the earlier 4,036,851-file inventory (SHA-256
+`2497ab2521c81252ceef8276c32207a0b132699922f46850d7d3505887563a39`), not a new
+recursive scan. Its 123.8 GB logical files, PostgreSQL and Docker populations
+overlap; they are never summed into a recovery estimate. No comparable growth
+time series exists. `/Volumes` contains only Macintosh HD and Recovery; external
+drive capacity, filesystem, encryption and repository growth remain unverified.
+
+Initial release proposals: one manual backup at a time, one pg_dump worker, two
+Restic CPUs/readers, low process priority, and a 20% destination free-space
+planning reserve. Preflight must include dump staging plus exact referenced file
+sizes and independent restore workspace. No missing dependency may be omitted to
+meet a budget. Peak RAM, full-scope backup/RTO and destination growth must be
+measured before operating activation; these proposals are not passing targets.
+Thirty-day manual backups cannot achieve the previously desired 24-hour RPO.
