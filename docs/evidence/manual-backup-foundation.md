@@ -252,5 +252,69 @@ select a later roadmap cohort; P02 source-proven identity/score work is a candid
 not authorization to begin it. The F0–F11 plan, Probability Filter, Rust engine and
 current champion are unchanged.
 
-Final aggregate and Git delivery: pending at this checkpoint; see subsequent
-verification entry. Implementation readiness is distinct from operating activation.
+## Final verification and handoff
+
+Implementation result: **PASS_WITH_WARNINGS**. Operating recovery acceptance:
+**BLOCKED** by unresolved original-file scope/capacity and pending enrollment.
+Implementation readiness is distinct from operating activation.
+
+[Implementation PR #184](https://github.com/sir-radar/match-forge/pull/184)
+targets main from `ft/manual-backup-foundation`. Checkpoints: ADR `e3169c2`,
+P00-01 `06b0332`, P00-02 `fee996b`, P01-01 `6fb87ef`, P01-02/Admin `eec31e4`,
+completion guard `1b12486`, owner Keychain/capacity requirements `c5324c7`.
+The verified implementation commit is
+`c5324c76b997f933b5a57939f9be62a4c9f8cece`.
+
+Executed final aggregate:
+
+```sh
+env -u DATABASE_URL -u TEST_DATABASE_URL -u FOOTBALL_DATABASE_URL \
+  -u FOOTBALL_DATA_ROOT VITEST_MAX_WORKERS=2 make check integration
+```
+
+**PASS**: formatting, Ruff/complexity, strict mypy, Clippy, Go vet/complexity lint,
+migration validation, architecture boundaries, builds, project-status validation,
+2,178 Python unit tests, 16 Rust tests, Go packages, 195 web tests and 982 reported
+storage integration cases. The final PostgreSQL/Redis/Go API integration also passed.
+Seven dependency NumPy deprecation warnings and one pre-existing frontend test-file
+unused-variable warning remain. Earlier failed attempts are retained locally.
+The final run bounds Vitest concurrency after an existing pagination test timed
+out; its isolated case passed in 383 ms. Assertions/timeouts were not changed.
+Protected final log SHA-256:
+`79f7c7a5e378ae3a2dc5047f4d86c7d5f1c2a6ab57972df7c21f8676fc8bb53b`.
+
+`cd web && pnpm exec playwright test e2e/backup.spec.ts`: two passed in 7.4 seconds.
+The changed UI is unchanged by the later backend-only corrections. Keyboard,
+cancellation, axe and responsive/media checks passed; no screen-reader conformance
+claim is made. Keychain and enrollment guards pass focused tests, including no
+directory creation for incomplete scope or insufficient capacity. The new duplicate
+reference test failed before the fix and now retains known size requirements in
+either order.
+
+Final independently restored fixture (not the operating recovery scope):
+
+| Measurement | Actual |
+| --- | --- |
+| Captured logical payload | 62,778,269 bytes |
+| New packed data | 16,061,825 bytes |
+| Repository files | 16,067,725 bytes |
+| PostgreSQL dump / original source fixture | 902,235 / 24 bytes |
+| Capture phase | 0.937 seconds |
+| Isolated restore verification phase | 5.864 seconds |
+| Global roles/ownership and extracted-application replay | PASS |
+
+Packed data is about 74.4% below logical bytes for this fixture only. Real initial
+and incremental sizes, sustainable retention and operating RTO remain unmeasured.
+Private metric receipt: `.local/foundation/verified-fixture.json`.
+
+Final read-only operating observation at 15:37:39 UTC still finds unknown release
+identity, latest migration `202611100100`, pending 200/300, all routes LEGACY and
+the unchanged champion. At 15:37:44 UTC, NTC identity/writability/exFAT remained
+verified: 1,000,185,528,320 total and 679,785,791,488 free bytes. A 20% planning
+reserve leaves 479,748,685,824 bytes for new backup data at that observation;
+this does **not** establish that the unknown complete essential scope fits.
+Test repositories, staging and receipts are on filesystems distinct from NTC.
+No task drive write, enrollment, operating migration, deployment, acquisition,
+promotion, protected deletion or automatic backup occurred. Separate recovery-key
+retention remains owner-promised rather than attested. CI and final PR head status
+are reported in the handoff; no merge is authorized.
