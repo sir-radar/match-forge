@@ -70,10 +70,12 @@ flowchart TD
   P00[0 Evidence and frozen budgets] --> P01[1 Complete backup and restore]
   P00 --> P02[2 Critical identity and score defects]
   P00 --> P03[3 Backend live sync and fairness]
+  P02 --> P03
   P03 --> P04[4 Committed events and freshness]
   P02 --> P05[5 Settlement and live Admin]
   P04 --> P05
   P00 --> P06[6 Admin SSR and table contracts]
+  P06 --> P05
   P06 --> P07[7 Match research and plain language]
   P04 --> P07
   P02 --> P08[8 Identity and source contracts]
@@ -91,6 +93,7 @@ flowchart TD
   P03 --> P16
   P08 --> P16
   P01 --> P16
+  P10 --> P16
   P04 --> P17[17 Independent end-to-end verification]
   P05 --> P17
   P06 --> P17

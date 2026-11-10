@@ -15,7 +15,7 @@ Docker VM filesystem or external backup disk.
 `du -sk` reported `.local` 132,559,784 KiB. A subsequent no-symlink metadata walk
 completed in **544.304 seconds**, with **4,036,851 files**, no errors,
 123,786,349,952 logical bytes and 135,745,224,704 allocated file bytes.
-Allocation is `st_blocks × 512`; directory blocks, APFS shared extents, sparse
+Allocation is `st_blocks × 512`; directory blocks, hard-linked paths, APFS shared extents, sparse
 VM allocation and concurrent writes prevent exact unique-physical-byte summing.
 Receipt: `.local/unified-architecture-investigation/inventory.json`, SHA-256
 `2497ab2521c81252ceef8276c32207a0b132699922f46850d7d3505887563a39`.

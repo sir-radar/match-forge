@@ -114,3 +114,11 @@ existing guides, expose version mismatch in `doctor`, and record setup failures,
 wall-clock check duration and navigation actions for the same bounded task before
 and after edits. No target percentage speedup, test-count reduction, blanket
 instruction rewrite or new indexing service is justified by these measurements.
+
+
+I3 verified installed versions: Rust 1.97.1, Go 1.27.3 and Python 3.13.14.
+Running `pnpm --version` from the repository root refused the enclosing Yarn
+configuration; package-manager commands belong in `web` or the existing Make
+web targets. This standalone diagnostic error did not affect the aggregate's
+successful web lint/type/test/build stages. It is a working-directory caveat,
+not evidence that the web package's pinned toolchain is broken.

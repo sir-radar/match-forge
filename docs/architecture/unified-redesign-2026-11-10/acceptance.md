@@ -38,6 +38,22 @@ operating gate PASS. New enum meanings or member/formation contracts require
 actual source fixtures and compatible later versions, not edits to old schema
 fingerprints. Core completion does not require deferred F-pages or new science.
 
+## Remaining audit-ID handoff
+
+The companion's phase table supplies references for the other 24 non-P0 IDs;
+A01 is the twenty-fifth non-P0 item and remains explicitly excluded. Together
+with the 15 foundation IDs, these account for all 40 IDs without inventing the
+missing original audit definitions. `registers.json` retains the exact ID→F-phase
+references; use the companion's actual ticket scope, not an inferred gap title.
+
+| ID group | Deferred IDs | Companion phases containing those references |
+| --- | --- | --- |
+| A | A03–A08 | F0/F1/F2/F7/F9/F11, as individually mapped in the register |
+| B | B06–B10 | F0/F2/F3/F5/F6/F10 |
+| C | C05–C07 | F0/F5/F6/F7/F8 |
+| D | D03–D05 | F0/F3/F7/F10 |
+| E | E04–E10 | F0/F6/F8/F9/F10/F11 |
+
 ## EXT-01–EXT-09 dispositions
 
 | ID | Verified owner/version and current maturity | Target seam and remaining gap | Ticket / acceptance |
@@ -224,9 +240,8 @@ scientific gates are not made redundant by the redesign.
 
 ## Discrepancy register and recurring audit
 
-Checkpoint I3 will assemble the machine-readable register from these source-bound
-entries. These summaries classify evidence instead of rewriting historical reports
-to agree.
+Machine-readable details are in [registers.json](registers.json). These source-bound
+summaries classify evidence instead of rewriting historical reports to agree.
 
 | ID | Class / severity | Evidence and resolution |
 | --- | --- | --- |

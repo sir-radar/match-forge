@@ -218,3 +218,19 @@ association must be verified before changing either guard.
 `representative-trace.json`, including separately timed HTTP responses, SHA-256:
 `9674450af77f1699e7ba41972b4faf4d73e0e322f863effd8fac934aa7efa9d3`.
 No mapping, fixture, source, decision or forecast was changed.
+
+
+## I3 handoff freshness check
+
+At **09:25:27.601996 UTC** (10:25 Africa/Lagos), a new read-only snapshot of
+`football` still has latest applied migration `202611100100`, all 13 LEGACY routes,
+zero runtime registrations and zero post-match evaluations. Two provider work
+leases are valid; four stored RUNNING historical rows have no valid lease.
+Separate HTTP responses still report unknown build/lock/worktree identity and
+healthy/ready service. These checks refresh release/work gates after the pause;
+football cohort and storage counts above remain their original dated observations.
+The integration suite's `202611100200` migration is confined to its disposable
+DB; it is not an operating migration or adoption proof.
+
+Private receipt `handoff-snapshot.json`, SHA-256:
+`cf15c4bcd9f4c212d2f693da6651d3faccf0ac890932d4566cd266302178868d`.
