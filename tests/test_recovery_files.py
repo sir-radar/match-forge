@@ -2,13 +2,19 @@ import hashlib
 from pathlib import Path
 
 import pytest
+from football.providers.football_data_uk_evidence import (
+    FootballDataUkAcquisitionEvidenceStoreV1,
+    FootballDataUkAcquisitionEvidenceV1,
+)
 
+from python.football.tests.test_football_data_uk_evidence import _receipts
 from scripts.recovery_files import (
     FileReference,
     RecoveryReferenceError,
     capture_files,
     legacy_source_path,
     restore_files,
+    source_manifest_reference,
     verify_files,
 )
 
@@ -98,3 +104,28 @@ def test_duplicate_references_preserve_every_registered_size_requirement(
     report = capture_files(refs, {"data": tmp_path}, tmp_path / "capture")
     assert report["status"] == "INCOMPLETE"
     assert len(report["failures"]) == 1
+
+
+def test_legacy_path_identity_is_not_treated_as_a_physical_file_checksum(tmp_path: Path) -> None:
+    path = "football_data_uk/2026-2027/original.csv"
+    identity = hashlib.sha256(path.encode()).hexdigest()
+    ref = source_manifest_reference(tmp_path, "football_data_uk", "old-revision", path, identity)
+    assert ref.sha256 is None
+    assert legacy_source_path("football_data_uk", None, "E0.csv", path, identity, "a" * 64) == path
+
+
+def test_acquisition_evidence_preserves_logical_identity_and_physical_bytes(tmp_path: Path) -> None:
+    evidence = FootballDataUkAcquisitionEvidenceV1(receipts=_receipts())
+    stored = FootballDataUkAcquisitionEvidenceStoreV1(tmp_path).publish(evidence)
+    relative = stored.path.relative_to(tmp_path).as_posix()
+    ref = source_manifest_reference(
+        tmp_path, "football_data_uk", evidence.sha256, relative, evidence.sha256
+    )
+    assert ref.sha256 == hashlib.sha256(evidence.to_bytes()).hexdigest()
+    assert ref.sha256 != evidence.sha256
+    assert stored.path.read_bytes() == evidence.to_bytes()
+    stored.path.write_bytes(evidence.to_bytes() + b" ")
+    with pytest.raises(ValueError):
+        source_manifest_reference(
+            tmp_path, "football_data_uk", evidence.sha256, relative, evidence.sha256
+        )

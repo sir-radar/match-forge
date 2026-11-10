@@ -14,6 +14,7 @@ from typing import Any
 
 from football.contracts.source import SHA256_PATTERN, validate_relative_posix_path
 from football.integrity import _raw_relative_path
+from football.providers.football_data_uk_evidence import FootballDataUkAcquisitionEvidenceV1
 from psycopg import Connection, sql
 
 from scripts.capture_architecture_v2_baseline import ROOT
@@ -170,7 +171,6 @@ def restore_files(archive: Path, roots: Mapping[str, Path]) -> None:
 # SQL migrations and current readers define these physical dependencies. Inline
 # DB payloads, provider-native keys and validation JSON pointers are not files.
 FILE_COLUMNS = {
-    "source_snapshots": ("manifest_path", "manifest_sha256", None),
     "acquired_resources": ("raw_path", "raw_sha256", "size_bytes"),
     "dataset_versions": ("manifest_path", "manifest_sha256", None),
     "dataset_files": ("relative_path", "physical_sha256", "size_bytes"),
@@ -189,6 +189,7 @@ FILE_COLUMNS = {
 
 def registered_files(connection: Connection[Any], data_root: Path) -> list[FileReference]:
     known = {(table, columns[0]) for table, columns in FILE_COLUMNS.items()} | {
+        ("source_snapshots", "manifest_path"),  # Provider contracts distinguish logical identities.
         ("source_resources", "provider_path"),  # Provider key, resolved from its source manifest.
         ("validation_findings", "field_path"),  # JSON pointer, not a filesystem dependency.
         ("product_history_sync_attempts", "last_resolution_path"),  # Inline decision history.
@@ -209,6 +210,11 @@ def registered_files(connection: Connection[Any], data_root: Path) -> list[FileR
             f"unclassified database file references: {sorted(actual - known)}"
         )
     references: list[FileReference] = []
+    for provider, revision, path, digest in connection.execute(
+        "SELECT p.code,s.source_revision,s.manifest_path,s.manifest_sha256 "
+        "FROM football.source_snapshots s JOIN football.providers p ON p.id=s.provider_id"
+    ):
+        references.append(source_manifest_reference(data_root, provider, revision, path, digest))
     for table, (path, checksum, size) in FILE_COLUMNS.items():
         query = sql.SQL("SELECT {},{},{} FROM football.{}").format(
             sql.Identifier(path),
@@ -303,11 +309,14 @@ def source_files(connection: Connection[Any], root: Path) -> list[FileReference]
                 raise RecoveryReferenceError("source manifest registration mismatch")
             relative = entry["raw_path"]
         else:
-            relative = _raw_relative_path(provider, revision, path, digest)
-            if relative is None:
+            try:
                 relative = legacy_source_path(
                     provider, git_sha, path, manifest_path, manifest_hash, digest
                 )
+            except RecoveryReferenceError:
+                relative = _raw_relative_path(provider, revision, path, digest)
+                if relative is None:
+                    raise
         refs.append(FileReference("data", relative, digest, size))
     return refs
 
@@ -322,6 +331,29 @@ def legacy_source_path(
 ) -> str:
     if provider == "openfootball" and git_sha:
         return f"openfootball/{git_sha}/{path}"
-    if manifest_hash == resource_hash:
-        return manifest_path  # Legacy single-payload registration proves identical original bytes.
+    if manifest_hash in (resource_hash, hashlib.sha256(manifest_path.encode()).hexdigest()):
+        return manifest_path  # Legacy location; the resource checksum still binds original bytes.
     raise RecoveryReferenceError("legacy source resource lacks a verified physical file locator")
+
+
+def source_manifest_reference(
+    root: Path, provider: str, revision: str, path: str, digest: str
+) -> FileReference:
+    if (
+        not revision.startswith("manifest-v1:")
+        and hashlib.sha256(path.encode()).hexdigest() == digest
+    ):
+        # HistoricalBackfillStore originally registered a pathname identity, not a byte hash.
+        # Source resource registrations still bind the original payload hashes and sizes.
+        return FileReference("data", path, None)
+    receipt_path = (
+        f"manifests/provider=football_data_uk/acquisition_sha256={digest}/"
+        "acquisition-evidence-v1.json"
+    )
+    if provider == "football_data_uk" and path == receipt_path:
+        raw = regular_file(root, path).read_bytes()
+        evidence = FootballDataUkAcquisitionEvidenceV1.from_bytes(raw)
+        if evidence.sha256 != digest or revision != digest:
+            raise RecoveryReferenceError("acquisition receipt identity differs from registration")
+        return FileReference("data", path, hashlib.sha256(raw).hexdigest(), len(raw))
+    return FileReference("data", path, digest)

@@ -268,3 +268,13 @@ scores, ambiguous candidates, and historical rows remain outside this display
 reconciliation. Source fixtures and mappings are retained; the fixture API shows
 the selected representative from active duplicate resolutions. Historical audits
 preserve operational resolutions outside their own history scope.
+
+### Historical source checksum meanings
+
+Legacy historical snapshots may store a hash of their pathname as
+`manifest_sha256`; this is a pathname identity, not a checksum of the referenced
+CSV/ZIP bytes. Original source-resource hashes and sizes still verify those bytes.
+The frozen Football-Data acquisition receipt bundle uses its existing canonical
+reader and logical digest; its trailing-newline representation has a distinct
+physical checksum. Recovery preserves both identities and never rewrites a legacy
+registration or source to make a checksum appear valid.

@@ -3955,7 +3955,7 @@
     }
   },
   "unified_architecture_foundation": {
-    "status": "PASS_WITH_WARNINGS",
+    "status": "IN_PROGRESS",
     "authorized_tickets": [
       "P00-01",
       "P00-02",
@@ -3968,7 +3968,7 @@
     "operating_activation": false,
     "automatic_backups": false,
     "destructive_cleanup": false,
-    "implementation_status": "VERIFIED_LOCAL_IMPLEMENTATION",
+    "implementation_status": "RESOLVING_OWNER_AUTHORIZED_OPERATING_RECOVERY_SCOPE",
     "implemented_tickets": [
       "P00-01",
       "P00-02",
@@ -3986,13 +3986,13 @@
     "cleanup_proposal_ref": "docs/recovery-cleanup-proposal.md",
     "implementation_pr": "https://github.com/sir-radar/match-forge/pull/184",
     "verified_implementation_commit": "c5324c76b997f933b5a57939f9be62a4c9f8cece",
-    "local_aggregate": "PASS",
+    "local_aggregate": "PASS_AT_C5324C7_EXPANDED_SCOPE_PENDING",
     "external_drive_status": "READ_ONLY_IDENTITY_CAPACITY_AND_FILESYSTEM_VERIFIED",
     "external_drive_capacity_bytes": 1000185528320,
     "external_drive_free_bytes_at_observation": 679785791488,
     "external_drive_observed_at": "2026-11-10T15:37:44Z",
     "keychain_credential_status": "VERIFIED_CURRENT_USER_PASSWORD_COMMAND",
     "separate_recovery_key_status": "PENDING_OWNER_ATTESTATION",
-    "enrollment_status": "PENDING_COMPLETE_SCOPE_CAPACITY"
+    "enrollment_status": "PENDING_DIRECTORY_ACCESS_AND_RESOLVED_CAPACITY"
   }
 }

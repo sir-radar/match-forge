@@ -318,3 +318,31 @@ No task drive write, enrollment, operating migration, deployment, acquisition,
 promotion, protected deletion or automatic backup occurred. Separate recovery-key
 retention remains owner-promised rather than attested. CI and final PR head status
 are reported in the handoff; no merge is authorized.
+
+## Owner-directed operating-scope recovery — in progress
+
+The owner authorized continued original-location investigation, safe resolver fixes,
+explicit missing-original declarations and a backup of every recoverable dependency.
+No original evidence or registration is rewritten. The earlier implementation
+verification remains historical; the expanded operating-recovery work is active.
+
+A read-only inventory enumerated 193,532 reference rows and hashed 114,387 physical
+objects. It retained 33 unresolved source locators and 236 initial physical issues
+instead of stopping at the first error. These are issues to classify, not proof
+that every file is missing. A single retained-storage search examined 4,132,248
+files, hashing 11,376 targeted candidates; 154 copies matched 64 required hashes.
+It found 19 moved evaluation reports. All 4,551 retained Git blobs were checked,
+with no additional original-byte matches. Archive and historical DB tracing continue.
+
+The resolver incorrectly treated 45 legacy Football-Data pathname identities and
+one canonical acquisition-receipt logical digest as physical file hashes. The
+legacy writer is visible before commit `55a7e35d`; the current provider evidence
+reader explicitly distinguishes its logical digest from canonical bytes with a
+trailing newline. These existing contracts now govern backup resolution. All 45
+legacy raw resources passed exact registered SHA-256/size checks. Original CSV/ZIP
+bytes, receipt bytes and immutable database identities remain unchanged. Focused
+verification: 13 tests and strict typing passed for the resolver correction.
+
+NTC directory enumeration currently times out despite readable mount metadata.
+No repository is created until actual drive access, credentials and capacity pass.
+The owner has been asked to check Finder/reconnect while independent work continues.
