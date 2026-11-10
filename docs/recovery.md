@@ -68,6 +68,62 @@ This is local recovery evidence only. It does not replace the separate
 raw-file, dataset, model-artifact, or forecast/evaluation integrity checks, and
 it is not a production disaster-recovery design.
 
+## Complete snapshot-bound recovery capture
+
+`scripts.capture_architecture_v2_baseline --complete-recovery --output <new-private-directory>
+--data-root <operating-data-root>` extends the existing exported repeatable-read
+snapshot mechanism. It captures a custom PostgreSQL dump, global roles/tablespaces,
+all registered raw/manifests, datasets, models, observations, capabilities,
+coverage, forecasts/evaluations, runtime model references and required retained
+parity/recovery evidence. Every physical file reference has a relative root,
+checksum, size and original modification time. Unknown file-reference columns,
+contradictory registrations, absent originals, changed globals and symlinks fail
+closed. Inline database records are preserved by the dump rather than exported
+into a second registry. Sync diagnostic logs are excluded: run state, work leases,
+decisions and summaries are authoritative database records, and the log reader is
+not needed to reconstruct football facts or issued forecasts.
+
+The private capture includes `application.tar` from the exact Git commit:
+application code, migrations, schemas, locks and example configuration. Local
+credentials are not included in that application archive. Retain separate database,
+provider and backup credential recovery instructions; configure fresh credentials
+after a disaster. Custom runtime artifact roots must be reconciled before capture;
+the registry's repository-relative champion path uses the repository root.
+Unregistered experimental runs/caches and unrelated `.local` directories are not
+part of the selected operating recovery scope. Nothing is deleted.
+
+`recovery.json` starts INCOMPLETE. CAPTURED means snapshot/file capture and
+checksums completed, not that an external backup or restore drill passed.
+Source files are copied without repair or rewriting. Raw files remain original
+bytes; pg_dump is uncompressed so the encrypted destination can deduplicate and
+compress its chunks. The exporter stays alive until pg_dump finishes. Global
+metadata is checked before and after capture because pg_dumpall does not import
+the database snapshot. Administrative role/tablespace changes must not run during
+a capture. No GC/cleanup is enabled; a missing file interrupts capture.
+
+For an explicitly requested drill:
+
+```sh
+uv run --locked python -m scripts.backup_recovery verify-restore \
+  --capture <verified-capture> --destination <new-empty-directory>
+```
+
+This always creates a random `football_restore_test_*` database; it accepts no
+operating target and removes only its own database afterward. It restores files
+into new roots, compares every table's ordered row hashes and historical eligible
+history cutoff, checks extensions and re-enumerates file references from the
+restored database. It never runs globals against the existing cluster. The
+integration test separately replays globals and ownership into a new networkless
+PostgreSQL container. Interrupted drills may leave a disposable database/root;
+inspect their exact ownership before removing them. A failed/incomplete capture
+or corrupt bytes cannot be used as passing recovery evidence.
+
+Thirty-day manual backups are the owner-selected policy. They may leave roughly
+a month of changes without an external recovery point; they do not guarantee the
+previously desired 24-hour RPO. Measure full operating restore time before adopting
+an RTO. The current external drive and missing original-file dependencies must be
+verified before claiming complete operating recovery.
+
 ## Provider fixture recovery
 
 The operational scheduler polls yesterday and today in Africa/Lagos time so

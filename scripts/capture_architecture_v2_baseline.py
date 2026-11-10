@@ -401,7 +401,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--fixture-date", action="append", type=date.fromisoformat, default=[])
     parser.add_argument("--cutoff", action="append", type=utc_cutoff, default=[])
     parser.add_argument("--verify-restored-baseline", type=Path)
+    parser.add_argument("--complete-recovery", action="store_true")
     args = parser.parse_args(argv)
+    if args.complete_recovery:
+        from scripts.backup_recovery import capture_recovery
+
+        result = capture_recovery(args.output, args.data_root)
+        return 0 if result["status"] == "CAPTURED" else 1
     if not args.verify_restored_baseline and not args.fixture_date:
         parser.error("capture requires at least one --fixture-date")
     args.output.mkdir(parents=True, exist_ok=False, mode=0o700)

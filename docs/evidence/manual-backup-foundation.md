@@ -92,3 +92,27 @@ sizes and independent restore workspace. No missing dependency may be omitted to
 meet a budget. Peak RAM, full-scope backup/RTO and destination growth must be
 measured before operating activation; these proposals are not passing targets.
 Thirty-day manual backups cannot achieve the previously desired 24-hour RPO.
+
+## P01-01 — snapshot and file recovery
+
+The existing baseline command now supports `--complete-recovery`, reusing its
+snapshot export, table digest and cutoff helpers. Recovery capture retains
+database globals, a full dump, Git application archive and the exact registered
+file set. Incomplete capture cannot become a passing recovery record. The old
+baseline workflow remains compatible. Procedures and scope are in `docs/recovery.md`.
+
+Executed focused checks: 19 baseline/file tests passed; Ruff formatting, lint and
+complexity plus strict mypy passed for new recovery modules. The disposable
+integration test passed in 14.19 seconds. It proves full table/migration and
+historical-cutoff parity, original-source bytes after the source root is moved,
+checksum corruption rejection, and isolated restoration. A separate networkless
+PostgreSQL container replayed globals and the dump with original ownership;
+only the test's own container/volumes and random databases were removed.
+
+Earlier test failures exposed lost credentials in the restored connection,
+a misclassified inline history column and PostgreSQL's temporary init-server
+readiness. These were fixed directly; checks were not skipped or weakened.
+The ordinary `verify-restore` drill deliberately does not apply global roles to
+the existing cluster; fresh-cluster global restoration is a separate procedure.
+No full operating backup or operating restore has run. Missing original sources,
+unregistered custom roots and hardware verification remain fail-closed blockers.
