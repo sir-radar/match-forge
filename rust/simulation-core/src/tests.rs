@@ -1,5 +1,25 @@
 use super::*;
 
+/// Vectors shared with `python/football/tests/test_pitchapi_simulation_reference.py`.
+const GOLDEN: &str = include_str!("../../../tests/fixtures/pitchapi-simulation-golden-v1.json");
+
+fn golden() -> Value {
+    serde_json::from_str(GOLDEN).unwrap()
+}
+
+fn golden_run(key: &str) -> (Vec<u8>, String, Value) {
+    let run = golden()["runs"][key].clone();
+    (
+        run["input"].as_str().unwrap().as_bytes().to_vec(),
+        run["input_sha256"].as_str().unwrap().to_owned(),
+        run,
+    )
+}
+
+fn batch_counts<'a>(events: impl Iterator<Item = &'a Vec<u64>>) -> Value {
+    serde_json::to_value(events.collect::<Vec<_>>()).unwrap()
+}
+
 fn atoms() -> Vec<ScoreAtomV1> {
     vec![
         ScoreAtomV1 {
@@ -243,7 +263,10 @@ fn unresolved_tail_never_becomes_exact_score_events() {
             probability: 1.0,
         },
     ];
-    let (counts, tails) = run_batch_with_draws(&atoms, [0; 32], 16).unwrap();
+    let (counts, tails) = Sampler::new(&atoms)
+        .unwrap()
+        .run_batch([0; 32], 16)
+        .unwrap();
     assert_eq!(tails, 16);
     assert!(counts.iter().all(|count| *count == 0));
 }
@@ -354,4 +377,107 @@ fn synthetic_benchmark_is_parallel_deterministic() {
         benchmark_synthetic_targets(3, 1).unwrap(),
         benchmark_synthetic_targets(3, 4).unwrap()
     );
+}
+
+#[test]
+fn golden_fixture_outputs_are_reproduced_for_every_worker_count() {
+    for workers in 1..=4 {
+        let (bytes, hash, run) = golden_run("v2");
+        let output = super::run(
+            &parse_canonical_input(&bytes, &hash).unwrap(),
+            &hash,
+            workers,
+        );
+        let output = output.unwrap();
+        assert_eq!(output.sha256().unwrap(), run["output_sha256"]);
+        assert_eq!(
+            batch_counts(output.events.iter().map(|event| &event.batch_counts)),
+            run["batch_counts"]
+        );
+
+        let (bytes, hash, run) = golden_run("v3");
+        let output = run_v3(
+            &parse_canonical_input_v3(&bytes, &hash).unwrap(),
+            &hash,
+            workers,
+        );
+        assert_eq!(output.unwrap().sha256().unwrap(), run["output_sha256"]);
+
+        let (bytes, hash, run) = golden_run("v4");
+        let output = run_v4(
+            &parse_canonical_input_v4(&bytes, &hash).unwrap(),
+            &hash,
+            workers,
+        );
+        let output = output.unwrap();
+        assert_eq!(output.sha256().unwrap(), run["output_sha256"]);
+        assert_eq!(
+            batch_counts(output.events.iter().map(|event| &event.batch_counts)),
+            run["batch_counts"]
+        );
+    }
+}
+
+#[test]
+fn golden_fixture_pins_atom_canonicalization_and_number_format() {
+    let fixture = golden();
+    let (bytes, hash, _) = golden_run("v3");
+    let input = parse_canonical_input_v3(&bytes, &hash).unwrap();
+    let canonical = canonical_bytes(&input.atoms).unwrap();
+    assert_eq!(
+        String::from_utf8(canonical.clone()).unwrap(),
+        fixture["canonical_atoms"].as_str().unwrap()
+    );
+    assert_eq!(sha256(&canonical), fixture["forecast_probability_sha256"]);
+    for vector in fixture["number_format_vectors"].as_array().unwrap() {
+        let parsed: f64 = vector["python"].as_str().unwrap().parse().unwrap();
+        assert_eq!(
+            String::from_utf8(canonical_bytes(&parsed).unwrap()).unwrap(),
+            vector["rust"].as_str().unwrap()
+        );
+    }
+}
+
+#[test]
+fn diagnostic_counts_match_for_every_worker_count() {
+    let (bytes, hash, _) = golden_run("v3");
+    let input = parse_canonical_input_v3(&bytes, &hash).unwrap();
+    let serial = diagnose_v3(&input, &hash, 1, 1_000).unwrap();
+    for workers in 2..=4 {
+        let parallel = diagnose_v3(&input, &hash, workers, 1_000).unwrap();
+        assert_eq!(parallel.events, serial.events);
+        assert_eq!(parallel.worker_count, workers);
+    }
+    assert_eq!(
+        diagnose_v3(&input, &hash, 5, 1_000).unwrap_err().code,
+        "INVALID_WORKER_COUNT"
+    );
+}
+
+#[test]
+fn goal_totals_beyond_u16_do_not_overflow() {
+    let indexes = event_indexes(u16::MAX, u16::MAX);
+    assert_eq!(indexes[0], 35);
+    assert_eq!(indexes[1], 37);
+    assert_eq!(&indexes[3..8], &[41, 43, 45, 47, 49]);
+    assert_eq!(indexes[10], 60);
+    assert_eq!(event_indexes(u16::MAX, 1)[10], 60);
+    assert_eq!(
+        event_indexes(2, 1),
+        [13, 36, 39, 41, 43, 45, 48, 50, 52, 54, 58]
+    );
+}
+
+#[test]
+fn identity_errors_name_the_expected_protocol() {
+    let error = run_v3(&input(), &"d".repeat(64), 1).unwrap_err();
+    assert_eq!(error.code, "UNSUPPORTED_IDENTITY");
+    assert!(error.message.ends_with(V3_PROTOCOL_ID));
+}
+
+#[test]
+fn exact_atom_without_goals_is_rejected_before_sampling() {
+    let mut atoms = atoms();
+    atoms[0].home_goals = None;
+    assert_eq!(Sampler::new(&atoms).err().unwrap().code, "INVALID_ATOMS");
 }

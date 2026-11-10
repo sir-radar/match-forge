@@ -26,6 +26,7 @@ pub const SIMULATION_COUNT: u64 = 112_460;
 pub const BATCH_COUNT: u32 = 4;
 pub const DRAWS_PER_BATCH: u64 = 28_115;
 const EVENT_COUNT: usize = 62;
+const EVENTS_PER_SCORE: usize = 11;
 const NORMALIZATION_TOLERANCE: f64 = 1e-12;
 const STABILITY_LIMIT: f64 = 0.019_974_384_468_264_498;
 const V4_TV_LIMIT: f64 = 0.012_794_580_429_261_083;
@@ -352,12 +353,6 @@ pub fn run_v4(
         ));
     }
     validate_v4_analytic_reduction(input)?;
-    if !(1..=4).contains(&workers) {
-        return Err(err(
-            "INVALID_WORKER_COUNT",
-            "worker count must be between one and four",
-        ));
-    }
     let base = base_seed_commitment_for(
         V4_PROTOCOL_ID,
         V4_POLICY_SHA256,
@@ -427,12 +422,6 @@ pub fn diagnose_v3(
     draws_per_batch: u64,
 ) -> Result<DiagnosticOutputV1, SimulationError> {
     validate_input_for(input, V3_PROTOCOL_ID, V3_POLICY_SHA256, V3_SEED_SCHEDULE_ID)?;
-    if !(1..=4).contains(&workers) {
-        return Err(err(
-            "INVALID_WORKER_COUNT",
-            "worker count must be between one and four",
-        ));
-    }
     if draws_per_batch == 0 {
         return Err(err(
             "INVALID_SIMULATION_COUNT",
@@ -447,30 +436,7 @@ pub fn diagnose_v3(
     let seeds: Vec<[u8; 32]> = (0..BATCH_COUNT)
         .map(|index| batch_seed(&base, &input.canonical_match_id, index))
         .collect();
-    let mut batches = vec![vec![0_u64; EVENT_COUNT]; BATCH_COUNT as usize];
-    let mut tails = vec![0_u64; BATCH_COUNT as usize];
-    if workers == 1 {
-        for index in 0..BATCH_COUNT as usize {
-            (batches[index], tails[index]) =
-                run_batch_with_draws(&input.atoms, seeds[index], draws_per_batch)?;
-        }
-    } else {
-        thread::scope(|scope| -> Result<(), SimulationError> {
-            let handles: Vec<_> = seeds
-                .iter()
-                .copied()
-                .map(|seed| {
-                    scope.spawn(move || run_batch_with_draws(&input.atoms, seed, draws_per_batch))
-                })
-                .collect();
-            for (index, handle) in handles.into_iter().enumerate() {
-                (batches[index], tails[index]) = handle
-                    .join()
-                    .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
-            }
-            Ok(())
-        })?;
-    }
+    let (batches, tails) = sample_batches(&input.atoms, &seeds, workers, draws_per_batch)?;
     let simulation_count = draws_per_batch
         .checked_mul(u64::from(BATCH_COUNT))
         .ok_or_else(|| err("ARITHMETIC_OVERFLOW", "simulation count overflow"))?;
@@ -511,12 +477,6 @@ fn run_for(
     seed_schedule_id: &str,
 ) -> Result<SimulationOutputV1, SimulationError> {
     validate_input_for(input, protocol_id, policy_sha256, seed_schedule_id)?;
-    if !(1..=4).contains(&workers) {
-        return Err(err(
-            "INVALID_WORKER_COUNT",
-            "worker count must be between one and four",
-        ));
-    }
     let ids = event_ids();
     let analytic: BTreeMap<&str, f64> = input
         .analytic_probabilities
@@ -531,27 +491,7 @@ fn run_for(
     let seeds: Vec<[u8; 32]> = (0..BATCH_COUNT)
         .map(|i| batch_seed(&base, &input.canonical_match_id, i))
         .collect();
-    let mut batches = vec![vec![0_u64; EVENT_COUNT]; BATCH_COUNT as usize];
-    let mut tails = vec![0_u64; BATCH_COUNT as usize];
-    if workers == 1 {
-        for i in 0..BATCH_COUNT as usize {
-            (batches[i], tails[i]) = run_batch(&input.atoms, seeds[i])?;
-        }
-    } else {
-        thread::scope(|scope| -> Result<(), SimulationError> {
-            let handles: Vec<_> = seeds
-                .iter()
-                .copied()
-                .map(|seed| scope.spawn(move || run_batch(&input.atoms, seed)))
-                .collect();
-            for (i, handle) in handles.into_iter().enumerate() {
-                (batches[i], tails[i]) = handle
-                    .join()
-                    .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
-            }
-            Ok(())
-        })?;
-    }
+    let (batches, tails) = sample_batches(&input.atoms, &seeds, workers, DRAWS_PER_BATCH)?;
     let tail_draws = tails.iter().sum();
     if tail_draws != 0 {
         return Err(err(
@@ -681,17 +621,22 @@ pub fn benchmark_synthetic_targets(
             probability: 0.0,
         },
     ];
+    let draws = u64::try_from(target_count)
+        .ok()
+        .and_then(|targets| targets.checked_mul(SIMULATION_COUNT))
+        .ok_or_else(|| err("ARITHMETIC_OVERFLOW", "benchmark draw count overflow"))?;
+    let sampler = Sampler::new(&atoms)?;
     let base = base_seed_commitment(&"c".repeat(64));
     let checksum = thread::scope(|scope| -> Result<u64, SimulationError> {
         let mut handles = Vec::new();
         for worker in 0..workers {
-            let atoms = &atoms;
+            let sampler = &sampler;
             handles.push(scope.spawn(move || {
                 let mut checksum = 0_u64;
                 for target in (worker..target_count).step_by(workers) {
                     for batch in 0..BATCH_COUNT {
                         let seed = batch_seed(&base, &format!("synthetic-{target}"), batch);
-                        let (counts, tails) = run_batch(atoms, seed)?;
+                        let (counts, tails) = sampler.run_batch(seed, DRAWS_PER_BATCH)?;
                         checksum = checksum
                             .wrapping_add(counts.into_iter().sum::<u64>())
                             .wrapping_add(tails);
@@ -710,7 +655,7 @@ pub fn benchmark_synthetic_targets(
         }
         Ok(checksum)
     })?;
-    Ok((target_count as u64 * SIMULATION_COUNT, checksum))
+    Ok((draws, checksum))
 }
 
 fn validate_input_for(
@@ -727,7 +672,7 @@ fn validate_input_for(
     {
         return Err(err(
             "UNSUPPORTED_IDENTITY",
-            "input identities do not match frozen V2",
+            format!("input identities do not match frozen {protocol_id}"),
         ));
     }
     if input.simulation_count != SIMULATION_COUNT {
@@ -862,84 +807,124 @@ fn validate_v4_distribution(
     Ok((total_variation, warnings))
 }
 
+/// Runs every seeded batch on at most `workers` threads.
+///
+/// Each batch owns its seed, so the counts do not depend on how batches are
+/// spread across threads.
 fn sample_batches(
     atoms: &[ScoreAtomV1],
     seeds: &[[u8; 32]],
     workers: usize,
     draws_per_batch: u64,
 ) -> Result<(Vec<Vec<u64>>, Vec<u64>), SimulationError> {
-    let mut batches = vec![vec![0_u64; EVENT_COUNT]; BATCH_COUNT as usize];
-    let mut tails = vec![0_u64; BATCH_COUNT as usize];
-    if workers == 1 {
-        for index in 0..BATCH_COUNT as usize {
-            (batches[index], tails[index]) =
-                run_batch_with_draws(atoms, seeds[index], draws_per_batch)?;
-        }
-    } else {
-        thread::scope(|scope| -> Result<(), SimulationError> {
-            let handles: Vec<_> = seeds
-                .iter()
-                .copied()
-                .map(|seed| scope.spawn(move || run_batch_with_draws(atoms, seed, draws_per_batch)))
-                .collect();
-            for (index, handle) in handles.into_iter().enumerate() {
-                (batches[index], tails[index]) = handle
-                    .join()
-                    .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
-            }
-            Ok(())
-        })?;
+    if !(1..=4).contains(&workers) {
+        return Err(err(
+            "INVALID_WORKER_COUNT",
+            "worker count must be between one and four",
+        ));
     }
+    let sampler = Sampler::new(atoms)?;
+    let mut batches = vec![Vec::new(); seeds.len()];
+    let mut tails = vec![0_u64; seeds.len()];
+    if workers == 1 {
+        for (index, seed) in seeds.iter().enumerate() {
+            (batches[index], tails[index]) = sampler.run_batch(*seed, draws_per_batch)?;
+        }
+        return Ok((batches, tails));
+    }
+    thread::scope(|scope| -> Result<(), SimulationError> {
+        let sampler = &sampler;
+        let handles: Vec<_> = (0..workers)
+            .map(|worker| {
+                scope.spawn(move || {
+                    (worker..seeds.len())
+                        .step_by(workers)
+                        .map(|index| Ok((index, sampler.run_batch(seeds[index], draws_per_batch)?)))
+                        .collect::<Result<Vec<_>, SimulationError>>()
+                })
+            })
+            .collect();
+        for handle in handles {
+            let results = handle
+                .join()
+                .map_err(|_| err("WORKER_FAILURE", "worker panicked"))??;
+            for (index, (counts, tail)) in results {
+                batches[index] = counts;
+                tails[index] = tail;
+            }
+        }
+        Ok(())
+    })?;
     Ok((batches, tails))
 }
 
-fn run_batch(atoms: &[ScoreAtomV1], seed: [u8; 32]) -> Result<(Vec<u64>, u64), SimulationError> {
-    run_batch_with_draws(atoms, seed, DRAWS_PER_BATCH)
+/// Categorical sampler over score atoms with the per-atom work done once.
+///
+/// `cumulative` holds the same left-to-right running sums the draw loop used to
+/// rebuild for every draw, so the selected atom for a given uniform is unchanged.
+struct Sampler {
+    cumulative: Vec<f64>,
+    events: Vec<Option<[usize; EVENTS_PER_SCORE]>>,
 }
 
-fn run_batch_with_draws(
-    atoms: &[ScoreAtomV1],
-    seed: [u8; 32],
-    draws: u64,
-) -> Result<(Vec<u64>, u64), SimulationError> {
-    let mut rng = SplitMix64::new(u64::from_be_bytes(
-        seed[..8]
-            .try_into()
-            .map_err(|_| err("SEED_FAILURE", "invalid seed"))?,
-    ));
-    let mut counts = vec![0_u64; EVENT_COUNT];
-    let mut tails = 0_u64;
-    for _ in 0..draws {
-        let u = rng.next_unit_f64();
+impl Sampler {
+    fn new(atoms: &[ScoreAtomV1]) -> Result<Self, SimulationError> {
+        let mut cumulative = Vec::with_capacity(atoms.len());
+        let mut events = Vec::with_capacity(atoms.len());
         let mut cdf = 0.0;
-        let mut selected = None;
         for atom in atoms {
             cdf += atom.probability;
-            if cdf > u {
-                selected = Some(atom);
-                break;
-            }
+            cumulative.push(cdf);
+            events.push(match atom.kind {
+                AtomKindV1::UnresolvedTail => None,
+                AtomKindV1::ExactScore => {
+                    let (home, away) = atom
+                        .home_goals
+                        .zip(atom.away_goals)
+                        .ok_or_else(|| err("INVALID_ATOMS", "missing goals"))?;
+                    Some(event_indexes(home, away))
+                }
+            });
         }
-        let atom = selected.ok_or_else(|| err("CUMULATIVE_RANGE_FAILURE", "draw exceeded CDF"))?;
-        if atom.kind == AtomKindV1::UnresolvedTail {
-            tails += 1;
-        } else {
-            let (h, a) = atom
-                .home_goals
-                .zip(atom.away_goals)
-                .ok_or_else(|| err("INVALID_ATOMS", "missing goals"))?;
-            for i in event_indexes(h, a) {
-                counts[i] = counts[i]
-                    .checked_add(1)
-                    .ok_or_else(|| err("ARITHMETIC_OVERFLOW", "count overflow"))?;
-            }
-        }
+        Ok(Self { cumulative, events })
     }
-    Ok((counts, tails))
+
+    fn run_batch(&self, seed: [u8; 32], draws: u64) -> Result<(Vec<u64>, u64), SimulationError> {
+        let mut rng = SplitMix64::new(u64::from_be_bytes(
+            seed[..8]
+                .try_into()
+                .map_err(|_| err("SEED_FAILURE", "invalid seed"))?,
+        ));
+        let mut counts = vec![0_u64; EVENT_COUNT];
+        let mut tails = 0_u64;
+        for _ in 0..draws {
+            let u = rng.next_unit_f64();
+            // First atom whose running sum exceeds the draw.
+            let selected = self.cumulative.partition_point(|&cdf| cdf <= u);
+            let events = self
+                .events
+                .get(selected)
+                .ok_or_else(|| err("CUMULATIVE_RANGE_FAILURE", "draw exceeded CDF"))?;
+            match events {
+                None => tails += 1,
+                Some(indexes) => {
+                    for &index in indexes {
+                        counts[index] = counts[index]
+                            .checked_add(1)
+                            .ok_or_else(|| err("ARITHMETIC_OVERFLOW", "count overflow"))?;
+                    }
+                }
+            }
+        }
+        Ok((counts, tails))
+    }
 }
 
-fn event_indexes(home: u16, away: u16) -> Vec<usize> {
-    let mut v = vec![
+fn event_indexes(home: u16, away: u16) -> [usize; EVENTS_PER_SCORE] {
+    // A u16 sum can exceed u16::MAX; widen before adding.
+    let total = u32::from(home) + u32::from(away);
+    let over = |threshold: u32| 41 + threshold as usize * 2 + usize::from(total <= threshold);
+    [
         usize::from(home.min(5)) * 6 + usize::from(away.min(5)),
         if home > away {
             36
@@ -949,15 +934,15 @@ fn event_indexes(home: u16, away: u16) -> Vec<usize> {
             38
         },
         if home > 0 && away > 0 { 39 } else { 40 },
-    ];
-    let total = home + away;
-    for t in 0..5u16 {
-        v.push(41 + usize::from(t) * 2 + usize::from(total <= t));
-    }
-    v.push(if away == 0 { 51 } else { 52 });
-    v.push(if home == 0 { 53 } else { 54 });
-    v.push(55 + usize::from(total.min(5)));
-    v
+        over(0),
+        over(1),
+        over(2),
+        over(3),
+        over(4),
+        if away == 0 { 51 } else { 52 },
+        if home == 0 { 53 } else { 54 },
+        55 + total.min(5) as usize,
+    ]
 }
 fn event_ids() -> Vec<String> {
     let mut v = Vec::new();
