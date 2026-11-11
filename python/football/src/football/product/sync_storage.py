@@ -463,15 +463,21 @@ class ProductStorageMixin(ProductIdentityMixin):
                 cursor.execute(
                     """
                     SELECT pf.fixture_id, pf.competition_id, pf.home_team_id, pf.away_team_id,
-                           pf.kickoff_at, pf.home_score, pf.away_score
+                           pf.kickoff_at, pf.home_score, pf.away_score,
+                           h.source_provider_code = %s
+                               AND (h.home_goals, h.away_goals)
+                                   IS DISTINCT FROM (pf.home_score, pf.away_score)
+                               OR h.fixture_id IS NULL AS needs_write
                     FROM football.product_fixtures pf
                     JOIN football.match_provider_mappings mpm ON mpm.match_id = pf.fixture_id
                     JOIN football.providers p ON p.id = mpm.provider_id
+                    LEFT JOIN football.product_team_match_history h
+                      ON h.fixture_id = pf.fixture_id
                     WHERE p.code = %s AND mpm.provider_match_id = %s
                       AND mpm.valid_to IS NULL
                       AND (mpm.valid_from IS NULL OR mpm.valid_from <= clock_timestamp())
                     """,
-                    (PROVIDER_CODE, provider_fixture_id),
+                    (PROVIDER_CODE, PROVIDER_CODE, provider_fixture_id),
                 )
                 stored = cursor.fetchone()
                 goals = _mapping(row, "goals")
@@ -482,6 +488,11 @@ class ProductStorageMixin(ProductIdentityMixin):
                     or stored[5] is None
                     or (goals.get("home"), goals.get("away")) != (stored[5], stored[6])
                 ):
+                    continue
+                # The insert below would be a no-op: history already holds this
+                # score, or holds another provider's row that this one never
+                # replaces. Skipping it avoids a savepoint per row on replays.
+                if not stored[7]:
                     continue
                 try:
                     with self.connection.transaction():
@@ -524,7 +535,7 @@ class ProductStorageMixin(ProductIdentityMixin):
         observed_at: datetime,
     ) -> None:
         """Hand a same-team, same-kickoff collision to the existing identity review."""
-        fixture_id, _competition, home_id, away_id, kickoff, home_goals, away_goals = stored
+        fixture_id, _competition, home_id, away_id, kickoff, home_goals, away_goals = stored[:7]
         existing = [
             item[0]
             for item in self.connection.execute(
