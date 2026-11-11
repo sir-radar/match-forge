@@ -88,6 +88,7 @@ def run(
             "snapshots": 0,
             "finished_rows": 0,
             "qualified": 0,
+            "identity_conflicts": 0,
             "missing_files": [],
         }
     )
@@ -111,6 +112,8 @@ def run(
             state["snapshots"] += 1
             state["finished_rows"] += _finished(rows)
             state["qualified"] += qualified
+            state["identity_conflicts"] += sync.history_identity_conflicts
+            sync.history_identity_conflicts = 0
             state["after"] = [acquired_at.isoformat(), str(snapshot_id)]
             if not dry_run:
                 checkpoint.parent.mkdir(parents=True, exist_ok=True)

@@ -231,6 +231,8 @@ class ProductSyncBase:
         self.history_worker_factory = history_worker_factory
         self.sync_run_id = sync_run_id
         self.context_config = context_config or ContextSyncConfig.from_environ(os.environ)
+        # Same-team, same-kickoff history collisions handed to identity review.
+        self.history_identity_conflicts = 0
 
     def _database_now(self) -> datetime:
         row = self.connection.execute("SELECT clock_timestamp()").fetchone()

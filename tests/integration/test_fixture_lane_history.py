@@ -225,3 +225,34 @@ def test_scheduled_report_job_detects_and_repairs_missed_qualification(
             data_root=tmp_path,
         )
         assert again["integrity"]["repaired"] == 0 and "after" not in again["integrity"]
+
+
+def test_identity_collision_skips_one_row_and_is_handed_to_review(
+    database: str, tmp_path: Path
+) -> None:
+    league = uuid4().int % 1_000_000_000 + 1_000_000_000
+    first = _row(league, 0, "FT", 1, 0)
+    clash = _row(league, 0, "FT", 2, 2)
+    clash["fixture"] = {**clash["fixture"], "id": league + 19}
+    clash["teams"] = {**clash["teams"], "away": {"id": league + 4, "name": f"Other {league}"}}
+    other = _row(league, 1, "FT", 0, 1)
+    with psycopg.connect(database) as connection:
+        sync = ProductSync(
+            connection,
+            cast(Any, _Client((first, clash, other), datetime(2026, 11, 5, tzinfo=UTC))),
+            tmp_path,
+            tmp_path / "unused",
+        )
+        sync._store_requested_fixtures(date(2026, 11, 1))
+        connection.commit()
+        assert [row[0] for row in _history(connection, league)] == [
+            str(league + 10),
+            str(league + 11),
+        ]
+        assert sync.history_identity_conflicts == 1
+        conflict = connection.execute(
+            """SELECT conflict_reason, provider_match_id, incoming_facts->>'stage'
+               FROM football.fixture_identity_ingestion_conflicts WHERE provider_match_id=%s""",
+            (str(league + 19),),
+        ).fetchall()
+        assert conflict == [("TEAM_TIMESTAMP_CONFLICT", str(league + 19), "HISTORY_QUALIFICATION")]

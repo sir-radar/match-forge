@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import UUID
+
+from psycopg.errors import RaiseException
 
 from football.product.api_football import (
     context_capability,
@@ -33,6 +36,8 @@ from football.product.sync_support import (
     _season_date_bounds,
 )
 from football.storage.locks import IDENTITY_ADMISSION_LOCK, acquire_locks
+
+_IDENTITY_CONFLICT = "unresolved canonical fixture identity conflict at team/timestamp"
 
 
 class ProductStorageMixin(ProductIdentityMixin):
@@ -443,7 +448,7 @@ class ProductStorageMixin(ProductIdentityMixin):
         later score from the same provider replaces the row; the append-only
         decisions keep the earlier value for earlier cutoffs.
         """
-        count = 0
+        count = conflicts = 0
         leagues: set[object] = set()
         with self.connection.cursor() as cursor:
             for row in fixtures:
@@ -476,29 +481,96 @@ class ProductStorageMixin(ProductIdentityMixin):
                     or (goals.get("home"), goals.get("away")) != (stored[5], stored[6])
                 ):
                     continue
-                cursor.execute(
-                    """
-                    INSERT INTO football.product_team_match_history (
-                        fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
-                        home_goals, away_goals, source_provider_code, source_snapshot_id
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (fixture_id) DO UPDATE SET
-                        home_goals = EXCLUDED.home_goals, away_goals = EXCLUDED.away_goals,
-                        source_snapshot_id = EXCLUDED.source_snapshot_id
-                    WHERE football.product_team_match_history.source_provider_code
-                            = EXCLUDED.source_provider_code
-                      AND (football.product_team_match_history.home_goals,
-                           football.product_team_match_history.away_goals)
-                          IS DISTINCT FROM (EXCLUDED.home_goals, EXCLUDED.away_goals)
-                    """,
-                    (*stored[:7], PROVIDER_CODE, snapshot_id),
-                )
+                try:
+                    with self.connection.transaction():
+                        cursor.execute(
+                            """
+                            INSERT INTO football.product_team_match_history (
+                                fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
+                                home_goals, away_goals, source_provider_code, source_snapshot_id
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (fixture_id) DO UPDATE SET
+                                home_goals = EXCLUDED.home_goals, away_goals = EXCLUDED.away_goals,
+                                source_snapshot_id = EXCLUDED.source_snapshot_id
+                            WHERE football.product_team_match_history.source_provider_code
+                                    = EXCLUDED.source_provider_code
+                              AND (football.product_team_match_history.home_goals,
+                                   football.product_team_match_history.away_goals)
+                                  IS DISTINCT FROM (EXCLUDED.home_goals, EXCLUDED.away_goals)
+                            """,
+                            (*stored[:7], PROVIDER_CODE, snapshot_id),
+                        )
+                except RaiseException as error:
+                    if str(error).partition("\n")[0] != _IDENTITY_CONFLICT:
+                        raise
+                    self._record_history_identity_conflict(row, stored, snapshot_id, observed_at)
+                    conflicts += 1
+                    continue
                 if cursor.rowcount:
                     count += 1
                     leagues.add(_mapping(row, "league").get("id"))
         if leagues:
             self._mark_context_available(leagues, observed_at)
+        self.history_identity_conflicts += conflicts
         return count
+
+    def _record_history_identity_conflict(
+        self,
+        row: Mapping[str, Any],
+        stored: Sequence[Any],
+        snapshot_id: UUID,
+        observed_at: datetime,
+    ) -> None:
+        """Hand a same-team, same-kickoff collision to the existing identity review."""
+        fixture_id, _competition, home_id, away_id, kickoff, home_goals, away_goals = stored
+        existing = [
+            item[0]
+            for item in self.connection.execute(
+                """SELECT fixture_id FROM football.product_team_match_history
+                   WHERE fixture_id<>%s AND kickoff_at=%s
+                     AND (home_team_id IN (%s,%s) OR away_team_id IN (%s,%s))
+                   ORDER BY fixture_id""",
+                (fixture_id, kickoff, home_id, away_id, home_id, away_id),
+            ).fetchall()
+        ]
+        if not existing:
+            return
+        provider_match_id = str(_integer(_mapping(row, "fixture"), "id"))
+        facts = {
+            "fixture_id": str(fixture_id),
+            "kickoff_at": kickoff.astimezone(UTC).isoformat(),
+            "home_goals": home_goals,
+            "away_goals": away_goals,
+            "stage": "HISTORY_QUALIFICATION",
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                [
+                    PROVIDER_CODE,
+                    provider_match_id,
+                    str(snapshot_id),
+                    sorted(map(str, existing)),
+                    facts,
+                ],
+                sort_keys=True,
+            ).encode()
+        ).hexdigest()
+        self.connection.execute(
+            """INSERT INTO football.fixture_identity_ingestion_conflicts
+               (conflict_sha256,provider_code,provider_match_id,source_snapshot_id,
+                existing_fixture_ids,conflict_reason,incoming_facts,created_at)
+               VALUES (%s,%s,%s,%s,%s,'TEAM_TIMESTAMP_CONFLICT',%s::jsonb,%s)
+               ON CONFLICT (conflict_sha256) DO NOTHING""",
+            (
+                digest,
+                PROVIDER_CODE,
+                provider_match_id,
+                snapshot_id,
+                existing,
+                json.dumps(facts, sort_keys=True),
+                observed_at,
+            ),
+        )
 
     def _store_fallback_history(
         self,
