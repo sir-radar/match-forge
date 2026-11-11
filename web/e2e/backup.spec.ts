@@ -21,7 +21,7 @@ test("manual backup confirmation, progress, cancellation and accessible reflow",
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/admin/backup");
-  await page.getByRole("button", { name: "Refresh drive status" }).click();
+  await page.getByRole("button", { name: /^(Refresh drive status|Retry status)$/ }).click();
   const backup = page.getByRole("button", { name: "Back Up Now" });
   await expect(backup).toBeEnabled();
   expect(submissions).toBe(0);
@@ -45,4 +45,20 @@ test("manual backup confirmation, progress, cancellation and accessible reflow",
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.emulateMedia({ forcedColors: "active" });
   await expect(backup).toBeVisible();
+});
+
+test("backup status distinguishes a browser network failure and recovers on retry", async ({ page }) => {
+  const endpoint = "http://127.0.0.1:8080/v1/admin/backup";
+  const alert = page.getByRole("main").getByRole("alert");
+  await page.route(endpoint, (route) => route.abort("failed"), { times: 1 });
+  await page.goto("/admin/backup");
+  await page.getByRole("button", { name: /^(Refresh drive status|Retry status)$/ }).click();
+  await expect(alert).toContainText("The browser could not reach the backup API");
+  await expect(page.getByRole("button", { name: "Back Up Now" })).toBeDisabled();
+  await expect(page.getByText(/awaiting setup/)).toHaveCount(0);
+
+  await page.route(endpoint, (route) => route.fulfill({ json: fixture }));
+  await page.getByRole("button", { name: "Retry status" }).press("Enter");
+  await expect(page.getByText("Authenticated encrypted repository")).toBeVisible();
+  await expect(alert).toHaveCount(0);
 });

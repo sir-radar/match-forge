@@ -355,9 +355,18 @@ the module and toolchain but has no VCS revision. The operating database is at
 contains `202610220100`, whose source SQL is absent from this checkout. Preserve
 that history and compare it with the recorded backup before proceeding.
 
+If Admin reports HTTP 404, compare the running API's `/version` and
+`GET /v1/admin/backup` with the approved release. Send the configured
+`WEB_ORIGIN` on the Admin GET. A compatible API returns HTTP 200 with
+`MIGRATION_PENDING` until migration 300 is applied. A 404 from the running
+API means the route is missing. Retry status after correcting the API address
+or starting the compatible release.
+
 1. Obtain owner approval for the operating migration, replacement build, enabling
    Admin, and the first manual Admin run. Confirm CI is green for the exact release
-   revision. Record the prior service command and configuration for rollback.
+   revision. Save the previous API binary, web build, launch commands and protected
+   configuration before replacing a service. Record the artifact checksums and
+   known release identities for rollback.
 2. In the clean release checkout, install the locked dependencies and source the
    local configuration with `MATCHFORGE_BACKUP_ENABLED=false`. Run
    `make build web-build` from the root. Record `git rev-parse HEAD`,
@@ -367,9 +376,13 @@ that history and compare it with the recorded backup before proceeding.
    revision.
 3. Record the current operating schema and active work with the read-only release
    diagnostic. Quiesce sync-run and work transactions in the approved maintenance
-   window. Check that migration 300 is the only pending forward migration and that
-   the previously verified NTC recovery point is available. Source the approved
-   operating configuration before the targeted migration:
+   window. Check that migration 300 is the only pending forward migration. Verify
+   that an encrypted NTC recovery point covers the current operating schema and
+   data. Compare its captured migration list and isolated restore evidence with the
+   quiesced operating state. Snapshot `42ada89cd1bc` captured schema
+   `202611100100`. The operating database at `202611100200` needs a newer verified
+   recovery point before migration 300. Source the approved operating configuration
+   before the targeted migration:
 
    ```sh
    set -a
@@ -406,6 +419,10 @@ that history and compare it with the recorded backup before proceeding.
    before using macOS Eject.
 7. To suspend the workflow, set `MATCHFORGE_BACKUP_ENABLED=false` and restart the
    compatible API. Keep migration 300 and its backup history. Keep both verified
-   recovery points and the independently retained password. If a hard interruption
-   leaves a disposable restore database, container or staging directory, inspect
-   the exact failed run and verify its identity before any separately approved cleanup.
+   recovery points and the independently retained password. Before migration 300,
+   an application rollback can restart the saved API and web pair with their saved
+   configuration. After migration 300, use a release that can read the migrated
+   schema and backup records. Check `/version`, `/readyz`, forecasting reads and
+   the Admin page after restarting. If a hard interruption leaves a disposable
+   restore database, container or staging directory, inspect the exact failed run
+   and verify its identity before any separately approved cleanup.
