@@ -19,7 +19,7 @@ Computed on the restored rehearsal copy after re-qualification ([runbook](../ope
 | Forecasts missing a result from the previous 120 days | 6,017 |
 | Forecasts missing 1 / 2 / 3 / 4–5 / 6 or more results | 4,650 / 2,874 / 1,195 / 938 / 650 |
 
-The per-forecast list (forecast ID, fixture ID, knowledge cutoff and the missing fixture IDs) is regenerated from the operating database after the runbook is applied. The rehearsal figures above are indicative until then.
+The per-forecast list (forecast ID, fixture ID, knowledge cutoff and the missing fixture IDs) is regenerated from the operating database after the runbook is applied. The rehearsal figures above are indicative until then. The rehearsal inventory hash is recorded in the [rehearsal evidence](../evidence/p02-remediation-rehearsal-2026-11-11.json).
 
 ## Rules that hold under every option
 

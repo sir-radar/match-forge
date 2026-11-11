@@ -84,4 +84,6 @@ Restored copy of the operating database, 11 November 2026, branch `ft/p02-remedi
 | API-Football `REGULATION_90` still without history | 490 (486 identity conflicts; 4 with no retained final-score response) |
 | Preservation hashes (forecasts 18,224; artifacts 9,990; reports 310,024; prior decisions 867,839; eligible history at 1 Nov) | unchanged |
 
-The evidence file for the rehearsal audit is listed in [docs/README.md](../../README.md).
+After the rebuild the second global audit (`p02-integrity-audit-v3`) covered 257,755 fixtures: 257,754 reports current and no served form symbol that fails to trace to a stored result. Full figures are in the [rehearsal evidence](../../evidence/p02-remediation-rehearsal-2026-11-11.json).
+
+Results still without history after the replay are expected. Extra-time and shootout results are not forecast-eligible. Sources without a score duration (PitchAPI and unmapped imports with `UNKNOWN` basis) have no qualification path. Identity collisions wait for review.
