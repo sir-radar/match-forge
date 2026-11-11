@@ -245,8 +245,8 @@ Every workflow goes through `make`. Run `make -n <target>` to see what a target 
 | Run only the Go API with reload | `make dev-go` |
 | Format all languages | `make format` |
 | Lint, type-check, vet | `make lint` |
-| Unit tests (Python, Rust, Go) | `make test` |
-| Python tests with branch coverage | `make test-coverage` |
+| Unit tests (Python with the coverage floor, Rust, Go) | `make test` |
+| Python tests with branch coverage and the coverage floor | `make test-coverage` |
 | Build all artifacts | `make build` |
 | Architecture boundary check | `make architecture-check` |
 | Verify the tracked project status | `make project-status-check` |

@@ -205,6 +205,24 @@ jobs:
           uv python install 3.13.14
           uv sync --locked
 
+      # Same policy as the frontend inventory below: advisories are recorded and
+      # surfaced as warnings; only a failed audit run stops the job.
+      - name: Record locked Python dependency advisory inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .local/dependency-audit
+          set +e
+          uv audit --locked --output-format json > .local/dependency-audit/python.json
+          audit_exit=$?
+          set -e
+          printf '%s\n' "$audit_exit" > .local/dependency-audit/python-exit-code.txt
+          if [[ "$audit_exit" -gt 1 ]]; then
+            exit "$audit_exit"
+          fi
+          jq -r '.vulnerabilities[] | "::warning title=Dependency advisory::\(.id): \(.dependency.name) \(.dependency.version); see retained audit artifact and reviewed operational disposition."' .local/dependency-audit/python.json
+          jq -c '.summary' .local/dependency-audit/python.json
+
       - name: Install pnpm 10.19.0
         uses: pnpm/action-setup@v4
         with:
@@ -248,7 +266,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dependency-audit
+          name: dependency-audit
           path: .local/dependency-audit
           retention-days: 7
 

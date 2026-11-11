@@ -60,14 +60,14 @@ lint:
 	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
 	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh
 
-test:
-	@$(TOOL_ENV); uv run pytest --ignore=tests/integration
+test: test-coverage
 	@$(TOOL_ENV); cargo test --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go test ./...
 
+# Runs the unit suite once and fails below the floor in pyproject.toml.
 test-coverage:
-	@$(TOOL_ENV); uv run coverage run --branch -m pytest --ignore=tests/integration
-	@$(TOOL_ENV); uv run coverage report
+	@$(TOOL_ENV); uv run coverage run -m pytest --ignore=tests/integration
+	@$(TOOL_ENV); uv run coverage report --skip-covered
 
 build:
 	@mkdir -p .local/dist .local/bin

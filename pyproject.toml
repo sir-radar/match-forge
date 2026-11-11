@@ -44,6 +44,15 @@ addopts = "-q"
 testpaths = ["tests", "python/football/tests"]
 pythonpath = [".", "python/football/src"]
 
+[tool.coverage.run]
+branch = true
+source = ["python/football/src/football"]
+
+[tool.coverage.report]
+# Unit tests alone reach 68% of lines and branches; storage code is covered by
+# the integration suite, which is not measured here. Raise this as coverage grows.
+fail_under = 67
+
 [tool.ruff]
 line-length = 100
 target-version = "py313"
