@@ -102,8 +102,9 @@ def _in_basis(row: dict[str, Any], basis: str) -> bool:
         return False
     if basis == "OFFICIAL":
         return True
-    return row["result_class"] != "AWARDED" and (
-        row["verification"] == "QUALIFIED_HISTORY" or row["score_basis"] != "UNKNOWN"
+    return bool(
+        row["result_class"] != "AWARDED"
+        and (row["verification"] == "QUALIFIED_HISTORY" or row["score_basis"] != "UNKNOWN")
     )
 
 

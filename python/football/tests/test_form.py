@@ -1,5 +1,6 @@
 """Form windows follow one policy. Seed cases are synthetic rows shaped like reported matches."""
 
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -15,7 +16,9 @@ def _at(days: float) -> str:
     return (KICKOFF - timedelta(days=days)).isoformat()
 
 
-def played(fid: str, days: float, home: str, away: str, hg: int, ag: int, **extra: Any) -> dict:
+def played(
+    fid: str, days: float, home: str, away: str, hg: int, ag: int, **extra: Any
+) -> dict[str, Any]:
     return {
         "fixture_id": fid,
         "competition_id": extra.get("competition_id", LEAGUE),
@@ -42,7 +45,7 @@ def result(
     status: str = "FINISHED",
     basis: str = "REGULATION_90",
     competition_id: str = LEAGUE,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "fixture_id": fid,
         "competition_id": competition_id,
@@ -58,7 +61,11 @@ def result(
     }
 
 
-def source(history=(), results=(), pending=()) -> dict[str, Any]:
+def source(
+    history: Sequence[dict[str, Any]] = (),
+    results: Sequence[dict[str, Any]] = (),
+    pending: Sequence[dict[str, Any]] = (),
+) -> dict[str, Any]:
     return {
         "fixture_id": "target",
         "competition_id": LEAGUE,
@@ -75,8 +82,9 @@ def source(history=(), results=(), pending=()) -> dict[str, Any]:
     }
 
 
-def windows(src: dict, team: str = "team") -> dict[str, dict]:
-    return team_form(src, team)["windows"]
+def windows(src: dict[str, Any], team: str = "team") -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = team_form(src, team)["windows"]
+    return result
 
 
 def test_withdrawn_team_official_form_includes_walkovers_but_played_form_does_not() -> None:
