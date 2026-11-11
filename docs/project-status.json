@@ -1,6 +1,6 @@
 {
   "contract": "ProjectStatusV2",
-  "updated_at": "2026-11-11T05:09:04Z",
+  "updated_at": "2026-11-11T09:40:00Z",
   "unified_architecture_investigation": {
     "status": "PASS_WITH_WARNINGS",
     "scope": "CURRENT_TASK.md revision 3; architecture investigation/planning only",
@@ -4006,7 +4006,7 @@
     "operating_activation_evidence_ref": "docs/evidence/admin-backup-activation-2026-11-11.json"
   },
   "unified_architecture_p02": {
-    "status": "NOT_RUN",
+    "status": "PASS_WITH_WARNINGS",
     "authorized_tickets": [
       "P02-01",
       "P02-02"
@@ -4015,11 +4015,24 @@
     "authorization_ref": "docs/evidence/owner-decision-authorize-p02-data-integrity-2026-11-11.json",
     "branch": "ft/p02-data-integrity",
     "baseline_git_sha": "b578e9890bf370caa5674bd5df11cac17a003987",
-    "implementation_status": "IN_PROGRESS",
+    "implementation_status": "COMPLETE_AUTHORIZED_SCOPE_PR_OPEN",
     "operating_mutations_by_this_task": 0,
     "operating_migrations_applied": false,
     "provider_acquisition": false,
     "identity_admissions": 0,
-    "model_promotions": 0
+    "model_promotions": 0,
+    "evidence_ref": "docs/evidence/p02-integrity-audit-2026-11-11.json",
+    "form_policy_version": "form-policy-v1",
+    "audit": {
+      "fixtures_audited": 257629,
+      "population": 257629,
+      "complete": true,
+      "not_audited_domains": 6
+    },
+    "warnings": [
+      "fixture-lane results stored before the fix stay unqualified until an authorized operating re-qualification (P03-02)",
+      "provider walkovers reported as ordinary full-time scores cannot be detected (P08-01)",
+      "10086 forecasts since 2026-10-01 were issued with incomplete team history (upper-bound estimate); no re-evaluation authorized"
+    ]
   }
 }
