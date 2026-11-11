@@ -18,6 +18,7 @@ def source() -> dict[str, Any]:
         "history": [
             {
                 "fixture_id": str(index),
+                "competition_id": "league",
                 "kickoff_at": (kickoff - timedelta(days=index + 1)).isoformat(),
                 "home_team_id": "home" if index % 2 == 0 else "away",
                 "away_team_id": "away" if index % 2 == 0 else "home",

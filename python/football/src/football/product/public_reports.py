@@ -61,7 +61,9 @@ def _snapshot(connection: Connection[Any], kind: str, scope: UUID, horizon: str)
             ]
             fingerprint = row["source_fingerprint"]
         else:
-            function = "public_context_source" if kind == "CONTEXT" else "public_comparison_source"
+            function = (
+                "public_context_source_v2" if kind == "CONTEXT" else "public_comparison_source"
+            )
             row = cursor.execute(
                 f"SELECT source,encode(sha256(convert_to(source::text,'UTF8')),'hex') "
                 f"AS fingerprint FROM (SELECT football.{function}(%s) AS source) s",
@@ -448,7 +450,7 @@ def _finish_refresh(
                 ).fetchone()
             else:
                 function = (
-                    "public_context_source" if kind == "CONTEXT" else "public_comparison_source"
+                    "public_context_source_v2" if kind == "CONTEXT" else "public_comparison_source"
                 )
                 row = cursor.execute(
                     sql.SQL(
