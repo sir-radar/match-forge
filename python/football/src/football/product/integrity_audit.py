@@ -397,6 +397,49 @@ def league_coverage(connection: Connection[Any]) -> tuple[dict[str, Any], list[d
     return summary, records
 
 
+def affected_forecasts(connection: Connection[Any], decided_from: datetime) -> list[dict[str, Any]]:
+    """Forecasts whose inputs lacked results that a later re-qualification admitted.
+
+    A forecast is affected only when the newly qualified result was already in a
+    retained source response before the forecast's knowledge cutoff
+    (source_known_at <= knowledge_cutoff), kicked off before the forecast
+    fixture, and involved one of its teams. Results first acquired after the
+    cutoff were legitimately unknown and do not count.
+    """
+    rows = connection.execute(
+        """WITH admitted AS (
+               SELECT DISTINCT ON (d.fixture_id) d.*
+               FROM football.product_match_history_decisions d
+               WHERE d.decided_at >= %s AND d.eligible
+               ORDER BY d.fixture_id, d.decided_at, d.decision_id)
+           SELECT f.forecast_id::text, f.fixture_id::text, f.created_at, f.knowledge_cutoff,
+                  f.model_label, count(*) AS missing_results,
+                  count(*) FILTER (WHERE a.kickoff_at >= t.kickoff_at - interval '120 days')
+                      AS missing_within_120_days,
+                  array_agg(a.fixture_id::text ORDER BY a.kickoff_at DESC, a.fixture_id)
+           FROM football.product_forecasts f
+           JOIN football.product_fixtures t ON t.fixture_id = f.fixture_id
+           JOIN admitted a ON a.source_known_at <= f.knowledge_cutoff
+             AND a.kickoff_at < t.kickoff_at AND a.fixture_id <> t.fixture_id
+             AND (a.home_team_id IN (t.home_team_id, t.away_team_id)
+                  OR a.away_team_id IN (t.home_team_id, t.away_team_id))
+           GROUP BY f.forecast_id, f.fixture_id, f.created_at, f.knowledge_cutoff, f.model_label
+           ORDER BY f.created_at, f.forecast_id""",
+        (decided_from,),
+    ).fetchall()
+    keys = (
+        "forecast_id",
+        "fixture_id",
+        "created_at",
+        "knowledge_cutoff",
+        "model_label",
+        "missing_results",
+        "missing_within_120_days",
+        "missing_fixture_ids",
+    )
+    return [{key: _iso(value) for key, value in zip(keys, row, strict=True)} for row in rows]
+
+
 def incremental_findings(connection: Connection[Any], since: datetime) -> dict[str, int]:
     """Cheap checks over fixtures changed since a time; the scheduled job runs these."""
     row = connection.execute(

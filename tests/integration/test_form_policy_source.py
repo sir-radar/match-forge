@@ -18,7 +18,10 @@ from tests.integration.test_live_context import (
     FIXTURE,
     HOME,
     KICKOFF,
+    OBSERVED,
     SEASON,
+    SNAPSHOT,
+    _insert_forecast,
     _seed_fixture,
 )
 from tests.integration.test_public_reports import build
@@ -246,3 +249,32 @@ def test_league_coverage_lists_absent_pairings_only_for_near_complete_seasons(
     assert season["state"] == "CANDIDATE_MISSING_MATCHES"
     assert season["missing_pairings"] == [[str(OTHER), str(extra)]]
     assert summary["candidate_missing_matches"] == 1
+
+
+def test_affected_forecasts_count_only_results_known_before_the_cutoff(database: str) -> None:
+    from uuid import uuid4
+
+    from football.product.integrity_audit import affected_forecasts
+
+    forecast = uuid4()
+    with psycopg.connect(database) as connection:
+        _insert_forecast(connection, forecast, "a" * 64, "b" * 64)
+        start = connection.execute("SELECT clock_timestamp()").fetchone()[0]
+        for number, known in (
+            (1, OBSERVED - timedelta(days=1)),
+            (3, OBSERVED + timedelta(hours=1)),
+        ):
+            connection.execute(
+                """INSERT INTO football.product_match_history_decisions
+                   (fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,home_goals,
+                    away_goals,source_provider_code,source_snapshot_id,source_kickoff_precision,
+                    eligible,reason,source_known_at)
+                   SELECT fixture_id,competition_id,home_team_id,away_team_id,kickoff_at,
+                          home_score,away_score,'live_context_test',%s,'EXACT',true,
+                          'synthetic requalification',%s
+                   FROM football.product_fixtures WHERE fixture_id=%s""",
+                (SNAPSHOT, known, UUID(int=8300 + number)),
+            )
+        rows = affected_forecasts(connection, start)
+    assert [(row["forecast_id"], row["missing_results"]) for row in rows] == [(str(forecast), 1)]
+    assert rows[0]["missing_fixture_ids"] == [str(UUID(int=8301))]
