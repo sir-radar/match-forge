@@ -312,7 +312,7 @@ func (store *PostgresProductStore) FixtureContext(ctx context.Context, fixtureID
         f.kickoff_at,
         LEAST(f.kickoff_at,statement_timestamp()),report.record_bytes,report.record_sha256
         FROM football.product_fixtures f
-        CROSS JOIN LATERAL (SELECT football.public_context_source(f.fixture_id) AS value) source
+        CROSS JOIN LATERAL (SELECT football.public_context_source_v2(f.fixture_id) AS value) source
         LEFT JOIN LATERAL (
             SELECT r.record_bytes,r.record_sha256 FROM football.product_read_reports r
             WHERE r.report_kind='CONTEXT' AND r.scope_id=f.fixture_id AND r.horizon='LATEST'
@@ -551,7 +551,42 @@ func contextMissingness(item *MatchContext, availabilityCount, coachCount int) [
 	if coachCount < 2 {
 		missingness = append(missingness, "COACH_CONTEXT_INCOMPLETE")
 	}
-	return missingness
+	return append(missingness, formMissingness(item.Form)...)
+}
+
+// formMissingness reports why served form may not be current or verified. Five
+// entries alone never prove the form is correct.
+func formMissingness(form *FormContext) []string {
+	if form == nil {
+		return []string{"RECENT_FORM_POLICY_UNKNOWN"}
+	}
+	codes := map[string]string{
+		"STALE":              "RECENT_FORM_STALE",
+		"RESULT_PENDING":     "RECENT_FORM_RESULT_PENDING",
+		"UNQUALIFIED_RESULT": "RECENT_FORM_UNVERIFIED",
+		"ORDER_AMBIGUOUS":    "RECENT_FORM_ORDER_AMBIGUOUS",
+		"SCORE_CONFLICT":     "RECENT_FORM_SCORE_CONFLICT",
+	}
+	seen := map[string]bool{}
+	result := []string{}
+	for _, team := range []TeamForm{form.Home, form.Away} {
+		window, ok := team.Windows[form.DefaultWindow]
+		if !ok {
+			continue
+		}
+		if window.Coverage != "COMPLETE" && !seen["RECENT_FORM_INCOMPLETE"] {
+			seen["RECENT_FORM_INCOMPLETE"] = true
+			result = append(result, "RECENT_FORM_INCOMPLETE")
+		}
+		for _, flag := range window.Flags {
+			if code, ok := codes[flag]; ok && !seen[code] {
+				seen[code] = true
+				result = append(result, code)
+			}
+		}
+	}
+	sort.Strings(result)
+	return result
 }
 
 func (store *PostgresProductStore) availabilityContext(

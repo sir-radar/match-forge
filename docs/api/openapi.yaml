@@ -744,7 +744,46 @@ components:
         venue: {"type": "string"}
         goals_for: {"type": "integer"}
         goals_against: {"type": "integer"}
-        result: {"type": "string"}
+        result: {"type": "string", "enum": ["W", "D", "L"], "description": "Official result from this team's side. A penalty shootout is D."}
+        fixture_id: {"type": "string", "description": "Canonical fixture behind this symbol. Absent in reports built before form-policy-v1."}
+        result_class: {"type": "string", "enum": ["PLAYED", "AWARDED", "AWARDED_AFTER_PLAY"]}
+        score_basis: {"type": "string", "enum": ["REGULATION_90", "EXTRA_TIME", "PENALTY_SHOOTOUT", "UNKNOWN"]}
+        competition_scope: {"type": "string", "enum": ["LEAGUE", "CUP", "FRIENDLY", "UNCLASSIFIED"]}
+        verification: {"type": "string", "enum": ["QUALIFIED_HISTORY", "CANONICAL_RESULT"], "description": "QUALIFIED_HISTORY passed history qualification; CANONICAL_RESULT is a stored result that has not."}
+    FormWindow:
+      type: object
+      additionalProperties: false
+      required: ["basis", "scope", "venue", "requested", "actual", "coverage", "flags", "results", "fixture_ids", "oldest_kickoff_at", "fingerprint"]
+      properties:
+        basis: {"type": "string", "enum": ["OFFICIAL", "PLAYED", "FORECAST_ELIGIBLE"]}
+        scope: {"type": "string", "enum": ["ALL_COMPETITIONS", "SAME_COMPETITION"]}
+        venue: {"type": "string", "enum": ["ALL", "HOME", "AWAY"]}
+        requested: {"type": "integer"}
+        actual: {"type": "integer"}
+        coverage: {"type": "string", "enum": ["COMPLETE", "PARTIAL", "EMPTY"]}
+        flags: {"type": "array", "items": {"type": "string", "enum": ["STALE", "RESULT_PENDING", "ORDER_AMBIGUOUS", "UNQUALIFIED_RESULT", "AWARDED_INCLUDED", "UNKNOWN_SCORE_BASIS", "UNCLASSIFIED_COMPETITION", "SCORE_CONFLICT"]}}
+        results: {"type": "string", "description": "W/D/L symbols in the context's order."}
+        fixture_ids: {"type": "array", "items": {"type": "string"}}
+        oldest_kickoff_at: {"type": ["string", "null"], "format": "date-time"}
+        fingerprint: {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    TeamForm:
+      type: object
+      additionalProperties: false
+      required: ["team_id", "windows", "pending_fixture_ids"]
+      properties:
+        team_id: {"type": "string"}
+        windows: {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/FormWindow"}, "description": "Keys include OFFICIAL_ALL_5, OFFICIAL_ALL_10, OFFICIAL_COMPETITION_5, OFFICIAL_HOME_5, OFFICIAL_AWAY_5, PLAYED_ALL_5 and FORECAST_ELIGIBLE_ALL_5."}
+        pending_fixture_ids: {"type": "array", "items": {"type": "string"}}
+    FormContext:
+      type: object
+      additionalProperties: false
+      required: ["policy_version", "order", "default_window", "home", "away"]
+      properties:
+        policy_version: {"type": "string"}
+        order: {"type": "string", "enum": ["NEWEST_FIRST"]}
+        default_window: {"type": "string", "description": "The window served as home_form and away_form."}
+        home: {"$ref": "#/components/schemas/TeamForm"}
+        away: {"$ref": "#/components/schemas/TeamForm"}
     H2HMatch:
       type: object
       additionalProperties: false
@@ -786,6 +825,7 @@ components:
         fixture_id: {"type": "string"}
         home_form: {"type": "array", "items": {"$ref": "#/components/schemas/FormMatch"}}
         away_form: {"type": "array", "items": {"$ref": "#/components/schemas/FormMatch"}}
+        form: {"anyOf": [{"$ref": "#/components/schemas/FormContext"}, {"type": "null"}], "description": "Form policy, order and selected fixtures. Null for reports built before form-policy-v1. home_team_statistics and away_team_statistics use the FORECAST_ELIGIBLE_ALL_5 on-field scores."}
         h2h: {"type": "array", "items": {"$ref": "#/components/schemas/H2HMatch"}}
         h2h_summary: {"$ref": "#/components/schemas/H2HSummary"}
         home_team_statistics: {"anyOf": [{"$ref": "#/components/schemas/TeamStatistics"}, {"type": "null"}]}
