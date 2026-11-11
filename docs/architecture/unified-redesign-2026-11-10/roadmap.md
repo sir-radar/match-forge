@@ -165,6 +165,43 @@ Gain: truthful source-backed score availability and no preventable duplicate
 publication. Candidate row counts are not unique recovered matches or accepted
 identity actions. Gate: integrity/no leakage; freeze and hand off before later scope.
 
+### P02 data-integrity cohort (authorized 2026-11-11)
+
+Owner decision `AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1` authorizes
+P02-01 and P02-02 on `ft/p02-data-integrity`. Delivered there:
+
+- Dated-request API-Football results now reach history qualification
+  (`ProductSyncStorage._qualify_finished_history`); same-provider score
+  corrections replace the history row while decisions stay append-only.
+- `form-policy-v1` (`product/form.py`, `public_context_source_v2`): official,
+  played and forecast-eligible windows from one candidate set, newest first,
+  with coverage, flags, selected fixture IDs and fingerprints. Forecast inputs
+  and `product_eligible_team_history_at` are unchanged.
+- API `form` object, per-match provenance, form missingness codes and
+  `lifecycle_state=RESULT_OVERDUE`; the web labels order and awarded results.
+- Read-only resumable audit `football.product.integrity_audit`.
+
+Recorded for later tickets, not built in P02:
+
+- **P03-02:** schedule the integrity audit as recurring work on the existing
+  work registry; regenerate context reports for fixtures the audit marks
+  `DIVERGENT_STALE_REPORT`; bounded re-qualification of fixture-lane results
+  that predate the P02 fix (operating write, needs P01 and an owner decision).
+- **P07-01:** UI filters for the non-default form windows (last 10,
+  same-competition, home/away, played).
+- **P08-01:** store official and on-field scores separately and add the
+  missing result classes (awarded after play, abandoned with result standing,
+  annulled after withdrawal); detect walkovers that providers report as an
+  ordinary FT 3–0; record upstream lineage in the capability registry so
+  independent corroboration can be tested. Unknown lineage counts as correlated.
+- **P08-02:** a typed competition-stage scope so league-only form can include
+  playoffs and exclude split-round labels without name heuristics; friendlies
+  get a typed scope instead of the name rule in `product_competition_scope`.
+- **P09-01:** acquire the missing fixtures the audit and seed traces found
+  (for example 1 Lyga 17 Oct 2026 Minija v Babrungas) under existing
+  acquisition authority; standings, H2H, statistics, live events and lineups
+  remain `NOT_AUDITED` until a domain check exists.
+
 ## Phase 3 — Backend live synchronization and fairness
 
 Dependencies: P00/P02 for affected correctness; existing live schedules remain
