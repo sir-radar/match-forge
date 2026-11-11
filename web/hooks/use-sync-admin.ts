@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { HistoricalCoverage, ProviderConfiguration, SyncRun, SyncType } from "@/lib/contracts";
 
+export type HistoryProvider = "fotmob" | "pitchapi";
 export type SyncFilters = { date: string; from_date: string; season: string; competition: string; country: string };
 export function syncLane(type: SyncType): string { return type === "FOTMOB_SYNC" ? "LIVE_FOTMOB" : type === "PITCHAPI_SYNC" ? "LIVE_PITCHAPI" : type === "PUBLIC_REPORTS" || type === "CONTEXT_REPORTS" ? "PUBLIC_REPORTS" : "BULK"; }
 function runActive(run: SyncRun): boolean { return run.status === "QUEUED" || run.status === "RUNNING"; }
@@ -108,7 +109,12 @@ export function useSyncAdminState(initialDate: string) {
       pending.current.delete(lane); if (mounted.current) setSubmitting(Object.fromEntries(pending.current));
     }
   };
-  const start = (type: SyncType, operation: (body: Record<string, string>) => Promise<SyncRun>) => mutate(type, type, () => operation(Object.fromEntries(Object.entries(filters).filter(([, value]) => value))));
+  const start = (type: SyncType, operation: (body: Record<string, string>) => Promise<SyncRun>, provider?: HistoryProvider) => {
+    const { season, competition, country } = filters;
+    const fields = type === "HISTORY_BACKFILL" ? { season, competition, ...(provider ? { provider } : { country }) } : filters;
+    const body = Object.fromEntries(Object.entries(fields).filter(([, value]) => value));
+    return mutate(type, provider ?? type, () => operation(body));
+  };
   const stop = (run: SyncRun) => mutate(run.sync_type, `STOP:${run.run_id}`, () => api.stopSyncRun(run.run_id), true);
   const retry = (run: SyncRun) => mutate(run.sync_type, `RETRY:${run.run_id}`, () => api.retrySyncRun(run.run_id));
   return { active, clock, coverage, error, laneErrors, filters, loading, providerConfiguration, retry, runs, setFilters, start, stop, submitting, reload, laneBusy };

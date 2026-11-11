@@ -187,19 +187,14 @@ class ProductSync:
         fixture_from_date: date | None = None,
         history_concurrency: int = 3,
         refresh: bool = True,
-    ) -> dict[str, int]:
+    ) -> dict[str, int | str]:
         if history_concurrency <= 0:
             raise ValueError("history_concurrency must be positive")
         fixture_dates = _fixture_sync_dates(requested_date, fixture_from_date)
         fixture_history_start = fixture_from_date or fixture_dates[0]
-        competition_response = self.client.competitions()
-        competition_snapshot = self._record_response("competitions", competition_response)
-        competition_count = self._store_competitions(
-            competition_response.rows, competition_snapshot, competition_response.fetched_at
-        )
-        self.connection.commit()
+        competition_count, remaining, discovery_error = self._sync_competitions()
         fixture_count, league_seasons = self._sync_fixtures(fixture_dates)
-        context_observations = self.sync_context(competition_response.remaining_day)
+        context_observations = self.sync_context(remaining) if discovery_error is None else 0
         self._recover_abandoned_history_jobs()
         self.connection.commit()
         self._enqueue_history_jobs(league_seasons)
@@ -219,7 +214,7 @@ class ProductSync:
             else 0
         )
         self.connection.commit()
-        return {
+        result: dict[str, int | str] = {
             "competitions": competition_count,
             "fixtures": fixture_count,
             "context_observations": context_observations,
@@ -235,6 +230,21 @@ class ProductSync:
             "history_queue_pending_retry": queue_result["pending_retry"],
             "history_queue_peak_concurrency": queue_result["peak_concurrency"],
         }
+        if discovery_error is not None:
+            result["competition_discovery_error"] = discovery_error
+        return result
+
+    def _sync_competitions(self) -> tuple[int, int | None, str | None]:
+        try:
+            response = self.client.competitions()
+        except ApiFootballError as error:
+            if self.history_fallback is None:
+                raise
+            return 0, None, str(error)
+        snapshot = self._record_response("competitions", response)
+        count = self._store_competitions(response.rows, snapshot, response.fetched_at)
+        self.connection.commit()
+        return count, response.remaining_day, None
 
     def sync_context(self, remaining_day: int | None, now: datetime | None = None) -> int:
         """Fetch enabled pre-match context without letting provider failures break fixture sync."""

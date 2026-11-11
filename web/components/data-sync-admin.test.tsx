@@ -70,7 +70,7 @@ describe("DataSyncAdmin", () => {
     expect(screen.getByText("124,806")).toBeInTheDocument();
     expect(screen.getByLabelText("Backfill fixtures from")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Backfill fixtures from"), { target: { value: "2026-09-29" } });
-    for (const name of ["Run MVP Sync", "Sync OpenFootball", "Sync Football-Data.co.uk", "Run Both Historical Sources", "Refresh Forecasts", "Sync External Predictions", "Sync FotMob", "Sync PitchAPI", "Run Full Sync"]) {
+    for (const name of ["Run MVP Sync", "Sync OpenFootball", "Sync Football-Data.co.uk", "Run All Historical Sources", "Refresh Forecasts", "Sync External Predictions", "Sync FotMob", "Sync PitchAPI", "Run Full Sync"]) {
       expect(screen.getByRole("button", { name })).toBeEnabled();
     }
     expect(screen.getAllByText("Disabled").length).toBeGreaterThanOrEqual(2);
@@ -82,6 +82,37 @@ describe("DataSyncAdmin", () => {
       expect.objectContaining({ method: "POST", body: expect.stringContaining('"from_date"') }),
     ));
   });
+
+  it.each([["fotmob", "FotMob"], ["pitchapi", "PitchAPI"]])(
+    "starts %s season acquisition independently from date-range sync",
+    async (provider, name) => {
+      const run = {
+        run_id: "history", sync_type: "HISTORY_BACKFILL", status: "QUEUED",
+        requested_at: "2026-11-11T00:30:00Z", started_at: null, finished_at: null,
+        requested_date: null, parameters: { provider, season: "2025/2026" },
+        summary: {}, error_message: null, log_path: null,
+      };
+      const config = { fotmob_enabled: true, pitchapi_enabled: true, operational_sync_interval: "30s" };
+      const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) =>
+        init?.method === "POST" ? json(run, 202) : json({ runs: [], coverage, provider_configuration: config }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      render(<DataSyncAdmin initialDate="2026-11-11" />);
+      fireEvent.change(screen.getByLabelText("Backfill fixtures from"), { target: { value: "2026-11-10" } });
+      fireEvent.change(screen.getByLabelText("Season"), { target: { value: "2025/2026" } });
+      const button = screen.getByRole("button", { name: `Acquire ${name} History` });
+      await waitFor(() => expect(button).toBeEnabled());
+      fireEvent.click(button);
+
+      expect(await screen.findByText("Queued")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent(`${name} History`);
+      expect(screen.getByRole("button", { name: `Sync ${name}` })).toBeEnabled();
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining("/v1/admin/sync/history"),
+        expect.objectContaining({ method: "POST", body: JSON.stringify({ season: "2025/2026", provider }) }),
+      );
+    },
+  );
 
   it("shows actionable API errors", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({ error: "database unavailable" }, 503)));

@@ -627,13 +627,16 @@ def test_fixture_sync_includes_stored_future_competitions(
     assert leagues == [(39, 2026), (999, 2026)]
 
 
+@pytest.mark.parametrize("quota_exhausted", [False, True])
 def test_run_uses_history_for_dates_before_live_provider_window(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, quota_exhausted: bool
 ) -> None:
     observed_at = datetime(2026, 10, 3, tzinfo=UTC)
 
     class PrimaryClient:
         def competitions(self) -> ApiResponse:
+            if quota_exhausted:
+                raise ApiFootballError("API-Football quota exhausted", retry_after=observed_at)
             return ApiResponse("/leagues", observed_at, b"{}", (), None)
 
     sync = ProductSync(
@@ -642,6 +645,8 @@ def test_run_uses_history_for_dates_before_live_provider_window(
         Path("data"),
         Path("artifact"),
     )
+    if quota_exhausted:
+        sync.history_fallback = cast(Any, object())
     provider_dates: list[date] = []
     history_ranges: list[tuple[date, date]] = []
     monkeypatch.setattr(
@@ -686,8 +691,10 @@ def test_run_uses_history_for_dates_before_live_provider_window(
         lambda _connection, _root, provider, **_kwargs: admissions.append(provider),
     )
 
-    sync.run(date(2026, 10, 3), fixture_from_date=date(2019, 12, 30))
+    result = sync.run(date(2026, 10, 3), fixture_from_date=date(2019, 12, 30))
 
+    if quota_exhausted:
+        assert result["competition_discovery_error"] == "API-Football quota exhausted"
     assert provider_dates == [date(2026, 10, 2), date(2026, 10, 3)]
     assert history_ranges == [(date(2019, 12, 30), date(2026, 10, 3))]
     assert admissions == ["api_football", "football_data_org"]

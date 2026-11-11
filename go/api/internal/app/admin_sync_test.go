@@ -132,6 +132,51 @@ func TestAdminSyncPassesFixtureBackfillStartDate(t *testing.T) {
 	}
 }
 
+func TestAdminHistoryProviderSelection(t *testing.T) {
+	tests := []struct {
+		action, provider string
+		want             int
+	}{
+		{"history", "fotmob", http.StatusAccepted},
+		{"history", "pitchapi", http.StatusAccepted},
+		{"history", "openfootball", http.StatusBadRequest},
+		{"fotmob", "fotmob", http.StatusBadRequest},
+	}
+	for _, test := range tests {
+		t.Run(test.action+"/"+test.provider, func(t *testing.T) {
+			runner := &syncRunnerStub{}
+			body := strings.NewReader(`{"provider":"` + test.provider + `","competition":"47","season":"2025/2026"}`)
+			request := localAdminTestRequest(http.MethodPost, "/v1/admin/sync/"+test.action, body)
+			response := httptest.NewRecorder()
+			newAdminTestApp(runner).Handler().ServeHTTP(response, request)
+			if response.Code != test.want {
+				t.Fatalf("response = %d %s", response.Code, response.Body.String())
+			}
+			if test.want == http.StatusBadRequest {
+				if len(runner.started) != 0 {
+					t.Fatalf("unexpected job = %+v", runner.started)
+				}
+				return
+			}
+			started := runner.started[0]
+			run := SyncRun{Type: started.Type, Parameters: syncParameters(started)}
+			retry := syncRequestFromRun(run)
+			args, err := syncCommandArgs(retry)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if retry.Type != SyncHistoryBackfill || syncLane(retry.Type) != "BULK" {
+				t.Fatalf("retry = %+v", retry)
+			}
+			for _, want := range []string{"backfill-history", "--provider-only " + test.provider, "--competition 47", "--season 2025/2026"} {
+				if !strings.Contains(strings.Join(args, " "), want) {
+					t.Fatalf("args = %q, missing %q", args, want)
+				}
+			}
+		})
+	}
+}
+
 func TestValidateSyncDateRangeRejectsReversedRange(t *testing.T) {
 	_, err := validateSyncDateRange("2026-10-03", "2026-10-04")
 	if err == nil || err.Error() != "from_date must not be after date" {

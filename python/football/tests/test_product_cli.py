@@ -323,7 +323,7 @@ def test_sync_all_enables_operational_providers_independently(
     enabled_provider: str,
     disabled_provider: str,
 ) -> None:
-    calls: list[str] = []
+    calls: list[tuple[str, date, date]] = []
 
     class Connection:
         def commit(self) -> None:
@@ -347,12 +347,12 @@ def test_sync_all_enables_operational_providers_independently(
         def __init__(self, *_args: object, provider_code: str, **_kwargs: object) -> None:
             self.provider_code = provider_code
 
-        def sync_fotmob(self, *_args: object, **_kwargs: object) -> dict[str, str]:
-            calls.append(self.provider_code)
+        def sync_fotmob(self, _client: object, start: date, end: date) -> dict[str, str]:
+            calls.append((self.provider_code, start, end))
             return {"provider": self.provider_code}
 
-        def sync_pitchapi(self, *_args: object, **_kwargs: object) -> dict[str, str]:
-            calls.append(self.provider_code)
+        def sync_pitchapi(self, _client: object, start: date, end: date) -> dict[str, str]:
+            calls.append((self.provider_code, start, end))
             return {"provider": self.provider_code}
 
     monkeypatch.setenv("MATCHFORGE_FOTMOB_ENABLED", str(enabled_provider == "fotmob").lower())
@@ -376,7 +376,7 @@ def test_sync_all_enables_operational_providers_independently(
     result = cli._sync_all(cast(Any, Connection()), args)
     operational = cast(dict[str, object], result["operational_providers"])
 
-    assert calls == [enabled_provider]
+    assert calls == [(enabled_provider, date(2026, 10, 8), date(2026, 10, 9))]
     assert disabled_provider not in operational
     assert operational == {enabled_provider: {"provider": enabled_provider}}
 

@@ -16,6 +16,15 @@ const coverage = {
 
 test.beforeEach(async ({ page }) => {
   await page.route("http://127.0.0.1:8080/v1/admin/**", async (route) => {
+    if (route.request().method() === "POST" && route.request().url().endsWith("/sync/history")) {
+      const { provider } = route.request().postDataJSON();
+      await route.fulfill({ status: 202, json: { ...run("provider-history", "HISTORY_BACKFILL", "QUEUED"), parameters: { provider } } });
+      return;
+    }
+    if (route.request().url().endsWith("/sync-runs/provider-history")) {
+      await route.fulfill({ json: { ...run("provider-history", "HISTORY_BACKFILL", "RUNNING"), parameters: { provider: "pitchapi" } } });
+      return;
+    }
     if (route.request().method() === "POST") {
       await route.fulfill({ status: 202, json: run("new-run", "ALL_DATA", "QUEUED") });
       return;
@@ -44,6 +53,18 @@ test("admin data sync exposes fixed actions, coverage, history, and accessible c
   await page.getByRole("button", { name: "Run Full Sync" }).click();
   await expect(page.getByText("Running", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sync OpenFootball" })).toBeDisabled();
+});
+
+test("provider history has a keyboard-accessible action separate from live sync", async ({ page }) => {
+  await page.goto("/admin/data-sync");
+  const live = page.getByRole("region", { name: "Live fixtures and scores" });
+  const history = page.getByRole("region", { name: "Historical acquisition" });
+  const action = history.getByRole("button", { name: "Acquire PitchAPI History" });
+  await expect(action).toBeEnabled();
+  await action.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("status")).toContainText("PitchAPI History");
+  await expect(live.getByRole("button", { name: "Sync PitchAPI" })).toBeEnabled();
 });
 
 test("admin remains usable at mobile width", async ({ page }, testInfo) => {

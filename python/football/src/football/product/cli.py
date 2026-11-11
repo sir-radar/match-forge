@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -677,7 +677,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
     sync_run_id = _sync_run_id()
     errors: dict[str, str] = {}
 
-    def mvp_sync() -> dict[str, int]:
+    def mvp_sync() -> dict[str, int | str]:
         fallback = FootballDataOrgClient(fallback_token) if fallback_token else None
         return ProductSync(
             connection,
@@ -733,7 +733,9 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
         errors,
     )
     if mvp is not None and fixtures_from_history is not None:
-        mvp["fixtures_from_history"] += fixtures_from_history
+        mvp["fixtures_from_history"] = (
+            cast(int, mvp["fixtures_from_history"]) + fixtures_from_history
+        )
     operational: dict[str, object | None] = {}
     if os.environ.get("MATCHFORGE_PITCHAPI_ENABLED", "false") == "true":
         operational["pitchapi"] = _run_sync_step(
@@ -745,7 +747,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
                     connection, args.data_root, provider_code="pitchapi"
                 ).sync_pitchapi(
                     _live_pitchapi_client(connection, yield_to_live=True),
-                    args.from_date or args.date,
+                    fixture_start,
                     args.date,
                 ),
             ),
@@ -761,7 +763,7 @@ def _sync_all(connection: psycopg.Connection[Any], args: argparse.Namespace) -> 
                     connection, args.data_root, provider_code="fotmob"
                 ).sync_fotmob(
                     _live_fotmob_client(connection, yield_to_live=True),
-                    args.from_date or args.date,
+                    fixture_start,
                     args.date,
                 ),
             ),
