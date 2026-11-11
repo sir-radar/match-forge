@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -331,6 +332,21 @@ def test_external_probabilities_are_normalized_and_fail_closed() -> None:
         SportmonksPredictionClient(None).fixture_probability("1").status
         is BenchmarkStatus.DISABLED_NOT_CONFIGURED
     )
+
+
+def test_sportmonks_token_is_sent_in_a_header_not_the_url() -> None:
+    requests: list[tuple[str, Mapping[str, str]]] = []
+
+    def transport(url: str, headers: Mapping[str, str]) -> bytes:
+        requests.append((url, headers))
+        return b'{"data": [{"predictions": {"home": 40, "draw": 30, "away": 30}}]}'
+
+    SportmonksPredictionClient("secret-token", transport=transport).fixture_probability("456")
+
+    ((url, headers),) = requests
+    assert "secret-token" not in url
+    assert url.endswith("/predictions/probabilities/fixtures/456?include=type")
+    assert headers == {"Authorization": "secret-token"}
 
 
 def test_ambiguous_external_mapping_fails_closed_and_stays_benchmark_only() -> None:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
@@ -15,6 +14,8 @@ from uuid import UUID
 
 import numpy as np
 from scipy.optimize import minimize
+
+from football.contracts.source import canonical_json_bytes
 
 MODEL_ID = "MATCHFORGE_CONTEXTUAL_GOAL_MODEL_V1"
 ALLOWED_L2 = (0.01, 0.1, 1.0, 10.0)
@@ -387,7 +388,7 @@ def _has_covered_context(
 
 
 def _canonical_json(value: object) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return canonical_json_bytes(value, ensure_ascii=True)
 
 
 def _sha256(value: str, name: str) -> None:

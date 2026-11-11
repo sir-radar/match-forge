@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
@@ -15,6 +14,7 @@ from penaltyblog.models.probabilities import (
     compute_negative_binomial_probabilities,
 )
 
+from football.contracts.source import canonical_json_bytes
 from football.forecasting.cold_start import (
     ArtifactTeamState,
     ColdStartConfig,
@@ -626,6 +626,4 @@ def _json_value(value: object) -> object:
 
 
 def _canonical_json(value: object) -> bytes:
-    return json.dumps(
-        _json_value(value), sort_keys=True, separators=(",", ":"), allow_nan=False
-    ).encode()
+    return canonical_json_bytes(_json_value(value), ensure_ascii=True)

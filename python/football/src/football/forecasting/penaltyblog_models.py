@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import importlib.metadata
-import json
 import math
 import re
+import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+from football.contracts.source import canonical_json_bytes
 from football.forecasting.model_contracts import (
     FittedModelArtifact,
     ForecastInputSnapshot,
@@ -343,17 +344,24 @@ def _diagnostics(model: Any, config: dict[str, object]) -> dict[str, object]:
     return result if isinstance(result, dict) else {}
 
 
+# penaltyblog draws from NumPy's process-wide generator, so a seeded fit owns that
+# generator until it finishes. The lock keeps two seeded fits on different threads
+# from interleaving their draws.
+_NUMPY_SEED_LOCK = threading.RLock()
+
+
 @contextmanager
 def _numpy_seed(seed: int | None) -> Iterator[None]:
     if seed is None:
         yield
         return
-    state = np.random.get_state()
-    np.random.seed(seed)
-    try:
-        yield
-    finally:
-        np.random.set_state(state)
+    with _NUMPY_SEED_LOCK:
+        state = np.random.get_state()
+        np.random.seed(seed)
+        try:
+            yield
+        finally:
+            np.random.set_state(state)
 
 
 def _dataset_sha256(rows: tuple[HistoricalMatch, ...]) -> str:
@@ -400,6 +408,4 @@ def _json_safe(value: object) -> object:
 
 
 def _canonical_json(value: object) -> bytes:
-    return json.dumps(
-        _json_safe(value), sort_keys=True, separators=(",", ":"), allow_nan=False
-    ).encode()
+    return canonical_json_bytes(_json_safe(value), ensure_ascii=True)

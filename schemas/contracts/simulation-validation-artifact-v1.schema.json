@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "simulation-validation-artifact-v1.schema.json",
+  "title": "SimulationValidationArtifactV1",
+  "description": "Result the Rust simulation-core V2 and V3 validators print for one PitchApiSimulationInputV1. A result is only produced when every stability, precision and parity check passed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "algorithm_version",
+    "base_seed_commitment",
+    "batch_seed_ids",
+    "events",
+    "forecast_artifact_sha256",
+    "forecast_id",
+    "forecast_probability_sha256",
+    "input_sha256",
+    "policy_sha256",
+    "protocol_id",
+    "schema_version",
+    "seed_schedule_id",
+    "simulation_count",
+    "stability_limit",
+    "status",
+    "tail_draws"
+  ],
+  "properties": {
+    "algorithm_version": {
+      "enum": [
+        "pitchapi-score-categorical-v1",
+        "pitchapi-score-categorical-v2"
+      ]
+    },
+    "base_seed_commitment": {
+      "$ref": "#/$defs/sha256"
+    },
+    "batch_seed_ids": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "events": {
+      "type": "array",
+      "minItems": 62,
+      "maxItems": 62,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "analytic_probability",
+          "batch_counts",
+          "count",
+          "event_id",
+          "parity_interval_99_familywise",
+          "precision_half_width",
+          "precision_interval_95_familywise",
+          "simulated_probability"
+        ],
+        "properties": {
+          "analytic_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "batch_counts": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parity_interval_99_familywise": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lower",
+              "upper"
+            ],
+            "properties": {
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "precision_half_width": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.005
+          },
+          "precision_interval_95_familywise": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lower",
+              "upper"
+            ],
+            "properties": {
+              "lower": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "upper": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "simulated_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "forecast_artifact_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "forecast_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "forecast_probability_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "input_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "protocol_id": {
+      "enum": [
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+      ]
+    },
+    "schema_version": {
+      "const": "SimulationValidationArtifactV1"
+    },
+    "seed_schedule_id": {
+      "enum": [
+        "pitchapi-v2-splitmix64-sha256-v1",
+        "pitchapi-v3-splitmix64-sha256-v1",
+        "pitchapi-v4-splitmix64-sha256-v1"
+      ]
+    },
+    "simulation_count": {
+      "const": 112460
+    },
+    "stability_limit": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "status": {
+      "const": "PASS"
+    },
+    "tail_draws": {
+      "const": 0
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

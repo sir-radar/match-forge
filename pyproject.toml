@@ -9,7 +9,7 @@ description = "Reproducible data foundation for football forecasting"
 requires-python = ">=3.13,<3.14"
 dependencies = [
   "jsonschema>=4.25,<5",
-  "pandera[polars]>=0.26,<1",
+  "numpy>=2.5,<3",
   "penaltyblog==1.13.0",
   "polars>=1.33,<2",
   "psycopg[binary]>=3.2,<4",
@@ -27,7 +27,7 @@ dev = [
   "hatchling>=1.27,<2",
   "hypothesis>=6.138,<7",
   "mypy>=1.17,<2",
-  "pytest>=8.4,<9",
+  "pytest>=9.0.3,<10",
   "ruff>=0.12,<1",
 ]
 
@@ -57,6 +57,15 @@ addopts = "-q"
 testpaths = ["tests", "python/football/tests"]
 pythonpath = [".", "python/football/src"]
 
+[tool.coverage.run]
+branch = true
+source = ["python/football/src/football"]
+
+[tool.coverage.report]
+# Unit tests alone reach 68% of lines and branches; storage code is covered by
+# the integration suite, which is not measured here. Raise this as coverage grows.
+fail_under = 67
+
 [tool.ruff]
 line-length = 100
 target-version = "py313"
@@ -67,8 +76,20 @@ select = ["E", "F", "I", "UP", "B", "SIM", "C901"]
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
+[tool.ruff.lint.per-file-ignores]
+# This script records its own SHA-256 in retained evidence, so its bytes stay as executed.
+"scripts/run_dcv3_static_heterogeneity_multiplicity.py" = ["E501", "B904"]
+
+[tool.ruff.format]
+exclude = ["scripts/run_dcv3_static_heterogeneity_multiplicity.py"]
+
 [tool.mypy]
 python_version = "3.13"
 strict = true
-files = ["experiments/sprint1_roundtrip", "python/football/src", "python/football/tests"]
+files = ["experiments/sprint1_roundtrip", "python/football/src", "python/football/tests", "scripts"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# This script records its own SHA-256 in retained evidence, so its bytes stay as executed.
+module = "scripts.run_dcv3_low_score_structure_diagnostic"
+ignore_errors = true

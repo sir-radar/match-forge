@@ -41,18 +41,18 @@ migration-status: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
 format:
-	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
-	@$(TOOL_ENV); uv run ruff format python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
+	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts
+	@$(TOOL_ENV); uv run ruff format python tests experiments scripts
 	@$(TOOL_ENV); cargo fmt --all
 	@$(TOOL_ENV); find go -type f -name '*.go' -exec gofmt -w {} +
 
 format-check:
-	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
+	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts
 	@$(TOOL_ENV); cargo fmt --all --check
 	@$(TOOL_ENV); test -z "$$(find go -type f -name '*.go' -exec gofmt -l {} +)"
 
 lint:
-	@$(TOOL_ENV); uv run ruff check python tests experiments scripts/verify_code_intelligence.py $(RECOVERY_SCRIPTS)
+	@$(TOOL_ENV); uv run ruff check python tests experiments scripts
 	@$(TOOL_ENV); uv run mypy
 	@$(TOOL_ENV); uv run mypy --strict scripts/verify_code_intelligence.py tests/test_code_intelligence.py
 	@$(TOOL_ENV); uv run mypy --strict $(RECOVERY_SCRIPTS)
@@ -62,14 +62,14 @@ lint:
 	@$(TOOL_ENV); goose -dir $(MIGRATIONS_DIR) validate
 	@sh -n scripts/bootstrap.sh scripts/doctor.sh scripts/integration.sh scripts/storage-integration.sh scripts/toolchain.sh scripts/code-intelligence.sh
 
-test:
-	@$(TOOL_ENV); uv run pytest --ignore=tests/integration
+test: test-coverage
 	@$(TOOL_ENV); cargo test --workspace --all-targets --all-features
 	@$(TOOL_ENV); cd go/api && go test ./...
 
+# Runs the unit suite once and fails below the floor in pyproject.toml.
 test-coverage:
-	@$(TOOL_ENV); uv run coverage run --branch -m pytest --ignore=tests/integration
-	@$(TOOL_ENV); uv run coverage report
+	@$(TOOL_ENV); uv run coverage run -m pytest --ignore=tests/integration
+	@$(TOOL_ENV); uv run coverage report --skip-covered
 
 build:
 	@mkdir -p .local/dist .local/bin

@@ -455,7 +455,7 @@ def _evidence_file(
 
 
 def _json_text(payload: dict[str, object]) -> str:
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return canonical_json_bytes(payload).decode("utf-8")
 
 
 def find_equivalent_clean_manifest(

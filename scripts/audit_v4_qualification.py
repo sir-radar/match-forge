@@ -9,7 +9,7 @@ from collections import Counter
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import psycopg
 from football.canonical_resources.resolution import _references
@@ -37,7 +37,7 @@ def resource_matrix(
     for observation in rows:
         for path, reference in _references(observation).items():
             kind = path.rsplit("/", 1)[-1]
-            native = reference.provider_native_id
+            native = cast(Any, reference).provider_native_id
             if native is None:
                 anonymous[kind] += 1
             else:
@@ -53,9 +53,9 @@ def resource_matrix(
         "native_competition": sorted(refs.get("competition", set())),
         "native_season": sorted(
             {
-                str(row.season_label)
+                str(label)
                 for row in rows
-                if getattr(row, "season_label", None) is not None
+                if (label := getattr(row, "season_label", None)) is not None
             }
         ),
         "resource_type": resource_type,

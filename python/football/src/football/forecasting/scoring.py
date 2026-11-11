@@ -15,6 +15,7 @@ from football.forecasting.contracts import (
     MatchResultProbabilitiesV1,
 )
 from football.forecasting.dataset import EvaluationMatchOutcomeV1
+from football.forecasting.dixon_coles import _poisson_probability, _tau
 from football.forecasting.evaluation import (
     EvaluatedMatchResultV1,
     MatchOutcome,
@@ -559,22 +560,6 @@ def _corner_probability(count: int, expected: float, dispersion: float | None) -
 
 def _stored_probability(count: int, values: tuple[float, ...]) -> float:
     return values[count] if count < len(values) else 0.0
-
-
-def _poisson_probability(count: int, expected: float) -> float:
-    return math.exp(count * math.log(expected) - expected - math.lgamma(count + 1.0))
-
-
-def _tau(home: int, away: int, home_mean: float, away_mean: float, rho: float) -> float:
-    if home == 0 and away == 0:
-        return 1.0 - home_mean * away_mean * rho
-    if home == 0 and away == 1:
-        return 1.0 + home_mean * rho
-    if home == 1 and away == 0:
-        return 1.0 + away_mean * rho
-    if home == 1 and away == 1:
-        return 1.0 - rho
-    return 1.0
 
 
 def _negative_log(probability: float) -> float:

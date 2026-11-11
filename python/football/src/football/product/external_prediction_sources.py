@@ -406,16 +406,15 @@ def collect_sources(
     *,
     requested_source: str | None = None,
     fetcher: FetchPage = fetch_page,
-    today: date | None = None,
+    today: date,
 ) -> tuple[SourceCollection, ...]:
-    current_date = today or date.today()
     if requested_source is not None and requested_source not in _KNOWN_SOURCES:
         raise ValueError(f"unknown external prediction source: {requested_source}")
     results: list[SourceCollection] = []
     for adapter in _ADAPTERS:
         if requested_source is not None and adapter.source_code != requested_source:
             continue
-        results.append(_collect_source(adapter, prediction_date, current_date, fetcher))
+        results.append(_collect_source(adapter, prediction_date, today, fetcher))
     if requested_source in {None, "forebet"}:
         results.append(
             SourceCollection(

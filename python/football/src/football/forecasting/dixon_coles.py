@@ -248,6 +248,13 @@ class DixonColesModel:
         if len(team_ids) < 2:
             raise DixonColesContractError("Dixon-Coles fitting requires at least two teams")
         team_indexes = {team_id: index for index, team_id in enumerate(team_ids)}
+        if self.config.effect_regularization == 0.0 and not _teams_are_linked(
+            ordered, team_indexes
+        ):
+            raise DixonColesContractError(
+                "Dixon-Coles fitting without effect regularization requires every team "
+                "to be linked to every other team through matches"
+            )
         cutoff = ordered[-1].kickoff_at
         weights = tuple(
             self.config.match_weight((cutoff - match.kickoff_at).total_seconds() / 86_400.0)
@@ -398,6 +405,27 @@ class DixonColesModel:
             score_matrix=matrix,
             markets=markets,
         )
+
+
+def _teams_are_linked(matches: tuple[GoalMatch, ...], team_indexes: Mapping[UUID, int]) -> bool:
+    """Return whether the fixture graph is one connected component.
+
+    Within a component, adding a constant to every attack and subtracting it from
+    every defense leaves all expected goals unchanged. The sum-to-zero attack
+    constraint removes that freedom once, so each further component leaves the
+    likelihood flat and strengths across components are not comparable.
+    """
+    parents = list(range(len(team_indexes)))
+
+    def root(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    for match in matches:
+        parents[root(team_indexes[match.home_team_id])] = root(team_indexes[match.away_team_id])
+    return len({root(index) for index in parents}) == 1
 
 
 def _initial_parameters(matches: tuple[GoalMatch, ...], team_count: int) -> list[float]:

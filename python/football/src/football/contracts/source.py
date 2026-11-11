@@ -37,10 +37,18 @@ def validate_relative_posix_path(value: str) -> str:
     return value
 
 
-def canonical_json_bytes(value: object) -> bytes:
+def canonical_json_bytes(value: object, *, ensure_ascii: bool = False) -> bytes:
+    """Serialize to the sorted, whitespace-free JSON bytes used for hashes and artifacts.
+
+    Existing hashes were taken over two encodings of non-ASCII text: raw UTF-8
+    (the default) and ``\\uXXXX`` escapes (``ensure_ascii=True``). Callers must keep
+    the encoding their recorded hashes used. NaN and infinities are rejected
+    because they are not JSON.
+    """
     return json.dumps(
         value,
-        ensure_ascii=False,
+        allow_nan=False,
+        ensure_ascii=ensure_ascii,
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")

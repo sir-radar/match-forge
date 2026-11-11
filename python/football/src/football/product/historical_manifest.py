@@ -11,7 +11,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from football.contracts.source import validate_relative_posix_path
+from football.contracts.source import canonical_json_bytes, validate_relative_posix_path
 from football.storage.raw import ImmutableFileStore
 
 _PACKAGED_SCHEMA = Path(__file__).with_name("historical-source-manifest-v1.schema.json")
@@ -123,4 +123,4 @@ def verify_manifest(
 
 
 def _serialize(value: dict[str, Any]) -> bytes:
-    return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    return canonical_json_bytes(value, ensure_ascii=True) + b"\n"

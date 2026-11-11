@@ -9,6 +9,7 @@ from typing import Any, cast
 
 from football.contracts.source import canonical_json_bytes, sha256_bytes
 from football.forecasting.contracts import MatchResultProbabilitiesV1
+from football.forecasting.dixon_coles import _poisson_probability
 from football.forecasting.evaluation import (
     EvaluatedMatchResultV1,
     MatchOutcome,
@@ -17,7 +18,7 @@ from football.forecasting.evaluation import (
 from football.forecasting.model_contracts import PROBABILITY_TOLERANCE
 from football.forecasting.pitchapi_v3 import _poisson_forecast
 from football.forecasting.runtime_models import CURRENT_CHAMPION_HASH
-from football.forecasting.scoring import _crps, _poisson_probability
+from football.forecasting.scoring import _crps
 
 POLICY_VERSION = "postmatch-monitoring-v1"
 _METRICS = ("log_loss", "brier", "rps", "crps", "sharpness_entropy")

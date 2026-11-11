@@ -167,11 +167,31 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
     selected = tuple(row for row in targets if row.split in roles)
     if not selected:
         raise RuntimeError("requested frozen partition is empty")
-    target_ids = {row.fixture_id for row in selected}
-    all_team_ids = tuple(
-        sorted({team for row in selected for team in (row.home_team_id, row.away_team_id)}, key=str)
+    providers_by_competition = _outcome_providers(selected)
+    by_fixture: dict[UUID, list[Mapping[str, object]]] = defaultdict(list)
+    for row in _retained_history_rows(database_url, selected):
+        if row["source_provider_code"] != providers_by_competition[row["competition_id"]]:
+            continue
+        by_fixture[cast(UUID, row["fixture_id"])].append(row)
+    ordered_history, outcomes = _history_and_outcomes(
+        by_fixture, {row.fixture_id: row for row in selected}
     )
-    competition_ids = tuple(sorted({row.competition_id for row in selected}, key=str))
+    missing = {row.fixture_id for row in selected} - outcomes.keys()
+    if missing:
+        raise RuntimeError(f"frozen targets missing retained outcomes: {len(missing)}")
+    result = tuple(
+        _observation(target, ordered_history, outcomes[target.fixture_id])
+        for target in sorted(selected, key=lambda row: (row.kickoff_at, str(row.fixture_id)))
+    )
+    if roles == {"DEVELOPMENT_HOLDOUT"}:
+        if len(result) != EXPECTED_SPLIT_COUNTS["DEVELOPMENT_HOLDOUT"]:
+            raise RuntimeError("FAIL_CLOSED_FROZEN_CORPUS_MISMATCH")
+        if min(row.target.kickoff_at for row in result) != min(row.kickoff_at for row in selected):
+            raise RuntimeError("holdout chronology mismatch")
+    return result
+
+
+def _outcome_providers(selected: tuple[FrozenTarget, ...]) -> dict[UUID, str]:
     providers_by_competition: dict[UUID, str] = {}
     for target in selected:
         existing_provider = providers_by_competition.setdefault(
@@ -179,10 +199,19 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
         )
         if existing_provider != target.source_provider:
             raise RuntimeError("frozen competition has conflicting outcome providers")
+    return providers_by_competition
+
+
+def _retained_history_rows(
+    database_url: str, selected: tuple[FrozenTarget, ...]
+) -> list[dict[str, Any]]:
+    all_team_ids = tuple(
+        sorted({team for row in selected for team in (row.home_team_id, row.away_team_id)}, key=str)
+    )
+    competition_ids = tuple(sorted({row.competition_id for row in selected}, key=str))
     maximum = max(row.kickoff_at for row in selected)
-    minimum = min(row.kickoff_at for row in selected)
     with psycopg.connect(database_url, row_factory=dict_row) as connection:
-        raw = connection.execute(
+        return connection.execute(
             """
             SELECT fixture_id, kickoff_at, competition_id, home_team_id, away_team_id,
                    home_goals, away_goals, home_xg, away_xg,
@@ -195,16 +224,16 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
             """,
             (maximum, list(competition_ids), list(all_team_ids), list(all_team_ids)),
         ).fetchall()
-    by_fixture: dict[UUID, list[Mapping[str, object]]] = defaultdict(list)
-    for row in raw:
-        if row["source_provider_code"] != providers_by_competition[row["competition_id"]]:
-            continue
-        by_fixture[cast(UUID, row["fixture_id"])].append(row)
-    target_by_id = {row.fixture_id: row for row in selected}
+
+
+def _history_and_outcomes(
+    by_fixture: Mapping[UUID, list[Mapping[str, object]]],
+    target_by_id: Mapping[UUID, FrozenTarget],
+) -> tuple[tuple[HistoricalMatch, ...], dict[UUID, tuple[int, int]]]:
     history_by_real_fixture: dict[tuple[datetime, UUID, frozenset[UUID]], HistoricalMatch] = {}
     outcomes: dict[UUID, tuple[int, int]] = {}
     for fixture_id, rows in by_fixture.items():
-        selected_target: FrozenTarget | None = target_by_id.get(fixture_id)
+        selected_target = target_by_id.get(fixture_id)
         chosen = next(
             (
                 row
@@ -220,62 +249,61 @@ def load_observations(database_url: str, *, roles: set[str]) -> tuple[Evaluation
             historical.competition_id,
             frozenset((historical.home_team_id, historical.away_team_id)),
         )
-        existing = history_by_real_fixture.get(real_key)
-        if existing is not None:
-            existing_score = {
-                existing.home_team_id: existing.home_goals,
-                existing.away_team_id: existing.away_goals,
-            }
-            candidate_score = {
-                historical.home_team_id: historical.home_goals,
-                historical.away_team_id: historical.away_goals,
-            }
-            if existing_score != candidate_score:
-                raise RuntimeError("retained duplicate real fixture has conflicting outcomes")
-            if str(historical.fixture_id) < str(existing.fixture_id):
-                history_by_real_fixture[real_key] = historical
-        else:
-            history_by_real_fixture[real_key] = historical
-        if target is not None:
+        history_by_real_fixture[real_key] = _preferred_duplicate(
+            history_by_real_fixture.get(real_key), historical
+        )
+        if selected_target is not None:
             outcomes[fixture_id] = (historical.home_goals, historical.away_goals)
-    missing = target_ids - outcomes.keys()
-    if missing:
-        raise RuntimeError(f"frozen targets missing retained outcomes: {len(missing)}")
     ordered_history = tuple(
         sorted(
             history_by_real_fixture.values(),
             key=lambda row: (row.kickoff_at, str(row.fixture_id)),
         )
     )
-    result: list[EvaluationObservation] = []
-    for target in sorted(selected, key=lambda row: (row.kickoff_at, str(row.fixture_id))):
-        eligible_history = tuple(
-            row for row in ordered_history if row.kickoff_at < target.kickoff_at
-        )
-        snapshot = build_forecast_snapshot(
-            fixture_id=target.fixture_id,
-            competition_id=target.competition_id,
-            competition_context=CompetitionContext.LEAGUE,
-            season_label=target.season,
-            kickoff_at=target.kickoff_at,
-            home_team_id=target.home_team_id,
-            away_team_id=target.away_team_id,
-            football_cutoff=target.kickoff_at,
-            knowledge_cutoff=target.kickoff_at,
-            knowledge_mode="RETROSPECTIVE_SNAPSHOT_POINT_IN_TIME_REPLAY",
-            history=eligible_history,
-            source_references=(CORPUS_SHA256,),
-            home_promoted=target.home_promoted,
-            away_promoted=target.away_promoted,
-        )
-        home_goals, away_goals = outcomes[target.fixture_id]
-        result.append(EvaluationObservation(target, snapshot, home_goals, away_goals))
-    if roles == {"DEVELOPMENT_HOLDOUT"}:
-        if len(result) != EXPECTED_SPLIT_COUNTS["DEVELOPMENT_HOLDOUT"]:
-            raise RuntimeError("FAIL_CLOSED_FROZEN_CORPUS_MISMATCH")
-        if min(row.target.kickoff_at for row in result) != minimum:
-            raise RuntimeError("holdout chronology mismatch")
-    return tuple(result)
+    return ordered_history, outcomes
+
+
+def _preferred_duplicate(
+    existing: HistoricalMatch | None, candidate: HistoricalMatch
+) -> HistoricalMatch:
+    """Keep one row per real fixture: the lowest fixture id, if the outcomes agree."""
+    if existing is None:
+        return candidate
+    existing_score = {
+        existing.home_team_id: existing.home_goals,
+        existing.away_team_id: existing.away_goals,
+    }
+    candidate_score = {
+        candidate.home_team_id: candidate.home_goals,
+        candidate.away_team_id: candidate.away_goals,
+    }
+    if existing_score != candidate_score:
+        raise RuntimeError("retained duplicate real fixture has conflicting outcomes")
+    return candidate if str(candidate.fixture_id) < str(existing.fixture_id) else existing
+
+
+def _observation(
+    target: FrozenTarget,
+    ordered_history: tuple[HistoricalMatch, ...],
+    outcome: tuple[int, int],
+) -> EvaluationObservation:
+    snapshot = build_forecast_snapshot(
+        fixture_id=target.fixture_id,
+        competition_id=target.competition_id,
+        competition_context=CompetitionContext.LEAGUE,
+        season_label=target.season,
+        kickoff_at=target.kickoff_at,
+        home_team_id=target.home_team_id,
+        away_team_id=target.away_team_id,
+        football_cutoff=target.kickoff_at,
+        knowledge_cutoff=target.kickoff_at,
+        knowledge_mode="RETROSPECTIVE_SNAPSHOT_POINT_IN_TIME_REPLAY",
+        history=tuple(row for row in ordered_history if row.kickoff_at < target.kickoff_at),
+        source_references=(CORPUS_SHA256,),
+        home_promoted=target.home_promoted,
+        away_promoted=target.away_promoted,
+    )
+    return EvaluationObservation(target, snapshot, *outcome)
 
 
 def build_runtime(config: Mapping[str, object], root: Path = ROOT) -> dict[str, Any]:

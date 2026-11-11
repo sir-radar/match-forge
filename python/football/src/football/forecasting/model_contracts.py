@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -9,6 +8,8 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Protocol, TypedDict, cast
 from uuid import UUID
+
+from football.contracts.source import canonical_json_bytes
 
 PROBABILITY_TOLERANCE = 1e-10
 
@@ -654,7 +655,7 @@ def _aware(value: datetime, name: str) -> None:
 
 
 def _canonical_json(value: object) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    return canonical_json_bytes(value, ensure_ascii=True)
 
 
 def _json_value(value: object) -> object:

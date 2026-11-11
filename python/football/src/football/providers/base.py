@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from io import BytesIO
 from math import isfinite
+from ssl import SSLCertVerificationError
 from time import monotonic, sleep
 from typing import IO, Any, Protocol, cast
 from urllib.error import HTTPError, URLError
@@ -15,6 +16,7 @@ from football.contracts.source import SourceResource, SourceSnapshot
 _MAX_TRANSPORT_ATTEMPTS = 4
 _RETRY_DELAYS_SECONDS = (1.0, 2.0, 4.0)
 _RETRYABLE_HTTP_STATUSES = frozenset((408, 429, 500, 502, 503, 504))
+_MAX_RETRY_AFTER_SECONDS = 30.0
 
 
 class ProviderConfigurationError(ValueError):
@@ -23,6 +25,10 @@ class ProviderConfigurationError(ValueError):
 
 class ProviderFetchError(RuntimeError):
     """A provider resource could not be fetched safely."""
+
+
+class ProviderIncompleteBodyError(ProviderFetchError):
+    """The connection closed before the declared Content-Length arrived."""
 
 
 class HttpTransport(Protocol):
@@ -76,7 +82,8 @@ class UrllibHttpTransport:
         for attempt in range(1, _MAX_TRANSPORT_ATTEMPTS + 1):
             if self._request_guard is not None:
                 self._request_guard()
-            failure: HTTPError | URLError | OSError
+            failure: HTTPError | URLError | OSError | ProviderIncompleteBodyError
+            delay = _RETRY_DELAYS_SECONDS[min(attempt, len(_RETRY_DELAYS_SECONDS)) - 1]
             try:
                 with open_bounded(request, timeout=timeout_seconds) as response:
                     payload = read_bounded(
@@ -86,14 +93,21 @@ class UrllibHttpTransport:
                 try:
                     if self._http_error_observer is not None:
                         self._http_error_observer(error)
+                    requested = retry_after_seconds(
+                        error.headers.get("Retry-After") if error.headers is not None else None
+                    )
                 finally:
                     error.close()
                 failure = error
                 retryable = error.code in _RETRYABLE_HTTP_STATUSES
                 status: int | None = error.code
-            except (URLError, OSError) as error:
+                if requested is not None:
+                    delay = requested
+            except (URLError, OSError, ProviderIncompleteBodyError) as error:
                 failure = error
-                retryable = True
+                retryable = not isinstance(
+                    getattr(error, "reason", error), SSLCertVerificationError
+                )
                 status = None
             else:
                 if len(payload) > max_bytes:
@@ -109,7 +123,7 @@ class UrllibHttpTransport:
                     headers={"content-type": headers.get("Content-Type") or ""},
                 )
             if retryable and attempt < _MAX_TRANSPORT_ATTEMPTS:
-                sleep(_RETRY_DELAYS_SECONDS[attempt - 1])
+                sleep(delay)
                 continue
             status_text = str(status) if status is not None else "none"
             raise ProviderFetchError(
@@ -138,13 +152,9 @@ def read_bounded(response: IO[bytes], *, max_bytes: int, timeout_seconds: float)
     """Bound retained bytes and elapsed body reads; retain transport socket timeouts."""
     if max_bytes <= 0 or timeout_seconds <= 0 or not isfinite(timeout_seconds):
         raise ProviderFetchError("positive finite transport limits required")
-    headers = getattr(response, "headers", None)
-    length = headers.get("Content-Length") if headers is not None else None
-    if length is not None:
-        if not length.isascii() or not length.isdecimal():
-            raise ProviderFetchError("invalid provider Content-Length")
-        if int(length) > max_bytes:
-            raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes")
+    declared = _declared_length(getattr(response, "headers", None))
+    if declared is not None and declared > max_bytes:
+        raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes")
     deadline = monotonic() + timeout_seconds
     reader = getattr(response, "read1", response.read)
     chunks: list[bytes] = []
@@ -154,11 +164,40 @@ def read_bounded(response: IO[bytes], *, max_bytes: int, timeout_seconds: float)
             raise ProviderFetchError("provider response body deadline exceeded")
         chunk = cast(bytes, reader(min(65536, max_bytes - size + 1)))
         if not chunk:
+            if declared is not None and size < declared:
+                raise ProviderIncompleteBodyError(
+                    f"provider response ended after {size} of {declared} declared bytes"
+                )
             return b"".join(chunks)
         size += len(chunk)
         if size > max_bytes:
             raise ProviderFetchError(f"provider resource exceeds {max_bytes} bytes")
         chunks.append(chunk)
+
+
+def _declared_length(headers: Any) -> int | None:
+    """Return the body length a non-chunked response promised, if it promised one."""
+    if headers is None or headers.get("Transfer-Encoding") is not None:
+        return None
+    length = headers.get("Content-Length")
+    if length is None:
+        return None
+    if not length.isascii() or not length.isdecimal():
+        raise ProviderFetchError("invalid provider Content-Length")
+    return int(length)
+
+
+def retry_after_seconds(value: str | None) -> float | None:
+    """Parse a delta-seconds Retry-After header, capped so one response cannot stall a run."""
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        return None
+    if not isfinite(seconds):
+        return None
+    return min(max(seconds, 0.0), _MAX_RETRY_AFTER_SECONDS)
 
 
 class _ClosedRedirectBodyHandler(HTTPRedirectHandler):

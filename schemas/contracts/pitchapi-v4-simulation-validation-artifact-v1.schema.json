@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pitchapi-v4-simulation-validation-artifact-v1.schema.json",
+  "title": "PitchApiV4SimulationValidationArtifactV1",
+  "description": "Result the Rust simulation-core V4 validator prints for one PitchApiSimulationInputV1. total_variation is half the summed absolute error over the 36 score cells and never exceeds total_variation_limit; warnings name events whose absolute error exceeds event_warning_limit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "algorithm_version",
+    "base_seed_commitment",
+    "batch_seed_ids",
+    "event_warning_limit",
+    "events",
+    "forecast_artifact_sha256",
+    "forecast_id",
+    "forecast_probability_sha256",
+    "input_sha256",
+    "policy_sha256",
+    "protocol_id",
+    "schema_version",
+    "seed_schedule_id",
+    "simulation_count",
+    "status",
+    "tail_draws",
+    "total_variation",
+    "total_variation_limit",
+    "warnings"
+  ],
+  "properties": {
+    "algorithm_version": {
+      "enum": [
+        "pitchapi-score-categorical-v1",
+        "pitchapi-score-categorical-v2"
+      ]
+    },
+    "base_seed_commitment": {
+      "$ref": "#/$defs/sha256"
+    },
+    "batch_seed_ids": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "event_warning_limit": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "events": {
+      "type": "array",
+      "minItems": 62,
+      "maxItems": 62,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "absolute_error",
+          "analytic_probability",
+          "batch_counts",
+          "count",
+          "event_id",
+          "simulated_probability"
+        ],
+        "properties": {
+          "absolute_error": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "analytic_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "batch_counts": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "simulated_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "forecast_artifact_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "forecast_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "forecast_probability_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "input_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "protocol_id": {
+      "enum": [
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V2",
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V3",
+        "PITCHAPI_DOMAIN_STRATIFIED_EVALUATION_V4"
+      ]
+    },
+    "schema_version": {
+      "const": "PitchApiV4SimulationValidationArtifactV1"
+    },
+    "seed_schedule_id": {
+      "enum": [
+        "pitchapi-v2-splitmix64-sha256-v1",
+        "pitchapi-v3-splitmix64-sha256-v1",
+        "pitchapi-v4-splitmix64-sha256-v1"
+      ]
+    },
+    "simulation_count": {
+      "const": 112460
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "PASS_WITH_WARNINGS"
+      ]
+    },
+    "tail_draws": {
+      "const": 0
+    },
+    "total_variation": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "total_variation_limit": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

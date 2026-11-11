@@ -218,9 +218,7 @@ def _frozen_target_coverage(
 ) -> FrozenH2HTargetCoverage:
     configured_prior = immediately_prior_scopes.get(target.scope_key, ())
     prior_scopes = (
-        {configured_prior}
-        if isinstance(configured_prior, str)
-        else set(configured_prior)
+        {configured_prior} if isinstance(configured_prior, str) else set(configured_prior)
     )
     eligible = sorted(
         (

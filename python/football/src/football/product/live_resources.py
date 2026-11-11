@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal
+
+from football.contracts.source import canonical_json_bytes
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -212,7 +213,7 @@ def _normalize_event(
             "disallowed": row.get("disallowed"),
         }
         provider_event_id = hashlib.sha256(
-            json.dumps(stable_facts, sort_keys=True, separators=(",", ":")).encode()
+            canonical_json_bytes(stable_facts, ensure_ascii=True)
         ).hexdigest()[:24]
     disallowed = event_type == "DISALLOWED_GOAL" or bool(row.get("disallowed"))
     return {
