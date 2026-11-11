@@ -353,7 +353,7 @@ def test_migration_and_product_query_preserve_champion_and_allow_multiple_models
     migration = Path(
         "infrastructure/migrations/202610070100_multi_model_forecasting.sql"
     ).read_text()
-    sync = Path("python/football/src/football/product/sync.py").read_text()
+    sync = Path("python/football/src/football/product/sync_forecasts.py").read_text()
 
     assert "CREATE TABLE football.product_model_forecasts" in migration
     assert (
