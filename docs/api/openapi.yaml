@@ -515,7 +515,12 @@ components:
       additionalProperties: false
       properties:
         date: { type: string, format: date }
+        from_date: { type: string, format: date }
         season: { type: string }
+        provider:
+          type: string
+          enum: [fotmob, pitchapi]
+          description: Optional provider selection for POST /v1/admin/sync/history. Omit to backfill all configured historical sources.
         competition: { type: string }
         country: { type: string }
     SyncRun:

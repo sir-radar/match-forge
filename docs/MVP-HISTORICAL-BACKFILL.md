@@ -132,7 +132,15 @@ metadata is rejected; the current competition label is not a historical fallback
 A source season that contradicts an existing native match registration is also
 rejected, preserving the registered identity until separately qualified recovery.
 
-Full sync order is MVP provider sync, OpenFootball, Football-Data.co.uk, canonical reconciliation during import, forecast refresh, then external-prediction collection.
+When API-Football league discovery fails and football-data.org is configured,
+the MVP stage still attempts fixture acquisition for the requested dates.
+The run summary reports `competition_discovery_error` alongside the
+fixture counts. The football-data.org fixture fallback covers the Premier League.
+
+Full sync runs MVP provider sync, the two bulk archives, reconciliation from
+stored history, date-range PitchAPI and FotMob sync when enabled, forecast
+refresh, and external-prediction collection. Use the separate provider history
+actions to acquire PitchAPI and FotMob league and season data.
 
 ## Independent team identity corrections
 

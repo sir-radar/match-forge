@@ -60,6 +60,7 @@ type SyncRequest struct {
 	Date                    string   `json:"date,omitempty"`
 	FromDate                string   `json:"from_date,omitempty"`
 	Season                  string   `json:"season,omitempty"`
+	HistoryProvider         string   `json:"provider,omitempty"`
 	Competition             string   `json:"competition,omitempty"`
 	Country                 string   `json:"country,omitempty"`
 	RetryOf                 string   `json:"-"`
@@ -389,8 +390,8 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
-		"retry_of_run_id": request.RetryOf,
-		"scope":           request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
+		"retry_of_run_id": request.RetryOf, "provider": request.HistoryProvider,
+		"scope": request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -719,6 +720,7 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 	}
 	request.FromDate = stringParameter(run.Parameters, "from_date")
 	request.Season = stringParameter(run.Parameters, "season")
+	request.HistoryProvider = stringParameter(run.Parameters, "provider")
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
 	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
@@ -1139,8 +1141,13 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	args := []string{".tools/bin/uv", "run", "python", "-m", "football.product.cli", command}
 	args = appendSyncDateArgs(args, request)
 	args = appendSyncSelectorArgs(args, request)
-	if request.Type == SyncHistoryBackfill && request.ScheduledHistory {
-		args = append(args, "--scheduled")
+	if request.Type == SyncHistoryBackfill {
+		if request.HistoryProvider != "" {
+			args = append(args, "--provider-only", request.HistoryProvider)
+		}
+		if request.ScheduledHistory {
+			args = append(args, "--scheduled")
+		}
 	}
 	if request.Type == SyncForecastRefresh && request.PendingOnly {
 		args = append(args, "--pending-only")
@@ -1245,6 +1252,7 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			Season      string `json:"season"`
 			Competition string `json:"competition"`
 			Country     string `json:"country"`
+			Provider    string `json:"provider"`
 		}
 		decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
 		decoder.DisallowUnknownFields()
@@ -1259,9 +1267,16 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
 			return
 		}
+		if input.Provider != "" && (syncType != SyncHistoryBackfill ||
+			(input.Provider != "fotmob" && input.Provider != "pitchapi")) {
+			application.writeJSON(response, http.StatusBadRequest, map[string]string{
+				"error": "provider must be fotmob or pitchapi and is only supported for historical backfill",
+			})
+			return
+		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
 			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
-			Competition: input.Competition, Country: input.Country,
+			Competition: input.Competition, Country: input.Country, HistoryProvider: input.Provider,
 		})
 		if err != nil {
 			application.writeSyncError(response, err)

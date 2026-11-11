@@ -31,7 +31,7 @@ The provider sync Make targets apply pending database migrations and load `.env`
 before starting the CLI. The admin service requires migrations to be applied
 before startup.
 
-The same operations are available on `/admin/data-sync`. Scheduling is opt-in: an omitted or zero `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` disables it; an enabled interval must be at least `30s`. Provider enablement is also required. FotMob live, PitchAPI live, and bulk work have independent database lanes; browser polling is not required. Worker heartbeats recover abandoned leases. API-Football quota exhaustion stops that provider's requests until the UTC reset without blocking the other providers.
+The **Live fixtures and scores** section on `/admin/data-sync` offers the same date-range operations. Scheduling is opt-in: an omitted or zero `MATCHFORGE_OPERATIONAL_SYNC_INTERVAL` disables it; an enabled interval must be at least `30s`. Provider enablement is also required. FotMob live, PitchAPI live, and bulk work have independent database lanes; browser polling is not required. Worker heartbeats recover abandoned leases. API-Football quota exhaustion stops that provider's requests until the UTC reset without blocking the other providers.
 
 Detail selection combines the requested dates before spending the live budget.
 Persisted attempts rotate fixtures across polls, including failed attempts;
@@ -86,6 +86,14 @@ New OpenFootball and Football-Data.co.uk imports write immutable `HistoricalSour
 `ProductIdentityTrustV1` requires retained provider/identifier evidence and the exact approved UUID algorithm for an origin anchor. An origin anchor proves identity within its provider. Cross-provider equivalence requires a versioned explicit crosswalk with compatible context, or an operator review linked to retained observations. Confidence 1 alone is insufficient. Name/kickoff candidates remain `REVIEW_REQUIRED`; manual review validates retained provider IDs, kickoff and conflicting finished results before applying a mapping. Corrections close the earlier mapping interval and create a successor; original observations and source evidence remain retained.
 
 Raw `product_team_match_history` evidence is retained. Identity admissions and history eligibility/fact changes are append-only decisions with separate source and decision timestamps. Forecast reconstruction calls `product_eligible_history_at(knowledge_cutoff)`; the current `product_eligible_match_history` view serves prospective context. Later promotion, revocation, quarantine or correction cannot change earlier cutoffs. Migration `202610121100` withholds history lacking verified admission evidence. After migration, seed only verified retained mappings prospectively with `python -m football.product.identity_audit --database-url "$DATABASE_URL" --data-root "$FOOTBALL_DATA_ROOT" --admit-verified`. Without `--admit-verified`, the command is read-only. It reports verified origin/crosswalk, unresolved and contradictory classifications; unresolved cases require review. No admission time is inferred or backdated. Import counts differ from eligible counts; the ten-match requirement is unchanged. `history-coverage` reports each upcoming fixture's reason and every unmatched PitchAPI observation with its snapshot and latest review reason.
+
+Use **Acquire FotMob History** or **Acquire PitchAPI History** under
+**Historical acquisition** on `/admin/data-sync` to run one provider's history
+queue. The optional season and provider competition ID select scopes.
+**Run All Historical Sources** also runs the bulk archives. These actions use
+the bulk lane, and run history records the chosen provider for retries.
+Full Data Sync uses the date-range operations for both providers and defaults
+to the through date and previous day when no start date is supplied.
 
 Historical acquisition uses persistent provider/competition/season checkpoints, cached checksum-verified snapshots, stale-claim recovery, failure cooldowns, and fair attempt ordering. PitchAPI discovers the supported league catalogue; FotMob discovers seasons for configured competition mappings. Discovery summaries are retained in command results, including errors and deferrals. One provider's failure does not stop independent selected backfills. Per-run budgets bound acquisition without limiting eventual scope coverage:
 
