@@ -127,6 +127,7 @@ Second rehearsal, replay v2, on a fresh restore of the operating database taken 
 | Overdue results, all providers | 2,238 before, 1,322 after |
 | Context reports rebuilt from the worklist | 10,459 in 579 s, 0 failures |
 | Historical backfill sample | 3,000 in 124 s, 0 failures |
+| Full historical backfill | 243,631 reports in 2 h 14 min, 0 failures; every report of an existing fixture then has form ([evidence](../../evidence/p02-context-report-backfill-2026-11-11.json)) |
 | Preservation hashes (forecasts 18,750; artifacts 9,990; reports 310,487; decisions 875,104; snapshots 83,360; review rows 2,038) | unchanged |
 | Global audit `p02-integrity-audit-v4` | 257,823 fixtures, 257,822 reports current, 0 untraceable served form symbols |
 
