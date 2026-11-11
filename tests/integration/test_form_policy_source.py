@@ -213,6 +213,14 @@ def test_audit_is_read_only_resumable_and_matches_served_form(
     assert summary["form_sides"]["report_current"] == 1
     assert summary["form_sides"]["report_source_v2"] == 1
     assert summary["form_sides"]["served_untraceable"] == 0
+    freshness = summary["domains"]["report_freshness"]
+    assert freshness["context_reports_current"] == 1
+    assert freshness["served_from_pre_policy_source_v1"] == 0
+    assert summary["domains"]["forecast_correctness"]["published"] >= 0
+    assert (
+        "api_football_regulation_90_without_history_by_cause"
+        in (summary["domains"]["reconciliation_correctness"])
+    )
     assert summary["population"]["context_fixtures"] == 1
     assert "standings" in summary["corpus"]["not_audited"]
     with psycopg.connect(database) as connection:
@@ -283,3 +291,4 @@ def test_affected_forecasts_count_only_results_known_before_the_cutoff(database:
         rows = affected_forecasts(connection, start)
     assert [(row["forecast_id"], row["missing_results"]) for row in rows] == [(str(forecast), 1)]
     assert rows[0]["missing_fixture_ids"] == [str(UUID(int=8301))]
+

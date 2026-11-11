@@ -38,7 +38,7 @@ from football.product.form import (
     team_form,
 )
 
-AUDIT_VERSION = "p02-integrity-audit-v3"
+AUDIT_VERSION = "p02-integrity-audit-v4"
 BATCH_SIZE = 500
 RUN_LIMIT_SECONDS = 30 * 60
 UNRESOLVED = ("SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED")
@@ -499,12 +499,169 @@ def incremental_findings(connection: Connection[Any], since: datetime) -> dict[s
            WHERE generation>completed_generation
              AND requested_at < statement_timestamp()-interval '1 hour'"""
     ).fetchone()
-    assert row is not None and stale is not None
+    # Whole-table, index-backed: overdue fixtures by whether any scheduled path
+    # will ever re-observe them. API-Football is re-requested only for
+    # yesterday and today, and the operational recovery view covers FotMob and
+    # PitchAPI, so an overdue fixture outside both stays overdue until acquired.
+    overdue = connection.execute(
+        """SELECT
+             count(*) FILTER (WHERE EXISTS (
+                 SELECT 1 FROM football.match_provider_mappings m
+                 JOIN football.providers p ON p.id=m.provider_id
+                 WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL
+                   AND p.code='api_football')),
+             count(*) FILTER (WHERE NOT EXISTS (
+                 SELECT 1 FROM football.product_recoverable_fixtures r
+                 WHERE r.fixture_id=f.fixture_id)
+               AND f.kickoff_at < (statement_timestamp() AT TIME ZONE 'UTC')::date
+                   - interval '1 day')
+           FROM football.product_fixtures f
+           WHERE f.status = ANY(%s) AND f.kickoff_at < statement_timestamp()-interval '4 hours'""",
+        (list(UNRESOLVED),),
+    ).fetchone()
+    assert row is not None and stale is not None and overdue is not None
     return {
         "finished_without_history": row[0],
         "result_overdue": row[1],
         "history_score_mismatch": row[2],
         "context_refresh_older_than_1h": stale[0],
+        "overdue_api_football": overdue[0],
+        "overdue_without_scheduled_recovery": overdue[1],
+    }
+
+
+def remaining_gaps(connection: Connection[Any]) -> dict[str, Any]:
+    """Classify finished results without history and overdue results by cause.
+
+    Read-only and whole-table. Separates gaps the system can close from retained
+    evidence (reconciliation correctness) from gaps that need a new source
+    observation or an identity review (source-data completeness).
+    """
+    without_history = connection.execute(
+        """WITH remaining AS (
+               SELECT f.fixture_id, f.kickoff_at, f.home_score, f.away_score,
+                      f.home_team_id, f.away_team_id
+               FROM football.product_fixtures f
+               LEFT JOIN football.product_team_match_history h USING (fixture_id)
+               WHERE f.status='FINISHED' AND f.result_score_basis='REGULATION_90'
+                 AND f.home_score IS NOT NULL AND h.fixture_id IS NULL
+                 AND EXISTS (SELECT 1 FROM football.match_provider_mappings m
+                     JOIN football.providers p ON p.id=m.provider_id
+                     WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL
+                       AND p.code='api_football')
+           ), collided AS (
+               SELECT DISTINCT (c.incoming_facts->>'fixture_id')::uuid AS fixture_id, e AS other_id
+               FROM football.fixture_identity_ingestion_conflicts c,
+                    unnest(c.existing_fixture_ids) e
+               WHERE c.incoming_facts->>'stage'='HISTORY_QUALIFICATION'
+           ), classified AS (
+               SELECT r.fixture_id,
+                      CASE
+                        WHEN NOT EXISTS (SELECT 1 FROM collided c WHERE c.fixture_id=r.fixture_id)
+                          THEN 'NOT_IN_IDENTITY_REVIEW'
+                        WHEN EXISTS (SELECT 1 FROM collided c
+                            JOIN football.product_team_match_history oh ON oh.fixture_id=c.other_id
+                            WHERE c.fixture_id=r.fixture_id AND oh.kickoff_at=r.kickoff_at
+                              AND (oh.home_goals,oh.away_goals)=(r.home_score,r.away_score))
+                          THEN 'DUPLICATE_IDENTITY_RESULT_ALREADY_IN_HISTORY'
+                        WHEN EXISTS (SELECT 1 FROM collided c
+                            JOIN football.product_team_match_history oh ON oh.fixture_id=c.other_id
+                            WHERE c.fixture_id=r.fixture_id)
+                          THEN 'DUPLICATE_IDENTITY_SCORE_DISAGREES'
+                        ELSE 'IDENTITY_COLLISION_OTHER_FIXTURE_WITHOUT_HISTORY'
+                      END AS cause
+               FROM remaining r)
+           SELECT cause, count(*) FROM classified GROUP BY 1 ORDER BY 1"""
+    ).fetchall()
+    overdue = connection.execute(
+        """SELECT COALESCE((SELECT string_agg(DISTINCT p.code, '+' ORDER BY p.code)
+                    FROM football.match_provider_mappings m
+                    JOIN football.providers p ON p.id=m.provider_id
+                    WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL), '(none)'),
+                  EXISTS (SELECT 1 FROM football.product_recoverable_fixtures r
+                          WHERE r.fixture_id=f.fixture_id),
+                  count(*)
+           FROM football.product_fixtures f
+           WHERE f.status = ANY(%s) AND f.kickoff_at < statement_timestamp()-interval '4 hours'
+           GROUP BY 1, 2 ORDER BY 1, 2""",
+        (list(UNRESOLVED),),
+    ).fetchall()
+    return {
+        "api_football_regulation_90_without_history": dict(without_history),
+        "result_overdue_by_provider": [
+            {"providers": row[0], "scheduled_recovery_path": row[1], "fixtures": row[2]}
+            for row in overdue
+        ],
+    }
+
+
+def forecast_inventory(connection: Connection[Any]) -> dict[str, Any]:
+    """Counts and a content hash of published forecasts; the audit never changes them."""
+    row = connection.execute(
+        """SELECT count(*), md5(string_agg(forecast_id::text||payload_sha256, ','
+                                          ORDER BY forecast_id)),
+                  count(*) FILTER (WHERE f.status IN ('FINISHED','AWARDED'))
+           FROM football.product_forecasts pf
+           JOIN football.product_fixtures f USING (fixture_id)"""
+    ).fetchone()
+    assert row is not None
+    return {"published": row[0], "content_md5": row[1], "fixture_settled": row[2]}
+
+
+def domains(summary: dict[str, Any]) -> dict[str, Any]:
+    """Group audit results into the four questions the owner asks separately."""
+    corpus = summary["corpus"]
+    sides = summary["form_sides"]
+    rows = corpus["fixtures_by_provider_status_basis"]
+
+    def total(key: str, **match: str) -> int:
+        return sum(
+            row[key] for row in rows if all(row.get(name) == value for name, value in match.items())
+        )
+
+    gaps = corpus.get("remaining_gaps", {})
+    overdue = gaps.get("result_overdue_by_provider", [])
+    coverage = corpus.get("league_coverage", {})
+    return {
+        "source_data_completeness": {
+            "result_overdue_without_scheduled_recovery": sum(
+                item["fixtures"] for item in overdue if not item["scheduled_recovery_path"]
+            ),
+            "result_overdue_with_scheduled_recovery": sum(
+                item["fixtures"] for item in overdue if item["scheduled_recovery_path"]
+            ),
+            "finished_with_unknown_score_basis": total(
+                "total", status="FINISHED", score_basis="UNKNOWN"
+            ),
+            "league_seasons_with_candidate_missing_matches": coverage.get(
+                "CANDIDATE_MISSING_MATCHES", 0
+            ),
+            "candidate_missing_matches": coverage.get("candidate_missing_matches", 0),
+            "league_seasons_partial_coverage": coverage.get("PARTIAL_COVERAGE", 0),
+        },
+        "reconciliation_correctness": {
+            "finished_without_history": total("finished_without_history"),
+            "api_football_regulation_90_without_history_by_cause": gaps.get(
+                "api_football_regulation_90_without_history", {}
+            ),
+            "history_score_mismatch": total("history_score_mismatch"),
+            "history_on_unfinished": total("history_on_unfinished"),
+            "fixture_identity_ingestion_conflicts": corpus["fixture_identity_ingestion_conflicts"],
+            "provider_result_conflicts": corpus["provider_result_conflicts"],
+        },
+        "report_freshness": {
+            "context_reports_audited": sides.get("fixtures", 0),
+            "context_reports_current": sides.get("report_current", 0),
+            "served_from_form_policy_source_v2": sides.get("report_source_v2", 0),
+            "served_from_pre_policy_source_v1": sides.get("report_source_v1", 0),
+            "context_refresh_pending": corpus["context_refresh_pending"],
+            "served_form_untraceable": sides.get("served_untraceable", 0),
+        },
+        "forecast_correctness": {
+            **corpus.get("forecasts", {}),
+            "note": "Published forecasts are counted and hashed, never recomputed or changed. "
+            "Forecasts affected by late qualification come from affected_forecasts.",
+        },
     }
 
 
@@ -536,6 +693,8 @@ class AuditRun:
             assert population is not None
             corpus = corpus_checks(connection)
             corpus["league_coverage"], coverage = league_coverage(connection)
+            corpus["remaining_gaps"] = remaining_gaps(connection)
+            corpus["forecasts"] = forecast_inventory(connection)
         self.out.mkdir(parents=True, exist_ok=True)
         with (self.out / "league_coverage.jsonl").open("w", encoding="utf-8") as handle:
             for record in coverage:
@@ -657,6 +816,11 @@ def summarize(out: Path) -> dict[str, Any]:
     }
 
 
+def _with_domains(summary: dict[str, Any]) -> dict[str, Any]:
+    summary["domains"] = domains(summary)
+    return summary
+
+
 def run(
     database_url: str, out: Path, *, batch_size: int, time_limit: float, max_batches: int | None
 ) -> dict[str, Any]:
@@ -673,7 +837,7 @@ def run(
                 break
             audit.batch(connection, state, batch_size)
             batches += 1
-    summary = summarize(out)
+    summary = _with_domains(summarize(out))
     (out / "summary.json").write_text(json.dumps(summary, sort_keys=True, indent=1))
     return summary
 
