@@ -153,9 +153,15 @@ def progress(phase: str) -> None:
     identity = os.environ.get("MATCHFORGE_SYNC_RUN_ID")
     if identity:
         with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
+            # Progress uses a control transaction separate from data publication.
+            connection.execute(
+                "SELECT set_config('matchforge.sync_run_id','',true),"
+                "set_config('matchforge.sync_worker_id','',true),"
+                "set_config('matchforge.history_claim_token','',true)"
+            )
             updated = connection.execute(
                 "UPDATE football.product_sync_runs "
-                "SET summary=jsonb_build_object('current_phase',%s) "
+                "SET summary=jsonb_build_object('current_phase',%s::text) "
                 "WHERE run_id=%s::uuid AND worker_id=%s AND status='RUNNING' "
                 "AND heartbeat_at>clock_timestamp()-interval '2 minutes' RETURNING run_id",
                 (phase, identity, identity),
