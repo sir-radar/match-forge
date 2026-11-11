@@ -38,7 +38,7 @@ from football.product.form import (
     team_form,
 )
 
-AUDIT_VERSION = "p02-integrity-audit-v1"
+AUDIT_VERSION = "p02-integrity-audit-v2"
 BATCH_SIZE = 500
 RUN_LIMIT_SECONDS = 30 * 60
 UNRESOLVED = ("SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED")
@@ -310,6 +310,93 @@ def corpus_checks(connection: Connection[Any]) -> dict[str, Any]:
     }
 
 
+_PAIRINGS = """
+WITH league_fixtures AS (
+    SELECT f.competition_id, m.season_id, f.home_team_id, f.away_team_id, f.status, f.kickoff_at
+    FROM football.product_fixtures f
+    JOIN football.matches m ON m.id = f.fixture_id
+    JOIN football.product_competitions c ON c.competition_id = f.competition_id
+    WHERE c.competition_type = 'LEAGUE' AND f.identity_status = 'VERIFIED'
+      AND f.status <> 'CANCELLED'
+), teams AS (
+    SELECT DISTINCT competition_id, season_id, team_id
+    FROM league_fixtures, LATERAL unnest(ARRAY[home_team_id, away_team_id]) team_id
+), seasons AS (
+    SELECT f.competition_id, f.season_id, count(*) AS fixtures,
+           count(DISTINCT (f.home_team_id, f.away_team_id)) AS present_pairs,
+           max(f.kickoff_at) AS last_kickoff, min(f.kickoff_at) AS first_kickoff,
+           (SELECT count(*) FROM teams t WHERE (t.competition_id, t.season_id)
+                = (f.competition_id, f.season_id)) AS teams
+    FROM league_fixtures f GROUP BY 1, 2
+)
+SELECT s.competition_id::text, s.season_id::text, c.country, c.name, s.teams, s.fixtures,
+       s.present_pairs, s.first_kickoff, s.last_kickoff,
+       CASE WHEN s.teams BETWEEN 4 AND 30 AND s.present_pairs < s.teams * (s.teams - 1)
+                 AND s.present_pairs >= 0.8 * s.teams * (s.teams - 1)
+            THEN (SELECT jsonb_agg(jsonb_build_array(a.team_id, b.team_id)
+                                   ORDER BY a.team_id, b.team_id)
+                  FROM teams a JOIN teams b USING (competition_id, season_id)
+                  WHERE (a.competition_id, a.season_id) = (s.competition_id, s.season_id)
+                    AND a.team_id <> b.team_id AND NOT EXISTS (
+                        SELECT 1 FROM league_fixtures f
+                        WHERE (f.competition_id, f.season_id) = (s.competition_id, s.season_id)
+                          AND f.home_team_id = a.team_id AND f.away_team_id = b.team_id))
+       END AS missing_pairs
+FROM seasons s JOIN football.product_competitions c USING (competition_id)
+ORDER BY 1, 2
+"""
+
+
+def league_coverage(connection: Connection[Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Classify each league season by its home/away pairings.
+
+    A double round robin with n teams has n(n-1) ordered pairings. Seasons with
+    at least 80% of them get their absent pairings listed as candidate missing
+    matches; sparser seasons are partial coverage. Leagues with splits, groups
+    or extra rounds can make an absent pairing legitimate, so these are
+    candidates for source checks, not proven defects.
+    """
+    records = []
+    counts: Counter[str] = Counter()
+    by_country: dict[str, Counter[str]] = defaultdict(Counter)
+    for row in connection.execute(_PAIRINGS).fetchall():
+        competition, season, country, name, teams, fixtures, present, first, last, missing = row
+        expected = teams * (teams - 1)
+        if teams < 4 or teams > 30:
+            state = "UNSUPPORTED_SIZE"
+        elif present >= expected:
+            state = "COMPLETE_PAIRINGS"
+        elif missing is not None:
+            state = "CANDIDATE_MISSING_MATCHES"
+        else:
+            state = "PARTIAL_COVERAGE"
+        counts[state] += 1
+        counts["missing_pairings"] += expected - present if state != "UNSUPPORTED_SIZE" else 0
+        counts["candidate_missing_matches"] += len(missing or ())
+        by_country[country][state] += 1
+        records.append(
+            {
+                "competition_id": competition,
+                "season_id": season,
+                "competition": f"{country} / {name}",
+                "state": state,
+                "teams": teams,
+                "fixtures": fixtures,
+                "present_pairings": present,
+                "expected_pairings": expected,
+                "first_kickoff_at": _iso(first),
+                "last_kickoff_at": _iso(last),
+                "missing_pairings": missing or [],
+            }
+        )
+    summary = {
+        "league_seasons": len(records),
+        **dict(sorted(counts.items())),
+        "by_country": {key: dict(value) for key, value in sorted(by_country.items())},
+    }
+    return summary, records
+
+
 def incremental_findings(connection: Connection[Any], since: datetime) -> dict[str, int]:
     """Cheap checks over fixtures changed since a time; the scheduled job runs these."""
     row = connection.execute(
@@ -371,7 +458,11 @@ class AuditRun:
             ).fetchone()
             assert population is not None
             corpus = corpus_checks(connection)
+            corpus["league_coverage"], coverage = league_coverage(connection)
         self.out.mkdir(parents=True, exist_ok=True)
+        with (self.out / "league_coverage.jsonl").open("w", encoding="utf-8") as handle:
+            for record in coverage:
+                handle.write(json.dumps(record, sort_keys=True) + "\n")
         state = {
             "audit_version": AUDIT_VERSION,
             "form_policy_version": FORM_POLICY_VERSION,

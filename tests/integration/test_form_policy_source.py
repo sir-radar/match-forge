@@ -212,3 +212,37 @@ def test_audit_is_read_only_resumable_and_matches_served_form(
             "SELECT count(*), max(registered_at) FROM football.product_read_reports"
         ).fetchone()
     assert before == after
+
+
+def test_league_coverage_lists_absent_pairings_only_for_near_complete_seasons(
+    database: str,
+) -> None:
+    from football.product.integrity_audit import league_coverage
+
+    extra = UUID(int=8210)
+    with psycopg.connect(database) as connection:
+        connection.execute("INSERT INTO football.teams (id) VALUES (%s)", (extra,))
+        connection.execute(
+            "INSERT INTO football.product_teams (team_id,name,updated_at) "
+            "VALUES (%s,'Extra',now())",
+            (extra,),
+        )
+        connection.execute(
+            """UPDATE football.product_fixtures SET status='CANCELLED',home_score=NULL,
+               away_score=NULL WHERE competition_id=%s AND fixture_id<>%s""",
+            (COMPETITION, FIXTURE),
+        )
+        teams = (HOME, AWAY, OTHER, extra)
+        number = 20
+        for home in teams:
+            for away in teams:
+                if home == away or (home, away) in ((HOME, AWAY), (OTHER, extra)):
+                    continue
+                number += 1
+                _fixture(connection, number, number, "FINISHED", (1, 0), home=home, away=away)
+        summary, records = league_coverage(connection)
+    season = next(row for row in records if row["competition_id"] == str(COMPETITION))
+    # HOME v AWAY exists as the scheduled target; OTHER v Extra is absent.
+    assert season["state"] == "CANDIDATE_MISSING_MATCHES"
+    assert season["missing_pairings"] == [[str(OTHER), str(extra)]]
+    assert summary["candidate_missing_matches"] == 1
