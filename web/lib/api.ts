@@ -14,7 +14,7 @@ import {
   parseSyncRuns,
 } from "@/lib/contracts";
 import type { MarketScope, SyncRun } from "@/lib/contracts";
-import { parseBackupView, type BackupScope } from "@/lib/backup";
+import { parseBackupView, type BackupScope, type BackupView } from "@/lib/backup";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8080";
 
@@ -24,13 +24,17 @@ export class ApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
 }
 
-async function request<T>(path: string, parse: (value: unknown) => T, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+function fetchResponse(path: string, options: RequestOptions) {
+  return fetch(`${API_BASE}${path}`, {
     method: options.method ?? "GET", signal: options.signal,
     headers: { Accept: "application/json", ...(options.origin ? { Origin: options.origin } : {}), ...(options.method === "POST" ? { "Content-Type": "application/json" } : {}) },
     cache: path.startsWith("/v1/admin/backup") ? "no-store" : undefined,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
+}
+
+async function request<T>(path: string, parse: (value: unknown) => T, options: RequestOptions = {}): Promise<T> {
+  const response = await fetchResponse(path, options);
   if (!response.ok) throw await responseError(response);
   return parse(await response.json());
 }
@@ -46,9 +50,51 @@ async function responseError(response: Response): Promise<ApiError> {
   return new ApiError(message, response.status);
 }
 
+type BackupStatusResult = { view: BackupView; error: null } | { view: null; error: string };
+
+const backupTimeoutMessage = "The backup status check timed out. Check the local API and external drive, then retry.";
+
+function backupStatusHTTPError(status: number): string {
+  switch (status) {
+    case 404:
+      return "The running API does not support Backup & Recovery (HTTP 404). Check the API address and start a compatible MatchForge release.";
+    case 401:
+    case 403:
+      return "The API denied access to backup status. Open MatchForge at the configured Admin origin.";
+    case 408:
+    case 504:
+      return backupTimeoutMessage;
+    default:
+      return `The API could not check backup status (HTTP ${status}). Check the local API and retry.`;
+  }
+}
+
+async function requestBackupStatus(path: string, options: RequestOptions): Promise<BackupStatusResult> {
+  const deadline = AbortSignal.timeout(15_000);
+  const signal = options.signal ? AbortSignal.any([options.signal, deadline]) : deadline;
+  let response: Response;
+  try {
+    response = await fetchResponse(path, { ...options, signal });
+  } catch {
+    const error = options.origin
+      ? "The web server could not reach the backup API. Check the local API address and retry."
+      : "The browser could not reach the backup API. Check the local API and its cross-origin settings for this Admin page, then retry.";
+    return { view: null, error: deadline.aborted ? backupTimeoutMessage : error };
+  }
+  if (!response.ok) return { view: null, error: backupStatusHTTPError(response.status) };
+  try {
+    return { view: parseBackupView(await response.json()), error: null };
+  } catch {
+    return {
+      view: null,
+      error: deadline.aborted ? backupTimeoutMessage : "The API returned incompatible backup status. Run matching MatchForge web and API releases, then retry.",
+    };
+  }
+}
+
 export const api = {
-  backup: (signal?: AbortSignal, origin?: string) => request("/v1/admin/backup", parseBackupView, { signal, origin }),
-  previewBackup: (signal?: AbortSignal) => request("/v1/admin/backup/preview", parseBackupView, { method: "POST", body: {}, signal }),
+  backup: (signal?: AbortSignal, origin?: string) => requestBackupStatus("/v1/admin/backup", { signal, origin }),
+  previewBackup: (signal?: AbortSignal) => requestBackupStatus("/v1/admin/backup/preview", { method: "POST", body: {}, signal }),
   startBackup: (requestId: string, scope: BackupScope, digest: string | null, signal?: AbortSignal) => request("/v1/admin/backup", (value) => {
     const run = parseSyncRun(value);
     if (run.sync_type !== "MANUAL_BACKUP" || run.run_id !== requestId || run.parameters.scope !== scope ||

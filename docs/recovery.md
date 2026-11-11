@@ -348,16 +348,30 @@ requires an external copy or evidence resolving the original registration.
 
 ## Activating the NTC Admin workflow
 
-The operating API currently returns `unknown` for Git SHA, lock hash and worktree
-state. The executable is a Go development build whose embedded metadata identifies
-the module and toolchain but has no VCS revision. The operating database is at
-`202611100200`, with all 13 routes on `LEGACY`. Existing migration history also
+Before the 11 November 2026 activation, the operating API returned `unknown` for
+Git SHA, lock hash and worktree state. Its Go development build identified the
+module and toolchain without a VCS revision. The operating database was at
+`202611100200`, with all 13 routes on `LEGACY`. Migration history also
 contains `202610220100`, whose source SQL is absent from this checkout. Preserve
 that history and compare it with the recorded backup before proceeding.
 
+The [verified activation record](evidence/admin-backup-activation-2026-11-11.json)
+records the deployed release, current-schema recovery point, retained earlier
+point, declared gaps and operating checks. Current activation state is tracked in
+[`project-status.json`](project-status.json).
+
+If Admin reports HTTP 404, compare the running API's `/version` and
+`GET /v1/admin/backup` with the approved release. Send the configured
+`WEB_ORIGIN` on the Admin GET. A compatible API returns HTTP 200 with
+`MIGRATION_PENDING` until migration 300 is applied. A 404 from the running
+API means the route is missing. Retry status after correcting the API address
+or starting the compatible release.
+
 1. Obtain owner approval for the operating migration, replacement build, enabling
    Admin, and the first manual Admin run. Confirm CI is green for the exact release
-   revision. Record the prior service command and configuration for rollback.
+   revision. Save the previous API binary, web build, launch commands and protected
+   configuration before replacing a service. Record the artifact checksums and
+   known release identities for rollback.
 2. In the clean release checkout, install the locked dependencies and source the
    local configuration with `MATCHFORGE_BACKUP_ENABLED=false`. Run
    `make build web-build` from the root. Record `git rev-parse HEAD`,
@@ -367,9 +381,13 @@ that history and compare it with the recorded backup before proceeding.
    revision.
 3. Record the current operating schema and active work with the read-only release
    diagnostic. Quiesce sync-run and work transactions in the approved maintenance
-   window. Check that migration 300 is the only pending forward migration and that
-   the previously verified NTC recovery point is available. Source the approved
-   operating configuration before the targeted migration:
+   window. Check that migration 300 is the only pending forward migration. Verify
+   that an encrypted NTC recovery point covers the current operating schema and
+   data. Compare its captured migration list and isolated restore evidence with the
+   quiesced operating state. Snapshot `42ada89cd1bc` captured schema
+   `202611100100` and predates `202611100200`. A newer verified recovery point must
+   cover the current schema and data before the targeted migration. Source the
+   approved operating configuration:
 
    ```sh
    set -a
@@ -406,6 +424,10 @@ that history and compare it with the recorded backup before proceeding.
    before using macOS Eject.
 7. To suspend the workflow, set `MATCHFORGE_BACKUP_ENABLED=false` and restart the
    compatible API. Keep migration 300 and its backup history. Keep both verified
-   recovery points and the independently retained password. If a hard interruption
-   leaves a disposable restore database, container or staging directory, inspect
-   the exact failed run and verify its identity before any separately approved cleanup.
+   recovery points and the independently retained password. Before migration 300,
+   an application rollback can restart the saved API and web pair with their saved
+   configuration. After migration 300, use a release that can read the migrated
+   schema and backup records. Check `/version`, `/readyz`, forecasting reads and
+   the Admin page after restarting. If a hard interruption leaves a disposable
+   restore database, container or staging directory, inspect the exact failed run
+   and verify its identity before any separately approved cleanup.

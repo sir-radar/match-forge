@@ -10,6 +10,8 @@ import pytest
 from psycopg.conninfo import make_conninfo
 from psycopg.errors import UniqueViolation
 
+from scripts.backup_destination import BackupError
+from scripts.manual_backup import progress
 from tests.integration.test_team_identity_correction import isolated_database
 
 
@@ -22,6 +24,65 @@ def backup_upgrade(url: str) -> subprocess.CompletedProcess[str]:
         timeout=30,
         check=False,
     )
+
+
+def test_manual_backup_progress_uses_independent_control_transaction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with isolated_database() as url, psycopg.connect(url, autocommit=True) as connection:
+        identity = uuid4()
+        connection.execute(
+            "INSERT INTO football.product_sync_runs"
+            "(run_id,sync_type,status,worker_id,heartbeat_at) "
+            "VALUES (%s,'MANUAL_BACKUP','QUEUED',%s,clock_timestamp())",
+            (identity, str(identity)),
+        )
+        connection.execute(
+            "UPDATE football.product_sync_runs SET status='RUNNING' WHERE run_id=%s",
+            (identity,),
+        )
+        before = connection.execute(
+            "SELECT heartbeat_at FROM football.product_sync_runs WHERE run_id=%s", (identity,)
+        ).fetchone()
+        monkeypatch.setenv("DATABASE_URL", url)
+        monkeypatch.setenv("MATCHFORGE_SYNC_RUN_ID", str(identity))
+        monkeypatch.setenv(
+            "PGOPTIONS",
+            f"-c matchforge.sync_run_id={identity} -c matchforge.sync_worker_id={identity} "
+            f"-c matchforge.history_claim_token={uuid4()}",
+        )
+
+        progress("Capturing consistent database snapshot and original files")
+
+        assert connection.execute(
+            "SELECT status,summary->>'current_phase',heartbeat_at "
+            "FROM football.product_sync_runs WHERE run_id=%s",
+            (identity,),
+        ).fetchone() == (
+            "RUNNING",
+            "Capturing consistent database snapshot and original files",
+            before[0],
+        )
+        with psycopg.connect(url) as publication:
+            assert publication.execute(
+                "SELECT current_setting('matchforge.sync_run_id'),"
+                "current_setting('matchforge.sync_worker_id')"
+            ).fetchone() == (str(identity), str(identity))
+            with pytest.raises(psycopg.Error, match="requires a separate transaction") as rejected:
+                publication.execute(
+                    "UPDATE football.product_sync_runs SET summary=summary WHERE false"
+                )
+            assert rejected.value.sqlstate == "MFL01"
+            publication.rollback()
+
+        connection.execute(
+            "UPDATE football.product_sync_runs SET status='CANCELLED',"
+            "finished_at=clock_timestamp(),error_message='test cancellation' WHERE run_id=%s",
+            (identity,),
+        )
+        with pytest.raises(BackupError) as cancelled:
+            progress("Cannot publish progress after cancellation")
+        assert cancelled.value.code == "INTERRUPTED"
 
 
 def test_manual_backup_upgrade_lets_sync_run_reader_finish() -> None:

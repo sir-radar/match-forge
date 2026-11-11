@@ -1,12 +1,28 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BackupAdmin } from "@/components/backup-admin";
+import { api } from "@/lib/api";
 import { parseBackupView } from "@/lib/backup";
 import fixture from "@/test-fixtures/backup-status.json";
 
 const initial = () => parseBackupView(structuredClone(fixture));
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { "Content-Type": "application/json" } });
 const run = { run_id: "10000000-0000-4000-8000-000000000001", sync_type: "MANUAL_BACKUP", status: "QUEUED", requested_at: "2026-11-10T11:00:00Z", started_at: null, finished_at: null, requested_date: null, parameters: { scope: fixture.availability.scope, unavailable_sha256: fixture.availability.unavailable_sha256 }, summary: {}, error_message: null, log_path: null };
+const snapshot = "a".repeat(64);
+const receiptView = () => parseBackupView({
+  ...fixture,
+  backup_age_seconds: 1,
+  next_due_at: "2026-12-10T22:05:00Z",
+  reminder_due: false,
+  availability: {
+    ...fixture.availability,
+    prior_verified: {
+      scope: "RECOVERABLE_ONLY", snapshot_id: snapshot, verified: true, full_recovery: false,
+      captured_at: "2026-11-10T21:12:00Z", verified_at: "2026-11-10T22:05:00Z",
+      unavailable_dependencies: 159, logical_bytes: 3, data_added_packed_bytes: 2, repository_file_bytes: 4,
+    },
+  },
+});
 
 describe("manual backup Admin", () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -20,11 +36,58 @@ describe("manual backup Admin", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
   it("disables manual work for a disconnected drive and allows status retry", async () => {
-    const value = initial(); value.safe_to_eject = false; value.availability.state = "DISCONNECTED"; value.availability.message = "Connect the enrolled external drive.";
+    const value = receiptView(); value.safe_to_eject = false; delete value.availability.drive;
+    value.availability.state = "DISCONNECTED"; value.availability.message = "Connect the enrolled external drive.";
     vi.stubGlobal("fetch", vi.fn(async () => json(fixture)));
     render(<BackupAdmin initial={value} />);
+    expect(screen.getByText("Connect the enrolled external drive.")).toBeVisible();
+    expect(screen.getByText(snapshot)).toBeVisible();
+    expect(screen.queryByText("Authenticated encrypted repository")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Back Up Now" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Refresh drive status" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Back Up Now" })).toBeEnabled());
+  });
+  it.each([
+    ["MIGRATION_PENDING", "Backup migration is pending separate operating approval."],
+    ["DISABLED", "Backup activation is disabled."],
+    ["WRONG_DRIVE", "Reconnect the correct drive."],
+    ["CREDENTIALS", "Unlock the enrolled backup password in macOS Keychain."],
+    ["MISSING_FILES", "Full recovery is blocked by the declared unavailable dependencies."],
+  ])("shows %s without guessing repository setup", (state, message) => {
+    const value = parseBackupView({
+      ...fixture, safe_to_eject: false,
+      availability: { ...fixture.availability, state, message, drive: undefined, repository_unlocked: false },
+    });
+    render(<BackupAdmin initial={value} />);
+    expect(screen.getByText(message)).toBeVisible();
+    expect(screen.queryByText(/awaiting setup/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Back Up Now" })).toBeDisabled();
+  });
+  it("retries the initial 404 without suggesting repository setup", async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(new Response("404 page not found", { status: 404 }));
+    vi.stubGlobal("fetch", fetch);
+    const { view, error } = await api.backup(undefined, "http://127.0.0.1:3000");
+    fetch.mockResolvedValueOnce(json(fixture));
+    render(<BackupAdmin initial={view} initialError={error} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("HTTP 404");
+    expect(screen.queryByText(/awaiting setup/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Retry status" }));
+    expect(await screen.findByText("Authenticated encrypted repository")).toBeVisible();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+  it("retains a verified receipt and blocks actions when the last status becomes stale", async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(json({ error: "private detail" }, 503))
+      .mockResolvedValueOnce(json(fixture));
+    vi.stubGlobal("fetch", fetch);
+    render(<BackupAdmin initial={receiptView()} />);
+    expect(screen.getByText("Recoverable data verified")).toBeVisible();
+    expect(screen.queryByText("Monthly backup due")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh drive status" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("HTTP 503");
+    expect(screen.getByText(snapshot)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Back Up Now" })).toBeDisabled();
+    expect(screen.getByText(/Safe-to-eject status is not confirmed/)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Retry status" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Back Up Now" })).toBeEnabled());
   });
   it("preflights, confirms once, and displays authoritative queued progress", async () => {
@@ -59,7 +122,7 @@ describe("manual backup Admin", () => {
     const fetch = vi.fn().mockResolvedValueOnce(json({})).mockResolvedValueOnce(json(fixture));
     vi.stubGlobal("fetch", fetch); render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Refresh drive status" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Invalid backup response");
+    expect(await screen.findByRole("alert")).toHaveTextContent("The API returned incompatible backup status");
     expect(screen.getByText("No backup attempts recorded.")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Retry status" }));
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
@@ -68,7 +131,7 @@ describe("manual backup Admin", () => {
     const fetch = vi.fn().mockRejectedValueOnce(new TypeError("Network unavailable")).mockResolvedValueOnce(json(fixture));
     vi.stubGlobal("fetch", fetch); render(<BackupAdmin initial={initial()} />);
     fireEvent.click(screen.getByRole("button", { name: "Refresh drive status" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Network unavailable");
+    expect(await screen.findByRole("alert")).toHaveTextContent("The browser could not reach the backup API");
     expect(screen.getByText("No backup attempts recorded.")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Retry status" }));
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
