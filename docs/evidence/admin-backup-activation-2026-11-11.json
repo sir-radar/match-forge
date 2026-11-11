@@ -1,0 +1,87 @@
+{
+  "status": "PASS_WITH_WARNINGS",
+  "observed_at": "2026-11-11T03:51:33.650410+00:00",
+  "owner_approval": "Owner approved all remaining activation work in this chat on 2026-11-11.",
+  "release": {
+    "code_commit_sha": "279e57d8f48e144e3785206c241641ea7eca3fc5",
+    "dependency_lock_sha256": "c881697f433174ce62daebe1edeb328cbac0f0c287c80baa1ec8d42990719044",
+    "build_worktree_state": "clean",
+    "release_observation": "MATCHING_CLEAN_BUILD",
+    "ci_run_url": "https://github.com/sir-radar/match-forge/actions/runs/42945714387",
+    "ci_conclusion": "success"
+  },
+  "schema": {
+    "latest_applied_migration": 202611100300,
+    "pending_migrations": [],
+    "migration_applied_before_cutover": true,
+    "migration_applied_by_this_task": false,
+    "captured_migration_rows_match_operating": true,
+    "legacy_stage_routes": 13
+  },
+  "backup": {
+    "run_id": "a067e8a5-01b8-454b-b063-b05bfe4500f7",
+    "status": "VERIFIED_RECOVERABLE",
+    "scope": "RECOVERABLE_ONLY",
+    "snapshot_id": "64e8a642186d3dd3f9572251bcb4150c24649c93bcf8d3961c67e4431749d782",
+    "previous_snapshot_retained": "42ada89cd1bc9373f84c50c5fb192e8d58feb03d8ed5762ce69608a27aa7511c",
+    "captured_at": "2026-11-11T02:47:09.135807+00:00",
+    "verified_at": "2026-11-11T03:45:21.476351+00:00",
+    "unavailable_dependencies": 159,
+    "unavailable_sha256": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+    "full_recovery": false,
+    "encrypted_read_back": "PASS",
+    "isolated_database_and_file_restore": "PASS_RECOVERABLE",
+    "run_duration_seconds": 3606.317036,
+    "capture_seconds": 819.2338417079882,
+    "isolated_restore_seconds": 1896.042113042029,
+    "next_due_at": "2026-12-11T03:45:21.476351Z",
+    "reminder_policy_days": 30,
+    "automatic_backups": false
+  },
+  "storage": {
+    "logical_payload_bytes": 24623691268,
+    "new_packed_bytes": 397963003,
+    "repository_file_bytes": 4378591783,
+    "volume_free_space_change_during_backup_bytes": 409206784,
+    "initial_repository_allocated_bytes": 4215537664,
+    "repository_allocated_bytes": 4624482304,
+    "allocated_growth_bytes": 408944640,
+    "allocation_note": "Volume free-space change can include unrelated drive activity."
+  },
+  "operating_checks": {
+    "backup_status_http": 200,
+    "connected_state": "READY",
+    "selected_policy_and_159_gaps_visible": true,
+    "manual_browser_confirmation": "PASS",
+    "latest_verified_point_displayed": "PASS",
+    "monthly_reminder_matches_verified_policy": "PASS",
+    "normal_unmount": "PASS",
+    "disconnected_state": "DISCONNECTED",
+    "verified_point_retained_while_disconnected": true,
+    "remounted_volume_identity_matches": true,
+    "reconnected_state": "READY",
+    "connection_started_no_backup": true,
+    "forecast_history_http": 200,
+    "forecast_http": 200,
+    "axe_violations": 0,
+    "reflow_320px": "PASS"
+  },
+  "validation": {
+    "make_check": "PASS",
+    "focused_backup_progress_and_publication_fencing_tests": 16,
+    "web_unit_tests": 214,
+    "playwright_passed": 46,
+    "playwright_configured_skips": 26,
+    "standalone_api_integration": "PASS",
+    "local_full_integration_warning": "The unchanged two-second serving response-cancellation test timed out and passed when run independently.",
+    "full_ci_integration": "PASS"
+  },
+  "operating_test_incident": {
+    "description": "One targeted fencing-test invocation used the operating URL. Synthetic provider scopes self-cleaned. One orphan work item was canceled through normal controls.",
+    "retained_synthetic_work_id": "863364a2-3d1b-4b47-8706-214442ce679f",
+    "work_state": "CANCELLED",
+    "immutable_history_retained": true
+  },
+  "previous_scope_evidence_ref": "docs/evidence/operating-recovery-scope.json",
+  "remaining_activation_blockers": []
+}

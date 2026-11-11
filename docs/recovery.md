@@ -348,12 +348,17 @@ requires an external copy or evidence resolving the original registration.
 
 ## Activating the NTC Admin workflow
 
-The operating API currently returns `unknown` for Git SHA, lock hash and worktree
-state. The executable is a Go development build whose embedded metadata identifies
-the module and toolchain but has no VCS revision. The operating database is at
-`202611100200`, with all 13 routes on `LEGACY`. Existing migration history also
+Before the 11 November 2026 activation, the operating API returned `unknown` for
+Git SHA, lock hash and worktree state. Its Go development build identified the
+module and toolchain without a VCS revision. The operating database was at
+`202611100200`, with all 13 routes on `LEGACY`. Migration history also
 contains `202610220100`, whose source SQL is absent from this checkout. Preserve
 that history and compare it with the recorded backup before proceeding.
+
+The [verified activation record](evidence/admin-backup-activation-2026-11-11.json)
+records the deployed release, current-schema recovery point, retained earlier
+point, declared gaps and operating checks. Current activation state is tracked in
+[`project-status.json`](project-status.json).
 
 If Admin reports HTTP 404, compare the running API's `/version` and
 `GET /v1/admin/backup` with the approved release. Send the configured
@@ -380,9 +385,9 @@ or starting the compatible release.
    that an encrypted NTC recovery point covers the current operating schema and
    data. Compare its captured migration list and isolated restore evidence with the
    quiesced operating state. Snapshot `42ada89cd1bc` captured schema
-   `202611100100`. The operating database at `202611100200` needs a newer verified
-   recovery point before migration 300. Source the approved operating configuration
-   before the targeted migration:
+   `202611100100` and predates `202611100200`. A newer verified recovery point must
+   cover the current schema and data before the targeted migration. Source the
+   approved operating configuration:
 
    ```sh
    set -a
