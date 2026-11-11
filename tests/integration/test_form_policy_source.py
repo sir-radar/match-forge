@@ -292,3 +292,17 @@ def test_affected_forecasts_count_only_results_known_before_the_cutoff(database:
     assert [(row["forecast_id"], row["missing_results"]) for row in rows] == [(str(forecast), 1)]
     assert rows[0]["missing_fixture_ids"] == [str(UUID(int=8301))]
 
+
+def test_pre_policy_backfill_queues_only_reports_without_form(database: str) -> None:
+    from football.product.public_reports import enqueue_pre_policy_context_reports
+
+    assert build(database, "CONTEXT", FIXTURE)["published"] == 1
+    with psycopg.connect(database) as connection:
+        # The only report was built from the v2 source, so nothing is queued.
+        assert enqueue_pre_policy_context_reports(connection, 10) == {
+            "queued": 0,
+            "pre_policy_before": 0,
+            "pre_policy_after": 0,
+        }
+        with pytest.raises(ValueError):
+            enqueue_pre_policy_context_reports(connection, 0)

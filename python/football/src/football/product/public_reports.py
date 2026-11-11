@@ -6,6 +6,8 @@ import hashlib
 import math
 import re
 import subprocess
+import time
+from collections import Counter
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -333,6 +335,85 @@ def run_pending_context_reports(
     result["context_reports_pending"] = row[0] if row is not None else 0
     result["context_reports_published"] = result.pop("published")
     return result
+
+
+CONTEXT_BACKFILL_LIMIT = 50_000
+
+
+def enqueue_pre_policy_context_reports(connection: Connection[Any], limit: int) -> dict[str, int]:
+    """Queue fixtures whose latest context report predates the form policy.
+
+    A report built from public_context_source (v1) has no ``form`` object. The
+    API keeps serving it with RECENT_FORM_POLICY_UNKNOWN until a v2 report
+    exists, so queuing is safe at any pace: published reports are immutable and
+    a rebuild only adds a new record. Newest kickoffs go first; fixtures already
+    pending are left as they are so the near-term priority of the worker holds.
+    """
+    if type(limit) is not int or not 0 < limit <= CONTEXT_BACKFILL_LIMIT:
+        raise ValueError(f"backfill limit must be between 1 and {CONTEXT_BACKFILL_LIMIT}")
+    with connection.transaction(), connection.cursor(row_factory=tuple_row) as cursor:
+        row = cursor.execute(
+            """WITH latest AS (
+                   SELECT DISTINCT ON (r.scope_id) r.scope_id, r.record_bytes
+                   FROM football.product_read_reports r
+                   WHERE r.report_kind='CONTEXT' AND r.horizon='LATEST'
+                   ORDER BY r.scope_id, r.source_observed_at DESC, r.registered_at DESC,
+                            r.input_sha256 DESC
+               ), pre_policy AS (
+                   SELECT f.fixture_id, f.kickoff_at
+                   FROM latest
+                   JOIN football.product_fixtures f ON f.fixture_id=latest.scope_id
+                   WHERE jsonb_typeof(convert_from(latest.record_bytes,'UTF8')::jsonb->'form')
+                         IS DISTINCT FROM 'object'
+                     AND NOT EXISTS (
+                         SELECT 1 FROM football.product_context_report_refresh_work w
+                         WHERE w.fixture_id=f.fixture_id AND w.generation>w.completed_generation)
+               ), chosen AS (
+                   SELECT fixture_id FROM pre_policy ORDER BY kickoff_at DESC, fixture_id LIMIT %s
+               ), queued AS (
+                   SELECT football.enqueue_product_context_report_refresh(fixture_id) FROM chosen
+               )
+               SELECT (SELECT count(*) FROM queued), (SELECT count(*) FROM pre_policy)""",
+            (limit,),
+        ).fetchone()
+    assert row is not None
+    return {"queued": row[0], "pre_policy_before": row[1], "pre_policy_after": row[1] - row[0]}
+
+
+def drain_context_reports(
+    connection: Connection[Any],
+    *,
+    seconds: float,
+    lease_duration: timedelta,
+    code_commit_sha: str,
+    dependency_lock_sha256: str,
+) -> dict[str, Any]:
+    """Run the normal context worker repeatedly until the queue is empty or time is up."""
+    started = time.monotonic()
+    totals: Counter[str] = Counter()
+    runs = 0
+    pending = None
+    while time.monotonic() - started < seconds:
+        result = run_pending_context_reports(
+            connection,
+            lease_duration=lease_duration,
+            code_commit_sha=code_commit_sha,
+            dependency_lock_sha256=dependency_lock_sha256,
+        )
+        runs += 1
+        for key in ("context_reports_published", "failed", "lease_lost", "busy_or_complete"):
+            totals[key] += int(result.get(key, 0))
+        pending = result["context_reports_pending"]
+        if not result["selected"] or not pending:
+            break
+    elapsed = time.monotonic() - started
+    return {
+        "runs": runs,
+        **dict(totals),
+        "context_reports_pending": pending,
+        "seconds": round(elapsed, 1),
+        "published_per_second": round(totals["context_reports_published"] / max(elapsed, 1e-9), 2),
+    }
 
 
 def run_pending_public_reports(
