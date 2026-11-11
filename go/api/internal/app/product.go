@@ -156,7 +156,24 @@ type Fixture struct {
 	Period               *string          `json:"period"`
 	LastSuccessfulUpdate *time.Time       `json:"last_successful_update"`
 	Stale                bool             `json:"stale"`
+	LifecycleState       string           `json:"lifecycle_state,omitempty"`
 	GoalScorers          []LiveEvent      `json:"goal_scorers"`
+}
+
+// resultOverdueAfter covers regulation, extra time, a shootout and normal delays.
+const resultOverdueAfter = 4 * time.Hour
+
+// lifecycleState marks a fixture whose stored status still says it has not
+// ended long after kickoff. The stored status is kept; only its currency is
+// reported, so the fixture is not presented as an ordinary upcoming match.
+func lifecycleState(status string, kickoff, now time.Time) string {
+	switch status {
+	case "SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED":
+		if now.Sub(kickoff) > resultOverdueAfter {
+			return "RESULT_OVERDUE"
+		}
+	}
+	return ""
 }
 
 type LiveEvent struct {

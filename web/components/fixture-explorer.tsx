@@ -136,6 +136,7 @@ function fixtureStateLabel(fixture: Fixture) {
   else if (fixture.match_minute !== null) {
     label = `${fixture.match_minute}${fixture.added_time ? `+${fixture.added_time}` : ""}′`;
   }
+  if (fixture.lifecycle_state === "RESULT_OVERDUE") label = `${label} · result overdue`;
   return `${label}${fixture.stale || fixture.freshness === "STALE" ? " · stale" : ""}`;
 }
 

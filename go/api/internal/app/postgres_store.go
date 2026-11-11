@@ -134,11 +134,13 @@ func (store *PostgresProductStore) Fixtures(ctx context.Context, filters Fixture
 	defer rows.Close()
 	groups := []FixtureGroup{}
 	indexes := map[string]int{}
+	now := time.Now()
 	for rows.Next() {
 		competition, fixture, err := scanFixture(rows)
 		if err != nil {
 			return nil, err
 		}
+		fixture.LifecycleState = lifecycleState(fixture.Status, fixture.KickoffAt, now)
 		index, exists := indexes[competition.ID]
 		if !exists {
 			index = len(groups)

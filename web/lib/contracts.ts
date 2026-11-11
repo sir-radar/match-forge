@@ -57,6 +57,7 @@ export type Fixture = {
   last_successful_update: string | null;
   freshness?: "UNKNOWN" | "FRESH" | "STALE";
   stale: boolean;
+  lifecycle_state?: "RESULT_OVERDUE";
   goal_scorers: LiveEvent[];
 };
 
@@ -853,6 +854,7 @@ function parseFixture(value: unknown): Fixture {
     last_successful_update: item.last_successful_update === undefined ? null : nullableTimestamp(item.last_successful_update, "last_successful_update"),
     freshness: parseFreshness(item.freshness),
     stale: item.stale === undefined ? false : boolean(item.stale, "stale"),
+    ...(item.lifecycle_state === "RESULT_OVERDUE" ? { lifecycle_state: "RESULT_OVERDUE" as const } : {}),
     goal_scorers: item.goal_scorers === undefined ? [] : array(item.goal_scorers, "goal_scorers").map(parseLiveEvent),
   };
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestFormMissingnessReportsDefaultWindowState(t *testing.T) {
@@ -39,5 +40,26 @@ func TestLegacyContextReportDecodesWithoutFormMetadata(t *testing.T) {
 	var fields map[string]any
 	if err := json.Unmarshal(encoded, &fields); err != nil || len(fields) != 6 {
 		t.Fatalf("legacy form match changed shape: %s", encoded)
+	}
+}
+
+func TestLifecycleStateMarksUnresolvedFixturesLongAfterKickoff(t *testing.T) {
+	kickoff := time.Date(2026, 11, 10, 18, 0, 0, 0, time.UTC)
+	cases := []struct {
+		status string
+		after  time.Duration
+		want   string
+	}{
+		{"SCHEDULED", 3 * time.Hour, ""},
+		{"SCHEDULED", 5 * time.Hour, "RESULT_OVERDUE"},
+		{"LIVE", 30 * time.Hour, "RESULT_OVERDUE"},
+		{"POSTPONED", 30 * time.Hour, ""},
+		{"FINISHED", 30 * time.Hour, ""},
+		{"SCHEDULED", -time.Hour, ""},
+	}
+	for _, item := range cases {
+		if got := lifecycleState(item.status, kickoff, kickoff.Add(item.after)); got != item.want {
+			t.Errorf("%s +%s: got %q want %q", item.status, item.after, got, item.want)
+		}
 	}
 }

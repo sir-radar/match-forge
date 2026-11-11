@@ -341,6 +341,13 @@ describe("FixtureExplorer", () => {
     }
   });
 
+  it("marks a fixture whose result is overdue instead of showing it as upcoming", async () => {
+    const overdue = { ...fixture, lifecycle_state: "RESULT_OVERDUE" };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(String(input).includes("/fixtures?") ? { groups: [{ competition, fixtures: [overdue] }] } : liveMatch), { status: 200 })));
+    render(<FixtureExplorer initialDate="2026-09-29" />);
+    expect(await screen.findByText(/SCHEDULED · result overdue/)).toBeInTheDocument();
+  });
+
   it("distinguishes unknown freshness and unresolved lifecycle from timed incidents", async () => {
     const original = fetch;
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, options?: RequestInit) => String(input).endsWith("/live")

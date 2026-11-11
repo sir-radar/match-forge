@@ -633,6 +633,7 @@ components:
         last_successful_update: { type: [string, 'null'], format: date-time }
         freshness: {type: string, enum: [UNKNOWN, FRESH, STALE]}
         stale: { type: boolean }
+        lifecycle_state: { type: string, enum: [RESULT_OVERDUE], description: 'Present when the stored status still says the match has not ended more than four hours after kickoff. The status is kept as stored; the fixture must not be shown as an ordinary upcoming match.' }
         goal_scorers: { type: array, items: { $ref: '#/components/schemas/LiveEvent' } }
     FixtureGroup:
       type: object
