@@ -38,7 +38,7 @@ from football.product.form import (
     team_form,
 )
 
-AUDIT_VERSION = "p02-integrity-audit-v2"
+AUDIT_VERSION = "p02-integrity-audit-v3"
 BATCH_SIZE = 500
 RUN_LIMIT_SECONDS = 30 * 60
 UNRESOLVED = ("SCHEDULED", "LIVE", "HALF_TIME", "SUSPENDED", "INTERRUPTED")
@@ -169,8 +169,16 @@ def classify_side(
     report_current: bool,
     source: dict[str, Any],
     team: str,
+    *,
+    official_report: bool = False,
 ) -> dict[str, Any]:
-    """Compare served form with the governed recomputation for one team."""
+    """Compare served form with the governed recomputation for one team.
+
+    A v1 report serves forecast-eligible history only, so its symbols must trace
+    to history. A form-policy report serves official results, which may include
+    awarded or not yet eligible rows, so those also count as a valid trace.
+    """
+    trace_rows = source["history"] + (source["results"] if official_report else [])
     window = team_form(source, team)["windows"][DEFAULT_WINDOW]
     kickoff = datetime.fromisoformat(source["kickoff_at"])
     served_text = "".join(row["result"] for row in served) if served is not None else None
@@ -192,7 +200,7 @@ def classify_side(
     return {
         "state": state,
         "served": served_text,
-        "served_traceable": None if served is None else _traceable(served, source["history"], team),
+        "served_traceable": None if served is None else _traceable(served, trace_rows, team),
         "served_older_than_stale_limit": served_old,
         "recomputed": window["results"],
         "coverage": window["coverage"],
@@ -223,18 +231,44 @@ def _audit_fixture(
             "SELECT LEAST(%s::timestamptz,statement_timestamp())",
             (row["source"]["kickoff_at"],),
         ).fetchone()
-    assert cutoff is not None
+        # After the form-policy migration the API serves a report built from the
+        # v2 source, falling back to a current v1 report until it is rebuilt.
+        v2 = cursor.execute(
+            """SELECT CASE WHEN to_regprocedure('football.public_context_source_v2(uuid)') IS NULL
+                      THEN NULL ELSE encode(sha256(convert_to(
+                          football.public_context_source_v2(%s)::text,'UTF8')),'hex') END AS fp""",
+            (fixture_id,),
+        ).fetchone()
+    assert cutoff is not None and v2 is not None
     source = official_inputs(connection, row["source"], next(iter(cutoff.values())))
     served = json.loads(bytes(report["record_bytes"])) if report else None
-    current = bool(report and report["source_fingerprint"] == row["fingerprint"])
+    fingerprint = report["source_fingerprint"] if report else None
+    report_source = (
+        "v2"
+        if fingerprint is not None and fingerprint == v2["fp"]
+        else "v1"
+        if fingerprint is not None and fingerprint == row["fingerprint"]
+        else None
+    )
+    current = report_source is not None
+    official = report_source == "v2"
     return {
         "fixture_id": str(fixture_id),
         "report_current": current,
+        "report_source": report_source,
         "home": classify_side(
-            served["home_form"] if served else None, current, source, source["home_team_id"]
+            served["home_form"] if served else None,
+            current,
+            source,
+            source["home_team_id"],
+            official_report=official,
         ),
         "away": classify_side(
-            served["away_form"] if served else None, current, source, source["away_team_id"]
+            served["away_form"] if served else None,
+            current,
+            source,
+            source["away_team_id"],
+            official_report=official,
         ),
     }
 
@@ -596,6 +630,8 @@ def summarize(out: Path) -> dict[str, Any]:
                 by[name][key]["sides"] += 1
         totals["fixtures"] += 1
         totals["report_current"] += bool(record.get("report_current"))
+        if record.get("report_source"):
+            totals[f"report_source_{record['report_source']}"] += 1
     return {
         "audit_version": AUDIT_VERSION,
         "form_policy_version": FORM_POLICY_VERSION,

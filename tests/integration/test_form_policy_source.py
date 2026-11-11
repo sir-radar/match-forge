@@ -208,6 +208,11 @@ def test_audit_is_read_only_resumable_and_matches_served_form(
     summary = run(database, tmp_path, batch_size=1, time_limit=600, max_batches=None)
     assert summary["complete"] and summary["audited_fixtures"] == 1
     assert summary["form_sides"]["MATCHING"] == 2
+    # The report is built from the v2 source and serves an awarded, not yet
+    # eligible result; it must count as current and traceable.
+    assert summary["form_sides"]["report_current"] == 1
+    assert summary["form_sides"]["report_source_v2"] == 1
+    assert summary["form_sides"]["served_untraceable"] == 0
     assert summary["population"]["context_fixtures"] == 1
     assert "standings" in summary["corpus"]["not_audited"]
     with psycopg.connect(database) as connection:
