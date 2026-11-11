@@ -431,10 +431,27 @@ class ProductStorageMixin(ProductIdentityMixin):
         self, rows: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
     ) -> int:
         fixtures = self._store_fixtures(rows, snapshot_id, observed_at)
+        return self._qualify_finished_history(fixtures, snapshot_id, observed_at)
+
+    def _qualify_finished_history(
+        self, fixtures: Sequence[Mapping[str, Any]], snapshot_id: UUID, observed_at: datetime
+    ) -> int:
+        """Offer stored regulation-time results to history qualification.
+
+        Both the dated fixture request and the league-season history request end
+        here, so a result enters history from whichever request saw it first. A
+        later score from the same provider replaces the row; the append-only
+        decisions keep the earlier value for earlier cutoffs.
+        """
         count = 0
+        leagues: set[object] = set()
         with self.connection.cursor() as cursor:
             for row in fixtures:
                 fixture = _mapping(row, "fixture")
+                if _api_football_score_basis(str(_mapping(fixture, "status")["short"])) != (
+                    "REGULATION_90"
+                ):
+                    continue
                 provider_fixture_id = str(_integer(fixture, "id"))
                 cursor.execute(
                     """
@@ -458,15 +475,22 @@ class ProductStorageMixin(ProductIdentityMixin):
                         fixture_id, competition_id, home_team_id, away_team_id, kickoff_at,
                         home_goals, away_goals, source_provider_code, source_snapshot_id
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (fixture_id) DO NOTHING
+                    ON CONFLICT (fixture_id) DO UPDATE SET
+                        home_goals = EXCLUDED.home_goals, away_goals = EXCLUDED.away_goals,
+                        source_snapshot_id = EXCLUDED.source_snapshot_id
+                    WHERE football.product_team_match_history.source_provider_code
+                            = EXCLUDED.source_provider_code
+                      AND (football.product_team_match_history.home_goals,
+                           football.product_team_match_history.away_goals)
+                          IS DISTINCT FROM (EXCLUDED.home_goals, EXCLUDED.away_goals)
                     """,
                     (*stored[:7], PROVIDER_CODE, snapshot_id),
                 )
-                count += cursor.rowcount
-        if count:
-            self._mark_context_available(
-                {_mapping(row, "league").get("id") for row in fixtures}, observed_at
-            )
+                if cursor.rowcount:
+                    count += 1
+                    leagues.add(_mapping(row, "league").get("id"))
+        if leagues:
+            self._mark_context_available(leagues, observed_at)
         return count
 
     def _store_fallback_history(

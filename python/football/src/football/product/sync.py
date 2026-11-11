@@ -234,6 +234,7 @@ class ProductSync(ProductHistoryMixin, ProductForecastMixin):
         if response is not None and response.rows:
             snapshot = self._record_response(f"fixtures-{requested_date}", response)
             fixtures = self._store_fixtures(response.rows, snapshot, response.fetched_at)
+            self._qualify_finished_history(fixtures, snapshot, response.fetched_at)
             return len(fixtures), _league_seasons(fixtures)
         fallback = self._fallback_fixtures(requested_date)
         if fallback is not None:
