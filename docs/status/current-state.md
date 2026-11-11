@@ -40,6 +40,7 @@ MVP implementation is complete and live settlement evidence is still pending. Ma
 | V4 programme | `BLOCKED_WITH_EVIDENCE`, phase 23 | Blocked phases 02, 07, 08, 10, 18, 19, 21; no model promotions. |
 | Codebase remediation | `PASS_WITH_WARNINGS` | Operating rollout and external evidence limits remain open. |
 | Unified architecture investigation | `PASS_WITH_WARNINGS`; planning only | [Redesign docs](../architecture/unified-redesign-2026-11-10/README.md) are recommendations. `implementation_of_proposed_architecture_authorized` is `false` in this status file until an implementation task records otherwise. |
+| Unified architecture P02 (data integrity) | `NOT_RUN`; implementation `IN_PROGRESS` | Owner decision `AUTHORIZE_UNIFIED_P02_DATA_INTEGRITY_IMPLEMENTATION_V1` ([record](../evidence/owner-decision-authorize-p02-data-integrity-2026-11-11.json)) authorizes tickets P02-01 and P02-02 on `ft/p02-data-integrity`. No operating write, acquisition, identity admission or model promotion is authorized. Every other proposed phase stays unauthorized. |
 
 ## Current authorized work
 
