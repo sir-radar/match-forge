@@ -208,11 +208,11 @@ class SportmonksPredictionClient:
                 BenchmarkStatus.DISABLED_NOT_CONFIGURED,
                 "SPORTMONKS_API_TOKEN is not configured",
             )
-        query = urllib.parse.urlencode({"api_token": self.api_token, "include": "type"})
+        # The token travels in a header so it cannot leak through logged or echoed URLs.
         path = f"/predictions/probabilities/fixtures/{provider_fixture_id}"
-        url = f"{SPORTMONKS_BASE_URL}{path}?{query}"
+        url = f"{SPORTMONKS_BASE_URL}{path}?{urllib.parse.urlencode({'include': 'type'})}"
         try:
-            raw = self.transport(url, {})
+            raw = self.transport(url, {"Authorization": self.api_token})
         except TimeoutError:
             return _failure(
                 "sportmonks",
