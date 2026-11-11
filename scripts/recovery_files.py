@@ -405,9 +405,10 @@ def _source_reference(root: Path, row: tuple[Any, ...], manifests: dict[str, Any
     try:
         relative = legacy_source_path(provider, git_sha, path, manifest_path, manifest_hash, digest)
     except RecoveryReferenceError:
-        relative = _raw_relative_path(provider, revision, path, digest)
-        if relative is None:
+        raw_relative = _raw_relative_path(provider, revision, path, digest)
+        if raw_relative is None:
             raise
+        relative = raw_relative
     return FileReference("data", relative, digest, size)
 
 
