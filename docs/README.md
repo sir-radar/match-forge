@@ -22,7 +22,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 
 - [PLAN.md](../PLAN.md): the control-plane roadmap and gate sequence.
 - [Post-redesign product roadmap (F0–F11)](../MatchForge_Post_Redesign_Extensible_Football_Product_Implementation_Plan_v2_2026-11-09.md): follow-on product work. It sits under PLAN.md's gates and needs its own task authorization.
-- [Unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md): planning recommendations from 10 November, with its [roadmap](architecture/unified-redesign-2026-11-10/roadmap.md) and [ADR 0005](adr/0005-unified-architecture-evolution.md).
+- [Unified architecture investigation](architecture/unified-redesign-2026-11-10/README.md): planning recommendations from 10 November, with its [roadmap](architecture/unified-redesign-2026-11-10/roadmap.md), the proposed [P09-01 historical-completeness plan](architecture/unified-redesign-2026-11-10/p09-01-historical-completeness-plan.md) and [ADR 0005](adr/0005-unified-architecture-evolution.md).
 - [Full phase deliverables](roadmap/implementation-phases.md) and [immediate backlog](roadmap/immediate-backlog.md): sections extracted from the original plan.
 
 ## Architecture / data
