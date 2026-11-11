@@ -40,18 +40,18 @@ migration-status: up
 	@set -a; . ./.env; set +a; $(TOOL_ENV); : "$${DATABASE_URL:?Set DATABASE_URL in .env}"; goose -dir $(MIGRATIONS_DIR) postgres "$$DATABASE_URL" status
 
 format:
-	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts/verify_code_intelligence.py
-	@$(TOOL_ENV); uv run ruff format python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff check --fix python tests experiments scripts
+	@$(TOOL_ENV); uv run ruff format python tests experiments scripts
 	@$(TOOL_ENV); cargo fmt --all
 	@$(TOOL_ENV); find go -type f -name '*.go' -exec gofmt -w {} +
 
 format-check:
-	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff format --check python tests experiments scripts
 	@$(TOOL_ENV); cargo fmt --all --check
 	@$(TOOL_ENV); test -z "$$(find go -type f -name '*.go' -exec gofmt -l {} +)"
 
 lint:
-	@$(TOOL_ENV); uv run ruff check python tests experiments scripts/verify_code_intelligence.py
+	@$(TOOL_ENV); uv run ruff check python tests experiments scripts
 	@$(TOOL_ENV); uv run mypy
 	@$(TOOL_ENV); uv run mypy --strict scripts/verify_code_intelligence.py tests/test_code_intelligence.py
 	@$(TOOL_ENV); cargo clippy --workspace --all-targets --all-features -- -D warnings

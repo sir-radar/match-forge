@@ -54,8 +54,20 @@ select = ["E", "F", "I", "UP", "B", "SIM", "C901"]
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
+[tool.ruff.lint.per-file-ignores]
+# This script records its own SHA-256 in retained evidence, so its bytes stay as executed.
+"scripts/run_dcv3_static_heterogeneity_multiplicity.py" = ["E501", "B904"]
+
+[tool.ruff.format]
+exclude = ["scripts/run_dcv3_static_heterogeneity_multiplicity.py"]
+
 [tool.mypy]
 python_version = "3.13"
 strict = true
-files = ["experiments/sprint1_roundtrip", "python/football/src", "python/football/tests"]
+files = ["experiments/sprint1_roundtrip", "python/football/src", "python/football/tests", "scripts"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# This script records its own SHA-256 in retained evidence, so its bytes stay as executed.
+module = "scripts.run_dcv3_low_score_structure_diagnostic"
+ignore_errors = true

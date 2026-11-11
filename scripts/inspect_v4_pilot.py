@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterator, Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 import psycopg
@@ -57,7 +57,11 @@ def identity_report(
     }
     competition_ids = {str(row["competition"]["competition_id"]) for row in matches}
     mappings = []
-    for kind, ids in (("team", team_ids), ("competition", competition_ids)):
+    kinds: tuple[tuple[Literal["team", "competition"], set[str]], ...] = (
+        ("team", team_ids),
+        ("competition", competition_ids),
+    )
+    for kind, ids in kinds:
         for row in mapping_rows(connection, kind, "statsbomb_open_data"):
             if row[3] in ids:
                 decision = classify_mapping(connection, kind, row, root, verifier)

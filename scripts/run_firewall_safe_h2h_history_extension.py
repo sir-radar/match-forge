@@ -108,12 +108,8 @@ V3_REPORT_SHA256 = "87ceaa4fa7fff3e1257380a545b921b0eb56d351168d6fcf088d9b990898
 V3_CONFIG_SHA256 = "f81c68b8f44e3f692dc76129773876c176d56313eeb56d719a6c609a8237ef50"
 V3_SNAPSHOT_ID = "d0da187c-88d0-5eb1-b08b-01bdaf097622"
 V3_SNAPSHOT_SHA256 = "09280f173008cffd4a05f7b71859b0588814d552e7dea8b5846474bebbd5e308"
-V3_BACKUP_INVENTORY_SHA256 = (
-    "430ad4efd52bbd06551dea11547bef1a553d05f42cb67b901f31621dc43a12af"
-)
-LA_LIGA_2023_24_RAW_SHA256 = (
-    "5ab215f10971e8479c06b8869d5118ec4fa98a7ed49cd7eb8333d8719c6dee34"
-)
+V3_BACKUP_INVENTORY_SHA256 = "430ad4efd52bbd06551dea11547bef1a553d05f42cb67b901f31621dc43a12af"
+LA_LIGA_2023_24_RAW_SHA256 = "5ab215f10971e8479c06b8869d5118ec4fa98a7ed49cd7eb8333d8719c6dee34"
 LA_LIGA_2023_24_NORMALIZED_SHA256 = (
     "de3f7dcd0d4cd868fb77138e576f2f98086d3bef7fce52fdb1054a492f552cc9"
 )
@@ -190,9 +186,7 @@ def acquire(config_path: Path = CONFIG_PATH, root: Path = OUTPUT_ROOT) -> dict[s
         older_candidate = _candidate_capacity_assessment(
             (*fixed_observations, *v3_observations), targets, candidate_payload, aliases
         )
-        shots, shot_resources, lineage = _acquire_eligible_shots(
-            store, client, eligible_matches
-        )
+        shots, shot_resources, lineage = _acquire_eligible_shots(store, client, eligible_matches)
         resources.extend(shot_resources)
         result = _complete(
             config,
@@ -280,9 +274,7 @@ def _complete(
             match, shots[match_id], group.scope_key, group.competition, aliases
         )
         added_observations.append(observation)
-        added_rows.append(
-            _history_row(match, observation, group, lineage[match_id], snapshot_id)
-        )
+        added_rows.append(_history_row(match, observation, group, lineage[match_id], snapshot_id))
     all_rows = [*v3_rows, *added_rows]
     all_rows.sort(key=_history_sort_key)
     coverage = analyze_frozen_h2h_coverage(
@@ -466,17 +458,14 @@ def _complete(
 def _load_config(path: Path) -> Mapping[str, object]:
     payload = json.loads(path.read_text())
     if (
-        payload.get("contract")
-        != "MatchForgeFirewallSafeH2HHistoryExtensionConfigurationV1"
+        payload.get("contract") != "MatchForgeFirewallSafeH2HHistoryExtensionConfigurationV1"
         and "contract" in payload
     ):
         raise SnapshotStop("CONFIGURATION_CONTRACT_MISMATCH")
     expected = _integer(payload, "season_manifest_requests") + _integer(payload, "shot_requests")
     if expected != payload.get("expected_requests"):
         raise SnapshotStop("CONFIGURATION_REQUEST_BUDGET_MISMATCH")
-    if expected + _integer(payload, "retry_allowance") > _integer(
-        payload, "hard_request_ceiling"
-    ):
+    if expected + _integer(payload, "retry_allowance") > _integer(payload, "hard_request_ceiling"):
         raise SnapshotStop("CONFIGURATION_REQUEST_CEILING_MISMATCH")
     if (
         payload.get("authorization") != AUTHORIZATION_ID
@@ -545,13 +534,9 @@ def _target_pair_completeness(
             "expected_missing_directed_fixtures"
         ],
     )
-    expected_pairs = {
-        (str(item["home_team_id"]), str(item["away_team_id"])) for item in expected
-    }
+    expected_pairs = {(str(item["home_team_id"]), str(item["away_team_id"])) for item in expected}
     missing = cast(Sequence[Mapping[str, object]], assessment["missing_directed_fixtures"])
-    observed_pairs = {
-        (str(item["home_team_id"]), str(item["away_team_id"])) for item in missing
-    }
+    observed_pairs = {(str(item["home_team_id"]), str(item["away_team_id"])) for item in missing}
     if observed_pairs != expected_pairs:
         raise SnapshotStop("TARGET_PAIR_COMPLETENESS_MISMATCH")
     matches = _finished_matches(payload)
@@ -646,18 +631,10 @@ def _capacity_assessment(
         (*base_observations, *theoretical), targets, configured_scopes
     )
     base_count = cast(int, cast(Mapping[str, Any], base["coverage"])["at_least_2"]["count"])
-    extended_count = cast(
-        int, cast(Mapping[str, Any], extended["coverage"])["at_least_2"]["count"]
-    )
-    base_three = cast(
-        int, cast(Mapping[str, Any], base["coverage"])["at_least_3"]["count"]
-    )
-    extended_three = cast(
-        int, cast(Mapping[str, Any], extended["coverage"])["at_least_3"]["count"]
-    )
-    la_liga = cast(
-        Mapping[str, Mapping[str, int]], extended["coverage_by_competition"]
-    )["La Liga"]
+    extended_count = cast(int, cast(Mapping[str, Any], extended["coverage"])["at_least_2"]["count"])
+    base_three = cast(int, cast(Mapping[str, Any], base["coverage"])["at_least_3"]["count"])
+    extended_three = cast(int, cast(Mapping[str, Any], extended["coverage"])["at_least_3"]["count"])
+    la_liga = cast(Mapping[str, Mapping[str, int]], extended["coverage_by_competition"])["La Liga"]
     affected = _affected_targets(targets, aliases, incomplete_provider_pairs)
     return {
         "scope_key": scope_key,
@@ -686,8 +663,7 @@ def _candidate_capacity_assessment(
     matches = _finished_matches(payload)
     missing = cast(Sequence[Mapping[str, object]], manifest["missing_directed_fixtures"])
     incomplete_pairs = {
-        frozenset((str(item["home_team_id"]), str(item["away_team_id"])))
-        for item in missing
+        frozenset((str(item["home_team_id"]), str(item["away_team_id"]))) for item in missing
     }
     eligible = tuple(
         match
@@ -726,9 +702,7 @@ def _affected_targets(
         for pair in incomplete_provider_pairs
     }
     inverse_matches = {
-        canonical: provider
-        for (kind, provider), canonical in aliases.items()
-        if kind == "match"
+        canonical: provider for (kind, provider), canonical in aliases.items() if kind == "match"
     }
     return [
         {
@@ -825,8 +799,7 @@ def _audit_selected_history(
         seasons=(PitchApiSeasonAuditInput(scope, selection_payload, shots),),
         request_log=records,
         budget=PitchApiRequestBudget(
-            _integer(config, "validation_resource_requests")
-            + _integer(config, "retry_allowance"),
+            _integer(config, "validation_resource_requests") + _integer(config, "retry_allowance"),
             _integer(config, "retry_allowance"),
         ),
         metadata=PitchApiAuditMetadata(
@@ -921,29 +894,24 @@ def _publish_mapping(
     mappings: Mapping[tuple[str, str], str],
     continuity: Mapping[str, object],
 ) -> tuple[str, str, int]:
-    return cast(
-        tuple[str, str, int],
-        store.publish_bytes(
-            "manifests",
-            canonical_json_bytes(
-                {
-                    "contract": (
-                        "MatchForgeH2HDevelopmentHistoryCanonicalMappingManifestQualifiedV1"
-                    ),
-                    "algorithm": "matchforge-explicit-uuid5-initial-allocation-v1",
-                    "role": "DEVELOPMENT_HISTORY_ONLY",
-                    "continuity": continuity,
-                    "mappings": [
-                        {
-                            "entity_type": kind,
-                            "provider_entity_id": provider_id,
-                            "canonical_id": canonical,
-                            "mapping_action": "reused_or_initial",
-                        }
-                        for (kind, provider_id), canonical in sorted(mappings.items())
-                    ],
-                }
-            ),
+    return store.publish_bytes(
+        "manifests",
+        canonical_json_bytes(
+            {
+                "contract": ("MatchForgeH2HDevelopmentHistoryCanonicalMappingManifestQualifiedV1"),
+                "algorithm": "matchforge-explicit-uuid5-initial-allocation-v1",
+                "role": "DEVELOPMENT_HISTORY_ONLY",
+                "continuity": continuity,
+                "mappings": [
+                    {
+                        "entity_type": kind,
+                        "provider_entity_id": provider_id,
+                        "canonical_id": canonical,
+                        "mapping_action": "reused_or_initial",
+                    }
+                    for (kind, provider_id), canonical in sorted(mappings.items())
+                ],
+            }
         ),
     )
 
@@ -981,24 +949,18 @@ def _classification(
     required = cast(Mapping[str, int], config["required_coverage"])
     cumulative = cast(Mapping[str, Mapping[str, int]], coverage["coverage"])
     competitions = cast(Mapping[str, Mapping[str, int]], coverage["coverage_by_competition"])
-    passing_domains = sum(
-        values["at_least_2"] >= 150 for values in competitions.values()
-    )
+    passing_domains = sum(values["at_least_2"] >= 150 for values in competitions.values())
     qualified = (
-        cumulative["at_least_2"]["count"]
-        >= required["minimum_targets_with_two_prior_meetings"]
+        cumulative["at_least_2"]["count"] >= required["minimum_targets_with_two_prior_meetings"]
         and cumulative["at_least_3"]["count"]
         >= required["minimum_targets_with_three_prior_meetings"]
-        and passing_domains
-        >= required["minimum_competitions_with_150_two_meeting_targets"]
+        and passing_domains >= required["minimum_competitions_with_150_two_meeting_targets"]
         and firewall["status"] == "PASS"
         and chronology["status"] == "PASS"
         and not failures
     )
     return (
-        "H2H_DEVELOPMENT_HISTORY_QUALIFIED"
-        if qualified
-        else "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT"
+        "H2H_DEVELOPMENT_HISTORY_QUALIFIED" if qualified else "H2H_DEVELOPMENT_HISTORY_INSUFFICIENT"
     )
 
 
