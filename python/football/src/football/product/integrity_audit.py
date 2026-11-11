@@ -310,6 +310,40 @@ def corpus_checks(connection: Connection[Any]) -> dict[str, Any]:
     }
 
 
+def incremental_findings(connection: Connection[Any], since: datetime) -> dict[str, int]:
+    """Cheap checks over fixtures changed since a time; the scheduled job runs these."""
+    row = connection.execute(
+        """SELECT
+             count(*) FILTER (WHERE f.status='FINISHED' AND f.result_score_basis='REGULATION_90'
+                 AND f.home_score IS NOT NULL AND h.fixture_id IS NULL
+                 AND f.updated_at < statement_timestamp()-interval '15 minutes'
+                 AND EXISTS (SELECT 1 FROM football.match_provider_mappings m
+                     JOIN football.providers p ON p.id=m.provider_id
+                     WHERE m.match_id=f.fixture_id AND m.valid_to IS NULL
+                       AND p.code='api_football')),
+             count(*) FILTER (WHERE f.status = ANY(%s)
+                 AND f.kickoff_at < statement_timestamp()-interval '4 hours'),
+             count(*) FILTER (WHERE h.fixture_id IS NOT NULL
+                 AND (f.home_score,f.away_score) IS DISTINCT FROM (h.home_goals,h.away_goals))
+           FROM football.product_fixtures f
+           LEFT JOIN football.product_team_match_history h USING (fixture_id)
+           WHERE f.updated_at >= %s""",
+        (list(UNRESOLVED), since),
+    ).fetchone()
+    stale = connection.execute(
+        """SELECT count(*) FROM football.product_context_report_refresh_work
+           WHERE generation>completed_generation
+             AND requested_at < statement_timestamp()-interval '1 hour'"""
+    ).fetchone()
+    assert row is not None and stale is not None
+    return {
+        "finished_without_history": row[0],
+        "result_overdue": row[1],
+        "history_score_mismatch": row[2],
+        "context_refresh_older_than_1h": stale[0],
+    }
+
+
 class AuditRun:
     """Checkpointed batches under one output directory."""
 

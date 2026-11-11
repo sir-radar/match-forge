@@ -18,12 +18,14 @@ import hashlib
 import json
 import time
 from collections.abc import Sequence
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, cast
 
 import psycopg
 from psycopg import Connection
 
+from football.product.integrity_audit import incremental_findings
 from football.product.sync import ProductSync
 from football.product.sync_support import PROVIDER_CODE
 
@@ -116,6 +118,50 @@ def run(
         else:
             state["complete"] = True
     return state
+
+
+REPAIR_WINDOW = timedelta(hours=72)
+REPAIR_SNAPSHOT_LIMIT = 8
+
+
+def maintain_history(connection: Connection[Any], data_root: Path) -> dict[str, Any]:
+    """Detect recent unqualified results and repair them from retained responses.
+
+    Bounded to the newest fixture-date responses inside REPAIR_WINDOW and run
+    only when detection finds a gap; score mismatches and overdue results are
+    reported, not repaired, because they need a newer source observation.
+    """
+    with connection.transaction():
+        now = connection.execute("SELECT statement_timestamp()").fetchone()
+        assert now is not None
+        since = now[0] - REPAIR_WINDOW
+        before = incremental_findings(connection, since)
+    result: dict[str, Any] = {"window_start": since.isoformat(), "before": before, "repaired": 0}
+    if before["finished_without_history"]:
+        sync = ProductSync(connection, cast(Any, None), data_root, data_root / "unused-artifact")
+        recent = connection.execute(
+            """SELECT * FROM (
+                 SELECT s.id, s.acquired_at, s.manifest_path, s.manifest_sha256
+                 FROM football.source_snapshots s
+                 JOIN football.providers p ON p.id = s.provider_id
+                 WHERE p.code = %s AND s.source_identity LIKE 'fixtures-%%'
+                   AND s.status = 'validated' AND s.acquired_at >= %s
+                 ORDER BY s.acquired_at DESC, s.id DESC LIMIT %s) newest
+               ORDER BY acquired_at, id""",
+            (PROVIDER_CODE, since, REPAIR_SNAPSHOT_LIMIT),
+        ).fetchall()
+        connection.commit()
+        for snapshot_id, acquired_at, path, sha256 in recent:
+            try:
+                rows = _rows(data_root, path, sha256)
+            except (OSError, ValueError) as error:
+                result.setdefault("errors", []).append(str(error)[:200])
+                continue
+            with connection.transaction():
+                result["repaired"] += sync._qualify_finished_history(rows, snapshot_id, acquired_at)
+        with connection.transaction():
+            result["after"] = incremental_findings(connection, since)
+    return result
 
 
 def main(argv: Sequence[str] | None = None) -> int:

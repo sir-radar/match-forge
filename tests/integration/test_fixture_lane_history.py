@@ -187,3 +187,41 @@ def test_requalification_replays_retained_responses_once_and_never_old_scores(
     run(database, tmp_path, checkpoint, dry_run=False, time_limit=60)
     with psycopg.connect(database) as connection:
         assert [row[4] for row in _history(connection, league)] == [1, 1]
+
+
+def test_scheduled_report_job_detects_and_repairs_missed_qualification(
+    database: str, tmp_path: Path
+) -> None:
+    from datetime import timedelta
+
+    from football.product.public_reports import run_pending_public_reports
+
+    league = uuid4().int % 1_000_000_000 + 1_000_000_000
+    fetched = datetime.now(UTC) - timedelta(hours=1)
+    with psycopg.connect(database) as connection:
+        sync = ProductSync(connection, cast(Any, None), tmp_path, tmp_path / "unused")
+        response = _Client((_row(league, 0, "FT", 3, 1),), fetched).fixtures_for_date(
+            date(2026, 11, 1)
+        )
+        snapshot = sync._record_response(f"fixtures-recent-{league}", response)
+        sync._store_fixtures(response.rows, snapshot, response.fetched_at)
+        connection.commit()
+        result = run_pending_public_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+            data_root=tmp_path,
+        )
+        integrity = result["integrity"]
+        assert integrity["before"]["finished_without_history"] >= 1
+        assert integrity["repaired"] >= 1
+        assert integrity["after"]["finished_without_history"] == 0
+        assert _history(connection, league) == [(str(league + 10), 3, 1, "api_football", 1)]
+        connection.commit()
+        again = run_pending_public_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+            data_root=tmp_path,
+        )
+        assert again["integrity"]["repaired"] == 0 and "after" not in again["integrity"]

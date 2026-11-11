@@ -110,6 +110,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     public_reports.add_argument("--limit", type=int, default=32)
     public_reports.add_argument("--lease-seconds", type=int, default=120)
+    public_reports.add_argument(
+        "--data-root",
+        type=Path,
+        default=Path(os.environ.get("FOOTBALL_DATA_ROOT", ".local/football-data")),
+        help="retained responses used to repair missed history qualification",
+    )
     binding = commands.add_parser("external-binding-review")
     binding.add_argument("--prediction-id", type=UUID, required=True)
     binding.add_argument("--mapping-id", type=UUID, required=True)
@@ -403,12 +409,16 @@ def _run_data_operation(args: argparse.Namespace) -> int:
                     if args.command == "refresh-public-reports"
                     else run_pending_context_reports
                 )
+                options: dict[str, Any] = {}
+                if args.command == "refresh-public-reports":
+                    options["data_root"] = args.data_root
                 result = worker(
                     connection,
                     limit=args.limit,
                     lease_duration=timedelta(seconds=args.lease_seconds),
                     code_commit_sha=code_commit_sha,
                     dependency_lock_sha256=dependency_lock_sha256,
+                    **options,
                 )
             elif args.command == "backfill-history":
                 result = _history_backfill(connection, args)

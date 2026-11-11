@@ -342,10 +342,23 @@ def run_pending_public_reports(
     lease_duration: timedelta = timedelta(minutes=2),
     code_commit_sha: str,
     dependency_lock_sha256: str,
+    data_root: Path | None = None,
 ) -> dict[str, Any]:
-    """Normal scheduled worker; each report kind has its own bounded capacity."""
-    from football.product.external_prediction_recovery import settle_pending_predictions
+    """Normal scheduled worker; each report kind has its own bounded capacity.
 
+    With a data root it first repairs recently missed history qualification so
+    the context reports refreshed in this run see it.
+    """
+    from football.product.external_prediction_recovery import settle_pending_predictions
+    from football.product.history_requalification import maintain_history
+
+    integrity: dict[str, Any] | None = None
+    if data_root is not None:
+        try:
+            integrity = maintain_history(connection, data_root)
+        except (Error, ValueError, RuntimeError) as error:
+            connection.rollback()
+            integrity = {"error": str(error)[:500]}
     settled = settle_pending_predictions(connection, datetime.now(UTC), limit=limit)
     context = run_pending_context_reports(
         connection,
@@ -371,6 +384,8 @@ def run_pending_public_reports(
         connection, selected, lease_duration, code_commit_sha, dependency_lock_sha256
     )
     result["external_settlement_revisions"] = settled
+    if integrity is not None:
+        result["integrity"] = integrity
     result["selected"] += context["selected"]
     result["context_reports_published"] = context["context_reports_published"]
     result["context_reports_pending"] = context["context_reports_pending"]
