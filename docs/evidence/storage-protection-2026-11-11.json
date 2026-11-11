@@ -1,0 +1,189 @@
+{
+  "observed_at": "2026-11-11T21:10:01.065016+00:00",
+  "phase": "P0",
+  "status": "PASS_WITH_WARNINGS",
+  "lifecycle_implementation_complete": false,
+  "later_phases": {
+    "P1": "NOT_STARTED",
+    "P2": "NOT_STARTED",
+    "P3": "NOT_STARTED",
+    "P4": "NOT_STARTED",
+    "P5": "NOT_STARTED",
+    "P6": "NOT_STARTED"
+  },
+  "audit_pr": "https://github.com/sir-radar/match-forge/pull/192",
+  "audit_commit": "a6655648365d031ea965bb67a8df21a730d59293",
+  "source_requirements_sha256": "9bb389a103d1b06587d9449f9a73b462e2c1d4662633bc84865b9c910cad14e0",
+  "protection": {
+    "primary": {
+      "status": "PASS_EXTERNAL_FILE_PRESERVATION",
+      "verified_at": "2026-11-11T14:34:52.770291+00:00",
+      "scope": "STORAGE_AUDIT_AND_V4_INTEGRATION_BACKUP_ONLY",
+      "full_recovery": false,
+      "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8",
+      "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+      "snapshot_id": "b0cc2b859548374be950d5a2daf4b27b3d2ea72f704664ce139915e6d397c15a",
+      "snapshot_path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/payload",
+      "manifest_sha256": "0104a622bb91756de0519bda63abd9861b8a93a5c606914e2167d4d56b68d297",
+      "files": 83,
+      "logical_bytes": 2477474141,
+      "data_added_packed_bytes": 2171571678,
+      "sources": {
+        "audit": "/Users/radar/Desktop/football-simutation/.claude/worktrees/storage-audit/docs/operations/storage-audit-2026-11-11",
+        "backup": "/private/tmp/matchforge-v4-post-remediation-integration/.local/v4-integration/backup"
+      },
+      "readback": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/external-readback",
+      "dump_sha256": "375c5d9daee0ec97b1e124441950850ac8d2c68931cae89eaab57995ff4fcacd",
+      "originals_removed": false,
+      "database_restore_verified": false
+    },
+    "supplement": {
+      "status": "PASS_EXTERNAL_FILE_PRESERVATION",
+      "scope": "AUDIT_SCRATCH_PRIOR_GAP_INVESTIGATION_V4_RESTORE_SCRIPTS",
+      "full_recovery": false,
+      "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8",
+      "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+      "snapshot_id": "0a1122d83cc8a2543f7d74f05c985ef2d889c4c2bce3f55a3d686f32b91538c0",
+      "snapshot_path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/supplement",
+      "manifest_sha256": "9c857beb0bc24895d923fecdf592b334784c166aeed710d2f58520801d6852d6",
+      "files": 116,
+      "logical_bytes": 271396177,
+      "data_added_packed_bytes": 44277498,
+      "verified_at": "2026-11-11T14:37:05.655356+00:00",
+      "originals_removed": false
+    },
+    "verification_records": {
+      "status": "PASS_EXTERNAL_FILE_PRESERVATION",
+      "scope": "P0_PROTECTION_AND_RESTORE_VERIFICATION_RECORDS",
+      "full_recovery": false,
+      "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8",
+      "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+      "snapshot_id": "d05c5e8a9d7d4be0261ad8cc6e84333f56e1dce8d51dd7188ccb275cf414d958",
+      "snapshot_path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/verification-records",
+      "manifest_sha256": "ded778cfcb51de2dcab5cdf13e5915fee965714e4fb7747d4715e708f62049e5",
+      "files": 41,
+      "logical_bytes": 5745803,
+      "data_added_packed_bytes": 735824,
+      "verified_at": "2026-11-11T21:08:54.329311+00:00",
+      "new_readback_removed_after_verification": true,
+      "originals_removed": false,
+      "approved_input_plan_sha256": "4d716493a747b6d79468e9d665999fdae64b77d68f5015468060499514bdae0a"
+    }
+  },
+  "v4_restore": {
+    "status": "PASS",
+    "full_recovery": false,
+    "container": "matchforge-storage-protection-d9f206d5932943869eb2244e0f2b21c3",
+    "image": "sha256:1c59e2c3c818eaa0f0628f695b36e7c9e362d6b219b36a54a32df645cbd7e1af",
+    "operating_writes": 0,
+    "eligible_history": {
+      "rows": 314876,
+      "sha256": "59e568404bed90ea749b5085a7397892d87b034b93ad00dbe674b333466e3865"
+    },
+    "archive_sha256": "375c5d9daee0ec97b1e124441950850ac8d2c68931cae89eaab57995ff4fcacd",
+    "verified_at": "2026-11-11T14:56:52.906487+00:00",
+    "migration_history": "EXACT",
+    "network": "none",
+    "duration_seconds": 1293.90878483298,
+    "temporary_container_removed": true
+  },
+  "v4_verified_tables": 49,
+  "v4_verified_table_rows": 9370649,
+  "latest_snapshot_restore": {
+    "status": "PASS_RECOVERABLE",
+    "full_recovery": false,
+    "unavailable_dependencies": 159,
+    "database_isolated": true,
+    "duration_seconds": 1604.4777468750253,
+    "verified_at": "2026-11-11T15:16:18.945499+00:00",
+    "global_role_restore": "NOT_RUN: apply globals only to a new isolated cluster",
+    "snapshot_id": "64e8a642186d3dd3f9572251bcb4150c24649c93bcf8d3961c67e4431749d782",
+    "snapshot_path": "/Users/radar/Desktop/football-simutation/.local/backup-staging/manual-m466nwf4/payload",
+    "captured_at": "2026-11-11T02:47:09.135807+00:00",
+    "relation_count": 137,
+    "cutoff_count": 2,
+    "restored_manifest_sha256": "18f0b6f2558952863667bf04b0cc112238a08193856220a58322e58a96338821",
+    "repository_id": "44aa85e3bbbf737d5852d9b7666ca84d8260b8027e318b32067d278878d4c0b8",
+    "volume_uuid": "988F99A7-D7C1-329C-9AFF-941D5D8B934C",
+    "temporary_readback_and_restore_removed": true
+  },
+  "reconciliation": {
+    "checked_one_byte_values": 256,
+    "checked_two_byte_values": 65536,
+    "unreachable_declared_digests": [
+      "5555555555555555555555555555555555555555555555555555555555555555",
+      "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    ],
+    "matches": [],
+    "original_gap_manifest_sha256": "3e00dfee7464d1bad57c68820b169a76302ae7cdde5452da85fb9c72a1413a8c",
+    "reconciled_gap_digest": "5043306f0e0c58ce609018f8de300b9d1002615228c82cd3ba987db7dea6b92d",
+    "unavailable": 159,
+    "full_recovery": false
+  },
+  "resource_accounting": {
+    "local_root": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11",
+    "new_retained_local_logical_bytes": 2760353595,
+    "new_retained_local_allocated_file_bytes": 2761007104,
+    "new_external_packed_bytes": 2216585000,
+    "reclaimed_existing_resource_bytes": 0,
+    "initial_local_protection_bytes": 0,
+    "initial_external_protection_bytes": 0,
+    "audit_total_gb_dated_observation": 318,
+    "audit_clone_adjusted_gb_dated_observation": 308,
+    "whole_environment_remeasurement": false
+  },
+  "operating_database_writes": 0,
+  "operating_migrations": 0,
+  "task_created_test_cleanup": {
+    "verified_at": "2026-11-11T14:58:02.023666+00:00",
+    "new_test_resources_released": [
+      {
+        "path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/external-readback",
+        "purpose": "this task disposable readback/test fixture",
+        "allocated_file_bytes_before_release": 2477641728
+      },
+      {
+        "path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/supplement-external-readback",
+        "purpose": "this task disposable readback/test fixture",
+        "allocated_file_bytes_before_release": 271757312
+      },
+      {
+        "path": "/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/pytest",
+        "purpose": "this task disposable readback/test fixture",
+        "allocated_file_bytes_before_release": 6508544
+      }
+    ],
+    "existing_resources_removed": [],
+    "protected_payloads_retained": true,
+    "external_snapshots_retained": true
+  },
+  "existing_resources_deleted": [],
+  "automatic_backups": false,
+  "destructive_cleanup_enabled": false,
+  "original_gap_manifest_unchanged": true,
+  "backup_configuration_changed": false,
+  "next_action": "Owner phase-gate handoff; P1 exact reclamation manifest next. P2\u2013P6 lifecycle implementation and P5 backup automation remain pending.",
+  "inventory_observed_at": "2026-11-11T14:33:01.469610+00:00",
+  "evidence_source_git_sha": "b578e9890bf370caa5674bd5df11cac17a003987",
+  "verification_commands": [
+    {
+      "command": "PYTHONPATH=.:python/football/src /Users/radar/Desktop/football-simutation/.venv/bin/python -m pytest tests/test_recovery_files.py tests/test_recovery_scope.py tests/test_backup_destination.py tests/test_backup_recovery.py tests/integration/test_restic_backup.py --basetemp=/Users/radar/Desktop/football-simutation/.local/storage-protection/2026-11-11/pytest",
+      "result": "27 passed in 22.02s"
+    },
+    {
+      "command": "FOOTBALL_PROJECT_ROOT=/Users/radar/Desktop/football-simutation CARGO_TARGET_DIR=/Users/radar/Desktop/football-simutation/target UV_PROJECT_ENVIRONMENT=/Users/radar/Desktop/football-simutation/.venv UV_NO_SYNC=true PYTHONPATH=.:python/football/src make format-check lint",
+      "result": "PASS; Ruff, mypy, Rust fmt/Clippy, Go formatting/vet/golangci-lint, Goose validation and shell syntax checks"
+    },
+    {
+      "command": "UV_PROJECT_ENVIRONMENT=/Users/radar/Desktop/football-simutation/.venv UV_NO_SYNC=true PYTHONPATH=.:python/football/src make project-status-check",
+      "result": "ProjectStatusV2 valid"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "final_original_dump_checksum_verified": true,
+  "final_original_gap_manifest_checksum_verified": true,
+  "final_exact_disposable_restore_targets_absent": true
+}
