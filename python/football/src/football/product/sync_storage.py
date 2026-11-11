@@ -467,7 +467,14 @@ class ProductStorageMixin(ProductIdentityMixin):
                     (PROVIDER_CODE, provider_fixture_id),
                 )
                 stored = cursor.fetchone()
-                if stored is None or stored[5] is None or stored[6] is None:
+                goals = _mapping(row, "goals")
+                # The cited snapshot must itself show the stored score; a replayed
+                # older response never re-qualifies a score corrected since.
+                if (
+                    stored is None
+                    or stored[5] is None
+                    or (goals.get("home"), goals.get("away")) != (stored[5], stored[6])
+                ):
                     continue
                 cursor.execute(
                     """

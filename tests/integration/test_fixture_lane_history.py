@@ -144,3 +144,46 @@ def test_same_provider_score_correction_reaches_history_without_rewriting_the_pa
             (before, str(league + 10)),
         ).fetchall()
         assert decisions == [(1, 0, True), (1, 1, False)]
+
+
+def test_requalification_replays_retained_responses_once_and_never_old_scores(
+    database: str, tmp_path: Path
+) -> None:
+    from football.product.history_requalification import run
+
+    league = uuid4().int % 1_000_000_000 + 1_000_000_000
+    with psycopg.connect(database) as connection:
+        sync = ProductSync(connection, cast(Any, None), tmp_path, tmp_path / "unused")
+        # Simulate the pre-fix fixture lane: fixtures stored, history never offered.
+        for day, home_goals in ((2, 1), (3, 2)):
+            response = _Client(
+                (_row(league, 0, "FT", home_goals, 0),), datetime(2026, 11, day, tzinfo=UTC)
+            ).fixtures_for_date(date(2026, 11, 1))
+            snapshot = sync._record_response(f"fixtures-2026-11-0{day}-{league}", response)
+            sync._store_fixtures(response.rows, snapshot, response.fetched_at)
+        response = _Client(
+            (_row(league, 1, "FT", 0, 0),), datetime(2026, 11, 4, tzinfo=UTC)
+        ).fixtures_for_date(date(2026, 11, 2))
+        snapshot = sync._record_response(f"fixtures-2026-11-04-{league}", response)
+        sync._store_fixtures(response.rows, snapshot, response.fetched_at)
+        connection.commit()
+        assert _history(connection, league) == []
+
+    checkpoint = tmp_path / "requalify.json"
+    dry = run(database, tmp_path, tmp_path / "dry.json", dry_run=True, time_limit=60)
+    assert dry["complete"] and dry["qualified"] >= 2
+    with psycopg.connect(database) as connection:
+        assert _history(connection, league) == []
+
+    first = run(database, tmp_path, checkpoint, dry_run=False, time_limit=60)
+    assert first["complete"] and not first["missing_files"]
+    with psycopg.connect(database) as connection:
+        # The 2-0 correction is cited; the older 1-0 response never re-qualifies it.
+        assert _history(connection, league) == [
+            (str(league + 10), 2, 0, "api_football", 1),
+            (str(league + 11), 0, 0, "api_football", 1),
+        ]
+    checkpoint.unlink()
+    run(database, tmp_path, checkpoint, dry_run=False, time_limit=60)
+    with psycopg.connect(database) as connection:
+        assert [row[4] for row in _history(connection, league)] == [1, 1]
