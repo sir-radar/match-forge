@@ -65,6 +65,25 @@ test("fixture expands inline", async ({ page }) => {
   await page.screenshot({ path: `test-results/${test.info().project.name}-expanded.png`, fullPage: true });
 });
 
+test("recent form states its order and traces awarded results", async ({ page }) => {
+  const awarded = { kickoff_at: "2026-09-20T15:00:00Z", opponent: "Brentford FC", venue: "AWAY", goals_for: 3, goals_against: 0, result: "W", fixture_id: "awarded-1", result_class: "AWARDED", score_basis: "UNKNOWN", competition_scope: "LEAGUE", verification: "CANONICAL_RESULT" };
+  const played = { ...duplicateForm, fixture_id: "played-1", result_class: "PLAYED", score_basis: "REGULATION_90", competition_scope: "LEAGUE", verification: "QUALIFIED_HISTORY" };
+  const window = { basis: "OFFICIAL", scope: "ALL_COMPETITIONS", venue: "ALL", requested: 5, actual: 2, coverage: "PARTIAL", flags: ["AWARDED_INCLUDED", "UNQUALIFIED_RESULT"], results: "WW", fixture_ids: ["awarded-1", "played-1"], oldest_kickoff_at: duplicateForm.kickoff_at, fingerprint: "a".repeat(64) };
+  const team = { team_id: fixture.home.id, windows: { OFFICIAL_ALL_5: window }, pending_fixture_ids: [] };
+  await page.route(/\/v1\/fixtures\/[^/]+\/context/, async (route) => {
+    await route.fulfill({ json: { fixture_id: fixture.id, home_form: [awarded, played], away_form: [], form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: team, away: { ...team, windows: {} } }, h2h: [], h2h_summary: { meetings: 0, home_wins: 0, draws: 0, away_wins: 0, home_goals: 0, away_goals: 0 }, home_team_statistics: null, away_team_statistics: null, standings: [], data_availability: {} } });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: /Arsenal.*Chelsea/ }).click();
+  await expect(page.getByText("Last 5 official results · newest first →")).toBeVisible();
+  await expect(page.getByLabel("W 3-0 at Brentford FC, 2026-09-20, awarded")).toHaveText("W*");
+  await page.getByText("Form details").click();
+  await expect(page.getByText("Only 2 of 5 results available")).toBeVisible();
+  await expect(page.getByText(/at Brentford FC.*\(not yet qualified\)/)).toBeVisible();
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
 for (const version of ["legacy-compact-index-v1", "compact-buckets-v2"]) {
   test(`${version} renders aggregate tail categories`, async ({ page }) => {
     await page.route("http://127.0.0.1:8080/v1/fixtures/*/forecasts/*", async (route) => {
