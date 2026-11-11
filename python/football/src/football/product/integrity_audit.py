@@ -239,7 +239,9 @@ def _audit_fixture(
     }
 
 
-def _scope_labels(connection: Connection[Any], fixtures: Sequence[UUID]) -> dict[str, tuple[Any, ...]]:
+def _scope_labels(
+    connection: Connection[Any], fixtures: Sequence[UUID]
+) -> dict[str, tuple[Any, ...]]:
     rows = connection.execute(
         """SELECT f.fixture_id::text, COALESCE(p.code,'(none)'), c.country, c.name, c.season_label
            FROM football.product_fixtures f
