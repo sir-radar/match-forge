@@ -18,7 +18,8 @@ Two phases run in order:
 Decisions are append-only and stamped with the replay time, so no earlier
 knowledge cutoff gains facts. Each snapshot (and each reconciled fixture) is its
 own transaction; a stopped run resumes after the last committed snapshot.
-``--dry-run`` rolls every transaction back.
+``--dry-run`` runs everything in one transaction and rolls it back, so its
+counts equal those of a real run.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ import json
 import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from contextlib import nullcontext
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -151,11 +153,16 @@ def reconcile_overdue(
     data_root: Path,
     snapshots: Sequence[tuple[Any, ...]],
     *,
-    dry_run: bool,
+    commit: bool = True,
 ) -> dict[str, Any]:
-    """Apply retained terminal provider states to overdue fixtures; classify the rest."""
+    """Apply retained terminal provider states to overdue fixtures; classify the rest.
+
+    With ``commit`` false the caller owns an enclosing transaction (the dry run)
+    and each fixture becomes a savepoint inside it.
+    """
     overdue = _overdue(connection)
-    connection.commit()
+    if commit:
+        connection.commit()
     latest, missing = _latest_retained(data_root, snapshots, {row[0] for row in overdue})
     outcome: Counter[str] = Counter()
     by_status: Counter[str] = Counter()
@@ -180,7 +187,7 @@ def reconcile_overdue(
             outcome["STORED_ROW_NEWER_THAN_RETAINED_EVIDENCE"] += 1
             continue
         try:
-            with connection.transaction(force_rollback=dry_run):
+            with connection.transaction():
                 sync._store_fixtures((row,), cast(UUID, snapshot_id), acquired_at)
         except psycopg.Error as error:
             outcome["APPLY_ERROR"] += 1
@@ -201,6 +208,54 @@ def reconcile_overdue(
         "missing_files": missing,
         "errors": errors[:50],
     }
+
+
+def _replay(
+    connection: Connection[Any],
+    sync: ProductSync,
+    data_root: Path,
+    state: dict[str, Any],
+    save: Any,
+    dry_run: bool,
+    started: float,
+    time_limit: float,
+) -> None:
+    if state["reconciliation"] is None:
+        snapshots = _snapshots(connection, None)
+        if not dry_run:
+            connection.commit()
+        state["reconciliation"] = reconcile_overdue(
+            connection, sync, data_root, snapshots, commit=not dry_run
+        )
+        save()
+    after = (state["after"][0], state["after"][1]) if state["after"] else None
+    kinds: Counter[str] = Counter(state["qualified_by_snapshot_kind"])
+    for snapshot_id, acquired_at, path, sha256, identity in _snapshots(connection, after):
+        if not dry_run:
+            connection.commit()
+        if time.monotonic() - started > time_limit:
+            break
+        try:
+            rows = _rows(data_root, path, sha256)
+        except FileNotFoundError:
+            state["missing_files"].append(path)
+            rows = ()
+        if rows:
+            with connection.transaction():
+                qualified = sync._qualify_finished_history(rows, snapshot_id, acquired_at)
+            state["finished_rows"] += _finished(rows)
+            state["qualified"] += qualified
+            kinds[_kind(str(identity))] += qualified
+            state["identity_conflicts"] += sync.history_identity_conflicts
+            sync.history_identity_conflicts = 0
+        else:
+            state["non_fixture_snapshots"] += 1
+        state["snapshots"] += 1
+        state["qualified_by_snapshot_kind"] = dict(sorted(kinds.items()))
+        state["after"] = [acquired_at.isoformat(), str(snapshot_id)]
+        save()
+    else:
+        state["complete"] = True
 
 
 def run(
@@ -239,40 +294,11 @@ def run(
     with psycopg.connect(database_url) as connection:
         sync = ProductSync(connection, cast(Any, None), data_root, data_root / "unused-artifact")
         state["complete"] = False
-        if state["reconciliation"] is None:
-            snapshots = _snapshots(connection, None)
-            connection.commit()
-            state["reconciliation"] = reconcile_overdue(
-                connection, sync, data_root, snapshots, dry_run=dry_run
-            )
-            save()
-        after = (state["after"][0], state["after"][1]) if state["after"] else None
-        kinds: Counter[str] = Counter(state["qualified_by_snapshot_kind"])
-        for snapshot_id, acquired_at, path, sha256, identity in _snapshots(connection, after):
-            connection.commit()
-            if time.monotonic() - started > time_limit:
-                break
-            try:
-                rows = _rows(data_root, path, sha256)
-            except FileNotFoundError:
-                state["missing_files"].append(path)
-                rows = ()
-            if rows:
-                with connection.transaction(force_rollback=dry_run):
-                    qualified = sync._qualify_finished_history(rows, snapshot_id, acquired_at)
-                state["finished_rows"] += _finished(rows)
-                state["qualified"] += qualified
-                kinds[_kind(str(identity))] += qualified
-                state["identity_conflicts"] += sync.history_identity_conflicts
-                sync.history_identity_conflicts = 0
-            else:
-                state["non_fixture_snapshots"] += 1
-            state["snapshots"] += 1
-            state["qualified_by_snapshot_kind"] = dict(sorted(kinds.items()))
-            state["after"] = [acquired_at.isoformat(), str(snapshot_id)]
-            save()
-        else:
-            state["complete"] = True
+        # A dry run is one transaction that is rolled back at the end, so later
+        # snapshots see what earlier ones would have written and the counts
+        # equal those of a real run. A real run commits per fixture and snapshot.
+        with connection.transaction(force_rollback=True) if dry_run else nullcontext():
+            _replay(connection, sync, data_root, state, save, dry_run, started, time_limit)
     return state
 
 
@@ -318,9 +344,7 @@ def maintain_history(connection: Connection[Any], data_root: Path) -> dict[str, 
         if rows:
             readable.append((snapshot, rows))
     if before["overdue_api_football"]:
-        reconciled = reconcile_overdue(
-            connection, sync, data_root, [item[0] for item in readable], dry_run=False
-        )
+        reconciled = reconcile_overdue(connection, sync, data_root, [item[0] for item in readable])
         result["reconciled"] = reconciled["outcome"].get(
             "APPLIED_FROM_RETAINED_TERMINAL_RESPONSE", 0
         )

@@ -321,6 +321,9 @@ def test_requalification_reconciles_overdue_fixtures_only_from_later_terminal_ev
     assert outcome["STORED_ROW_NEWER_THAN_RETAINED_EVIDENCE"] == 1
     assert state["reconciliation"]["applied_by_snapshot_kind"] == {"recovery": 2}
     assert state["qualified_by_snapshot_kind"].get("recovery") == 1
+    # The dry run is one rolled-back transaction, so its counts match the real run.
+    assert dry["qualified"] == state["qualified"]
+    assert dry["reconciliation"]["outcome"] == outcome
     with psycopg.connect(database) as connection:
         assert _states(connection, league) == [
             (str(league + 10), "FINISHED", 2, 0, True),
