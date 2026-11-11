@@ -272,8 +272,10 @@ class ProductStorageMixin(ProductIdentityMixin):
             status = fixture_status(provider_status)
             score_basis = _api_football_score_basis(provider_status)
             goals = _mapping(row, "goals")
-            home_score = goals.get("home") if status == "FINISHED" else None
-            away_score = goals.get("away") if status == "FINISHED" else None
+            # An awarded result keeps the awarded score; form marks it as awarded.
+            scored = status in {"FINISHED", "AWARDED"}
+            home_score = goals.get("home") if scored else None
+            away_score = goals.get("away") if scored else None
             with self.connection.cursor() as cursor:
                 cursor.execute(
                     """
