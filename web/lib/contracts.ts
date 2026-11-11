@@ -599,10 +599,16 @@ function parseFormWindow(value: unknown): FormWindow {
     actual: integer(item.actual, "actual", 0),
     coverage,
     flags: array(item.flags, "flags").map((flag) => text(flag, "flag")),
-    results: text(item.results, "results"),
+    results: formResults(item.results),
     fixture_ids: array(item.fixture_ids, "fixture_ids").map((id) => text(id, "fixture_id")),
     oldest_kickoff_at: nullableTimestamp(item.oldest_kickoff_at, "oldest_kickoff_at"),
   };
+}
+
+function formResults(value: unknown): string {
+  // An EMPTY window serves "", so this field cannot use the non-empty text rule.
+  if (typeof value !== "string" || !/^[WDL]*$/.test(value)) throw new Error("invalid form results");
+  return value;
 }
 
 function parseFormContext(value: unknown): FormContext {

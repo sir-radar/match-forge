@@ -42,6 +42,10 @@ describe("API contract boundary", () => {
     expect(parsed.home_form[0].result_class).toBe("AWARDED");
     expect(parsed.form?.home.OFFICIAL_ALL_5.coverage).toBe("PARTIAL");
     expect(parseContext(context).form).toBeNull();
+    const empty = { ...window, actual: 0, coverage: "EMPTY", flags: [], results: "", fixture_ids: [], oldest_kickoff_at: null };
+    const emptyTeam = { team_id: "t", windows: { OFFICIAL_ALL_5: empty }, pending_fixture_ids: [] };
+    expect(parseContext({ ...context, form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: emptyTeam, away: emptyTeam } }).form?.home.OFFICIAL_ALL_5.results).toBe("");
+    expect(() => parseContext({ ...context, form: { policy_version: "form-policy-v1", order: "NEWEST_FIRST", default_window: "OFFICIAL_ALL_5", home: { ...emptyTeam, windows: { OFFICIAL_ALL_5: { ...empty, results: "WX" } } }, away: emptyTeam } })).toThrow(/form results/);
     expect(() => parseContext({ ...context, form: { policy_version: "v", order: "OLDEST_FIRST", default_window: "x", home: team, away: team } })).toThrow(/order/);
     expect(() => parseContext({ ...context, home_form: [{ ...form, result_class: "FORFEIT" }] })).toThrow(/result_class/);
   });
