@@ -19,6 +19,8 @@ Computed on the restored rehearsal copy after re-qualification ([runbook](../ope
 | Forecasts missing a result from the previous 120 days | 6,017 |
 | Forecasts missing 1 / 2 / 3 / 4–5 / 6 or more results | 4,650 / 2,874 / 1,195 / 938 / 650 |
 
+A second rehearsal with replay v2 (which also reconciles overdue fixtures from retained responses) on a fresh restore found **10,887 affected forecasts over 3,799 fixtures, 6,383 of them missing a result from the previous 120 days** (inventory SHA-256 `cc5f2da6afc33cf1a24d31326b9692f99b629411d7a103958ae3520f643fdad8`, [evidence](../evidence/p02-remediation-rehearsal-2-2026-11-11.json)). The table above is from the first rehearsal.
+
 The per-forecast list (forecast ID, fixture ID, knowledge cutoff and the missing fixture IDs) is regenerated from the operating database after the runbook is applied. The rehearsal figures above are indicative until then. The rehearsal inventory hash is recorded in the [rehearsal evidence](../evidence/p02-remediation-rehearsal-2026-11-11.json).
 
 ## Rules that hold under every option
@@ -39,6 +41,33 @@ The per-forecast list (forecast ID, fixture ID, knowledge cutoff and the missing
 ## Decision requested
 
 Choose A, B or C, and for C name the pre-registration owner. Until a decision event exists, the system keeps doing what it does today: published forecasts stay unchanged, and upcoming fixtures get new forecasts only through the existing refresh schedule. Of the 1,935 upcoming affected fixtures on 11 November, those still `SCHEDULED` when the runbook is applied will get revisions; the rest will settle with their earlier forecast.
+
+## Option B approval package
+
+This section is what the owner signs if Option B is chosen. Nothing in it is built or applied until the decision event exists.
+
+**Decision event to record** (`docs/governance/decision-events/`, contract `OwnerDecisionRecordV1`):
+
+- `decision_id`: `APPROVE_P02_FORECAST_REEVALUATION_OPTION_B_V1`
+- `authorizes`: an additive migration for the annotation table below; populating it from the affected-forecast inventory regenerated on the operating database after the runbook; evaluation reports that show every metric with and without annotated forecasts.
+- `explicitly_not_authorized`: editing, superseding, hiding, deleting or re-scoring any published forecast, artifact or read report; counterfactual reruns (Option C); model training, promotion or retirement; changing which forecasts are served.
+- `requires`: `inventory_sha256` of the operating inventory, the runbook's preservation hashes before and after population, and the annotation count equal to the inventory count.
+
+**Annotation storage.** A new append-only table, separate from forecasts:
+
+| Column | Meaning |
+| --- | --- |
+| `forecast_id` | The published forecast (foreign key; the forecast row is not touched) |
+| `annotation` | `P02-D-01` |
+| `missing_fixture_ids` | Results the forecast's inputs lacked although their source was known before its cutoff |
+| `missing_within_120_days` | Count used for the sensitivity split |
+| `inventory_sha256`, `decision_id`, `recorded_at` | Provenance |
+
+Rows are insert-only (same immutability trigger as read reports). Revoking the annotation means inserting a revocation row, not deleting.
+
+**Evaluation reporting.** Every performance or comparison report over a period that contains annotated forecasts shows three figures side by side: all forecasts, forecasts without the annotation, and annotated forecasts only, each with its count. Reports for periods with no annotated forecasts are unchanged. The headline metric stays "all forecasts", so nothing published becomes better by exclusion.
+
+**Preserved under Option B:** every historical forecast and its probabilities, hashes, artifacts and read reports; the order and timing of revisions; model governance (no promotion or retirement follows from the split).
 
 ## Approval placeholders
 
