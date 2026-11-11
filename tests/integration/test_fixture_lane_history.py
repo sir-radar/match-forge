@@ -256,3 +256,108 @@ def test_identity_collision_skips_one_row_and_is_handed_to_review(
             (str(league + 19),),
         ).fetchall()
         assert conflict == [("TEAM_TIMESTAMP_CONFLICT", str(league + 19), "HISTORY_QUALIFICATION")]
+
+
+def _states(connection: psycopg.Connection[Any], league: int) -> list[tuple[Any, ...]]:
+    return connection.execute(
+        """SELECT m.provider_match_id,f.status,f.home_score,f.away_score,
+                  h.fixture_id IS NOT NULL
+           FROM football.product_fixtures f
+           JOIN football.match_provider_mappings m ON m.match_id=f.fixture_id
+           LEFT JOIN football.product_team_match_history h USING (fixture_id)
+           WHERE m.provider_match_id::bigint BETWEEN %s AND %s ORDER BY 1""",
+        (league + 10, league + 19),
+    ).fetchall()
+
+
+def _store_not_started(sync: ProductSync, league: int, count: int) -> None:
+    rows = tuple(_row(league, offset, "NS", None, None) for offset in range(count))
+    response = _Client(rows, datetime(2026, 11, 1, tzinfo=UTC)).fixtures_for_date(date(2026, 11, 1))
+    snapshot = sync._record_response(f"fixtures-2026-11-01-{league}", response)
+    sync._store_fixtures(response.rows, snapshot, response.fetched_at)
+
+
+def test_requalification_reconciles_overdue_fixtures_only_from_later_terminal_evidence(
+    database: str, tmp_path: Path
+) -> None:
+    from football.product.history_requalification import run
+
+    league = uuid4().int % 1_000_000_000 + 1_000_000_000
+    with psycopg.connect(database) as connection:
+        sync = ProductSync(connection, cast(Any, None), tmp_path, tmp_path / "unused")
+        _store_not_started(sync, league, 4)
+        # An ad hoc request retained the outcomes after every kickoff but was
+        # never stored: the defect the replay closes.
+        recovery = (
+            _row(league, 0, "FT", 2, 0),
+            _row(league, 1, "AWD", 3, 0),
+            _row(league, 2, "NS", None, None),
+            _row(league, 3, "FT", 1, 1),
+        )
+        response = _Client(recovery, datetime(2026, 11, 6, tzinfo=UTC)).fixtures_for_date(
+            date(2026, 11, 1)
+        )
+        sync._record_response(f"recovery-{league}", response)
+        # Fixture 3 was written by another path after that evidence was retained.
+        connection.execute(
+            """UPDATE football.product_fixtures SET updated_at=%s WHERE fixture_id=(
+                   SELECT match_id FROM football.match_provider_mappings
+                   WHERE provider_match_id=%s AND valid_to IS NULL)""",
+            (datetime(2026, 11, 7, tzinfo=UTC), str(league + 13)),
+        )
+        connection.commit()
+        before = _states(connection, league)
+
+    dry = run(database, tmp_path, tmp_path / "dry.json", dry_run=True, time_limit=60)
+    assert dry["reconciliation"]["outcome"]["APPLIED_FROM_RETAINED_TERMINAL_RESPONSE"] == 2
+    with psycopg.connect(database) as connection:
+        assert _states(connection, league) == before
+
+    state = run(database, tmp_path, tmp_path / "real.json", dry_run=False, time_limit=60)
+    outcome = state["reconciliation"]["outcome"]
+    assert state["complete"]
+    assert outcome["APPLIED_FROM_RETAINED_TERMINAL_RESPONSE"] == 2
+    assert outcome["PROVIDER_NOT_TERMINAL_AT_LAST_RETAINED_OBSERVATION"] == 1
+    assert outcome["STORED_ROW_NEWER_THAN_RETAINED_EVIDENCE"] == 1
+    assert state["reconciliation"]["applied_by_snapshot_kind"] == {"recovery": 2}
+    assert state["qualified_by_snapshot_kind"].get("recovery") == 1
+    with psycopg.connect(database) as connection:
+        assert _states(connection, league) == [
+            (str(league + 10), "FINISHED", 2, 0, True),
+            (str(league + 11), "AWARDED", 3, 0, False),
+            (str(league + 12), "SCHEDULED", None, None, False),
+            (str(league + 13), "SCHEDULED", None, None, False),
+        ]
+    # A second run changes nothing.
+    again = run(database, tmp_path, tmp_path / "again.json", dry_run=False, time_limit=60)
+    assert "APPLIED_FROM_RETAINED_TERMINAL_RESPONSE" not in again["reconciliation"]["outcome"]
+    assert again["qualified"] == 0
+
+
+def test_scheduled_report_job_reconciles_overdue_results_from_recent_responses(
+    database: str, tmp_path: Path
+) -> None:
+    from datetime import timedelta
+
+    from football.product.public_reports import run_pending_public_reports
+
+    league = uuid4().int % 1_000_000_000 + 1_000_000_000
+    with psycopg.connect(database) as connection:
+        sync = ProductSync(connection, cast(Any, None), tmp_path, tmp_path / "unused")
+        _store_not_started(sync, league, 1)
+        response = _Client(
+            (_row(league, 0, "FT", 0, 2),), datetime.now(UTC) - timedelta(hours=1)
+        ).fixtures_for_date(date(2026, 11, 1))
+        sync._record_response(f"stale-fixture-{league}", response)
+        connection.commit()
+        result = run_pending_public_reports(
+            connection,
+            code_commit_sha="f" * 40,
+            dependency_lock_sha256="d" * 64,
+            data_root=tmp_path,
+        )
+        integrity = result["integrity"]
+        assert integrity["before"]["overdue_api_football"] >= 1
+        assert integrity["reconciled"] == 1 and integrity["repaired"] == 1
+        assert integrity["after"]["finished_without_history"] == 0
+        assert _states(connection, league) == [(str(league + 10), "FINISHED", 0, 2, True)]
