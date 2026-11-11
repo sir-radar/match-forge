@@ -1,0 +1,71 @@
+SET
+== schemas
+football|137|13 GB
+pg_catalog|64|18 MB
+information_schema|4|248 kB
+public|1|24 kB
+== top relations: schema.table | total | heap | toast | indexes | est rows | dead | last_autovacuum
+football.product_competitions|2634547200|97296384|2536308736|892928|1659|227|1659|2026-11-11 10:35:56
+football.product_provider_mapping_decisions|2331320320|1364869120|24576|966033408|2743351|11808|2922167|2026-11-03 08:20:30
+football.event_observations|2069118976|762159104|8192|1306722304|2609098|0|0|
+football.product_provider_resource_observations|1449222144|225058816|1163870208|60211200|328764|20339|329632|2026-11-04 20:37:39
+football.product_read_reports|1193738240|597975040|466763776|128811008|283891|0|310050|2026-11-10 04:36:35
+football.fixture_identity_resolutions|888840192|785915904|122880|102563840|351283|5658|351283|2026-11-11 13:40:39
+football.event_provider_mappings|793853952|436215808|8192|357482496|2609109|0|0|
+football.event_catalog|415588352|178126848|0|237387776|2609129|0|0|
+football.product_match_history_decisions|400343040|186269696|8192|213991424|813364|9697|875104|2026-10-21 20:07:21
+football.provider_mapping_history|278962176|123600896|8192|155295744|537781|6395|574771|2026-10-18 07:12:37
+football.match_provider_mappings|254386176|96780288|8192|157548544|546286|413|549078|2026-11-01 15:10:27
+football.work_items|244228096|157483008|8192|86671360|347140|64069|347575|2026-11-10 10:56:29
+football.matches|226959360|69115904|0|157794304|776871|4|787731|2026-11-10 00:05:41
+football.product_team_match_history|179789824|77611008|8192|102121472|484927|563|505403|2026-11-02 00:33:57
+football.product_provider_fixture_observations|156721152|85377024|8192|71286784|244895|39088|245254|2026-11-07 09:11:40
+football.product_fixtures|107601920|59326464|8192|48226304|288267|2338|288887|2026-11-11 00:54:43
+football.product_forecasts|78241792|38223872|26558464|13418496|18725|32|18750|2026-11-08 03:44:39
+football.work_attempt_metrics|66166784|47218688|8192|18898944|346796|5953|357618|2026-11-10 04:25:17
+football.source_snapshots|62021632|31768576|8192|30212096|79249|66|83335|2026-11-07 04:29:28
+football.product_context_report_refresh_work|47407104|26435584|8192|20930560|257727|33665|257808|2026-11-10 04:44:13
+football.product_provider_history_scopes|46366720|46178304|8192|139264|1224|257|1224|2026-10-16 05:52:13
+football.player_source_facts|39256064|11722752|8192|27492352|48349|0|0|
+football.source_resources|34734080|18628608|8192|16064512|79335|66|85144|2026-11-05 18:55:33
+football.product_sync_runs|25001984|21749760|999424|2220032|21085|3281|21352|2026-11-11 05:05:53
+football.product_identity_admissions|18284544|15253504|155648|2842624|21899|26|23368|2026-10-16 00:19:01
+football.product_forecast_refresh_work|18210816|11919360|0|6258688|11656|650|11656|2026-11-11 10:34:57
+football.player_observations|16138240|5120000|8192|10977280|1247|0|0|
+football.match_player_participation_observations|15589376|4079616|0|11476992|27354|0|0|
+football.baseline_forecasts|10076160|8658944|8192|1409024|9985|0|0|
+football.team_provider_mappings|9650176|4218880|8192|5390336|21376|3686|22135|2026-10-16 11:01:10
+football.player_provider_mappings|9158656|3923968|8192|5193728|1240|0|0|
+football.resource_observation_artifacts|7798784|7036928|8192|720896|12310|0|12310|2026-11-01 03:13:04
+football.player_position_stints|7266304|4284416|8192|2940928|26327|0|0|
+football.dependency_edges|7184384|2457600|8192|4685824|15988|0|0|
+football.match_player_participations|5693440|2318336|0|3342336|27354|0|0|
+football.work_lock_metrics|4620288|4030464|0|557056|23918|693|23925|2026-11-11 13:55:39
+football.product_team_aliases|4440064|2146304|8192|2252800|19661|3019|19664|2026-11-08 21:04:16
+football.product_report_refresh_work|4235264|2695168|8192|1499136|5852|0|5852|2026-11-11 13:58:39
+football.product_teams|3809280|2695168|8192|1073152|18697|3506|18697|2026-11-09 05:02:11
+football.resolution_parity_work|3719168|8192|3678208|32768|-1|4|22|
+== totals heap/toast/index
+5389 MB|4008 MB|4159 MB|138
+== unused indexes (idx_scan=0) top
+football.event_observations_event_id_provider_id_tstzrange_excl|549183488|0
+football.event_observations_source_snapshot_id_provider_event_id_key|296181760|0
+football.event_provider_mappings_provider_id_provider_event_id_key|265166848|0
+football.event_observations_source_snapshot_id_provider_match_id_eve_key|206766080|0
+football.event_catalog_id_match_id_key|145055744|0
+football.player_source_facts_source_snapshot_id_source_resource_id_p_key|13656064|0
+football.player_observations_player_id_provider_id_tstzrange_excl|8839168|0
+football.player_source_facts_fact_sha256_key|5947392|0
+football.player_source_facts_snapshot_player_idx|5750784|0
+football.player_provider_mappings_provider_id_provider_player_id_ts_excl|4497408|0
+football.product_forecasts_fixture_id_model_artifact_sha256_knowledg_key|2932736|0
+football.dependency_edges_upstream_kind_upstream_id_relationship_dow_key|2605056|0
+football.match_player_participation_ob_source_snapshot_id_match_play_key|2039808|0
+football.baseline_forecasts_semantic_sha256_key|974848|0
+football.dependency_edges_downstream_idx|958464|0
+== dead tuple ratio top
+football.work_items|347575|64069|244228096
+football.product_provider_fixture_observations|245254|39088|156721152
+football.product_context_report_refresh_work|257808|33665|47407104
+football.product_provider_resource_observations|329632|20339|1449222144
+football.product_provider_mapping_decisions|2922167|11808|2331320320

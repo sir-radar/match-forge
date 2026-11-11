@@ -1,0 +1,27 @@
+Images space usage:
+
+REPOSITORY                                TAG                   IMAGE ID       CREATED        SIZE      SHARED SIZE   UNIQUE SIZE   CONTAINERS
+postgres                                  18.6-bookworm         1c59e2c3c818   2 months ago   647MB     0B            647.4MB       3
+redis                                     8.10.0-alpine3.23     978f0e01593e   3 months ago   161MB     0B            160.6MB       1
+<unrelated-image>                         <tag>                 cc60f11d3134   4 years ago    415MB     0B            415.3MB       0
+
+Containers space usage:
+
+CONTAINER ID   IMAGE                     COMMAND                  LOCAL VOLUMES   SIZE      CREATED        STATUS                 NAMES
+41eaaa083c08   postgres:18.6-bookworm    "docker-entrypoint.s…"   1               17.4MB    4 hours ago    Up 4 hours             matchforge-global-audit-pg
+f22f42cb445f   redis:8.10.0-alpine3.23   "docker-entrypoint.s…"   1               188kB     4 weeks ago    Up 11 days (healthy)   football-forecasting-redis-1
+403411fcd255   postgres:18.6-bookworm    "docker-entrypoint.s…"   1               12.3kB    4 weeks ago    Up 11 days (healthy)   football-forecasting-postgres-1
+681d390c9a2f   postgres:18.6-bookworm    "docker-entrypoint.s…"   1               12.3kB    2 months ago   Up 11 days (healthy)   football-gate-a-postgres-1
+
+Local Volumes space usage:
+
+VOLUME NAME                                                        LINKS     SIZE
+football-forecasting_postgres-data                                 1         154.8GB
+football-forecasting_redis-data                                    1         280B
+football-gate-a_prototype-postgres                                 1         70.32MB
+6249ed37508ea60f71513e3e3f297eea0a6cab6acf67e84b01e54c325b4ec388   1         75.53MB
+<unrelated-project-volume>                                          0         923.4MB
+
+Build cache usage: 0B
+
+CACHE ID   CACHE TYPE   SIZE      CREATED   LAST USED   USAGE     SHARED

@@ -58,6 +58,7 @@ Every file marked *proposed* under `docs/` is a proposal, not an approval. A sta
 - [Mandatory validation policy](simulation/mandatory-validation.md), [publication state machine](simulation/publication-state-machine.md), [failure runbook](operations/runbooks/simulation-failure.md)
 - [OpenAPI for the MVP API](api/openapi.yaml), [compatibility/privacy](api/compatibility-policy.md), [superseded original API illustration](api/future-api-illustration.md), [frontend API requirements](frontend/api-requirements.md)
 - [Capabilities and enablement](operations/capability-registry.md), [rollback](operations/rollback-policy.md), [monitoring](operations/forecast-monitoring.md)
+- [Environment storage audit, 11 November 2026](operations/storage-audit-2026-11-11/README.md): dated read-only inventory and growth analysis; proposes, does not authorize, cleanup
 
 ## Engineering standards
 

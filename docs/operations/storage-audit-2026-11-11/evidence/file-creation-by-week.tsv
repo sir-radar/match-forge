@@ -1,0 +1,28 @@
+iso_week	allocated_bytes_created	cumulative	top_groups
+2025-W50	81444864	81444864	web=81444864
+2025-W51	11952128	93396992	web=11952128
+2026-W02	4378624	97775616	web=4378624
+2026-W03	1880064	99655680	web=1880064
+2026-W07	561152	100216832	web=561152
+2026-W09	32768	100249600	web=32768
+2026-W13	172032	100421632	web=172032
+2026-W15	17551360	117972992	web=17551360
+2026-W17	618496	118591488	web=618496
+2026-W19	8192	118599680	web=8192
+2026-W20	1306624	119906304	web=1306624
+2026-W31	40558592	160464896	.tools=40558592
+2026-W32	10207232	170672128	web=10207232
+2026-W33	2850816	173522944	web=2850816
+2026-W34	284049408	457572352	.tools=284049408
+2026-W35	6075936768	6533509120	.local/data-status-remediation=1297448960; .local/foundation/operating-ntc-restore=1297440768; .local/football-data/raw=1138229248; .local/go-mod-cache=1056632832
+2026-W36	1479798784	8013307904	.local/foundation/operating-ntc-restore=485343232; .local/data-status-remediation=485212160; .local/football-data/models=444018688; .local/football-data/forecasts=40845312
+2026-W37	6220763136	14234071040	.local/data-status-remediation=2044600320; .local/football-data/raw=1885011968; .local/foundation/operating-ntc-restore=1289150464; .local/football-data-liga-f-recovery-2026-09-10=841797632
+2026-W38	1695744	14235766784	docs=1445888; scripts=155648; python=73728; .agents=16384
+2026-W39	4697145344	18932912128	.local/phase3a-serie-a-qualification-20260922=1330991104; .local/data-status-remediation=1166241792; .local/football-data/raw=1166000128; target=740110336
+2026-W40	6216478720	25149390848	.local/backups=3519873024; .local/uv-cache=561491968; .local/foundation/delivery-worktree=457011200; .local/review-gaps=447787008
+2026-W41	1612881920	26762272768	.venv=272998400; .local/uv-cache=267337728; .local/foundation/delivery-worktree=256102400; .local/review-gaps=248750080
+2026-W42	61267709952	88029982720	.local/remediation/matchforge-audit=52153176064; .local/remediation/matchforge-architecture-v2=3413385216; .local/data-status-remediation=1634299904; .local/football-data/operational=1601069056
+2026-W43	24671145984	112701128704	.local/remediation/matchforge-architecture-v2=21621178368; .local/foundation/operating-ntc-restore=934744064; .local/data-status-remediation=900128768; .local/football-data/operational=847589376
+2026-W44	9915342848	122616471552	.local/shadow-v4=2391085056; .local/data-status-remediation=1985855488; .local/football-data/operational=1868595200; .local/foundation/operating-ntc-restore=1824002048
+2026-W45	19342553088	141959024640	.local/shadow-v4=6376341504; .local/forecast-readiness-execution=3101663232; .local/data-status-remediation=2033868800; .local/provider-wide-acquisition=1915408384
+2026-W46	12684746752	154643771392	.local/forecast-readiness-execution=6794993664; .local/foundation/operating-ntc-restore=1313222656; .local/foundation/delivery-worktree=1244200960; .local/go-cache=716800000

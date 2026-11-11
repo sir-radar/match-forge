@@ -1,0 +1,39 @@
+{
+ "base": "<repo>/.local/football-data",
+ "base_files": 132089,
+ "base_alloc": 11129880576,
+ "copies": [
+  {
+   "copy": "<repo>/.local/data-status-remediation/populated/data",
+   "files": 112092,
+   "alloc": 9987833856,
+   "same_relpath_and_size_files": 112092,
+   "same_relpath_and_size_alloc": 9987833856,
+   "same_inode_hardlinks": 0,
+   "extent_checked": 112092,
+   "shared_first_extent_files": 112092,
+   "shared_first_extent_alloc": 9987833856,
+   "hash_sample": 400,
+   "hash_sample_equal": 400,
+   "only_in_copy_files": 0,
+   "only_in_copy_alloc": 0,
+   "size_differs_files": 0
+  },
+  {
+   "copy": "<repo>/.local/foundation/operating-ntc-restore/data",
+   "files": 115316,
+   "alloc": 8646242304,
+   "same_relpath_and_size_files": 115297,
+   "same_relpath_and_size_alloc": 8646082560,
+   "same_inode_hardlinks": 0,
+   "extent_checked": 115297,
+   "shared_first_extent_files": 0,
+   "shared_first_extent_alloc": 0,
+   "hash_sample": 400,
+   "hash_sample_equal": 400,
+   "only_in_copy_files": 19,
+   "only_in_copy_alloc": 159744,
+   "size_differs_files": 0
+  }
+ ]
+}
