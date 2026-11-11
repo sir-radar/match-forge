@@ -47,6 +47,17 @@ func requireOperationalProviderSyncSchema(ctx context.Context, pool *pgxpool.Poo
 func requireProviderSyncSchema(
 	ctx context.Context, pool *pgxpool.Pool, syncType SyncType,
 ) error {
+	if syncType == SyncManualBackup {
+		var ready bool
+		err := pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM public.goose_db_version WHERE version_id=202611100300 AND is_applied)").Scan(&ready)
+		if err != nil {
+			return err
+		}
+		if !ready {
+			return errProductUnavailable
+		}
+		return nil
+	}
 	if syncType != SyncFotMob && syncType != SyncPitchAPI {
 		return nil
 	}

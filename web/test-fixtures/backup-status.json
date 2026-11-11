@@ -1,0 +1,29 @@
+{
+  "availability": {
+    "state": "READY",
+    "message": "Enrolled encrypted repository is available.",
+    "drive": {
+      "volume_uuid": "enrolled-volume-uuid",
+      "filesystem": "apfs",
+      "filesystem_encrypted": false,
+      "free_bytes": 800000000000,
+      "capacity_bytes": 1000000000000
+    },
+    "repository_unlocked": true,
+    "referenced_files": 12,
+    "referenced_bytes": 1000000,
+    "estimated_staging_bytes": 3000000,
+    "impact": "One database dump worker and two Restic readers. Includes an isolated database and file restore.",
+    "scope": "RECOVERABLE_ONLY",
+    "known_unavailable_dependencies": 159,
+    "unavailable_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "prior_verified": null
+  },
+  "runs": [],
+  "last_verified": null,
+  "next_due_at": null,
+  "backup_age_seconds": null,
+  "reminder_due": true,
+  "safe_to_eject": true,
+  "last_full_recovery": null
+}

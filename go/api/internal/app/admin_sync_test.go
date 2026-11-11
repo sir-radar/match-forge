@@ -132,6 +132,51 @@ func TestAdminSyncPassesFixtureBackfillStartDate(t *testing.T) {
 	}
 }
 
+func TestAdminHistoryProviderSelection(t *testing.T) {
+	tests := []struct {
+		action, provider string
+		want             int
+	}{
+		{"history", "fotmob", http.StatusAccepted},
+		{"history", "pitchapi", http.StatusAccepted},
+		{"history", "openfootball", http.StatusBadRequest},
+		{"fotmob", "fotmob", http.StatusBadRequest},
+	}
+	for _, test := range tests {
+		t.Run(test.action+"/"+test.provider, func(t *testing.T) {
+			runner := &syncRunnerStub{}
+			body := strings.NewReader(`{"provider":"` + test.provider + `","competition":"47","season":"2025/2026"}`)
+			request := localAdminTestRequest(http.MethodPost, "/v1/admin/sync/"+test.action, body)
+			response := httptest.NewRecorder()
+			newAdminTestApp(runner).Handler().ServeHTTP(response, request)
+			if response.Code != test.want {
+				t.Fatalf("response = %d %s", response.Code, response.Body.String())
+			}
+			if test.want == http.StatusBadRequest {
+				if len(runner.started) != 0 {
+					t.Fatalf("unexpected job = %+v", runner.started)
+				}
+				return
+			}
+			started := runner.started[0]
+			run := SyncRun{Type: started.Type, Parameters: syncParameters(started)}
+			retry := syncRequestFromRun(run)
+			args, err := syncCommandArgs(retry)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if retry.Type != SyncHistoryBackfill || syncLane(retry.Type) != "BULK" {
+				t.Fatalf("retry = %+v", retry)
+			}
+			for _, want := range []string{"backfill-history", "--provider-only " + test.provider, "--competition 47", "--season 2025/2026"} {
+				if !strings.Contains(strings.Join(args, " "), want) {
+					t.Fatalf("args = %q, missing %q", args, want)
+				}
+			}
+		})
+	}
+}
+
 func TestValidateSyncDateRangeRejectsReversedRange(t *testing.T) {
 	_, err := validateSyncDateRange("2026-10-03", "2026-10-04")
 	if err == nil || err.Error() != "from_date must not be after date" {
@@ -188,7 +233,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 	status, message := syncCompletion(map[string]interface{}{
 		"status":          "COMPLETED_WITH_ERRORS",
 		"failure_reasons": map[string]interface{}{"mvp": "API-Football request limit reached"},
-	})
+	}, SyncRequest{Type: SyncMVP})
 	if status != "FAILED" {
 		t.Fatalf("status = %q", status)
 	}
@@ -196,7 +241,7 @@ func TestSyncCompletionMarksPartialWorkflowFailed(t *testing.T) {
 		t.Fatalf("message = %v", message)
 	}
 
-	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"})
+	status, message = syncCompletion(map[string]interface{}{"status": "COMPLETED"}, SyncRequest{Type: SyncMVP})
 	if status != "SUCCEEDED" || message != nil {
 		t.Fatalf("completion = %q %v", status, message)
 	}
@@ -214,7 +259,7 @@ func TestRunCommandAcceptsStructuredPartialFailure(t *testing.T) {
 		context.Background(),
 		"run-id",
 		[]string{"/bin/sh", "-c", `echo '{"status":"COMPLETED_WITH_ERRORS","errors":{"mvp":"quota"}}'; exit 1`},
-		logFile,
+		logFile, false,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +277,7 @@ func TestRunCommandPreservesOriginalCauseBeforeGenericSummary(t *testing.T) {
 	defer logFile.Close()
 	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
 	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
-		`echo 'NameError: retained fixture_id is missing' >&2; echo '{"status":"FAILED","errors":{}}'; exit 1`}, logFile)
+		`echo 'NameError: retained fixture_id is missing' >&2; echo '{"status":"FAILED","errors":{}}'; exit 1`}, logFile, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +295,7 @@ func TestRunCommandRedactsBothStreamsAcrossWrites(t *testing.T) {
 	defer logFile.Close()
 	runner := &CommandSyncRunner{repoRoot: t.TempDir()}
 	summary, err := runner.runCommand(context.Background(), "run-id", []string{"/bin/sh", "-c",
-		`printf 'API_'; printf 'KEY=stdout-private\n'; printf 'password="two words"\nAuthorization: Bearer stderr-private\n' >&2; echo '{"status":"FAILED","errors":{"source":"token=summary-private"}}'; exit 1`}, logFile)
+		`printf 'API_'; printf 'KEY=stdout-private\n'; printf 'password="two words"\nAuthorization: Bearer stderr-private\n' >&2; echo '{"status":"FAILED","errors":{"source":"token=summary-private"}}'; exit 1`}, logFile, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +345,7 @@ func TestRunCommandCancellationStopsProcessGroup(t *testing.T) {
 	done := make(chan error, 1)
 	go func() {
 		_, runErr := runner.runCommand(
-			ctx, "run-id", []string{"/bin/sh", "-c", "sleep 30"}, logFile,
+			ctx, "run-id", []string{"/bin/sh", "-c", "sleep 30"}, logFile, false,
 		)
 		done <- runErr
 	}()

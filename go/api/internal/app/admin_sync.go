@@ -52,18 +52,23 @@ const (
 	SyncFotMob              SyncType = "FOTMOB_SYNC"
 	SyncPitchAPI            SyncType = "PITCHAPI_SYNC"
 	SyncAllData             SyncType = "ALL_DATA"
+	SyncManualBackup        SyncType = "MANUAL_BACKUP"
 )
 
 type SyncRequest struct {
-	Type             SyncType `json:"sync_type"`
-	Date             string   `json:"date,omitempty"`
-	FromDate         string   `json:"from_date,omitempty"`
-	Season           string   `json:"season,omitempty"`
-	Competition      string   `json:"competition,omitempty"`
-	Country          string   `json:"country,omitempty"`
-	RetryOf          string   `json:"-"`
-	ScheduledHistory bool     `json:"-"`
-	PendingOnly      bool     `json:"-"`
+	Type                    SyncType `json:"sync_type"`
+	Date                    string   `json:"date,omitempty"`
+	FromDate                string   `json:"from_date,omitempty"`
+	Season                  string   `json:"season,omitempty"`
+	HistoryProvider         string   `json:"provider,omitempty"`
+	Competition             string   `json:"competition,omitempty"`
+	Country                 string   `json:"country,omitempty"`
+	RetryOf                 string   `json:"-"`
+	ScheduledHistory        bool     `json:"-"`
+	PendingOnly             bool     `json:"-"`
+	ManualRequestID         string   `json:"-"`
+	BackupScope             string   `json:"-"`
+	BackupUnavailableSHA256 string   `json:"-"`
 }
 
 type SyncRun struct {
@@ -229,27 +234,73 @@ func (runner *CommandSyncRunner) Start(ctx context.Context, request SyncRequest)
 	if err != nil {
 		return SyncRun{}, err
 	}
-	runID, err := newUUID()
+	runID, err := syncRequestID(request)
 	if err != nil {
 		return SyncRun{}, err
 	}
 	logPath := filepath.Join(".local", "sync-runs", runID+".log")
-	if err = runner.enqueue(ctx, request, runID, logPath, requestedDate, encodedParameters); err != nil {
-		var postgresError *pgconn.PgError
-		if errors.As(err, &postgresError) && postgresError.Code == "23505" {
-			return SyncRun{}, runner.activeRunConflict(ctx)
-		}
+	previous, err := runner.enqueueOrJoin(ctx, request, runID, logPath, requestedDate, encodedParameters)
+	if err != nil {
 		return SyncRun{}, err
+	}
+	if previous != nil {
+		return *previous, nil
 	}
 	runContext, cancel := context.WithCancel(runner.ctx)
 	control := &syncRunControl{cancel: cancel, done: make(chan struct{})}
 	runner.mu.Lock()
 	runner.active[runID] = control
 	runner.mu.Unlock()
-	go runner.execute(runContext, runID, logPath, args, control)
+	go runner.execute(runContext, runID, logPath, args, control, request)
 	// Activate committed work before reading the HTTP response: a disconnect
 	// after enqueue must not leave a successfully submitted job unstarted.
 	return runner.Get(ctx, runID)
+}
+
+func syncRequestID(request SyncRequest) (string, error) {
+	if request.Type != SyncManualBackup {
+		return newUUID()
+	}
+	if !backupRequestID.MatchString(request.ManualRequestID) {
+		return "", errWorkControlConflict
+	}
+	return request.ManualRequestID, nil
+}
+
+func (runner *CommandSyncRunner) existingBackup(ctx context.Context, request SyncRequest, runID string) (*SyncRun, error) {
+	if request.Type != SyncManualBackup {
+		return nil, nil
+	}
+	previous, err := runner.Get(ctx, runID)
+	if errors.Is(err, errSyncRunNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	input := backupRequest{Scope: request.BackupScope, UnavailableSHA256: request.BackupUnavailableSHA256}
+	if previous.Type != SyncManualBackup || !input.matches(previous) {
+		return nil, errWorkControlConflict
+	}
+	return &previous, nil
+}
+
+func (runner *CommandSyncRunner) enqueueOrJoin(ctx context.Context, request SyncRequest, runID, logPath string, requestedDate *time.Time, parameters []byte) (*SyncRun, error) {
+	if previous, err := runner.existingBackup(ctx, request, runID); err != nil || previous != nil {
+		return previous, err
+	}
+	err := runner.enqueue(ctx, request, runID, logPath, requestedDate, parameters)
+	if err == nil {
+		return nil, nil
+	}
+	var postgresError *pgconn.PgError
+	if !errors.As(err, &postgresError) || postgresError.Code != "23505" {
+		return nil, err
+	}
+	if previous, err := runner.existingBackup(ctx, request, runID); err != nil || previous != nil {
+		return previous, err
+	}
+	return nil, runner.activeRunConflict(ctx)
 }
 
 func (runner *CommandSyncRunner) PendingForecastRefresh(ctx context.Context) (bool, error) {
@@ -339,7 +390,8 @@ func syncParameters(request SyncRequest) map[string]interface{} {
 	for key, value := range map[string]string{
 		"from_date": request.FromDate, "season": request.Season,
 		"competition": request.Competition, "country": request.Country,
-		"retry_of_run_id": request.RetryOf,
+		"retry_of_run_id": request.RetryOf, "provider": request.HistoryProvider,
+		"scope": request.BackupScope, "unavailable_sha256": request.BackupUnavailableSHA256,
 	} {
 		if value != "" {
 			parameters[key] = value
@@ -382,11 +434,12 @@ func (runner *CommandSyncRunner) activeRunConflict(ctx context.Context) error {
 	if err != nil {
 		return errSyncAlreadyRunning
 	}
+	hideBackupDiagnostics(&activeRun)
 	return syncConflictError{ActiveRun: activeRun}
 }
 
 func (runner *CommandSyncRunner) execute(
-	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl,
+	ctx context.Context, runID string, logPath string, args []string, control *syncRunControl, request SyncRequest,
 ) {
 	defer func() {
 		control.cancel()
@@ -412,7 +465,7 @@ func (runner *CommandSyncRunner) execute(
 		return
 	}
 	defer logFile.Close()
-	summary, err := runner.runCommand(ctx, runID, args, logFile)
+	summary, err := runner.runCommand(ctx, runID, args, logFile, request.Type == SyncManualBackup)
 	if err != nil {
 		if runner.cancelIfRequested(ctx, runID) {
 			return
@@ -428,7 +481,7 @@ func (runner *CommandSyncRunner) execute(
 		runner.fail(runID, err)
 		return
 	}
-	status, errorMessage := syncCompletion(summary)
+	status, errorMessage := syncCompletion(summary, request)
 	if runner.cancelIfRequested(ctx, runID) {
 		return
 	}
@@ -500,7 +553,18 @@ func (runner *CommandSyncRunner) cancelIfRequested(ctx context.Context, runID st
 	return true
 }
 
-func syncCompletion(summary map[string]interface{}) (string, *string) {
+func syncCompletion(summary map[string]interface{}, request SyncRequest) (string, *string) {
+	if summary["status"] == "FAILED" && request.Type == SyncManualBackup {
+		message := "Backup did not finish. Review preflight and retry manually."
+		return "FAILED", &message
+	}
+	if request.Type == SyncManualBackup {
+		payload, err := json.Marshal(summary)
+		if err != nil || !validBackupSummary(payload, request.BackupScope, request.BackupUnavailableSHA256) {
+			message := "backup verification evidence is incomplete; check the repository and retry manually"
+			return "FAILED", &message
+		}
+	}
 	if summary["status"] != "COMPLETED_WITH_ERRORS" && summary["status"] != "FAILED" {
 		return "SUCCEEDED", nil
 	}
@@ -509,13 +573,26 @@ func syncCompletion(summary map[string]interface{}) (string, *string) {
 }
 
 func (runner *CommandSyncRunner) runCommand(
-	ctx context.Context, runID string, args []string, logFile *os.File,
+	ctx context.Context, runID string, args []string, logFile *os.File, gracefulCancel bool,
 ) (map[string]interface{}, error) {
 	command := exec.CommandContext(ctx, args[0], args[1:]...)
 	command.Dir = runner.repoRoot
 	command.Env = append(os.Environ(), "MATCHFORGE_SYNC_RUN_ID="+runID)
 	command.Env = append(command.Env, "PGOPTIONS="+os.Getenv("PGOPTIONS")+
 		" -c matchforge.sync_run_id="+runID+" -c matchforge.sync_worker_id="+runID)
+	isolateCommand(command)
+	if gracefulCancel {
+		command.Cancel = func() error { return syscall.Kill(-command.Process.Pid, syscall.SIGTERM) }
+		command.WaitDelay = 2 * time.Minute
+	}
+	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
+	if readErr != nil {
+		return nil, readErr
+	}
+	return syncCommandSummary(lastLine, waitErr, logFile)
+}
+
+func isolateCommand(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	command.Cancel = func() error {
 		if command.Process == nil {
@@ -523,11 +600,6 @@ func (runner *CommandSyncRunner) runCommand(
 		}
 		return syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
 	}
-	lastLine, waitErr, readErr := captureSyncOutput(command, logFile)
-	if readErr != nil {
-		return nil, readErr
-	}
-	return syncCommandSummary(lastLine, waitErr, logFile)
 }
 
 func syncCommandSummary(lastLine string, waitErr error, logFile *os.File) (map[string]interface{}, error) {
@@ -635,6 +707,9 @@ func (runner *CommandSyncRunner) Retry(ctx context.Context, id string) (SyncRun,
 	if run.Status != "FAILED" && run.Status != "CANCELLED" {
 		return SyncRun{}, errSyncRunNotRetryable
 	}
+	if run.Type == SyncManualBackup {
+		return SyncRun{}, errSyncRunNotRetryable
+	}
 	return runner.Start(ctx, syncRequestFromRun(run))
 }
 
@@ -645,6 +720,7 @@ func syncRequestFromRun(run SyncRun) SyncRequest {
 	}
 	request.FromDate = stringParameter(run.Parameters, "from_date")
 	request.Season = stringParameter(run.Parameters, "season")
+	request.HistoryProvider = stringParameter(run.Parameters, "provider")
 	request.Competition = stringParameter(run.Parameters, "competition")
 	request.Country = stringParameter(run.Parameters, "country")
 	request.ScheduledHistory, _ = run.Parameters["scheduled_history"].(bool)
@@ -778,7 +854,7 @@ func (runner *CommandSyncRunner) fail(runID string, cause error) {
 }
 
 func (runner *CommandSyncRunner) List(ctx context.Context) ([]SyncRun, error) {
-	rows, err := runner.pool.Query(ctx, syncRunSelect+" ORDER BY requested_at DESC LIMIT 50")
+	rows, err := runner.pool.Query(ctx, syncRunSelect+" WHERE sync_type<>'MANUAL_BACKUP' ORDER BY requested_at DESC LIMIT 50")
 	if err != nil {
 		return nil, err
 	}
@@ -802,6 +878,7 @@ func (runner *CommandSyncRunner) Get(ctx context.Context, id string) (SyncRun, e
 	if errors.Is(err, pgx.ErrNoRows) {
 		return SyncRun{}, errSyncRunNotFound
 	}
+	hideBackupDiagnostics(&run)
 	return run, err
 }
 
@@ -1035,6 +1112,16 @@ func scanSyncRun(row rowScanner) (SyncRun, error) {
 }
 
 func syncCommandArgs(request SyncRequest) ([]string, error) {
+	if request.Type == SyncManualBackup {
+		if !validBackupScope(request.BackupScope, request.BackupUnavailableSHA256) {
+			return nil, errWorkControlConflict
+		}
+		args := []string{".tools/bin/uv", "run", "--locked", "python", "-m", "scripts.manual_backup", "run", "--admin", "--scope", request.BackupScope}
+		if request.BackupUnavailableSHA256 != "" {
+			args = append(args, "--unavailable-sha256", request.BackupUnavailableSHA256)
+		}
+		return args, nil
+	}
 	command := map[SyncType]string{
 		SyncMVP:                 "sync",
 		SyncOpenFootball:        "backfill-openfootball",
@@ -1054,8 +1141,13 @@ func syncCommandArgs(request SyncRequest) ([]string, error) {
 	args := []string{".tools/bin/uv", "run", "python", "-m", "football.product.cli", command}
 	args = appendSyncDateArgs(args, request)
 	args = appendSyncSelectorArgs(args, request)
-	if request.Type == SyncHistoryBackfill && request.ScheduledHistory {
-		args = append(args, "--scheduled")
+	if request.Type == SyncHistoryBackfill {
+		if request.HistoryProvider != "" {
+			args = append(args, "--provider-only", request.HistoryProvider)
+		}
+		if request.ScheduledHistory {
+			args = append(args, "--scheduled")
+		}
 	}
 	if request.Type == SyncForecastRefresh && request.PendingOnly {
 		args = append(args, "--pending-only")
@@ -1160,6 +1252,7 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			Season      string `json:"season"`
 			Competition string `json:"competition"`
 			Country     string `json:"country"`
+			Provider    string `json:"provider"`
 		}
 		decoder := json.NewDecoder(http.MaxBytesReader(nil, request.Body, 64*1024))
 		decoder.DisallowUnknownFields()
@@ -1174,9 +1267,16 @@ func (application *App) startSync(syncType SyncType) http.HandlerFunc {
 			application.writeJSON(response, http.StatusBadRequest, map[string]string{"error": "invalid JSON request"})
 			return
 		}
+		if input.Provider != "" && (syncType != SyncHistoryBackfill ||
+			(input.Provider != "fotmob" && input.Provider != "pitchapi")) {
+			application.writeJSON(response, http.StatusBadRequest, map[string]string{
+				"error": "provider must be fotmob or pitchapi and is only supported for historical backfill",
+			})
+			return
+		}
 		run, err := application.syncRunner.Start(request.Context(), SyncRequest{
 			Type: syncType, Date: input.Date, FromDate: input.FromDate, Season: input.Season,
-			Competition: input.Competition, Country: input.Country,
+			Competition: input.Competition, Country: input.Country, HistoryProvider: input.Provider,
 		})
 		if err != nil {
 			application.writeSyncError(response, err)

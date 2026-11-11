@@ -90,8 +90,8 @@ def test_native_mapping_upgrade_preserves_both_histories(
                 ).fetchall()
                 == constraints
             )
-        _migrate(url, "up")
-        _migrate(url, "up")
+        _migrate(url, "up-to", "202611100200")
+        _migrate(url, "up-to", "202611100200")
         with psycopg.connect(url) as c:
             for table, rows in before.items():
                 assert (

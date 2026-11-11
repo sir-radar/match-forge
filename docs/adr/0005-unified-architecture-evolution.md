@@ -1,8 +1,10 @@
-# ADR 0005: Propose incremental unified architecture evolution
+# ADR 0005: Incremental unified architecture evolution
 
 Date: 10 November 2026.
-Status: **PROPOSED — investigation recommendation, not rollout approval**.
-Scope: `CURRENT_TASK.md` revision 3; implementation remains separately authorized.
+Status: **ACCEPTED — Option B; operating adoption remains separately authorized**.
+Scope: Owner's 10 November 2026 foundation task authorizes P00-01, P00-02,
+P01-01, P01-02, manual Admin backup and monthly reminders. Other roadmap tickets
+remain proposals. This supersedes the investigation's proposed status.
 
 ## Context
 
@@ -14,7 +16,7 @@ missing forward migration `202611100200`, no runtime model registrations and no
 post-match evaluation records. Existing code is therefore reusable but not proof
 of unified runtime adoption or autonomous model learning.
 
-## Recommendation
+## Decision
 
 Use [incremental existing-owner evolution](../architecture/unified-redesign-2026-11-10/design.md):
 
@@ -48,5 +50,9 @@ acceptance evidence; it does not erase missing source proof or phase blockers.
 Use the [single roadmap](../architecture/unified-redesign-2026-11-10/roadmap.md)
 and [research/experiment evidence](../architecture/unified-redesign-2026-11-10/research.md).
 Independent Architecture V2 Phase 35/36 and model-governance gates remain binding.
-Do not mark this ADR accepted from successful documentation checks or use it to
-start implementation, data acquisition, cutover, fitting or promotion.
+Acceptance follows the owner's explicit foundation implementation instruction,
+not documentation checks. It does not authorize operating migrations, data
+acquisition, cutover, fitting, promotion, automatic backups or destructive cleanup.
+The four investigation commits are included in main by planning
+[PR #183](https://github.com/sir-radar/match-forge/pull/183); retain that historical
+planning evidence without repeating the investigation.
