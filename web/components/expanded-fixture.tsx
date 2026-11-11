@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useId, useRef, type KeyboardEvent, type CSSProperties, type ReactNode } from "react";
 import { api } from "@/lib/api";
-import type { Competition, Fixture, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
+import type { Competition, Fixture, FormWindow, Forecast, LiveMatch, MatchContext, ScoreCell } from "@/lib/contracts";
 import { useResource } from "@/hooks/use-resource";
 import { EmptyState, ResourceError, ResourceLoading } from "@/components/resource-state";
 import { percent, ProbabilityBar } from "@/components/probability-bar";
@@ -174,7 +174,7 @@ function Overview({ fixture, forecast, context }: { fixture: Fixture; forecast: 
       <section className="panel"><header><h4>Top scoreline densities</h4><small>Exact scores and aggregate categories</small></header><div className="score-cards">{likely.map((cell, index) => <div key={scoreLabel(cell)} className={index === 0 ? "modal" : ""}><b>{scoreLabel(cell)}</b><strong>{percent(cell.probability)}</strong><small>{isExactScore(cell) ? index === 0 ? "Modal score" : "Supporting outcome" : "Aggregate score category"}</small></div>)}</div></section>
       <section className="panel provenance"><header><h4>Forecast record</h4><small>Immutable pre-match snapshot</small></header><dl><div><dt>Model</dt><dd>MatchForge Forecast</dd></div><div><dt>Algorithm</dt><dd>{forecast.model_algorithm_version}</dd></div><div><dt>Knowledge cutoff</dt><dd>{formatDateTime(forecast.knowledge_cutoff)}</dd></div><div><dt>Publication</dt><dd>Owner-authorized MVP</dd></div></dl></section>
     </> : <EmptyState title={availabilityCopy(fixture.forecast_availability)} detail="Fixture remains visible. MatchForge does not fabricate probabilities when history or source data is insufficient." />}
-    <section className="panel"><header><h4>Recent form</h4><small>Qualified completed matches</small></header><TeamForm name={fixture.home.name} values={context.data?.home_form ?? null} placeholder={contextPlaceholder(context)} /><TeamForm name={fixture.away.name} values={context.data?.away_form ?? null} placeholder={contextPlaceholder(context)} /></section>
+    <section className="panel"><header><h4>Recent form</h4><small>{formLabel(context.data?.form)}</small></header><TeamForm name={fixture.home.name} values={context.data?.home_form ?? null} placeholder={contextPlaceholder(context)} window={defaultWindow(context.data?.form, "home")} /><TeamForm name={fixture.away.name} values={context.data?.away_form ?? null} placeholder={contextPlaceholder(context)} window={defaultWindow(context.data?.form, "away")} /></section>
   </div>;
 }
 
@@ -276,7 +276,22 @@ function UnavailablePanel({ title, detail }: { title: string; detail: string }) 
 
 function Metric({ label, value, tone = "draw" }: { label: string; value: string; tone?: string }) { return <div className={`metric ${tone}`}><small>{label}</small><b>{value}</b></div>; }
 function MarketBar({ label, value, tone }: { label: string; value: number | undefined; tone: string }) { const valid = value !== undefined && Number.isFinite(value) && value >= 0 && value <= 1; return <div className="market-bar"><div><span>{label}</span><b>{valid ? percent(value) : "Unavailable"}</b></div><i><span className={tone} style={{ width: valid ? `${value * 100}%` : "0%" }} /></i></div>; }
-function TeamForm({ name, values, placeholder = "No qualified match history" }: { name: string; values: MatchContext["home_form"] | null; placeholder?: string }) { return <div className="team-form"><span>{name}</span><div>{values?.length ? values.map((match, index) => <b key={formMatchKey(match, index)} className={match.result}>{match.result}</b>) : <small>{placeholder}</small>}</div></div>; }
+const FORM_FLAG_TEXT: Record<string, string> = {
+  STALE: "Oldest match is more than 180 days before kickoff",
+  RESULT_PENDING: "A later match has no result yet",
+  UNQUALIFIED_RESULT: "Includes results not yet qualified as history",
+  ORDER_AMBIGUOUS: "Same-day matches; order uncertain",
+  AWARDED_INCLUDED: "Includes awarded results",
+  SCORE_CONFLICT: "Official and on-field scores disagree",
+};
+function formLabel(form: MatchContext["form"]) { return form ? "Last 5 official results · newest first →" : "Qualified completed matches · newest first →"; }
+function defaultWindow(form: MatchContext["form"], side: "home" | "away") { return form ? form[side][form.default_window] ?? null : null; }
+function formSymbolLabel(match: MatchContext["home_form"][number]) { return `${match.result} ${match.goals_for}-${match.goals_against} ${match.venue === "HOME" ? "vs" : "at"} ${match.opponent}, ${match.kickoff_at.slice(0, 10)}${match.result_class && match.result_class !== "PLAYED" ? ", awarded" : ""}`; }
+function TeamForm({ name, values, placeholder = "No qualified match history", window = null }: { name: string; values: MatchContext["home_form"] | null; placeholder?: string; window?: FormWindow | null }) {
+  const notes = window ? window.flags.filter((flag) => FORM_FLAG_TEXT[flag]).map((flag) => FORM_FLAG_TEXT[flag]) : [];
+  if (window && window.coverage === "PARTIAL") notes.unshift(`Only ${window.actual} of ${window.requested} results available`);
+  return <div className="team-form"><span>{name}</span><div>{values?.length ? values.map((match, index) => <b key={formMatchKey(match, index)} className={match.result} title={formSymbolLabel(match)} aria-label={formSymbolLabel(match)} data-awarded={match.result_class && match.result_class !== "PLAYED" ? "true" : undefined}>{match.result}{match.result_class && match.result_class !== "PLAYED" ? "*" : ""}</b>) : <small>{placeholder}</small>}</div>{window && values?.length ? <details className="form-details"><summary>Form details</summary>{notes.length ? <ul>{notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}<ol>{values.map((match, index) => <li key={formMatchKey(match, index)}>{formSymbolLabel(match)}{match.verification === "CANONICAL_RESULT" ? " (not yet qualified)" : ""}</li>)}</ol></details> : null}</div>;
+}
 function formMatchKey(match: MatchContext["home_form"][number], index: number) { return [match.kickoff_at, match.opponent, match.venue, match.goals_for, match.goals_against, match.result, index].join("|"); }
 function TeamStatCard({ name, form, stats }: { name: string; form: MatchContext["home_form"]; stats: MatchContext["home_team_statistics"] }) { return <section className="panel team-stat"><header><h4>{name}</h4><TeamForm name="Recent form" values={form} /></header>{stats ? <div className="stat-pair"><Metric label={`Goals scored (${stats.recent_matches})`} value={String(stats.goals_for)} tone="home" /><Metric label={`Goals conceded (${stats.recent_matches})`} value={String(stats.goals_against)} tone="away" /><Metric label="Average goals scored" value={stats.average_goals_for.toFixed(2)} tone="home" /><Metric label="Average goals conceded" value={stats.average_goals_against.toFixed(2)} tone="away" /></div> : <EmptyState title="Team statistics unavailable" detail="No qualified completed-match sample is stored for this team." />}<div className="unavailable-block"><b>Advanced team metrics unavailable</b><span>xG, field tilt, lineup, and player availability are shown only when a qualified source provides them.</span></div></section>; }
 function dateLabel(value: string) { return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(value)); }
