@@ -21,7 +21,8 @@ from football.product.competition_geography import refresh_competition_geography
 from football.product.fixture_reconciliation import reconcile_product_fixtures
 from football.product.historical_backfill import HistoricalBackfillStore, HistoricalMatch
 from football.product.identity_admission import admit_provider_mappings
-from football.product.operational_provider_sync import OperationalProviderSync, SyncCounts
+from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_support import SyncCounts
 from football.product.provider_history_scopes import claim_scope, enqueue_seasons
 from football.product.sync import ProductSync
 from football.providers.pitchapi import PitchApiFixture, PitchApiResponse

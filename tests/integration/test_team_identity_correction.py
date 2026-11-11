@@ -419,7 +419,7 @@ def seed_replaced_native(
            VALUES(%s,%s,%s,%s,%s,2,1,'fotmob',%s,'EXACT')""",
         (fixture, competition, old_team, away_team, kickoff, sources["old"]),
     )
-    from football.product.operational_provider_sync import _fotmob_season_rows
+    from football.product.operational_support import _fotmob_season_rows
     from football.providers.fotmob import FotmobResponse
 
     raw = json.dumps(new_payload).encode()

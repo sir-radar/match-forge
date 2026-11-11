@@ -19,11 +19,8 @@ from football.product.history_coverage import history_coverage
 from football.product.identity_admission import admit_provider_mappings, verify_source_identifier
 from football.product.identity_audit import audit_report
 from football.product.identity_trust import origin_id
-from football.product.operational_provider_sync import (
-    OperationalProviderSync,
-    SyncCounts,
-    _fotmob_season_rows,
-)
+from football.product.operational_provider_sync import OperationalProviderSync
+from football.product.operational_support import SyncCounts, _fotmob_season_rows
 from football.product.sync import ProductSync
 from football.providers.fotmob import FotmobResponse
 from football.providers.pitchapi import (
