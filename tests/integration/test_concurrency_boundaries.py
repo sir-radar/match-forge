@@ -16,7 +16,7 @@ from tests.integration.test_product_forecast_worklist import _forecast_fixture
 def test_pending_forecast_computes_before_canonical_and_work_locks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from football.product import sync as module
+    from football.product import sync_forecasts as module
 
     url = os.environ["TEST_DATABASE_URL"]
     with (
@@ -81,7 +81,7 @@ def test_fixture_dates_release_identity_locks_before_next_provider_request(
 def test_forecast_change_during_preparation_stays_pending(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from football.product import sync as module
+    from football.product import sync_forecasts as module
 
     url = os.environ["TEST_DATABASE_URL"]
     with (

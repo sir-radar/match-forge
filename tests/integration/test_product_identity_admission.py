@@ -1277,7 +1277,11 @@ def test_season_qualification_uses_database_knowledge_clock(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import football.product.operational_provider_sync as operational
+    from football.product import (
+        operational_details,
+        operational_identity,
+        operational_seasons,
+    )
 
     class BehindClock(datetime):
         @classmethod
@@ -1287,7 +1291,8 @@ def test_season_qualification_uses_database_knowledge_clock(
     with psycopg.connect(DATABASE_URL) as c, c.transaction(force_rollback=True):
         sync, fixture, snapshot, row = _review_pair(c, tmp_path)
         sync.apply_reviewed_mapping(row.provider_match_id, fixture, source_snapshot_id=snapshot)
-        monkeypatch.setattr(operational, "datetime", BehindClock)
+        for layer in (operational_details, operational_identity, operational_seasons):
+            monkeypatch.setattr(layer, "datetime", BehindClock, raising=False)
         report = sync._season_qualification(snapshot, [row], SyncCounts(matched=1))
         assert report["status"] == "COMPLETED" and report["qualified_results"] == 1
 
